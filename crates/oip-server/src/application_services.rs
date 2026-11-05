@@ -38,7 +38,7 @@ impl CapabilityAudit for LocalLogAudit {
 }
 #[derive(Clone)]
 pub struct ApplicationServices {
-    state: AppState,
+    pub(crate) state: AppState,
     audit: Arc<dyn CapabilityAudit>,
 }
 fn storage(_: String) -> CapabilityError {
@@ -88,6 +88,9 @@ impl ApplicationServices {
         }
     }
     fn source_for(&self, request: &CapabilityRequest) -> Option<DataSourceId> {
+        if let Some(q) = crate::diagnostic_services::query(request) {
+            return q.source.clone();
+        }
         match request {
             CapabilityRequest::SourcesRead(q)
             | CapabilityRequest::ObservationsRead(q)
@@ -173,6 +176,13 @@ impl ApplicationServices {
         use CapabilityRequest::*;
         let s = &self.state;
         match request {
+            EventHistoryRead(_)
+            | EventDetailRead(_)
+            | DataGapsRead(_)
+            | SourceHealthHistoryRead(_)
+            | EvidenceRead(_)
+            | DiagnosticFindingsRead(_)
+            | ObservationHistoryRead(_) => Err(denied()),
             OrganizationsRead(_) | InfrastructuresRead(_) | SitesRead(_) | ScopedSnapshotRead => {
                 Err(denied())
             }
@@ -574,7 +584,11 @@ impl CapabilityService for ApplicationServices {
                 sink: self.audit.clone(),
                 event: Some(self.audit_event(context, id, source.as_ref(), true, "interrupted")),
             };
-            let result = self.run(request).await;
+            let result = if let Some(q) = crate::diagnostic_services::query(&request) {
+                self.diagnostic_read(context, id, q.clone()).await
+            } else {
+                self.run(request).await
+            };
             interrupted.event = None;
             let outcome = if result.is_ok() {
                 "succeeded"

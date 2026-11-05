@@ -1,0 +1,18 @@
+{
+  "main_head": "79639ff42c68ee2ede34862929822a4789845268",
+  "main_status": "clean",
+  "all_original_main_files_unchanged": true,
+  "flutter_files_byteidentical": 83,
+  "design_sha256": "bd9f9d8696ed48676055ee9a2cd0afb29e6c3d59e0945e662d925306f73c753e",
+  "branch": "feature/oip-0082-diagnostics-evidence",
+  "foreign_previews_preserved_pids": [
+    2091,
+    74048,
+    85653,
+    92260,
+    56655,
+    67633
+  ],
+  "no_ui_handoff_integrated": true,
+  "no_merge_push_deployment": true
+}

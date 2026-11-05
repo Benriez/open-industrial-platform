@@ -1,0 +1,83 @@
+{
+  "status": "PASS_LOCAL_REVIEW",
+  "review_a": {
+    "reviewer": "/root/review_storage_0082",
+    "scope": "Storage/evidence/time/migration/writer reliability",
+    "mode": "independent read-only",
+    "remaining_blockers": 0
+  },
+  "review_b": {
+    "reviewer": "/root/review_auth_0082",
+    "scope": "Authorization/REST/MCP/cursors/audit/limits",
+    "mode": "independent read-only",
+    "remaining_blockers": 0
+  },
+  "evidence": "Reviewers inspected source and parent-produced logs, not independently executed tests",
+  "resolved_findings": [
+    "Compound permission mismatch for embedded telemetry/health fixed and denied tests",
+    "Row/cumulative SQLite byte budget before fetch; octet_length optimization; no unbounded JSON filter",
+    "Global run ID removed; opaque random writer epoch",
+    "Final health persistence failure makes shutdown unclean; one final cutoff",
+    "Query watermark source scans replaced with internal table-tail lookup",
+    "Truthful provisioning schema output",
+    "Retain negative/invalid stored timestamps in unfiltered/detail reads",
+    "Long cursor-chain storage bounded; two recent continuation retries",
+    "Validated hierarchy/anchor audit context",
+    "Required/non-null tool-specific schemas and metric length bound",
+    "Performance baseline metadata corrected and rerun"
+  ],
+  "reviewed_source": [
+    {
+      "path": "crates/oip-core/src/diagnostics.rs",
+      "sha256": "76b9d6d36667df659e12ccce8ee977ddeb4a9394570e90e594f4df8ca057a675"
+    },
+    {
+      "path": "crates/oip-core/src/capabilities.rs",
+      "sha256": "9ef2412248602db5333c79fb85304135876bea3a1eb1698ee4738095c5f24662"
+    },
+    {
+      "path": "crates/oip-storage/src/history.rs",
+      "sha256": "d65c9ac3fc772d6bf7b9b1646f4b58d38c6ed2ed462e9822c80a16969ac8fce1"
+    },
+    {
+      "path": "crates/oip-storage/src/lib.rs",
+      "sha256": "d1e328b7927d99c81f4f3b67a8ff7d4ab1568215e99b6a2c0ec92e8ffbabf4ff"
+    },
+    {
+      "path": "crates/oip-storage/src/application.rs",
+      "sha256": "a07c7d0b28be67aa0672282a754f593f4cbad1be09da79c88d55cc71700d605c"
+    },
+    {
+      "path": "crates/oip-storage/src/hierarchy.rs",
+      "sha256": "4467fecbf1f62de6a04138973f354ec5d8a7aab40aef12f74a539e110008df45"
+    },
+    {
+      "path": "crates/oip-server/src/writer.rs",
+      "sha256": "a34ebd06d360337bf8ccbae6d9818515327ee827bb5f8d796e810c3eb94f1d8c"
+    },
+    {
+      "path": "crates/oip-server/src/diagnostic_services.rs",
+      "sha256": "5e97385315b7e1a58d2b54f29ce9dab9fca2aeb7b667c3beab3731602e7a10ba"
+    },
+    {
+      "path": "crates/oip-server/src/tenant_services.rs",
+      "sha256": "082120a8b913ebf1ffedd8fc2e45220c9eddb3d65f5bc001a3b4b293e9bcc418"
+    },
+    {
+      "path": "crates/oip-server/src/api.rs",
+      "sha256": "8f254e153bbc1eacab8cf7d3fd03dcc6c53e8129b090a728fc80ee1b2d6a77fd"
+    },
+    {
+      "path": "crates/oip-server/src/mcp.rs",
+      "sha256": "5d73c7cd58d8731e21613e91a765cfa1857153fd0030d79c3ebd80d78b4dd392"
+    },
+    {
+      "path": "crates/oip-server/tests/diagnostics.rs",
+      "sha256": "efa7b6d20176e6cc9b0b91a0dfd43e182a2218878993a2c9a44f34fe9cbac648"
+    },
+    {
+      "path": "crates/oip-diagnostics/src/lib.rs",
+      "sha256": "ccdf75999e7dcaf50cdeadec1c647768d61c333567dde81f55933bdc39fb944e"
+    }
+  ]
+}

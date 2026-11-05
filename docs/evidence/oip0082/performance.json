@@ -1,0 +1,165 @@
+{
+  "environment": {
+    "host": "Darwin arm64",
+    "rust": "rustc 1.93.0 (254b59607 2026-01-19)",
+    "sqlite_cli": "3.53.4 2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc (64-bit)",
+    "note": "Short local runs; other operator/UI processes remained active; no SLA, peak-memory or isolated CPU claim"
+  },
+  "synthetic_sql_fixture": {
+    "status": "PASS",
+    "fixture_events": 100000,
+    "method": "60 local SQLite CLI invocations/query, cold process overhead included, synthetic history, separate database; not application latency or production SLA",
+    "results": {
+      "source_time": {
+        "query": "SELECT event_key,at_ms,payload_json FROM collection_events WHERE data_source_id='source-a' AND at_ms BETWEEN 19000 AND 21000 AND (at_ms,event_key)>(19500,'') ORDER BY at_ms,event_key LIMIT 101",
+        "plan": [
+          {
+            "id": 5,
+            "parent": 0,
+            "notused": 49,
+            "detail": "SEARCH collection_events USING INDEX history_events (data_source_id=? AND at_ms>? AND at_ms<?)"
+          }
+        ],
+        "p50_ms_including_cli": 8.954,
+        "p95_ms_including_cli": 13.778,
+        "rows": 101
+      },
+      "kind_time": {
+        "query": "SELECT event_key,at_ms FROM collection_events WHERE data_source_id='source-a' AND kind='connection_lost' AND at_ms BETWEEN 19000 AND 21000 ORDER BY at_ms,event_key LIMIT 101",
+        "plan": [
+          {
+            "id": 4,
+            "parent": 0,
+            "notused": 46,
+            "detail": "SEARCH collection_events USING COVERING INDEX history_events_kind (data_source_id=? AND kind=? AND at_ms>? AND at_ms<?)"
+          }
+        ],
+        "p50_ms_including_cli": 8.622,
+        "p95_ms_including_cli": 16.353,
+        "rows": 101
+      },
+      "event_detail": {
+        "query": "SELECT event_key,payload_json FROM collection_events WHERE event_key=printf('%064x',50000) AND data_source_id='source-a'",
+        "plan": [
+          {
+            "id": 3,
+            "parent": 0,
+            "notused": 39,
+            "detail": "SEARCH collection_events USING INDEX events_key_source (event_key=? AND data_source_id=?)"
+          }
+        ],
+        "p50_ms_including_cli": 8.976,
+        "p95_ms_including_cli": 11.827,
+        "rows": 1
+      },
+      "internal_watermark": {
+        "query": "SELECT max(rowid) FROM collection_events",
+        "plan": [
+          {
+            "id": 3,
+            "parent": 0,
+            "notused": 216,
+            "detail": "SEARCH collection_events"
+          }
+        ],
+        "p50_ms_including_cli": 8.58,
+        "p95_ms_including_cli": 14.118,
+        "rows": 1
+      },
+      "source_parent": {
+        "query": "SELECT s.source_id FROM source_placements s JOIN sites p ON s.site_id=p.id JOIN infrastructures i ON p.infrastructure_id=i.id WHERE i.organization_id='org-a'",
+        "plan": [
+          {
+            "id": 4,
+            "parent": 0,
+            "notused": 55,
+            "detail": "SEARCH i USING COVERING INDEX infrastructures_parent (organization_id=?)"
+          },
+          {
+            "id": 8,
+            "parent": 0,
+            "notused": 55,
+            "detail": "SEARCH p USING COVERING INDEX sites_parent (infrastructure_id=?)"
+          },
+          {
+            "id": 12,
+            "parent": 0,
+            "notused": 55,
+            "detail": "SEARCH s USING COVERING INDEX placements_site (site_id=?)"
+          }
+        ],
+        "p50_ms_including_cli": 8.589,
+        "p95_ms_including_cli": 12.878,
+        "rows": 3
+      }
+    }
+  },
+  "actual_application_reads_on_synthetic_history": {
+    "baseline": "79639ff42c68ee2ede34862929822a4789845268",
+    "phases": [],
+    "runtime_directory": "/private/tmp/oip82-perf-81070",
+    "model_used": false,
+    "binary_sha256": "92cae33df21b0077414fb60711ba9b2d38cecc8b01e65b01088b01f462e59caf",
+    "sdk_probe_sha256": "6d6ec427460a69ceeb71ef6263befc366915962461100b0764d07aa30d62d7e6",
+    "status": "PASS",
+    "fixture_events": 100000,
+    "principal_cursor_overload_denied": true,
+    "other_principal_unaffected": true,
+    "fixture_label": "Explicit synthetic persisted event fixtures, not observed production events; distinct from real simulator E2E",
+    "measurements": {
+      "event_history_read_mcp": {
+        "requests": 25,
+        "p50_ms": 7.397,
+        "p95_ms": 7.649
+      },
+      "event_history_read_rest": {
+        "requests": 25,
+        "p50_ms": 2.2,
+        "p95_ms": 2.783
+      },
+      "event_detail_read_mcp": {
+        "requests": 25,
+        "p50_ms": 1.647,
+        "p95_ms": 1.931
+      },
+      "event_detail_read_rest": {
+        "requests": 25,
+        "p50_ms": 1.342,
+        "p95_ms": 1.705
+      },
+      "evidence_read_mcp": {
+        "requests": 25,
+        "p50_ms": 3.554,
+        "p95_ms": 3.879
+      },
+      "evidence_read_rest": {
+        "requests": 25,
+        "p50_ms": 1.813,
+        "p95_ms": 2.187
+      }
+    },
+    "ingestion_progress": 13,
+    "core_rss_kib_cpu_percent": "34880  74.1",
+    "method": "25 real REST/MCP calls per case against same runtime, SDK probe IPC/control hop included; short local run, no SLA",
+    "all_owned_processes_stopped": true
+  },
+  "real_eight_client_batch": {
+    "phase": "10_history_concurrency",
+    "status": "PASS",
+    "details": {
+      "official_clients": 8,
+      "latencies_ms": [
+        4.538916051387787,
+        6.287041935138404,
+        5.280249984934926,
+        28.704999946057796,
+        28.581167105585337,
+        29.845583019778132,
+        5.389750003814697,
+        29.452875023707747
+      ],
+      "core_rss_kib_cpu_percent": "35024  24.9",
+      "ingestion_progressed": true
+    }
+  }
+}

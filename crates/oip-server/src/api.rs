@@ -151,6 +151,13 @@ pub fn router_with_identity(
         .route("/api/v2/devices/{id}", get(device))
         .route("/api/v2/observations", get(metrics))
         .route("/api/v2/events", get(events))
+        .route("/api/v2/events/history", get(event_history))
+        .route("/api/v2/events/detail", get(event_detail))
+        .route("/api/v2/diagnostics/gaps", get(data_gaps))
+        .route("/api/v2/diagnostics/health-history", get(health_history))
+        .route("/api/v2/diagnostics/evidence", get(evidence))
+        .route("/api/v2/diagnostics/findings", get(findings))
+        .route("/api/v2/observations/history", get(observation_history))
         .route("/api/v2/opcua/nodes", get(nodes))
         .route("/api/v2/snapshot", get(scoped_snapshot))
         .route("/api/v2/stream", get(scoped_sse))
@@ -498,3 +505,50 @@ async fn scoped_sse(
     });
     Ok(Sse::new(output).keep_alive(KeepAlive::new().interval(Duration::from_secs(2))))
 }
+
+macro_rules! diagnostic_handler {
+    ($name:ident,$cap:ident,$out:ident,$dto:ty) => {
+        async fn $name(
+            Authorized(s): Authorized,
+            q: Result<Query<DiagnosticQuery>, axum::extract::rejection::QueryRejection>,
+        ) -> Result<Json<$dto>, CapabilityErrorResponse> {
+            let Query(q) = q.map_err(|_| CapabilityErrorResponse(diagnostic_invalid()))?;
+            match call(s, CapabilityRequest::$cap(q)).await? {
+                CapabilityOutput::$out(v) => Ok(Json(v)),
+                _ => Err(mismatch()),
+            }
+        }
+    };
+}
+diagnostic_handler!(
+    event_history,
+    EventHistoryRead,
+    DiagnosticPage,
+    DiagnosticPage
+);
+diagnostic_handler!(
+    event_detail,
+    EventDetailRead,
+    DiagnosticPage,
+    DiagnosticPage
+);
+diagnostic_handler!(data_gaps, DataGapsRead, DiagnosticPage, DiagnosticPage);
+diagnostic_handler!(
+    health_history,
+    SourceHealthHistoryRead,
+    DiagnosticPage,
+    DiagnosticPage
+);
+diagnostic_handler!(evidence, EvidenceRead, Evidence, Box<EvidenceSet>);
+diagnostic_handler!(
+    findings,
+    DiagnosticFindingsRead,
+    DiagnosticPage,
+    DiagnosticPage
+);
+diagnostic_handler!(
+    observation_history,
+    ObservationHistoryRead,
+    DiagnosticPage,
+    DiagnosticPage
+);

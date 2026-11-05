@@ -1,5 +1,7 @@
 //! Stack-neutral domain contracts for the Open Industrial Platform.
 
+mod diagnostics;
+pub use diagnostics::*;
 mod event;
 mod model;
 mod persistence;

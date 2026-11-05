@@ -109,7 +109,7 @@ async fn direct_capabilities_and_rest_use_the_same_query_contracts() {
     assert_eq!(error.kind, CapabilityErrorCode::ResourceNotFound);
     assert_eq!(error.code, "DEVICE_NOT_FOUND");
     let catalog = service.discover(&ctx);
-    assert_eq!(catalog.len(), 13);
+    assert_eq!(catalog.len(), 20);
     assert_eq!(catalog.iter().filter(|c| c.mutating).count(), 1);
     assert!(state.shutdown().await.clean);
 }

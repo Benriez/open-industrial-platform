@@ -292,6 +292,7 @@ impl<R: CoreRepository> Application<R> {
         }
         if outcome == IngestOutcome::Inserted && !matches!(event, ClientEvent::Observation(_)) {
             self.events.push(EventRecord {
+                id: self.repository.event_id(&context, &event),
                 sequence,
                 context,
                 event,

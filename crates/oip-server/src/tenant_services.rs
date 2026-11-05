@@ -53,7 +53,7 @@ impl ApplicationServices {
         }
         Ok(())
     }
-    fn tenant_sources(
+    pub(crate) fn tenant_sources(
         &self,
         h: &HierarchyRegistry,
         p: &PrincipalId,
@@ -117,7 +117,7 @@ impl ApplicationServices {
             }
             _ => self.source_for(&request),
         };
-        let scope = match &request {
+        let mut scope = match &request {
             CapabilityRequest::OrganizationsRead(q)
             | CapabilityRequest::InfrastructuresRead(q)
             | CapabilityRequest::SitesRead(q) => q
@@ -137,6 +137,15 @@ impl ApplicationServices {
                 .or_else(|| q.organization.clone().map(AccessScope::Organization)),
             _ => source.clone().map(AccessScope::Source),
         };
+        if let Some(q) = crate::diagnostic_services::query(&request) {
+            scope = q
+                .source
+                .clone()
+                .map(AccessScope::Source)
+                .or_else(|| q.site.clone().map(AccessScope::Site))
+                .or_else(|| q.infrastructure.clone().map(AccessScope::Infrastructure))
+                .or_else(|| q.organization.clone().map(AccessScope::Organization));
+        }
         let mut event = self.audit_event(context, id, None, false, "denied");
         let mut interrupted = InterruptedExecution {
             sink: self.audit.clone(),
@@ -148,7 +157,7 @@ impl ApplicationServices {
                 "interrupted_before_completion",
             )),
         };
-        let result = self.run_tenant(h, principal, request).await;
+        let result = self.run_tenant(h, principal, context, request).await;
         interrupted.event = None;
         event.authorized = result.is_ok()
             || result.as_ref().is_err_and(|e| {
@@ -171,7 +180,21 @@ impl ApplicationServices {
                 .scope
                 .as_ref()
                 .map_or_else(|| "authorized-projection".into(), |s| format!("{s:?}"));
-            if let Some(source) = source {
+            let resolved = if let Ok(CapabilityOutput::Evidence(e)) = &result {
+                e.anchor.as_ref().map(|a| a.source.clone())
+            } else if id == CapabilityId::EventDetailRead {
+                if let Ok(CapabilityOutput::DiagnosticPage(p)) = &result {
+                    p.items.first().and_then(|i| match i {
+                        DiagnosticItem::Event(e) => Some(e.source.clone()),
+                        _ => None,
+                    })
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+            if let Some(source) = source.or(resolved) {
                 event.hierarchy = h.location(&source).cloned();
                 event.target = source.to_string();
             }
@@ -183,6 +206,7 @@ impl ApplicationServices {
         &self,
         h: &HierarchyRegistry,
         p: &PrincipalId,
+        context: &ExecutionContext,
         request: CapabilityRequest,
     ) -> Result<CapabilityOutput, CapabilityError> {
         use CapabilityRequest::*;
@@ -213,6 +237,9 @@ impl ApplicationServices {
             .any(|b| h.permits(p, id, &b.scope, false))
         {
             return Err(denied());
+        }
+        if let Some(q) = crate::diagnostic_services::query(&request) {
+            return self.diagnostic_read(context, id, q.clone()).await;
         }
         match request {
             OrganizationsRead(q) => {

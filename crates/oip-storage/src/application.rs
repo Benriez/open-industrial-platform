@@ -1,6 +1,13 @@
 use super::*;
 
 impl oip_core::CoreRepository for SqliteStore {
+    fn event_id(&self, context: &EventContext, event: &ClientEvent) -> Option<String> {
+        Some(keyed_hash(
+            b"oip-event-v1\0",
+            context,
+            &serde_json::to_string(event).ok()?,
+        ))
+    }
     fn definitions(&self) -> Result<Vec<oip_core::SourceDefinition>, oip_core::PersistenceFailure> {
         let mut q = self
             .connection
@@ -51,7 +58,7 @@ impl oip_core::CoreRepository for SqliteStore {
         &self,
         limit: usize,
     ) -> Result<Vec<oip_core::EventRecord>, oip_core::PersistenceFailure> {
-        let mut q=self.connection.prepare("SELECT i.sequence,e.data_source_id,e.origin_class,e.payload_json FROM control_event_heads h JOIN control_event_index i ON i.source_id=h.source_id AND i.sequence>h.sequence-?1 JOIN collection_events e ON e.event_key=i.event_key ORDER BY i.source_id,i.sequence").map_err(|_|"read_events")?;
+        let mut q=self.connection.prepare("SELECT i.sequence,e.data_source_id,e.origin_class,e.payload_json,e.event_key FROM control_event_heads h JOIN control_event_index i ON i.source_id=h.source_id AND i.sequence>h.sequence-?1 JOIN collection_events e ON e.event_key=i.event_key ORDER BY i.source_id,i.sequence").map_err(|_|"read_events")?;
         let result = q
             .query_map([limit.min(100) as i64], |r| {
                 Ok((
@@ -59,12 +66,14 @@ impl oip_core::CoreRepository for SqliteStore {
                     r.get::<_, String>(1)?,
                     r.get::<_, String>(2)?,
                     r.get::<_, String>(3)?,
+                    r.get::<_, String>(4)?,
                 ))
             })
             .map_err(|_| "read_events")?
             .map(|r| {
-                let (sequence, source, origin, payload) = r.map_err(|_| "read_events")?;
+                let (sequence, source, origin, payload, key) = r.map_err(|_| "read_events")?;
                 Ok(oip_core::EventRecord {
+                    id: Some(key),
                     sequence,
                     context: decode_context(&source, &origin).map_err(|_| "decode_context")?,
                     event: serde_json::from_str(&payload).map_err(|_| "decode_event")?,

@@ -5,5 +5,8 @@ edition.workspace = true
 license.workspace = true
 publish = false
 
+[dependencies]
+oip-core = { path = "../oip-core" }
+
 [lints]
 workspace = true

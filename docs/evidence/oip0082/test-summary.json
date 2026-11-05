@@ -1,0 +1,387 @@
+{
+  "status": "PASS",
+  "baseline_workspace_tests": 118,
+  "workspace_tests": 135,
+  "storage_tests": 30,
+  "opcua_interop_tests": 37,
+  "open_only_tests": 2,
+  "counts_overlap": true,
+  "new_tests": 17,
+  "rust": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:50:26.878388+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "check",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "--workspace",
+        "--all-targets"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:50:27.179751+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:50:32.337970+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "workspace-tests",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--workspace",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:50:36.836383+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "interop-tests",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--features",
+        "open62541-backend",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:52:30.303357+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "open-only-tests",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--no-default-features",
+        "--features",
+        "open62541-backend",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:53:42.088651+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "no-default-check",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--no-default-features"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:53:42.719759+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "no-default-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--no-default-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:53:42.892779+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "open-only-check",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--no-default-features",
+        "--features",
+        "open62541-backend"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:53:43.130209+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "open-only-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--no-default-features",
+        "--features",
+        "open62541-backend",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:53:43.336508+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "interop-check",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--features",
+        "open62541-backend"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:53:43.589633+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "interop-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--features",
+        "open62541-backend",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:53:43.884120+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "deny",
+      "command": [
+        "target/oip-002-tools/bin/cargo-deny",
+        "check",
+        "advisories",
+        "licenses",
+        "bans",
+        "sources"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:53:44.173166+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:53:45.197831+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "examples",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "-p",
+        "oip-server",
+        "--examples"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "started_at": "2026-11-05T22:53:54.716077+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    }
+  ],
+  "flutter": {
+    "tests": 80,
+    "analyze_issues": 0,
+    "source_tested": "/Users/benny/Code/open-industrial-platform/apps/flutter",
+    "byteidentical_to_feature": true,
+    "commands": [
+      {
+        "name": "dart-format",
+        "command": [
+          "dart",
+          "format",
+          "--output=none",
+          "--set-exit-if-changed",
+          "lib",
+          "test",
+          "integration_test"
+        ],
+        "cwd": "/Users/benny/Code/open-industrial-platform/apps/flutter",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "name": "analyze",
+        "command": [
+          "flutter",
+          "analyze"
+        ],
+        "cwd": "/Users/benny/Code/open-industrial-platform/apps/flutter",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "name": "tests",
+        "command": [
+          "flutter",
+          "test",
+          "--reporter",
+          "expanded"
+        ],
+        "cwd": "/Users/benny/Code/open-industrial-platform/apps/flutter",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "name": "web-build",
+        "command": [
+          "flutter",
+          "build",
+          "web",
+          "--release",
+          "--web-renderer",
+          "canvaskit",
+          "--no-web-resources-cdn",
+          "--pwa-strategy=none",
+          "--output=/Users/benny/Documents/OIP-Handoffs/core-0082-20261105T222139Z/flutter-web"
+        ],
+        "cwd": "/Users/benny/Code/open-industrial-platform/apps/flutter",
+        "exit_code": 0,
+        "status": "PASS"
+      }
+    ]
+  },
+  "ui": {
+    "url": "http://127.0.0.1:49488",
+    "process_id": 75242,
+    "results": [
+      {
+        "name": "browser",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "name": "interactions",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "name": "visual",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "name": "native_macos",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "name": "demo_core_shutdown",
+        "exit_code": 0,
+        "status": "PASS"
+      }
+    ]
+  },
+  "headless_phases": 7,
+  "legacy_mcp_phases": 9,
+  "actual_source_e2e": "e2e.json",
+  "migration": "migration.json",
+  "performance": "performance.json",
+  "gates": {
+    "G1": "PASS",
+    "G2": "PASS",
+    "G3": "PASS",
+    "G4": "PASS",
+    "G5": "PASS",
+    "G6": "PASS",
+    "G7": "PASS",
+    "G8": "PASS",
+    "G9": "PASS",
+    "G10": "PASS",
+    "G11": "PASS",
+    "G12": "PASS",
+    "G13": "PASS",
+    "G14": "PASS",
+    "G15": "PASS",
+    "G16": "PASS"
+  },
+  "git_gate": "Feature commit and clean finish to be independently verified after commit; exact hash in external git-final.json/session final",
+  "external_raw_artifacts": "/Users/benny/Documents/OIP-Handoffs/core-0082-20261105T222139Z",
+  "not_tested": [
+    "Production/remote authentication, hostile same-UID isolation, tamper-resistant durable audit",
+    "Industrial hardware, OPC writes, long-duration/industrial load, hardware power failure",
+    "Remote CI, Windows/Linux native IPC, Safari/Firefox/mobile platforms",
+    "New Diagnostics UI integration/browser session security (OIP-009)"
+  ]
+}

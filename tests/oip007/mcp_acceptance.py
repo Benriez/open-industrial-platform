@@ -64,7 +64,7 @@ try:
  duplicate=start('duplicate-core',[str(ROOT/'target/debug/oip-server'),'--legacy-single-infrastructure','--config',str(RUN/'core.json'),'--mcp-stdio','--mcp-policy','examples/mcp-read-local.json'],True)
  duplicate.stdin.close();duplicate.wait(timeout=5);assert duplicate.returncode!=0;assert not duplicate.stdout.read()
  record('A_single_runtime_sqlite_rest_sse',{'sdk':c.ready,'devices':devices,'health':get('/api/v1/core/health'),'snapshot':sse(),'db':sql('SELECT data_source_id,count(*) n FROM observations GROUP BY data_source_id'),'duplicate_rejected':True})
- tools=c.command({'op':'tools'})['result']['tools'];resources=c.command({'op':'resources'})['result']['resources'];assert len(tools)==6;assert len(resources)==8
+ tools=c.command({'op':'tools'})['result']['tools'];resources=c.command({'op':'resources'})['result']['resources'];assert len(tools)==13;assert len(resources)==8
  assert all(t['annotations']['readOnlyHint'] for t in tools)
  assert all('scenario' not in t['name'] for t in tools)
  for tool in tools:assert tool['inputSchema']['type']=='object' and tool['inputSchema']['additionalProperties']==False

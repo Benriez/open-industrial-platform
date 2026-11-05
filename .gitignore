@@ -137,3 +137,14 @@ secrets/
 !/docs/evidence/oip008/test-summary.json
 !/docs/evidence/oip008/ui-regression.json
 !/docs/evidence/oip008/git-verification.json
+
+# OIP-008.2 curated evidence only; runtime DBs/credentials/raw captures remain excluded.
+!/docs/evidence/oip0082/preflight.json
+!/docs/evidence/oip0082/e2e.json
+!/docs/evidence/oip0082/migration.json
+!/docs/evidence/oip0082/performance.json
+!/docs/evidence/oip0082/reviews.json
+!/docs/evidence/oip0082/integrity.json
+!/docs/evidence/oip0082/test-summary.json
+!/docs/evidence/oip0082/secret-scan.json
+!/docs/evidence/oip0082/source-hashes.json

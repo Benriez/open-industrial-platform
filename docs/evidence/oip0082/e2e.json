@@ -1,0 +1,207 @@
+{
+  "baseline": "79639ff42c68ee2ede34862929822a4789845268",
+  "phases": [
+    {
+      "phase": "01_provision_ingestion",
+      "status": "PASS",
+      "details": {
+        "sources": [
+          {
+            "source_id": "source-a",
+            "site_id": "site-a1",
+            "infrastructure_id": "infra-a1",
+            "organization_id": "org-a",
+            "samples": 6
+          },
+          {
+            "source_id": "source-b",
+            "site_id": "site-a1",
+            "infrastructure_id": "infra-a1",
+            "organization_id": "org-a",
+            "samples": 6
+          },
+          {
+            "source_id": "source-c",
+            "site_id": "site-a2",
+            "infrastructure_id": "infra-a1",
+            "organization_id": "org-a",
+            "samples": 6
+          },
+          {
+            "source_id": "source-d",
+            "site_id": "site-b1",
+            "infrastructure_id": "infra-b1",
+            "organization_id": "org-b",
+            "samples": 6
+          }
+        ],
+        "ownership_private": "0o600"
+      }
+    },
+    {
+      "phase": "02_real_clients_scope_parity",
+      "status": "PASS",
+      "details": {
+        "principals": [
+          "reader-org-a",
+          "reader-infra-a1",
+          "reader-org-b"
+        ],
+        "source_sets": [
+          [
+            "source-a",
+            "source-b",
+            "source-c"
+          ],
+          [
+            "source-a",
+            "source-b",
+            "source-c"
+          ],
+          [
+            "source-d"
+          ]
+        ],
+        "tools": 16,
+        "node_page_limit": 100
+      }
+    },
+    {
+      "phase": "03_negative_auth_sse",
+      "status": "PASS",
+      "details": {
+        "foreign_and_missing_same_error": true,
+        "tampered_context_rejected": true,
+        "sse_reconnect_scoped": true
+      }
+    },
+    {
+      "phase": "04_independent_lifecycle",
+      "status": "PASS",
+      "details": {
+        "before": 242,
+        "after": 254,
+        "daemon_alive": true
+      }
+    },
+    {
+      "phase": "05_eight_clients",
+      "status": "PASS",
+      "details": {
+        "measurements": [
+          {
+            "clients": 1,
+            "MCP_plus_REST_parallel_elapsed_ms": 2.820375026203692
+          },
+          {
+            "clients": 3,
+            "MCP_plus_REST_parallel_elapsed_ms": 2.9384170193225145
+          },
+          {
+            "clients": 8,
+            "MCP_plus_REST_parallel_elapsed_ms": 7.853874936699867
+          }
+        ],
+        "clients": 8,
+        "rss_cpu": "38528   8.0"
+      }
+    },
+    {
+      "phase": "10_history_concurrency",
+      "status": "PASS",
+      "details": {
+        "official_clients": 8,
+        "latencies_ms": [
+          4.538916051387787,
+          6.287041935138404,
+          5.280249984934926,
+          28.704999946057796,
+          28.581167105585337,
+          29.845583019778132,
+          5.389750003814697,
+          29.452875023707747
+        ],
+        "core_rss_kib_cpu_percent": "35024  24.9",
+        "ingestion_progressed": true
+      }
+    },
+    {
+      "phase": "09_diagnostics_history_evidence",
+      "status": "PASS",
+      "details": {
+        "seven_capabilities_parity": true,
+        "event_pages": 62,
+        "stable_ids": 124,
+        "gaps": 2,
+        "health_transitions": 9,
+        "missing_evidence_explicit": true,
+        "scope_denials": true,
+        "sse_history_identity": true
+      }
+    },
+    {
+      "phase": "06_source_failure_reconnect",
+      "status": "PASS",
+      "details": {
+        "B_independent": true,
+        "gaps": [
+          {
+            "data_source_id": "source-a",
+            "n": 2
+          },
+          {
+            "data_source_id": "source-b",
+            "n": 1
+          },
+          {
+            "data_source_id": "source-c",
+            "n": 1
+          },
+          {
+            "data_source_id": "source-d",
+            "n": 1
+          }
+        ]
+      }
+    },
+    {
+      "phase": "07_restart_stale_restore",
+      "status": "PASS",
+      "details": {
+        "restored_count": 293,
+        "fresh_requires_receive": true,
+        "restored_source_health_is_unknown": true
+      }
+    },
+    {
+      "phase": "08_crash_recovery",
+      "status": "PASS",
+      "details": {
+        "runs": [
+          {
+            "result": "interrupted",
+            "n": 1
+          },
+          {
+            "result": "running",
+            "n": 1
+          },
+          {
+            "result": "stopped",
+            "n": 1
+          }
+        ],
+        "observations": 323,
+        "hierarchy": [
+          {
+            "n": 2
+          }
+        ]
+      }
+    }
+  ],
+  "runtime_directory": "/private/tmp/oip82-74579",
+  "model_used": false,
+  "status": "PASS",
+  "all_owned_processes_stopped": true
+}

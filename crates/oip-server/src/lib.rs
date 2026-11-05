@@ -2,6 +2,7 @@ pub mod api;
 pub mod collector;
 pub mod contracts;
 pub mod demo;
+pub mod diagnostic_services;
 pub mod state;
 
 pub mod config;

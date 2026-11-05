@@ -13,6 +13,8 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::path::Path;
 use thiserror::Error;
+mod history;
+pub use history::*;
 mod ownership;
 pub use ownership::DatabaseOwnership;
 mod hierarchy;
@@ -101,10 +103,17 @@ const MIGRATIONS: &[Migration] = &[
         name: "hierarchy_identity_control_sequences",
         sql: hierarchy::HIERARCHY_SQL,
     },
+    Migration {
+        version: 4,
+        name: "diagnostic_history_indexes_health",
+        sql: history::HISTORY_SQL,
+    },
 ];
 
 #[derive(Debug, Error)]
 pub enum StorageError {
+    #[error("Historical evidence byte limit exceeded; narrow the query")]
+    HistoryLimit,
     #[error("local storage ownership I/O failed")]
     Io(#[from] std::io::Error),
     #[error("{0}")]
@@ -165,7 +174,7 @@ impl SqliteStore {
     }
 
     pub fn migrate(&mut self) -> Result<u32, StorageError> {
-        self.migrate_to(3)
+        self.migrate_to(4)
     }
     fn migrate_to(&mut self, maximum: u32) -> Result<u32, StorageError> {
         // Validate history BEFORE any DDL. A corrupt migration ledger must never
@@ -884,8 +893,8 @@ mod tests {
         let path = test_path("migration");
         std::fs::create_dir_all(path.parent().expect("parent")).expect("create test dir");
         let mut store = SqliteStore::open(&path).expect("open");
-        assert_eq!(store.schema_version().expect("version"), 3);
-        assert_eq!(store.migrate().expect("second migration"), 3);
+        assert_eq!(store.schema_version().expect("version"), 4);
+        assert_eq!(store.migrate().expect("second migration"), 4);
         store
             .connection
             .execute("PRAGMA user_version = 0", [])
@@ -896,7 +905,7 @@ mod tests {
         ));
         store
             .connection
-            .execute("PRAGMA user_version = 3", [])
+            .execute("PRAGMA user_version = 4", [])
             .expect("restore version");
         store
             .connection

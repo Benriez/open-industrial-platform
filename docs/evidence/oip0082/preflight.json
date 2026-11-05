@@ -1,0 +1,11 @@
+{
+  "baseline": "79639ff42c68ee2ede34862929822a4789845268",
+  "archive_sha256": "f19bc3f025e7eefd09a1c9723e79c872cf6e01acc262763597b2589ac3cd74c4",
+  "session": "01a1a3b3-9469-7311-be9a-1218be181ebc",
+  "authority": "Rust Core/Storage/Diagnostics/REST/MCP/tests/docs only; no Flutter; main read-only",
+  "active_opencode": {},
+  "tracked_files": 359,
+  "archive_verified_against_git_blobs": true,
+  "archive": "/Users/benny/Documents/OIP-Handoffs/core-0082-20261105T222139Z/baseline.tar",
+  "archive_integrity_rechecked": true
+}

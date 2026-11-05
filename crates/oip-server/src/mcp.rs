@@ -93,7 +93,14 @@ struct ToolSpec {
     id: CapabilityId,
     description: &'static str,
 }
-const TOOLS: [ToolSpec; 9] = [
+const TOOLS: [ToolSpec; 16] = [
+    ToolSpec {name:"oip_event_history_read",id:CapabilityId::EventHistoryRead,description:"Authorized bounded historical event history; stable persisted evidence, no inferred root cause. Time range uses Unix milliseconds; continuation cursor is principal/query bound and expires after five minutes."},
+    ToolSpec {name:"oip_event_detail_read",id:CapabilityId::EventDetailRead,description:"Authorized bounded historical event detail; stable persisted evidence, no inferred root cause. Time range uses Unix milliseconds; continuation cursor is principal/query bound and expires after five minutes."},
+    ToolSpec {name:"oip_data_gaps_read",id:CapabilityId::DataGapsRead,description:"Authorized bounded historical data gaps; stable persisted evidence, no inferred root cause. Time range uses Unix milliseconds; continuation cursor is principal/query bound and expires after five minutes."},
+    ToolSpec {name:"oip_source_health_history_read",id:CapabilityId::SourceHealthHistoryRead,description:"Authorized bounded historical source health history; stable persisted evidence, no inferred root cause. Time range uses Unix milliseconds; continuation cursor is principal/query bound and expires after five minutes."},
+    ToolSpec {name:"oip_evidence_read",id:CapabilityId::EvidenceRead,description:"Authorized bounded historical evidence; stable persisted evidence, no inferred root cause. Time range uses Unix milliseconds; continuation cursor is principal/query bound and expires after five minutes."},
+    ToolSpec {name:"oip_diagnostic_findings_read",id:CapabilityId::DiagnosticFindingsRead,description:"Authorized bounded historical diagnostic findings; stable persisted evidence, no inferred root cause. Time range uses Unix milliseconds; continuation cursor is principal/query bound and expires after five minutes."},
+    ToolSpec {name:"oip_observation_history_read",id:CapabilityId::ObservationHistoryRead,description:"Authorized bounded historical observation history; stable persisted evidence, no inferred root cause. Time range uses Unix milliseconds; continuation cursor is principal/query bound and expires after five minutes."},
     ToolSpec {name:"oip_organizations_read",id:CapabilityId::OrganizationsRead,description:"Discover only authorized organizations and ancestor labels, bounded pagination."},
     ToolSpec {name:"oip_infrastructures_read",id:CapabilityId::InfrastructuresRead,description:"List authorized infrastructures; parent IDs never grant access."},
     ToolSpec {name:"oip_sites_read",id:CapabilityId::SitesRead,description:"List authorized sites with validated parent filters, bounded pagination."},
@@ -118,6 +125,15 @@ const RESOURCES: [(&str, CapabilityId); 7] = [
 ];
 fn input_schema(id: CapabilityId) -> Value {
     let mut v = match id {
+        CapabilityId::EventHistoryRead
+        | CapabilityId::EventDetailRead
+        | CapabilityId::DataGapsRead
+        | CapabilityId::SourceHealthHistoryRead
+        | CapabilityId::EvidenceRead
+        | CapabilityId::DiagnosticFindingsRead
+        | CapabilityId::ObservationHistoryRead => {
+            serde_json::to_value(schemars::schema_for!(DiagnosticQuery))
+        }
         CapabilityId::OrganizationsRead
         | CapabilityId::InfrastructuresRead
         | CapabilityId::SitesRead => serde_json::to_value(schemars::schema_for!(HierarchyQuery)),
@@ -130,6 +146,16 @@ fn input_schema(id: CapabilityId) -> Value {
     if let Some(props) = v.get_mut("properties").and_then(Value::as_object_mut) {
         for (name, p) in props {
             match name.as_str() {
+                "start_ms" | "end_ms" => {
+                    p["minimum"] = json!(-11644473600000_i64);
+                    p["maximum"] = json!(253402300799999_i64);
+                }
+                "metric" => {
+                    *p = json!({"type":["string","null"],"minLength":1,"maxLength":128});
+                }
+                "event_id" | "cursor" => {
+                    *p = json!({"type":["string","null"],"minLength":64,"maxLength":64,"pattern":"^[a-f0-9]{64}$"});
+                }
                 "source" => {
                     *p = json!({"type":["string","null"],"minLength":1,"maxLength":128,"pattern":"^[A-Za-z0-9_.-]+$"});
                 }
@@ -150,6 +176,42 @@ fn input_schema(id: CapabilityId) -> Value {
             }
         }
     }
+    use CapabilityId::*;
+    if matches!(
+        id,
+        EventHistoryRead
+            | EventDetailRead
+            | DataGapsRead
+            | SourceHealthHistoryRead
+            | EvidenceRead
+            | DiagnosticFindingsRead
+            | ObservationHistoryRead
+    ) {
+        let props = v["properties"].as_object_mut().expect("query object");
+        if id != ObservationHistoryRead {
+            props.remove("metric");
+        }
+        if !matches!(id, EventHistoryRead | EventDetailRead | EvidenceRead) {
+            props.remove("event_id");
+            props.remove("event_type");
+        }
+        if matches!(id, EventDetailRead | EvidenceRead) {
+            props.remove("cursor");
+        }
+        if id == EventDetailRead {
+            props.get_mut("event_id").unwrap()["type"] = json!("string");
+            v["required"] = json!(["event_id"]);
+        } else if id == EvidenceRead {
+            props.remove("event_type");
+            props.get_mut("limit").unwrap()["minimum"] = json!(4);
+            for name in ["start_ms", "end_ms"] {
+                props.get_mut(name).unwrap()["type"] = json!("integer");
+            }
+            v["required"] = json!(["start_ms", "end_ms"]);
+            v["anyOf"] = json!([{"required":["source"],"properties":{"source":{"type":"string"}}},{"required":["event_id"],"properties":{"event_id":{"type":"string"}}}]);
+        }
+    }
+
     v
 }
 fn invalid() -> ErrorData {
@@ -190,6 +252,13 @@ fn unit_request(id: CapabilityId) -> CapabilityRequest {
 }
 fn output_schema(id: CapabilityId) -> Value {
     let tag = match id {
+        CapabilityId::EvidenceRead => "evidence",
+        CapabilityId::EventHistoryRead
+        | CapabilityId::EventDetailRead
+        | CapabilityId::DataGapsRead
+        | CapabilityId::SourceHealthHistoryRead
+        | CapabilityId::DiagnosticFindingsRead
+        | CapabilityId::ObservationHistoryRead => "diagnostic_page",
         CapabilityId::OrganizationsRead => "organizations",
         CapabilityId::InfrastructuresRead => "infrastructures",
         CapabilityId::SitesRead => "sites",

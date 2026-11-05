@@ -1,3 +1,5 @@
+> OIP-008.2 feature adds seven historical read capabilities (24 total); current [Diagnostics/REST/MCP mapping](oip-0082-rest-mcp-parity.md). Historical milestone descriptions below remain unchanged.
+
 > OIP-008 Feature-Stand: 17 Capabilities, neun MCP-Tools im Principal-Modus; aktuelles [Scope-/Paritätsinventar](oip-008-rest-mcp-parity.md). Die folgenden Angaben dokumentieren den früheren Meilenstein.
 
 # OIP Capability Inventory — OIP-005

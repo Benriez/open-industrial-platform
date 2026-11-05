@@ -443,7 +443,7 @@ impl SqliteStore {
         tx.execute("INSERT INTO provisioning_audit(at_ms,actor,operation,plan_digest,outcome) VALUES(?1,'local-offline-operator','provision_read_hierarchy',?2,?3)",params![Timestamp::now().map_err(|_|bad())?.as_unix_millis(),digest,if idempotent{"idempotent"}else{"committed"}])?;
         tx.commit()?;
         Ok(ProvisioningResult {
-            schema_version: 3,
+            schema_version: self.schema_version()?,
             organizations: plan.organizations.len(),
             sources: ids.len(),
             idempotent,

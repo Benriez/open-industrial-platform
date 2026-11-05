@@ -1,0 +1,181 @@
+{
+  "baseline": "79639ff42c68ee2ede34862929822a4789845268",
+  "files": [
+    {
+      "path": ".gitignore",
+      "digest": "6b2c460b3d2c77bbd2dab1a98da5d361c8dcef1c5788c46a0b245efd5edb8042"
+    },
+    {
+      "path": "Cargo.lock",
+      "digest": "05635952b3311367165b50507aeeb3a4a0cfeaa717b4853cf248a2676a484f47"
+    },
+    {
+      "path": "Cargo.toml",
+      "digest": "4560ead16b2afc55ff5e18c2337611b96ddc14a2291dc3fc6ac7d561d7b95d50"
+    },
+    {
+      "path": "crates/oip-core/src/application.rs",
+      "digest": "06b9db934b7ce62d4657b0989eea333f9d0c7b88e9ec1c2e9ed75dd0ca3bcd7c"
+    },
+    {
+      "path": "crates/oip-core/src/application_contracts.rs",
+      "digest": "b40871d51b454b55adac0e6d3bf8f1f04e6e597dde14d8ee9d4f77eae688b7ee"
+    },
+    {
+      "path": "crates/oip-core/src/capabilities.rs",
+      "digest": "9ef2412248602db5333c79fb85304135876bea3a1eb1698ee4738095c5f24662"
+    },
+    {
+      "path": "crates/oip-core/src/diagnostics.rs",
+      "digest": "76b9d6d36667df659e12ccce8ee977ddeb4a9394570e90e594f4df8ca057a675"
+    },
+    {
+      "path": "crates/oip-core/src/lib.rs",
+      "digest": "d80b9e52e849f741f7ff34a2922471637bf39fb56c2f069817738409acd7aa8b"
+    },
+    {
+      "path": "crates/oip-diagnostics/Cargo.toml",
+      "digest": "04952c83fbe60c55a4d45363065011142dc1752e722e6de1c1b84ca331d4090f"
+    },
+    {
+      "path": "crates/oip-diagnostics/src/lib.rs",
+      "digest": "ccdf75999e7dcaf50cdeadec1c647768d61c333567dde81f55933bdc39fb944e"
+    },
+    {
+      "path": "crates/oip-server/Cargo.toml",
+      "digest": "30ef633c52d5ad2c9afc294e3ad5f97af71f0fa67e408cc025cb36cc6e2421b3"
+    },
+    {
+      "path": "crates/oip-server/src/api.rs",
+      "digest": "8f254e153bbc1eacab8cf7d3fd03dcc6c53e8129b090a728fc80ee1b2d6a77fd"
+    },
+    {
+      "path": "crates/oip-server/src/application_services.rs",
+      "digest": "37431485b62ccbfa28c794dd6c8b5bcdf55b751e8eb68c415e2bd53877137421"
+    },
+    {
+      "path": "crates/oip-server/src/diagnostic_services.rs",
+      "digest": "5e97385315b7e1a58d2b54f29ce9dab9fca2aeb7b667c3beab3731602e7a10ba"
+    },
+    {
+      "path": "crates/oip-server/src/lib.rs",
+      "digest": "e4bc5927493fb65211084d9ccbfe5215815b77047d6039079cca9d1bc124fab5"
+    },
+    {
+      "path": "crates/oip-server/src/mcp.rs",
+      "digest": "5d73c7cd58d8731e21613e91a765cfa1857153fd0030d79c3ebd80d78b4dd392"
+    },
+    {
+      "path": "crates/oip-server/src/state.rs",
+      "digest": "274c9a150a1b6fef43b201eea5e057ceaa0bdb23a647018b6609c19c71ca713e"
+    },
+    {
+      "path": "crates/oip-server/src/tenant_services.rs",
+      "digest": "082120a8b913ebf1ffedd8fc2e45220c9eddb3d65f5bc001a3b4b293e9bcc418"
+    },
+    {
+      "path": "crates/oip-server/src/writer.rs",
+      "digest": "a34ebd06d360337bf8ccbae6d9818515327ee827bb5f8d796e810c3eb94f1d8c"
+    },
+    {
+      "path": "crates/oip-server/tests/capabilities.rs",
+      "digest": "808802e2a3c83c34c21c1fcf350068c42001df605d3bcb9d62f36d25dc8de15e"
+    },
+    {
+      "path": "crates/oip-server/tests/diagnostics.rs",
+      "digest": "efa7b6d20176e6cc9b0b91a0dfd43e182a2218878993a2c9a44f34fe9cbac648"
+    },
+    {
+      "path": "crates/oip-server/tests/hierarchy.rs",
+      "digest": "2dc7b90c4d9eddf224ddbd4b57a45dba69caa79e627c895ad31fd9812f8ade05"
+    },
+    {
+      "path": "crates/oip-server/tests/ipc.rs",
+      "digest": "c726fc48b2803ce9f92799ac3a8c8d1d6a215eeec8a868910da37f666c4c636b"
+    },
+    {
+      "path": "crates/oip-server/tests/mcp.rs",
+      "digest": "e7ad35a138f3ea9009210b2655f2627039bfd218863858f96fe705109f7a8876"
+    },
+    {
+      "path": "crates/oip-storage/src/application.rs",
+      "digest": "a07c7d0b28be67aa0672282a754f593f4cbad1be09da79c88d55cc71700d605c"
+    },
+    {
+      "path": "crates/oip-storage/src/hierarchy.rs",
+      "digest": "4467fecbf1f62de6a04138973f354ec5d8a7aab40aef12f74a539e110008df45"
+    },
+    {
+      "path": "crates/oip-storage/src/history.rs",
+      "digest": "d65c9ac3fc772d6bf7b9b1646f4b58d38c6ed2ed462e9822c80a16969ac8fce1"
+    },
+    {
+      "path": "crates/oip-storage/src/lib.rs",
+      "digest": "d1e328b7927d99c81f4f3b67a8ff7d4ab1568215e99b6a2c0ec92e8ffbabf4ff"
+    },
+    {
+      "path": "docs/architecture/oip-0082-diagnostics-domain.md",
+      "digest": "25ed405284c3e4c56f0f847d0b3c89f2177875cf312fdeff95027480ee02bd33"
+    },
+    {
+      "path": "docs/architecture/oip-0082-diagnostics-flutter-contract.md",
+      "digest": "3eba77a8ea072f835ac66ac35162c9b5af43bfeb745b95a269374a41f6706987"
+    },
+    {
+      "path": "docs/architecture/oip-0082-evidence-query.md",
+      "digest": "ea02f6d982515c8a07efb78537c3b6e79766d4c606bb676611bab8c8db778451"
+    },
+    {
+      "path": "docs/architecture/oip-0082-rest-mcp-parity.md",
+      "digest": "552ab4b95f9c32ef2b80d979dfd98e78b2061427f637772e5ab23a2671233a4d"
+    },
+    {
+      "path": "docs/architecture/oip-0082-time-semantics.md",
+      "digest": "32c87f86c3b0d652193d43c8b6ae4252bf68c9e039a765433fb3dfb3e56e37fb"
+    },
+    {
+      "path": "docs/architecture/oip-capability-inventory.md",
+      "digest": "47677c136ed43746fc19feb5e1b12587ba35c67e61636fe9fa29daeb01197015"
+    },
+    {
+      "path": "docs/architecture/oip-mcp-capability-mapping.md",
+      "digest": "5c6a6474c5fe631208f6eea2309672347300ccdc5c82abaf0628ba2b4b2b0ffc"
+    },
+    {
+      "path": "docs/oip-0082-verification.md",
+      "digest": "65db8796aa75aafc18b24652669842471d88c3db34aa346a48f05c6c32c6b711"
+    },
+    {
+      "path": "tests/oip006/acceptance.py",
+      "digest": "86def778d3d9b5205e6704bf3b01f962323cba093204f1c10be716f474f2339d"
+    },
+    {
+      "path": "tests/oip007/acceptance.py",
+      "digest": "cd331af6dbbf32dd065ecf13deb0d0a7b0d7b1b0768a12ea83eb314042ebbcfb"
+    },
+    {
+      "path": "tests/oip007/mcp_acceptance.py",
+      "digest": "c592490b76e514c207d5f3ca3f0aed348302db8cb131601629ee18141065eab7"
+    },
+    {
+      "path": "tests/oip008/acceptance.py",
+      "digest": "3b8266c99f241537a620effe0d257211bf62001a80a08445380cf3aab33dc4db"
+    },
+    {
+      "path": "tests/oip0082/acceptance.py",
+      "digest": "8399c939eb0c61dbf5e6c9e70a4240f3f2237e2759b805f894b24a42583fedf1"
+    },
+    {
+      "path": "tests/oip0082/application_performance.py",
+      "digest": "deecb62bd847b8a4f3d3eac22900e6aa5be367f8122c72e40de58b649a78fbe1"
+    },
+    {
+      "path": "tests/oip0082/performance.py",
+      "digest": "80311b42f21d4aa3b24e31b3df848638214f4532009f0eaea57fb34ab74fcccf"
+    },
+    {
+      "path": "tests/oip0082/schema3_migration.py",
+      "digest": "5f77a6d5937e6ec7b908200fb694aaf51b5a76c3c8c0e693b31ad117fae5931b"
+    }
+  ]
+}

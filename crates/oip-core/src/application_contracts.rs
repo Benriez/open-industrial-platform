@@ -120,6 +120,8 @@ pub struct CoreHealth {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 pub struct EventRecord {
+    #[serde(default)]
+    pub id: Option<String>,
     pub sequence: i64,
     pub context: EventContext,
     pub event: ClientEvent,
@@ -167,6 +169,9 @@ impl From<&'static str> for PersistenceFailure {
 
 /// Atomic evidence + optional latest checkpoint, not a concrete database API.
 pub trait CoreRepository: Send {
+    fn event_id(&self, _context: &EventContext, _event: &ClientEvent) -> Option<String> {
+        None
+    }
     fn definitions(&self) -> Result<Vec<SourceDefinition>, PersistenceFailure>;
     fn register(&mut self, definition: &SourceDefinition) -> Result<(), PersistenceFailure>;
     fn restore_latest(&self) -> Result<Vec<ObservationEnvelope>, PersistenceFailure>;

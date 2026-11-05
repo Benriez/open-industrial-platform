@@ -25,6 +25,13 @@ pub enum CapabilityId {
     InfrastructuresRead,
     SitesRead,
     ScopedSnapshotRead,
+    EventHistoryRead,
+    EventDetailRead,
+    DataGapsRead,
+    SourceHealthHistoryRead,
+    EvidenceRead,
+    DiagnosticFindingsRead,
+    ObservationHistoryRead,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
@@ -50,7 +57,7 @@ pub struct CapabilityDescriptor {
     pub audit: String,
 }
 impl CapabilityId {
-    pub const ALL: [Self; 17] = [
+    pub const ALL: [Self; 24] = [
         Self::CoreHealthRead,
         Self::CoreLivenessRead,
         Self::CoreReadinessRead,
@@ -68,10 +75,46 @@ impl CapabilityId {
         Self::InfrastructuresRead,
         Self::SitesRead,
         Self::ScopedSnapshotRead,
+        Self::EventHistoryRead,
+        Self::EventDetailRead,
+        Self::DataGapsRead,
+        Self::SourceHealthHistoryRead,
+        Self::EvidenceRead,
+        Self::DiagnosticFindingsRead,
+        Self::ObservationHistoryRead,
     ];
     pub fn descriptor(self) -> CapabilityDescriptor {
         use CapabilityId::*;
         let (permission, input, output) = match self {
+            EventHistoryRead | EventDetailRead => (
+                vec![Permission::EventsRead, Permission::TelemetryRead],
+                "DiagnosticQuery",
+                "DiagnosticPage",
+            ),
+            DataGapsRead | DiagnosticFindingsRead => (
+                vec![Permission::EventsRead],
+                "DiagnosticQuery",
+                "DiagnosticPage",
+            ),
+            SourceHealthHistoryRead => (
+                vec![Permission::EventsRead, Permission::SourcesRead],
+                "DiagnosticQuery",
+                "DiagnosticPage",
+            ),
+            ObservationHistoryRead => (
+                vec![Permission::TelemetryRead],
+                "DiagnosticQuery",
+                "DiagnosticPage",
+            ),
+            EvidenceRead => (
+                vec![
+                    Permission::EventsRead,
+                    Permission::TelemetryRead,
+                    Permission::SourcesRead,
+                ],
+                "DiagnosticQuery",
+                "EvidenceSet",
+            ),
             OrganizationsRead => (
                 vec![Permission::HierarchyRead],
                 "HierarchyQuery",
@@ -227,10 +270,24 @@ pub enum CapabilityRequest {
     InfrastructuresRead(HierarchyQuery),
     SitesRead(HierarchyQuery),
     ScopedSnapshotRead,
+    EventHistoryRead(DiagnosticQuery),
+    EventDetailRead(DiagnosticQuery),
+    DataGapsRead(DiagnosticQuery),
+    SourceHealthHistoryRead(DiagnosticQuery),
+    EvidenceRead(DiagnosticQuery),
+    DiagnosticFindingsRead(DiagnosticQuery),
+    ObservationHistoryRead(DiagnosticQuery),
 }
 impl CapabilityRequest {
     pub fn id(&self) -> CapabilityId {
         match self {
+            Self::EventHistoryRead(_) => CapabilityId::EventHistoryRead,
+            Self::EventDetailRead(_) => CapabilityId::EventDetailRead,
+            Self::DataGapsRead(_) => CapabilityId::DataGapsRead,
+            Self::SourceHealthHistoryRead(_) => CapabilityId::SourceHealthHistoryRead,
+            Self::EvidenceRead(_) => CapabilityId::EvidenceRead,
+            Self::DiagnosticFindingsRead(_) => CapabilityId::DiagnosticFindingsRead,
+            Self::ObservationHistoryRead(_) => CapabilityId::ObservationHistoryRead,
             Self::CoreHealthRead => CapabilityId::CoreHealthRead,
             Self::CoreLivenessRead => CapabilityId::CoreLivenessRead,
             Self::CoreReadinessRead => CapabilityId::CoreReadinessRead,
@@ -255,6 +312,8 @@ impl CapabilityRequest {
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 #[serde(tag = "type", content = "value", rename_all = "snake_case")]
 pub enum CapabilityOutput {
+    DiagnosticPage(DiagnosticPage),
+    Evidence(Box<EvidenceSet>),
     CoreHealth(CoreHealth),
     Sources(Vec<SourceHealth>),
     Queue(QueueHealth),

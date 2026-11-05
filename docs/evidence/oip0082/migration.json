@@ -1,0 +1,60 @@
+{
+  "schema3_to_4_real_runtime": {
+    "baseline": "79639ff42c68ee2ede34862929822a4789845268",
+    "phases": [],
+    "runtime_directory": "/private/tmp/oip82-migration-76386",
+    "model_used": false,
+    "baseline_binary_sha256": "889a36b2cf0d761796662e0437a18c2ed43dc8c1b1da82d70fecdd5a055865c6",
+    "status": "PASS",
+    "before_counts": {
+      "observations": 24,
+      "collection_events": 56,
+      "data_gaps": 4
+    },
+    "keys_preserved": true,
+    "foreign_keys": true,
+    "integrity": true,
+    "stale_restore": true,
+    "schema": 4,
+    "all_owned_processes_stopped": true
+  },
+  "schema2_attested_adoption": {
+    "baseline_binary_sha256": "8a726547e9c7ac3c4483a24220425889bdba92c52fd8240aa6b3e9eff632feaf",
+    "status": "PASS",
+    "before_counts": {
+      "observations": 12,
+      "events": 14,
+      "gaps": 2
+    },
+    "after_counts": {
+      "observations": 12,
+      "events": 14,
+      "gaps": 2
+    },
+    "same_observation_keys": true,
+    "unattested_refused": true,
+    "changed_evidence_refused": true,
+    "migration": {
+      "schema_version": 3,
+      "organizations": 1,
+      "sources": 2,
+      "idempotent": false,
+      "legacy_migrated": true
+    },
+    "hierarchy": [
+      {
+        "source_id": "source-a",
+        "site_id": "site-a1",
+        "device_id": "M-01"
+      },
+      {
+        "source_id": "source-b",
+        "site_id": "site-a1",
+        "device_id": "source-b:M-01"
+      }
+    ]
+  },
+  "schema2_generator": "/Users/benny/Documents/OIP-Handoffs/core-0081-integration-20261105T171159Z/baseline/oip-007-server",
+  "schema3_generator": "/Users/benny/Documents/OIP-Handoffs/core-0082-20261105T222139Z/oip008-baseline-server",
+  "offline_provisioning_ends_at_schema3": "Intentional; runtime opens schema4, unit tests prove atomic4 DDL rollback/keys and idempotence"
+}

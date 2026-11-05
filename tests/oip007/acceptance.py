@@ -77,7 +77,7 @@ try:
  A=Client('client-A');B=Client('client-B','a');C=Client('client-C','b',legacy=True)
  def scoped(client,source):return client.call('observations_read',{'source':source})
  with concurrent.futures.ThreadPoolExecutor(3) as pool:results=list(pool.map(lambda x:scoped(*x),[(A,'sim-a'),(B,'sim-a'),(C,'sim-b')]))
- assert all(o['data_source_id']=='sim-a' for o in results[1]);assert all(o['data_source_id']=='sim-b' for o in results[2]);assert len(A.command({'op':'tools'})['result']['tools'])==6;assert len(A.command({'op':'resources'})['result']['resources'])==8
+ assert all(o['data_source_id']=='sim-a' for o in results[1]);assert all(o['data_source_id']=='sim-b' for o in results[2]);assert len(A.command({'op':'tools'})['result']['tools'])==13;assert len(A.command({'op':'resources'})['result']['resources'])==8
  assert len(B.command({'op':'resources'})['result']['resources'])==1
  for target in ['sim-b','sim-c']:
   denied=B.command({'op':'call','name':'oip_sources_read','arguments':{'source':target}});assert denied['result']['structuredContent']['kind']=='permission_denied'

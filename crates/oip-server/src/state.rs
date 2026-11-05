@@ -66,6 +66,7 @@ struct Inner {
 }
 #[derive(Clone)]
 pub struct AppState {
+    pub history: Arc<crate::diagnostic_services::DiagnosticReads>,
     pub hierarchy: Option<Arc<HierarchyRegistry>>,
     pub legacy_access: bool,
     inner: Arc<Inner>,
@@ -134,6 +135,9 @@ impl AppState {
             .iter()
             .map(SourceConfig::definition)
             .collect::<Result<Vec<_>, _>>()?;
+        let history = Arc::new(crate::diagnostic_services::DiagnosticReads::new(
+            store.history_reader().map_err(|_| "history_reader")?,
+        ));
         let app = Application::initialize(store, definitions, now_ms(), config.stale_after_ms)
             .map_err(|e| e.to_string())?;
         let initial = app.view(now_ms());
@@ -159,6 +163,7 @@ impl AppState {
             .map_err(|_| "writer_thread_start")?;
         *inner.thread.lock().map_err(|_| "thread lock")? = Some(worker);
         Ok(Self {
+            history,
             hierarchy,
             legacy_access,
             inner,
