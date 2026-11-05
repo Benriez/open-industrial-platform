@@ -1,5 +1,5 @@
 {
-  "status": "PASS_EXECUTED_TESTS_COMMIT_PENDING",
+  "status": "PASS",
   "rust_commands": [
     {
       "name": "fmt",
@@ -322,12 +322,14 @@
     "G11": "PASS",
     "G12": "PASS",
     "G13": "PASS",
-    "G14": "COMMIT_PENDING"
+    "G14": "PASS"
   },
   "no_production_tenant_security_claim": true,
   "notes": [
     "Historical supplier numbers were not substituted for actual runs.",
     "Interop and workspace OPC tests overlap; counts are not added as independent tests.",
-    "Local final commit and post-commit checks recorded separately after commit to avoid self-referential commit hash."
-  ]
+    "Implementation commit and actual post-commit checks recorded in a separate documentation-only follow-up; final tip is verified after that commit."
+  ],
+  "implementation_commit": "dd17dc46bc15de8c5099ebf056566bd737da436e",
+  "git_post_commit_verification": "docs/evidence/oip008/git-verification.json"
 }

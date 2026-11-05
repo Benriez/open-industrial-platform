@@ -1,0 +1,14 @@
+{
+  "implementation_commit": "dd17dc46bc15de8c5099ebf056566bd737da436e",
+  "branch": "feature/oip-008-multi-infrastructure",
+  "parent_baseline": "a27e7b1e01dc1cb6f4d97c34319b0aa6d7321871",
+  "implementation_commit_files": 358,
+  "status_after_implementation_commit": "CLEAN",
+  "git_fsck": "PASS",
+  "index_matches_scanned_candidate": "PASS",
+  "main_head_unchanged": true,
+  "flutter_and_design_tree_diff_empty": true,
+  "no_merge_no_push_no_deployment": true,
+  "untracked_nonignored": [],
+  "post_commit_record_scope": "Subsequent commit contains only reviewed documentation/verification metadata; product-source hashes stay identical."
+}

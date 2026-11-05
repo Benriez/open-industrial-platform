@@ -131,4 +131,28 @@ RUSTSEC-2023-0071 bleibt Produktionsblocker; RUSTSEC-2023-0089 und RUSTSEC-2024-
 
 NOT_TESTED: feindliche separate OS-Konten, Windows-IPC, Remote-/OIDC-Authentisierung, produktive Tenant-Penetrationstests, große Langzeit-/Dauerlast-/Stromausfalltests, Remote-CI und reale Industriehardware. Keine produktive Hierarchie-/Policy-Mutation über REST/MCP. Kein Credential-Vault, kein dauerhaft manipulationssicheres Execution-Audit, keine vollständige Historien-/Diagnostics-Plattform. Spätere UI-Auswahl und produktive Identity-/Session-Sicherheit sind separate Aufträge.
 
-Vor lokalem Commit: geprüfte explizite Dateiliste, [Gitleaks8.30.1-Scan mit einzeln geprüften False Positives und null ungeklärten Befunden](evidence/oip008/secret-scan.json), Source-/Design-/UI-Integrität, keine generierten Runtime-Artefakte. Der tatsächliche Feature-Commit-Hash steht im Session-Abschluss; dieses vor Commit erzeugte Dokument wird dafür nicht amendiert. Kein Merge nach main, kein Push oder Deployment. Alle14 Gates werden im abschließenden Test-Summary einzeln ausgewiesen.
+Vor lokalem Commit: geprüfte explizite Dateiliste, [Gitleaks8.30.1-Scan mit einzeln geprüften False Positives und null ungeklärten Befunden](evidence/oip008/secret-scan.json), Source-/Design-/UI-Integrität, keine generierten Runtime-Artefakte. Produktcode-Commit: `dd17dc46bc15de8c5099ebf056566bd737da436e`. Danach wurden leerer Index/Working Tree, alle358 getrackten Dateien, Git-fsck, Baseline-/UI-/Design-Integrität und der bytegenaue Scan-Kandidat geprüft. [Tatsächlicher Git-Nachweis](evidence/oip008/git-verification.json). Die Ergebnisse werden als separater Dokumentations-Commit festgehalten; kein Amend/History-Rewrite. Der abschließende Branch-Tip wird nach diesem Commit im Session-Abschluss angegeben. Kein Merge nach main, kein Push oder Deployment. Alle14 Gates werden im abschließenden Test-Summary einzeln ausgewiesen.
+
+
+## Finale Gates
+
+| Gate | Ergebnis |
+|---|---|
+| G1 Domain | PASS — typisierte, validierte Hierarchie und stabile Source-/Device-Zuordnung |
+| G2 Storage | PASS — Schema3, referenzielle Integrität, atomare Transaktionen |
+| G3 Legacy | PASS — tatsächlicher Schema2-Bestand, unveränderte Schlüssel/Counts, abgewiesene Mehrdeutigkeit |
+| G4 Identity | PASS — geschützte IPC-Credentials an gespeicherte Principals gebunden |
+| G5 Authorization | PASS — zentrale hierarchische Entscheidung, Default-Deny, Scope-Union-Regression |
+| G6 REST/SSE | PASS — authentisierte Projektionen, kein globaler Snapshot/Count für Tenant-Reader |
+| G7 MCP | PASS — reale unabhängige Clients, Org-/Infra-/Site-/Source-Isolation und negative Inputs |
+| G8 Agent-first | PASS — dieselben CapabilityServices, Paritätsmatrix/Schemas, keine UI-Business-Logik |
+| G9 Ingestion | PASS — vier Quellen in zwei Organizations, Ausfallisolierung |
+| G10 Recovery | PASS — Restart, tatsächlicher Crash, Run-Journal, Stale-Restore und Migration |
+| G11 Security | PASS im lokalen Entwicklungsscope — beide unabhängigen Reviews, Blocking Findings behoben |
+| G12 Regression | PASS — 118 Rust,37 Interop,80 Flutter,16 Browserchecks und native macOS-Integration |
+| G13 Isolation | PASS — main/Flutter/Design und fremde Services erhalten |
+| G14 Git | PASS — tatsächlicher lokaler Feature-Commit und Nachprüfung, kein Merge/Push |
+
+Nächster Auftrag: produktive Identity-/Credential-/Audit-Grenzen und feinere dynamische Read-Kontexte getrennt spezifizieren; anschließend autorisierte Multi-Infrastructure-UI auf APIv2 integrieren. Keine Produktionsfreigabe durch diesen Meilenstein.
+
+OIP_008_MULTI_INFRASTRUCTURE_PASS

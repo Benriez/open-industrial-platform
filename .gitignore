@@ -136,3 +136,4 @@ secrets/
 !/docs/evidence/oip008/start-commands.json
 !/docs/evidence/oip008/test-summary.json
 !/docs/evidence/oip008/ui-regression.json
+!/docs/evidence/oip008/git-verification.json
