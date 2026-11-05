@@ -1,0 +1,15 @@
+{
+  "verdict": "PASS",
+  "elapsed_s": 6.057668833993375,
+  "unread_pipe_bytes": 65536,
+  "stdin_open_until_exit": true,
+  "shutdown": {
+    "clean": true,
+    "uncommitted": 0,
+    "adapter_failures": 0,
+    "persistence_thread_joined": true,
+    "http_drained": true,
+    "http_forced_close": false
+  },
+  "mode": "legacy stdio-owned, no daemon"
+}

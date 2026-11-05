@@ -1,0 +1,35 @@
+[workspace]
+members = [
+    "crates/oip-core",
+    "crates/oip-server",
+    "crates/oip-agent",
+    "crates/oip-gateway",
+    "crates/oip-opcua",
+    "crates/oip-simulator",
+    "crates/oip-storage",
+    "crates/oip-diagnostics",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.0.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.dependencies]
+rusqlite = { version = "0.38.0", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
+tracing = "0.1"
+
+# async-opcua 0.19.0 sends an empty ActivateSession nonce under Policy None.
+# This narrowly scoped source patch enforces the OPC UA >=32-byte session nonce
+# required by independent clients. See docs/decisions/0002-security-interop.md.
+[patch.crates-io]
+async-opcua-server = { path = "vendor/async-opcua-server" }

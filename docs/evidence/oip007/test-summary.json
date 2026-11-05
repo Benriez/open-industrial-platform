@@ -1,0 +1,53 @@
+{
+  "verdict": "OIP_007_PERSISTENT_CORE_PASS",
+  "gates": {
+    "G1": "PASS",
+    "G2": "PASS",
+    "G3": "PASS",
+    "G4": "PASS",
+    "G5": "PASS",
+    "G6": "PASS",
+    "G7": "PASS",
+    "G8": "PASS",
+    "G9": "PASS",
+    "G10": "PASS",
+    "G11": "PASS",
+    "G12": "PASS"
+  },
+  "rust_baseline": 89,
+  "rust_workspace": 100,
+  "opcua_interop": 37,
+  "open_only": 2,
+  "new_tests": {
+    "ipc": 9,
+    "startup_rollback": 1,
+    "offline_producer_stop": 1
+  },
+  "flutter": 80,
+  "browser": 16,
+  "native_macos": "PASS",
+  "mcp_read_capabilities": 12,
+  "mcp_tools": 6,
+  "multi_client_e2e_phases": 12,
+  "concurrent_client_counts": [
+    1,
+    3,
+    8
+  ],
+  "connect_disconnect_cycles": 12,
+  "physical_unread_stdout_bytes": 65536,
+  "legacy_blocked_output_shutdown_s": 6.057668833993375,
+  "flutter_source_changed": false,
+  "new_dependencies": false,
+  "new_workspace_crates": 0,
+  "production_clearance": false,
+  "security_blocker": "RUSTSEC-2023-0071",
+  "remaining_advisories": [
+    "RUSTSEC-2023-0089",
+    "RUSTSEC-2024-0449"
+  ],
+  "reviews": "two independent read-only completed reviews, source hashes matched",
+  "commits": 0,
+  "pushes": 0,
+  "deployments": 0
+}

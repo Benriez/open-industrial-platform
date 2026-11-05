@@ -1,0 +1,31 @@
+{
+  "dependency_graph": {
+    "oip-core": [],
+    "oip-server": [
+      "oip-core",
+      "oip-opcua",
+      "oip-simulator",
+      "oip-storage"
+    ],
+    "oip-opcua": [
+      "oip-core",
+      "oip-simulator"
+    ],
+    "oip-simulator": [
+      "oip-core"
+    ],
+    "oip-storage": [
+      "oip-core"
+    ],
+    "oip-agent": [],
+    "oip-gateway": [],
+    "oip-diagnostics": []
+  },
+  "acyclic": true,
+  "rust_workspace_tests": 78,
+  "design_sha256": "bd9f9d8696ed48676055ee9a2cd0afb29e6c3d59e0945e662d925306f73c753e",
+  "core_dependencies": [
+    "serde",
+    "thiserror"
+  ]
+}

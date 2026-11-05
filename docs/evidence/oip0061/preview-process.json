@@ -1,0 +1,20 @@
+{
+  "pid": 2091,
+  "url": "http://127.0.0.1:18086",
+  "opcua_port": 14886,
+  "database": "/Users/benny/Code/open-industrial-platform/target/oip0061-preview/preview.sqlite",
+  "web_dir": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/web",
+  "argv": [
+    "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+    "--demo",
+    "--port",
+    "18086",
+    "--opcua-port",
+    "14886",
+    "--database",
+    "/Users/benny/Code/open-industrial-platform/target/oip0061-preview/preview.sqlite",
+    "--web-dir",
+    "/Users/benny/Code/open-industrial-platform/apps/flutter/build/web"
+  ],
+  "purpose": "Operator preview; tests use isolated instances when scenarios change"
+}

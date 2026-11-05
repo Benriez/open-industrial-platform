@@ -1,0 +1,157 @@
+{
+  "archive_sha256": "2e657d4b9c28a6d8adc7aa55151a3fe5a2601e2fb01fc8894afb02fd2c91714a",
+  "members": 126,
+  "manifest_entries": 109,
+  "paths_types_manifest_and_roundtrip": "PASS",
+  "stage": "/Users/benny/Documents/OIP-Handoffs/core-005-baseline-20261104T012210Z/handoff-validated",
+  "classifications": [
+    {
+      "path": "apps/flutter/lib/app/app.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "42fcf44a1a9edd137881e7a4d1608bd3f8b4feed60c229ab6ed53a1ff293e8a1",
+      "handoff_sha256": "4434561e95c43b534e2abd1613e386756e4002272b7ae0e4a362b0b56476b755",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/lib/app/controller.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "6ab248b0bbe12584cf70843cc7338e73a41cec54b334153da811891e772b56c1",
+      "handoff_sha256": "2d8c1844c88b14b34a2ceb7a57fdb79b8e7646ad5b7cdbfd0a25beb599e81c86",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/lib/design_system/theme.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "ff321739ca79008710bdae254d470d66746cbe490d8996574503f1e9275da8fe",
+      "handoff_sha256": "7bf00dc77eb8632f9c2b439c377a127b6098392509905ce2efe96892a4a467ce",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/lib/features/devices.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "ffdcb775df7a56f81fb4fafdaf663cbe7bda5768263ac51b4a9b21fb956fa8bb",
+      "handoff_sha256": "67b5d9e37e7759d15bf70066fdf9c6af30ad0d494110420d05ce79a07c5d167d",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/lib/features/diagnostics.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "498eaad6f71c371c94c80ec253784e5b98bd8103176ab92ea37566a391bb7d3a",
+      "handoff_sha256": "d18c3f4a64679b6f6201d9e1f8fb9250a9572cdc27c4c400f9ced45a040b1d9e",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/lib/features/network.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "d34f67e01a6ae752f972bf4b27d254edb13056dc33fdb5f871ce9e0ad28da196",
+      "handoff_sha256": "7d1eca26e212b55995df0f1da103a985bf996270346950d568a772fe76795a45",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/lib/features/opcua.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "9f39f191a03ef197c2881a9c56ceb168dc0f071ef3e25886116f297b3bb313ce",
+      "handoff_sha256": "3d690f57c94013917bda80a7d58b9aa28c75556efff21829616d62aed50acf2a",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/lib/features/overview.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "1305e1ead1b76de0547f05b05077a70195025f0bcb9371e0e049500441b14760",
+      "handoff_sha256": "f93295a834f910301e965be9d6d92c825dc664dc7a8126f6a7ec5898f3d10eb9",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/lib/models/contracts.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "41c492824549cfef875a9554e7c5995051c74f3635115ca08d57d95f3d3e4b7c",
+      "handoff_sha256": "6988bedc2cee3829a55bdbe379f6930a9505d46ac6bc61be0ab01d2247f19fe0",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/lib/services/api.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "85baf18de3135293bca8cb469a6e7c13b206c7553f4066a5384d47408186e450",
+      "handoff_sha256": "4a8dcf320608d63e5892eceaac36c315ed15673056639819034b5b2c40214fb1",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/lib/widgets/components.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "5dccf13670f3b549212c10bc57dd46f5b58ad1f16f63370a39ce3411e9ed2756",
+      "handoff_sha256": "02d01a1c32fb54865313e3f44fe36aad0af51bb5477aafbb0e9a3648e068be80",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/lib/widgets/trend.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "49435a4f85d319c17f3708867b6b5e43249d165713ebd94b8ff3354741603c5e",
+      "handoff_sha256": "09a6835259a2b5a821f975fbbbb99a860f57ab312986ad4f2889db95d350aee8",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/test/browser_oip004.mjs",
+      "classification": "WITHOUT_CONFLICT_NEW",
+      "base_sha256": null,
+      "handoff_sha256": "343290affc33c90d65dad661a71495fa4b08be972a4e52325a63bac32ac9c7e4",
+      "oip004_hash_confirmed": false
+    },
+    {
+      "path": "apps/flutter/test/contracts_test.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "ce652a5a6761599f64abaa7d7b99a0a322871e873d528816b39b12aa97ec0378",
+      "handoff_sha256": "072f7938c6f5b464bf376e7759767ec3e735446b25110c6cf275325eaeb3c45a",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/test/support.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "e682ffae4a05aa37b6bf17bc1b3ea8bc62ace83e862ac3c2d8f1b1337e888de9",
+      "handoff_sha256": "74f96a13a858133bc42ea5a25520d818b75686cc27b3617d92416f45bc72b21a",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/test/trend_test.dart",
+      "classification": "WITHOUT_CONFLICT_NEW",
+      "base_sha256": null,
+      "handoff_sha256": "e5faeb1ccc2ba62f5ff5d9e2b27cabf1e7ac9fc85b67c5db54d22dec536aa3e0",
+      "oip004_hash_confirmed": false
+    },
+    {
+      "path": "apps/flutter/test/ui_regression_test.dart",
+      "classification": "WITHOUT_CONFLICT_NEW",
+      "base_sha256": null,
+      "handoff_sha256": "5c95a3f416853bd480c4e3c4285a5100fb8a767713dee3a55af5f9f9bbcaef99",
+      "oip004_hash_confirmed": false
+    },
+    {
+      "path": "apps/flutter/test/widget_test.dart",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "beef6ee9dc01bdf81c2875d5ee9702614d359f9d6d38ee0493e800d7304a5ce5",
+      "handoff_sha256": "a72fe2bf924fec97742e2ec42d78e7af5a21b8299134bdc52bec3548a66e234a",
+      "oip004_hash_confirmed": true
+    },
+    {
+      "path": "apps/flutter/web/index.html",
+      "classification": "WITHOUT_CONFLICT",
+      "base_sha256": "79443b4a3f36b15b239eb9ff3f76e313abc5bfae8dababe81a37b41a1805bde0",
+      "handoff_sha256": "cedfda977eb15bc97ca2efc7597a19cd41b63709aa99150028c7ed4778d279c9",
+      "oip004_hash_confirmed": false
+    }
+  ],
+  "baseline": {
+    "created_utc": "20261104T012210Z",
+    "root": "/Users/benny/Code/open-industrial-platform",
+    "branch": "main",
+    "head": null,
+    "tracked": 0,
+    "untracked": 284,
+    "ignored_inventory_count": 126146,
+    "archive": "/Users/benny/Documents/OIP-Handoffs/core-005-baseline-20261104T012210Z/project-baseline.tar.gz",
+    "archive_sha256": "56f79d98ad415d31eddbcb5f6a4f48e5e3e582540963f40ac03f0ebc0c9aa052",
+    "archive_bytes": 5853123,
+    "excluded": "All ignored files inventoried as metadata only: generated builds/dependencies, runtime databases, logs, PKI, secrets; no credentials packaged. No project source excluded. Git metadata kept in place, HEAD unborn."
+  },
+  "payload_exactly_matches_patch": true,
+  "credential_marker_scan": "PASS"
+}

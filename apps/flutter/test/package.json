@@ -1,0 +1,16 @@
+{
+  "name": "oip-flutter-browser-verification",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test:browser": "node browser_oip004.mjs",
+    "test:visual": "node browser_visual_oip004.mjs",
+    "test:spectrum": "node browser_spectrum.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.60.0"
+  }
+}

@@ -1,0 +1,20 @@
+//! Stack-neutral domain contracts for the Open Industrial Platform.
+
+mod event;
+mod model;
+mod persistence;
+
+pub use event::*;
+pub use model::*;
+pub use persistence::*;
+
+mod application;
+pub use application::*;
+
+mod application_contracts;
+pub use application_contracts::*;
+
+mod service_contracts;
+pub use service_contracts::*;
+mod capabilities;
+pub use capabilities::*;

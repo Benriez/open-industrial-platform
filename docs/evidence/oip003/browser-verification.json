@@ -1,0 +1,196 @@
+{
+  "verdict": "PASS",
+  "browser": "156.0.8078.80",
+  "checks": [
+    "Backend ready",
+    "Multiple sensor samples rendered via SSE",
+    "Dark and light theme toggle",
+    "Device search, filters, sorting, empty state, detail dialog, close",
+    "Interactive topology opens device health dimensions",
+    "1000 actual browsed bulk nodes, pagination, search and typed read",
+    "Real simulator sensor alarm reaches persisted API",
+    "Sensor alarm reaches visible Flutter metric via SSE",
+    "All deterministic diagnoses retain support, contradiction and missing evidence",
+    "Collector reconnect after real simulator socket stop",
+    "Freshness restored after simulator recovery",
+    "Browser network reconnect clears stale error",
+    "All five pages navigable at 834x1112",
+    "All five pages navigable at 390x844",
+    "All five pages navigable at 320x740"
+  ],
+  "timings": {
+    "firstLiveMs": 738,
+    "nodePageMs": 67,
+    "sensorToUiMs": 503
+  },
+  "status": {
+    "api_version": "v1",
+    "cpu_percent": null,
+    "demo_controls": true,
+    "generated_at_ms": 1793750567508,
+    "gpu_percent": null,
+    "last_received_ms": 1793750567181,
+    "network_status": "unknown",
+    "opcua_status": "connected",
+    "persisted_observations": 944,
+    "ram_percent": null,
+    "scenario": "normal",
+    "security_blocker": "RUSTSEC-2023-0071",
+    "simulated": true,
+    "subscription_status": "active"
+  },
+  "metrics": [
+    {
+      "collection_error": null,
+      "data_source_id": "oip-local-simulation-v1",
+      "entity_id": "M-01",
+      "freshness": "stale",
+      "metric_id": "alarm_active",
+      "quality": "good",
+      "simulation_origin": {
+        "origin_id": "oip-local-simulation-v1",
+        "scenario": "normal",
+        "seed": 42,
+        "sequence": 16,
+        "virtual_time_ms": 16000
+      },
+      "status_code": 0,
+      "timestamps": {
+        "received": 1793750563931,
+        "server": 1793750563143,
+        "source": 1700000016000
+      },
+      "unit": "none",
+      "value": {
+        "boolean": false
+      }
+    },
+    {
+      "collection_error": null,
+      "data_source_id": "oip-local-simulation-v1",
+      "entity_id": "M-01",
+      "freshness": "stale",
+      "metric_id": "motor_running",
+      "quality": "good",
+      "simulation_origin": {
+        "origin_id": "oip-local-simulation-v1",
+        "scenario": "normal",
+        "seed": 42,
+        "sequence": 16,
+        "virtual_time_ms": 16000
+      },
+      "status_code": 0,
+      "timestamps": {
+        "received": 1793750563930,
+        "server": 1793750563143,
+        "source": 1700000016000
+      },
+      "unit": "none",
+      "value": {
+        "boolean": true
+      }
+    },
+    {
+      "collection_error": null,
+      "data_source_id": "oip-local-simulation-v1",
+      "entity_id": "M-01",
+      "freshness": "stale",
+      "metric_id": "operating_mode",
+      "quality": "good",
+      "simulation_origin": {
+        "origin_id": "oip-local-simulation-v1",
+        "scenario": "normal",
+        "seed": 42,
+        "sequence": 16,
+        "virtual_time_ms": 16000
+      },
+      "status_code": 0,
+      "timestamps": {
+        "received": 1793750563929,
+        "server": 1793750563143,
+        "source": 1700000016000
+      },
+      "unit": "none",
+      "value": {
+        "text": "automatic"
+      }
+    },
+    {
+      "collection_error": null,
+      "data_source_id": "oip-local-simulation-v1",
+      "entity_id": "M-01",
+      "freshness": "stale",
+      "metric_id": "pressure",
+      "quality": "good",
+      "simulation_origin": {
+        "origin_id": "oip-local-simulation-v1",
+        "scenario": "normal",
+        "seed": 42,
+        "sequence": 20,
+        "virtual_time_ms": 20000
+      },
+      "status_code": 0,
+      "timestamps": {
+        "received": 1793750567180,
+        "server": 1793750567143,
+        "source": 1700000020000
+      },
+      "unit": "kilo_pascal",
+      "value": {
+        "float": 320.3
+      }
+    },
+    {
+      "collection_error": null,
+      "data_source_id": "oip-local-simulation-v1",
+      "entity_id": "M-01",
+      "freshness": "stale",
+      "metric_id": "temperature",
+      "quality": "good",
+      "simulation_origin": {
+        "origin_id": "oip-local-simulation-v1",
+        "scenario": "normal",
+        "seed": 42,
+        "sequence": 20,
+        "virtual_time_ms": 20000
+      },
+      "status_code": 0,
+      "timestamps": {
+        "received": 1793750567180,
+        "server": 1793750567143,
+        "source": 1700000020000
+      },
+      "unit": "celsius",
+      "value": {
+        "float": 59.9
+      }
+    },
+    {
+      "collection_error": null,
+      "data_source_id": "oip-local-simulation-v1",
+      "entity_id": "M-01",
+      "freshness": "stale",
+      "metric_id": "units_produced",
+      "quality": "good",
+      "simulation_origin": {
+        "origin_id": "oip-local-simulation-v1",
+        "scenario": "normal",
+        "seed": 42,
+        "sequence": 20,
+        "virtual_time_ms": 20000
+      },
+      "status_code": 0,
+      "timestamps": {
+        "received": 1793750567180,
+        "server": 1793750567143,
+        "source": 1700000020000
+      },
+      "unit": "count",
+      "value": {
+        "unsigned_integer": 2
+      }
+    }
+  ],
+  "externalRequests": [],
+  "errors": []
+}

@@ -1,0 +1,1 @@
+{"name":"oip-local-browser-verification","private":true,"type":"module","scripts":{"test":"node browser.mjs"},"devDependencies":{"playwright":"1.60.0"}}

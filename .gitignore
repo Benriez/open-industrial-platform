@@ -1,0 +1,119 @@
+# Rust builds
+/target/
+**/target/
+
+# Frontend builds and installed dependencies
+node_modules/
+**/node_modules/
+/frontend/dist/
+/frontend/.vite/
+/frontend/coverage/
+
+# Test and coverage output
+/coverage/
+**/coverage/
+*.profraw
+# Python acceptance-runner cache
+__pycache__/
+*.pyc
+
+# Local runtime state and databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+# Persistent advisory ownership sidecars contain no source content.
+*.oip-lock
+
+# Temporary and editor files
+*.tmp
+*.temp
+*.log
+*.swp
+*.swo
+*~
+.DS_Store
+.idea/
+.vscode/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+**/secrets/
+/pki/
+**/pki/
+
+# The manually supplied HTML design reference is intentionally tracked.
+!design/reference/
+!design/reference/*.html
+
+# Flutter local build state (also covered by generated app gitignore)
+/apps/flutter/build/
+/apps/flutter/.dart_tool/
+/apps/flutter/macos/Pods/
+/apps/flutter/macos/Flutter/ephemeral/
+
+# Local IPC authentication, endpoints and ownership (never source)
+*.credential
+*.credentials
+*.token
+*.sock
+*.socket
+*.ipc-lock
+/ipc.json
+
+# Initial Git baseline evidence policy
+# Full original evidence remains local and in the verified external archive.
+# Keep only these explicitly reviewed reports/manifests; see docs/oip-initial-git-baseline.md.
+/docs/evidence/**/*
+!/docs/evidence/**/
+!/docs/evidence/oip003/artifacts.json
+!/docs/evidence/oip003/browser-verification.json
+!/docs/evidence/oip003/persistence-verification.json
+!/docs/evidence/oip004/final-integrity.json
+!/docs/evidence/oip004/acceptance/report.json
+!/docs/evidence/oip005/architecture-check.json
+!/docs/evidence/oip005/provenance.json
+!/docs/evidence/oip005/integrity.json
+!/docs/evidence/oip005/final-source-hashes.json
+!/docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json
+!/docs/evidence/oip005/reconciliation-005-1/test-summary.json
+!/docs/evidence/oip005/reconciliation-005-1/reconciliation-plan.json
+!/docs/evidence/oip005/reconciliation-005-1/final-integrity.json
+!/docs/evidence/oip006/capability-mapping.json
+!/docs/evidence/oip006/rust-regression.json
+!/docs/evidence/oip006/test-summary.json
+!/docs/evidence/oip006/final-integrity.json
+!/docs/evidence/oip006/baseline.json
+!/docs/evidence/oip0061/preview-process.json
+!/docs/evidence/oip0061/handoff-verification.json
+!/docs/evidence/oip0061/reconciliation.json
+!/docs/evidence/oip0061/test-summary.json
+!/docs/evidence/oip0061/final-integrity.json
+!/docs/evidence/oip0061/baseline.json
+!/docs/evidence/oip0061/final-web-hashes.json
+!/docs/evidence/oip007/test-summary.json
+!/docs/evidence/oip007/final-integrity.json
+!/docs/evidence/oip007/baseline.json
+!/docs/evidence/oip007/rust-regression.json
+!/docs/evidence/oip007/flutter-regression.json
+!/docs/evidence/oip007/ui-regression.json
+!/docs/evidence/oip007/blocked-stdio/report.json
+!/docs/evidence/oip007/headless/report.json
+!/docs/evidence/oip007/performance/report.json
+!/docs/evidence/oip007/browser/browser-verification.json
+!/docs/evidence/oip007/e2e/report.json
+!/docs/evidence/oip007/mcp/report.json
+!/docs/evidence/oip007/reviews/runtime-review.md
+!/docs/evidence/oip007/reviews/ipc-security-review.md
+!/docs/evidence/oip007/reviews/reviewed-source-hashes.json
+!/docs/evidence/git-baseline/external-evidence.json
+!/docs/evidence/git-baseline/secret-scan.json
+!/docs/evidence/git-baseline/test-summary.json
+!/docs/evidence/git-baseline/classification-summary.json

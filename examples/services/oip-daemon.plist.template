@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>Label</key><string>org.openindustrialplatform.core.local</string>
+<key>ProgramArguments</key><array>
+<string>@OIP_ROOT@/target/debug/oip-server</string><string>--daemon</string>
+<string>--config</string><string>@OIP_ROOT@/examples/core-local.json</string>
+<string>--database</string><string>@OIP_ROOT@/target/operator-core.sqlite</string>
+<string>--ipc-config</string><string>@IPC_DIRECTORY@/ipc.json</string>
+</array>
+<key>WorkingDirectory</key><string>@OIP_ROOT@</string>
+<key>RunAtLoad</key><true/>
+<key>KeepAlive</key><true/>
+<key>ThrottleInterval</key><integer>10</integer>
+<key>StandardOutPath</key><string>@OIP_ROOT@/target/daemon-stdout.log</string>
+<key>StandardErrorPath</key><string>@OIP_ROOT@/target/daemon-stderr.log</string>
+</dict></plist>

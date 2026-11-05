@@ -1,0 +1,51 @@
+[
+  {
+    "name": "dart-format",
+    "command": [
+      "dart",
+      "format",
+      "--output=none",
+      "--set-exit-if-changed",
+      "lib",
+      "test",
+      "integration_test"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "flutter-analyze",
+    "command": [
+      "flutter",
+      "analyze"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "flutter-tests",
+    "command": [
+      "flutter",
+      "test",
+      "--reporter",
+      "expanded"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "flutter-web-build",
+    "command": [
+      "flutter",
+      "build",
+      "web",
+      "--release",
+      "--web-renderer",
+      "canvaskit",
+      "--no-web-resources-cdn",
+      "--pwa-strategy=none"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  }
+]

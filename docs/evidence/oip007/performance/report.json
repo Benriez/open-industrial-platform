@@ -1,0 +1,249 @@
+{
+  "verdict": "PASS",
+  "method": "8-second runs, SourceRead each50ms/client, same host/profile/two sources; SDK control-hop included; CPU clock10ms granularity, RSS point samples, OS threads not Tokio task count",
+  "runs": [
+    {
+      "mode": "OIP-006 stdio-owned mode (same final binary)",
+      "clients": 1,
+      "seconds": 8.055009166011587,
+      "reads": 146,
+      "read_mean_ms": 1.6908273846389446,
+      "read_p95_ms": 2.062042010948062,
+      "read_max_ms": 30.174208979588002,
+      "before": {
+        "rss_kib": 28928,
+        "cpu_s": 0.25,
+        "os_threads": 13
+      },
+      "after": {
+        "rss_kib": 24880,
+        "cpu_s": 0.55,
+        "os_threads": 13
+      },
+      "cpu_percent_one_logical_core": 3.724390547758298,
+      "persisted_delta": 107
+    },
+    {
+      "mode": "OIP-007 daemon",
+      "clients": 1,
+      "seconds": 8.003747000009753,
+      "reads": 142,
+      "read_mean_ms": 2.5612845870134957,
+      "read_p95_ms": 4.464333993382752,
+      "read_max_ms": 60.83899998338893,
+      "before": {
+        "rss_kib": 28528,
+        "cpu_s": 0.21,
+        "os_threads": 12
+      },
+      "after": {
+        "rss_kib": 24080,
+        "cpu_s": 0.51,
+        "os_threads": 12
+      },
+      "cpu_percent_one_logical_core": 3.748244416017079,
+      "persisted_delta": 109
+    },
+    {
+      "mode": "OIP-007 daemon",
+      "clients": 3,
+      "seconds": 8.008179750002455,
+      "reads": 438,
+      "read_mean_ms": 1.4812383875431552,
+      "read_p95_ms": 1.9137500203214586,
+      "read_max_ms": 7.546958047896624,
+      "before": {
+        "rss_kib": 24544,
+        "cpu_s": 0.51,
+        "os_threads": 12
+      },
+      "after": {
+        "rss_kib": 24304,
+        "cpu_s": 0.98,
+        "os_threads": 12
+      },
+      "cpu_percent_one_logical_core": 5.8689991317921635,
+      "persisted_delta": 107
+    },
+    {
+      "mode": "OIP-007 daemon",
+      "clients": 8,
+      "seconds": 8.04726349998964,
+      "reads": 1174,
+      "read_mean_ms": 1.4197858409627675,
+      "read_p95_ms": 2.0923750125803053,
+      "read_max_ms": 20.297834009397775,
+      "before": {
+        "rss_kib": 24848,
+        "cpu_s": 0.99,
+        "os_threads": 12
+      },
+      "after": {
+        "rss_kib": 25552,
+        "cpu_s": 1.74,
+        "os_threads": 12
+      },
+      "cpu_percent_one_logical_core": 9.319938386520654,
+      "persisted_delta": 100
+    }
+  ],
+  "session_task_telemetry": [
+    {
+      "timestamp": "2026-11-05T11:37:34.021412Z",
+      "message": "bounded session admitted",
+      "code": "ipc_session_admitted",
+      "session_id": 1,
+      "active_sessions": 1
+    },
+    {
+      "timestamp": "2026-11-05T11:37:42.378780Z",
+      "message": "session resources joined",
+      "code": "ipc_session_cleanup",
+      "active_sessions": 0
+    },
+    {
+      "timestamp": "2026-11-05T11:37:42.394100Z",
+      "message": "bounded session admitted",
+      "code": "ipc_session_admitted",
+      "session_id": 2,
+      "active_sessions": 1
+    },
+    {
+      "timestamp": "2026-11-05T11:37:42.412608Z",
+      "message": "bounded session admitted",
+      "code": "ipc_session_admitted",
+      "session_id": 3,
+      "active_sessions": 2
+    },
+    {
+      "timestamp": "2026-11-05T11:37:42.430400Z",
+      "message": "bounded session admitted",
+      "code": "ipc_session_admitted",
+      "session_id": 4,
+      "active_sessions": 3
+    },
+    {
+      "timestamp": "2026-11-05T11:37:50.469826Z",
+      "message": "session resources joined",
+      "code": "ipc_session_cleanup",
+      "active_sessions": 2
+    },
+    {
+      "timestamp": "2026-11-05T11:37:50.472477Z",
+      "message": "session resources joined",
+      "code": "ipc_session_cleanup",
+      "active_sessions": 1
+    },
+    {
+      "timestamp": "2026-11-05T11:37:50.474991Z",
+      "message": "session resources joined",
+      "code": "ipc_session_cleanup",
+      "active_sessions": 0
+    },
+    {
+      "timestamp": "2026-11-05T11:37:50.489426Z",
+      "message": "bounded session admitted",
+      "code": "ipc_session_admitted",
+      "session_id": 5,
+      "active_sessions": 1
+    },
+    {
+      "timestamp": "2026-11-05T11:37:50.501744Z",
+      "message": "bounded session admitted",
+      "code": "ipc_session_admitted",
+      "session_id": 6,
+      "active_sessions": 2
+    },
+    {
+      "timestamp": "2026-11-05T11:37:50.513705Z",
+      "message": "bounded session admitted",
+      "code": "ipc_session_admitted",
+      "session_id": 7,
+      "active_sessions": 3
+    },
+    {
+      "timestamp": "2026-11-05T11:37:50.528557Z",
+      "message": "bounded session admitted",
+      "code": "ipc_session_admitted",
+      "session_id": 8,
+      "active_sessions": 4
+    },
+    {
+      "timestamp": "2026-11-05T11:37:50.540979Z",
+      "message": "bounded session admitted",
+      "code": "ipc_session_admitted",
+      "session_id": 9,
+      "active_sessions": 5
+    },
+    {
+      "timestamp": "2026-11-05T11:37:50.552873Z",
+      "message": "bounded session admitted",
+      "code": "ipc_session_admitted",
+      "session_id": 10,
+      "active_sessions": 6
+    },
+    {
+      "timestamp": "2026-11-05T11:37:50.565906Z",
+      "message": "bounded session admitted",
+      "code": "ipc_session_admitted",
+      "session_id": 11,
+      "active_sessions": 7
+    },
+    {
+      "timestamp": "2026-11-05T11:37:50.580638Z",
+      "message": "bounded session admitted",
+      "code": "ipc_session_admitted",
+      "session_id": 12,
+      "active_sessions": 8
+    },
+    {
+      "timestamp": "2026-11-05T11:37:58.654529Z",
+      "message": "session resources joined",
+      "code": "ipc_session_cleanup",
+      "active_sessions": 7
+    },
+    {
+      "timestamp": "2026-11-05T11:37:58.657107Z",
+      "message": "session resources joined",
+      "code": "ipc_session_cleanup",
+      "active_sessions": 6
+    },
+    {
+      "timestamp": "2026-11-05T11:37:58.659745Z",
+      "message": "session resources joined",
+      "code": "ipc_session_cleanup",
+      "active_sessions": 5
+    },
+    {
+      "timestamp": "2026-11-05T11:37:58.662238Z",
+      "message": "session resources joined",
+      "code": "ipc_session_cleanup",
+      "active_sessions": 4
+    },
+    {
+      "timestamp": "2026-11-05T11:37:58.664795Z",
+      "message": "session resources joined",
+      "code": "ipc_session_cleanup",
+      "active_sessions": 3
+    },
+    {
+      "timestamp": "2026-11-05T11:37:58.667117Z",
+      "message": "session resources joined",
+      "code": "ipc_session_cleanup",
+      "active_sessions": 2
+    },
+    {
+      "timestamp": "2026-11-05T11:37:58.669440Z",
+      "message": "session resources joined",
+      "code": "ipc_session_cleanup",
+      "active_sessions": 1
+    },
+    {
+      "timestamp": "2026-11-05T11:37:58.671839Z",
+      "message": "session resources joined",
+      "code": "ipc_session_cleanup",
+      "active_sessions": 0
+    }
+  ],
+  "scope": "short local development sample; no production SLA"
+}

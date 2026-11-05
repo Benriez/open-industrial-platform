@@ -1,0 +1,6 @@
+# Preserve the verified pre-existing upstream/source bytes in this initial baseline.
+# Only these existing whitespace categories are waived; all other checks remain.
+# See docs/oip-initial-git-baseline.md for the exact three findings.
+apps/flutter/web/fonts/notosanssymbols/OFL.txt whitespace=-blank-at-eol
+vendor/async-opcua-server/src/session/manager.rs whitespace=-blank-at-eol
+crates/oip-server/Cargo.toml whitespace=-blank-at-eof

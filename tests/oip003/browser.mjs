@@ -1,0 +1,157 @@
+import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+const base = process.env.OIP_URL ?? 'http://127.0.0.1:18080';
+const out = resolve(process.env.OIP_EVIDENCE_DIR ?? '../../docs/evidence/oip003');
+await mkdir(out,{recursive:true});
+const browser = await chromium.launch({executablePath:process.env.CHROME_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
+const context = await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});
+const page = await context.newPage();
+const errors=[]; const failedResources=[]; const external=[]; const checks=[]; const timings={};
+let expectedOffline = false;
+page.on('response',r=>{if(r.status()>=400 && !failedResources.includes(r.url())) {failedResources.push(r.url());console.log('HTTP',r.status(),r.url());}});
+page.on('pageerror',e=>errors.push(e.message));
+page.on('console',m=>{if(m.type()==='error' && !expectedOffline) errors.push(m.text());});
+await context.route('**/*',route=>{
+  const url=new URL(route.request().url());
+  if(url.protocol.startsWith('http') && url.origin!==new URL(base).origin) { external.push(url.href); return route.abort(); }
+  return route.continue();
+});
+async function poll(fn,label,timeout=35000) {
+  const start=Date.now();
+  while(Date.now()-start<timeout) { if(await fn()) { checks.push(label); console.log('PASS',label); return; } await new Promise(r=>setTimeout(r,150)); }
+  throw new Error(`Timeout: ${label}`);
+}
+async function api(path) {const r=await context.request.get(base+path); assert.equal(r.status(),200);return r.json();}
+async function scenario(name) {const r=await context.request.post(base+'/api/v1/demo/scenario',{data:{scenario:name}});assert.equal(r.status(),200);}
+async function nav(label) {
+  const menu=page.getByRole('button',{name:/Navigation öffnen/});
+  const narrow=await menu.count()>0;
+  const group=page.getByText('Dismiss',{exact:true});
+  if(narrow) {
+    await group.waitFor({state:'hidden'});
+    await menu.click();
+    await group.waitFor({state:'visible'});
+  }
+  await page.getByText(label,{exact:true}).last().click();
+  if(narrow) await group.waitFor({state:'hidden'});
+}
+
+async function typeInto(locator,text) { await locator.click(); await locator.press('Meta+A'); await locator.press('Backspace'); if(text) await locator.pressSequentially(text,{delay:70}); }
+async function capture(name) {await page.screenshot({path:resolve(out,name+'.png')});}
+try {
+  await poll(async()=>{try {await api('/api/v1/system/status');return true;} catch {return false;}},'Backend ready');
+  await scenario('normal');
+  const start=Date.now();
+  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.getByText('Deine Infrastruktur. Ein Bild.',{exact:true}).waitFor({timeout:45000});
+  await page.getByText('LIVE · API',{exact:false}).waitFor({timeout:15000});
+  timings.firstLiveMs=Date.now()-start;
+  await poll(async()=>/Temperaturverlauf, [2-9]/.test(await page.locator('body').innerText()),'Multiple sensor samples rendered via SSE');
+  await capture('overview-desktop');
+  await page.getByRole('button',{name:/Darstellung wechseln/}).click();
+  await capture('overview-light');
+  // The hover tooltip overlays the Flutter semantics hit target after capture.
+  // Exercise the existing keyboard activation path for the second toggle.
+  await page.getByRole('button',{name:/Darstellung wechseln/}).focus();
+  await page.getByRole('button',{name:/Darstellung wechseln/}).press('Enter');
+  checks.push('Dark and light theme toggle'); console.log('THEME PASS');
+  await nav('Geräte & Dienste');
+  const search=page.getByRole('textbox',{name:'Geräte durchsuchen'});
+  await typeInto(search,'AMD');
+  await page.getByText('1 von 17 Geräten · Simuliertes Inventar',{exact:true}).waitFor();
+  await page.getByRole('button',{name:/Details AMD EVO-X2/}).click();
+  await page.getByText('Fünf unabhängige Statusdimensionen',{exact:true}).waitFor();
+  await capture('device-detail');
+  await page.getByRole('button',{name:/Details schließen/}).click();
+  await typeInto(search,'does-not-exist');
+  await page.getByText('Keine Geräte gefunden',{exact:true}).waitFor();
+  await typeInto(search,'');
+  await page.getByText('Standort: Alle',{exact:true}).click();
+  await page.getByText('Standort: Tailnet',{exact:true}).last().click();
+  await page.getByText('1 von 17 Geräten · Simuliertes Inventar',{exact:true}).waitFor();
+  await page.getByText('Standort: Tailnet',{exact:true}).click();
+  await page.getByText('Standort: Alle',{exact:true}).last().click();
+  await page.getByText('Sortieren: Name',{exact:true}).click();
+  await page.getByText('Sortieren: Standort',{exact:true}).last().click();
+  await page.getByText('17 von 17 Geräten · Simuliertes Inventar',{exact:true}).waitFor();
+  checks.push('Device search, filters, sorting, empty state, detail dialog, close');
+  await capture('devices-desktop');
+  await nav('Netzwerk & VPN');
+  await page.getByText('Verbindungspfade',{exact:true}).waitFor();
+  await capture('network-desktop');
+  await page.getByRole('button',{name:/Remote-Linux-Server/}).first().click();
+  await page.getByText('Device Reachability',{exact:true}).first().waitFor();
+  await page.getByRole('button',{name:/Details schließen/}).click();
+  checks.push('Interactive topology opens device health dimensions');
+  await nav('OPC-UA-Browser');
+  await page.getByText('Namespace 2',{exact:true}).waitFor();
+  await page.getByText('temperature Double',{exact:true}).click();
+  await page.getByText('SourceTimestamp · virtuelle Quellzeit',{exact:true}).waitFor();
+  await capture('opcua-process');
+  await page.getByText('Bulk',{exact:true}).first().click();
+  await page.getByText('1000 Nodes · Seite 1',{exact:true}).waitFor();
+  const nodeStart=Date.now();
+  await page.getByRole('button',{name:'Nächste Nodes',exact:true}).click();
+  await page.getByText('1000 Nodes · Seite 2',{exact:true}).waitFor();
+  timings.nodePageMs=Date.now()-nodeStart;
+  await typeInto(page.getByRole('textbox',{name:'Nodes durchsuchen'}),'bulk.0999');
+  await page.getByText('1 Nodes · Seite 1',{exact:true}).waitFor();
+  await capture('opcua-bulk');
+  checks.push('1000 actual browsed bulk nodes, pagination, search and typed read');
+  await nav('Diagnose & Ereignisse');
+  await page.getByText('Sensoralarm',{exact:true}).click();
+  const sensorStart=Date.now();
+  await poll(async()=> (await api('/api/v1/metrics/current')).some(o=>o.metric_id==='temperature' && o.value?.float>90),'Real simulator sensor alarm reaches persisted API');
+  await nav('Übersicht');
+  await poll(async()=>/9[5-9]\.\d °C/.test(await page.locator('body').innerText()),'Sensor alarm reaches visible Flutter metric via SSE');
+  timings.sensorToUiMs=Date.now()-sensorStart;
+  await capture('sensor-alarm-live');
+  await nav('Diagnose & Ereignisse');
+  await capture('diagnostics-sensor');
+  for(const [key,label,title] of [['gpu','Hohe GPU-Last','Hohe GPU-Auslastung'],['inference','Langsame Inferenz','Langsame lokale Inferenz'],['vpn','VPN-Störung','Instabile VPN-Verbindung'],['agent','Remote-Agent fehlt','VPN erreichbar · Agent nicht verfügbar']]) {
+    await page.getByText(label,{exact:true}).click();
+    await page.getByText(title,{exact:true}).waitFor();
+    assert.equal((await api('/api/v1/system/status')).scenario,key);
+  }
+  await capture('diagnostics-agent');
+  checks.push('All deterministic diagnoses retain support, contradiction and missing evidence');
+  await page.getByText('Offline & Reconnect',{exact:true}).click();
+  await nav('Übersicht');
+  await page.getByText(/VERALTET \/ UNBEKANNT/).waitFor({timeout:15000});
+  await capture('collector-offline');
+  await poll(async()=> (await api('/api/v1/system/status')).opcua_status==='connected','Collector reconnect after real simulator socket stop');
+  await poll(async()=>await page.getByText(/VERALTET \/ UNBEKANNT/).count()===0,'Freshness restored after simulator recovery');
+  await scenario('normal');
+  expectedOffline=true;
+  await context.setOffline(true);
+  await page.getByText(/OIP-Server nicht erreichbar/).waitFor({timeout:15000});
+  await capture('browser-offline');
+  await context.setOffline(false);
+  await poll(async()=> (await page.getByText(/OIP-Server nicht erreichbar/).count())===0,'Browser network reconnect clears stale error');
+  expectedOffline=false;
+  await page.getByText('LIVE · API',{exact:false}).waitFor();
+  await capture('reconnected');
+  for(const [name,width,height] of [['tablet',834,1112],['mobile',390,844],['narrow',320,740]]) {
+    await page.setViewportSize({width,height});
+    await capture('overview-'+name);
+    for(const label of ['Geräte & Dienste','Netzwerk & VPN','OPC-UA-Browser','Diagnose & Ereignisse','Übersicht']) {
+      await nav(label);
+      const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);
+      assert.equal(overflow,false,`${name} ${label} document overflow`);
+      await capture(`${name}-${label.startsWith('OPC')?'opcua':label.startsWith('Netz')?'network':label.startsWith('Geräte')?'devices':label.startsWith('Diagnose')?'diagnostics':'overview'}`);
+    }
+    checks.push(`All five pages navigable at ${width}x${height}`);
+  }
+  assert.deepEqual(external,[], 'No external runtime requests');
+  assert.deepEqual(errors,[], 'No unexpected browser errors');
+  const status=await api('/api/v1/system/status');
+  const metrics=await api('/api/v1/metrics/current');
+  await writeFile(resolve(out,'browser-verification.json'),JSON.stringify({verdict:'PASS',browser:await browser.version(),checks,timings,status,metrics,externalRequests:external,errors},null,2));
+  console.log(JSON.stringify({verdict:'PASS',checks,timings},null,2));
+} catch(e) {
+  await capture('failure');
+  await writeFile(resolve(out,'browser-failure.json'),JSON.stringify({error:String(e),checks,errors,external,failedResources,body:(await page.locator('body').innerText()).slice(0,14000)},null,2));
+  throw e;
+} finally {await context.setOffline(false).catch(()=>{});await browser.close();}

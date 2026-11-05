@@ -1,0 +1,658 @@
+{
+  "phases": [
+    {
+      "phase": "1_start_without_flutter",
+      "status": "PASS",
+      "details": {
+        "health": {
+          "lifecycle": "ready",
+          "live": true,
+          "ready": true,
+          "persistence_healthy": true,
+          "persistence_errors": 0,
+          "last_persistence_error": null,
+          "revision": 26,
+          "run_id": 1,
+          "persisted_observations": 16
+        },
+        "sources": {
+          "sim-a": {
+            "id": "sim-a",
+            "name": "Simulation A",
+            "entity_id": "M-01",
+            "simulated": true,
+            "reachability": "reachable",
+            "connection": "connected",
+            "service": "healthy",
+            "freshness": "fresh",
+            "validity": "valid",
+            "last_received_ms": 1793878311124,
+            "accepted": 12,
+            "duplicates": 4,
+            "out_of_order": 0,
+            "rejected": 0,
+            "reconnect_attempts": 1,
+            "dropped": 0,
+            "last_error": null
+          },
+          "sim-b": {
+            "id": "sim-b",
+            "name": "Simulation B",
+            "entity_id": "M-01",
+            "simulated": true,
+            "reachability": "reachable",
+            "connection": "connected",
+            "service": "healthy",
+            "freshness": "fresh",
+            "validity": "valid",
+            "last_received_ms": 1793878311131,
+            "accepted": 12,
+            "duplicates": 4,
+            "out_of_order": 0,
+            "rejected": 0,
+            "reconnect_attempts": 1,
+            "dropped": 0,
+            "last_error": null
+          }
+        }
+      }
+    },
+    {
+      "phase": "2_ingestion_sqlite_rest_sse_and_slow_client",
+      "status": "PASS",
+      "details": {
+        "persisted": 53,
+        "sse_event_id": "1:26",
+        "queue": {
+          "capacity": 8,
+          "depth": 0,
+          "backpressure_waits": 0,
+          "rejected_submissions": 0
+        }
+      }
+    },
+    {
+      "phase": "3_A_failure_isolated",
+      "status": "PASS",
+      "details": {
+        "health": {
+          "lifecycle": "degraded",
+          "live": true,
+          "ready": true,
+          "persistence_healthy": true,
+          "persistence_errors": 0,
+          "last_persistence_error": null,
+          "revision": 73,
+          "run_id": 1,
+          "persisted_observations": 59
+        },
+        "sources": {
+          "sim-a": {
+            "id": "sim-a",
+            "name": "Simulation A",
+            "entity_id": "M-01",
+            "simulated": true,
+            "reachability": "unknown",
+            "connection": "disconnected",
+            "service": "degraded",
+            "freshness": "stale",
+            "validity": "valid",
+            "last_received_ms": 1793878314188,
+            "accepted": 29,
+            "duplicates": 4,
+            "out_of_order": 0,
+            "rejected": 0,
+            "reconnect_attempts": 1,
+            "dropped": 0,
+            "last_error": "reconnect failed: BadCommunicationError"
+          },
+          "sim-b": {
+            "id": "sim-b",
+            "name": "Simulation B",
+            "entity_id": "M-01",
+            "simulated": true,
+            "reachability": "reachable",
+            "connection": "connected",
+            "service": "healthy",
+            "freshness": "fresh",
+            "validity": "valid",
+            "last_received_ms": 1793878314851,
+            "accepted": 38,
+            "duplicates": 4,
+            "out_of_order": 0,
+            "rejected": 0,
+            "reconnect_attempts": 1,
+            "dropped": 0,
+            "last_error": null
+          }
+        }
+      }
+    },
+    {
+      "phase": "3b_both_offline",
+      "status": "PASS",
+      "details": {
+        "lifecycle": "degraded",
+        "live": true,
+        "ready": false,
+        "persistence_healthy": true,
+        "persistence_errors": 0,
+        "last_persistence_error": null,
+        "revision": 75,
+        "run_id": 1,
+        "persisted_observations": 59
+      }
+    },
+    {
+      "phase": "4_recovery",
+      "status": "PASS",
+      "details": {
+        "health": {
+          "lifecycle": "ready",
+          "live": true,
+          "ready": true,
+          "persistence_healthy": true,
+          "persistence_errors": 0,
+          "last_persistence_error": null,
+          "revision": 95,
+          "run_id": 1,
+          "persisted_observations": 59
+        },
+        "events": [
+          {
+            "sequence": 73,
+            "context": {
+              "data_source_id": "sim-b",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "Reconnected": {
+                "at": 1793878316124,
+                "gap": {
+                  "started_at": 1793878314911,
+                  "ended_at": 1793878316124,
+                  "reason": "BadServerHalted"
+                }
+              }
+            }
+          },
+          {
+            "sequence": 72,
+            "context": {
+              "data_source_id": "sim-b",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "ConnectionLost": {
+                "at": 1793878315621,
+                "reason": "reconnect failed: BadCommunicationError"
+              }
+            }
+          },
+          {
+            "sequence": 71,
+            "context": {
+              "data_source_id": "sim-a",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "Reconnected": {
+                "at": 1793878315442,
+                "gap": {
+                  "started_at": 1793878314229,
+                  "ended_at": 1793878315442,
+                  "reason": "BadServerHalted"
+                }
+              }
+            }
+          },
+          {
+            "sequence": 70,
+            "context": {
+              "data_source_id": "sim-b",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "ConnectionLost": {
+                "at": 1793878315219,
+                "reason": "reconnect failed: BadCommunicationError"
+              }
+            }
+          },
+          {
+            "sequence": 69,
+            "context": {
+              "data_source_id": "sim-b",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "ConnectionLost": {
+                "at": 1793878315015,
+                "reason": "reconnect failed: BadCommunicationError"
+              }
+            }
+          },
+          {
+            "sequence": 68,
+            "context": {
+              "data_source_id": "sim-a",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "ConnectionLost": {
+                "at": 1793878314936,
+                "reason": "reconnect failed: BadCommunicationError"
+              }
+            }
+          },
+          {
+            "sequence": 67,
+            "context": {
+              "data_source_id": "sim-b",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "ConnectionLost": {
+                "at": 1793878314913,
+                "reason": "reconnect failed: BadCommunicationError"
+              }
+            }
+          },
+          {
+            "sequence": 66,
+            "context": {
+              "data_source_id": "sim-b",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "ConnectionLost": {
+                "at": 1793878314911,
+                "reason": "BadServerHalted"
+              }
+            }
+          },
+          {
+            "sequence": 61,
+            "context": {
+              "data_source_id": "sim-a",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "ConnectionLost": {
+                "at": 1793878314535,
+                "reason": "reconnect failed: BadCommunicationError"
+              }
+            }
+          },
+          {
+            "sequence": 58,
+            "context": {
+              "data_source_id": "sim-a",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "ConnectionLost": {
+                "at": 1793878314333,
+                "reason": "reconnect failed: BadCommunicationError"
+              }
+            }
+          },
+          {
+            "sequence": 57,
+            "context": {
+              "data_source_id": "sim-a",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "ConnectionLost": {
+                "at": 1793878314231,
+                "reason": "reconnect failed: BadCommunicationError"
+              }
+            }
+          },
+          {
+            "sequence": 56,
+            "context": {
+              "data_source_id": "sim-a",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "ConnectionLost": {
+                "at": 1793878314229,
+                "reason": "BadServerHalted"
+              }
+            }
+          },
+          {
+            "sequence": 14,
+            "context": {
+              "data_source_id": "sim-b",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "Reconnected": {
+                "at": 1793878310659,
+                "gap": {
+                  "started_at": 1793878310659,
+                  "ended_at": 1793878310659,
+                  "reason": "reconnect without recorded connection loss"
+                }
+              }
+            }
+          },
+          {
+            "sequence": 7,
+            "context": {
+              "data_source_id": "sim-a",
+              "origin_class": "simulation"
+            },
+            "event": {
+              "Reconnected": {
+                "at": 1793878310658,
+                "gap": {
+                  "started_at": 1793878310658,
+                  "ended_at": 1793878310658,
+                  "reason": "reconnect without recorded connection loss"
+                }
+              }
+            }
+          }
+        ],
+        "gaps": [
+          {
+            "data_source_id": "sim-a",
+            "started_at_ms": 1793878310658,
+            "ended_at_ms": 1793878310658,
+            "reason": "reconnect without recorded connection loss"
+          },
+          {
+            "data_source_id": "sim-b",
+            "started_at_ms": 1793878310659,
+            "ended_at_ms": 1793878310659,
+            "reason": "reconnect without recorded connection loss"
+          },
+          {
+            "data_source_id": "sim-a",
+            "started_at_ms": 1793878314229,
+            "ended_at_ms": 1793878315442,
+            "reason": "BadServerHalted"
+          },
+          {
+            "data_source_id": "sim-b",
+            "started_at_ms": 1793878314911,
+            "ended_at_ms": 1793878316124,
+            "reason": "BadServerHalted"
+          }
+        ]
+      }
+    },
+    {
+      "phase": "5_coordinated_restart_and_resync",
+      "status": "PASS",
+      "details": {
+        "shutdown": {
+          "clean": true,
+          "uncommitted": 0,
+          "adapter_failures": 0,
+          "persistence_thread_joined": true,
+          "http_drained": false,
+          "http_forced_close": true
+        },
+        "restored": {
+          "sim-a": {
+            "id": "sim-a",
+            "name": "Simulation A",
+            "entity_id": "M-01",
+            "simulated": true,
+            "reachability": "unknown",
+            "connection": "unknown",
+            "service": "unknown",
+            "freshness": "unknown",
+            "validity": "unknown",
+            "last_received_ms": null,
+            "accepted": 0,
+            "duplicates": 0,
+            "out_of_order": 0,
+            "rejected": 0,
+            "reconnect_attempts": 1,
+            "dropped": 0,
+            "last_error": null
+          },
+          "sim-b": {
+            "id": "sim-b",
+            "name": "Simulation B",
+            "entity_id": "M-01",
+            "simulated": true,
+            "reachability": "unknown",
+            "connection": "unknown",
+            "service": "unknown",
+            "freshness": "unknown",
+            "validity": "unknown",
+            "last_received_ms": null,
+            "accepted": 0,
+            "duplicates": 0,
+            "out_of_order": 0,
+            "rejected": 0,
+            "reconnect_attempts": 1,
+            "dropped": 0,
+            "last_error": null
+          }
+        },
+        "current": {
+          "sim-a": {
+            "id": "sim-a",
+            "name": "Simulation A",
+            "entity_id": "M-01",
+            "simulated": true,
+            "reachability": "reachable",
+            "connection": "connected",
+            "service": "healthy",
+            "freshness": "fresh",
+            "validity": "valid",
+            "last_received_ms": 1793878320024,
+            "accepted": 12,
+            "duplicates": 12,
+            "out_of_order": 0,
+            "rejected": 0,
+            "reconnect_attempts": 1,
+            "dropped": 0,
+            "last_error": null
+          },
+          "sim-b": {
+            "id": "sim-b",
+            "name": "Simulation B",
+            "entity_id": "M-01",
+            "simulated": true,
+            "reachability": "reachable",
+            "connection": "connected",
+            "service": "healthy",
+            "freshness": "fresh",
+            "validity": "valid",
+            "last_received_ms": 1793878320010,
+            "accepted": 12,
+            "duplicates": 12,
+            "out_of_order": 0,
+            "rejected": 0,
+            "reconnect_attempts": 1,
+            "dropped": 0,
+            "last_error": null
+          }
+        },
+        "old_event_id": "1:26",
+        "new_event_id": "2:28",
+        "duplicates": 46
+      }
+    },
+    {
+      "phase": "5b_crash_during_ingestion",
+      "status": "PASS",
+      "details": {
+        "health": {
+          "lifecycle": "ready",
+          "live": true,
+          "ready": true,
+          "persistence_healthy": true,
+          "persistence_errors": 0,
+          "last_persistence_error": null,
+          "revision": 28,
+          "run_id": 3,
+          "persisted_observations": 67
+        },
+        "runs": [
+          {
+            "id": 1,
+            "started_ms": 1793878310534,
+            "ended_ms": 1793878316314,
+            "result": "stopped"
+          },
+          {
+            "id": 2,
+            "started_ms": 1793878319379,
+            "ended_ms": null,
+            "result": "interrupted"
+          },
+          {
+            "id": 3,
+            "started_ms": 1793878320296,
+            "ended_ms": null,
+            "result": "running"
+          }
+        ],
+        "integrity": "ok"
+      }
+    }
+  ],
+  "processes": [
+    {
+      "name": "sim-a",
+      "pid": 57824,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "49270",
+        "--seed",
+        "42",
+        "--tick-ms",
+        "250"
+      ]
+    },
+    {
+      "name": "sim-b",
+      "pid": 57825,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "49271",
+        "--seed",
+        "77",
+        "--tick-ms",
+        "250"
+      ]
+    },
+    {
+      "name": "core-first",
+      "pid": 57826,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform/target/oip004-acceptance-57811/core.json",
+        "--no-web"
+      ]
+    },
+    {
+      "name": "sim-a-recovered",
+      "pid": 57896,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "49270",
+        "--seed",
+        "42",
+        "--tick-ms",
+        "250"
+      ]
+    },
+    {
+      "name": "sim-b-recovered",
+      "pid": 57913,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "49271",
+        "--seed",
+        "77",
+        "--tick-ms",
+        "250"
+      ]
+    },
+    {
+      "name": "core-restored-offline",
+      "pid": 57997,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform/target/oip004-acceptance-57811/core.json",
+        "--no-web"
+      ]
+    },
+    {
+      "name": "sim-a-after-core-restart",
+      "pid": 58002,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "49270",
+        "--seed",
+        "42",
+        "--tick-ms",
+        "250"
+      ]
+    },
+    {
+      "name": "sim-b-after-core-restart",
+      "pid": 58003,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "49271",
+        "--seed",
+        "77",
+        "--tick-ms",
+        "250"
+      ]
+    },
+    {
+      "name": "core-after-crash",
+      "pid": 58019,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform/target/oip004-acceptance-57811/core.json",
+        "--no-web"
+      ]
+    }
+  ],
+  "flutter_used": false,
+  "verdict": "PASS",
+  "database": "/Users/benny/Code/open-industrial-platform/target/oip004-acceptance-57811/evidence.sqlite",
+  "config": {
+    "database": "/Users/benny/Code/open-industrial-platform/target/oip004-acceptance-57811/evidence.sqlite",
+    "http_port": 49272,
+    "sources": [
+      {
+        "id": "sim-a",
+        "name": "Simulation A",
+        "endpoint": "opc.tcp://127.0.0.1:49270"
+      },
+      {
+        "id": "sim-b",
+        "name": "Simulation B",
+        "endpoint": "opc.tcp://127.0.0.1:49271"
+      }
+    ],
+    "web_dir": null,
+    "queue_capacity": 8,
+    "shutdown_timeout_ms": 6000,
+    "stale_after_ms": 3000
+  }
+}

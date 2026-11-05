@@ -1,0 +1,27 @@
+{
+  "directory": "/Users/benny/Documents/OIP-Handoffs/git-initial-baseline-20261105T115216Z",
+  "archives": [
+    {
+      "path": "/Users/benny/Documents/OIP-Handoffs/git-initial-baseline-20261105T115216Z/project-pre-git-baseline.tar.gz",
+      "sha256": "f2f596041cd624c90c6493358aa6222c16a258733aae683d7120a116f3097122",
+      "bytes": 79017315,
+      "members": 1074,
+      "independently_verified": true
+    },
+    {
+      "path": "/Users/benny/Documents/OIP-Handoffs/git-initial-baseline-20261105T115216Z/historical-evidence-complete.tar.gz",
+      "sha256": "9633dc4e625070ba0fe79435ffeb408316399db77bdc34a6cca552ccdcd80dce",
+      "bytes": 78854794,
+      "members": 1230,
+      "independently_verified": true
+    }
+  ],
+  "preservation": "No original evidence/log/capture deleted; excluded historical docs/evidence paths map unchanged into historical-evidence-complete.tar.gz",
+  "restore": "Extract into an isolated review directory and verify against the adjacent member manifest; restore only needed artifacts, never blindly overwrite repository sources",
+  "other_preserved_baselines": [
+    "core-007-baseline-20261105T010256Z",
+    "core-0061-baseline-20261104T232930Z",
+    "core-005-1-baseline-20261104T220739Z"
+  ],
+  "excluded_runtime": "DB/PKI/IPC credentials/caches are not source archives; originals remain in ignored local paths"
+}

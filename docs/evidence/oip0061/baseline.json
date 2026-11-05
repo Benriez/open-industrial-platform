@@ -1,0 +1,10 @@
+{
+  "directory": "/Users/benny/Documents/OIP-Handoffs/core-0061-baseline-20261104T232930Z",
+  "archive": "/Users/benny/Documents/OIP-Handoffs/core-0061-baseline-20261104T232930Z/project-baseline.tar.gz",
+  "sha256": "52891379f5b234ac476d34f5f89d9b9410f991e87fbaf7084c3afa6e74f901e4",
+  "files": 637,
+  "archive_bytes": 29828219,
+  "verified": true,
+  "oip006_source_drift": [],
+  "reference_sha256": "bd9f9d8696ed48676055ee9a2cd0afb29e6c3d59e0945e662d925306f73c753e"
+}

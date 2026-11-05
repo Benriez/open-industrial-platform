@@ -1,0 +1,110 @@
+{
+  "checked_utc": "2026-11-04T22:31:12.814850+00:00",
+  "baseline": {
+    "created_utc": "20261104T220739Z",
+    "repository": "/Users/benny/Code/open-industrial-platform",
+    "branch": "main",
+    "head": null,
+    "tracked": 0,
+    "untracked": 415,
+    "ignored_metadata_entries": 135666,
+    "archive": "/Users/benny/Documents/OIP-Handoffs/core-005-1-baseline-20261104T220739Z/oip005-project-baseline.tar.gz",
+    "archive_sha256": "7be7a92c73fb32461c023de8c247b4875a8166fbb055bfb054e81badfba246ae",
+    "archive_bytes": 15214426,
+    "archive_independently_verified": true,
+    "drift_from_oip005_final_source_manifest": [],
+    "excluded": "ignored generated files, dependencies, caches, runtime DBs, PKI, credentials; originals retained"
+  },
+  "source_baseline_count": 415,
+  "missing_baseline_files": [],
+  "authorized_changed_baseline_files": [
+    "README.md",
+    "apps/flutter/README.md",
+    "apps/flutter/lib/app/app.dart",
+    "apps/flutter/lib/app/controller.dart",
+    "apps/flutter/lib/design_system/theme.dart",
+    "apps/flutter/lib/features/devices.dart",
+    "apps/flutter/lib/features/diagnostics.dart",
+    "apps/flutter/lib/features/network.dart",
+    "apps/flutter/lib/features/opcua.dart",
+    "apps/flutter/lib/features/overview.dart",
+    "apps/flutter/lib/main.dart",
+    "apps/flutter/lib/models/contracts.dart",
+    "apps/flutter/lib/services/api.dart",
+    "apps/flutter/lib/services/event_transport_web.dart",
+    "apps/flutter/lib/widgets/trend.dart",
+    "apps/flutter/test/browser_oip004.mjs",
+    "apps/flutter/test/contracts_test.dart",
+    "apps/flutter/test/core_integration_test.dart",
+    "apps/flutter/test/support.dart",
+    "apps/flutter/test/trend_test.dart",
+    "apps/flutter/test/ui_regression_test.dart"
+  ],
+  "only_authorized_changes": true,
+  "all_original_rust_files_byte_identical_to_oip005": true,
+  "cargo_flutter_packages_and_capability_inventory_unchanged": true,
+  "historical_verification_reports_unchanged": true,
+  "design_sha256": "bd9f9d8696ed48676055ee9a2cd0afb29e6c3d59e0945e662d925306f73c753e",
+  "handoff_files_reconciled": 25,
+  "handoff_files_updated": 22,
+  "original_base_text_conflict_files": 17,
+  "residual_conflict_files_resolved": 6,
+  "unresolved_conflicts": 0,
+  "new_joint_regression_tests": 2,
+  "tests": {
+    "rust_workspace_tests": 78,
+    "interop_tests": 36,
+    "open_only_tests": 2,
+    "flutter_tests": 47,
+    "browser_checks": 16,
+    "visual_captures": 30,
+    "integrated_ui_phases": [
+      [
+        "A_two_source_core_rest_sqlite_sse",
+        "PASS"
+      ],
+      [
+        "B_five_flutter_views",
+        "PASS"
+      ],
+      [
+        "B2_sensor_change_and_alarm_through_actual_core",
+        "PASS"
+      ],
+      [
+        "C_isolation_visible_in_flutter_and_consistent_rest_sse",
+        "PASS"
+      ],
+      [
+        "D_recovery",
+        "PASS"
+      ],
+      [
+        "E_restart_restore_then_reobserve",
+        "PASS"
+      ]
+    ],
+    "headless_verdict": "PASS",
+    "integrated_ui_verdict": "PASS",
+    "browser_verdict": "PASS",
+    "native_macos": "PASS"
+  },
+  "owned_demo_shutdown": {
+    "clean": true,
+    "uncommitted": 0,
+    "adapter_failures": 0,
+    "persistence_thread_joined": true,
+    "http_drained": true,
+    "http_forced_close": false
+  },
+  "gates": {
+    "G1": "PASS",
+    "G2": "PASS",
+    "G3": "PASS",
+    "G4": "PASS",
+    "G5": "PASS",
+    "G6": "PASS",
+    "G7": "PASS",
+    "G8": "PASS"
+  }
+}

@@ -1,0 +1,80 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: never
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master, toolchain from rust-toolchain.toml
+      - uses: Swatinem/rust-cache@e9d7b9f1e587218970671bac74e5511ed9506e6a # v2
+      - run: cargo fmt --all -- --check
+      - run: cargo check --workspace --all-targets
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo check -p oip-opcua --no-default-features --all-targets
+      - run: cargo check -p oip-opcua --no-default-features --features open62541-backend --all-targets
+      - run: cargo clippy -p oip-opcua --no-default-features --all-targets -- -D warnings
+      - run: cargo clippy -p oip-opcua --no-default-features --features open62541-backend --all-targets -- -D warnings
+
+  platform-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            platform: linux-x86_64
+          - runner: ubuntu-24.04-arm
+            platform: linux-aarch64
+          - runner: macos-latest
+            platform: macos-aarch64
+          - runner: windows-latest
+            platform: windows-x86_64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master, toolchain from rust-toolchain.toml
+      - uses: Swatinem/rust-cache@e9d7b9f1e587218970671bac74e5511ed9506e6a # v2
+      - name: Default tests, including SQLite migrations and secure OPC UA
+        run: cargo test --workspace -- --test-threads=1
+      - name: Headless two-source isolation, restart and crash recovery
+        if: matrix.platform == 'linux-x86_64'
+        run: |
+          cargo build --workspace
+          python3 tests/oip004/acceptance.py
+
+  open62541-interoperability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master, toolchain from rust-toolchain.toml
+      - uses: Swatinem/rust-cache@e9d7b9f1e587218970671bac74e5511ed9506e6a # v2
+      - name: Native open62541 build prerequisites
+        run: sudo apt-get update && sudo apt-get install -y cmake libclang-dev
+      - run: cargo clippy -p oip-opcua --all-targets --features open62541-backend -- -D warnings
+      - name: Both OPC UA directions and read-only regression tests
+        run: cargo test -p oip-opcua --features open62541-backend -- --test-threads=1
+      - name: open62541-only configuration tests
+        run: cargo test -p oip-opcua --no-default-features --features open62541-backend -- --test-threads=1
+
+  supply-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master, toolchain from rust-toolchain.toml
+      - uses: EmbarkStudios/cargo-deny-action@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          command: check advisories licenses bans sources

@@ -1,0 +1,37 @@
+# Dependency policy for the complete lockfile, including optional OPC UA peers.
+[advisories]
+version = 2
+yanked = "deny"
+unmaintained = "all"
+# Local-only OIP-002 exceptions, not a production security clearance. The RSA
+# Marvin advisory has no fixed release as of this verification. Any real or
+# networked industrial use requires a new security gate and stack evaluation.
+ignore = [
+    { id = "RUSTSEC-2023-0071", reason = "async-opcua RSA dependency; only explicitly trusted loopback tests are permitted in OIP-002; no fixed upstream release; review by 2027-02-03" },
+    { id = "RUSTSEC-2023-0089", reason = "transitive heapless/postcard atomic-polyfill; unmaintained, replacement requires upstream async-opcua migration; review by 2027-02-03" },
+    { id = "RUSTSEC-2024-0449", reason = "transitive unsafe-libyaml parser via serde_yaml; unmaintained, replacement requires upstream async-opcua migration; review by 2027-02-03" },
+]
+
+[licenses]
+version = 2
+allow = [
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "MIT",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Unlicense",
+    "Zlib",
+]
+confidence-threshold = 0.8
+
+[bans]
+multiple-versions = "warn"
+wildcards = "warn"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

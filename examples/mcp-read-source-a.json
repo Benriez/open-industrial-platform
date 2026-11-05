@@ -1,0 +1,5 @@
+{
+  "actor": "local-source-a-reader",
+  "permissions": ["sources_read", "devices_read", "telemetry_read", "events_read", "opcua_read"],
+  "sources": {"kind": "only", "sources": ["sim-a"]}
+}

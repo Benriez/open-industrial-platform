@@ -1,0 +1,31 @@
+{
+  "url": "http://127.0.0.1:50370",
+  "process_id": 60344,
+  "results": [
+    {
+      "name": "browser",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "interactions",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "visual",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "native_macos",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "demo_core_shutdown",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "archive_sha256": "be767ee48de12d120b46b599da2e4fa6906c29bfccfe21a7189bbe9ff4da6ad6",
+  "archive_members": 129,
+  "manifested_files": 112,
+  "payload_files": 15,
+  "canonical_baseline_files_verified": 79,
+  "screenshots_verified": 66,
+  "roundtrip_files": 15,
+  "workspace": "/Users/benny/Documents/OIP-Handoffs/core-0061-baseline-20261104T232930Z/validation",
+  "files": [
+    {
+      "path": "apps/flutter/README.md",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "ffee3e7cffb7abe0edf77d88ea649ced894f014031b269918d1ee4e054b7c509",
+      "ours_sha256": "ffee3e7cffb7abe0edf77d88ea649ced894f014031b269918d1ee4e054b7c509",
+      "theirs_sha256": "72ff15fd504c1897fe73a09d9e0fc86eafa9bde8d25a6648461a064b1df86299"
+    },
+    {
+      "path": "apps/flutter/lib/app/app.dart",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "08eb9513db6d50eca453ec78d59c7a4f8b4ea66def14511166e41f557b28692d",
+      "ours_sha256": "08eb9513db6d50eca453ec78d59c7a4f8b4ea66def14511166e41f557b28692d",
+      "theirs_sha256": "0a20824c83b4711087946ed685901aa828b4b8f909cf2c2bbe4b60d613d13458"
+    },
+    {
+      "path": "apps/flutter/lib/design_system/theme.dart",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "445e4cd305906ff713f2a0d39192606c4a2177343e2a840f12c634ac452981db",
+      "ours_sha256": "445e4cd305906ff713f2a0d39192606c4a2177343e2a840f12c634ac452981db",
+      "theirs_sha256": "200ac3b88041a9e373d0c5d6eedecda168b829d14c991ac8207a29321a14b768"
+    },
+    {
+      "path": "apps/flutter/lib/features/devices.dart",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "d5d68b896425d23e0576839d3a47d92f4e720d1e4c2b49fec56c74576e878aa5",
+      "ours_sha256": "d5d68b896425d23e0576839d3a47d92f4e720d1e4c2b49fec56c74576e878aa5",
+      "theirs_sha256": "902c19e7748699e566149e61a2e1ddb274c6c03b3202a069eb930e77bcf775aa"
+    },
+    {
+      "path": "apps/flutter/lib/features/diagnostics.dart",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "df334933f20452ddc43d463d9ddb05a8207414550a3d1ee1bd3822ba8affd60f",
+      "ours_sha256": "df334933f20452ddc43d463d9ddb05a8207414550a3d1ee1bd3822ba8affd60f",
+      "theirs_sha256": "28a06a8e7abbe0ff95deb6d2275660c17a6b099623e037d1c841248cf3282422"
+    },
+    {
+      "path": "apps/flutter/lib/features/network.dart",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "d9dc35f90f19957a21442245b14a6db07b0434af5edef1a4da987916ff09fa5b",
+      "ours_sha256": "d9dc35f90f19957a21442245b14a6db07b0434af5edef1a4da987916ff09fa5b",
+      "theirs_sha256": "fb641b63a1a59ed92f7b4bbba71c6ed96d0e495acee91ef2576cdc3ac0579877"
+    },
+    {
+      "path": "apps/flutter/lib/features/opcua.dart",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "6114b82fa93e4d62bd72aee777fa5500f00ba5b5977a6df41c2c734939cad923",
+      "ours_sha256": "6114b82fa93e4d62bd72aee777fa5500f00ba5b5977a6df41c2c734939cad923",
+      "theirs_sha256": "2730e7042ca52d5bc34ae93ba6158aa4cd3732ed74ecea1df10d72a282797e38"
+    },
+    {
+      "path": "apps/flutter/lib/features/overview.dart",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "f3ef3888b390785a970d8b18ad55adaf3c1db42461f8c23e70e90f23f4290231",
+      "ours_sha256": "f3ef3888b390785a970d8b18ad55adaf3c1db42461f8c23e70e90f23f4290231",
+      "theirs_sha256": "2cd32404f37295f6918d8bf1942e9a6b094e761be94f35ee91075c0d4c884d21"
+    },
+    {
+      "path": "apps/flutter/lib/widgets/components.dart",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "ceef7bf604f2704507d7d2d81f2c1dbf0dc9997d6e84c53f2a64e443cf9cf529",
+      "ours_sha256": "ceef7bf604f2704507d7d2d81f2c1dbf0dc9997d6e84c53f2a64e443cf9cf529",
+      "theirs_sha256": "a61c11a5ad05ef0a89ccddb39d374d4bd189acc13ab8b8f21c0b2692e7dd331e"
+    },
+    {
+      "path": "apps/flutter/lib/widgets/trend.dart",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "53ba3935f442a8064b4d6930e44c653ca0aded6da8cbb857396143462ed2adbc",
+      "ours_sha256": "53ba3935f442a8064b4d6930e44c653ca0aded6da8cbb857396143462ed2adbc",
+      "theirs_sha256": "56da1a409abdf2042f5abcf6218d82ba66d421ea35ea2c28387c9d156690f1e5"
+    },
+    {
+      "path": "apps/flutter/test/browser_oip004.mjs",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "f569802716e48156e8be34c6c94809dd90ede374a57424c9e5c104c71d55d82b",
+      "ours_sha256": "f569802716e48156e8be34c6c94809dd90ede374a57424c9e5c104c71d55d82b",
+      "theirs_sha256": "9196fb3534f8f09cf9b40d13a8116306346699820cd39206df103ba1014f9f1a"
+    },
+    {
+      "path": "apps/flutter/test/browser_spectrum.mjs",
+      "classification": "Neu",
+      "base_sha256": null,
+      "ours_sha256": null,
+      "theirs_sha256": "5a51eb568aba652a104febd5418582e7e139a3d8da9a01764b89cd18358ab755"
+    },
+    {
+      "path": "apps/flutter/test/browser_visual_oip004.mjs",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "5fc2ae96f5841a3d9a83ee6542e8eb06b7a8a963525db0bb1453f6a1e24c7545",
+      "ours_sha256": "5fc2ae96f5841a3d9a83ee6542e8eb06b7a8a963525db0bb1453f6a1e24c7545",
+      "theirs_sha256": "8cd3ec2c8ef30db7f33fe2768d5008c9c13da16147098f64ab03ae027156699a"
+    },
+    {
+      "path": "apps/flutter/test/package.json",
+      "classification": "Konfliktfrei ge\u00e4ndert",
+      "base_sha256": "8773fa06da338c1d853ca2c121e27d1499f4a78b13de1dcd6aef486cb88ab8fe",
+      "ours_sha256": "8773fa06da338c1d853ca2c121e27d1499f4a78b13de1dcd6aef486cb88ab8fe",
+      "theirs_sha256": "321ff322346e7d6cb1666459317bd4c9b3f60276ff580aeef473fc616f9a0300"
+    },
+    {
+      "path": "apps/flutter/test/spectrum_test.dart",
+      "classification": "Neu",
+      "base_sha256": null,
+      "ours_sha256": null,
+      "theirs_sha256": "a194db33d11b87168089ec85a194355ea78e49ad49bb53bb1f90e6000c90bc9c"
+    }
+  ],
+  "verdict": "PASS"
+}

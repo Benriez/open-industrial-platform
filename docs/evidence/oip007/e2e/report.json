@@ -1,0 +1,2061 @@
+{
+  "phases": [
+    {
+      "phase": "01_daemon_two_sources_sqlite_rest_sse",
+      "status": "PASS",
+      "details": {
+        "pid": 57504,
+        "health": {
+          "lifecycle": "ready",
+          "live": true,
+          "ready": true,
+          "persistence_healthy": true,
+          "persistence_errors": 0,
+          "last_persistence_error": null,
+          "revision": 81,
+          "run_id": 1,
+          "persisted_observations": 65
+        },
+        "snapshot": {
+          "core": {
+            "lifecycle": "ready",
+            "live": true,
+            "ready": true,
+            "persistence_healthy": true,
+            "persistence_errors": 0,
+            "last_persistence_error": null,
+            "revision": 81,
+            "run_id": 1,
+            "persisted_observations": 65
+          },
+          "sources": [
+            {
+              "id": "sim-a",
+              "name": "Simulation A",
+              "entity_id": "M-01",
+              "simulated": true,
+              "reachability": "reachable",
+              "connection": "connected",
+              "service": "healthy",
+              "freshness": "fresh",
+              "validity": "valid",
+              "last_received_ms": 1793878303585,
+              "accepted": 39,
+              "duplicates": 8,
+              "out_of_order": 0,
+              "rejected": 0,
+              "reconnect_attempts": 1,
+              "dropped": 0,
+              "last_error": null
+            },
+            {
+              "id": "sim-b",
+              "name": "Simulation B",
+              "entity_id": "M-01",
+              "simulated": true,
+              "reachability": "reachable",
+              "connection": "connected",
+              "service": "healthy",
+              "freshness": "fresh",
+              "validity": "valid",
+              "last_received_ms": 1793878303324,
+              "accepted": 38,
+              "duplicates": 6,
+              "out_of_order": 0,
+              "rejected": 0,
+              "reconnect_attempts": 1,
+              "dropped": 0,
+              "last_error": null
+            }
+          ],
+          "queue": {
+            "capacity": 16,
+            "depth": 0,
+            "backpressure_waits": 0,
+            "rejected_submissions": 0
+          },
+          "resync_required": true,
+          "system": {
+            "primary_source_id": "sim-a",
+            "api_version": "v1",
+            "simulated": true,
+            "demo_controls": false,
+            "scenario": "normal",
+            "opcua_status": "connected",
+            "subscription_status": "active",
+            "last_received_ms": 1793878303585,
+            "generated_at_ms": 1793878303660,
+            "persisted_observations": 65,
+            "cpu_percent": null,
+            "gpu_percent": null,
+            "ram_percent": null,
+            "network_status": "unknown",
+            "security_blocker": "RUSTSEC-2023-0071"
+          },
+          "devices": [
+            {
+              "data_source_id": "sim-a",
+              "is_faulted": false,
+              "id": "M-01",
+              "name": "Simulation A",
+              "kind": "Industrial",
+              "location": "Local simulation",
+              "connection": "OPC UA",
+              "simulated": true,
+              "health": {
+                "reachability": "reachable",
+                "vpn_transport": "not_applicable",
+                "agent_availability": "unknown",
+                "service_health": "connected",
+                "telemetry_freshness": "fresh"
+              }
+            },
+            {
+              "data_source_id": "sim-b",
+              "is_faulted": false,
+              "id": "sim-b:M-01",
+              "name": "Simulation B",
+              "kind": "Industrial",
+              "location": "Local simulation",
+              "connection": "OPC UA",
+              "simulated": true,
+              "health": {
+                "reachability": "reachable",
+                "vpn_transport": "not_applicable",
+                "agent_availability": "unknown",
+                "service_health": "connected",
+                "telemetry_freshness": "fresh"
+              }
+            }
+          ],
+          "metrics": [
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "alarm_active",
+              "value": {
+                "boolean": false
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000004000,
+                "server": 1793878303321,
+                "received": 1793878303402
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 4000,
+                "sequence": 16
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "motor_running",
+              "value": {
+                "boolean": true
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000004000,
+                "server": 1793878303321,
+                "received": 1793878303402
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 4000,
+                "sequence": 16
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "operating_mode",
+              "value": {
+                "text": "automatic"
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000004000,
+                "server": 1793878303321,
+                "received": 1793878303402
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 4000,
+                "sequence": 16
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "pressure",
+              "value": {
+                "float": 320.1
+              },
+              "unit": "kilo_pascal",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000004250,
+                "server": 1793878303570,
+                "received": 1793878303584
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 4250,
+                "sequence": 17
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "temperature",
+              "value": {
+                "float": 60.4
+              },
+              "unit": "celsius",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000004000,
+                "server": 1793878303321,
+                "received": 1793878303345
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 4000,
+                "sequence": 16
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "units_produced",
+              "value": {
+                "unsigned_integer": 1
+              },
+              "unit": "count",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000004000,
+                "server": 1793878303321,
+                "received": 1793878303402
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 4000,
+                "sequence": 16
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "alarm_active",
+              "value": {
+                "boolean": false
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "stale",
+              "timestamps": {
+                "source": 1700000000250,
+                "server": 1793878299569,
+                "received": 1793878299805
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 250,
+                "sequence": 1
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "motor_running",
+              "value": {
+                "boolean": true
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "stale",
+              "timestamps": {
+                "source": 1700000000250,
+                "server": 1793878299569,
+                "received": 1793878299805
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 250,
+                "sequence": 1
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "operating_mode",
+              "value": {
+                "text": "automatic"
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "stale",
+              "timestamps": {
+                "source": 1700000000250,
+                "server": 1793878299569,
+                "received": 1793878299805
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 250,
+                "sequence": 1
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "pressure",
+              "value": {
+                "float": 319.9
+              },
+              "unit": "kilo_pascal",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000004000,
+                "server": 1793878303321,
+                "received": 1793878303323
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 4000,
+                "sequence": 16
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "temperature",
+              "value": {
+                "float": 60.4
+              },
+              "unit": "celsius",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000004000,
+                "server": 1793878303321,
+                "received": 1793878303323
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 4000,
+                "sequence": 16
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "units_produced",
+              "value": {
+                "unsigned_integer": 1
+              },
+              "unit": "count",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000002500,
+                "server": 1793878301821,
+                "received": 1793878301845
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 2500,
+                "sequence": 10
+              }
+            }
+          ],
+          "incidents": [],
+          "topology": []
+        },
+        "sql": [
+          {
+            "data_source_id": "sim-a",
+            "n": 33
+          },
+          {
+            "data_source_id": "sim-b",
+            "n": 34
+          }
+        ],
+        "ui": {
+          "ready": true,
+          "main_sha256": "c8d267715a4cc627328ef2efd513a6bb681cf1b12044d479091bd3c3ac083f68",
+          "views": 5
+        }
+      }
+    },
+    {
+      "phase": "02_three_clients_parity_and_scopes",
+      "status": "PASS",
+      "details": {
+        "parity": {
+          "run_id": 1,
+          "sources": {
+            "sim-a": {
+              "accepted": 39,
+              "connection": "connected",
+              "dropped": 0,
+              "duplicates": 8,
+              "entity_id": "M-01",
+              "freshness": "fresh",
+              "id": "sim-a",
+              "last_error": null,
+              "last_received_ms": 1793878303585,
+              "name": "Simulation A",
+              "out_of_order": 0,
+              "reachability": "reachable",
+              "reconnect_attempts": 1,
+              "rejected": 0,
+              "service": "healthy",
+              "simulated": true,
+              "validity": "valid"
+            },
+            "sim-b": {
+              "accepted": 40,
+              "connection": "connected",
+              "dropped": 0,
+              "duplicates": 6,
+              "entity_id": "M-01",
+              "freshness": "fresh",
+              "id": "sim-b",
+              "last_error": null,
+              "last_received_ms": 1793878303665,
+              "name": "Simulation B",
+              "out_of_order": 0,
+              "reachability": "reachable",
+              "reconnect_attempts": 1,
+              "rejected": 0,
+              "service": "healthy",
+              "simulated": true,
+              "validity": "valid"
+            }
+          }
+        },
+        "B_allowed": "sim-a",
+        "C_allowed": "sim-b",
+        "peer_modern": {
+          "peer": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "oip-local-read",
+                "version": "0.0.0"
+              }
+            },
+            "capabilities": {
+              "resources": {},
+              "tools": {}
+            },
+            "protocolVersion": "2026-07-28",
+            "serverInfo": {
+              "name": "oip-local-read",
+              "version": "0.0.0"
+            }
+          },
+          "pid": 57574,
+          "ready": true
+        },
+        "peer_legacy": {
+          "peer": {
+            "capabilities": {
+              "resources": {},
+              "tools": {}
+            },
+            "protocolVersion": "2025-11-25",
+            "serverInfo": {
+              "name": "oip-local-read",
+              "version": "0.0.0"
+            }
+          },
+          "pid": 57584,
+          "ready": true
+        },
+        "denials": true
+      }
+    },
+    {
+      "phase": "03_single_writer_duplicate_alias_protection",
+      "status": "PASS",
+      "details": {
+        "duplicates_rejected": true,
+        "core_alive": true
+      }
+    },
+    {
+      "phase": "04_abrupt_client_isolation_and_reconnect",
+      "status": "PASS",
+      "details": {
+        "daemon_pid": 57504,
+        "run_id": 1,
+        "UI": {
+          "ok": true,
+          "api_live": true
+        }
+      }
+    },
+    {
+      "phase": "05_zero_clients_persistent_ingestion",
+      "status": "PASS",
+      "details": {
+        "before": 73,
+        "after": 79,
+        "health": {
+          "lifecycle": "ready",
+          "live": true,
+          "ready": true,
+          "persistence_healthy": true,
+          "persistence_errors": 0,
+          "last_persistence_error": null,
+          "revision": 95,
+          "run_id": 1,
+          "persisted_observations": 79
+        }
+      }
+    },
+    {
+      "phase": "06_multiclient_load_and_session_cleanup",
+      "status": "PASS",
+      "details": {
+        "ipc_auth_latency_ms": [
+          0.27258298359811306,
+          0.08258299203589559,
+          0.13091700384393334,
+          0.11029199231415987,
+          0.09662500815466046,
+          0.07079099304974079,
+          0.11508399620652199,
+          0.09595899609848857,
+          0.07983401883393526,
+          0.09445799514651299,
+          0.1354999840259552,
+          0.0688750296831131,
+          0.10374997509643435,
+          0.07474998710677028,
+          0.1029159757308662,
+          0.06391701754182577,
+          0.08395803160965443,
+          0.07804203778505325,
+          0.10241696145385504,
+          0.07358298171311617,
+          0.05962501745671034,
+          0.07391598774120212,
+          0.09724998380988836,
+          0.09491702076047659,
+          0.069082947447896
+        ],
+        "runs": [
+          {
+            "clients": 1,
+            "reads": 20,
+            "mean_ms": 0.7738272077403963,
+            "p95_ms": 1.0279170237481594,
+            "max_ms": 1.5703340177424252,
+            "elapsed_s": 0.027767457999289036,
+            "process_before": "28528   0:00.49   4.9",
+            "process_after": "28512   0:00.50   4.9",
+            "observations_added": 2
+          },
+          {
+            "clients": 3,
+            "reads": 60,
+            "mean_ms": 0.943318780628033,
+            "p95_ms": 1.3612079783342779,
+            "max_ms": 1.945875003002584,
+            "elapsed_s": 0.028936207992956042,
+            "process_before": "28000   0:00.50   4.9",
+            "process_after": "27744   0:00.52   4.9",
+            "observations_added": 1
+          },
+          {
+            "clients": 8,
+            "reads": 160,
+            "mean_ms": 1.821182512503583,
+            "p95_ms": 3.18175001302734,
+            "max_ms": 4.370792012196034,
+            "elapsed_s": 0.04869733296800405,
+            "process_before": "27904   0:00.53  14.0",
+            "process_after": "28688   0:00.60  10.4",
+            "observations_added": 1
+          }
+        ],
+        "connect_read_close_ms": [
+          18.03420903161168,
+          17.8437500144355,
+          16.947166004683822,
+          18.037500034552068,
+          16.99779200134799,
+          18.637417000718415,
+          17.247375042643398,
+          17.24058302352205,
+          16.874082968570292,
+          17.380708013661206,
+          16.68079203227535,
+          16.269582964014262
+        ],
+        "pid": 57504
+      }
+    },
+    {
+      "phase": "07_security_slow_client_and_bounded_pagination",
+      "status": "PASS",
+      "details": {
+        "errors": [
+          {
+            "error": "Mcp error: -32602: Invalid bounded tool arguments; see inputSchema",
+            "ok": false
+          },
+          {
+            "error": "Mcp error: -32602: Invalid bounded tool arguments; see inputSchema",
+            "ok": false
+          },
+          {
+            "error": "Mcp error: -32601: tools/call",
+            "ok": false
+          },
+          {
+            "error": "Mcp error: -32602: Unknown OIP resource",
+            "ok": false
+          },
+          {
+            "ok": true,
+            "result": {
+              "content": [
+                {
+                  "text": "{\"code\":\"DEVICE_NOT_FOUND\",\"kind\":\"resource_not_found\",\"message\":\"Device does not exist\"}",
+                  "type": "text"
+                }
+              ],
+              "isError": true,
+              "resultType": "complete",
+              "structuredContent": {
+                "code": "DEVICE_NOT_FOUND",
+                "kind": "resource_not_found",
+                "message": "Device does not exist"
+              }
+            }
+          },
+          {
+            "error": "Mcp error: -32602: Invalid bounded tool arguments; see inputSchema",
+            "ok": false
+          },
+          {
+            "error": "Mcp error: -32602: Invalid bounded tool arguments; see inputSchema",
+            "ok": false
+          }
+        ],
+        "nodes": 1000,
+        "core_alive": true,
+        "slow_client_bytes": 65536,
+        "stdout_protocol_only": true
+      }
+    },
+    {
+      "phase": "08_source_isolation_UI_MCP_REST_SSE",
+      "status": "PASS",
+      "details": {
+        "parity": {
+          "run_id": 1,
+          "sources": {
+            "sim-a": {
+              "accepted": 107,
+              "connection": "disconnected",
+              "dropped": 0,
+              "duplicates": 8,
+              "entity_id": "M-01",
+              "freshness": "stale",
+              "id": "sim-a",
+              "last_error": "reconnect failed: BadCommunicationError",
+              "last_received_ms": 1793878314177,
+              "name": "Simulation A",
+              "out_of_order": 0,
+              "reachability": "unknown",
+              "reconnect_attempts": 1,
+              "rejected": 0,
+              "service": "degraded",
+              "simulated": true,
+              "validity": "valid"
+            },
+            "sim-b": {
+              "accepted": 1922,
+              "connection": "connected",
+              "dropped": 0,
+              "duplicates": 6,
+              "entity_id": "M-01",
+              "freshness": "fresh",
+              "id": "sim-b",
+              "last_error": null,
+              "last_received_ms": 1793878315606,
+              "name": "Simulation B",
+              "out_of_order": 0,
+              "reachability": "reachable",
+              "reconnect_attempts": 1,
+              "rejected": 0,
+              "service": "healthy",
+              "simulated": true,
+              "validity": "valid"
+            }
+          }
+        },
+        "snapshot": {
+          "core": {
+            "lifecycle": "degraded",
+            "live": true,
+            "ready": true,
+            "persistence_healthy": true,
+            "persistence_errors": 0,
+            "last_persistence_error": null,
+            "revision": 2039,
+            "run_id": 1,
+            "persisted_observations": 2017
+          },
+          "sources": [
+            {
+              "id": "sim-a",
+              "name": "Simulation A",
+              "entity_id": "M-01",
+              "simulated": true,
+              "reachability": "unknown",
+              "connection": "disconnected",
+              "service": "degraded",
+              "freshness": "stale",
+              "validity": "valid",
+              "last_received_ms": 1793878314177,
+              "accepted": 107,
+              "duplicates": 8,
+              "out_of_order": 0,
+              "rejected": 0,
+              "reconnect_attempts": 1,
+              "dropped": 0,
+              "last_error": "reconnect failed: BadCommunicationError"
+            },
+            {
+              "id": "sim-b",
+              "name": "Simulation B",
+              "entity_id": "M-01",
+              "simulated": true,
+              "reachability": "reachable",
+              "connection": "connected",
+              "service": "healthy",
+              "freshness": "fresh",
+              "validity": "valid",
+              "last_received_ms": 1793878315606,
+              "accepted": 1922,
+              "duplicates": 6,
+              "out_of_order": 0,
+              "rejected": 0,
+              "reconnect_attempts": 1,
+              "dropped": 0,
+              "last_error": null
+            }
+          ],
+          "queue": {
+            "capacity": 16,
+            "depth": 0,
+            "backpressure_waits": 805,
+            "rejected_submissions": 0
+          },
+          "resync_required": true,
+          "system": {
+            "primary_source_id": "sim-a",
+            "api_version": "v1",
+            "simulated": true,
+            "demo_controls": false,
+            "scenario": "normal",
+            "opcua_status": "reconnecting",
+            "subscription_status": "waiting",
+            "last_received_ms": 1793878314177,
+            "generated_at_ms": 1793878315722,
+            "persisted_observations": 2017,
+            "cpu_percent": null,
+            "gpu_percent": null,
+            "ram_percent": null,
+            "network_status": "unknown",
+            "security_blocker": "RUSTSEC-2023-0071"
+          },
+          "devices": [
+            {
+              "data_source_id": "sim-a",
+              "is_faulted": true,
+              "id": "M-01",
+              "name": "Simulation A",
+              "kind": "Industrial",
+              "location": "Local simulation",
+              "connection": "OPC UA",
+              "simulated": true,
+              "health": {
+                "reachability": "unknown",
+                "vpn_transport": "not_applicable",
+                "agent_availability": "unknown",
+                "service_health": "degraded",
+                "telemetry_freshness": "stale"
+              }
+            },
+            {
+              "data_source_id": "sim-b",
+              "is_faulted": false,
+              "id": "sim-b:M-01",
+              "name": "Simulation B",
+              "kind": "Industrial",
+              "location": "Local simulation",
+              "connection": "OPC UA",
+              "simulated": true,
+              "health": {
+                "reachability": "reachable",
+                "vpn_transport": "not_applicable",
+                "agent_availability": "unknown",
+                "service_health": "connected",
+                "telemetry_freshness": "fresh"
+              }
+            }
+          ],
+          "metrics": [
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "alarm_active",
+              "value": {
+                "boolean": false
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "stale",
+              "timestamps": {
+                "source": 1700000004000,
+                "server": 1793878303321,
+                "received": 1793878303402
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 4000,
+                "sequence": 16
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "motor_running",
+              "value": {
+                "boolean": true
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "stale",
+              "timestamps": {
+                "source": 1700000004000,
+                "server": 1793878303321,
+                "received": 1793878303402
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 4000,
+                "sequence": 16
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "operating_mode",
+              "value": {
+                "text": "automatic"
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "stale",
+              "timestamps": {
+                "source": 1700000004000,
+                "server": 1793878303321,
+                "received": 1793878303402
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 4000,
+                "sequence": 16
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "pressure",
+              "value": {
+                "float": 320.6
+              },
+              "unit": "kilo_pascal",
+              "quality": "good",
+              "freshness": "stale",
+              "timestamps": {
+                "source": 1700000014750,
+                "server": 1793878314071,
+                "received": 1793878314141
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 14750,
+                "sequence": 59
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "temperature",
+              "value": {
+                "float": 60.0
+              },
+              "unit": "celsius",
+              "quality": "good",
+              "freshness": "stale",
+              "timestamps": {
+                "source": 1700000014750,
+                "server": 1793878314071,
+                "received": 1793878314141
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 14750,
+                "sequence": 59
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "units_produced",
+              "value": {
+                "unsigned_integer": 5
+              },
+              "unit": "count",
+              "quality": "good",
+              "freshness": "stale",
+              "timestamps": {
+                "source": 1700000012500,
+                "server": 1793878311820,
+                "received": 1793878311865
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 12500,
+                "sequence": 50
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "alarm_active",
+              "value": {
+                "boolean": false
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "stale",
+              "timestamps": {
+                "source": 1700000000250,
+                "server": 1793878299569,
+                "received": 1793878299805
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 250,
+                "sequence": 1
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "motor_running",
+              "value": {
+                "boolean": true
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "stale",
+              "timestamps": {
+                "source": 1700000000250,
+                "server": 1793878299569,
+                "received": 1793878299805
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 250,
+                "sequence": 1
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "operating_mode",
+              "value": {
+                "text": "automatic"
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "stale",
+              "timestamps": {
+                "source": 1700000000250,
+                "server": 1793878299569,
+                "received": 1793878299805
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 250,
+                "sequence": 1
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "pressure",
+              "value": {
+                "float": 320.1
+              },
+              "unit": "kilo_pascal",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000016000,
+                "server": 1793878315321,
+                "received": 1793878315385
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 16000,
+                "sequence": 64
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "temperature",
+              "value": {
+                "float": 60.4
+              },
+              "unit": "celsius",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000016250,
+                "server": 1793878315570,
+                "received": 1793878315606
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 16250,
+                "sequence": 65
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "units_produced",
+              "value": {
+                "unsigned_integer": 6
+              },
+              "unit": "count",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000015000,
+                "server": 1793878314320,
+                "received": 1793878314384
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 15000,
+                "sequence": 60
+              }
+            }
+          ],
+          "incidents": [],
+          "topology": []
+        }
+      }
+    },
+    {
+      "phase": "09_source_reconnect_alarm_and_gaps",
+      "status": "PASS",
+      "details": {
+        "parity": {
+          "run_id": 1,
+          "sources": {
+            "sim-a": {
+              "accepted": 141,
+              "connection": "connected",
+              "dropped": 0,
+              "duplicates": 8,
+              "entity_id": "M-01",
+              "freshness": "fresh",
+              "id": "sim-a",
+              "last_error": null,
+              "last_received_ms": 1793878319434,
+              "name": "Simulation A",
+              "out_of_order": 0,
+              "reachability": "reachable",
+              "reconnect_attempts": 1,
+              "rejected": 0,
+              "service": "healthy",
+              "simulated": true,
+              "validity": "valid"
+            },
+            "sim-b": {
+              "accepted": 1951,
+              "connection": "connected",
+              "dropped": 0,
+              "duplicates": 6,
+              "entity_id": "M-01",
+              "freshness": "fresh",
+              "id": "sim-b",
+              "last_error": null,
+              "last_received_ms": 1793878319384,
+              "name": "Simulation B",
+              "out_of_order": 0,
+              "reachability": "reachable",
+              "reconnect_attempts": 1,
+              "rejected": 0,
+              "service": "healthy",
+              "simulated": true,
+              "validity": "valid"
+            }
+          }
+        },
+        "gaps": [
+          {
+            "gap_key": "8cdbb37c82803ec329eb019bbedb37b0beeefc9369a9ff31ef9f0d87a2889201",
+            "data_source_id": "sim-b",
+            "origin_class": "simulation",
+            "started_at_ms": 1793878299381,
+            "ended_at_ms": 1793878299381,
+            "reason": "reconnect without recorded connection loss",
+            "duplicate_count": 0
+          },
+          {
+            "gap_key": "1494f4b1ad75e43d8f4d64b93bd8b01130c6f50454e21597f614dae3597c88ee",
+            "data_source_id": "sim-a",
+            "origin_class": "simulation",
+            "started_at_ms": 1793878299381,
+            "ended_at_ms": 1793878299381,
+            "reason": "reconnect without recorded connection loss",
+            "duplicate_count": 0
+          },
+          {
+            "gap_key": "7407852a60dc0fe8cff42972c430d98d38d121567a5acc32119d0ce436befaa2",
+            "data_source_id": "sim-a",
+            "origin_class": "simulation",
+            "started_at_ms": 1793878314250,
+            "ended_at_ms": 1793878315973,
+            "reason": "BadServerHalted",
+            "duplicate_count": 0
+          },
+          {
+            "gap_key": "6481b754377e35d11a2b3ce545c7c72d52980dcb107ee35571f58985ee1321fa",
+            "data_source_id": "sim-a",
+            "origin_class": "simulation",
+            "started_at_ms": 1793878319178,
+            "ended_at_ms": 1793878319305,
+            "reason": "BadServerHalted",
+            "duplicate_count": 0
+          }
+        ]
+      }
+    },
+    {
+      "phase": "10_graceful_restart_stale_restore",
+      "status": "PASS",
+      "details": {
+        "parity": {
+          "run_id": 2,
+          "sources": {
+            "sim-a": {
+              "accepted": 0,
+              "connection": "unknown",
+              "dropped": 0,
+              "duplicates": 0,
+              "entity_id": "M-01",
+              "freshness": "unknown",
+              "id": "sim-a",
+              "last_error": null,
+              "last_received_ms": null,
+              "name": "Simulation A",
+              "out_of_order": 0,
+              "reachability": "unknown",
+              "reconnect_attempts": 1,
+              "rejected": 0,
+              "service": "unknown",
+              "simulated": true,
+              "validity": "unknown"
+            },
+            "sim-b": {
+              "accepted": 0,
+              "connection": "unknown",
+              "dropped": 0,
+              "duplicates": 0,
+              "entity_id": "M-01",
+              "freshness": "unknown",
+              "id": "sim-b",
+              "last_error": null,
+              "last_received_ms": null,
+              "name": "Simulation B",
+              "out_of_order": 0,
+              "reachability": "unknown",
+              "reconnect_attempts": 1,
+              "rejected": 0,
+              "service": "unknown",
+              "simulated": true,
+              "validity": "unknown"
+            }
+          }
+        },
+        "observation_count": 2080
+      }
+    },
+    {
+      "phase": "11_actual_crash_stale_socket_and_journal_recovery",
+      "status": "PASS",
+      "details": {
+        "journal": [
+          {
+            "id": 1,
+            "started_ms": 1793878299232,
+            "ended_ms": 1793878321579,
+            "result": "stopped"
+          },
+          {
+            "id": 2,
+            "started_ms": 1793878321700,
+            "ended_ms": null,
+            "result": "interrupted"
+          },
+          {
+            "id": 3,
+            "started_ms": 1793878337324,
+            "ended_ms": null,
+            "result": "running"
+          }
+        ],
+        "integrity": "ok",
+        "parity": {
+          "run_id": 3,
+          "sources": {
+            "sim-a": {
+              "accepted": 0,
+              "connection": "unknown",
+              "dropped": 0,
+              "duplicates": 0,
+              "entity_id": "M-01",
+              "freshness": "unknown",
+              "id": "sim-a",
+              "last_error": null,
+              "last_received_ms": null,
+              "name": "Simulation A",
+              "out_of_order": 0,
+              "reachability": "unknown",
+              "reconnect_attempts": 1,
+              "rejected": 0,
+              "service": "unknown",
+              "simulated": true,
+              "validity": "unknown"
+            },
+            "sim-b": {
+              "accepted": 0,
+              "connection": "unknown",
+              "dropped": 0,
+              "duplicates": 0,
+              "entity_id": "M-01",
+              "freshness": "unknown",
+              "id": "sim-b",
+              "last_error": null,
+              "last_received_ms": null,
+              "name": "Simulation B",
+              "out_of_order": 0,
+              "reachability": "unknown",
+              "reconnect_attempts": 1,
+              "rejected": 0,
+              "service": "unknown",
+              "simulated": true,
+              "validity": "unknown"
+            }
+          }
+        }
+      }
+    },
+    {
+      "phase": "12_audit_redaction_and_cleanup",
+      "status": "PASS",
+      "details": {
+        "audit_present": true,
+        "token_not_logged": true,
+        "socket_removed": true,
+        "final_sqlite_integrity": "ok"
+      }
+    }
+  ],
+  "processes": [
+    {
+      "name": "source-a",
+      "pid": 57502,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "65524",
+        "--seed",
+        "42",
+        "--tick-ms",
+        "250",
+        "--scenario",
+        "normal"
+      ]
+    },
+    {
+      "name": "source-b",
+      "pid": 57503,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "65525",
+        "--seed",
+        "77",
+        "--tick-ms",
+        "250",
+        "--scenario",
+        "normal"
+      ]
+    },
+    {
+      "name": "daemon-first",
+      "pid": 57504,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--daemon",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/core.json",
+        "--ipc-config",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/ipc.json"
+      ]
+    },
+    {
+      "name": "flutter-daemon-browser",
+      "pid": 57508,
+      "argv": [
+        "node",
+        "tests/oip007/ui_probe.mjs",
+        "http://127.0.0.1:65526",
+        "/Users/benny/Code/open-industrial-platform/docs/evidence/oip007/e2e/ui"
+      ]
+    },
+    {
+      "name": "client-A",
+      "pid": 57573,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "client-B",
+      "pid": 57580,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/a.credential"
+      ]
+    },
+    {
+      "name": "client-C",
+      "pid": 57583,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "legacy",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/b.credential"
+      ]
+    },
+    {
+      "name": "duplicate-daemon",
+      "pid": 57589,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--daemon",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/core.json",
+        "--port",
+        "49217",
+        "--ipc-config",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/duplicate-ipc.json"
+      ]
+    },
+    {
+      "name": "duplicate-alias",
+      "pid": 57590,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--daemon",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/core.json",
+        "--database",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/alias.sqlite",
+        "--port",
+        "49218",
+        "--ipc-config",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/duplicate-ipc.json"
+      ]
+    },
+    {
+      "name": "saturated-existing-socket",
+      "pid": 57591,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--daemon",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/core.json",
+        "--port",
+        "49219",
+        "--ipc-config",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/busy-ipc.json"
+      ]
+    },
+    {
+      "name": "client-A-reconnected",
+      "pid": 57594,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "client-A-after-zero",
+      "pid": 57601,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "load-3-0",
+      "pid": 57609,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "load-3-1",
+      "pid": 57611,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "load-8-0",
+      "pid": 57618,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "load-8-1",
+      "pid": 57620,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "load-8-2",
+      "pid": 57622,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "load-8-3",
+      "pid": 57624,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "load-8-4",
+      "pid": 57626,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "load-8-5",
+      "pid": 57629,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "load-8-6",
+      "pid": 57631,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "cycle-0",
+      "pid": 57638,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "cycle-1",
+      "pid": 57640,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "cycle-2",
+      "pid": 57642,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "cycle-3",
+      "pid": 57644,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "cycle-4",
+      "pid": 57646,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "cycle-5",
+      "pid": 57658,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "cycle-6",
+      "pid": 57660,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "cycle-7",
+      "pid": 57662,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "cycle-8",
+      "pid": 57664,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "cycle-9",
+      "pid": 57666,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "cycle-10",
+      "pid": 57668,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "cycle-11",
+      "pid": 57670,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "new-bridge-a",
+      "pid": 57672,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/a.credential"
+      ]
+    },
+    {
+      "name": "new-bridge-b",
+      "pid": 57676,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/b.credential"
+      ]
+    },
+    {
+      "name": "wrong-bridge-credential",
+      "pid": 57678,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/bad.credential"
+      ]
+    },
+    {
+      "name": "slow-raw-bridge",
+      "pid": 57679,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "source-a-alarm",
+      "pid": 57914,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "65524",
+        "--seed",
+        "42",
+        "--tick-ms",
+        "250",
+        "--scenario",
+        "critical_sensor"
+      ]
+    },
+    {
+      "name": "source-a-normal",
+      "pid": 57983,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "65524",
+        "--seed",
+        "42",
+        "--tick-ms",
+        "250",
+        "--scenario",
+        "normal"
+      ]
+    },
+    {
+      "name": "daemon-restored",
+      "pid": 58049,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--daemon",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/core.json",
+        "--ipc-config",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/ipc.json"
+      ]
+    },
+    {
+      "name": "restored-client",
+      "pid": 58052,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "legacy",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "source-a-after-restart",
+      "pid": 58055,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "65524",
+        "--seed",
+        "42",
+        "--tick-ms",
+        "250",
+        "--scenario",
+        "normal"
+      ]
+    },
+    {
+      "name": "source-b-after-restart",
+      "pid": 58056,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "65525",
+        "--seed",
+        "77",
+        "--tick-ms",
+        "250",
+        "--scenario",
+        "normal"
+      ]
+    },
+    {
+      "name": "daemon-crash-recovered",
+      "pid": 58562,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--daemon",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/core.json",
+        "--ipc-config",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/ipc.json"
+      ]
+    },
+    {
+      "name": "crash-restored-client",
+      "pid": 58564,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-server",
+        "--mcp-bridge",
+        "--ipc-socket",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/s",
+        "--ipc-credential",
+        "/Users/benny/Code/open-industrial-platform/target/i7-57490/all.credential"
+      ]
+    },
+    {
+      "name": "source-a-after-crash",
+      "pid": 58570,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "65524",
+        "--seed",
+        "42",
+        "--tick-ms",
+        "250",
+        "--scenario",
+        "normal"
+      ]
+    },
+    {
+      "name": "source-b-after-crash",
+      "pid": 58571,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform/target/debug/oip-simulated-server",
+        "--port",
+        "65525",
+        "--seed",
+        "77",
+        "--tick-ms",
+        "250",
+        "--scenario",
+        "normal"
+      ]
+    }
+  ],
+  "model_used": false,
+  "verdict": "PASS",
+  "database": "/Users/benny/Code/open-industrial-platform/target/i7-57490/core.sqlite",
+  "url": "http://127.0.0.1:65526"
+}

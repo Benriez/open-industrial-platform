@@ -1,0 +1,38 @@
+{
+  "rust_workspace_tests": 78,
+  "interop_tests": 36,
+  "open_only_tests": 2,
+  "flutter_tests": 47,
+  "browser_checks": 16,
+  "visual_captures": 30,
+  "integrated_ui_phases": [
+    [
+      "A_two_source_core_rest_sqlite_sse",
+      "PASS"
+    ],
+    [
+      "B_five_flutter_views",
+      "PASS"
+    ],
+    [
+      "B2_sensor_change_and_alarm_through_actual_core",
+      "PASS"
+    ],
+    [
+      "C_isolation_visible_in_flutter_and_consistent_rest_sse",
+      "PASS"
+    ],
+    [
+      "D_recovery",
+      "PASS"
+    ],
+    [
+      "E_restart_restore_then_reobserve",
+      "PASS"
+    ]
+  ],
+  "headless_verdict": "PASS",
+  "integrated_ui_verdict": "PASS",
+  "browser_verdict": "PASS",
+  "native_macos": "PASS"
+}

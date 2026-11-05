@@ -1,0 +1,68 @@
+{
+  "newly_executed": [
+    {
+      "name": "rust-fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rust-check",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "--workspace",
+        "--all-targets"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rust-tests",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--workspace",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "flutter-analyze",
+      "command": [
+        "flutter",
+        "analyze"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "flutter-tests",
+      "command": [
+        "flutter",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "rust_workspace_passed": 100,
+  "flutter_tests_passed": 80,
+  "flutter_analyze_issues": 0,
+  "rust_fmt_and_check": "PASS",
+  "prior_evidence_only": {
+    "OIP-007 OPC-UA interoperability": 37,
+    "OIP-007 browser_checks": 16,
+    "OIP-007 native_macos": "PASS",
+    "OIP-007 full_daemon_MCP_E2E": "PASS"
+  },
+  "new_run_logs_external": "/Users/benny/Documents/OIP-Handoffs/git-initial-baseline-20261105T115216Z",
+  "design_sha256": "bd9f9d8696ed48676055ee9a2cd0afb29e6c3d59e0945e662d925306f73c753e"
+}

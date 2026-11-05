@@ -1,0 +1,7 @@
+{
+  "crates/oip-server/src/mcp/ipc.rs": "f89119d53c9d0476b039927fb9e5559e43e3e9c1539d28fb8d9345e0fe9c7654",
+  "crates/oip-server/src/mcp/transport.rs": "63be60cc10b101ed7db705c8f7a786646c214f0c3d53e3f2fffc6dd26db65b53",
+  "crates/oip-server/src/main.rs": "47ebc98331c9c4d3acdf26f64fbdd1f698bc73ae153f02351e859b24d484b9d1",
+  "crates/oip-server/src/runtime.rs": "89ce4b87b282c34288622688d7bf28d65845c1a3f79650405a5035093360b5aa",
+  "crates/oip-opcua/src/async_opcua/client.rs": "07cb3f7bf535b0f8a645d2efb84c521eb3e0d685dc0b5b10d5a9b146a4cebd1e"
+}

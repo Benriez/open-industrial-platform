@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-11-05T11:44:04.579379+00:00",
+  "missing_baseline_files": [],
+  "changed_baseline_files": [
+    "README.md",
+    "crates/oip-opcua/src/async_opcua/client.rs",
+    "crates/oip-opcua/src/async_opcua/client/tests.rs",
+    "crates/oip-server/src/main.rs",
+    "crates/oip-server/src/mcp.rs",
+    "crates/oip-server/src/mcp/transport.rs",
+    "crates/oip-server/src/runtime.rs"
+  ],
+  "flutter_source_changed": false,
+  "cargo_manifests_and_lock_unchanged": true,
+  "eight_workspace_members_unchanged": true,
+  "domain_storage_and_capability_contracts_unchanged": true,
+  "branch": "main",
+  "tracked_files": 0,
+  "unborn_head": true,
+  "design_reference_sha256": "bd9f9d8696ed48676055ee9a2cd0afb29e6c3d59e0945e662d925306f73c753e",
+  "available_opencode_status": {},
+  "reference_and_ui_unchanged": true
+}

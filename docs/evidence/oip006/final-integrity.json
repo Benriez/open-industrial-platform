@@ -1,0 +1,60 @@
+{
+  "baseline_archive_sha256": "120b85deb7746180313ab9cca6dcad701ebfc0caa239e185b31562d1078c2174",
+  "archive_members_verified": 575,
+  "missing_baseline_files": [],
+  "changed_existing_files": [
+    ".gitignore",
+    "Cargo.lock",
+    "README.md",
+    "crates/oip-core/Cargo.toml",
+    "crates/oip-core/src/application_contracts.rs",
+    "crates/oip-core/src/capabilities.rs",
+    "crates/oip-core/src/event.rs",
+    "crates/oip-core/src/model.rs",
+    "crates/oip-core/src/persistence.rs",
+    "crates/oip-core/src/service_contracts.rs",
+    "crates/oip-server/Cargo.toml",
+    "crates/oip-server/src/api.rs",
+    "crates/oip-server/src/application_services.rs",
+    "crates/oip-server/src/lib.rs",
+    "crates/oip-server/src/main.rs",
+    "crates/oip-server/src/runtime.rs"
+  ],
+  "core_schema_only": {
+    "crates/oip-core/src/application_contracts.rs": true,
+    "crates/oip-core/src/capabilities.rs": true,
+    "crates/oip-core/src/event.rs": true,
+    "crates/oip-core/src/model.rs": true,
+    "crates/oip-core/src/persistence.rs": true,
+    "crates/oip-core/src/service_contracts.rs": true
+  },
+  "flutter_changed": [],
+  "reference_sha256": "bd9f9d8696ed48676055ee9a2cd0afb29e6c3d59e0945e662d925306f73c753e",
+  "workspace_graph": {
+    "oip-core": [],
+    "oip-server": [
+      "oip-core",
+      "oip-opcua",
+      "oip-simulator",
+      "oip-storage"
+    ],
+    "oip-opcua": [
+      "oip-core",
+      "oip-simulator"
+    ],
+    "oip-simulator": [
+      "oip-core"
+    ],
+    "oip-storage": [
+      "oip-core"
+    ],
+    "oip-agent": [],
+    "oip-gateway": [],
+    "oip-diagnostics": []
+  },
+  "workspace_acyclic": true,
+  "branch": "main",
+  "tracked_count": 0,
+  "head_unborn": true,
+  "approved_scope": true
+}

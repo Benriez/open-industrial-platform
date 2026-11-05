@@ -1,0 +1,19 @@
+# Example only: substitute paths and explicitly choose an unprivileged local user.
+# NOT installed or execution-tested on Linux by OIP-007.
+[Unit]
+Description=Open Industrial Platform local core
+After=network.target
+[Service]
+Type=simple
+User=@OIP_OS_USER@
+WorkingDirectory=@OIP_ROOT@
+ExecStart=@OIP_ROOT@/target/debug/oip-server --daemon --config @OIP_ROOT@/examples/core-local.json --database @OIP_ROOT@/target/operator-core.sqlite --ipc-config @IPC_DIRECTORY@/ipc.json
+Restart=on-failure
+RestartSec=10
+KillSignal=SIGTERM
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+[Install]
+WantedBy=multi-user.target

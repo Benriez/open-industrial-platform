@@ -1,0 +1,22 @@
+{
+  "database": "oip-core.sqlite",
+  "http_port": 18084,
+  "sources": [
+    {
+      "id": "sim-a",
+      "name": "Simulation A",
+      "endpoint": "opc.tcp://127.0.0.1:14841",
+      "namespace": 2
+    },
+    {
+      "id": "sim-b",
+      "name": "Simulation B",
+      "endpoint": "opc.tcp://127.0.0.1:14842",
+      "namespace": 2
+    }
+  ],
+  "queue_capacity": 64,
+  "stale_after_ms": 5000,
+  "shutdown_timeout_ms": 10000,
+  "web_dir": null
+}

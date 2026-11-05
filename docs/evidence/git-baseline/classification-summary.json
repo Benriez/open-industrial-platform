@@ -1,0 +1,14 @@
+{
+  "initial_nonignored_files": 1074,
+  "initial_A_source_config_docs": 272,
+  "initial_B_reviewed_manifests": 40,
+  "initial_C_excluded_generated_local_evidence": 762,
+  "new_baseline_documentation_and_manifests": 7,
+  "candidate_files": 319,
+  "candidate_A_source_config_docs": 275,
+  "candidate_B_manifests": 44,
+  "candidate_C": 0,
+  "full_file_allowlist": "docs/git-baseline-files.txt",
+  "filewise_inventory_external": "/Users/benny/Documents/OIP-Handoffs/git-initial-baseline-20261105T115216Z/classified-inventory.json",
+  "no_files_deleted": true
+}
