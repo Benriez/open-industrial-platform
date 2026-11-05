@@ -1,0 +1,27 @@
+{
+  "database": "target/oip008-local.sqlite",
+  "http_port": 18808,
+  "sources": [
+    {
+      "id": "source-a",
+      "name": "Local simulation A",
+      "endpoint": "opc.tcp://127.0.0.1:15861"
+    },
+    {
+      "id": "source-b",
+      "name": "Local simulation B",
+      "endpoint": "opc.tcp://127.0.0.1:15862"
+    },
+    {
+      "id": "source-c",
+      "name": "Local simulation C",
+      "endpoint": "opc.tcp://127.0.0.1:15863"
+    },
+    {
+      "id": "source-d",
+      "name": "Local simulation D",
+      "endpoint": "opc.tcp://127.0.0.1:15864"
+    }
+  ],
+  "web_dir": null
+}

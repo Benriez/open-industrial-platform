@@ -30,7 +30,7 @@ impl Drop for InterruptedExecution {
 pub struct LocalLogAudit;
 impl CapabilityAudit for LocalLogAudit {
     fn record(&self, event: &ExecutionAudit) -> Result<(), CapabilityError> {
-        tracing::info!(actor=%event.actor,capability=?event.capability,target=%event.target,
+        tracing::info!(principal=?event.principal,scope=?event.scope,hierarchy=?event.hierarchy,actor=%event.actor,capability=?event.capability,target=%event.target,
             at_ms=event.at_ms,authorized=event.authorized,outcome=%event.outcome,
             correlation_id=%event.correlation_id,code="capability_execution","local development audit (not durable)");
         Ok(())
@@ -76,6 +76,7 @@ impl ApplicationServices {
             permissions.insert(Permission::SimulationControl);
         }
         ExecutionContext {
+            principal: None,
             actor: "local-development".into(),
             correlation_id: format!(
                 "run-{}-call-{}",
@@ -123,11 +124,19 @@ impl ApplicationServices {
                     .all(|b| b.is_ascii_alphanumeric() || b"-_.:".contains(&b))
         };
         ExecutionAudit {
+            scope: source
+                .filter(|s| authorized && self.state.view().sources.iter().any(|v| &v.id == *s))
+                .cloned()
+                .map(AccessScope::Source),
             actor: if safe(&context.actor) {
                 context.actor.clone()
             } else {
                 "invalid-context".into()
             },
+            principal: context.principal.clone(),
+            hierarchy: source
+                .and_then(|s| self.state.hierarchy.as_ref()?.location(s))
+                .cloned(),
             capability: id,
             // Log only enrolled resource IDs, never a caller's arbitrary target string.
             target: match source {
@@ -164,6 +173,9 @@ impl ApplicationServices {
         use CapabilityRequest::*;
         let s = &self.state;
         match request {
+            OrganizationsRead(_) | InfrastructuresRead(_) | SitesRead(_) | ScopedSnapshotRead => {
+                Err(denied())
+            }
             CoreHealthRead | CoreLivenessRead | CoreReadinessRead => {
                 Ok(CapabilityOutput::CoreHealth(s.view().health))
             }
@@ -231,10 +243,11 @@ impl ApplicationServices {
                     .into_iter()
                     .filter(|m| {
                         device.data_source_id.as_ref() == Some(&m.data_source_id)
-                            && q.id
-                                .split_once(':')
-                                .map_or(q.id.as_str(), |(_, entity)| entity)
-                                == m.entity_id.as_str()
+                            && s.view()
+                                .sources
+                                .iter()
+                                .find(|s| Some(&s.id) == device.data_source_id.as_ref())
+                                .is_some_and(|s| s.entity_id == m.entity_id)
                     })
                     .collect();
                 Ok(CapabilityOutput::Device(DeviceDetail {
@@ -263,6 +276,7 @@ impl ApplicationServices {
                         .is_none_or(|id| &r.context.data_source_id == id)
                 });
                 records.reverse();
+                records.truncate(100);
                 let collection_events = records.iter().map(|r| r.event.clone()).collect();
                 let incidents = if q.source.is_none() {
                     s.snapshot().map_err(storage)?.incidents
@@ -414,6 +428,7 @@ impl ApplicationServices {
                     }
                     .into();
                     Ok(Node {
+                        data_source_id: source.clone(),
                         node_id,
                         name,
                         namespace: 2,
@@ -438,6 +453,55 @@ impl ApplicationServices {
     }
 }
 impl CapabilityService for ApplicationServices {
+    fn discover(&self, context: &ExecutionContext) -> Vec<CapabilityDescriptor> {
+        if let Some(p) = &context.principal {
+            if let Some(h) = &self.state.hierarchy {
+                return CapabilityId::ALL
+                    .into_iter()
+                    .filter(|id| {
+                        !id.descriptor().mutating
+                            && (h.platform(p, *id)
+                                || (!matches!(
+                                    id,
+                                    CapabilityId::CoreHealthRead
+                                        | CapabilityId::CoreLivenessRead
+                                        | CapabilityId::CoreReadinessRead
+                                        | CapabilityId::QueueRead
+                                        | CapabilityId::SystemStatusRead
+                                        | CapabilityId::SnapshotRead
+                                ) && h
+                                    .plan
+                                    .bindings
+                                    .iter()
+                                    .filter(|b| &b.principal_id == p)
+                                    .any(|b| h.permits(p, *id, &b.scope, false))))
+                    })
+                    .map(CapabilityId::descriptor)
+                    .collect();
+            }
+            return Vec::new();
+        }
+        if !self.state.legacy_access {
+            return Vec::new();
+        }
+        CapabilityId::ALL
+            .into_iter()
+            .filter(|id| {
+                !matches!(
+                    id,
+                    CapabilityId::OrganizationsRead
+                        | CapabilityId::InfrastructuresRead
+                        | CapabilityId::SitesRead
+                        | CapabilityId::ScopedSnapshotRead
+                ) && id
+                    .descriptor()
+                    .permission
+                    .iter()
+                    .all(|p| context.permissions.contains(p))
+            })
+            .map(CapabilityId::descriptor)
+            .collect()
+    }
     fn execute<'a>(
         &'a self,
         context: &'a ExecutionContext,
@@ -448,7 +512,28 @@ impl CapabilityService for ApplicationServices {
         >,
     > {
         Box::pin(async move {
+            if self.state.hierarchy.is_some() && context.principal.is_some() {
+                return self.execute_tenant(context, request).await;
+            }
+            if !self.state.legacy_access {
+                return Err(denied());
+            }
             let id = request.id();
+            if matches!(&request,CapabilityRequest::SourcesRead(q)|CapabilityRequest::EventsRead(q)|CapabilityRequest::ObservationsRead(q) if q.organization.is_some()||q.infrastructure.is_some()||q.site.is_some())
+            {
+                self.audit.record(&self.audit_event(
+                    context,
+                    id,
+                    None,
+                    false,
+                    "unsupported_hierarchy_without_principal",
+                ))?;
+                return Err(CapabilityError::new(
+                    CapabilityErrorCode::OperationNotSupported,
+                    "HIERARCHY_REQUIRES_PRINCIPAL",
+                    "Hierarchy filters require a bound principal",
+                ));
+            }
             let source = self.source_for(&request);
             if id == CapabilityId::SimulationScenarioSet && self.state.scenario_tx.is_none() {
                 let _ = self.audit.record(&self.audit_event(
@@ -504,3 +589,6 @@ impl CapabilityService for ApplicationServices {
         })
     }
 }
+
+#[path = "tenant_services.rs"]
+mod tenant_services;

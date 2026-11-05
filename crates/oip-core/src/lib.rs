@@ -18,3 +18,6 @@ mod service_contracts;
 pub use service_contracts::*;
 mod capabilities;
 pub use capabilities::*;
+
+mod hierarchy;
+pub use hierarchy::*;

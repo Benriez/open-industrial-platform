@@ -33,7 +33,7 @@ def receive(p,timeout=25):
  line=p.stdout.readline();assert line,('client closed',p.poll());value=json.loads(line);TRANSCRIPT.append({'response':value});return value
 class Client:
  def __init__(self,name,policy='examples/mcp-read-local.json',era='modern',rest=True):
-  self.p=start(name,[str(ROOT/'target/debug/examples/mcp_probe'),era,str(ROOT/'target/debug/oip-server'),'--config',str(RUN/'core.json'),'--mcp-stdio','--mcp-policy',policy]+(['--mcp-rest'] if rest else []),True);self.ready=receive(self.p);assert self.ready['ready']
+  self.p=start(name,[str(ROOT/'target/debug/examples/mcp_probe'),era,str(ROOT/'target/debug/oip-server'),'--legacy-single-infrastructure','--config',str(RUN/'core.json'),'--mcp-stdio','--mcp-policy',policy]+(['--mcp-rest'] if rest else []),True);self.ready=receive(self.p);assert self.ready['ready']
  def command(self,value):
   TRANSCRIPT.append({'request':value});self.p.stdin.write(json.dumps(value)+'\n');self.p.stdin.flush();return receive(self.p)
  def call(self,name,args={}):
@@ -61,7 +61,7 @@ try:
  assert {o['simulation_origin']['seed'] for o in c.call('observations_read')}=={42,77}
  assert len(sql('SELECT DISTINCT data_source_id FROM observations'))==2
  # Duplicate process rejected even through a different path to the same inode.
- duplicate=start('duplicate-core',[str(ROOT/'target/debug/oip-server'),'--config',str(RUN/'core.json'),'--mcp-stdio','--mcp-policy','examples/mcp-read-local.json'],True)
+ duplicate=start('duplicate-core',[str(ROOT/'target/debug/oip-server'),'--legacy-single-infrastructure','--config',str(RUN/'core.json'),'--mcp-stdio','--mcp-policy','examples/mcp-read-local.json'],True)
  duplicate.stdin.close();duplicate.wait(timeout=5);assert duplicate.returncode!=0;assert not duplicate.stdout.read()
  record('A_single_runtime_sqlite_rest_sse',{'sdk':c.ready,'devices':devices,'health':get('/api/v1/core/health'),'snapshot':sse(),'db':sql('SELECT data_source_id,count(*) n FROM observations GROUP BY data_source_id'),'duplicate_rejected':True})
  tools=c.command({'op':'tools'})['result']['tools'];resources=c.command({'op':'resources'})['result']['resources'];assert len(tools)==6;assert len(resources)==8
@@ -127,7 +127,7 @@ try:
  except ConnectionRefusedError:pass
  assert len(d.call('sources_read'))==2;d.close();record('G3_stdio_only_no_http_listener',{'model_used':False,'http_listener':False})
  # Raw protocol fault/slow-client exercises supplement, never replace, SDK interop.
- raw=start('core-raw-slow',[str(ROOT/'target/debug/oip-server'),'--config',str(RUN/'core.json'),'--mcp-stdio','--mcp-rest','--mcp-policy','examples/mcp-read-local.json'],True)
+ raw=start('core-raw-slow',[str(ROOT/'target/debug/oip-server'),'--legacy-single-infrastructure','--config',str(RUN/'core.json'),'--mcp-stdio','--mcp-rest','--mcp-policy','examples/mcp-read-local.json'],True)
  raw.stdin.write(json.dumps({'jsonrpc':'2.0','id':1,'method':'initialize','params':{'protocolVersion':'2025-11-25','clientInfo':{'name':'raw-security-verifier','version':'1'},'capabilities':{}}})+'\n');raw.stdin.flush();assert 'result' in receive(raw)
  raw.stdin.write('{bad json}\n');raw.stdin.write(json.dumps({'jsonrpc':'2.0','id':3,'method':'ping'})+'\n');raw.stdin.flush();assert receive(raw)['id']==3
  raw.stdin.write(json.dumps({'jsonrpc':'2.0','id':4,'method':42})+'\n');raw.stdin.flush();assert 'error' in receive(raw)

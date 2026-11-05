@@ -4,11 +4,13 @@ Die Open Industrial Platform ist eine geplante quelloffene, selbst betriebene un
 
 ## Aktueller Status
 
+OIP-008 implementiert im isolierten Feature-Branch eine persistierte Organization-/Infrastructure-/Site-/Source-Hierarchie, Principal-/Role-Bindungen und zentrale REST-/SSE-/MCP-Scope-Auswertung. Noch nicht nach main integriert; lokale Simulation, keine produktive Tenant-Zertifizierung. [Implementierung, Startbefehle und aktuelle Verifikation](docs/oip-008-verification.md).
+
 OIP-007 ergänzt einen persistenten lokalen Core-Daemon und stdio-MCP-Bridges über einen geschützten Unix-Socket. Mehrere Clients teilen dieselbe Runtime, denselben Writer und CapabilityService; Disconnect stoppt den Daemon nicht. Zwölf Read-Capabilities bleiben autorisiert, Flutter-Spectrum unverändert. Ausschließlich lokale Entwicklung, keine Produktionsfreigabe.
 
 - [OIP-007: Runtime, Multi-Client-Verifikation, Security-Reviews und Startbefehle](docs/oip-007-verification.md)
 - [Persistente Runtime](docs/architecture/oip-007-persistent-runtime.md) · [Lokales MCP/IPC](docs/architecture/oip-007-mcp-multiclient.md)
-- [OIP-008: Multi-Infrastructure-Vorschlag, noch nicht implementiert](docs/architecture/oip-008-multi-infrastructure-proposal.md)
+- [OIP-008: ursprünglicher Architekturvorschlag](docs/architecture/oip-008-multi-infrastructure-proposal.md)
 
 OIP-006.1 integriert das verifizierte Spectrum-Handoff mit dem unveränderten OIP-006-Rust-/MCP-Core. Spectrum, Graphite und Daylight sind auf acht Breiten geprüft; Browser, REST/SSE und MCP bedienen im Integrationslauf dieselbe Runtime. Der lokale RC bleibt ausschließlich Simulation/Entwicklung, ohne Produktionsfreigabe.
 

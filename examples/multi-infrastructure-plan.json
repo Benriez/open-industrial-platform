@@ -1,0 +1,179 @@
+{
+  "organizations": [
+    {
+      "id": "org-a",
+      "name": "Organization A"
+    },
+    {
+      "id": "org-b",
+      "name": "Organization B"
+    }
+  ],
+  "infrastructures": [
+    {
+      "id": "infra-a1",
+      "organization_id": "org-a",
+      "name": "Infrastructure A1"
+    },
+    {
+      "id": "infra-a2",
+      "organization_id": "org-a",
+      "name": "Infrastructure A2"
+    },
+    {
+      "id": "infra-b1",
+      "organization_id": "org-b",
+      "name": "Infrastructure B1"
+    }
+  ],
+  "sites": [
+    {
+      "id": "site-a1",
+      "infrastructure_id": "infra-a1",
+      "name": "site-a1"
+    },
+    {
+      "id": "site-a2",
+      "infrastructure_id": "infra-a1",
+      "name": "site-a2"
+    },
+    {
+      "id": "site-a3",
+      "infrastructure_id": "infra-a2",
+      "name": "site-a3"
+    },
+    {
+      "id": "site-b1",
+      "infrastructure_id": "infra-b1",
+      "name": "site-b1"
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "source-a",
+      "site_id": "site-a1",
+      "device_id": "device-a",
+      "entity_id": "M-01"
+    },
+    {
+      "source_id": "source-b",
+      "site_id": "site-a1",
+      "device_id": "device-b",
+      "entity_id": "M-01"
+    },
+    {
+      "source_id": "source-c",
+      "site_id": "site-a2",
+      "device_id": "device-c",
+      "entity_id": "M-01"
+    },
+    {
+      "source_id": "source-d",
+      "site_id": "site-b1",
+      "device_id": "device-d",
+      "entity_id": "M-01"
+    }
+  ],
+  "principals": [
+    {
+      "id": "reader-org-a",
+      "name": "reader-org-a",
+      "enabled": true
+    },
+    {
+      "id": "reader-infra-a1",
+      "name": "reader-infra-a1",
+      "enabled": true
+    },
+    {
+      "id": "reader-org-b",
+      "name": "reader-org-b",
+      "enabled": true
+    },
+    {
+      "id": "reader-source-b",
+      "name": "reader-source-b",
+      "enabled": true
+    },
+    {
+      "id": "reader-site-a1",
+      "name": "reader-site-a1",
+      "enabled": true
+    },
+    {
+      "id": "platform-reader",
+      "name": "platform-reader",
+      "enabled": true
+    },
+    {
+      "id": "unbound-reader",
+      "name": "unbound-reader",
+      "enabled": true
+    }
+  ],
+  "roles": [
+    {
+      "id": "reader",
+      "name": "Read only capabilities",
+      "permissions": [
+        "core_read",
+        "sources_read",
+        "devices_read",
+        "telemetry_read",
+        "events_read",
+        "opcua_read",
+        "hierarchy_read"
+      ]
+    }
+  ],
+  "bindings": [
+    {
+      "principal_id": "reader-org-a",
+      "role_id": "reader",
+      "scope": {
+        "kind": "organization",
+        "id": "org-a"
+      }
+    },
+    {
+      "principal_id": "reader-infra-a1",
+      "role_id": "reader",
+      "scope": {
+        "kind": "infrastructure",
+        "id": "infra-a1"
+      }
+    },
+    {
+      "principal_id": "reader-org-b",
+      "role_id": "reader",
+      "scope": {
+        "kind": "organization",
+        "id": "org-b"
+      }
+    },
+    {
+      "principal_id": "reader-source-b",
+      "role_id": "reader",
+      "scope": {
+        "kind": "source",
+        "id": "source-b"
+      }
+    },
+    {
+      "principal_id": "reader-site-a1",
+      "role_id": "reader",
+      "scope": {
+        "kind": "site",
+        "id": "site-a1"
+      }
+    },
+    {
+      "principal_id": "platform-reader",
+      "role_id": "reader",
+      "scope": {
+        "kind": "platform"
+      }
+    }
+  ],
+  "legacy_single_infrastructure": false
+}

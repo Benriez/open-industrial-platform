@@ -86,7 +86,7 @@ impl<R: CoreRepository> Application<R> {
                 return Err(ApplicationError::Provenance);
             }
             if let Some(s) = sources.get_mut(&o.data_source_id) {
-                validate(s, &o)?;
+                validate_observation(&s.definition, &o)?;
                 if let Some(received) = o.timestamps.received.map(Timestamp::as_unix_millis) {
                     s.gap_start = Some(s.gap_start.map_or(received, |old| old.max(received)));
                 }
@@ -188,7 +188,7 @@ impl<R: CoreRepository> Application<R> {
         }
         let mut publish_latest = false;
         if let ClientEvent::Observation(o) = &event {
-            validate(s, o)?;
+            validate_observation(&s.definition, o)?;
             publish_latest = o.collection_error != Some(CollectionError::InvalidTimestamp)
                 && s.watermarks
                     .get(&o.metric_id)
@@ -296,8 +296,20 @@ impl<R: CoreRepository> Application<R> {
                 context,
                 event,
             });
-            if self.events.len() > 100 {
-                self.events.remove(0);
+            if self
+                .events
+                .iter()
+                .filter(|e| &e.context.data_source_id == id)
+                .count()
+                > 100
+            {
+                if let Some(index) = self
+                    .events
+                    .iter()
+                    .position(|e| &e.context.data_source_id == id)
+                {
+                    self.events.remove(index);
+                }
             }
         }
         self.health.revision += 1;
@@ -444,22 +456,25 @@ impl<R: CoreRepository> Application<R> {
         }
     }
 }
-fn validate(s: &SourceState, o: &ObservationEnvelope) -> Result<(), ApplicationError> {
-    let provenance_matches = match s.definition.origin_class {
+/// Shared validation for live ingestion, recovery and explicit offline legacy adoption.
+pub fn validate_observation(
+    definition: &SourceDefinition,
+    o: &ObservationEnvelope,
+) -> Result<(), ApplicationError> {
+    let provenance_matches = match definition.origin_class {
         OriginClass::Simulation => o
             .simulation_origin
             .as_ref()
-            .is_some_and(|p| p.origin_id == s.definition.simulation_origin_id),
+            .is_some_and(|p| p.origin_id == definition.simulation_origin_id),
         OriginClass::External => o.simulation_origin.is_none(),
     };
-    if o.data_source_id != s.definition.id
-        || o.entity_id != s.definition.entity_id
+    if o.data_source_id != definition.id
+        || o.entity_id != definition.entity_id
         || !provenance_matches
     {
         return Err(ApplicationError::Provenance);
     }
-    let kind = s
-        .definition
+    let kind = definition
         .metrics
         .get(&o.metric_id)
         .ok_or(ApplicationError::DataType)?;

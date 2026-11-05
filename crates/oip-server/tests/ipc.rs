@@ -33,10 +33,9 @@ struct Fixture {
 impl Fixture {
     fn new() -> Self {
         static SEQ: AtomicU64 = AtomicU64::new(0);
-        let dir = std::env::current_dir()
-            .unwrap()
+        let dir = PathBuf::from("/private/tmp")
             .join(format!(
-                "../../target/i7-{}-{}",
+                "oip8-ipc-{}-{}",
                 std::process::id(),
                 SEQ.fetch_add(1, Ordering::Relaxed)
             ))
@@ -109,6 +108,7 @@ async fn auth(f: &Fixture, n: u8) -> UnixStream {
 }
 fn service() -> (AppState, Arc<ApplicationServices>) {
     let c = CoreConfig {
+        legacy_single_infrastructure: true,
         sources: vec![
             SourceConfig {
                 id: "sim-a".into(),

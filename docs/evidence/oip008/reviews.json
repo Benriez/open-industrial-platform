@@ -1,0 +1,69 @@
+{
+  "baseline": "a27e7b1e01dc1cb6f4d97c34319b0aa6d7321871",
+  "reviews": [
+    {
+      "reviewer": "/root/review_domain_008",
+      "independent": true,
+      "read_only": true,
+      "scope": "Domain, schema3, migration, ownership, policy replacement",
+      "final": "No remaining blocking findings in reviewed scope",
+      "source_hashes": {
+        "crates/oip-core/src/application.rs": "664cf9841fcafeca7ca3bf078ada1e90a499abbfcf816199148dcaa989c6bf88",
+        "crates/oip-storage/src/hierarchy.rs": "dd7211fb26514194a62fb194054edb5fa8888d32d4f378ae6aee3e819ead2519",
+        "crates/oip-storage/src/ownership.rs": "f6c81e92d554c6922564615dda4e260183be67f2c6ccfce88c0229f4d0a88c8d",
+        "crates/oip-storage/src/lib.rs": "83a4bd7ff659d0f5b8c59213ac48315b88de35cc81a534d2f7475c3946e1a2ca",
+        "crates/oip-storage/src/application.rs": "2765a15dbd5042af74f1cbd8ff663564b0d96690f5742679959e9c4b3aae31c5"
+      },
+      "findings_fixed": [
+        "legacy to multi metadata persistence",
+        "historical device/source/entity links",
+        "historical origin/payload/SQL-key integrity",
+        "event/gap cross-source references",
+        "private DB/sidecar permissions and alias protection",
+        "atomicity and policy revocation",
+        "Missing/nonpositive migration ledger entries rejected before any DDL; independent follow-up reviewed exact 1..version guard"
+      ],
+      "regressions": [
+        "oip_storage::hierarchy::tests",
+        "oip_storage::ownership::tests",
+        "foreign source event volume preserves own cache and sequence; missing ledger1 and replacements0/-1 preserve schema"
+      ]
+    },
+    {
+      "reviewer": "/root/review_auth_008",
+      "independent": true,
+      "read_only": true,
+      "scope": "Principal binding, hierarchical authorization, REST, SSE, MCP, IPC",
+      "final": "No remaining blocking findings in reviewed scope",
+      "source_hashes": {
+        "crates/oip-core/src/hierarchy.rs": "31d3602debdb9bbc8bc444e7b8044147a897c1482030e2f3ed5df80a85050ac3",
+        "crates/oip-server/src/tenant_services.rs": "8c0aee050d09e27824706854a4f8d9eb2281233a82200a915244d81975f685f2",
+        "crates/oip-server/src/identity.rs": "1bbf2b2c58eb13cbcd857515ff147edcc816e3ba3a9ed763aa32275cd4327ff5",
+        "crates/oip-server/src/application_services.rs": "d597d977cac16ed0acc139da1168dec71c144c8b80eb62f4ea2d1e69babed47d",
+        "crates/oip-server/src/api.rs": "cb45dd25e1ed9d362b340e14d60afbcfde9acd2bee34e4b5e6fbccaffcd7ba44",
+        "crates/oip-server/src/mcp.rs": "ec5fe2729e13162c66dcafc32bc6b43b6788c5ccb1502daf08e25904470617fa",
+        "crates/oip-server/src/state.rs": "9c23834f032ca0ae75be333deb24a2983cfe8782a49969d50b7efdbdf6b2d0c3",
+        "crates/oip-server/src/mcp/ipc.rs": "c24bbe3a55e9e98a00b36f78ed02fab001b5ed453431c095e21c6cabffaa30bd"
+      },
+      "findings_fixed": [
+        "UTF8 credential panic",
+        "implicit embedded legacy all-access",
+        "global discovery without platform scope",
+        "implicit node source audit target",
+        "principal denial and cancellation audit",
+        "schema ID bounds"
+      ],
+      "regressions": [
+        "oip_server::identity::tests",
+        "oip-server/tests/hierarchy.rs"
+      ],
+      "remaining_nonblocking": [
+        "Local audit is not durable/tamper-proof",
+        "InvalidInput and interrupted-before-completion lack confirmed authorization/target outcome"
+      ]
+    }
+  ],
+  "reviewers_ran_tests": false,
+  "root_ran_actual_tests": true,
+  "note": "Domain reviewer also inspected hierarchy before DeviceId bound compatibility change; final bound256 and schema consistency were checked by authorization reviewer. CLI mutually-exclusive offline-mode guard was subsequently added with a dedicated subprocess regression."
+}

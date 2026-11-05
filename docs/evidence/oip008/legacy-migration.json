@@ -1,0 +1,36 @@
+{
+  "baseline_binary_sha256": "8a726547e9c7ac3c4483a24220425889bdba92c52fd8240aa6b3e9eff632feaf",
+  "status": "PASS",
+  "before_counts": {
+    "observations": 12,
+    "events": 14,
+    "gaps": 2
+  },
+  "after_counts": {
+    "observations": 12,
+    "events": 14,
+    "gaps": 2
+  },
+  "same_observation_keys": true,
+  "unattested_refused": true,
+  "changed_evidence_refused": true,
+  "migration": {
+    "schema_version": 3,
+    "organizations": 1,
+    "sources": 2,
+    "idempotent": false,
+    "legacy_migrated": true
+  },
+  "hierarchy": [
+    {
+      "source_id": "source-a",
+      "site_id": "site-a1",
+      "device_id": "M-01"
+    },
+    {
+      "source_id": "source-b",
+      "site_id": "site-a1",
+      "device_id": "source-b:M-01"
+    }
+  ]
+}

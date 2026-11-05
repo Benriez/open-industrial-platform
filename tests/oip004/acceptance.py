@@ -21,7 +21,7 @@ def start(name,args):
  log=OUT/(name+'.log'); f=log.open('w');p=subprocess.Popen(args,cwd=ROOT,stdout=f,stderr=subprocess.STDOUT);f.close();processes.append(p);REPORT['processes'].append({'name':name,'pid':p.pid,'argv':[str(a) for a in args]});return p
 
 def sim(name,p,seed):return start(name,[str(ROOT/'target/debug/oip-simulated-server'),'--port',str(p),'--seed',str(seed),'--tick-ms','250'])
-def core(name):return start(name,[str(ROOT/'target/debug/oip-server'),'--config',str(RUN/'core.json'),'--no-web'])
+def core(name):return start(name,[str(ROOT/'target/debug/oip-server'),'--legacy-single-infrastructure','--config',str(RUN/'core.json'),'--no-web'])
 def wait(fn,label,timeout=25):
  start_time=time.monotonic();last=None
  while time.monotonic()-start_time<timeout:

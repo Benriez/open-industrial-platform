@@ -4,14 +4,19 @@ impl oip_core::CoreRepository for SqliteStore {
     fn definitions(&self) -> Result<Vec<oip_core::SourceDefinition>, oip_core::PersistenceFailure> {
         let mut q = self
             .connection
-            .prepare("SELECT payload_json FROM core_sources ORDER BY source_id")
+            .prepare("SELECT source_id,payload_json FROM core_sources ORDER BY source_id")
             .map_err(|_| "read_sources")?;
         let result = q
-            .query_map([], |r| r.get::<_, String>(0))
+            .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))
             .map_err(|_| "read_sources")?
             .map(|r| {
-                serde_json::from_str(&r.map_err(|_| "read_sources")?)
-                    .map_err(|_| "decode_sources".into())
+                let (key, payload) = r.map_err(|_| "read_sources")?;
+                let definition: oip_core::SourceDefinition =
+                    serde_json::from_str(&payload).map_err(|_| "decode_sources")?;
+                if definition.id.as_str() != key {
+                    return Err("source_identity_mismatch".into());
+                }
+                Ok(definition)
             })
             .collect();
         result
@@ -46,7 +51,7 @@ impl oip_core::CoreRepository for SqliteStore {
         &self,
         limit: usize,
     ) -> Result<Vec<oip_core::EventRecord>, oip_core::PersistenceFailure> {
-        let mut q=self.connection.prepare("SELECT rowid,data_source_id,origin_class,payload_json FROM collection_events WHERE kind != 'observation' ORDER BY rowid DESC LIMIT ?1").map_err(|_|"read_events")?;
+        let mut q=self.connection.prepare("SELECT i.sequence,e.data_source_id,e.origin_class,e.payload_json FROM control_event_heads h JOIN control_event_index i ON i.source_id=h.source_id AND i.sequence>h.sequence-?1 JOIN collection_events e ON e.event_key=i.event_key ORDER BY i.source_id,i.sequence").map_err(|_|"read_events")?;
         let result = q
             .query_map([limit.min(100) as i64], |r| {
                 Ok((
@@ -81,11 +86,21 @@ impl oip_core::CoreRepository for SqliteStore {
         if let Some(o) = latest {
             tx.execute("INSERT INTO core_latest VALUES (?1,?2,?3,?4) ON CONFLICT(source_id,entity_id,metric_id) DO UPDATE SET payload_json=excluded.payload_json",params![o.data_source_id.as_str(),o.entity_id.as_str(),o.metric_id.as_str(),serde_json::to_string(o).map_err(|_|"encode_checkpoint")?]).map_err(|_|"write_checkpoint")?;
         }
-        let sequence = tx
-            .query_row("SELECT max(rowid) FROM collection_events", [], |r| {
-                r.get::<_, i64>(0)
-            })
-            .map_err(|_| "event_sequence")?;
+        let sequence = if !matches!(event, ClientEvent::Observation(_)) {
+            let key = keyed_hash(
+                b"oip-event-v1\0",
+                context,
+                &serde_json::to_string(event).map_err(|_| "encode_event")?,
+            );
+            tx.query_row(
+                "SELECT sequence FROM control_event_index WHERE event_key=?1",
+                [key],
+                |r| r.get::<_, i64>(0),
+            )
+            .map_err(|_| "event_sequence")?
+        } else {
+            0
+        };
         tx.commit().map_err(|_| "commit_transaction")?;
         Ok((outcome, sequence))
     }
@@ -176,13 +191,20 @@ mod tests {
     }
     #[test]
     fn valid_version_one_database_upgrades_without_losing_evidence() {
-        let mut store = SqliteStore::open_in_memory().unwrap();
+        let mut store = SqliteStore {
+            connection: Connection::open_in_memory().unwrap(),
+        };
+        store
+            .connection
+            .execute_batch("PRAGMA foreign_keys=ON")
+            .unwrap();
+        store.migrate_to(1).unwrap();
         store.ingest_observation(&observation()).unwrap();
         // Test-owned fixture: exactly the prior release's tables and migration record.
-        store.connection.execute_batch("DROP TABLE core_sources; DROP TABLE core_latest; DROP TABLE core_runs; DELETE FROM schema_migrations WHERE version=2; PRAGMA user_version=1;").unwrap();
-        assert_eq!(store.migrate().unwrap(), 2);
+
+        assert_eq!(store.migrate_to(2).unwrap(), 2);
         assert_eq!(store.observation_count().unwrap(), 1);
         assert_eq!(store.restore_latest().unwrap(), vec![observation()]);
-        assert_eq!(store.migrate().unwrap(), 2);
+        assert_eq!(store.migrate_to(2).unwrap(), 2);
     }
 }

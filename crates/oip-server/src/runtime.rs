@@ -221,7 +221,7 @@ pub async fn source_worker(
 pub struct CoreRuntime {
     pub state: AppState,
     // Exclusive advisory ownership on the canonical database sidecar, before SQLite opens.
-    database_ownership: Option<std::fs::File>,
+    database_ownership: Option<oip_storage::DatabaseOwnership>,
     cancel: CancellationToken,
     workers: Vec<JoinHandle<Result<(), RuntimeError>>>,
     ticker: JoinHandle<()>,
@@ -233,50 +233,24 @@ impl CoreRuntime {
         scenario: Option<tokio::sync::watch::Sender<String>>,
     ) -> Result<Self, RuntimeError> {
         config.validate().map_err(RuntimeError::Configuration)?;
-        // Do not flock SQLite itself: on macOS this interferes with SQLite locks.
-        // Resolve symlink aliases first and reject hardlinked databases (which
-        // could otherwise acquire distinct pathname-based ownership sidecars).
-        let file = std::fs::OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .truncate(false)
-            .open(&config.database)
-            .map_err(|_| RuntimeError::Configuration("database ownership open failed".into()))?;
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::MetadataExt;
-            if file
-                .metadata()
-                .map_err(|_| RuntimeError::Configuration("database metadata unavailable".into()))?
-                .nlink()
-                != 1
-            {
-                return Err(RuntimeError::Configuration(
-                    "hardlinked database paths are not supported".into(),
-                ));
+        let ownership = oip_storage::DatabaseOwnership::acquire(&config.database)?;
+        let mut store = SqliteStore::open(&config.database)?;
+        if store.hierarchy()?.is_none() {
+            if !config.legacy_single_infrastructure {
+                return Err(RuntimeError::Configuration("offline hierarchy provisioning required; legacy mode must be explicitly selected".into()));
             }
+            let definitions = config
+                .sources
+                .iter()
+                .map(|s| s.definition())
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(RuntimeError::Configuration)?;
+            store.provision(
+                crate::provisioning::legacy_plan(&config).map_err(RuntimeError::Configuration)?,
+                &definitions,
+                None,
+            )?;
         }
-        let mut lock_path = std::fs::canonicalize(&config.database)
-            .map_err(|_| RuntimeError::Configuration("database path cannot be resolved".into()))?
-            .into_os_string();
-        lock_path.push(".oip-lock");
-        let ownership = std::fs::OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .truncate(false)
-            .open(std::path::PathBuf::from(lock_path))
-            .map_err(|_| {
-                RuntimeError::Configuration("database ownership lock unavailable".into())
-            })?;
-        ownership.try_lock().map_err(|_| {
-            RuntimeError::Configuration(
-                "database already owned by another core; stop it before starting MCP".into(),
-            )
-        })?;
-        drop(file);
-        let store = SqliteStore::open(&config.database)?;
         let state =
             AppState::configured(store, &config, scenario).map_err(RuntimeError::Ingestion)?;
         let mut runtime = Self::from_state(state, config).await?;

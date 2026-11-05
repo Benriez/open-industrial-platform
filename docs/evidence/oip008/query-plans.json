@@ -1,0 +1,92 @@
+{
+  "status": "PASS",
+  "database": "/private/tmp/oip8-5160/core.sqlite",
+  "method": "SQLite CLI 100 SELECTs per process, includes CLI startup; no isolated per-query latency claim",
+  "results": [
+    {
+      "name": "organization_infrastructures",
+      "plan": [
+        {
+          "id": 4,
+          "parent": 0,
+          "notused": 55,
+          "detail": "SEARCH infrastructures USING COVERING INDEX infrastructures_parent (organization_id=?)"
+        }
+      ],
+      "selects": 100,
+      "cli_startup_plus_100_queries_ms": 12.216999952215701
+    },
+    {
+      "name": "infrastructure_sites",
+      "plan": [
+        {
+          "id": 4,
+          "parent": 0,
+          "notused": 55,
+          "detail": "SEARCH sites USING COVERING INDEX sites_parent (infrastructure_id=?)"
+        }
+      ],
+      "selects": 100,
+      "cli_startup_plus_100_queries_ms": 17.0314580318518
+    },
+    {
+      "name": "site_sources",
+      "plan": [
+        {
+          "id": 4,
+          "parent": 0,
+          "notused": 55,
+          "detail": "SEARCH source_placements USING COVERING INDEX placements_site (site_id=?)"
+        }
+      ],
+      "selects": 100,
+      "cli_startup_plus_100_queries_ms": 13.720208022277802
+    },
+    {
+      "name": "device_lookup",
+      "plan": [
+        {
+          "id": 3,
+          "parent": 0,
+          "notused": 39,
+          "detail": "SEARCH source_placements USING INDEX sqlite_autoindex_source_placements_2 (device_id=?)"
+        }
+      ],
+      "selects": 100,
+      "cli_startup_plus_100_queries_ms": 12.068708019796759
+    },
+    {
+      "name": "latest_observation",
+      "plan": [
+        {
+          "id": 5,
+          "parent": 0,
+          "notused": 60,
+          "detail": "SEARCH observations USING INDEX observations_by_device_source_metric_time (entity_id=? AND data_source_id=? AND metric_id=?)"
+        }
+      ],
+      "selects": 100,
+      "cli_startup_plus_100_queries_ms": 20.88604198070243
+    },
+    {
+      "name": "control_events",
+      "plan": [
+        {
+          "id": 6,
+          "parent": 0,
+          "notused": 51,
+          "detail": "SEARCH i USING INDEX sqlite_autoindex_control_event_index_2 (source_id=? AND sequence>?)"
+        },
+        {
+          "id": 12,
+          "parent": 0,
+          "notused": 44,
+          "detail": "SEARCH e USING COVERING INDEX sqlite_autoindex_collection_events_1 (event_key=?)"
+        }
+      ],
+      "selects": 100,
+      "cli_startup_plus_100_queries_ms": 19.625584012828767
+    }
+  ],
+  "note": "Small local four-source/two-organization database; no scale or SLA guarantee."
+}

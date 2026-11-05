@@ -1,0 +1,37 @@
+[
+  {
+    "name": "flutter-analyze",
+    "command": [
+      "flutter",
+      "analyze"
+    ],
+    "cwd": "/Users/benny/Code/open-industrial-platform/apps/flutter",
+    "status": "PASS"
+  },
+  {
+    "name": "flutter-tests",
+    "command": [
+      "flutter",
+      "test",
+      "--reporter",
+      "expanded"
+    ],
+    "cwd": "/Users/benny/Code/open-industrial-platform/apps/flutter",
+    "status": "PASS"
+  },
+  {
+    "name": "flutter-web",
+    "command": [
+      "flutter",
+      "build",
+      "web",
+      "--release",
+      "--web-renderer",
+      "canvaskit",
+      "--no-web-resources-cdn",
+      "--pwa-strategy=none"
+    ],
+    "cwd": "/Users/benny/Code/open-industrial-platform/apps/flutter",
+    "status": "PASS"
+  }
+]

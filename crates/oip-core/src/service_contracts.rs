@@ -83,6 +83,7 @@ pub struct Snapshot {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 pub struct Node {
+    pub data_source_id: crate::DataSourceId,
     pub node_id: String,
     pub name: String,
     pub namespace: u16,

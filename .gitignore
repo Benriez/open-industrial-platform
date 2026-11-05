@@ -117,3 +117,22 @@ secrets/
 !/docs/evidence/git-baseline/secret-scan.json
 !/docs/evidence/git-baseline/test-summary.json
 !/docs/evidence/git-baseline/classification-summary.json
+
+# OIP-008 reviewed reports only; raw logs, credentials, DBs and captures stay excluded.
+!/docs/evidence/oip008/backup.json
+!/docs/evidence/oip008/browser.json
+!/docs/evidence/oip008/capability-mapping.json
+!/docs/evidence/oip008/e2e.json
+!/docs/evidence/oip008/flutter-regression.json
+!/docs/evidence/oip008/headless.json
+!/docs/evidence/oip008/integrity.json
+!/docs/evidence/oip008/legacy-migration.json
+!/docs/evidence/oip008/mcp-legacy.json
+!/docs/evidence/oip008/preflight.json
+!/docs/evidence/oip008/query-plans.json
+!/docs/evidence/oip008/reviews.json
+!/docs/evidence/oip008/rust-regression.json
+!/docs/evidence/oip008/secret-scan.json
+!/docs/evidence/oip008/start-commands.json
+!/docs/evidence/oip008/test-summary.json
+!/docs/evidence/oip008/ui-regression.json

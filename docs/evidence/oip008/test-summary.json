@@ -1,0 +1,333 @@
+{
+  "status": "PASS_EXECUTED_TESTS_COMMIT_PENDING",
+  "rust_commands": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "check",
+      "command": [
+        "cargo",
+        "check",
+        "--workspace",
+        "--all-targets"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "workspace-tests",
+      "command": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--",
+        "--test-threads=1"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "interop-tests",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "oip-opcua",
+        "--features",
+        "open62541-backend",
+        "--",
+        "--test-threads=1"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "open-only-tests",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "oip-opcua",
+        "--no-default-features",
+        "--features",
+        "open62541-backend",
+        "--",
+        "--test-threads=1"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "no-default-check",
+      "command": [
+        "cargo",
+        "check",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--no-default-features"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "no-default-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--no-default-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "open-only-check",
+      "command": [
+        "cargo",
+        "check",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--no-default-features",
+        "--features",
+        "open62541-backend"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "open-only-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--no-default-features",
+        "--features",
+        "open62541-backend",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "interop-check",
+      "command": [
+        "cargo",
+        "check",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--features",
+        "open62541-backend"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "interop-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--features",
+        "open62541-backend",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "deny",
+      "command": [
+        "target/oip-002-tools/bin/cargo-deny",
+        "check",
+        "advisories",
+        "licenses",
+        "bans",
+        "sources"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "examples",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "-p",
+        "oip-server",
+        "--examples"
+      ],
+      "status": "PASS",
+      "exit_code": 0
+    }
+  ],
+  "workspace_tests": 118,
+  "opcua_interop_tests": 37,
+  "open_only_tests": 2,
+  "storage_tests": 21,
+  "new_hierarchy_tests": 6,
+  "new_cli_test": 1,
+  "flutter_tests": 80,
+  "flutter_analyze": "PASS",
+  "dart_format": "PASS",
+  "flutter_web_release": "PASS",
+  "browser_checks": 16,
+  "native_macos_tests": 1,
+  "browser_spectrum_interactions": "PASS",
+  "visual_captures": 30,
+  "e2e": "PASS",
+  "legacy_migration": "PASS",
+  "headless": "PASS",
+  "legacy_stdio_mcp": "PASS",
+  "runtime_source_hashes": {
+    "Cargo.lock": "ba615b2fd0116c164dfe0e71b94cd924963cc750445e8c697427764c7d1bb0f6",
+    "Cargo.toml": "a2b164fd0ee77c3081e5606523d2485dfceaabed921108892eecf8e41c9235c8",
+    "crates/oip-agent/Cargo.toml": "297553bc3e5597bf22168c22cd7cfda7adbfd06ccb5f05316985e0da2032e0f5",
+    "crates/oip-agent/src/main.rs": "536e506bb90914c243a12b397b9a998f85ae2cbd9ba02dfd03a9e155ca5ca0f4",
+    "crates/oip-core/Cargo.toml": "a449b0820edab98d6714a831ebb4947bf856278d1a8b400c720961ce2aa13718",
+    "crates/oip-core/src/application.rs": "664cf9841fcafeca7ca3bf078ada1e90a499abbfcf816199148dcaa989c6bf88",
+    "crates/oip-core/src/application_contracts.rs": "e499901a4aa5938ca17debdffdccd820fd5758ba654f47fc73503b391c7ba861",
+    "crates/oip-core/src/capabilities.rs": "2198e661d523cae76a9bb97c6b0511e81fcc907b073ef3c6b45ff750086051fb",
+    "crates/oip-core/src/event.rs": "4674ab1569f54a76d2a96269297412dbc3c354e26196d799d97890f3ecd330f3",
+    "crates/oip-core/src/hierarchy.rs": "31d3602debdb9bbc8bc444e7b8044147a897c1482030e2f3ed5df80a85050ac3",
+    "crates/oip-core/src/lib.rs": "df0109d81c1cd004ae887fdd4de0202e71fdbad52a1d19381edd00d415be1ff5",
+    "crates/oip-core/src/model.rs": "3d037c9fe70e59f4307776cda2bde8aaa8d6cfc2445f256ce8c8bea48e5960eb",
+    "crates/oip-core/src/persistence.rs": "b00c18d86cba4184886f3728c3daeee5e8541973b7a89a6e373f5413cc05efd6",
+    "crates/oip-core/src/service_contracts.rs": "47c1388270bd8f7893fa1a5bce5dde64b74b58a6db8902eb702b129f760d771c",
+    "crates/oip-diagnostics/Cargo.toml": "8b339a76616ccde862897a234dd46ff2d93de2ec8c37a43d18d798542f10455c",
+    "crates/oip-diagnostics/src/lib.rs": "996ade018067b2f5ead29f8f5a0350940dcb11df65b897ece696000a086b003f",
+    "crates/oip-gateway/Cargo.toml": "159ee9b3259f6f8ee501b68faf2c597c7f68799ea2f9967beed18bc9a563de78",
+    "crates/oip-gateway/src/main.rs": "536e506bb90914c243a12b397b9a998f85ae2cbd9ba02dfd03a9e155ca5ca0f4",
+    "crates/oip-opcua/Cargo.toml": "4c3a1059456d345fe1a797919ad2c124130cc0a9e7bb9eff35d7403ee9416e88",
+    "crates/oip-opcua/src/adapter.rs": "68148daf60d83c4c8b2d4c779ed677e5f2ac147e9b71add98263312b519126c9",
+    "crates/oip-opcua/src/async_opcua/client.rs": "07cb3f7bf535b0f8a645d2efb84c521eb3e0d685dc0b5b10d5a9b146a4cebd1e",
+    "crates/oip-opcua/src/async_opcua/client/tests.rs": "7a33fe8f8829e6fd1b92917eed3524b91de21b9097b82f31ed634dd9dedb0bf9",
+    "crates/oip-opcua/src/async_opcua/input_tests.rs": "431b2ee906ec9dfcfbac0eaf8f8a79d309a4445c5362b43c369a8888b7fe9069",
+    "crates/oip-opcua/src/async_opcua/mapping.rs": "6cb13860ae5c573f09b97ce8e04dbb73934e2cb7e9ef3c118b51956f3e8bdb54",
+    "crates/oip-opcua/src/async_opcua/mod.rs": "675a0e5c85c6cc03730c59673502e08e55f477cb3f2571e554fea774ffcc40dd",
+    "crates/oip-opcua/src/async_opcua/security.rs": "11a909d201065082b7310125cc2e9225814154d664d1d4e90f02f84fca4e7270",
+    "crates/oip-opcua/src/async_opcua/security_tests.rs": "a2287da25894fe4b28e067561ad4c2615c4d3f4759a876deaad80d7418851fc0",
+    "crates/oip-opcua/src/async_opcua/server.rs": "d18adb6b9d4a93793a1356166281bc577f9957909e900f6040504bde3e61c8e9",
+    "crates/oip-opcua/src/bin/oip-async-opcua-poc.rs": "4e7cfd9db0f8e2f3b8682c388e0f9b5e6a2229acd5b8700cb3b17caecb331b43",
+    "crates/oip-opcua/src/bin/oip-open62541-poc.rs": "ec40593afab45cb1cfd1abc42c6341273c21b17585084e900db5582ae5e2d5ef",
+    "crates/oip-opcua/src/bin/oip-simulated-server.rs": "b548677f46d9f045d010752ac7b8a9d3627c6287afa8b6a2182779e3b94fe0f7",
+    "crates/oip-opcua/src/bin/oip-test-client.rs": "63b98fb43993d19633ce9a1af67e2135157934ce0ed465d5cf18f12fd386fb95",
+    "crates/oip-opcua/src/endpoint.rs": "97aa60ec8e6e0c9745a54c9164398de1b8fcf864b1a0551854e5184cc38adc68",
+    "crates/oip-opcua/src/lib.rs": "fb42d3f8a855590ad97b4d45808f6bf961a2af156ed6387b87293e2d6520d8a5",
+    "crates/oip-opcua/src/open62541_poc.rs": "5d522d92e5b5176fd27726ce392270c6b268711e88cbb6538fa2a2da7ba54b7d",
+    "crates/oip-server/Cargo.toml": "bf071b12de4b65173f6d2d8aad9c51f8eeffc6e9b60897bfd2058542cc1fede4",
+    "crates/oip-server/examples/mcp_catalog.rs": "c312a1c3b6ed041e52f79bd0e1abbc9cac9c62057af83f564ed4a4d9e885762a",
+    "crates/oip-server/examples/mcp_probe.rs": "1a34d9ce06abd8cabc0c4d2abb558a7805d92efb5caae1dc8fe0d1d3f4555502",
+    "crates/oip-server/src/api.rs": "cb45dd25e1ed9d362b340e14d60afbcfde9acd2bee34e4b5e6fbccaffcd7ba44",
+    "crates/oip-server/src/application_services.rs": "d597d977cac16ed0acc139da1168dec71c144c8b80eb62f4ea2d1e69babed47d",
+    "crates/oip-server/src/collector.rs": "c4e20cb773158583f5501b92284dda08f69cadff725036afe482f66d49658e4a",
+    "crates/oip-server/src/config.rs": "12946dd88e3ecc596a52f4db14100d679313a6abf24d7e2cb0ccac1c0e05d275",
+    "crates/oip-server/src/contracts.rs": "c2567793267204ea68e5c54cbb9f7e4584204fe2fbde90cc51bb0c6b6790046d",
+    "crates/oip-server/src/demo.rs": "00d86aabb7e663f5b8c4b45c1e514529266fa5b0aa7ecc3a19cd08b3d21f6ad1",
+    "crates/oip-server/src/identity.rs": "1bbf2b2c58eb13cbcd857515ff147edcc816e3ba3a9ed763aa32275cd4327ff5",
+    "crates/oip-server/src/lib.rs": "3d16e8fd32aee4e528df032b8f500b6e8ae188e4493a6696ec7d9900f575bc81",
+    "crates/oip-server/src/main.rs": "932d1e326251f3df1febff1cbdf640fca9e73d36c4e2437d0900f1a397f70255",
+    "crates/oip-server/src/mcp.rs": "ec5fe2729e13162c66dcafc32bc6b43b6788c5ccb1502daf08e25904470617fa",
+    "crates/oip-server/src/mcp/ipc.rs": "c24bbe3a55e9e98a00b36f78ed02fab001b5ed453431c095e21c6cabffaa30bd",
+    "crates/oip-server/src/mcp/transport.rs": "63be60cc10b101ed7db705c8f7a786646c214f0c3d53e3f2fffc6dd26db65b53",
+    "crates/oip-server/src/provisioning.rs": "68b59428ebc32faae9f16186616f8cec4e937ebc1f2ac99d7a07cc1f8d2cda61",
+    "crates/oip-server/src/runtime.rs": "9b7fbd39de05d1792a3356db4e9b0641d41a8008938410fd6a6708e6792d011b",
+    "crates/oip-server/src/state.rs": "9c23834f032ca0ae75be333deb24a2983cfe8782a49969d50b7efdbdf6b2d0c3",
+    "crates/oip-server/src/tenant_services.rs": "8c0aee050d09e27824706854a4f8d9eb2281233a82200a915244d81975f685f2",
+    "crates/oip-server/src/writer.rs": "337f32fd1e765d6a94e1f6003fa07d31cb98d96aba3ab2d34ed8b118b4da461e",
+    "crates/oip-server/tests/api.rs": "c9dabd5cebd4eda37abf7b3a47f7bece26f22ed5115c483cf6ca3806db7096c3",
+    "crates/oip-server/tests/capabilities.rs": "09c64ba55875157e6bdcc3e36c877088998fe1a307acf8d00251b7cb16fffbb3",
+    "crates/oip-server/tests/hierarchy.rs": "792a68da9423bb2fff97f7d2aca1c89346dfeee23326b86c684234fe57dd3deb",
+    "crates/oip-server/tests/ipc.rs": "72e2f3d764a6db4632d11ccd839ed6af3e86aa322cadb8d0baa7b131c20b8aaa",
+    "crates/oip-server/tests/mcp.rs": "b4d4df2c2a0add945d2a3e43479641bda3996c0a036edede41a987320e1c21d7",
+    "crates/oip-server/tests/provision_cli.rs": "52fa49d99798909520c38173af56034b9e151dbf05b6734f467e88b7acf25159",
+    "crates/oip-server/tests/reliability.rs": "d9e21d734a40ef71349e9062b595e6fdcb8c2afc2eb83db2dc5e4e6f0092a7c8",
+    "crates/oip-simulator/Cargo.toml": "36789c382bf70dd125ec01130e6ab2ecbebecadd30c3763b2e0f891181763038",
+    "crates/oip-simulator/src/lib.rs": "e8a42177cfa948450221f4f475fa4e6dc978fcda32e391e274344cec39a34092",
+    "crates/oip-storage/Cargo.toml": "db0348c0a37fb4aac3a4cb81ee66fa7795995110f5b0534bc2089fdb22eefab6",
+    "crates/oip-storage/src/application.rs": "2765a15dbd5042af74f1cbd8ff663564b0d96690f5742679959e9c4b3aae31c5",
+    "crates/oip-storage/src/hierarchy.rs": "dd7211fb26514194a62fb194054edb5fa8888d32d4f378ae6aee3e819ead2519",
+    "crates/oip-storage/src/lib.rs": "83a4bd7ff659d0f5b8c59213ac48315b88de35cc81a534d2f7475c3946e1a2ca",
+    "crates/oip-storage/src/ownership.rs": "f6c81e92d554c6922564615dda4e260183be67f2c6ccfce88c0229f4d0a88c8d",
+    "examples/core-local.json": "306a239da13f4178ff57d57865fc8a4012f93853ca3eca24a0b21e93d78062c0",
+    "examples/mcp-read-local.json": "bdd08966fee16b7d1469df2d44f66fadc9b7725c6ad47480702ca7c6aaf85c87",
+    "examples/mcp-read-source-a.json": "d3b29b36b949234c5fe9e674cad50d492754505923e67e19cc8da24190017087",
+    "examples/prepare-local-ipc.py": "babce6ce023438ac68a1660365411b992b165b177555eafc9f34a33539ad8fae",
+    "examples/services/oip-daemon.plist.template": "5af695b3a8066e88d3c93a9001b9ba51c9356d04a60181c9c2e16210ab9b3160",
+    "examples/services/oip-daemon.service.template": "50f0c3037ba20c59c9c6fe60a17ff42665cca1577689d3c7ba9279d28e2ae9a7"
+  },
+  "security_blocker": "RUSTSEC-2023-0071",
+  "gates": {
+    "G1": "PASS",
+    "G2": "PASS",
+    "G3": "PASS",
+    "G4": "PASS",
+    "G5": "PASS",
+    "G6": "PASS",
+    "G7": "PASS",
+    "G8": "PASS",
+    "G9": "PASS",
+    "G10": "PASS",
+    "G11": "PASS",
+    "G12": "PASS",
+    "G13": "PASS",
+    "G14": "COMMIT_PENDING"
+  },
+  "no_production_tenant_security_claim": true,
+  "notes": [
+    "Historical supplier numbers were not substituted for actual runs.",
+    "Interop and workspace OPC tests overlap; counts are not added as independent tests.",
+    "Local final commit and post-commit checks recorded separately after commit to avoid self-referential commit hash."
+  ]
+}

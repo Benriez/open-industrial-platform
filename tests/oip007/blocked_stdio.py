@@ -8,7 +8,7 @@ def start(name,args,pipe=False):
  f=(O/(name+'.log')).open('w');p=subprocess.Popen(list(map(str,args)),cwd=R,stdin=subprocess.PIPE if pipe else subprocess.DEVNULL,stdout=subprocess.PIPE if pipe else f,stderr=f,text=True,bufsize=1);f.close();PROCS.append(p);return p
 h,p=port(),port();db=D/'core.sqlite';cfg=D/'core.json';cfg.write_text(json.dumps({'database':str(db),'http_port':h,'web_dir':None,'sources':[{'id':'sim-a','name':'A','endpoint':f'opc.tcp://127.0.0.1:{p}'}]}))
 try:
- sim=start('sim',[R/'target/debug/oip-simulated-server','--port',p,'--seed',42,'--tick-ms',250]);core=start('core',[R/'target/debug/oip-server','--mcp-stdio','--mcp-rest','--config',cfg,'--mcp-policy',R/'examples/mcp-read-local.json'],True)
+ sim=start('sim',[R/'target/debug/oip-simulated-server','--port',p,'--seed',42,'--tick-ms',250]);core=start('core',[R/'target/debug/oip-server','--mcp-stdio','--mcp-rest','--legacy-single-infrastructure','--config',cfg,'--mcp-policy',R/'examples/mcp-read-local.json'],True)
  end=time.monotonic()+30
  while True:
   try:

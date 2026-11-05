@@ -1,3 +1,5 @@
+> OIP-008 Feature-Stand: 17 Capabilities, neun MCP-Tools im Principal-Modus; aktuelles [Scope-/Paritätsinventar](oip-008-rest-mcp-parity.md). Die folgenden Angaben dokumentieren den früheren Meilenstein.
+
 # OIP Capability → MCP Mapping — OIP-006
 
 Stand 2026-11-05. Die 13 bestehenden Core-Capabilities bleiben vollständig erhalten. **12 lesende Capabilities MCP-IMPLEMENTED**, sechs Tools und sechs globale Resource-Operationen; SourcesRead besitzt zusätzlich quellbezogene Resources. Eine vorhandene Mutation ist bewusst gesperrt. Historischer fachlicher Katalog: [OIP-005-Inventar](oip-capability-inventory.md).

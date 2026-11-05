@@ -1,0 +1,3474 @@
+{
+  "phases": [
+    {
+      "phase": "A_single_runtime_sqlite_rest_sse",
+      "status": "PASS",
+      "details": {
+        "sdk": {
+          "peer": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "oip-local-read",
+                "version": "0.0.0"
+              }
+            },
+            "capabilities": {
+              "resources": {},
+              "tools": {}
+            },
+            "protocolVersion": "2026-07-28",
+            "serverInfo": {
+              "name": "oip-local-read",
+              "version": "0.0.0"
+            }
+          },
+          "pid": 5233,
+          "ready": true
+        },
+        "devices": [
+          {
+            "connection": "OPC UA",
+            "data_source_id": "sim-a",
+            "health": {
+              "agent_availability": "unknown",
+              "reachability": "reachable",
+              "service_health": "connected",
+              "telemetry_freshness": "fresh",
+              "vpn_transport": "not_applicable"
+            },
+            "id": "M-01",
+            "is_faulted": false,
+            "kind": "Industrial",
+            "location": "Local simulation",
+            "name": "Simulation A",
+            "simulated": true
+          },
+          {
+            "connection": "OPC UA",
+            "data_source_id": "sim-b",
+            "health": {
+              "agent_availability": "unknown",
+              "reachability": "reachable",
+              "service_health": "connected",
+              "telemetry_freshness": "fresh",
+              "vpn_transport": "not_applicable"
+            },
+            "id": "sim-b:M-01",
+            "is_faulted": false,
+            "kind": "Industrial",
+            "location": "Local simulation",
+            "name": "Simulation B",
+            "simulated": true
+          }
+        ],
+        "health": {
+          "lifecycle": "ready",
+          "live": true,
+          "ready": true,
+          "persistence_healthy": true,
+          "persistence_errors": 0,
+          "last_persistence_error": null,
+          "revision": 26,
+          "run_id": 1,
+          "persisted_observations": 12
+        },
+        "snapshot": {
+          "core": {
+            "lifecycle": "ready",
+            "live": true,
+            "ready": true,
+            "persistence_healthy": true,
+            "persistence_errors": 0,
+            "last_persistence_error": null,
+            "revision": 26,
+            "run_id": 1,
+            "persisted_observations": 12
+          },
+          "sources": [
+            {
+              "id": "sim-a",
+              "name": "Simulation A",
+              "entity_id": "M-01",
+              "simulated": true,
+              "reachability": "reachable",
+              "connection": "connected",
+              "service": "healthy",
+              "freshness": "fresh",
+              "validity": "valid",
+              "last_received_ms": 1793897373466,
+              "accepted": 12,
+              "duplicates": 6,
+              "out_of_order": 0,
+              "rejected": 0,
+              "reconnect_attempts": 1,
+              "dropped": 0,
+              "last_error": null
+            },
+            {
+              "id": "sim-b",
+              "name": "Simulation B",
+              "entity_id": "M-01",
+              "simulated": true,
+              "reachability": "reachable",
+              "connection": "connected",
+              "service": "healthy",
+              "freshness": "fresh",
+              "validity": "valid",
+              "last_received_ms": 1793897373626,
+              "accepted": 12,
+              "duplicates": 6,
+              "out_of_order": 0,
+              "rejected": 0,
+              "reconnect_attempts": 1,
+              "dropped": 0,
+              "last_error": null
+            }
+          ],
+          "queue": {
+            "capacity": 8,
+            "depth": 0,
+            "backpressure_waits": 0,
+            "rejected_submissions": 0
+          },
+          "resync_required": true,
+          "system": {
+            "primary_source_id": "sim-a",
+            "api_version": "v1",
+            "simulated": true,
+            "demo_controls": false,
+            "scenario": "normal",
+            "opcua_status": "connected",
+            "subscription_status": "active",
+            "last_received_ms": 1793897373466,
+            "generated_at_ms": 1793897373693,
+            "persisted_observations": 12,
+            "cpu_percent": null,
+            "gpu_percent": null,
+            "ram_percent": null,
+            "network_status": "unknown",
+            "security_blocker": "RUSTSEC-2023-0071"
+          },
+          "devices": [
+            {
+              "data_source_id": "sim-a",
+              "is_faulted": false,
+              "id": "M-01",
+              "name": "Simulation A",
+              "kind": "Industrial",
+              "location": "Local simulation",
+              "connection": "OPC UA",
+              "simulated": true,
+              "health": {
+                "reachability": "reachable",
+                "vpn_transport": "not_applicable",
+                "agent_availability": "unknown",
+                "service_health": "connected",
+                "telemetry_freshness": "fresh"
+              }
+            },
+            {
+              "data_source_id": "sim-b",
+              "is_faulted": false,
+              "id": "sim-b:M-01",
+              "name": "Simulation B",
+              "kind": "Industrial",
+              "location": "Local simulation",
+              "connection": "OPC UA",
+              "simulated": true,
+              "health": {
+                "reachability": "reachable",
+                "vpn_transport": "not_applicable",
+                "agent_availability": "unknown",
+                "service_health": "connected",
+                "telemetry_freshness": "fresh"
+              }
+            }
+          ],
+          "metrics": [
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "alarm_active",
+              "value": {
+                "boolean": false
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000000500,
+                "server": 1793897373338,
+                "received": 1793897373464
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 500,
+                "sequence": 2
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "motor_running",
+              "value": {
+                "boolean": true
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000000500,
+                "server": 1793897373338,
+                "received": 1793897373464
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 500,
+                "sequence": 2
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "operating_mode",
+              "value": {
+                "text": "automatic"
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000000500,
+                "server": 1793897373338,
+                "received": 1793897373464
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 500,
+                "sequence": 2
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "pressure",
+              "value": {
+                "float": 320.3
+              },
+              "unit": "kilo_pascal",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000000500,
+                "server": 1793897373338,
+                "received": 1793897373464
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 500,
+                "sequence": 2
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "temperature",
+              "value": {
+                "float": 60.3
+              },
+              "unit": "celsius",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000000500,
+                "server": 1793897373338,
+                "received": 1793897373464
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 500,
+                "sequence": 2
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-a",
+              "metric_id": "units_produced",
+              "value": {
+                "unsigned_integer": 0
+              },
+              "unit": "count",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000000500,
+                "server": 1793897373338,
+                "received": 1793897373464
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 42,
+                "scenario": "normal",
+                "virtual_time_ms": 500,
+                "sequence": 2
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "alarm_active",
+              "value": {
+                "boolean": false
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000000750,
+                "server": 1793897373457,
+                "received": 1793897373624
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 750,
+                "sequence": 3
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "motor_running",
+              "value": {
+                "boolean": true
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000000750,
+                "server": 1793897373457,
+                "received": 1793897373624
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 750,
+                "sequence": 3
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "operating_mode",
+              "value": {
+                "text": "automatic"
+              },
+              "unit": "none",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000000750,
+                "server": 1793897373457,
+                "received": 1793897373624
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 750,
+                "sequence": 3
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "pressure",
+              "value": {
+                "float": 320.4
+              },
+              "unit": "kilo_pascal",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000000750,
+                "server": 1793897373457,
+                "received": 1793897373624
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 750,
+                "sequence": 3
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "temperature",
+              "value": {
+                "float": 60.2
+              },
+              "unit": "celsius",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000000750,
+                "server": 1793897373457,
+                "received": 1793897373624
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 750,
+                "sequence": 3
+              }
+            },
+            {
+              "entity_id": "M-01",
+              "data_source_id": "sim-b",
+              "metric_id": "units_produced",
+              "value": {
+                "unsigned_integer": 0
+              },
+              "unit": "count",
+              "quality": "good",
+              "freshness": "fresh",
+              "timestamps": {
+                "source": 1700000000750,
+                "server": 1793897373457,
+                "received": 1793897373624
+              },
+              "status_code": 0,
+              "collection_error": null,
+              "simulation_origin": {
+                "origin_id": "oip-local-simulation-v1",
+                "seed": 77,
+                "scenario": "normal",
+                "virtual_time_ms": 750,
+                "sequence": 3
+              }
+            }
+          ],
+          "incidents": [],
+          "topology": []
+        },
+        "db": [
+          {
+            "data_source_id": "sim-a",
+            "n": 6
+          },
+          {
+            "data_source_id": "sim-b",
+            "n": 6
+          }
+        ],
+        "duplicate_rejected": true
+      }
+    },
+    {
+      "phase": "B_discovery",
+      "status": "PASS",
+      "details": {
+        "tools": [
+          {
+            "annotations": {
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false,
+              "readOnlyHint": true
+            },
+            "description": "List/search registered devices; source scope and authoritative health are preserved. Bounded current registry, not discovery of remote endpoints.",
+            "inputSchema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "additionalProperties": false,
+              "properties": {
+                "location": {
+                  "default": null,
+                  "maxLength": 256,
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "q": {
+                  "default": null,
+                  "maxLength": 256,
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.-]+$",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "title": "DeviceQuery",
+              "type": "object"
+            },
+            "name": "oip_devices_read",
+            "outputSchema": {
+              "$defs": {
+                "Device": {
+                  "properties": {
+                    "connection": {
+                      "type": "string"
+                    },
+                    "data_source_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "health": {
+                      "$ref": "#/$defs/Health"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "is_faulted": {
+                      "type": "boolean"
+                    },
+                    "kind": {
+                      "type": "string"
+                    },
+                    "location": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "simulated": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "is_faulted",
+                    "id",
+                    "name",
+                    "kind",
+                    "location",
+                    "connection",
+                    "simulated",
+                    "health"
+                  ],
+                  "type": "object"
+                },
+                "Health": {
+                  "properties": {
+                    "agent_availability": {
+                      "type": "string"
+                    },
+                    "reachability": {
+                      "type": "string"
+                    },
+                    "service_health": {
+                      "type": "string"
+                    },
+                    "telemetry_freshness": {
+                      "type": "string"
+                    },
+                    "vpn_transport": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "reachability",
+                    "vpn_transport",
+                    "agent_availability",
+                    "service_health",
+                    "telemetry_freshness"
+                  ],
+                  "type": "object"
+                }
+              },
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "properties": {
+                "type": {
+                  "const": "devices",
+                  "type": "string"
+                },
+                "value": {
+                  "items": {
+                    "$ref": "#/$defs/Device"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "type",
+                "value"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "annotations": {
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false,
+              "readOnlyHint": true
+            },
+            "description": "Read a device by its exact registry ID, with current source-specific observations.",
+            "inputSchema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "title": "DeviceRequest",
+              "type": "object"
+            },
+            "name": "oip_device_read",
+            "outputSchema": {
+              "$defs": {
+                "CollectionError": {
+                  "oneOf": [
+                    {
+                      "enum": [
+                        "device_unreachable",
+                        "connection_interrupted",
+                        "collector_unavailable",
+                        "stale_measurement",
+                        "invalid_measurement",
+                        "unknown"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "const": "invalid_timestamp",
+                      "description": "An external source/server timestamp was null, a sentinel, or outside\nthe OPC UA calendar range. Its original value is retained.",
+                      "type": "string"
+                    },
+                    {
+                      "const": "security_validation_failed",
+                      "description": "A certificate or transport security validation failed. This is distinct\nfrom data provenance and never downgraded to an insecure connection.",
+                      "type": "string"
+                    },
+                    {
+                      "const": "invalid_provenance",
+                      "description": "The remote source claimed a provenance that does not match the expected\nlocal simulation origin and was therefore not adopted.",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "DataQuality": {
+                  "enum": [
+                    "good",
+                    "uncertain",
+                    "bad",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "Device": {
+                  "properties": {
+                    "connection": {
+                      "type": "string"
+                    },
+                    "data_source_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "health": {
+                      "$ref": "#/$defs/Health"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "is_faulted": {
+                      "type": "boolean"
+                    },
+                    "kind": {
+                      "type": "string"
+                    },
+                    "location": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "simulated": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "is_faulted",
+                    "id",
+                    "name",
+                    "kind",
+                    "location",
+                    "connection",
+                    "simulated",
+                    "health"
+                  ],
+                  "type": "object"
+                },
+                "DeviceDetail": {
+                  "properties": {
+                    "device": {
+                      "$ref": "#/$defs/Device"
+                    },
+                    "history_status": {
+                      "type": "string"
+                    },
+                    "metrics": {
+                      "items": {
+                        "$ref": "#/$defs/ObservationEnvelope"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "device",
+                    "metrics",
+                    "history_status"
+                  ],
+                  "type": "object"
+                },
+                "Freshness": {
+                  "enum": [
+                    "fresh",
+                    "stale",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "Health": {
+                  "properties": {
+                    "agent_availability": {
+                      "type": "string"
+                    },
+                    "reachability": {
+                      "type": "string"
+                    },
+                    "service_health": {
+                      "type": "string"
+                    },
+                    "telemetry_freshness": {
+                      "type": "string"
+                    },
+                    "vpn_transport": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "reachability",
+                    "vpn_transport",
+                    "agent_availability",
+                    "service_health",
+                    "telemetry_freshness"
+                  ],
+                  "type": "object"
+                },
+                "MetricValue": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "float": {
+                          "format": "double",
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "float"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "signed_integer": {
+                          "format": "int64",
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "signed_integer"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "unsigned_integer": {
+                          "format": "uint64",
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "unsigned_integer"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "boolean": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "boolean"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "text"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "ObservationEnvelope": {
+                  "properties": {
+                    "collection_error": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/CollectionError"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "data_source_id": {
+                      "type": "string"
+                    },
+                    "entity_id": {
+                      "type": "string"
+                    },
+                    "freshness": {
+                      "$ref": "#/$defs/Freshness"
+                    },
+                    "metric_id": {
+                      "type": "string"
+                    },
+                    "quality": {
+                      "$ref": "#/$defs/DataQuality"
+                    },
+                    "simulation_origin": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/SimulationOrigin"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "status_code": {
+                      "format": "uint32",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "timestamps": {
+                      "$ref": "#/$defs/Timestamps"
+                    },
+                    "unit": {
+                      "$ref": "#/$defs/Unit"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/MetricValue"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "entity_id",
+                    "data_source_id",
+                    "metric_id",
+                    "unit",
+                    "quality",
+                    "freshness",
+                    "timestamps"
+                  ],
+                  "type": "object"
+                },
+                "SimulationOrigin": {
+                  "properties": {
+                    "origin_id": {
+                      "type": "string"
+                    },
+                    "scenario": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "seed": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "sequence": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "virtual_time_ms": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "origin_id"
+                  ],
+                  "type": "object"
+                },
+                "Timestamps": {
+                  "properties": {
+                    "received": {
+                      "format": "int64",
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "server": {
+                      "format": "int64",
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "source": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ],
+                  "type": "object"
+                },
+                "Unit": {
+                  "oneOf": [
+                    {
+                      "enum": [
+                        "none",
+                        "celsius",
+                        "kilo_pascal",
+                        "count"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "custom": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "custom"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              },
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "properties": {
+                "type": {
+                  "const": "device",
+                  "type": "string"
+                },
+                "value": {
+                  "$ref": "#/$defs/DeviceDetail"
+                }
+              },
+              "required": [
+                "type",
+                "value"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "annotations": {
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false,
+              "readOnlyHint": true
+            },
+            "description": "Read current observations with source/entity, quality, freshness, timestamps and simulation provenance; not historical replay.",
+            "inputSchema": {
+              "$defs": {
+                "InfrastructureId": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.:-]+$",
+                  "type": "string"
+                },
+                "OrganizationId": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.:-]+$",
+                  "type": "string"
+                },
+                "SiteId": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.:-]+$",
+                  "type": "string"
+                }
+              },
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "additionalProperties": false,
+              "properties": {
+                "infrastructure": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/InfrastructureId"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "limit": {
+                  "default": null,
+                  "format": "uint",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "offset": {
+                  "default": null,
+                  "format": "uint",
+                  "maximum": 1000000,
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "organization": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/OrganizationId"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "site": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/SiteId"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "source": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.-]+$",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "title": "SourceQuery",
+              "type": "object"
+            },
+            "name": "oip_observations_read",
+            "outputSchema": {
+              "$defs": {
+                "CollectionError": {
+                  "oneOf": [
+                    {
+                      "enum": [
+                        "device_unreachable",
+                        "connection_interrupted",
+                        "collector_unavailable",
+                        "stale_measurement",
+                        "invalid_measurement",
+                        "unknown"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "const": "invalid_timestamp",
+                      "description": "An external source/server timestamp was null, a sentinel, or outside\nthe OPC UA calendar range. Its original value is retained.",
+                      "type": "string"
+                    },
+                    {
+                      "const": "security_validation_failed",
+                      "description": "A certificate or transport security validation failed. This is distinct\nfrom data provenance and never downgraded to an insecure connection.",
+                      "type": "string"
+                    },
+                    {
+                      "const": "invalid_provenance",
+                      "description": "The remote source claimed a provenance that does not match the expected\nlocal simulation origin and was therefore not adopted.",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "DataQuality": {
+                  "enum": [
+                    "good",
+                    "uncertain",
+                    "bad",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "Freshness": {
+                  "enum": [
+                    "fresh",
+                    "stale",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "MetricValue": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "float": {
+                          "format": "double",
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "float"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "signed_integer": {
+                          "format": "int64",
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "signed_integer"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "unsigned_integer": {
+                          "format": "uint64",
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "unsigned_integer"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "boolean": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "boolean"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "text"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "ObservationEnvelope": {
+                  "properties": {
+                    "collection_error": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/CollectionError"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "data_source_id": {
+                      "type": "string"
+                    },
+                    "entity_id": {
+                      "type": "string"
+                    },
+                    "freshness": {
+                      "$ref": "#/$defs/Freshness"
+                    },
+                    "metric_id": {
+                      "type": "string"
+                    },
+                    "quality": {
+                      "$ref": "#/$defs/DataQuality"
+                    },
+                    "simulation_origin": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/SimulationOrigin"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "status_code": {
+                      "format": "uint32",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "timestamps": {
+                      "$ref": "#/$defs/Timestamps"
+                    },
+                    "unit": {
+                      "$ref": "#/$defs/Unit"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/MetricValue"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "entity_id",
+                    "data_source_id",
+                    "metric_id",
+                    "unit",
+                    "quality",
+                    "freshness",
+                    "timestamps"
+                  ],
+                  "type": "object"
+                },
+                "SimulationOrigin": {
+                  "properties": {
+                    "origin_id": {
+                      "type": "string"
+                    },
+                    "scenario": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "seed": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "sequence": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "virtual_time_ms": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "origin_id"
+                  ],
+                  "type": "object"
+                },
+                "Timestamps": {
+                  "properties": {
+                    "received": {
+                      "format": "int64",
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "server": {
+                      "format": "int64",
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "source": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ],
+                  "type": "object"
+                },
+                "Unit": {
+                  "oneOf": [
+                    {
+                      "enum": [
+                        "none",
+                        "celsius",
+                        "kilo_pascal",
+                        "count"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "custom": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "custom"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              },
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "properties": {
+                "type": {
+                  "const": "observations",
+                  "type": "string"
+                },
+                "value": {
+                  "items": {
+                    "$ref": "#/$defs/ObservationEnvelope"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "type",
+                "value"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "annotations": {
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false,
+              "readOnlyHint": true
+            },
+            "description": "Read registered source health, preserving connection, reachability, service, validity and freshness as separate fields.",
+            "inputSchema": {
+              "$defs": {
+                "InfrastructureId": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.:-]+$",
+                  "type": "string"
+                },
+                "OrganizationId": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.:-]+$",
+                  "type": "string"
+                },
+                "SiteId": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.:-]+$",
+                  "type": "string"
+                }
+              },
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "additionalProperties": false,
+              "properties": {
+                "infrastructure": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/InfrastructureId"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "limit": {
+                  "default": null,
+                  "format": "uint",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "offset": {
+                  "default": null,
+                  "format": "uint",
+                  "maximum": 1000000,
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "organization": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/OrganizationId"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "site": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/SiteId"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "source": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.-]+$",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "title": "SourceQuery",
+              "type": "object"
+            },
+            "name": "oip_sources_read",
+            "outputSchema": {
+              "$defs": {
+                "ConnectionHealth": {
+                  "enum": [
+                    "connected",
+                    "disconnected",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "Freshness": {
+                  "enum": [
+                    "fresh",
+                    "stale",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "Reachability": {
+                  "enum": [
+                    "reachable",
+                    "unreachable",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "ServiceHealth": {
+                  "enum": [
+                    "healthy",
+                    "degraded",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "SourceHealth": {
+                  "properties": {
+                    "accepted": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "connection": {
+                      "$ref": "#/$defs/ConnectionHealth"
+                    },
+                    "dropped": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "duplicates": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "entity_id": {
+                      "type": "string"
+                    },
+                    "freshness": {
+                      "$ref": "#/$defs/Freshness"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "last_error": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "last_received_ms": {
+                      "format": "int64",
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "out_of_order": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "reachability": {
+                      "$ref": "#/$defs/Reachability"
+                    },
+                    "reconnect_attempts": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "rejected": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "service": {
+                      "$ref": "#/$defs/ServiceHealth"
+                    },
+                    "simulated": {
+                      "type": "boolean"
+                    },
+                    "validity": {
+                      "$ref": "#/$defs/Validity"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "entity_id",
+                    "simulated",
+                    "reachability",
+                    "connection",
+                    "service",
+                    "freshness",
+                    "validity",
+                    "accepted",
+                    "duplicates",
+                    "out_of_order",
+                    "rejected",
+                    "reconnect_attempts",
+                    "dropped"
+                  ],
+                  "type": "object"
+                },
+                "Validity": {
+                  "enum": [
+                    "valid",
+                    "invalid",
+                    "unknown"
+                  ],
+                  "type": "string"
+                }
+              },
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "properties": {
+                "type": {
+                  "const": "sources",
+                  "type": "string"
+                },
+                "value": {
+                  "items": {
+                    "$ref": "#/$defs/SourceHealth"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "type",
+                "value"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "annotations": {
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false,
+              "readOnlyHint": true
+            },
+            "description": "Read the last 100 persisted control events, source context, sequences and data gaps; no complete history/replay. Diagnostics fixtures are labeled.",
+            "inputSchema": {
+              "$defs": {
+                "InfrastructureId": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.:-]+$",
+                  "type": "string"
+                },
+                "OrganizationId": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.:-]+$",
+                  "type": "string"
+                },
+                "SiteId": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.:-]+$",
+                  "type": "string"
+                }
+              },
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "additionalProperties": false,
+              "properties": {
+                "infrastructure": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/InfrastructureId"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "limit": {
+                  "default": null,
+                  "format": "uint",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "offset": {
+                  "default": null,
+                  "format": "uint",
+                  "maximum": 1000000,
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "organization": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/OrganizationId"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "site": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/SiteId"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "source": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.-]+$",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "title": "SourceQuery",
+              "type": "object"
+            },
+            "name": "oip_events_read",
+            "outputSchema": {
+              "$defs": {
+                "ClientEvent": {
+                  "description": "Stack-neutral events emitted by a read-only collection adapter.",
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Observation": {
+                          "$ref": "#/$defs/ObservationEnvelope"
+                        }
+                      },
+                      "required": [
+                        "Observation"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "ConnectionLost": {
+                          "properties": {
+                            "at": {
+                              "format": "int64",
+                              "type": "integer"
+                            },
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "at",
+                            "reason"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "ConnectionLost"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Reconnected": {
+                          "properties": {
+                            "at": {
+                              "format": "int64",
+                              "type": "integer"
+                            },
+                            "gap": {
+                              "$ref": "#/$defs/DataGap"
+                            }
+                          },
+                          "required": [
+                            "at",
+                            "gap"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "Reconnected"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "SubscriptionError": {
+                          "properties": {
+                            "at": {
+                              "format": "int64",
+                              "type": "integer"
+                            },
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "at",
+                            "reason"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "SubscriptionError"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "DataLoss": {
+                          "properties": {
+                            "at": {
+                              "format": "int64",
+                              "type": "integer"
+                            },
+                            "dropped": {
+                              "format": "uint64",
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "gap": {
+                              "$ref": "#/$defs/DataGap"
+                            }
+                          },
+                          "required": [
+                            "at",
+                            "gap",
+                            "dropped"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "DataLoss"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "CollectionError": {
+                  "oneOf": [
+                    {
+                      "enum": [
+                        "device_unreachable",
+                        "connection_interrupted",
+                        "collector_unavailable",
+                        "stale_measurement",
+                        "invalid_measurement",
+                        "unknown"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "const": "invalid_timestamp",
+                      "description": "An external source/server timestamp was null, a sentinel, or outside\nthe OPC UA calendar range. Its original value is retained.",
+                      "type": "string"
+                    },
+                    {
+                      "const": "security_validation_failed",
+                      "description": "A certificate or transport security validation failed. This is distinct\nfrom data provenance and never downgraded to an insecure connection.",
+                      "type": "string"
+                    },
+                    {
+                      "const": "invalid_provenance",
+                      "description": "The remote source claimed a provenance that does not match the expected\nlocal simulation origin and was therefore not adopted.",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "DataGap": {
+                  "description": "A documented interval without observations from a previously active source.",
+                  "properties": {
+                    "ended_at": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "started_at": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "started_at",
+                    "ended_at",
+                    "reason"
+                  ],
+                  "type": "object"
+                },
+                "DataQuality": {
+                  "enum": [
+                    "good",
+                    "uncertain",
+                    "bad",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "EventContext": {
+                  "description": "Source identity required for connection events and gaps, which do not carry\nan ObservationEnvelope of their own.",
+                  "properties": {
+                    "data_source_id": {
+                      "type": "string"
+                    },
+                    "origin_class": {
+                      "$ref": "#/$defs/OriginClass"
+                    }
+                  },
+                  "required": [
+                    "data_source_id",
+                    "origin_class"
+                  ],
+                  "type": "object"
+                },
+                "EventRecord": {
+                  "properties": {
+                    "context": {
+                      "$ref": "#/$defs/EventContext"
+                    },
+                    "event": {
+                      "$ref": "#/$defs/ClientEvent"
+                    },
+                    "sequence": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sequence",
+                    "context",
+                    "event"
+                  ],
+                  "type": "object"
+                },
+                "EventsResponse": {
+                  "properties": {
+                    "collection_events": {
+                      "items": {
+                        "$ref": "#/$defs/ClientEvent"
+                      },
+                      "type": "array"
+                    },
+                    "diagnosis_history_status": {
+                      "type": "string"
+                    },
+                    "incidents": {
+                      "items": {
+                        "$ref": "#/$defs/Incident"
+                      },
+                      "type": "array"
+                    },
+                    "records": {
+                      "items": {
+                        "$ref": "#/$defs/EventRecord"
+                      },
+                      "type": "array"
+                    },
+                    "replay_supported": {
+                      "type": "boolean"
+                    },
+                    "resync_required": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "incidents",
+                    "collection_events",
+                    "records",
+                    "diagnosis_history_status",
+                    "replay_supported",
+                    "resync_required"
+                  ],
+                  "type": "object"
+                },
+                "Freshness": {
+                  "enum": [
+                    "fresh",
+                    "stale",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "Incident": {
+                  "properties": {
+                    "category": {
+                      "type": "string"
+                    },
+                    "contradicting": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "device_id": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "missing": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "simulated": {
+                      "type": "boolean"
+                    },
+                    "supporting": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "timeline": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "category",
+                    "device_id",
+                    "simulated",
+                    "supporting",
+                    "contradicting",
+                    "missing",
+                    "timeline"
+                  ],
+                  "type": "object"
+                },
+                "MetricValue": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "float": {
+                          "format": "double",
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "float"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "signed_integer": {
+                          "format": "int64",
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "signed_integer"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "unsigned_integer": {
+                          "format": "uint64",
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "unsigned_integer"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "boolean": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "boolean"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "text"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "ObservationEnvelope": {
+                  "properties": {
+                    "collection_error": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/CollectionError"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "data_source_id": {
+                      "type": "string"
+                    },
+                    "entity_id": {
+                      "type": "string"
+                    },
+                    "freshness": {
+                      "$ref": "#/$defs/Freshness"
+                    },
+                    "metric_id": {
+                      "type": "string"
+                    },
+                    "quality": {
+                      "$ref": "#/$defs/DataQuality"
+                    },
+                    "simulation_origin": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/SimulationOrigin"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "status_code": {
+                      "format": "uint32",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "timestamps": {
+                      "$ref": "#/$defs/Timestamps"
+                    },
+                    "unit": {
+                      "$ref": "#/$defs/Unit"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/MetricValue"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "entity_id",
+                    "data_source_id",
+                    "metric_id",
+                    "unit",
+                    "quality",
+                    "freshness",
+                    "timestamps"
+                  ],
+                  "type": "object"
+                },
+                "OriginClass": {
+                  "enum": [
+                    "simulation",
+                    "external"
+                  ],
+                  "type": "string"
+                },
+                "SimulationOrigin": {
+                  "properties": {
+                    "origin_id": {
+                      "type": "string"
+                    },
+                    "scenario": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "seed": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "sequence": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "virtual_time_ms": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "origin_id"
+                  ],
+                  "type": "object"
+                },
+                "Timestamps": {
+                  "properties": {
+                    "received": {
+                      "format": "int64",
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "server": {
+                      "format": "int64",
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "source": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ],
+                  "type": "object"
+                },
+                "Unit": {
+                  "oneOf": [
+                    {
+                      "enum": [
+                        "none",
+                        "celsius",
+                        "kilo_pascal",
+                        "count"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "custom": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "custom"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              },
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "properties": {
+                "type": {
+                  "const": "events",
+                  "type": "string"
+                },
+                "value": {
+                  "$ref": "#/$defs/EventsResponse"
+                }
+              },
+              "required": [
+                "type",
+                "value"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "annotations": {
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false,
+              "readOnlyHint": true
+            },
+            "description": "Browse/read existing registered simulation nodes. Offset pagination, max 100 nodes, no arbitrary endpoint or device writes. Read samples use normal core ingestion.",
+            "inputSchema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "additionalProperties": false,
+              "properties": {
+                "folder": {
+                  "default": null,
+                  "maxLength": 256,
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "limit": {
+                  "default": null,
+                  "format": "uint",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "offset": {
+                  "default": null,
+                  "format": "uint",
+                  "maximum": 1000000,
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "q": {
+                  "default": null,
+                  "maxLength": 256,
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.-]+$",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "title": "NodeQuery",
+              "type": "object"
+            },
+            "name": "oip_opcua_nodes_read",
+            "outputSchema": {
+              "$defs": {
+                "CollectionError": {
+                  "oneOf": [
+                    {
+                      "enum": [
+                        "device_unreachable",
+                        "connection_interrupted",
+                        "collector_unavailable",
+                        "stale_measurement",
+                        "invalid_measurement",
+                        "unknown"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "const": "invalid_timestamp",
+                      "description": "An external source/server timestamp was null, a sentinel, or outside\nthe OPC UA calendar range. Its original value is retained.",
+                      "type": "string"
+                    },
+                    {
+                      "const": "security_validation_failed",
+                      "description": "A certificate or transport security validation failed. This is distinct\nfrom data provenance and never downgraded to an insecure connection.",
+                      "type": "string"
+                    },
+                    {
+                      "const": "invalid_provenance",
+                      "description": "The remote source claimed a provenance that does not match the expected\nlocal simulation origin and was therefore not adopted.",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "DataQuality": {
+                  "enum": [
+                    "good",
+                    "uncertain",
+                    "bad",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "Freshness": {
+                  "enum": [
+                    "fresh",
+                    "stale",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                "MetricValue": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "float": {
+                          "format": "double",
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "float"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "signed_integer": {
+                          "format": "int64",
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "signed_integer"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "unsigned_integer": {
+                          "format": "uint64",
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "unsigned_integer"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "boolean": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "boolean"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "text"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "Node": {
+                  "properties": {
+                    "access": {
+                      "type": "string"
+                    },
+                    "data_source_id": {
+                      "type": "string"
+                    },
+                    "data_type": {
+                      "type": "string"
+                    },
+                    "folder": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "namespace": {
+                      "format": "uint16",
+                      "maximum": 65535,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "node_id": {
+                      "type": "string"
+                    },
+                    "observation": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/ObservationEnvelope"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data_source_id",
+                    "node_id",
+                    "name",
+                    "namespace",
+                    "folder",
+                    "data_type",
+                    "access"
+                  ],
+                  "type": "object"
+                },
+                "NodePage": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "$ref": "#/$defs/Node"
+                      },
+                      "type": "array"
+                    },
+                    "limit": {
+                      "format": "uint",
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "offset": {
+                      "format": "uint",
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "format": "uint",
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "offset",
+                    "limit"
+                  ],
+                  "type": "object"
+                },
+                "ObservationEnvelope": {
+                  "properties": {
+                    "collection_error": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/CollectionError"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "data_source_id": {
+                      "type": "string"
+                    },
+                    "entity_id": {
+                      "type": "string"
+                    },
+                    "freshness": {
+                      "$ref": "#/$defs/Freshness"
+                    },
+                    "metric_id": {
+                      "type": "string"
+                    },
+                    "quality": {
+                      "$ref": "#/$defs/DataQuality"
+                    },
+                    "simulation_origin": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/SimulationOrigin"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "status_code": {
+                      "format": "uint32",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "timestamps": {
+                      "$ref": "#/$defs/Timestamps"
+                    },
+                    "unit": {
+                      "$ref": "#/$defs/Unit"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/MetricValue"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "entity_id",
+                    "data_source_id",
+                    "metric_id",
+                    "unit",
+                    "quality",
+                    "freshness",
+                    "timestamps"
+                  ],
+                  "type": "object"
+                },
+                "SimulationOrigin": {
+                  "properties": {
+                    "origin_id": {
+                      "type": "string"
+                    },
+                    "scenario": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "seed": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "sequence": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "virtual_time_ms": {
+                      "format": "uint64",
+                      "minimum": 0,
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "origin_id"
+                  ],
+                  "type": "object"
+                },
+                "Timestamps": {
+                  "properties": {
+                    "received": {
+                      "format": "int64",
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "server": {
+                      "format": "int64",
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "source": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ],
+                  "type": "object"
+                },
+                "Unit": {
+                  "oneOf": [
+                    {
+                      "enum": [
+                        "none",
+                        "celsius",
+                        "kilo_pascal",
+                        "count"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "custom": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "custom"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              },
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "properties": {
+                "type": {
+                  "const": "nodes",
+                  "type": "string"
+                },
+                "value": {
+                  "$ref": "#/$defs/NodePage"
+                }
+              },
+              "required": [
+                "type",
+                "value"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "resources": [
+          {
+            "mimeType": "application/json",
+            "name": "core_health_read",
+            "uri": "oip://v1/core/health"
+          },
+          {
+            "mimeType": "application/json",
+            "name": "core_liveness_read",
+            "uri": "oip://v1/core/liveness"
+          },
+          {
+            "mimeType": "application/json",
+            "name": "core_readiness_read",
+            "uri": "oip://v1/core/readiness"
+          },
+          {
+            "mimeType": "application/json",
+            "name": "queue_read",
+            "uri": "oip://v1/core/queue"
+          },
+          {
+            "mimeType": "application/json",
+            "name": "system_status_read",
+            "uri": "oip://v1/system/status"
+          },
+          {
+            "mimeType": "application/json",
+            "name": "snapshot_read",
+            "uri": "oip://v1/snapshot/current"
+          },
+          {
+            "mimeType": "application/json",
+            "name": "source_health",
+            "uri": "oip://v1/sources/sim-a/health"
+          },
+          {
+            "mimeType": "application/json",
+            "name": "source_health",
+            "uri": "oip://v1/sources/sim-b/health"
+          }
+        ],
+        "protocol": "2026-07-28"
+      }
+    },
+    {
+      "phase": "C_data_pagination",
+      "status": "PASS",
+      "details": {
+        "metrics_count": 6,
+        "node_pages": 10,
+        "nodes": 1000,
+        "sources": {
+          "sim-a": {
+            "accepted": 45,
+            "connection": "connected",
+            "dropped": 0,
+            "duplicates": 6,
+            "entity_id": "M-01",
+            "freshness": "fresh",
+            "id": "sim-a",
+            "last_error": null,
+            "last_received_ms": 1793897378846,
+            "name": "Simulation A",
+            "out_of_order": 0,
+            "reachability": "reachable",
+            "reconnect_attempts": 1,
+            "rejected": 0,
+            "service": "healthy",
+            "simulated": true,
+            "validity": "valid"
+          },
+          "sim-b": {
+            "accepted": 1048,
+            "connection": "connected",
+            "dropped": 0,
+            "duplicates": 6,
+            "entity_id": "M-01",
+            "freshness": "fresh",
+            "id": "sim-b",
+            "last_error": null,
+            "last_received_ms": 1793897378796,
+            "name": "Simulation B",
+            "out_of_order": 0,
+            "reachability": "reachable",
+            "reconnect_attempts": 1,
+            "rejected": 0,
+            "service": "healthy",
+            "simulated": true,
+            "validity": "valid"
+          }
+        }
+      }
+    },
+    {
+      "phase": "D_isolation",
+      "status": "PASS",
+      "details": {
+        "mcp": {
+          "sim-a": {
+            "accepted": 45,
+            "connection": "disconnected",
+            "dropped": 0,
+            "duplicates": 6,
+            "entity_id": "M-01",
+            "freshness": "stale",
+            "id": "sim-a",
+            "last_error": "reconnect failed: BadCommunicationError",
+            "last_received_ms": 1793897378846,
+            "name": "Simulation A",
+            "out_of_order": 0,
+            "reachability": "unknown",
+            "reconnect_attempts": 1,
+            "rejected": 0,
+            "service": "degraded",
+            "simulated": true,
+            "validity": "valid"
+          },
+          "sim-b": {
+            "accepted": 1053,
+            "connection": "connected",
+            "dropped": 0,
+            "duplicates": 6,
+            "entity_id": "M-01",
+            "freshness": "fresh",
+            "id": "sim-b",
+            "last_error": null,
+            "last_received_ms": 1793897379504,
+            "name": "Simulation B",
+            "out_of_order": 0,
+            "reachability": "reachable",
+            "reconnect_attempts": 1,
+            "rejected": 0,
+            "service": "healthy",
+            "simulated": true,
+            "validity": "valid"
+          }
+        },
+        "rest": {
+          "sim-a": {
+            "id": "sim-a",
+            "name": "Simulation A",
+            "entity_id": "M-01",
+            "simulated": true,
+            "reachability": "unknown",
+            "connection": "disconnected",
+            "service": "degraded",
+            "freshness": "stale",
+            "validity": "valid",
+            "last_received_ms": 1793897378846,
+            "accepted": 45,
+            "duplicates": 6,
+            "out_of_order": 0,
+            "rejected": 0,
+            "reconnect_attempts": 1,
+            "dropped": 0,
+            "last_error": "reconnect failed: BadCommunicationError"
+          },
+          "sim-b": {
+            "id": "sim-b",
+            "name": "Simulation B",
+            "entity_id": "M-01",
+            "simulated": true,
+            "reachability": "reachable",
+            "connection": "connected",
+            "service": "healthy",
+            "freshness": "fresh",
+            "validity": "valid",
+            "last_received_ms": 1793897379504,
+            "accepted": 1053,
+            "duplicates": 6,
+            "out_of_order": 0,
+            "rejected": 0,
+            "reconnect_attempts": 1,
+            "dropped": 0,
+            "last_error": null
+          }
+        }
+      }
+    },
+    {
+      "phase": "E_recovery",
+      "status": "PASS",
+      "details": {
+        "sources": {
+          "sim-a": {
+            "accepted": 51,
+            "connection": "connected",
+            "dropped": 0,
+            "duplicates": 6,
+            "entity_id": "M-01",
+            "freshness": "fresh",
+            "id": "sim-a",
+            "last_error": null,
+            "last_received_ms": 1793897380226,
+            "name": "Simulation A",
+            "out_of_order": 0,
+            "reachability": "reachable",
+            "reconnect_attempts": 1,
+            "rejected": 0,
+            "service": "healthy",
+            "simulated": true,
+            "validity": "valid"
+          },
+          "sim-b": {
+            "accepted": 1056,
+            "connection": "connected",
+            "dropped": 0,
+            "duplicates": 6,
+            "entity_id": "M-01",
+            "freshness": "fresh",
+            "id": "sim-b",
+            "last_error": null,
+            "last_received_ms": 1793897379967,
+            "name": "Simulation B",
+            "out_of_order": 0,
+            "reachability": "reachable",
+            "reconnect_attempts": 1,
+            "rejected": 0,
+            "service": "healthy",
+            "simulated": true,
+            "validity": "valid"
+          }
+        },
+        "gaps": [
+          {
+            "gap_key": "e109a2e0a56554ab387246edc869e42163faf5c02c89b6316ce2fec72e2eda3e",
+            "data_source_id": "sim-a",
+            "origin_class": "simulation",
+            "started_at_ms": 1793897372825,
+            "ended_at_ms": 1793897372825,
+            "reason": "reconnect without recorded connection loss",
+            "duplicate_count": 0
+          },
+          {
+            "gap_key": "d6e9cb0ca1f9456216f4be5a84f8f613e136db0bf58beae7afd29a4d8ccec0cf",
+            "data_source_id": "sim-b",
+            "origin_class": "simulation",
+            "started_at_ms": 1793897372868,
+            "ended_at_ms": 1793897372868,
+            "reason": "reconnect without recorded connection loss",
+            "duplicate_count": 0
+          },
+          {
+            "gap_key": "f60a34fa2451bdb794839cf43fc8b88cf815bc1e5f2d3b399ccfd7da78459407",
+            "data_source_id": "sim-a",
+            "origin_class": "simulation",
+            "started_at_ms": 1793897378875,
+            "ended_at_ms": 1793897380093,
+            "reason": "BadServerHalted",
+            "duplicate_count": 0
+          }
+        ]
+      }
+    },
+    {
+      "phase": "F_restart",
+      "status": "PASS",
+      "details": {
+        "legacy_sdk": {
+          "peer": {
+            "capabilities": {
+              "resources": {},
+              "tools": {}
+            },
+            "protocolVersion": "2025-11-25",
+            "serverInfo": {
+              "name": "oip-local-read",
+              "version": "0.0.0"
+            }
+          },
+          "pid": 5474,
+          "ready": true
+        },
+        "restored": {
+          "sim-a": {
+            "accepted": 0,
+            "connection": "unknown",
+            "dropped": 0,
+            "duplicates": 0,
+            "entity_id": "M-01",
+            "freshness": "unknown",
+            "id": "sim-a",
+            "last_error": null,
+            "last_received_ms": null,
+            "name": "Simulation A",
+            "out_of_order": 0,
+            "reachability": "unknown",
+            "reconnect_attempts": 1,
+            "rejected": 0,
+            "service": "unknown",
+            "simulated": true,
+            "validity": "unknown"
+          },
+          "sim-b": {
+            "accepted": 0,
+            "connection": "unknown",
+            "dropped": 0,
+            "duplicates": 0,
+            "entity_id": "M-01",
+            "freshness": "unknown",
+            "id": "sim-b",
+            "last_error": null,
+            "last_received_ms": null,
+            "name": "Simulation B",
+            "out_of_order": 0,
+            "reachability": "unknown",
+            "reconnect_attempts": 1,
+            "rejected": 0,
+            "service": "unknown",
+            "simulated": true,
+            "validity": "unknown"
+          }
+        },
+        "live": {
+          "sim-a": {
+            "accepted": 12,
+            "connection": "connected",
+            "dropped": 0,
+            "duplicates": 8,
+            "entity_id": "M-01",
+            "freshness": "fresh",
+            "id": "sim-a",
+            "last_error": null,
+            "last_received_ms": 1793897382175,
+            "name": "Simulation A",
+            "out_of_order": 0,
+            "reachability": "reachable",
+            "reconnect_attempts": 1,
+            "rejected": 0,
+            "service": "healthy",
+            "simulated": true,
+            "validity": "valid"
+          },
+          "sim-b": {
+            "accepted": 12,
+            "connection": "connected",
+            "dropped": 0,
+            "duplicates": 8,
+            "entity_id": "M-01",
+            "freshness": "fresh",
+            "id": "sim-b",
+            "last_error": null,
+            "last_received_ms": 1793897382145,
+            "name": "Simulation B",
+            "out_of_order": 0,
+            "reachability": "reachable",
+            "reconnect_attempts": 1,
+            "rejected": 0,
+            "service": "healthy",
+            "simulated": true,
+            "validity": "valid"
+          }
+        },
+        "integrity": "ok"
+      }
+    },
+    {
+      "phase": "G_authorization_security_performance",
+      "status": "PASS",
+      "details": {
+        "errors": [
+          {
+            "error": "Mcp error: -32602: Invalid bounded tool arguments; see inputSchema",
+            "ok": false
+          },
+          {
+            "error": "Mcp error: -32602: Invalid bounded tool arguments; see inputSchema",
+            "ok": false
+          },
+          {
+            "error": "Mcp error: -32602: Invalid bounded tool arguments; see inputSchema",
+            "ok": false
+          },
+          {
+            "error": "Mcp error: -32602: Invalid bounded tool arguments; see inputSchema",
+            "ok": false
+          },
+          {
+            "error": "Mcp error: -32601: tools/call",
+            "ok": false
+          },
+          {
+            "error": "Mcp error: -32601: tools/call",
+            "ok": false
+          },
+          {
+            "error": "Mcp error: -32002: Unknown OIP resource",
+            "ok": false
+          }
+        ],
+        "scoped_resources": [
+          {
+            "mimeType": "application/json",
+            "name": "source_health",
+            "uri": "oip://v1/sources/sim-a/health"
+          }
+        ],
+        "source_denial": {
+          "ok": true,
+          "result": {
+            "content": [
+              {
+                "text": "{\"code\":\"PERMISSION_DENIED\",\"kind\":\"permission_denied\",\"message\":\"Capability or source scope is not authorized\"}",
+                "type": "text"
+              }
+            ],
+            "isError": true,
+            "resultType": "complete",
+            "structuredContent": {
+              "code": "PERMISSION_DENIED",
+              "kind": "permission_denied",
+              "message": "Capability or source scope is not authorized"
+            }
+          }
+        },
+        "snapshot_denial": {
+          "error": "Mcp error: -32001: OIP capability failed({\"code\":\"PERMISSION_DENIED\",\"kind\":\"permission_denied\",\"message\":\"Capability or source scope is not authorized\"})",
+          "ok": false
+        },
+        "read_latency_ms": {
+          "min": 3.2255840487778187,
+          "max": 21.467249956913292,
+          "mean": 6.874595114495605
+        },
+        "rss_kib": 32304
+      }
+    },
+    {
+      "phase": "G3_stdio_only_no_http_listener",
+      "status": "PASS",
+      "details": {
+        "model_used": false,
+        "http_listener": false
+      }
+    },
+    {
+      "phase": "G2_slow_client_invalid_json_and_frame_limit",
+      "status": "PASS",
+      "details": {
+        "ingestion_advanced": true,
+        "stdout_protocol_only": true,
+        "response_bytes": 64744,
+        "clean_exit": 0
+      }
+    }
+  ],
+  "processes": [
+    {
+      "name": "sim-a",
+      "pid": 5220,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/oip-simulated-server",
+        "--port",
+        "58955",
+        "--seed",
+        "42",
+        "--tick-ms",
+        "250"
+      ]
+    },
+    {
+      "name": "sim-b",
+      "pid": 5222,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/oip-simulated-server",
+        "--port",
+        "58956",
+        "--seed",
+        "77",
+        "--tick-ms",
+        "250"
+      ]
+    },
+    {
+      "name": "core-sdk-modern",
+      "pid": 5226,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/oip-server",
+        "--legacy-single-infrastructure",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/oip006-e2e-5161/core.json",
+        "--mcp-stdio",
+        "--mcp-policy",
+        "examples/mcp-read-local.json",
+        "--mcp-rest"
+      ]
+    },
+    {
+      "name": "duplicate-core",
+      "pid": 5271,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/oip-server",
+        "--legacy-single-infrastructure",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/oip006-e2e-5161/core.json",
+        "--mcp-stdio",
+        "--mcp-policy",
+        "examples/mcp-read-local.json"
+      ]
+    },
+    {
+      "name": "sim-a-recovered",
+      "pid": 5439,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/oip-simulated-server",
+        "--port",
+        "58955",
+        "--seed",
+        "42",
+        "--tick-ms",
+        "250"
+      ]
+    },
+    {
+      "name": "core-sdk-legacy",
+      "pid": 5473,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/examples/mcp_probe",
+        "legacy",
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/oip-server",
+        "--legacy-single-infrastructure",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/oip006-e2e-5161/core.json",
+        "--mcp-stdio",
+        "--mcp-policy",
+        "examples/mcp-read-local.json",
+        "--mcp-rest"
+      ]
+    },
+    {
+      "name": "sim-a-after-restart",
+      "pid": 5478,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/oip-simulated-server",
+        "--port",
+        "58955",
+        "--seed",
+        "42",
+        "--tick-ms",
+        "250"
+      ]
+    },
+    {
+      "name": "sim-b-after-restart",
+      "pid": 5479,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/oip-simulated-server",
+        "--port",
+        "58956",
+        "--seed",
+        "77",
+        "--tick-ms",
+        "250"
+      ]
+    },
+    {
+      "name": "core-scoped",
+      "pid": 5526,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/oip-server",
+        "--legacy-single-infrastructure",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/oip006-e2e-5161/core.json",
+        "--mcp-stdio",
+        "--mcp-policy",
+        "examples/mcp-read-source-a.json",
+        "--mcp-rest"
+      ]
+    },
+    {
+      "name": "core-stdio-only",
+      "pid": 5530,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/examples/mcp_probe",
+        "modern",
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/oip-server",
+        "--legacy-single-infrastructure",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/oip006-e2e-5161/core.json",
+        "--mcp-stdio",
+        "--mcp-policy",
+        "examples/mcp-read-local.json"
+      ]
+    },
+    {
+      "name": "core-raw-slow",
+      "pid": 5573,
+      "argv": [
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/debug/oip-server",
+        "--legacy-single-infrastructure",
+        "--config",
+        "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/oip006-e2e-5161/core.json",
+        "--mcp-stdio",
+        "--mcp-rest",
+        "--mcp-policy",
+        "examples/mcp-read-local.json"
+      ]
+    }
+  ],
+  "model_used": false,
+  "verdict": "PASS",
+  "database": "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/oip006-e2e-5161/evidence.sqlite",
+  "config": {
+    "database": "/Users/benny/Code/open-industrial-platform-worktrees/oip-008/target/oip006-e2e-5161/evidence.sqlite",
+    "http_port": 58957,
+    "sources": [
+      {
+        "id": "sim-a",
+        "name": "Simulation A",
+        "endpoint": "opc.tcp://127.0.0.1:58955"
+      },
+      {
+        "id": "sim-b",
+        "name": "Simulation B",
+        "endpoint": "opc.tcp://127.0.0.1:58956"
+      }
+    ],
+    "web_dir": null,
+    "queue_capacity": 8,
+    "stale_after_ms": 2000,
+    "shutdown_timeout_ms": 6000
+  }
+}

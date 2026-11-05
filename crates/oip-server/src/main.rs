@@ -86,6 +86,9 @@ async fn run() -> Result<(), Box<dyn Error>> {
     }
     let mcp = args.iter().any(|a| a == "--mcp-stdio");
     let mcp_rest = args.iter().any(|a| a == "--mcp-rest");
+    let mut provision = None;
+    let mut adoption = None;
+    let mut inspect_legacy = false;
     let mut policy_path = None;
     let mut demo = false;
     let mut opcua_port = 4840;
@@ -95,7 +98,16 @@ async fn run() -> Result<(), Box<dyn Error>> {
         i += 1;
         match arg.as_str() {
             "--mcp-stdio" | "--mcp-rest" | "--daemon" => continue,
+            "--inspect-legacy" => {
+                inspect_legacy = true;
+                continue;
+            }
+            "--legacy-single-infrastructure" => {
+                config.legacy_single_infrastructure = true;
+                continue;
+            }
             "--demo" => {
+                config.legacy_single_infrastructure = true;
                 demo = true;
                 continue;
             }
@@ -108,6 +120,8 @@ async fn run() -> Result<(), Box<dyn Error>> {
         let value = args.get(i).ok_or("missing argument value")?;
         i += 1;
         match arg.as_str() {
+            "--provision" => provision = Some(value.clone()),
+            "--adopt-legacy" => adoption = Some(value.clone()),
             "--config" => {}
             "--mcp-policy" => policy_path = Some(value.clone()),
             "--ipc-config" => ipc_config = Some(std::path::PathBuf::from(value)),
@@ -122,6 +136,52 @@ async fn run() -> Result<(), Box<dyn Error>> {
         }
     }
     config.validate()?;
+    if (inspect_legacy || provision.is_some() || adoption.is_some())
+        && (daemon || mcp || mcp_rest || ipc_config.is_some() || policy_path.is_some() || demo)
+    {
+        return Err("offline provisioning/inspection cannot be combined with runtime modes".into());
+    }
+    if inspect_legacy && (provision.is_some() || adoption.is_some()) {
+        return Err("inspection and provisioning are separate operator steps".into());
+    }
+    if inspect_legacy {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&oip_storage::SqliteStore::inspect_legacy(
+                &config.database
+            )?)?
+        );
+        return Ok(());
+    }
+    if let Some(path) = provision {
+        let bytes = std::fs::read(path)?;
+        if bytes.len() > 1_048_576 {
+            return Err("provisioning plan too large".into());
+        }
+        let plan = serde_json::from_slice(&bytes)?;
+        let adoption: Option<oip_storage::LegacyAdoption> = adoption
+            .map(|p| {
+                std::fs::read(p)
+                    .and_then(|b| serde_json::from_slice(&b).map_err(std::io::Error::other))
+            })
+            .transpose()?;
+        let definitions = config
+            .sources
+            .iter()
+            .map(|s| s.definition())
+            .collect::<Result<Vec<_>, _>>()?;
+        let result = oip_storage::SqliteStore::provision_file(
+            &config.database,
+            plan,
+            &definitions,
+            adoption.as_ref(),
+        )?;
+        println!("{}", serde_json::to_string(&result)?);
+        return Ok(());
+    }
+    if adoption.is_some() {
+        return Err("--adopt-legacy requires --provision".into());
+    }
     if daemon && (mcp || mcp_rest || policy_path.is_some() || demo) {
         return Err(
             "daemon cannot use stdio-owned core, MCP policy or embedded demo control".into(),
@@ -207,14 +267,32 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let service = Arc::new(ApplicationServices::new(state.clone()));
     let rest_authority = policy.as_ref().map(McpPolicy::execution_context);
     #[cfg(unix)]
-    let rest_authority = ipc.as_ref().map(|i| i.rest_context()).or(rest_authority);
+    let rest_authority = ipc
+        .as_ref()
+        .and_then(|i| i.rest_context())
+        .or(rest_authority);
+    #[cfg(unix)]
+    let credentials = ipc
+        .as_ref()
+        .map(|i| i.rest_identities())
+        .unwrap_or_default();
+    #[cfg(not(unix))]
+    let credentials = oip_server::identity::RestIdentities::default();
+    #[cfg(unix)]
+    if let Some(i) = &ipc {
+        if let Err(e) = i.validate_principals(&state) {
+            runtime.shutdown().await;
+            return Err(e.into());
+        }
+    }
     let adapter = policy
         .map(|p| McpAdapter::new(service.clone(), p))
         .transpose()?;
-    let app = api::router_with_service(
+    let app = api::router_with_identity(
         state.clone(),
         service.clone(),
         rest_authority,
+        credentials,
         config.web_dir.as_deref(),
     );
     let http_cancel = stop.clone();

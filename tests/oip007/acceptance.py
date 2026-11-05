@@ -22,7 +22,7 @@ def receive(p,timeout=25):
  line=p.stdout.readline();assert line,('closed',p.pid,p.poll());v=json.loads(line);TRANSCRIPT.append({'pid':p.pid,'response':v});return v
 class Client:
  def __init__(self,name,credential='all',legacy=False,standalone=False):
-  args=[BIN,'--config',str(RUN/'core.json'),'--mcp-stdio','--mcp-policy',str(ROOT/'examples/mcp-read-local.json')] if standalone else [BIN,'--mcp-bridge','--ipc-socket',str(SOCK),'--ipc-credential',str(RUN/(credential+'.credential'))]
+  args=[BIN,'--legacy-single-infrastructure','--config',str(RUN/'core.json'),'--mcp-stdio','--mcp-policy',str(ROOT/'examples/mcp-read-local.json')] if standalone else [BIN,'--mcp-bridge','--ipc-socket',str(SOCK),'--ipc-credential',str(RUN/(credential+'.credential'))]
   self.p=start(name,[SDK,'legacy' if legacy else 'modern']+args,True);self.lock=threading.Lock();self.ready=receive(self.p);assert self.ready['ready'];self.bridge_pid=self.ready['pid']
  def command(self,v):
   with self.lock:
@@ -39,7 +39,7 @@ def stop(p,crash=False):
  if p.poll() is None:p.send_signal(signal.SIGKILL if crash else signal.SIGINT)
  p.wait(timeout=20)
  assert p.returncode==(-signal.SIGKILL if crash else 0),(p.pid,p.returncode)
-def daemon(name):return start(name,[BIN,'--daemon','--config',RUN/'core.json','--ipc-config',RUN/'ipc.json'])
+def daemon(name):return start(name,[BIN,'--daemon','--legacy-single-infrastructure','--config',RUN/'core.json','--ipc-config',RUN/'ipc.json'])
 def sim(name,p,seed,scenario='normal'):return start(name,[ROOT/'target/debug/oip-simulated-server','--port',p,'--seed',seed,'--tick-ms','250','--scenario',scenario])
 def get(path):
  with urllib.request.urlopen(URL+path,timeout=3) as r:return json.load(r)
@@ -85,11 +85,11 @@ try:
  record('02_three_clients_parity_and_scopes',{'parity':parity(A),'B_allowed':'sim-a','C_allowed':'sim-b','peer_modern':A.ready,'peer_legacy':C.ready,'denials':True})
  # Database duplicate rejected before collector start; use distinct IPC endpoint.
  dupcfg=dict(IPCCONFIG,socket=str(RUN/'duplicate-s'));(RUN/'duplicate-ipc.json').write_text(json.dumps(dupcfg));(RUN/'duplicate-ipc.json').chmod(0o600)
- duplicate=start('duplicate-daemon',[BIN,'--daemon','--config',RUN/'core.json','--port',freeport(),'--ipc-config',RUN/'duplicate-ipc.json']);duplicate.wait(timeout=5);assert duplicate.returncode!=0
+ duplicate=start('duplicate-daemon',[BIN,'--daemon','--legacy-single-infrastructure','--config',RUN/'core.json','--port',freeport(),'--ipc-config',RUN/'duplicate-ipc.json']);duplicate.wait(timeout=5);assert duplicate.returncode!=0
  assert 'source_connected' not in (OUT/'duplicate-daemon.log').read_text();assert not (RUN/'duplicate-s').exists();assert d.poll() is None
  # Actual canonical symlink alias also cannot start a second writer.
  alias=RUN/'alias.sqlite';alias.symlink_to(DB)
- duplicate=start('duplicate-alias',[BIN,'--daemon','--config',RUN/'core.json','--database',alias,'--port',freeport(),'--ipc-config',RUN/'duplicate-ipc.json']);duplicate.wait(timeout=5);assert duplicate.returncode!=0
+ duplicate=start('duplicate-alias',[BIN,'--daemon','--legacy-single-infrastructure','--config',RUN/'core.json','--database',alias,'--port',freeport(),'--ipc-config',RUN/'duplicate-ipc.json']);duplicate.wait(timeout=5);assert duplicate.returncode!=0
  # A live non-cooperating listener with a saturated backlog cannot hang startup.
  busy_path=RUN/'busy-s';busy=socket.socket(socket.AF_UNIX);busy.bind(str(busy_path));busy.listen(1);fill=[]
  for _ in range(12):
@@ -97,7 +97,7 @@ try:
   try:z.connect(str(busy_path));fill.append(z)
   except (TimeoutError,OSError):z.close();break
  busycfg=dict(IPCCONFIG,socket=str(busy_path));(RUN/'busy-ipc.json').write_text(json.dumps(busycfg));(RUN/'busy-ipc.json').chmod(0o600)
- begun=time.monotonic();busy_probe=start('saturated-existing-socket',[BIN,'--daemon','--config',RUN/'core.json','--port',freeport(),'--ipc-config',RUN/'busy-ipc.json']);busy_probe.wait(timeout=3);assert busy_probe.returncode!=0 and time.monotonic()-begun<2;assert busy_path.exists();assert 'ipc_ready' not in (OUT/'saturated-existing-socket.log').read_text()
+ begun=time.monotonic();busy_probe=start('saturated-existing-socket',[BIN,'--daemon','--legacy-single-infrastructure','--config',RUN/'core.json','--port',freeport(),'--ipc-config',RUN/'busy-ipc.json']);busy_probe.wait(timeout=3);assert busy_probe.returncode!=0 and time.monotonic()-begun<2;assert busy_path.exists();assert 'ipc_ready' not in (OUT/'saturated-existing-socket.log').read_text()
  for z in fill:z.close()
  busy.close();busy_path.unlink()
  record('03_single_writer_duplicate_alias_protection',{'duplicates_rejected':True,'core_alive':d.poll() is None})

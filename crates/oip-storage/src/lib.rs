@@ -13,6 +13,10 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::path::Path;
 use thiserror::Error;
+mod ownership;
+pub use ownership::DatabaseOwnership;
+mod hierarchy;
+pub use hierarchy::{LegacyAdoption, ProvisioningResult};
 
 #[derive(Clone, Copy)]
 struct Migration {
@@ -77,6 +81,7 @@ CREATE INDEX IF NOT EXISTS collection_events_by_source_time
 
 // Append only. Never edit an applied migration; add a new version instead.
 const MIGRATIONS: &[Migration] = &[
+    // Applied in version order below.
     Migration {
         version: 1,
         name: "initial_observation_event_evidence",
@@ -91,10 +96,19 @@ const MIGRATIONS: &[Migration] = &[
  CREATE TABLE core_runs (id INTEGER PRIMARY KEY, started_ms INTEGER NOT NULL, ended_ms INTEGER, result TEXT NOT NULL) STRICT;
  "#,
     },
+    Migration {
+        version: 3,
+        name: "hierarchy_identity_control_sequences",
+        sql: hierarchy::HIERARCHY_SQL,
+    },
 ];
 
 #[derive(Debug, Error)]
 pub enum StorageError {
+    #[error("local storage ownership I/O failed")]
+    Io(#[from] std::io::Error),
+    #[error("{0}")]
+    Hierarchy(&'static str),
     #[error("SQLite operation failed: {0}")]
     Sqlite(#[from] rusqlite::Error),
     #[error("stored payload cannot be decoded: {0}")]
@@ -151,6 +165,53 @@ impl SqliteStore {
     }
 
     pub fn migrate(&mut self) -> Result<u32, StorageError> {
+        self.migrate_to(3)
+    }
+    fn migrate_to(&mut self, maximum: u32) -> Result<u32, StorageError> {
+        // Validate history BEFORE any DDL. A corrupt migration ledger must never
+        // be "repaired" by applying earlier migrations over existing data.
+        let initial = self.pragma_version()?;
+        let supported = MIGRATIONS.last().map_or(0, |m| m.version);
+        if initial > supported {
+            return Err(StorageError::UnsupportedSchemaVersion {
+                found: initial,
+                supported,
+            });
+        }
+        let history: bool = self.connection.query_row(
+            "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='schema_migrations')",
+            [],
+            |r| r.get(0),
+        )?;
+        if initial > 0 && !history {
+            return Err(StorageError::Hierarchy(
+                "missing migration history; restore a verified backup",
+            ));
+        }
+        if history {
+            let (version, count, minimum): (u32, u32, i64) = self.connection.query_row(
+                "SELECT COALESCE(MAX(version),0),count(*),COALESCE(MIN(version),0) FROM schema_migrations",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?,r.get(2)?)),
+            )?;
+            if version != initial {
+                return Err(StorageError::SchemaVersionMismatch {
+                    pragma: initial,
+                    table: version,
+                });
+            }
+            if count != version || (version > 0 && minimum != 1) {
+                return Err(StorageError::Hierarchy(
+                    "incomplete migration history; restore a verified backup",
+                ));
+            }
+        }
+        if maximum >= 3 && initial == 1 {
+            return Err(StorageError::Hierarchy(
+                "schema1 requires a separately verified OIP-007 upgrade before adoption",
+            ));
+        }
+        if initial==0 && self.connection.query_row("SELECT count(*) FROM sqlite_master WHERE type='table' AND name!='schema_migrations' AND name NOT LIKE 'sqlite_%'",[],|r|r.get::<_,i64>(0))?>0 {return Err(StorageError::Hierarchy("unversioned existing database is not an empty installation"));}
         self.connection.execute_batch(
             "CREATE TABLE IF NOT EXISTS schema_migrations (
                 version INTEGER PRIMARY KEY,
@@ -183,6 +244,31 @@ impl SqliteStore {
                     });
                 }
                 continue;
+            }
+            if migration.version > maximum {
+                continue;
+            }
+            if migration.version == 3
+                && [
+                    "observations",
+                    "core_sources",
+                    "collection_events",
+                    "data_gaps",
+                    "source_identities",
+                    "core_latest",
+                ]
+                .iter()
+                .try_fold(0i64, |sum, table| {
+                    self.connection
+                        .query_row(&format!("SELECT count(*) FROM {table}"), [], |r| {
+                            r.get::<_, i64>(0)
+                        })
+                        .map(|n| sum + n)
+                })? > 0
+            {
+                return Err(StorageError::Hierarchy(
+                    "legacy database requires explicit offline provisioning/adoption",
+                ));
             }
             let transaction = self.write_transaction()?;
             transaction.execute_batch(migration.sql)?;
@@ -676,6 +762,10 @@ fn ingest_event_in(
             payload
         ],
     )?;
+    if kind != "observation" && !duplicate {
+        transaction.execute("INSERT INTO control_event_heads VALUES(?1,1) ON CONFLICT(source_id) DO UPDATE SET sequence=sequence+1",[context.data_source_id.as_str()])?;
+        transaction.execute("INSERT INTO control_event_index SELECT ?1,source_id,sequence FROM control_event_heads WHERE source_id=?2",params![key,context.data_source_id.as_str()])?;
+    }
     Ok(if duplicate {
         IngestOutcome::Duplicate
     } else {
@@ -746,7 +836,7 @@ mod tests {
     static NEXT_PATH: AtomicU64 = AtomicU64::new(0);
     const SOURCE: &str = "oip-local-simulation-v1";
 
-    fn observation(source_ms: i64) -> ObservationEnvelope {
+    pub(super) fn observation(source_ms: i64) -> ObservationEnvelope {
         ObservationEnvelope {
             entity_id: EntityId::new("M-01").expect("entity"),
             data_source_id: DataSourceId::new(SOURCE).expect("source"),
@@ -794,8 +884,8 @@ mod tests {
         let path = test_path("migration");
         std::fs::create_dir_all(path.parent().expect("parent")).expect("create test dir");
         let mut store = SqliteStore::open(&path).expect("open");
-        assert_eq!(store.schema_version().expect("version"), 2);
-        assert_eq!(store.migrate().expect("second migration"), 2);
+        assert_eq!(store.schema_version().expect("version"), 3);
+        assert_eq!(store.migrate().expect("second migration"), 3);
         store
             .connection
             .execute("PRAGMA user_version = 0", [])
@@ -806,7 +896,7 @@ mod tests {
         ));
         store
             .connection
-            .execute("PRAGMA user_version = 2", [])
+            .execute("PRAGMA user_version = 3", [])
             .expect("restore version");
         store
             .connection

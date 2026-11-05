@@ -1,6 +1,7 @@
 use crate::{application_services::ApplicationServices, state::AppState};
+use axum::extract::FromRequestParts;
 use axum::{
-    extract::{Path, Query, Request, State},
+    extract::{Path, Query, Request},
     http::{HeaderValue, StatusCode},
     middleware::{self, Next},
     response::{
@@ -13,6 +14,7 @@ use axum::{
 use futures::stream;
 use oip_core::*;
 use serde_json::json;
+use sha2::{Digest, Sha256};
 use std::{convert::Infallible, sync::Arc, time::Duration};
 
 #[derive(Clone)]
@@ -20,6 +22,31 @@ struct ApiContext {
     state: AppState,
     service: Arc<ApplicationServices>,
     authority: Option<ExecutionContext>,
+    credentials: crate::identity::RestIdentities,
+}
+struct Authorized(ApiContext);
+impl FromRequestParts<ApiContext> for Authorized {
+    type Rejection = CapabilityErrorResponse;
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        state: &ApiContext,
+    ) -> Result<Self, Self::Rejection> {
+        let mut s = state.clone();
+        if let Some(value) = parts.headers.get(axum::http::header::AUTHORIZATION) {
+            s.authority = Some(
+                s.credentials
+                    .authenticate(
+                        value
+                            .to_str()
+                            .map_err(|_| CapabilityErrorResponse(denied()))?,
+                    )
+                    .map_err(CapabilityErrorResponse)?,
+            );
+        } else if !s.state.legacy_access {
+            return Err(CapabilityErrorResponse(denied()));
+        }
+        Ok(Self(s))
+    }
 }
 impl std::ops::Deref for ApiContext {
     type Target = AppState;
@@ -68,6 +95,7 @@ async fn call(
 ) -> Result<CapabilityOutput, CapabilityErrorResponse> {
     let mut context = s.service.local_context();
     if let Some(authority) = s.authority {
+        context.principal = authority.principal;
         context.actor = authority.actor;
         context.permissions = authority.permissions;
         context.sources = authority.sources;
@@ -99,7 +127,33 @@ pub fn router_with_service(
     authority: Option<ExecutionContext>,
     web_dir: Option<&str>,
 ) -> Router {
+    router_with_identity(
+        state,
+        service,
+        authority,
+        crate::identity::RestIdentities::default(),
+        web_dir,
+    )
+}
+pub fn router_with_identity(
+    state: AppState,
+    service: Arc<ApplicationServices>,
+    authority: Option<ExecutionContext>,
+    credentials: crate::identity::RestIdentities,
+    web_dir: Option<&str>,
+) -> Router {
     let routes = Router::new()
+        .route("/api/v2/organizations", get(organizations))
+        .route("/api/v2/infrastructures", get(infrastructures))
+        .route("/api/v2/sites", get(sites))
+        .route("/api/v2/sources", get(source_health))
+        .route("/api/v2/devices", get(devices))
+        .route("/api/v2/devices/{id}", get(device))
+        .route("/api/v2/observations", get(metrics))
+        .route("/api/v2/events", get(events))
+        .route("/api/v2/opcua/nodes", get(nodes))
+        .route("/api/v2/snapshot", get(scoped_snapshot))
+        .route("/api/v2/stream", get(scoped_sse))
         .route("/api/v1/system/status", get(status))
         .route("/api/v1/core/health", get(core_health))
         .route("/api/v1/sources", get(source_health))
@@ -133,6 +187,7 @@ pub fn router_with_service(
             state,
             service,
             authority,
+            credentials,
         })
 }
 
@@ -167,16 +222,14 @@ async fn local_origin(request: Request, next: Next) -> Response {
     next.run(request).await
 }
 
-async fn status(
-    State(s): State<ApiContext>,
-) -> Result<Json<SystemStatus>, CapabilityErrorResponse> {
+async fn status(Authorized(s): Authorized) -> Result<Json<SystemStatus>, CapabilityErrorResponse> {
     match call(s, CapabilityRequest::SystemStatusRead).await? {
         CapabilityOutput::SystemStatus(v) => Ok(Json(v)),
         _ => Err(mismatch()),
     }
 }
 async fn devices(
-    State(s): State<ApiContext>,
+    Authorized(s): Authorized,
     query: Result<Query<DeviceQuery>, axum::extract::rejection::QueryRejection>,
 ) -> Result<Json<Vec<Device>>, Response> {
     let Query(q) = query.map_err(|_| {
@@ -196,7 +249,7 @@ async fn devices(
     }
 }
 async fn device(
-    State(s): State<ApiContext>,
+    Authorized(s): Authorized,
     Path(id): Path<String>,
 ) -> Result<Json<DeviceDetail>, CapabilityErrorResponse> {
     match call(s, CapabilityRequest::DeviceRead(DeviceRequest { id })).await? {
@@ -205,7 +258,7 @@ async fn device(
     }
 }
 async fn metrics(
-    State(s): State<ApiContext>,
+    Authorized(s): Authorized,
     query: Result<Query<SourceQuery>, axum::extract::rejection::QueryRejection>,
 ) -> Result<Json<Vec<ObservationEnvelope>>, Response> {
     let Query(q) = query.map_err(|_| {
@@ -225,7 +278,7 @@ async fn metrics(
     }
 }
 async fn events(
-    State(s): State<ApiContext>,
+    Authorized(s): Authorized,
     query: Result<Query<SourceQuery>, axum::extract::rejection::QueryRejection>,
 ) -> Result<Json<EventsResponse>, Response> {
     let Query(q) = query.map_err(|_| {
@@ -245,7 +298,7 @@ async fn events(
     }
 }
 async fn nodes(
-    State(s): State<ApiContext>,
+    Authorized(s): Authorized,
     query: Result<Query<NodeQuery>, axum::extract::rejection::QueryRejection>,
 ) -> Result<Json<NodePage>, Response> {
     let Query(q) = query.map_err(|_| {
@@ -265,7 +318,7 @@ async fn nodes(
     }
 }
 async fn scenario(
-    State(s): State<ApiContext>,
+    Authorized(s): Authorized,
     body: Result<Json<ScenarioRequest>, axum::extract::rejection::JsonRejection>,
 ) -> Result<Json<ScenarioResponse>, Response> {
     let Json(q) = body.map_err(|_| {
@@ -285,7 +338,7 @@ async fn scenario(
     }
 }
 async fn core_health(
-    State(s): State<ApiContext>,
+    Authorized(s): Authorized,
 ) -> Result<Json<CoreHealth>, CapabilityErrorResponse> {
     match call(s, CapabilityRequest::CoreHealthRead).await? {
         CapabilityOutput::CoreHealth(v) => Ok(Json(v)),
@@ -293,7 +346,7 @@ async fn core_health(
     }
 }
 async fn source_health(
-    State(s): State<ApiContext>,
+    Authorized(s): Authorized,
     query: Result<Query<SourceQuery>, axum::extract::rejection::QueryRejection>,
 ) -> Result<Json<Vec<SourceHealth>>, Response> {
     let Query(q) = query.map_err(|_| {
@@ -312,7 +365,7 @@ async fn source_health(
         _ => Err(mismatch().into_response()),
     }
 }
-async fn live(State(s): State<ApiContext>) -> Result<impl IntoResponse, CapabilityErrorResponse> {
+async fn live(Authorized(s): Authorized) -> Result<impl IntoResponse, CapabilityErrorResponse> {
     match call(s, CapabilityRequest::CoreLivenessRead).await? {
         CapabilityOutput::CoreHealth(v) => Ok((
             if v.live {
@@ -325,7 +378,7 @@ async fn live(State(s): State<ApiContext>) -> Result<impl IntoResponse, Capabili
         _ => Err(mismatch()),
     }
 }
-async fn ready(State(s): State<ApiContext>) -> Result<impl IntoResponse, CapabilityErrorResponse> {
+async fn ready(Authorized(s): Authorized) -> Result<impl IntoResponse, CapabilityErrorResponse> {
     match call(s, CapabilityRequest::CoreReadinessRead).await? {
         CapabilityOutput::CoreHealth(v) => Ok((
             if v.ready {
@@ -338,7 +391,8 @@ async fn ready(State(s): State<ApiContext>) -> Result<impl IntoResponse, Capabil
         _ => Err(mismatch()),
     }
 }
-async fn sse(State(s): State<ApiContext>) -> impl IntoResponse {
+async fn sse(Authorized(s): Authorized) -> Result<impl IntoResponse, CapabilityErrorResponse> {
+    call(s.clone(), CapabilityRequest::SnapshotRead).await?;
     let rx = s.updates.subscribe();
     let output = stream::unfold((s, rx, true), |(s, mut rx, first)| async move {
         if s.stopping.is_cancelled() {
@@ -362,5 +416,85 @@ async fn sse(State(s): State<ApiContext>) -> impl IntoResponse {
         };
         Some((Ok::<_, Infallible>(event), (s, rx, false)))
     });
-    Sse::new(output).keep_alive(KeepAlive::new().interval(Duration::from_secs(2)))
+    Ok(Sse::new(output).keep_alive(KeepAlive::new().interval(Duration::from_secs(2))))
+}
+
+macro_rules! hierarchy_handler {
+    ($name:ident,$request:ident,$output:ident,$ty:ty) => {
+        async fn $name(
+            Authorized(s): Authorized,
+            query: Result<Query<HierarchyQuery>, axum::extract::rejection::QueryRejection>,
+        ) -> Result<Json<Page<$ty>>, Response> {
+            let Query(q) = query.map_err(|_| {
+                ApiError(
+                    StatusCode::BAD_REQUEST,
+                    "INVALID_QUERY",
+                    "Invalid hierarchy query",
+                )
+                .into_response()
+            })?;
+            match call(s, CapabilityRequest::$request(q))
+                .await
+                .map_err(IntoResponse::into_response)?
+            {
+                CapabilityOutput::$output(v) => Ok(Json(v)),
+                _ => Err(mismatch().into_response()),
+            }
+        }
+    };
+}
+hierarchy_handler!(
+    organizations,
+    OrganizationsRead,
+    Organizations,
+    Organization
+);
+hierarchy_handler!(
+    infrastructures,
+    InfrastructuresRead,
+    Infrastructures,
+    Infrastructure
+);
+hierarchy_handler!(sites, SitesRead, Sites, Site);
+async fn scoped_snapshot(
+    Authorized(s): Authorized,
+) -> Result<Json<ScopedSnapshot>, CapabilityErrorResponse> {
+    match call(s, CapabilityRequest::ScopedSnapshotRead).await? {
+        CapabilityOutput::ScopedSnapshot(v) => Ok(Json(v)),
+        _ => Err(mismatch()),
+    }
+}
+async fn scoped_sse(
+    Authorized(s): Authorized,
+) -> Result<impl IntoResponse, CapabilityErrorResponse> {
+    // Authorize before200/stream headers. Fixed cadence avoids wakeups exposing
+    // unrelated organizations; full authorized resync ignores untrusted cursors.
+    let first = call(s.clone(), CapabilityRequest::ScopedSnapshotRead).await?;
+    let output = stream::unfold((s, Some(first)), |(s, first)| async move {
+        if s.stopping.is_cancelled() {
+            return None;
+        }
+        let result = if let Some(first) = first {
+            Ok(first)
+        } else {
+            tokio::select! {_=s.stopping.cancelled()=>return None,_=tokio::time::sleep(Duration::from_secs(1))=>{}}
+            call(s.clone(), CapabilityRequest::ScopedSnapshotRead).await
+        };
+        let event = match result {
+            Ok(CapabilityOutput::ScopedSnapshot(snapshot)) => {
+                let bytes = serde_json::to_vec(&snapshot).expect("serializable snapshot");
+                let digest = format!("{:x}", Sha256::digest(&bytes));
+                Event::default()
+                    .event("snapshot")
+                    .id(digest)
+                    .json_data(snapshot)
+                    .expect("serializable snapshot")
+            }
+            _ => Event::default()
+                .event("error")
+                .data("Authorized snapshot unavailable"),
+        };
+        Some((Ok::<_, Infallible>(event), (s, None)))
+    });
+    Ok(Sse::new(output).keep_alive(KeepAlive::new().interval(Duration::from_secs(2))))
 }

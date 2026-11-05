@@ -62,6 +62,7 @@ impl SourceConfig {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct CoreConfig {
+    pub legacy_single_infrastructure: bool,
     pub database: PathBuf,
     pub http_port: u16,
     pub sources: Vec<SourceConfig>,
@@ -73,6 +74,7 @@ pub struct CoreConfig {
 impl Default for CoreConfig {
     fn default() -> Self {
         Self {
+            legacy_single_infrastructure: false,
             database: "oip-demo.sqlite".into(),
             http_port: 8080,
             sources: vec![SourceConfig::primary(4840)],

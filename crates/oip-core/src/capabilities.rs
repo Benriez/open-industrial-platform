@@ -21,11 +21,16 @@ pub enum CapabilityId {
     OpcuaNodesRead,
     SnapshotRead,
     SimulationScenarioSet,
+    OrganizationsRead,
+    InfrastructuresRead,
+    SitesRead,
+    ScopedSnapshotRead,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Permission {
+    HierarchyRead,
     CoreRead,
     SourcesRead,
     DevicesRead,
@@ -45,7 +50,7 @@ pub struct CapabilityDescriptor {
     pub audit: String,
 }
 impl CapabilityId {
-    pub const ALL: [Self; 13] = [
+    pub const ALL: [Self; 17] = [
         Self::CoreHealthRead,
         Self::CoreLivenessRead,
         Self::CoreReadinessRead,
@@ -59,10 +64,39 @@ impl CapabilityId {
         Self::OpcuaNodesRead,
         Self::SnapshotRead,
         Self::SimulationScenarioSet,
+        Self::OrganizationsRead,
+        Self::InfrastructuresRead,
+        Self::SitesRead,
+        Self::ScopedSnapshotRead,
     ];
     pub fn descriptor(self) -> CapabilityDescriptor {
         use CapabilityId::*;
         let (permission, input, output) = match self {
+            OrganizationsRead => (
+                vec![Permission::HierarchyRead],
+                "HierarchyQuery",
+                "Page<Organization>",
+            ),
+            InfrastructuresRead => (
+                vec![Permission::HierarchyRead],
+                "HierarchyQuery",
+                "Page<Infrastructure>",
+            ),
+            SitesRead => (
+                vec![Permission::HierarchyRead],
+                "HierarchyQuery",
+                "Page<Site>",
+            ),
+            ScopedSnapshotRead => (
+                vec![
+                    Permission::SourcesRead,
+                    Permission::DevicesRead,
+                    Permission::TelemetryRead,
+                    Permission::EventsRead,
+                ],
+                "Empty",
+                "ScopedSnapshot",
+            ),
             CoreHealthRead | CoreLivenessRead | CoreReadinessRead => {
                 (vec![Permission::CoreRead], "Empty", "CoreHealth")
             }
@@ -130,6 +164,11 @@ impl CapabilityId {
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
 pub struct SourceQuery {
+    pub organization: Option<OrganizationId>,
+    pub infrastructure: Option<InfrastructureId>,
+    pub site: Option<SiteId>,
+    pub offset: Option<usize>,
+    pub limit: Option<usize>,
     pub source: Option<DataSourceId>,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -184,6 +223,10 @@ pub enum CapabilityRequest {
     OpcuaNodesRead(NodeQuery),
     SnapshotRead,
     SimulationScenarioSet(ScenarioRequest),
+    OrganizationsRead(HierarchyQuery),
+    InfrastructuresRead(HierarchyQuery),
+    SitesRead(HierarchyQuery),
+    ScopedSnapshotRead,
 }
 impl CapabilityRequest {
     pub fn id(&self) -> CapabilityId {
@@ -201,6 +244,10 @@ impl CapabilityRequest {
             Self::OpcuaNodesRead(_) => CapabilityId::OpcuaNodesRead,
             Self::SnapshotRead => CapabilityId::SnapshotRead,
             Self::SimulationScenarioSet(_) => CapabilityId::SimulationScenarioSet,
+            Self::OrganizationsRead(_) => CapabilityId::OrganizationsRead,
+            Self::InfrastructuresRead(_) => CapabilityId::InfrastructuresRead,
+            Self::SitesRead(_) => CapabilityId::SitesRead,
+            Self::ScopedSnapshotRead => CapabilityId::ScopedSnapshotRead,
         }
     }
 }
@@ -219,6 +266,10 @@ pub enum CapabilityOutput {
     Nodes(NodePage),
     Snapshot(Box<Snapshot>),
     Scenario(ScenarioResponse),
+    Organizations(Page<Organization>),
+    Infrastructures(Page<Infrastructure>),
+    Sites(Page<Site>),
+    ScopedSnapshot(ScopedSnapshot),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
@@ -262,6 +313,7 @@ pub enum SourceScope {
 /// from an untrusted tool body as proof of identity or authorization.
 #[derive(Clone, Debug)]
 pub struct ExecutionContext {
+    pub principal: Option<PrincipalId>,
     pub actor: String,
     pub correlation_id: String,
     pub permissions: BTreeSet<Permission>,
@@ -304,6 +356,9 @@ impl ExecutionContext {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 pub struct ExecutionAudit {
+    pub scope: Option<AccessScope>,
+    pub principal: Option<PrincipalId>,
+    pub hierarchy: Option<HierarchyLocation>,
     pub actor: String,
     pub capability: CapabilityId,
     pub target: String,
@@ -381,6 +436,7 @@ mod tests {
     #[test]
     fn no_implicit_wildcard_permissions_and_unsafe_contexts_are_rejected() {
         let mut ctx = ExecutionContext {
+            principal: None,
             actor: "operator".into(),
             correlation_id: "call-1".into(),
             permissions: [Permission::CoreRead].into(),

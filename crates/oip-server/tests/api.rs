@@ -27,7 +27,7 @@ async fn get(app: Router, path: &str) -> (StatusCode, Value) {
     (status, serde_json::from_slice(&body).unwrap())
 }
 fn state() -> AppState {
-    AppState::new(SqliteStore::open_in_memory().unwrap(), None).unwrap()
+    AppState::legacy(SqliteStore::open_in_memory().unwrap(), None).unwrap()
 }
 
 #[tokio::test]
@@ -108,7 +108,7 @@ fn demo_never_equates_vpn_and_agent_health() {
 async fn persistence_failure_does_not_publish_and_restart_values_are_stale() {
     let path = std::env::temp_dir().join(format!("oip003-storage-{}.sqlite", std::process::id()));
     let _ = std::fs::remove_file(&path);
-    let s = AppState::new(SqliteStore::open(&path).unwrap(), None).unwrap();
+    let s = AppState::legacy(SqliteStore::open(&path).unwrap(), None).unwrap();
     let frame = Simulation::new(SimulationConfig::default(), Scenario::SensorFault).frame_at(2);
     let observation = frame.observation("temperature").unwrap().clone();
     s.ingest(ClientEvent::Observation(Box::new(observation)))
@@ -127,7 +127,7 @@ async fn persistence_failure_does_not_publish_and_restart_values_are_stale() {
     assert_eq!(s.snapshot().unwrap().metrics.len(), 1);
     s.shutdown().await;
     drop(s);
-    let s = AppState::new(SqliteStore::open(&path).unwrap(), None).unwrap();
+    let s = AppState::legacy(SqliteStore::open(&path).unwrap(), None).unwrap();
     let snap = s.snapshot().unwrap();
     assert_eq!(snap.metrics[0].freshness, Freshness::Stale);
     assert!(snap.system.last_received_ms.is_none());
@@ -278,5 +278,5 @@ async fn external_evidence_cannot_be_relabelled_as_dashboard_simulation() {
     assert_eq!(s.snapshot().unwrap().system.persisted_observations, 0);
     let mut store = SqliteStore::open_in_memory().unwrap();
     store.ingest_observation(&external).unwrap();
-    assert!(AppState::new(store, None).is_err());
+    assert!(AppState::legacy(store, None).is_err());
 }

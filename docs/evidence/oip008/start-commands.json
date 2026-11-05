@@ -1,0 +1,12 @@
+{
+  "commands_tested": true,
+  "status": "PASS",
+  "url": "http://127.0.0.1:18808",
+  "sources": [
+    "source-a",
+    "source-b",
+    "source-c"
+  ],
+  "daemon_survives_client_disconnect": true,
+  "all_owned_processes_stopped": true
+}

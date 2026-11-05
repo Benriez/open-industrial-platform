@@ -32,7 +32,8 @@ pub struct IpcConfig {
     pub clients: Vec<IpcClient>,
     #[serde(default = "default_sessions")]
     pub max_sessions: usize,
-    pub rest_policy: McpPolicy,
+    #[serde(default)]
+    pub rest_policy: Option<McpPolicy>,
 }
 fn default_sessions() -> usize {
     16
@@ -156,7 +157,7 @@ pub struct LocalIpc {
     _ownership: SocketOwnership,
     authorities: Arc<Vec<Authority>>,
     max_sessions: usize,
-    rest_policy: McpPolicy,
+    rest_policy: Option<McpPolicy>,
 }
 impl LocalIpc {
     /// Prepare before CoreRuntime starts; errors cannot orphan source workers.
@@ -177,7 +178,22 @@ impl LocalIpc {
         {
             return Err(invalid());
         }
-        config.rest_policy.validate().map_err(|_| invalid())?;
+        let principal_mode = config.clients.iter().all(|c| c.policy.principal.is_some());
+        if config.clients.iter().any(|c| c.policy.principal.is_some()) != principal_mode {
+            return Err(invalid());
+        }
+        if principal_mode {
+            if config.rest_policy.is_some() {
+                return Err(invalid());
+            }
+        } else {
+            config
+                .rest_policy
+                .as_ref()
+                .ok_or_else(invalid)?
+                .validate()
+                .map_err(|_| invalid())?;
+        }
         let parent = config.socket.parent().ok_or_else(invalid)?;
         plain_path(parent)?;
         let m = std::fs::metadata(parent)?;
@@ -318,8 +334,31 @@ impl LocalIpc {
             rest_policy: config.rest_policy,
         })
     }
-    pub fn rest_context(&self) -> oip_core::ExecutionContext {
-        self.rest_policy.execution_context()
+    pub fn rest_context(&self) -> Option<oip_core::ExecutionContext> {
+        self.rest_policy.as_ref().map(McpPolicy::execution_context)
+    }
+    pub fn rest_identities(&self) -> crate::identity::RestIdentities {
+        crate::identity::RestIdentities::new(
+            self.authorities
+                .iter()
+                .filter_map(|a| a.policy.principal.as_ref().map(|p| (a.secret, p.clone())))
+                .collect(),
+        )
+    }
+    pub fn validate_principals(&self, state: &crate::state::AppState) -> Result<(), &'static str> {
+        for a in self.authorities.iter() {
+            match &a.policy.principal {
+                Some(p)
+                    if state.hierarchy.as_ref().is_some_and(|h| {
+                        h.plan.principals.iter().any(|x| &x.id == p && x.enabled)
+                    }) => {}
+                None if state.legacy_access => {}
+                _ => return Err(
+                    "IPC binding requires a provisioned enabled principal or explicit legacy mode",
+                ),
+            }
+        }
+        Ok(())
     }
     pub async fn run(
         self,
@@ -384,7 +423,7 @@ async fn session(
             Ok::<_,io::Error>(authority.policy.clone())
         })=>result.map_err(|_|denied())??,
     };
-    tracing::info!(code="ipc_authorized",peer_uid=peer.uid(),peer_pid=?peer.pid(),actor=%policy.actor,source_scope=?policy.sources,"server-bound local authority");
+    tracing::info!(code="ipc_authorized",peer_uid=peer.uid(),peer_pid=?peer.pid(),principal=?policy.principal,actor=%policy.actor,source_scope=?policy.sources,"server-bound local authority");
     let adapter = McpAdapter::new(service, policy).map_err(|_| invalid())?;
     let (read, write) = stream.into_split();
     let transport = BoundedTransport::new(read, write).with_disconnect_token(stop.clone());
@@ -463,8 +502,8 @@ mod tests {
     use super::*;
     #[test]
     fn failed_record_publication_rolls_back_owned_socket_and_partial_record() {
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join(format!("../../target/ipc-rollback-{}", std::process::id()));
+        let dir =
+            PathBuf::from("/private/tmp").join(format!("oip8-rollback-{}", std::process::id()));
         std::fs::create_dir(&dir).unwrap();
         let path = dir.join("s");
         let lockpath = dir.join("lock");

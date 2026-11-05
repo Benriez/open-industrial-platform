@@ -45,9 +45,9 @@ try:
  pa,pb,h=port(),port(),port()
  for name,p,seed in [('a',pa,42),('b',pb,77)]:start('source-'+name,[str(R/'target/debug/oip-simulated-server'),'--port',str(p),'--seed',str(seed),'--tick-ms','250'])
  config={'database':str(D/'legacy.sqlite'),'http_port':h,'sources':[{'id':'sim-a','name':'A','endpoint':f'opc.tcp://127.0.0.1:{pa}'},{'id':'sim-b','name':'B','endpoint':f'opc.tcp://127.0.0.1:{pb}'}],'web_dir':None}
- cfg=D/'core.json';cfg.write_text(json.dumps(config));legacy=Client(['--mcp-stdio','--config',str(cfg),'--mcp-policy',str(R/'examples/mcp-read-local.json')],'legacy');wait(lambda:legacy.health()['lifecycle']=='ready');measure('OIP-006 stdio-owned mode (same final binary)',[legacy],legacy.ready['pid']);legacy.close()
+ cfg=D/'core.json';cfg.write_text(json.dumps(config));legacy=Client(['--mcp-stdio','--legacy-single-infrastructure','--config',str(cfg),'--mcp-policy',str(R/'examples/mcp-read-local.json')],'legacy');wait(lambda:legacy.health()['lifecycle']=='ready');measure('OIP-006 stdio-owned mode (same final binary)',[legacy],legacy.ready['pid']);legacy.close()
  subprocess.run(['python3','examples/prepare-local-ipc.py',str(D/'ipc')],cwd=R,stdout=subprocess.DEVNULL,check=True)
- config['database']=str(D/'daemon.sqlite');cfg.write_text(json.dumps(config));daemon=start('daemon',[BIN,'--daemon','--config',str(cfg),'--ipc-config',str(D/'ipc/ipc.json')]);sock=D/'ipc/mcp.sock';wait(lambda:sock.exists())
+ config['database']=str(D/'daemon.sqlite');cfg.write_text(json.dumps(config));daemon=start('daemon',[BIN,'--daemon','--legacy-single-infrastructure','--config',str(cfg),'--ipc-config',str(D/'ipc/ipc.json')]);sock=D/'ipc/mcp.sock';wait(lambda:sock.exists())
  args=['--mcp-bridge','--ipc-socket',str(sock),'--ipc-credential',str(D/'ipc/all.credential')]
  for n in [1,3,8]:
   clients=[Client(args,f'client-{n}-{i}') for i in range(n)];wait(lambda:clients[0].health()['lifecycle']=='ready');measure('OIP-007 daemon',clients,daemon.pid)

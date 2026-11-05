@@ -66,6 +66,8 @@ struct Inner {
 }
 #[derive(Clone)]
 pub struct AppState {
+    pub hierarchy: Option<Arc<HierarchyRegistry>>,
+    pub legacy_access: bool,
     inner: Arc<Inner>,
     pub updates: watch::Sender<u64>,
     pub data: Arc<Mutex<UiData>>,
@@ -83,12 +85,50 @@ impl AppState {
     ) -> Result<Self, String> {
         Self::configured(store, &CoreConfig::default(), scenario_tx)
     }
+    /// Explicit compatibility host for local single-infrastructure development.
+    pub fn legacy(
+        store: SqliteStore,
+        scenario_tx: Option<watch::Sender<String>>,
+    ) -> Result<Self, String> {
+        Self::configured(
+            store,
+            &CoreConfig {
+                legacy_single_infrastructure: true,
+                ..Default::default()
+            },
+            scenario_tx,
+        )
+    }
     pub fn configured(
         store: SqliteStore,
         config: &CoreConfig,
         scenario_tx: Option<watch::Sender<String>>,
     ) -> Result<Self, String> {
         config.validate()?;
+        let hierarchy = store
+            .hierarchy()
+            .map_err(|_| "hierarchy unavailable")?
+            .map(Arc::new);
+        if let Some(h) = &hierarchy {
+            let ids: std::collections::BTreeSet<_> =
+                config.sources.iter().map(|s| s.id.as_str()).collect();
+            if ids
+                != h.plan
+                    .sources
+                    .iter()
+                    .map(|s| s.source_id.as_str())
+                    .collect()
+            {
+                return Err("runtime sources must exactly match provisioned registry".into());
+            }
+            if scenario_tx.is_some() && !h.plan.legacy_single_infrastructure {
+                return Err("demo is only available in explicit single-infrastructure mode".into());
+            }
+        }
+        let legacy_access = config.legacy_single_infrastructure
+            && hierarchy
+                .as_ref()
+                .is_none_or(|h| h.plan.legacy_single_infrastructure);
         let definitions = config
             .sources
             .iter()
@@ -119,6 +159,8 @@ impl AppState {
             .map_err(|_| "writer_thread_start")?;
         *inner.thread.lock().map_err(|_| "thread lock")? = Some(worker);
         Ok(Self {
+            hierarchy,
+            legacy_access,
             inner,
             updates,
             data: Arc::new(Mutex::new(UiData {
@@ -335,7 +377,9 @@ impl AppState {
                 .map(|s| Device {
                     data_source_id: Some(s.id.clone()),
                     is_faulted: false,
-                    id: if s.id == self.primary {
+                    id: if let Some(p) = self.hierarchy.as_ref().and_then(|h| h.placement(&s.id)) {
+                        p.device_id.to_string()
+                    } else if s.id == self.primary {
                         s.entity_id.to_string()
                     } else {
                         format!("{}:{}", s.id, s.entity_id)
@@ -371,7 +415,7 @@ impl AppState {
                 .collect()
         };
         for device in &mut devices {
-            if device.id == "M-01" {
+            if self.legacy_access && device.id == "M-01" {
                 device.data_source_id = Some(self.primary.clone());
             }
             if v.observations.iter().any(|o| {

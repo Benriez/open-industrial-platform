@@ -25,6 +25,7 @@ fn policy() -> McpPolicy {
 }
 fn ctx(p: &McpPolicy) -> ExecutionContext {
     ExecutionContext {
+        principal: None,
         actor: p.actor.clone(),
         correlation_id: "parity-1".into(),
         permissions: p.permissions.clone(),
@@ -33,6 +34,7 @@ fn ctx(p: &McpPolicy) -> ExecutionContext {
 }
 fn state() -> AppState {
     let config = CoreConfig {
+        legacy_single_infrastructure: true,
         sources: vec![
             SourceConfig {
                 id: "sim-a".into(),
@@ -132,6 +134,7 @@ async fn all_six_tools_have_real_sdk_direct_and_rest_parity_and_generated_schema
             "/api/v1/metrics/current?source=sim-b",
             CapabilityRequest::ObservationsRead(SourceQuery {
                 source: Some(DataSourceId::new("sim-b").unwrap()),
+                ..Default::default()
             }),
         ),
         (
@@ -215,6 +218,7 @@ async fn source_scope_permission_errors_and_resource_denials_match_rest() {
             "/api/v1/sources?source=sim-b",
             CapabilityRequest::SourcesRead(SourceQuery {
                 source: Some(DataSourceId::new("sim-b").unwrap()),
+                ..Default::default()
             }),
         ),
         (
@@ -545,6 +549,7 @@ async fn runtime_ownership_rejects_duplicate_and_symlink_alias_then_allows_resta
         oip_server::state::now_ms()
     ));
     let config = CoreConfig {
+        legacy_single_infrastructure: true,
         database: path.clone(),
         ..Default::default()
     };
@@ -556,6 +561,7 @@ async fn runtime_ownership_rejects_duplicate_and_symlink_alias_then_allows_resta
         std::os::unix::fs::symlink(&path, &alias).unwrap();
         assert!(CoreRuntime::start(
             CoreConfig {
+                legacy_single_infrastructure: true,
                 database: alias,
                 ..config.clone()
             },
@@ -671,7 +677,7 @@ async fn resource_models_match_direct_service_and_rest_including_sse_projections
         assert_eq!(direct["value"], http, "{uri}");
     }
     let mapping = oip_server::mcp::capability_mapping();
-    assert_eq!(mapping["capabilities"].as_array().unwrap().len(), 13);
+    assert_eq!(mapping["capabilities"].as_array().unwrap().len(), 17);
     assert_eq!(
         mapping["capabilities"]
             .as_array()

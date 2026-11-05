@@ -25,12 +25,29 @@ pub const READ_TIMEOUT: Duration = Duration::from_secs(15);
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct McpPolicy {
+    #[serde(default)]
+    pub principal: Option<PrincipalId>,
+    #[serde(default)]
     pub actor: String,
+    #[serde(default)]
     pub permissions: BTreeSet<Permission>,
+    #[serde(default = "empty_scope")]
     pub sources: SourceScope,
+}
+fn empty_scope() -> SourceScope {
+    SourceScope::Only(BTreeSet::new())
 }
 impl McpPolicy {
     pub fn validate(&self) -> Result<(), &'static str> {
+        if self.principal.is_some() {
+            if !self.actor.is_empty()
+                || !self.permissions.is_empty()
+                || !matches!(&self.sources,SourceScope::Only(ids) if ids.is_empty())
+            {
+                return Err("principal policies cannot carry legacy actor/grants/scopes");
+            }
+            return Ok(());
+        }
         let safe = |v: &str| {
             !v.is_empty()
                 && v.len() <= 128
@@ -50,7 +67,11 @@ impl McpPolicy {
     pub fn execution_context(&self) -> ExecutionContext {
         static NEXT: AtomicU64 = AtomicU64::new(1);
         ExecutionContext {
-            actor: self.actor.clone(),
+            principal: self.principal.clone(),
+            actor: self
+                .principal
+                .as_ref()
+                .map_or_else(|| self.actor.clone(), ToString::to_string),
             correlation_id: format!(
                 "mcp-{}-{}",
                 std::process::id(),
@@ -72,7 +93,10 @@ struct ToolSpec {
     id: CapabilityId,
     description: &'static str,
 }
-const TOOLS: [ToolSpec; 6] = [
+const TOOLS: [ToolSpec; 9] = [
+    ToolSpec {name:"oip_organizations_read",id:CapabilityId::OrganizationsRead,description:"Discover only authorized organizations and ancestor labels, bounded pagination."},
+    ToolSpec {name:"oip_infrastructures_read",id:CapabilityId::InfrastructuresRead,description:"List authorized infrastructures; parent IDs never grant access."},
+    ToolSpec {name:"oip_sites_read",id:CapabilityId::SitesRead,description:"List authorized sites with validated parent filters, bounded pagination."},
     ToolSpec { name: "oip_devices_read", id: CapabilityId::DevicesRead, description: "List/search registered devices; source scope and authoritative health are preserved. Bounded current registry, not discovery of remote endpoints." },
     ToolSpec { name: "oip_device_read", id: CapabilityId::DeviceRead, description: "Read a device by its exact registry ID, with current source-specific observations." },
     ToolSpec { name: "oip_observations_read", id: CapabilityId::ObservationsRead, description: "Read current observations with source/entity, quality, freshness, timestamps and simulation provenance; not historical replay." },
@@ -80,7 +104,11 @@ const TOOLS: [ToolSpec; 6] = [
     ToolSpec { name: "oip_events_read", id: CapabilityId::EventsRead, description: "Read the last 100 persisted control events, source context, sequences and data gaps; no complete history/replay. Diagnostics fixtures are labeled." },
     ToolSpec { name: "oip_opcua_nodes_read", id: CapabilityId::OpcuaNodesRead, description: "Browse/read existing registered simulation nodes. Offset pagination, max 100 nodes, no arbitrary endpoint or device writes. Read samples use normal core ingestion." },
 ];
-const RESOURCES: [(&str, CapabilityId); 6] = [
+const RESOURCES: [(&str, CapabilityId); 7] = [
+    (
+        "oip://v2/snapshot/current",
+        CapabilityId::ScopedSnapshotRead,
+    ),
     ("oip://v1/core/health", CapabilityId::CoreHealthRead),
     ("oip://v1/core/liveness", CapabilityId::CoreLivenessRead),
     ("oip://v1/core/readiness", CapabilityId::CoreReadinessRead),
@@ -90,6 +118,9 @@ const RESOURCES: [(&str, CapabilityId); 6] = [
 ];
 fn input_schema(id: CapabilityId) -> Value {
     let mut v = match id {
+        CapabilityId::OrganizationsRead
+        | CapabilityId::InfrastructuresRead
+        | CapabilityId::SitesRead => serde_json::to_value(schemars::schema_for!(HierarchyQuery)),
         CapabilityId::DevicesRead => serde_json::to_value(schemars::schema_for!(DeviceQuery)),
         CapabilityId::DeviceRead => serde_json::to_value(schemars::schema_for!(DeviceRequest)),
         CapabilityId::OpcuaNodesRead => serde_json::to_value(schemars::schema_for!(NodeQuery)),
@@ -159,6 +190,10 @@ fn unit_request(id: CapabilityId) -> CapabilityRequest {
 }
 fn output_schema(id: CapabilityId) -> Value {
     let tag = match id {
+        CapabilityId::OrganizationsRead => "organizations",
+        CapabilityId::InfrastructuresRead => "infrastructures",
+        CapabilityId::SitesRead => "sites",
+        CapabilityId::ScopedSnapshotRead => "scoped_snapshot",
         CapabilityId::DevicesRead => "devices",
         CapabilityId::DeviceRead => "device",
         CapabilityId::ObservationsRead => "observations",
@@ -253,19 +288,31 @@ impl McpAdapter {
         Ok(Self { service, policy })
     }
     fn visible(&self, id: CapabilityId, source: Option<&DataSourceId>) -> bool {
-        self.policy
-            .execution_context()
-            .authorize(id, source)
-            .is_ok()
+        if self.policy.principal.is_some() {
+            self.service
+                .discover(&self.policy.execution_context())
+                .iter()
+                .any(|d| d.id == id)
+        } else {
+            self.service
+                .discover(&self.policy.execution_context())
+                .iter()
+                .any(|d| d.id == id)
+                && self
+                    .policy
+                    .execution_context()
+                    .authorize(id, source)
+                    .is_ok()
+        }
     }
     pub fn tools(&self) -> Vec<Tool> {
         TOOLS
             .iter()
             .filter(|s| {
-                s.id.descriptor()
-                    .permission
+                self.service
+                    .discover(&self.policy.execution_context())
                     .iter()
-                    .all(|p| self.policy.permissions.contains(p))
+                    .any(|d| d.id == s.id)
             })
             .map(|s| {
                 let mut tool = Tool::new(
@@ -301,15 +348,27 @@ impl McpAdapter {
         cancel: CancellationToken,
     ) -> Result<Vec<Resource>, ErrorData> {
         let mut resources = self.resources();
-        if self.policy.permissions.contains(&Permission::SourcesRead) {
-            let sources = match &self.policy.sources {
-                SourceScope::All => vec![None],
-                SourceScope::Only(ids) => ids.iter().cloned().map(Some).collect(),
+        if self
+            .service
+            .discover(&self.policy.execution_context())
+            .iter()
+            .any(|d| d.id == CapabilityId::SourcesRead)
+        {
+            let sources = if self.policy.principal.is_some() {
+                vec![None]
+            } else {
+                match &self.policy.sources {
+                    SourceScope::All => vec![None],
+                    SourceScope::Only(ids) => ids.iter().cloned().map(Some).collect(),
+                }
             };
             for source in sources {
                 if let Ok(value) = self
                     .execute(
-                        CapabilityRequest::SourcesRead(SourceQuery { source }),
+                        CapabilityRequest::SourcesRead(SourceQuery {
+                            source,
+                            ..Default::default()
+                        }),
                         cancel.clone(),
                     )
                     .await?
@@ -394,6 +453,7 @@ impl McpAdapter {
             }
             CapabilityRequest::SourcesRead(SourceQuery {
                 source: Some(DataSourceId::new(id).map_err(|_| invalid())?),
+                ..Default::default()
             })
         } else {
             return Err(ErrorData::resource_not_found("Unknown OIP resource", None));

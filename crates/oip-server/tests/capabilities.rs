@@ -32,6 +32,7 @@ impl CapabilityAudit for Audit {
 }
 fn context() -> ExecutionContext {
     ExecutionContext {
+        principal: None,
         actor: "operator-test".into(),
         correlation_id: "call-1".into(),
         permissions: [
@@ -53,7 +54,7 @@ fn state(demo: bool) -> AppState {
     } else {
         None
     };
-    AppState::new(SqliteStore::open_in_memory().unwrap(), tx).unwrap()
+    AppState::legacy(SqliteStore::open_in_memory().unwrap(), tx).unwrap()
 }
 fn request(name: &str) -> CapabilityRequest {
     CapabilityRequest::SimulationScenarioSet(ScenarioRequest {
@@ -148,6 +149,7 @@ async fn authorization_and_audit_are_enforced_before_any_simulation_effect() {
                 &ctx,
                 CapabilityRequest::SourcesRead(SourceQuery {
                     source: Some(DataSourceId::new(untrusted).unwrap()),
+                    ..Default::default()
                 })
             )
             .await
@@ -200,6 +202,7 @@ async fn audit_failure_fails_closed_and_completion_failure_is_explicit() {
 #[tokio::test]
 async fn source_scopes_cannot_leak_other_sources_or_global_snapshots() {
     let config = CoreConfig {
+        legacy_single_infrastructure: true,
         sources: vec![
             SourceConfig {
                 id: "a".into(),
@@ -227,6 +230,7 @@ async fn source_scopes_cannot_leak_other_sources_or_global_snapshots() {
             &ctx,
             CapabilityRequest::SourcesRead(SourceQuery {
                 source: Some(id.clone()),
+                ..Default::default()
             }),
         )
         .await

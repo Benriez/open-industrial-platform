@@ -219,6 +219,7 @@ async fn sqlite_busy_backpressure_and_recovery_preserve_accepted_work() {
     let p = path("busy");
     let _ = std::fs::remove_file(&p);
     let c = CoreConfig {
+        legacy_single_infrastructure: true,
         database: p.clone(),
         queue_capacity: 1,
         ..Default::default()
@@ -270,7 +271,7 @@ async fn sqlite_busy_backpressure_and_recovery_preserve_accepted_work() {
 async fn failed_shutdown_reports_uncommitted_instead_of_claiming_success() {
     let p = path("stop-failure");
     let _ = std::fs::remove_file(&p);
-    let s = AppState::new(SqliteStore::open(&p).unwrap(), None).unwrap();
+    let s = AppState::legacy(SqliteStore::open(&p).unwrap(), None).unwrap();
     bootstrap(&s).await;
     let db = rusqlite::Connection::open(&p).unwrap();
     db.execute_batch("BEGIN IMMEDIATE").unwrap();
@@ -289,7 +290,7 @@ async fn failed_shutdown_reports_uncommitted_instead_of_claiming_success() {
     assert!(work.await.unwrap().is_err());
     assert_eq!(s.view().health.lifecycle, Lifecycle::Failed);
     db.execute_batch("ROLLBACK").unwrap();
-    let restored = AppState::new(SqliteStore::open(&p).unwrap(), None).unwrap();
+    let restored = AppState::legacy(SqliteStore::open(&p).unwrap(), None).unwrap();
     assert_eq!(restored.view().health.persisted_observations, 6);
     assert!(restored
         .view()
@@ -300,7 +301,7 @@ async fn failed_shutdown_reports_uncommitted_instead_of_claiming_success() {
 }
 #[tokio::test]
 async fn shutdown_drains_all_admitted_events() {
-    let s = AppState::new(SqliteStore::open_in_memory().unwrap(), None).unwrap();
+    let s = AppState::legacy(SqliteStore::open_in_memory().unwrap(), None).unwrap();
     let mut receipts = Vec::new();
     for tick in 0..16 {
         receipts.push(
@@ -324,7 +325,7 @@ async fn shutdown_drains_all_admitted_events() {
 }
 #[tokio::test]
 async fn slow_sse_and_reconnect_use_complete_resynchronization_without_blocking() {
-    let s = AppState::new(SqliteStore::open_in_memory().unwrap(), None).unwrap();
+    let s = AppState::legacy(SqliteStore::open_in_memory().unwrap(), None).unwrap();
     bootstrap(&s).await;
     let app = api::router(s.clone(), "missing");
     let response = app.clone().oneshot(req("/api/v1/stream")).await.unwrap();
@@ -426,6 +427,7 @@ impl CollectionSession for FakeSession {
 #[tokio::test]
 async fn panicking_adapter_is_closed_and_isolated_from_other_source() {
     let c = CoreConfig {
+        legacy_single_infrastructure: true,
         sources: vec![source("a", 14841), source("b", 14842)],
         ..Default::default()
     };
@@ -470,6 +472,7 @@ async fn invalid_configuration_starts_no_resources() {
     let p = path("invalid-config");
     let _ = std::fs::remove_file(&p);
     let mut c = CoreConfig {
+        legacy_single_infrastructure: true,
         database: p.clone(),
         queue_capacity: 0,
         ..Default::default()
@@ -542,6 +545,7 @@ async fn abandoning_runtime_is_detected_and_does_not_detach_live_workers() {
     let p = path("abandon");
     let _ = std::fs::remove_file(&p);
     let config = CoreConfig {
+        legacy_single_infrastructure: true,
         database: p,
         sources: vec![SourceConfig::primary(port)],
         ..Default::default()

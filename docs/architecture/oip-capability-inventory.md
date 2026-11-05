@@ -1,3 +1,5 @@
+> OIP-008 Feature-Stand: 17 Capabilities, neun MCP-Tools im Principal-Modus; aktuelles [Scope-/Paritätsinventar](oip-008-rest-mcp-parity.md). Die folgenden Angaben dokumentieren den früheren Meilenstein.
+
 # OIP Capability Inventory — OIP-005
 
 Stand: 2026-11-04. **OIP IS AGENT-FIRST BY DESIGN.** Implementierungsstatus gilt für das lokale Simulationsprofil, nicht für Produktionsreife. Ein angekündigter MCP-Zugang ist kein implementierter MCP-Server.

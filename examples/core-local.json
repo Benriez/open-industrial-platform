@@ -18,5 +18,6 @@
   "queue_capacity": 64,
   "stale_after_ms": 5000,
   "shutdown_timeout_ms": 10000,
-  "web_dir": null
+  "web_dir": null,
+  "legacy_single_infrastructure": true
 }

@@ -1,0 +1,38 @@
+{
+  "baseline": "a27e7b1e01dc1cb6f4d97c34319b0aa6d7321871",
+  "main_head": "a27e7b1e01dc1cb6f4d97c34319b0aa6d7321871",
+  "main_status": "",
+  "flutter_files_unchanged": 83,
+  "workspace_members": {
+    "oip-core": [],
+    "oip-server": [
+      "oip-core",
+      "oip-opcua",
+      "oip-simulator",
+      "oip-storage"
+    ],
+    "oip-opcua": [
+      "oip-core",
+      "oip-simulator"
+    ],
+    "oip-simulator": [
+      "oip-core"
+    ],
+    "oip-storage": [
+      "oip-core"
+    ],
+    "oip-agent": [],
+    "oip-gateway": [],
+    "oip-diagnostics": []
+  },
+  "acyclic": true,
+  "domain_no_concrete_infrastructure_dependencies": true,
+  "design_reference_sha256": "bd9f9d8696ed48676055ee9a2cd0afb29e6c3d59e0945e662d925306f73c753e",
+  "ui_isolated_worktree_not_written": true,
+  "no_push_no_merge": true,
+  "observed_isolated_ui_previews_untouched": [
+    18096,
+    18097,
+    18098
+  ]
+}

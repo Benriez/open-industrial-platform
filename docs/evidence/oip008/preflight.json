@@ -1,0 +1,11 @@
+{
+  "self": "01a1a3b3-9469-7311-be9a-1218be181ebc",
+  "workstream": "OIP-008 Core/Domain/Storage/Authorization/REST/MCP",
+  "main": "/Users/benny/Code/open-industrial-platform",
+  "main_head": "a27e7b1e01dc1cb6f4d97c34319b0aa6d7321871",
+  "worktree": "/Users/benny/Code/open-industrial-platform-worktrees/oip-008",
+  "branch": "feature/oip-008-multi-infrastructure",
+  "scope": "Rust core/storage/server, core tests, examples and architecture/evidence only; Flutter source and isolated UI excluded",
+  "checked_at": "2026-11-05T12:24:46.757300+00:00",
+  "active": {}
+}
