@@ -1,0 +1,12 @@
+{
+  "main_unchanged": true,
+  "oip0084_parent": "f9969f0a21f2885a8b6c4695b3c105ad28708d33",
+  "stacked_dependency": true,
+  "ui_files_byte_identical": 83,
+  "design_sha256": "bd9f9d8696ed48676055ee9a2cd0afb29e6c3d59e0945e662d925306f73c753e",
+  "cargo_lock_unchanged": true,
+  "existing_operator_databases_opened": false,
+  "foreign_process_signals": false,
+  "baseline_source_archive_sha256": "009258976ddd4af6bec8043d61a21ce62678e180f6a7ad7194d9ae568cbe4f3d",
+  "all_own_e2e_processes_stopped": true
+}

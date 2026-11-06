@@ -302,7 +302,7 @@ async fn management_catalog_schema_and_configuration_redaction() {
     )
     .unwrap();
     let tools = adapter.tools();
-    assert_eq!(tools.len(), 18);
+    assert_eq!(tools.len(), 19);
     for section in [
         ManagementSection::Server,
         ManagementSection::Tools,

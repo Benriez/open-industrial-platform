@@ -75,20 +75,19 @@ impl Default for CoreConfig {
     fn default() -> Self {
         Self {
             legacy_single_infrastructure: false,
-            database: "oip-demo.sqlite".into(),
+            database: "oip.sqlite".into(),
             http_port: 8080,
-            sources: vec![SourceConfig::primary(4840)],
+            sources: Vec::new(),
             queue_capacity: 64,
             stale_after_ms: 5000,
             shutdown_timeout_ms: 10000,
-            web_dir: Some("apps/flutter/build/web".into()),
+            web_dir: None,
         }
     }
 }
 impl CoreConfig {
     pub fn validate(&self) -> Result<(), String> {
         if self.http_port == 0
-            || self.sources.is_empty()
             || self.sources.len() > 32
             || !(1..=4096).contains(&self.queue_capacity)
             || self.stale_after_ms <= 0

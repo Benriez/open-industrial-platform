@@ -1,0 +1,22 @@
+{
+  "scanner": "gitleaks 8.30.1",
+  "full_tree_scan": true,
+  "rules_disabled": false,
+  "reviewed_false_positives": 27,
+  "all_previous_file_hashes_lines_rules_unchanged": true,
+  "unresolved_secrets": 0,
+  "reason": "source SHA-256 manifests and deterministic simulation gap content hashes; exact classifications external secret-scan-reviewed.json",
+  "independent_reviewers": 2,
+  "open_blocking_review_findings": 0,
+  "local_same_uid_trust_only": true,
+  "browser_admin_implemented": false,
+  "mcp_mutations": 0,
+  "production_release": false,
+  "open_advisories": [
+    "RUSTSEC-2023-0071",
+    "RUSTSEC-2023-0089",
+    "RUSTSEC-2024-0449"
+  ],
+  "push": false,
+  "deployment": false
+}

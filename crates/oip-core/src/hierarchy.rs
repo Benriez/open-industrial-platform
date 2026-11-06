@@ -167,7 +167,6 @@ impl HierarchyRegistry {
             || plan.organizations.len() > 64
             || plan.infrastructures.len() > 128
             || plan.sites.len() > 256
-            || plan.sources.is_empty()
             || plan.sources.len() > 32
             || plan.principals.is_empty()
             || plan.principals.len() > 64

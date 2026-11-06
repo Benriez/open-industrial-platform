@@ -550,6 +550,7 @@ async fn runtime_ownership_rejects_duplicate_and_symlink_alias_then_allows_resta
     ));
     let config = CoreConfig {
         legacy_single_infrastructure: true,
+        sources: vec![oip_server::config::SourceConfig::primary(4840)],
         database: path.clone(),
         ..Default::default()
     };
@@ -562,6 +563,7 @@ async fn runtime_ownership_rejects_duplicate_and_symlink_alias_then_allows_resta
         assert!(CoreRuntime::start(
             CoreConfig {
                 legacy_single_infrastructure: true,
+                sources: vec![oip_server::config::SourceConfig::primary(4840)],
                 database: alias,
                 ..config.clone()
             },
@@ -677,7 +679,7 @@ async fn resource_models_match_direct_service_and_rest_including_sse_projections
         assert_eq!(direct["value"], http, "{uri}");
     }
     let mapping = oip_server::mcp::capability_mapping();
-    assert_eq!(mapping["capabilities"].as_array().unwrap().len(), 27);
+    assert_eq!(mapping["capabilities"].as_array().unwrap().len(), 30);
     assert_eq!(
         mapping["capabilities"]
             .as_array()
@@ -685,7 +687,7 @@ async fn resource_models_match_direct_service_and_rest_including_sse_projections
             .iter()
             .filter(|c| c["mcp_status"] == "BLOCKED")
             .count(),
-        2
+        3
     );
     assert!(s.shutdown().await.clean);
 }
@@ -730,7 +732,7 @@ async fn physically_blocked_output_leaves_ingestion_independent_and_closes_trans
     use rmcp::transport::Transport;
     let s = state();
     s.started().await.unwrap();
-    s.connected(&s.primary).await.unwrap();
+    s.connected(s.primary.as_ref().unwrap()).await.unwrap();
     let (_input, read) = tokio::io::duplex(1);
     let (write, _unread) = tokio::io::duplex(1);
     let mut transport = BoundedTransport::new(read, write);
@@ -745,7 +747,7 @@ async fn physically_blocked_output_leaves_ingestion_independent_and_closes_trans
     .frame_at(0)
     .observations[0]
         .clone();
-    o.data_source_id = s.primary.clone();
+    o.data_source_id = s.primary.clone().unwrap();
     s.ingest(ClientEvent::Observation(Box::new(o)))
         .await
         .unwrap();

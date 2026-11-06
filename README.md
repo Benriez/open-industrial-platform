@@ -4,6 +4,8 @@ Die Open Industrial Platform ist eine geplante quelloffene, selbst betriebene un
 
 ## Aktueller Status
 
+OIP-008.5 ergänzt im isolierten Feature-Branch ein persistentes Geräteinventar ohne Collector-Pflicht und einen normalen Start ohne Demo-Daten. Der Branch ist ausdrücklich auf OIP-008.4 (`f9969f0…`) gestapelt; `main` bleibt unverändert. Geräte starten mit Unknown/NoCollector, lokale Registrierung/Import sind autorisiert und offline, REST/MCP liefern dieselben gefilterten Reads. [Verifikation](docs/oip-0085-verification.md) · [Erstes eigenes Gerät registrieren](docs/architecture/oip-0085-operator-onboarding.md). Keine Produktionsfreigabe. Die folgenden Absätze sind historische Meilensteine.
+
 OIP-008 implementiert im isolierten Feature-Branch eine persistierte Organization-/Infrastructure-/Site-/Source-Hierarchie, Principal-/Role-Bindungen und zentrale REST-/SSE-/MCP-Scope-Auswertung. Noch nicht nach main integriert; lokale Simulation, keine produktive Tenant-Zertifizierung. [Implementierung, Startbefehle und aktuelle Verifikation](docs/oip-008-verification.md).
 
 OIP-007 ergänzt einen persistenten lokalen Core-Daemon und stdio-MCP-Bridges über einen geschützten Unix-Socket. Mehrere Clients teilen dieselbe Runtime, denselben Writer und CapabilityService; Disconnect stoppt den Daemon nicht. Zwölf Read-Capabilities bleiben autorisiert, Flutter-Spectrum unverändert. Ausschließlich lokale Entwicklung, keine Produktionsfreigabe.

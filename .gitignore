@@ -154,3 +154,9 @@ secrets/
 !/docs/evidence/oip0084/reviews.json
 !/docs/evidence/oip0084/security.json
 !/docs/evidence/oip0084/integrity.json
+
+# OIP-008.5 curated summaries; raw DBs/credentials/logs/captures stay external.
+!/docs/evidence/oip0085/test-summary.json
+!/docs/evidence/oip0085/reviews.json
+!/docs/evidence/oip0085/integrity.json
+!/docs/evidence/oip0085/security.json

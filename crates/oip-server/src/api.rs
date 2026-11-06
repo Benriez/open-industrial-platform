@@ -143,6 +143,9 @@ pub fn router_with_identity(
     web_dir: Option<&str>,
 ) -> Router {
     let routes = Router::new()
+        .route("/api/v2/installation/status", get(installation_status))
+        .route("/api/v2/inventory/devices", get(inventory_read))
+        .route("/api/v2/inventory/plan", post(inventory_plan))
         .route("/api/v2/settings", get(settings_read))
         .route("/api/v2/management", get(management_read))
         .route("/api/v2/organizations", get(organizations))
@@ -572,6 +575,43 @@ async fn management_read(
     let Query(q) = q.map_err(|_| CapabilityErrorResponse(diagnostic_invalid()))?;
     match call(s, CapabilityRequest::McpManagementRead(q)).await? {
         CapabilityOutput::Management(v) => Ok(Json(v)),
+        _ => Err(mismatch()),
+    }
+}
+
+async fn installation_status(
+    axum::extract::State(s): axum::extract::State<ApiContext>,
+) -> Result<Json<InventoryPage>, CapabilityErrorResponse> {
+    if s.state.hierarchy.is_some() {
+        return Err(CapabilityErrorResponse(denied()));
+    }
+    match call(
+        s,
+        CapabilityRequest::InventoryRead(InventoryQuery::default()),
+    )
+    .await?
+    {
+        CapabilityOutput::Inventory(v) => Ok(Json(v)),
+        _ => Err(mismatch()),
+    }
+}
+async fn inventory_read(
+    Authorized(s): Authorized,
+    q: Result<Query<InventoryQuery>, axum::extract::rejection::QueryRejection>,
+) -> Result<Json<InventoryPage>, CapabilityErrorResponse> {
+    let Query(q) = q.map_err(|_| CapabilityErrorResponse(inventory_invalid()))?;
+    match call(s, CapabilityRequest::InventoryRead(q)).await? {
+        CapabilityOutput::Inventory(v) => Ok(Json(v)),
+        _ => Err(mismatch()),
+    }
+}
+async fn inventory_plan(
+    Authorized(s): Authorized,
+    body: Result<Json<InventoryPlanQuery>, axum::extract::rejection::JsonRejection>,
+) -> Result<Json<InventoryPlan>, CapabilityErrorResponse> {
+    let Json(q) = body.map_err(|_| CapabilityErrorResponse(inventory_invalid()))?;
+    match call(s, CapabilityRequest::InventoryPlanRead(q)).await? {
+        CapabilityOutput::InventoryPlan(v) => Ok(Json(v)),
         _ => Err(mismatch()),
     }
 }

@@ -344,6 +344,7 @@ pub enum ManagementSection {
     Storage,
     Security,
     DiagnosticRules,
+    Infrastructure,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]

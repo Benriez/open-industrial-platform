@@ -79,7 +79,8 @@ pub struct AppState {
     pub clients: Arc<RwLock<BTreeMap<DataSourceId, Arc<AsyncOpcUaClient>>>>,
     pub catalogs: Arc<RwLock<BTreeMap<DataSourceId, Vec<BrowseEntry>>>>,
     pub scenario_tx: Option<watch::Sender<String>>,
-    pub primary: DataSourceId,
+    pub primary: Option<DataSourceId>,
+    pub inventory: Arc<Vec<InventoryRecord>>,
     pub stopping: tokio_util::sync::CancellationToken,
 }
 impl AppState {
@@ -97,6 +98,7 @@ impl AppState {
         Self::configured(
             store,
             &CoreConfig {
+                sources: vec![SourceConfig::primary(4840)],
                 legacy_single_infrastructure: true,
                 ..Default::default()
             },
@@ -138,6 +140,23 @@ impl AppState {
             .iter()
             .map(SourceConfig::definition)
             .collect::<Result<Vec<_>, _>>()?;
+        let inventory = Arc::new(store.inventory_records().map_err(|_| "invalid inventory")?);
+        if let Some(h) = &hierarchy {
+            for row in inventory.iter() {
+                oip_core::device_site_scope(h, &row.device.site_id)
+                    .map_err(|_| "invalid inventory placement")?;
+            }
+            for source in &h.plan.sources {
+                if !inventory
+                    .iter()
+                    .any(|r| r.device.id == source.device_id && r.device.site_id == source.site_id)
+                {
+                    return Err("source/inventory placement mismatch".into());
+                }
+            }
+        } else if !inventory.is_empty() {
+            return Err("unassigned inventory without hierarchy".into());
+        }
         let settings = Arc::new(
             store
                 .settings_records()
@@ -181,12 +200,18 @@ impl AppState {
             settings_loaded_ms,
             management,
             history,
+            inventory,
             hierarchy,
             legacy_access,
             inner,
             updates,
             data: Arc::new(Mutex::new(UiData {
-                scenario: "normal".into(),
+                scenario: if scenario_tx.is_some() {
+                    "normal"
+                } else {
+                    "not_applicable"
+                }
+                .into(),
                 catalog: Vec::new(),
             })),
             client: Arc::new(RwLock::new(None)),
@@ -194,7 +219,11 @@ impl AppState {
             catalogs: Arc::new(RwLock::new(BTreeMap::new())),
             scenario_tx,
             stopping: tokio_util::sync::CancellationToken::new(),
-            primary: DataSourceId::new(&config.sources[0].id).map_err(|_| "id")?,
+            primary: config
+                .sources
+                .first()
+                .map(|s| DataSourceId::new(&s.id).map_err(|_| "id"))
+                .transpose()?,
         })
     }
     pub fn view(&self) -> CoreView {
@@ -282,7 +311,7 @@ impl AppState {
     pub async fn ingest(&self, event: ClientEvent) -> Result<IngestOutcome, String> {
         let id = match &event {
             ClientEvent::Observation(o) => o.data_source_id.clone(),
-            _ => self.primary.clone(),
+            _ => self.primary.clone().ok_or("No primary source configured")?,
         };
         self.ingest_for(&id, event).await
     }
@@ -365,19 +394,23 @@ impl AppState {
         let primary = v
             .sources
             .iter()
-            .find(|s| s.id == self.primary)
-            .ok_or("primary source missing")?;
-        let status = if primary.connection == ConnectionHealth::Connected {
-            if primary.freshness == Freshness::Fresh {
-                "connected"
+            .find(|s| Some(&s.id) == self.primary.as_ref());
+        let status = if let Some(primary) = primary {
+            if primary.connection == ConnectionHealth::Connected {
+                if primary.freshness == Freshness::Fresh {
+                    "connected"
+                } else {
+                    "stale"
+                }
+            } else if primary.connection == ConnectionHealth::Unknown
+                && primary.reconnect_attempts == 0
+            {
+                "connecting"
             } else {
-                "stale"
+                "reconnecting"
             }
-        } else if primary.connection == ConnectionHealth::Unknown && primary.reconnect_attempts == 0
-        {
-            "connecting"
         } else {
-            "reconnecting"
+            "unavailable"
         };
         let scenario = self
             .data
@@ -401,7 +434,7 @@ impl AppState {
                     is_faulted: false,
                     id: if let Some(p) = self.hierarchy.as_ref().and_then(|h| h.placement(&s.id)) {
                         p.device_id.to_string()
-                    } else if s.id == self.primary {
+                    } else if Some(&s.id) == self.primary.as_ref() {
                         s.entity_id.to_string()
                     } else {
                         format!("{}:{}", s.id, s.entity_id)
@@ -410,7 +443,7 @@ impl AppState {
                     kind: "Industrial".into(),
                     location: "Local simulation".into(),
                     connection: "OPC UA".into(),
-                    simulated: true,
+                    simulated: s.simulated,
                     health: Health {
                         reachability: match s.reachability {
                             Reachability::Reachable => "reachable",
@@ -436,9 +469,59 @@ impl AppState {
                 })
                 .collect()
         };
+        if self.scenario_tx.is_none() {
+            devices.retain(|d| {
+                self.inventory
+                    .iter()
+                    .find(|r| r.device.id.as_str() == d.id)
+                    .is_none_or(|r| r.registration == RegistrationStatus::Registered)
+            });
+            for record in self
+                .inventory
+                .iter()
+                .filter(|r| r.registration == RegistrationStatus::Registered)
+            {
+                if let Some(d) = devices
+                    .iter_mut()
+                    .find(|d| d.id == record.device.id.as_str())
+                {
+                    d.name = record.device.display_name.clone();
+                    d.kind = format!("{:?}", record.device.device_type);
+                    d.location = record
+                        .device
+                        .metadata
+                        .physical_location
+                        .clone()
+                        .unwrap_or_else(|| record.device.site_id.to_string());
+                } else {
+                    devices.push(Device {
+                        data_source_id: None,
+                        is_faulted: false,
+                        id: record.device.id.to_string(),
+                        name: record.device.display_name.clone(),
+                        kind: format!("{:?}", record.device.device_type),
+                        location: record
+                            .device
+                            .metadata
+                            .physical_location
+                            .clone()
+                            .unwrap_or_else(|| record.device.site_id.to_string()),
+                        connection: "No collector".into(),
+                        simulated: record.origin == InventoryOrigin::ExistingSimulationSource,
+                        health: Health {
+                            reachability: "unknown".into(),
+                            vpn_transport: "unknown".into(),
+                            agent_availability: "unknown".into(),
+                            service_health: "not_evaluated".into(),
+                            telemetry_freshness: "no_collector".into(),
+                        },
+                    });
+                }
+            }
+        }
         for device in &mut devices {
             if self.legacy_access && device.id == "M-01" {
-                device.data_source_id = Some(self.primary.clone());
+                device.data_source_id = self.primary.clone();
             }
             if v.observations.iter().any(|o| {
                 device.data_source_id.as_ref() == Some(&o.data_source_id)
@@ -454,7 +537,7 @@ impl AppState {
             system: SystemStatus {
                 primary_source_id: self.primary.clone(),
                 api_version: "v1".into(),
-                simulated: true,
+                simulated: v.sources.iter().any(|s| s.simulated),
                 demo_controls: self.scenario_tx.is_some(),
                 scenario: scenario.clone(),
                 opcua_status: status.into(),
@@ -464,7 +547,7 @@ impl AppState {
                     "waiting"
                 }
                 .into(),
-                last_received_ms: primary.last_received_ms,
+                last_received_ms: primary.and_then(|p| p.last_received_ms),
                 generated_at_ms: now_ms(),
                 persisted_observations: v.health.persisted_observations,
                 cpu_percent: None,

@@ -118,6 +118,13 @@ impl ApplicationServices {
             _ => self.source_for(&request),
         };
         let mut scope = match &request {
+            CapabilityRequest::InventoryRead(q) => q
+                .source
+                .clone()
+                .map(AccessScope::Source)
+                .or_else(|| q.site.clone().map(AccessScope::Site))
+                .or_else(|| q.infrastructure.clone().map(AccessScope::Infrastructure))
+                .or_else(|| q.organization.clone().map(AccessScope::Organization)),
             CapabilityRequest::SettingsRead(q) => q.target().ok(),
             CapabilityRequest::McpManagementRead(_) => Some(AccessScope::Platform),
             CapabilityRequest::OrganizationsRead(q)
@@ -159,6 +166,30 @@ impl ApplicationServices {
                 "interrupted_before_completion",
             )),
         };
+        let inventory_detail_requested =
+            matches!(&request,CapabilityRequest::InventoryRead(q) if q.id.is_some());
+        let inventory_plan_site = if let CapabilityRequest::InventoryPlanRead(q) = &request {
+            q.changes
+                .iter()
+                .filter_map(|c| match c {
+                    InventoryChange::Register { device }
+                    | InventoryChange::Update { device, .. } => Some(device.site_id.clone()),
+                    InventoryChange::Archive { id, .. } => self
+                        .state
+                        .inventory
+                        .iter()
+                        .find(|r| &r.device.id == id)
+                        .map(|r| r.device.site_id.clone()),
+                })
+                .collect::<std::collections::BTreeSet<_>>()
+        } else {
+            std::collections::BTreeSet::new()
+        };
+        let inventory_plan_site = if inventory_plan_site.len() == 1 {
+            inventory_plan_site.into_iter().next()
+        } else {
+            None
+        };
         let result = self.run_tenant(h, principal, context, request).await;
         interrupted.event = None;
         event.authorized = result.is_ok()
@@ -182,6 +213,41 @@ impl ApplicationServices {
                 .scope
                 .as_ref()
                 .map_or_else(|| "authorized-projection".into(), |s| format!("{s:?}"));
+            if let Ok(CapabilityOutput::Inventory(page)) = &result {
+                if inventory_detail_requested {
+                    {
+                        if let Some(row) = page.items.first() {
+                            event.target = row.record.device.id.to_string();
+                            event.scope = if h.permits(
+                                principal,
+                                id,
+                                &AccessScope::Site(row.record.device.site_id.clone()),
+                                false,
+                            ) {
+                                Some(AccessScope::Site(row.record.device.site_id.clone()))
+                            } else {
+                                row.sources
+                                    .iter()
+                                    .find(|s| {
+                                        h.permits(
+                                            principal,
+                                            id,
+                                            &AccessScope::Source((*s).clone()),
+                                            false,
+                                        )
+                                    })
+                                    .cloned()
+                                    .map(AccessScope::Source)
+                            };
+                        }
+                    }
+                }
+            }
+            if let Ok(CapabilityOutput::InventoryPlan(plan)) = &result {
+                event.target = format!("authorized-inventory-plan:{}", plan.actions.len());
+                event.scope = inventory_plan_site.map(AccessScope::Site);
+            }
+
             let resolved = if let Ok(CapabilityOutput::Evidence(e)) = &result {
                 e.anchor.as_ref().map(|a| a.source.clone())
             } else if id == CapabilityId::EventDetailRead {
@@ -215,6 +281,12 @@ impl ApplicationServices {
         let id = request.id();
         if id.descriptor().mutating {
             return Err(denied());
+        }
+        if let InventoryRead(q) = &request {
+            return self.inventory_read(context, q.clone());
+        }
+        if let InventoryPlanRead(q) = &request {
+            return self.inventory_plan_read(context, q.clone());
         }
         if let SettingsRead(q) = &request {
             return self.settings_read(context, q.clone());
@@ -304,7 +376,18 @@ impl ApplicationServices {
                 Ok(CapabilityOutput::Sites(Page::bounded(items, &q)?))
             }
             DeviceRead(q) => {
-                let source = h.source_for_device(&q.id).ok_or_else(inaccessible)?;
+                let Some(source) = h.source_for_device(&q.id) else {
+                    let row = self
+                        .state
+                        .inventory
+                        .iter()
+                        .find(|r| r.device.id.as_str() == q.id)
+                        .ok_or_else(inaccessible)?;
+                    if !h.permits(p, id, &AccessScope::Site(row.device.site_id.clone()), false) {
+                        return Err(inaccessible());
+                    }
+                    return self.run(DeviceRead(q)).await;
+                };
                 if !h.permits(p, id, &AccessScope::Source(source.clone()), false) {
                     return Err(inaccessible());
                 }
@@ -381,6 +464,19 @@ impl ApplicationServices {
                     d.data_source_id
                         .as_ref()
                         .is_some_and(|s| allowed.contains(s))
+                        || self
+                            .state
+                            .inventory
+                            .iter()
+                            .find(|r| r.device.id.as_str() == d.id)
+                            .is_some_and(|r| {
+                                h.permits(
+                                    p,
+                                    id,
+                                    &AccessScope::Site(r.device.site_id.clone()),
+                                    false,
+                                )
+                            })
                 });
                 Ok(CapabilityOutput::Devices(items))
             }
@@ -421,6 +517,19 @@ impl ApplicationServices {
                             v.data_source_id
                                 .as_ref()
                                 .is_some_and(|s| allowed.contains(s))
+                                || self
+                                    .state
+                                    .inventory
+                                    .iter()
+                                    .find(|r| r.device.id.as_str() == v.id)
+                                    .is_some_and(|r| {
+                                        h.permits(
+                                            p,
+                                            id,
+                                            &AccessScope::Site(r.device.site_id.clone()),
+                                            false,
+                                        )
+                                    })
                         })
                         .collect(),
                     observations: s

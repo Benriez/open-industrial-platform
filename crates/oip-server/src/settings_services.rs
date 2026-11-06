@@ -66,7 +66,7 @@ impl ApplicationServices {
                 })
                 .collect()
         };
-        Ok(CapabilityOutput::Settings(SettingsSnapshot{definitions:keys.into_iter().map(SettingKey::definition).collect(),categories:[SettingCategory::General,SettingCategory::McpAgents,SettingCategory::Infrastructure,SettingCategory::DataStorage,SettingCategory::Diagnostics,SettingCategory::SecurityAccess,SettingCategory::System].into_iter().map(|category|SettingsCategoryDefinition{category,status:if matches!(category,SettingCategory::General|SettingCategory::Diagnostics){"offline_administration_required"}else{"read_only"}.into(),capabilities:match category {SettingCategory::General=>vec![CapabilityId::SettingsRead],SettingCategory::Infrastructure=>vec![CapabilityId::OrganizationsRead,CapabilityId::InfrastructuresRead,CapabilityId::SitesRead,CapabilityId::SourcesRead],SettingCategory::Diagnostics=>vec![CapabilityId::SettingsRead,CapabilityId::DiagnosticFindingsRead],_=>vec![CapabilityId::McpManagementRead]}}).collect(),settings,loaded_at_ms:if h.platform(p,CapabilityId::SettingsRead){Some(self.state.settings_loaded_ms)}else{None},inheritance:"only history_page_size: source > site > infrastructure > organization > platform > default; metadata platform only".into()}))
+        Ok(CapabilityOutput::Settings(SettingsSnapshot{definitions:keys.into_iter().map(SettingKey::definition).collect(),categories:[SettingCategory::General,SettingCategory::McpAgents,SettingCategory::Infrastructure,SettingCategory::DataStorage,SettingCategory::Diagnostics,SettingCategory::SecurityAccess,SettingCategory::System].into_iter().map(|category|SettingsCategoryDefinition{category,status:if matches!(category,SettingCategory::General|SettingCategory::Diagnostics){"offline_administration_required"}else{"read_only"}.into(),capabilities:match category {SettingCategory::General=>vec![CapabilityId::SettingsRead],SettingCategory::Infrastructure=>vec![CapabilityId::InventoryRead,CapabilityId::InventoryPlanRead,CapabilityId::OrganizationsRead,CapabilityId::InfrastructuresRead,CapabilityId::SitesRead,CapabilityId::SourcesRead],SettingCategory::Diagnostics=>vec![CapabilityId::SettingsRead,CapabilityId::DiagnosticFindingsRead],_=>vec![CapabilityId::McpManagementRead]}}).collect(),settings,loaded_at_ms:if h.platform(p,CapabilityId::SettingsRead){Some(self.state.settings_loaded_ms)}else{None},inheritance:"only history_page_size: source > site > infrastructure > organization > platform > default; metadata platform only".into()}))
     }
     pub(crate) fn management_read(
         &self,
@@ -221,6 +221,31 @@ impl ApplicationServices {
                 fact(
                     "backup",
                     "offline operator source/SQLite backup; no management export endpoint".into(),
+                );
+            }
+            Infrastructure => {
+                fact(
+                    "active_infrastructure",
+                    "no global selection; use explicit authorized request context".into(),
+                );
+                fact("inventory_devices", self.state.inventory.len().to_string());
+                fact("sites", h.plan.sites.len().to_string());
+                fact(
+                    "demo_controls_enabled",
+                    self.state.scenario_tx.is_some().to_string(),
+                );
+                fact(
+                    "runtime_sources",
+                    self.state.view().sources.len().to_string(),
+                );
+                fact(
+                    "device_management",
+                    "typed local offline registration/update/archive/import; no browser writes"
+                        .into(),
+                );
+                fact(
+                    "monitoring",
+                    "independent of inventory; no collector means unknown reachability".into(),
                 );
             }
             DiagnosticRules => {

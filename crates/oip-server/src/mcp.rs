@@ -93,7 +93,9 @@ struct ToolSpec {
     id: CapabilityId,
     description: &'static str,
 }
-const TOOLS: [ToolSpec; 18] = [
+const TOOLS: [ToolSpec; 20] = [
+    ToolSpec{name:"oip_inventory_read",id:CapabilityId::InventoryRead,description:"Read authorized persistent device inventory, metadata and collector availability. No collector does not mean offline; bounded pagination."},
+    ToolSpec{name:"oip_inventory_plan_read",id:CapabilityId::InventoryPlanRead,description:"Validate a bounded inventory change plan against current permissions and revisions. Read-only; never applies changes or grants permissions."},
     ToolSpec{name:"oip_settings_read",id:CapabilityId::SettingsRead,description:"Read authorized typed setting definitions or effective startup values at an explicit scope; no mutation or credential access."},
     ToolSpec{name:"oip_mcp_management_read",id:CapabilityId::McpManagementRead,description:"Platform-authorized MCP/system management information. Read-only; missing session telemetry and unsupported controls are explicit."},
     ToolSpec {name:"oip_event_history_read",id:CapabilityId::EventHistoryRead,description:"Authorized bounded historical event history; stable persisted evidence, no inferred root cause. Time range uses Unix milliseconds; continuation cursor is principal/query bound and expires after five minutes."},
@@ -127,6 +129,10 @@ const RESOURCES: [(&str, CapabilityId); 7] = [
 ];
 fn input_schema(id: CapabilityId) -> Value {
     let mut v = match id {
+        CapabilityId::InventoryRead => serde_json::to_value(schemars::schema_for!(InventoryQuery)),
+        CapabilityId::InventoryPlanRead => {
+            serde_json::to_value(schemars::schema_for!(InventoryPlanQuery))
+        }
         CapabilityId::SettingsRead => serde_json::to_value(schemars::schema_for!(SettingsQuery)),
         CapabilityId::McpManagementRead => {
             serde_json::to_value(schemars::schema_for!(ManagementQuery))
@@ -258,6 +264,8 @@ fn unit_request(id: CapabilityId) -> CapabilityRequest {
 }
 fn output_schema(id: CapabilityId) -> Value {
     let tag = match id {
+        CapabilityId::InventoryRead => "inventory",
+        CapabilityId::InventoryPlanRead | CapabilityId::InventoryChange => "inventory_plan",
         CapabilityId::SettingsRead => "settings",
         CapabilityId::McpManagementRead => "management",
         CapabilityId::SettingsChange => "settings_changed",
@@ -343,7 +351,7 @@ pub fn capability_mapping() -> Value {
     CACHE.get_or_init(|| json!({"protocol":"2026-07-28","legacy_protocol":"2025-11-25","sdk":"rmcp 3.8.0","capabilities":CapabilityId::ALL.into_iter().map(|id| {
         let tool=TOOLS.iter().find(|t|t.id==id);
         let resource=RESOURCES.iter().find(|(_,c)|*c==id).map(|(uri,_)|*uri);
-        json!({"capability":id,"core_status":if id==CapabilityId::SettingsChange {"OFFLINE_OPERATOR_ONLY"}else{"IMPLEMENTED"},"rest":id!=CapabilityId::SettingsChange,"mcp_status":if id.descriptor().mutating {"BLOCKED"}else{"IMPLEMENTED"},"tool":tool.map(|t|t.name),"resource":resource,"source_resource":if id==CapabilityId::SourcesRead {Some("oip://v1/sources/{id}/health")}else{None},"permissions":id.descriptor().permission,"input_schema":tool.map(|_|input_schema(id)),"output_schema":if id.descriptor().mutating {None}else{Some(output_schema(id))},"test":"crates/oip-server/tests/mcp.rs"})
+        json!({"capability":id,"core_status":if matches!(id,CapabilityId::SettingsChange|CapabilityId::InventoryChange) {"OFFLINE_OPERATOR_ONLY"}else{"IMPLEMENTED"},"rest":!matches!(id,CapabilityId::SettingsChange|CapabilityId::InventoryChange),"mcp_status":if id.descriptor().mutating {"BLOCKED"}else{"IMPLEMENTED"},"tool":tool.map(|t|t.name),"resource":resource,"source_resource":if id==CapabilityId::SourcesRead {Some("oip://v1/sources/{id}/health")}else{None},"permissions":id.descriptor().permission,"input_schema":tool.map(|_|input_schema(id)),"output_schema":if id.descriptor().mutating {None}else{Some(output_schema(id))},"test":"crates/oip-server/tests/mcp.rs"})
     }).collect::<Vec<_>>()})).clone()
 }
 fn bounded(output: CapabilityOutput) -> Result<Value, ErrorData> {

@@ -302,8 +302,8 @@ mod tests {
             0
         );
         db.connection.execute_batch("DROP TABLE settings").unwrap();
-        assert_eq!(db.migrate().unwrap(), 5);
-        assert_eq!(db.migrate().unwrap(), 5);
+        assert_eq!(db.migrate().unwrap(), 6);
+        assert_eq!(db.migrate().unwrap(), 6);
     }
     #[test]
     fn type_limits_and_unprovisioned_scope_rejected() {

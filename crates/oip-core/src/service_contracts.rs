@@ -51,7 +51,7 @@ pub struct Link {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 pub struct SystemStatus {
-    pub primary_source_id: crate::DataSourceId,
+    pub primary_source_id: Option<crate::DataSourceId>,
     pub api_version: String,
     pub simulated: bool,
     pub demo_controls: bool,

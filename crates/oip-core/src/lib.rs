@@ -26,3 +26,6 @@ pub use hierarchy::*;
 
 mod settings;
 pub use settings::*;
+
+mod inventory;
+pub use inventory::*;

@@ -24,7 +24,7 @@ impl<R: CoreRepository> Application<R> {
         now: i64,
         stale_after_ms: i64,
     ) -> Result<Self, ApplicationError> {
-        if stale_after_ms <= 0 || definitions.is_empty() {
+        if stale_after_ms <= 0 {
             return Err(ApplicationError::RegistrationConflict);
         }
         let saved = repository

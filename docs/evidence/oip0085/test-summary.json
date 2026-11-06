@@ -1,0 +1,476 @@
+{
+  "baseline": "f9969f0a21f2885a8b6c4695b3c105ad28708d33",
+  "dependency_oip0084": "stacked; not merged to main",
+  "main": "0e20f7283a8815242aaa71a2066a9944cb8cafc8",
+  "branch": "feature/oip-0085-real-infrastructure",
+  "external_receipt": "/Users/benny/Documents/OIP-Handoffs/core-0085-real-inventory-20261106T200219Z",
+  "status": "VERIFIED_PRECOMMIT",
+  "schema": 6,
+  "baseline_workspace_tests": 144,
+  "workspace_tests": 155,
+  "storage_tests_overlapping": 43,
+  "opcua_interop": 37,
+  "open_only": 2,
+  "flutter_tests": 80,
+  "browser_checks": 16,
+  "native_macos": 1,
+  "declared_capabilities": 30,
+  "read_capabilities": 27,
+  "registered_mcp_tools": 20,
+  "mcp_mutations": 0,
+  "inventory_e2e": [
+    {
+      "phase": "01_empty_normal_runtime",
+      "status": "PASS",
+      "details": {
+        "devices": 0,
+        "sources": 0,
+        "observations": 0,
+        "events": 0,
+        "simulator_started": false
+      }
+    },
+    {
+      "phase": "02_first_device_restart",
+      "status": "PASS",
+      "details": {
+        "registered_without_collector": true,
+        "stable_id": "manual-first",
+        "name_does_not_determine_origin": true,
+        "rest_sdk_parity": true,
+        "unknown_no_collector": true
+      }
+    },
+    {
+      "phase": "03_multi_org_import_auth_crash",
+      "status": "PASS",
+      "details": {
+        "devices_preserved": 5,
+        "archived_retained": 1,
+        "active_org_a": 3,
+        "active_org_b": 1,
+        "mcp_clients": 8,
+        "csv_dry_run_apply_idempotent": true,
+        "settings_preserved": true,
+        "restart_and_sigkill": true,
+        "fake_sources_or_events": 0
+      }
+    },
+    {
+      "phase": "04_separate_actual_source_association",
+      "status": "PASS",
+      "details": {
+        "same_device_identity": true,
+        "source_origin": "simulation_test_only",
+        "receiving_after_actual_observations": true,
+        "device_connectivity_not_inferred": true,
+        "normal_inventory_database_sources": 0
+      }
+    }
+  ],
+  "migration": {
+    "baseline": "f9969f0a21f2885a8b6c4695b3c105ad28708d33",
+    "model_used": false,
+    "baseline_binary_sha256": "73d70d8105914db20210c95268b5733ca2ec19c959c4c29fa57cb93c1935fe58",
+    "status": "PASS",
+    "schema": 6,
+    "preserved_tables": {
+      "organizations": 2,
+      "infrastructures": 3,
+      "sites": 4,
+      "source_placements": 4,
+      "principals": 7,
+      "read_roles": 2,
+      "role_bindings": 7,
+      "settings": 1,
+      "settings_audit": 1,
+      "observations": 30,
+      "collection_events": 41,
+      "data_gaps": 4,
+      "source_health_history": 28
+    },
+    "history_ids_payloads_settings_and_policies_preserved": true,
+    "source_origins_preserved": true,
+    "no_fabricated_old_timestamps": true,
+    "dry_run_schema5_unchanged": true,
+    "foreign_keys": true,
+    "integrity": true,
+    "ledger": [
+      {
+        "version": 1,
+        "checksum": "7379640f0def55cf933347bc04bb68c248b994df590100047853abf6ab6626f3"
+      },
+      {
+        "version": 2,
+        "checksum": "ceb971ef7924d73e97904cab1cf04912116fb92a5667b06c1e143f8aaaeb117e"
+      },
+      {
+        "version": 3,
+        "checksum": "09f0affc73acb8ab958570061c936a014005ee155a5b8d9b809a86a2579c5deb"
+      },
+      {
+        "version": 4,
+        "checksum": "2e19713d2f65b1ecc3e35a086b6d02bc71cc76b4930d4d36b2c7822a48b7a6c8"
+      },
+      {
+        "version": 5,
+        "checksum": "3e21b311affa4c6ad5d4bbc9a399cbd0e39ecbe06cbec1aea58eb21636524ef2"
+      },
+      {
+        "version": 6,
+        "checksum": "4cc7e809a90dbd24503cafea38dbc6993e8395a4082140b047ba407e6cf2e976"
+      }
+    ],
+    "backup_sha256": "51e2824f050ac03abd4f138de80d5e5173c9a3147cdc0d0c8d8607d4472aaa85",
+    "own_processes_stopped": true
+  },
+  "operator_workflow": {
+    "status": "PASS",
+    "typed_uuid_assigned": true,
+    "no_source_required": true,
+    "no_platform_grants": true,
+    "metadata_preserved_on_rename": true
+  },
+  "rust_checks": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:34:01.719353+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "check",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "--workspace",
+        "--all-targets"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:34:02.237384+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:34:11.043977+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "workspace-tests",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--workspace",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:34:16.394944+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "interop-tests",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--features",
+        "open62541-backend",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:36:47.501146+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "open-only-tests",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--no-default-features",
+        "--features",
+        "open62541-backend",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:38:22.274188+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "no-default-check",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--no-default-features"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:38:32.783398+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "no-default-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--no-default-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:38:47.804504+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "open-only-check",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--no-default-features",
+        "--features",
+        "open62541-backend"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:38:50.954945+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "open-only-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--no-default-features",
+        "--features",
+        "open62541-backend",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:38:53.642847+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "interop-check",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--features",
+        "open62541-backend"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:38:56.959547+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "interop-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "oip-opcua",
+        "--all-targets",
+        "--features",
+        "open62541-backend",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:39:03.703770+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "deny",
+      "command": [
+        "target/oip-002-tools/bin/cargo-deny",
+        "check",
+        "advisories",
+        "licenses",
+        "bans",
+        "sources"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:39:13.295160+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:39:14.697480+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "examples",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "-p",
+        "oip-server",
+        "--examples"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "started_at": "2026-11-06T20:45:29.931727+00:00",
+      "status": "PASS",
+      "exit_code": 0
+    }
+  ],
+  "settings_e2e_status": "PASS",
+  "prior_harnesses": [
+    {
+      "name": "diagnostics",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "migration",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "headless",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "mcp",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "legacy",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "sqlperf",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "appperf",
+      "status": "PASS",
+      "exit_code": 0
+    }
+  ],
+  "ui_checks": [
+    {
+      "name": "browser",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "interactions",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "visual",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "native_macos",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "demo_core_shutdown",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "gates": {
+    "G1": "PASS",
+    "G2": "PASS",
+    "G3": "PASS",
+    "G4": "PASS",
+    "G5": "PASS",
+    "G6": "PASS",
+    "G7": "PASS",
+    "G8": "PASS",
+    "G9": "PASS",
+    "G10": "PASS",
+    "G11": "PASS",
+    "G12": "PASS",
+    "G13": "PASS",
+    "G14": "PASS",
+    "G15": "PASS",
+    "G16": "PASS",
+    "G17": "PASS",
+    "G18": "External git-final.json and SHA256SUMS certify the actual feature commit and receipt after commit"
+  },
+  "production_release": false,
+  "merge": false,
+  "push": false,
+  "deployment": false
+}

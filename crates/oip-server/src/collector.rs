@@ -18,7 +18,9 @@ pub const METRICS: &[&str] = &[
 pub async fn collect(state: AppState, endpoint: String) {
     let mut config = SourceConfig::primary(4840);
     config.endpoint = endpoint;
-    let id = state.primary.clone();
+    let Some(id) = state.primary.clone() else {
+        return;
+    };
     let adapter = Arc::new(OpcUaAdapter {
         config,
         state: state.clone(),

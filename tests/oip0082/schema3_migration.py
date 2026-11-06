@@ -101,14 +101,14 @@ try:
  assert json.loads((OUT/'schema4-upgrade.log').read_text())['schema_version']==3
  for table,key in [('observations','observation_key'),('collection_events','event_key'),('data_gaps','gap_key')]:assert sql('select '+key+' from '+table+' order by '+key)==before[table]
  assert sql('pragma user_version')[0]['user_version']==3 and sql('pragma foreign_key_check')==[]
- d=daemon('schema4-stale-restore');wait(lambda:len(sources())==4,'schema4 sources');assert sql('pragma user_version')[0]['user_version']==5
+ d=daemon('schema4-stale-restore');wait(lambda:len(sources())==4,'schema4 sources');assert sql('pragma user_version')[0]['user_version']==6
  for table,key in [('observations','observation_key'),('collection_events','event_key'),('data_gaps','gap_key')]:assert all(row in sql('select '+key+' from '+table+' order by '+key) for row in before[table])
  assert all(s['last_received_ms'] is None and s['freshness']=='unknown' for s in sources().values())
  assert all(o['freshness']=='stale' for o in get('/api/v2/observations','platform-reader'))
  sims=[sim(i,'schema4-source-'+str(i)) for i in range(4)];wait(lambda:all(s['freshness']=='fresh' for s in sources().values()),'fresh requires actual new receive')
  stop(d)
  for p in sims:stop(p)
- assert sql('pragma integrity_check')[0]['integrity_check']=='ok';REPORT.update(status='PASS',before_counts=counts,keys_preserved=True,foreign_keys=True,integrity=True,stale_restore=True,schema=5)
+ assert sql('pragma integrity_check')[0]['integrity_check']=='ok';REPORT.update(status='PASS',before_counts=counts,keys_preserved=True,foreign_keys=True,integrity=True,stale_restore=True,schema=6)
 except BaseException as e:REPORT.update(status='FAIL',error=repr(e));raise
 finally:
  for p in reversed(PROCS):

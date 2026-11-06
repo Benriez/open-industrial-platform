@@ -1,0 +1,47 @@
+{
+  "status": "PASS",
+  "reviewers": [
+    {
+      "id": "/root/review_inventory_0085",
+      "scope": "Registry/storage/migration/import/data integrity",
+      "mode": "independent read-only code and parent-evidence inspection; no independent test execution",
+      "open_blocking_findings": 0,
+      "fixed": [
+        "dry-run cannot migrate/create DB",
+        "Other instead of invented legacy type",
+        "bounded exact legacy name preservation/fail-atomic",
+        "conflict-specific source sync with rollback",
+        "rename preserves metadata; explicit raw replacement",
+        "cleanup no-create guard"
+      ]
+    },
+    {
+      "id": "/root/review_auth_0085",
+      "scope": "Identity/authorization/REST/MCP/OS operator/cursor/scopes",
+      "mode": "independent read-only code and parent-evidence inspection; no independent test execution",
+      "open_blocking_findings": 0,
+      "fixed": [
+        "readonly snapshots without CoreRun/writer",
+        "validated audit targets after authorization",
+        "canonical Source selector parity",
+        "offline unknown simulation provenance is null",
+        "typed mutations remain offline, no grants or credential export"
+      ]
+    }
+  ],
+  "source_binding": {
+    "crates/oip-core/src/inventory.rs": "ee3e705fc014f725009fe44f9a8bbc429de3315be0b6620ae57d51582397985c",
+    "crates/oip-storage/src/inventory.rs": "5945964f8a492ea8b401788d8e70671d5b2c9f317d0c28c560b4f7f7ce585b94",
+    "crates/oip-server/src/inventory_services.rs": "be43ea4d121db6d7f6c9128522ed9fb6f0777f957e5772169cfa3a54c9568ae2",
+    "crates/oip-server/src/state.rs": "04e094bc9f603b165336588cdb0165c039204a75ac6d86297abc8c1e533e7e64",
+    "crates/oip-server/src/tenant_services.rs": "6c1b6b942675c221a4cdf8de5ce68cff01e5a9786aa0e73e9fe7fe59c24118b6",
+    "crates/oip-server/src/main.rs": "6757fa1f638895eefe74d2115b2db3af07fb36c5df190ddd4778d9f253f56f84",
+    "crates/oip-server/src/mcp.rs": "db83afd42cda388b2e881228510d10994532dabca000f9f2257b12215af70cb4",
+    "crates/oip-server/tests/inventory.rs": "6df01100af6222f63f20d09e987ccf31aa42a2f11694b35a0ded8de984622703",
+    "tests/oip0085/onboard.py": "d3d558c2d2c62f7f1d14c03b7a0479f10aeea7f40ebd0e62cb4fdd323116e867",
+    "tests/oip0085/acceptance.py": "20aaeaec43ec068f18cff251c96afb53b3ff61d04784abc2ef4894d0c8cdf61b",
+    "tests/oip0085/migration.py": "e5345c431e4b471a49508aa9c7999e1ef89b4c949ceb871bc2b4df2cb0d3f6f6"
+  },
+  "post_review_helper_hardening": "Both read-only reviewers completed final follow-up: no new blockers; backend validates before echo; random-sentinel E2E PASS; no independent test rerun",
+  "final_e2e_report_sha256": "e4b55dcc99f8c01cd1c78801862e5dff608f3183adc7c257370fd01b76281e44"
+}

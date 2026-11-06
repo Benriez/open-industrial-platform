@@ -17,3 +17,5 @@ pub mod provisioning;
 pub mod identity;
 
 pub mod settings_services;
+
+pub mod inventory_services;

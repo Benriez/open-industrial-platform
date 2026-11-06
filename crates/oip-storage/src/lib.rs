@@ -14,6 +14,7 @@ use sha2::{Digest, Sha256};
 use std::path::Path;
 use thiserror::Error;
 mod history;
+mod inventory;
 mod settings;
 pub use history::*;
 mod ownership;
@@ -114,6 +115,11 @@ const MIGRATIONS: &[Migration] = &[
         name: "typed_application_settings",
         sql: settings::SETTINGS_SQL,
     },
+    Migration {
+        version: 6,
+        name: "independent_device_inventory",
+        sql: inventory::INVENTORY_SQL,
+    },
 ];
 
 #[derive(Debug, Error)]
@@ -180,7 +186,7 @@ impl SqliteStore {
     }
 
     pub fn migrate(&mut self) -> Result<u32, StorageError> {
-        self.migrate_to(5)
+        self.migrate_to(6)
     }
     fn migrate_to(&mut self, maximum: u32) -> Result<u32, StorageError> {
         // Validate history BEFORE any DDL. A corrupt migration ledger must never
@@ -286,6 +292,12 @@ impl SqliteStore {
                 ));
             }
             let transaction = self.write_transaction()?;
+            if migration.version == 6 {
+                let invalid:i64=transaction.query_row("SELECT count(*) FROM core_sources WHERE octet_length(json_extract(payload_json,'$.name'))>16384 OR length(trim(json_extract(payload_json,'$.name')))=0",[],|r|r.get(0))?;
+                if invalid != 0 {
+                    return Err(StorageError::Hierarchy("Legacy source names require explicit operator review; migration6 not applied"));
+                }
+            }
             transaction.execute_batch(migration.sql)?;
             transaction.execute(
                 "INSERT INTO schema_migrations(version, name, checksum) VALUES (?1, ?2, ?3)",
@@ -899,8 +911,8 @@ mod tests {
         let path = test_path("migration");
         std::fs::create_dir_all(path.parent().expect("parent")).expect("create test dir");
         let mut store = SqliteStore::open(&path).expect("open");
-        assert_eq!(store.schema_version().expect("version"), 5);
-        assert_eq!(store.migrate().expect("second migration"), 5);
+        assert_eq!(store.schema_version().expect("version"), 6);
+        assert_eq!(store.migrate().expect("second migration"), 6);
         store
             .connection
             .execute("PRAGMA user_version = 0", [])
@@ -911,7 +923,7 @@ mod tests {
         ));
         store
             .connection
-            .execute("PRAGMA user_version = 5", [])
+            .execute("PRAGMA user_version = 6", [])
             .expect("restore version");
         store
             .connection

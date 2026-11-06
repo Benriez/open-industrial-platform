@@ -70,7 +70,7 @@ impl CollectionAdapter for OpcUaAdapter {
                 .write()
                 .await
                 .insert(id.clone(), catalog.clone());
-            if id == self.state.primary {
+            if Some(id.clone()) == self.state.primary {
                 self.state
                     .data
                     .lock()
@@ -108,7 +108,7 @@ impl CollectionSession for OpcUaSession {
     fn close(&mut self) -> BoxFuture<'_, Result<(), RuntimeError>> {
         Box::pin(async move {
             self.state.clients.write().await.remove(&self.id);
-            if self.id == self.state.primary {
+            if Some(self.id.clone()) == self.state.primary {
                 *self.state.client.write().await = None;
             }
             let remote_close = self.client.shutdown().await;
@@ -235,7 +235,7 @@ impl CoreRuntime {
         config.validate().map_err(RuntimeError::Configuration)?;
         let ownership = oip_storage::DatabaseOwnership::acquire(&config.database)?;
         let mut store = SqliteStore::open(&config.database)?;
-        if store.hierarchy()?.is_none() {
+        if store.hierarchy()?.is_none() && !config.sources.is_empty() {
             if !config.legacy_single_infrastructure {
                 return Err(RuntimeError::Configuration("offline hierarchy provisioning required; legacy mode must be explicitly selected".into()));
             }

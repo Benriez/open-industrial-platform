@@ -441,6 +441,7 @@ impl SqliteStore {
             return Err(bad());
         }
         tx.execute("INSERT INTO provisioning_audit(at_ms,actor,operation,plan_digest,outcome) VALUES(?1,'local-offline-operator','provision_read_hierarchy',?2,?3)",params![Timestamp::now().map_err(|_|bad())?.as_unix_millis(),digest,if idempotent{"idempotent"}else{"committed"}])?;
+        crate::inventory::sync_sources(&tx)?;
         tx.commit()?;
         Ok(ProvisioningResult {
             schema_version: self.schema_version()?,

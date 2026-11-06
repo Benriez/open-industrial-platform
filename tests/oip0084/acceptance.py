@@ -64,10 +64,10 @@ try:
  for principal,scope,role in [('platform-reader',{'kind':'platform'},'settings-operator'),('reader-org-a',{'kind':'organization','id':'org-a'},'settings-read'),('reader-org-b',{'kind':'organization','id':'org-b'},'settings-read'),('reader-infra-a1',{'kind':'infrastructure','id':'infra-a1'},'settings-read'),('reader-site-a1',{'kind':'site','id':'site-a1'},'settings-read'),('reader-source-b',{'kind':'source','id':'source-b'},'settings-read')]:plan['bindings'].append({'principal_id':principal,'role_id':role,'scope':scope})
  (RUN/'plan.json').write_text(json.dumps(plan));p=start('settings-policy-provision',[BIN,'--config',RUN/'core.json','--provision',RUN/'plan.json']);p.wait(timeout=15);assert p.returncode==0
  # Runtime-open alone migrates4→5 with no extra grants; do before configured values.
- d=daemon('schema5-default-restore');wait(lambda:len(sources())==4,'restored old sources');assert sql('PRAGMA user_version')[0]['user_version']==5
+ d=daemon('schema5-default-restore');wait(lambda:len(sources())==4,'restored old sources');assert sql('PRAGMA user_version')[0]['user_version']==6
  assert settings()['settings'][2]['effective']['value']==50 or any(s['effective']=={'type':'integer','value':50} for s in settings()['settings'])
  assert all(s['freshness']=='unknown' and s['last_received_ms'] is None for s in sources().values());assert all(o['freshness']=='stale' for o in get('/api/v2/observations','platform-reader'))
- stop(d);preservation(before);record('01_real_schema4_migration',{'schema':5,'before_counts':{k:len(v) for k,v in before.items()},'ids_and_payloads_preserved':True,'backup_sha256':hashlib.sha256(backup.read_bytes()).hexdigest()})
+ stop(d);preservation(before);record('01_real_schema4_migration',{'schema':6,'before_counts':{k:len(v) for k,v in before.items()},'ids_and_payloads_preserved':True,'backup_sha256':hashlib.sha256(backup.read_bytes()).hexdigest()})
  for scope,value in [({'kind':'platform'},40),({'kind':'organization','id':'org-a'},13),({'kind':'infrastructure','id':'infra-a1'},11),({'kind':'site','id':'site-a1'},9),({'kind':'source','id':'source-a'},7)]:change('history_page_size',{'type':'integer','value':value},scope)
  change('instance_name',{'type':'text','value':'OIP Settings Acceptance'})
  change('history_page_size',{'type':'integer','value':0},ok=False);change('history_page_size',{'type':'integer','value':50},revision=0,ok=False)
@@ -86,12 +86,12 @@ try:
  for scope,id,p in [('organization','org-a','reader-org-a'),('infrastructure','infra-a1','reader-infra-a1'),('site','site-a1','reader-site-a1'),('source','source-b','reader-source-b')]:assert settings(scope,id,p)['settings']
  for path,p in [('/api/v2/settings','reader-org-a'),('/api/v2/settings?scope=organization&scope_id=org-b','reader-org-a'),('/api/v2/settings?scope=source&scope_id=source-d','reader-infra-a1'),('/api/v2/management','reader-org-a')]:assert req(path,p)[0] in [403,404]
  clients=[Client(p,'settings-client-'+str(i)) for i,p in enumerate(['platform-reader','reader-org-a','reader-infra-a1','reader-org-b','reader-site-a1','reader-source-b','reader-org-a','reader-org-b'])];A=clients[0]
- assert len(A.command({'op':'tools'})['result']['tools'])==18;assert len(clients[1].command({'op':'tools'})['result']['tools'])==17
+ assert len(A.command({'op':'tools'})['result']['tools'])==19;assert len(clients[1].command({'op':'tools'})['result']['tools'])==18
  assert A.call('settings_read')==settings();assert A.call('mcp_management_read',{'section':'tools'})==management('tools')
  assert clients[1].call('settings_read',{'scope':'organization','scope_id':'org-a'})==settings('organization','org-a','reader-org-a')
  preview=management('client_configuration')['client_configuration'];cfg=json.loads(preview['configuration_json']);assert cfg['mcpServers']['oip-local']['command']==str(BIN);assert cfg['mcpServers']['oip-local']['args'][::2]==['--mcp-bridge','<AUTHORIZED_PRIVATE_SOCKET>','<AUTHORIZED_PRIVATE_CREDENTIAL_FILE>'];assert not preview['usable_without_replacement'] and not preview['credential_provisioned']
  for token in TOKENS.values():assert token.hex() not in preview['configuration_json']
- assert management('sessions')['availability']=='unsupported';assert len(management('tools')['tools'])==18
+ assert management('sessions')['availability']=='unsupported';assert len(management('tools')['tools'])==20
  for c in clients[1:]:c.denied('mcp_management_read',{});c.denied('settings_read',{'scope':'platform'});c.denied('settings_read',{'scope':'organization','scope_id':'org-b' if c.principal!='reader-org-b' else 'org-a'})
  for q in [{'actor':'platform-reader'},{'principal':'platform-reader'},{'scope':'source','scope_id':'x'*1000},{'scope':'tenant'},{'key':'credential'},{'key':None,'unexpected':True}]:clients[1].denied('settings_read',q)
  A.denied('settings_change',{'value':{'type':'integer','value':1}});change('history_page_size',{'type':'integer','value':5},revision=1,ok=False)
@@ -102,7 +102,7 @@ try:
  metrics=performance(A);metrics['offline_save']={'samples':len(SAVE_TIMES),'p50_ms':percentile(SAVE_TIMES,.5),'p95_ms':percentile(SAVE_TIMES,.95),'includes':'CLI process startup, ownership, schema validation, CAS+audit transaction; no live apply'};before_count=count();time.sleep(.6);assert count()>before_count
  metrics['resources']={'rss_kib_cpu_percent':subprocess.check_output(['ps','-p',str(d.pid),'-o','rss=,pcpu='],text=True).strip(),'ingestion_before':before_count,'ingestion_after':count(),'method':'one OS process sample during eight attached clients; not peak/steady-state measurement'}
  with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:assert all(pool.map(lambda c:bool(c.call('settings_read',{'scope':'platform'} if c.principal=='platform-reader' else {'scope':'organization','scope_id':'org-b' if c.principal=='reader-org-b' else 'org-a'})) if c.principal in ['platform-reader','reader-org-a','reader-org-b'] else bool(c.call('sources_read')),clients))
- record('02_settings_parity_security',{'mcp_clients':8,'operator_tools':18,'scoped_tools':17,'safe_writes':7,'running_write_rejected':True,'sessions_inventory':'unsupported','config_preview':'valid_placeholder_template_no_grants','performance':metrics})
+ record('02_settings_parity_security',{'mcp_clients':8,'operator_tools':19,'scoped_tools':18,'safe_writes':7,'running_write_rejected':True,'sessions_inventory':'unsupported','config_preview':'valid_placeholder_template_no_grants','performance':metrics})
  clients[1].abort();assert d.poll() is None and A.call('settings_read');before_count=count()
  for c in clients:c.close()
  time.sleep(.7);assert count()>before_count
@@ -115,7 +115,7 @@ try:
  stop(d);preservation(before);assert sql('PRAGMA integrity_check')[0]['integrity_check']=='ok' and sql('PRAGMA foreign_key_check')==[];assert sql('SELECT count(*) n FROM observations')[0]['n']==sql('SELECT count(DISTINCT observation_key) n FROM observations')[0]['n']
  authority=sql('SELECT DISTINCT operator_authority FROM settings_audit');assert authority==[{'operator_authority':'local_os_operator_uid:'+str(os.geteuid())}]
  record('03_disconnect_recovery_integrity',{'restart':True,'sigkill':True,'persisted_effective_settings':True,'no_duplicate_keys':True,'foreign_keys':True,'integrity':True,'historical_keys_preserved':True})
- REPORT['status']='PASS';REPORT['schema']=5;REPORT['performance']=metrics
+ REPORT['status']='PASS';REPORT['schema']=6;REPORT['performance']=metrics
 except Exception:
  REPORT['status']='FAIL';raise
 finally:

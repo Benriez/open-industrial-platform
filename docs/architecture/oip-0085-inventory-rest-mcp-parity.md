@@ -1,0 +1,19 @@
+# OIP-008.5 — Agent-first inventory parity
+
+| Operation | Core contract | REST | MCP | Permission / channel |
+|---|---|---|---|---|
+| Registry query/detail/metadata/associations/monitoring | InventoryRead(InventoryQuery) → InventoryPage | GET /api/v2/inventory/devices | oip_inventory_read | DevicesRead at actual Site or specifically associated Source |
+| Registration/update/archive/import plan validation | InventoryPlanRead(InventoryPlanQuery) → InventoryPlan | POST /api/v2/inventory/plan (read-only validation) | oip_inventory_plan_read | InventoryManage for every target, no mutation |
+| Register/update/archive/import apply | InventoryChange offline contract | **none** | **none** | InventoryManage + exclusive local OS operator; offline only |
+| Empty installation status | same InventoryRead default empty projection | GET /api/v2/installation/status | no anonymous IPC profile is created | public constant empty status only before hierarchy exists; no IDs/counts/names |
+| Compatibility devices/detail/scoped SSE | existing DevicesRead/DeviceRead/ScopedSnapshotRead | existing v1/v2 routes | existing tools/resources | original permissions retained, manual devices scoped by actual Site |
+
+30 declared capability contracts:27 reads; legacy simulation mutation plus offline SettingsChange and InventoryChange remain unavailable over MCP.20 registered tools exist; discovery is filtered by actual grants. Old reader profiles additionally discover InventoryRead through existing DevicesRead. InventoryPlanRead requires a separate administrative grant. No tool can apply a plan, mutate roles, extract credentials or create a collector.
+
+InventoryQuery: optional organization/infrastructure/site/source/id/q/offset/limit/include_archived. Source spelling is canonical across REST/MCP. Unknown fields, invalid IDs/filters and limits fail; supplied Organization/Infrastructure/Site parent relationships must be consistent. Source is an additional intersecting filter; it never broadens a selected parent scope. Parent-label selection never expands the authorized row set. Detail by id returns one authorized row, otherwise generic inaccessible; foreign/missing IDs disclose no names. Lists are filtered **before** pagination/has_more. Same-site Source-only readers do not see unrelated manual devices.
+
+InventoryPage {items,offset,limit,has_more,status,management_channel}. Each InventoryDevice contains record, resolved parents, sources, connectivity, telemetry, health and monitoring_simulated (nullable). No measurements are invented. Registration-plan changes are typed tagged Register/Update/Archive objects, max100. Update requires explicit complete metadata; HTTP/MCP are validation-only. Plan actions return authorized targets/outcomes/expected revisions, applied=false and offline_requires_restart. There is no generic command executor or arbitrary endpoint/file/SQL input.
+
+REST and MCP call the same ApplicationServices. The offline CLI reuses the same authorized inventory_projection for read-only snapshots and the same core validate_inventory_plan for mutations. Store code only persists an already validated bounded plan in one transaction. Scope checks are not recreated in Axum/MCP/Flutter/SQL DTO mapping. Successful detail/plan reads audit only authorized target/scope; foreign targets never enter audit fields.
+
+Inventory uses the existing principal binding from protected local IPC credentials/peer identity or REST header. No user-supplied Principal/Grants in tool parameters is accepted. Public bootstrap status stops once provisioning exists; all inventory after that requires authorization. Existing v1 demo compatibility is explicit, never an anonymous real-inventory fallback. MCP16KiB input/4MiB output/16 requests per session, configured IPC session bounds and cancellation remain; REST body bounds and core batch/page limits also apply. No new session or writer implementation.

@@ -96,9 +96,7 @@ impl ApplicationServices {
             | CapabilityRequest::ObservationsRead(q)
             | CapabilityRequest::EventsRead(q) => q.source.clone(),
             CapabilityRequest::DevicesRead(q) => q.source.clone(),
-            CapabilityRequest::OpcuaNodesRead(q) => {
-                Some(q.source.clone().unwrap_or(self.state.primary.clone()))
-            }
+            CapabilityRequest::OpcuaNodesRead(q) => q.source.clone().or(self.state.primary.clone()),
             CapabilityRequest::DeviceRead(q) => {
                 self.state
                     .snapshot()
@@ -108,7 +106,7 @@ impl ApplicationServices {
                     .find(|d| d.id == q.id)?
                     .data_source_id
             }
-            CapabilityRequest::SimulationScenarioSet(_) => Some(self.state.primary.clone()),
+            CapabilityRequest::SimulationScenarioSet(_) => self.state.primary.clone(),
             _ => None,
         }
     }
@@ -176,13 +174,12 @@ impl ApplicationServices {
         use CapabilityRequest::*;
         let s = &self.state;
         match request {
-            SettingsRead(_) | McpManagementRead(_) | SettingsChange(_) => {
-                Err(CapabilityError::new(
-                    CapabilityErrorCode::PermissionDenied,
-                    "PRINCIPAL_REQUIRED",
-                    "Provisioned principal required",
-                ))
-            }
+            InventoryRead(_) | InventoryPlanRead(_) | InventoryChange(_) | SettingsRead(_)
+            | McpManagementRead(_) | SettingsChange(_) => Err(CapabilityError::new(
+                CapabilityErrorCode::PermissionDenied,
+                "PRINCIPAL_REQUIRED",
+                "Provisioned principal required",
+            )),
             EventHistoryRead(_)
             | EventDetailRead(_)
             | DataGapsRead(_)
@@ -372,7 +369,13 @@ impl ApplicationServices {
         let offset = q.offset.unwrap_or(0);
         let limit = q.limit.unwrap_or(40).clamp(1, 100);
         let search = q.q.unwrap_or_default().to_lowercase();
-        let source = q.source.unwrap_or(s.primary.clone());
+        let source = q.source.or(s.primary.clone()).ok_or_else(|| {
+            CapabilityError::new(
+                CapabilityErrorCode::SourceUnavailable,
+                "NO_SOURCE",
+                "No source configured",
+            )
+        })?;
         if !s.view().sources.iter().any(|v| v.id == source) {
             return Err(CapabilityError::new(
                 CapabilityErrorCode::ResourceNotFound,
@@ -507,7 +510,10 @@ impl CapabilityService for ApplicationServices {
             .filter(|id| {
                 !matches!(
                     id,
-                    CapabilityId::SettingsRead
+                    CapabilityId::InventoryRead
+                        | CapabilityId::InventoryPlanRead
+                        | CapabilityId::InventoryChange
+                        | CapabilityId::SettingsRead
                         | CapabilityId::McpManagementRead
                         | CapabilityId::SettingsChange
                         | CapabilityId::OrganizationsRead
@@ -533,6 +539,24 @@ impl CapabilityService for ApplicationServices {
         >,
     > {
         Box::pin(async move {
+            if self.state.hierarchy.is_none() {
+                if let CapabilityRequest::InventoryRead(q) = &request {
+                    let result = self.inventory_read(context, q.clone());
+                    self.audit.record(&self.audit_event(
+                        context,
+                        request.id(),
+                        None,
+                        result.is_ok(),
+                        if result.is_ok() {
+                            "bootstrap_status"
+                        } else {
+                            "denied"
+                        },
+                    ))?;
+                    return result;
+                }
+            }
+
             if self.state.hierarchy.is_some() && context.principal.is_some() {
                 return self.execute_tenant(context, request).await;
             }

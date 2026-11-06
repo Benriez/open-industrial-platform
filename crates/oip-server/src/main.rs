@@ -86,6 +86,11 @@ async fn run() -> Result<(), Box<dyn Error>> {
     }
     let mcp = args.iter().any(|a| a == "--mcp-stdio");
     let mcp_rest = args.iter().any(|a| a == "--mcp-rest");
+    let mut inventory_initialize = None;
+    let mut inventory_plan = None;
+    let mut inventory_query = None;
+    let mut inventory_inspect = None;
+    let mut inventory_apply = false;
     let mut settings_change = None;
     let mut provision = None;
     let mut adoption = None;
@@ -99,6 +104,10 @@ async fn run() -> Result<(), Box<dyn Error>> {
         i += 1;
         match arg.as_str() {
             "--mcp-stdio" | "--mcp-rest" | "--daemon" => continue,
+            "--inventory-apply" => {
+                inventory_apply = true;
+                continue;
+            }
             "--inspect-legacy" => {
                 inspect_legacy = true;
                 continue;
@@ -121,6 +130,10 @@ async fn run() -> Result<(), Box<dyn Error>> {
         let value = args.get(i).ok_or("missing argument value")?;
         i += 1;
         match arg.as_str() {
+            "--inventory-initialize" => inventory_initialize = Some(value.clone()),
+            "--inventory-plan" => inventory_plan = Some(value.clone()),
+            "--inventory-query" => inventory_query = Some(value.clone()),
+            "--inventory-cleanup-plan" => inventory_inspect = Some(value.clone()),
             "--settings-change" => settings_change = Some(value.clone()),
             "--provision" => provision = Some(value.clone()),
             "--adopt-legacy" => adoption = Some(value.clone()),
@@ -137,7 +150,120 @@ async fn run() -> Result<(), Box<dyn Error>> {
             _ => return Err(format!("unknown argument: {arg}").into()),
         }
     }
+    if config.legacy_single_infrastructure
+        && !args.iter().any(|a| a == "--database" || a == "--config")
+    {
+        return Err(
+            "explicit simulation/legacy mode requires an isolated --database or --config".into(),
+        );
+    }
+    if config.legacy_single_infrastructure && config.sources.is_empty() {
+        config.sources = vec![oip_server::config::SourceConfig::primary(opcua_port)];
+    }
     config.validate()?;
+    let inventory_modes = [
+        inventory_initialize.is_some(),
+        inventory_plan.is_some(),
+        inventory_query.is_some(),
+        inventory_inspect.is_some(),
+    ]
+    .into_iter()
+    .filter(|v| *v)
+    .count();
+    if inventory_modes > 1 || inventory_apply && inventory_plan.is_none() {
+        return Err("select one inventory operator mode; apply requires plan".into());
+    }
+    if inventory_modes != 0 {
+        if daemon
+            || mcp
+            || mcp_rest
+            || demo
+            || ipc_config.is_some()
+            || policy_path.is_some()
+            || provision.is_some()
+            || adoption.is_some()
+            || inspect_legacy
+            || settings_change.is_some()
+        {
+            return Err("inventory administration is offline only".into());
+        }
+        let read = |path: String| -> Result<Vec<u8>, Box<dyn Error>> {
+            use std::io::Read;
+            let f = std::fs::File::open(path)?;
+            let mut b = Vec::new();
+            f.take(1_048_577).read_to_end(&mut b)?;
+            if b.len() > 1_048_576 {
+                return Err("inventory request too large".into());
+            }
+            Ok(b)
+        };
+        if let Some(path) = inventory_initialize {
+            #[derive(serde::Deserialize)]
+            #[serde(deny_unknown_fields)]
+            struct Init {
+                principal: oip_core::PrincipalId,
+            }
+            let q: Init = serde_json::from_slice(&read(path)?)
+                .map_err(|_| "invalid inventory initialization")?;
+            let version = oip_storage::SqliteStore::inventory_initialize_file(
+                &config.database,
+                &q.principal,
+            )?;
+            println!(
+                "{}",
+                serde_json::json!({"schema":version,"initialized":true,"devices_created_from_names":false})
+            );
+            return Ok(());
+        }
+        if let Some(path) = inventory_plan {
+            let request =
+                serde_json::from_slice(&read(path)?).map_err(|_| "invalid typed inventory plan; updates require complete metadata and expected revision")?;
+            let result = oip_storage::SqliteStore::inventory_admin_file(
+                &config.database,
+                request,
+                inventory_apply,
+                oip_server::state::now_ms(),
+            )?;
+            println!("{}", serde_json::to_string(&result)?);
+            return Ok(());
+        }
+        #[derive(serde::Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct LocalQuery {
+            principal: oip_core::PrincipalId,
+            #[serde(default)]
+            query: oip_core::InventoryQuery,
+        }
+        if let Some(path) = inventory_inspect {
+            let q: LocalQuery =
+                serde_json::from_slice(&read(path)?).map_err(|_| "invalid inventory inspection")?;
+            let result =
+                oip_storage::SqliteStore::inventory_inspect_file(&config.database, &q.principal)?;
+            println!("{}", serde_json::to_string(&result)?);
+            return Ok(());
+        }
+        if let Some(path) = inventory_query {
+            let q: LocalQuery =
+                serde_json::from_slice(&read(path)?).map_err(|_| "invalid inventory query")?;
+            let (h, rows) = oip_storage::SqliteStore::inventory_snapshot_file(&config.database)?;
+            let context = oip_core::ExecutionContext {
+                actor: q.principal.to_string(),
+                principal: Some(q.principal),
+                correlation_id: format!("offline-inventory-{}", std::process::id()),
+                permissions: Default::default(),
+                sources: oip_core::SourceScope::Only(Default::default()),
+            };
+            let result = oip_server::inventory_services::inventory_projection(
+                Some(&h),
+                &rows,
+                &[],
+                &context,
+                q.query,
+            )?;
+            println!("{}", serde_json::to_string(&result)?);
+            return Ok(());
+        }
+    }
     if let Some(path) = settings_change {
         if daemon
             || mcp

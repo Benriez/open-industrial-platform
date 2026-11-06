@@ -77,7 +77,7 @@ async fn until(mut f: impl FnMut() -> bool) {
 }
 async fn bootstrap(s: &AppState) {
     s.started().await.unwrap();
-    s.connected(&s.primary).await.unwrap();
+    s.connected(s.primary.as_ref().unwrap()).await.unwrap();
     for o in Simulation::new(SimulationConfig::default(), Scenario::Normal)
         .frame_at(0)
         .observations
@@ -220,6 +220,7 @@ async fn sqlite_busy_backpressure_and_recovery_preserve_accepted_work() {
     let _ = std::fs::remove_file(&p);
     let c = CoreConfig {
         legacy_single_infrastructure: true,
+        sources: vec![oip_server::config::SourceConfig::primary(4840)],
         database: p.clone(),
         queue_capacity: 1,
         ..Default::default()
@@ -238,15 +239,24 @@ async fn sqlite_busy_backpressure_and_recovery_preserve_accepted_work() {
     until(|| !s.view().health.persistence_healthy).await;
     assert_eq!(s.view().health.persisted_observations, 6);
     let queued = s
-        .try_ingest(&s.primary, event(s.primary.as_str(), 2, now_ms()))
+        .try_ingest(
+            s.primary.as_ref().unwrap(),
+            event(s.primary.as_ref().unwrap().as_str(), 2, now_ms()),
+        )
         .unwrap();
     assert!(s
-        .try_ingest(&s.primary, event(s.primary.as_str(), 3, now_ms()))
+        .try_ingest(
+            s.primary.as_ref().unwrap(),
+            event(s.primary.as_ref().unwrap().as_str(), 3, now_ms())
+        )
         .is_err());
     assert_eq!(s.queue().depth, 1);
     let waiting = {
         let s = s.clone();
-        tokio::spawn(async move { s.ingest(event(s.primary.as_str(), 3, now_ms())).await })
+        tokio::spawn(async move {
+            s.ingest(event(s.primary.as_ref().unwrap().as_str(), 3, now_ms()))
+                .await
+        })
     };
     until(|| s.queue().backpressure_waits > 0).await;
     let response = tokio::time::timeout(
@@ -277,7 +287,10 @@ async fn failed_shutdown_reports_uncommitted_instead_of_claiming_success() {
     db.execute_batch("BEGIN IMMEDIATE").unwrap();
     let work = {
         let s = s.clone();
-        tokio::spawn(async move { s.ingest(event(s.primary.as_str(), 1, now_ms())).await })
+        tokio::spawn(async move {
+            s.ingest(event(s.primary.as_ref().unwrap().as_str(), 1, now_ms()))
+                .await
+        })
     };
     until(|| !s.view().health.persistence_healthy).await;
     s.shutdown_deadline(Duration::from_millis(150));
@@ -305,8 +318,11 @@ async fn shutdown_drains_all_admitted_events() {
     let mut receipts = Vec::new();
     for tick in 0..16 {
         receipts.push(
-            s.try_ingest(&s.primary, event(s.primary.as_str(), tick, now_ms()))
-                .unwrap(),
+            s.try_ingest(
+                s.primary.as_ref().unwrap(),
+                event(s.primary.as_ref().unwrap().as_str(), tick, now_ms()),
+            )
+            .unwrap(),
         );
     }
     s.shutdown_deadline(Duration::from_secs(2));
@@ -319,7 +335,7 @@ async fn shutdown_drains_all_admitted_events() {
     assert_eq!(s.view().health.persisted_observations, 16);
     assert_eq!(s.view().health.lifecycle, Lifecycle::Stopped);
     assert!(s
-        .ingest(event(s.primary.as_str(), 20, now_ms()))
+        .ingest(event(s.primary.as_ref().unwrap().as_str(), 20, now_ms()))
         .await
         .is_err());
 }
@@ -331,7 +347,7 @@ async fn slow_sse_and_reconnect_use_complete_resynchronization_without_blocking(
     let response = app.clone().oneshot(req("/api/v1/stream")).await.unwrap();
     let mut slow = response.into_body().into_data_stream();
     for tick in 1..100 {
-        s.ingest(event(s.primary.as_str(), tick, now_ms()))
+        s.ingest(event(s.primary.as_ref().unwrap().as_str(), tick, now_ms()))
             .await
             .unwrap();
     }
@@ -473,6 +489,7 @@ async fn invalid_configuration_starts_no_resources() {
     let _ = std::fs::remove_file(&p);
     let mut c = CoreConfig {
         legacy_single_infrastructure: true,
+        sources: vec![oip_server::config::SourceConfig::primary(4840)],
         database: p.clone(),
         queue_capacity: 0,
         ..Default::default()

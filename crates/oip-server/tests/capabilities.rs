@@ -138,7 +138,7 @@ async fn authorization_and_audit_are_enforced_before_any_simulation_effect() {
     assert_eq!(events[2].outcome, "succeeded");
     assert_eq!(events[2].actor, "operator-test");
     assert_eq!(events[2].correlation_id, "call-1");
-    assert_eq!(events[2].target, state.primary.as_str());
+    assert_eq!(events[2].target, state.primary.as_ref().unwrap().as_str());
     let encoded = serde_json::to_string(&events).unwrap();
     assert!(!encoded.contains("sensor"));
     assert!(!encoded.contains("gpu"));
