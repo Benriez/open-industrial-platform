@@ -15,3 +15,5 @@ pub mod mcp;
 pub mod provisioning;
 
 pub mod identity;
+
+pub mod settings_services;

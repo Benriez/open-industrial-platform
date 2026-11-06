@@ -77,7 +77,7 @@ async fn fixture() -> (AppState, Arc<ApplicationServices>, Arc<Audit>, PathBuf) 
         .map(|s| s.definition().unwrap())
         .collect::<Vec<_>>();
     let result = db.provision(plan, &defs, None).unwrap();
-    assert_eq!(result.schema_version, 4);
+    assert_eq!(result.schema_version, 5);
     for s in &c.sources {
         let ctx = EventContext {
             data_source_id: DataSourceId::new(&s.id).unwrap(),

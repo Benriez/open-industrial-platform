@@ -66,6 +66,9 @@ struct Inner {
 }
 #[derive(Clone)]
 pub struct AppState {
+    pub settings: Arc<Vec<SettingRecord>>,
+    pub settings_loaded_ms: i64,
+    pub management: Arc<Mutex<crate::settings_services::ManagementRuntime>>,
     pub history: Arc<crate::diagnostic_services::DiagnosticReads>,
     pub hierarchy: Option<Arc<HierarchyRegistry>>,
     pub legacy_access: bool,
@@ -135,6 +138,17 @@ impl AppState {
             .iter()
             .map(SourceConfig::definition)
             .collect::<Result<Vec<_>, _>>()?;
+        let settings = Arc::new(
+            store
+                .settings_records()
+                .map_err(|_| "invalid stored settings")?,
+        );
+        let settings_loaded_ms = now_ms();
+        let management = Arc::new(Mutex::new(
+            crate::settings_services::ManagementRuntime::new(
+                store.schema_version().map_err(|_| "schema")?,
+            ),
+        ));
         let history = Arc::new(crate::diagnostic_services::DiagnosticReads::new(
             store.history_reader().map_err(|_| "history_reader")?,
         ));
@@ -163,6 +177,9 @@ impl AppState {
             .map_err(|_| "writer_thread_start")?;
         *inner.thread.lock().map_err(|_| "thread lock")? = Some(worker);
         Ok(Self {
+            settings,
+            settings_loaded_ms,
+            management,
             history,
             hierarchy,
             legacy_access,

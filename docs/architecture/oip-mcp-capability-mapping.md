@@ -1,3 +1,5 @@
+> OIP-008.4 feature: 27 declared capability contracts (25 reads; legacy simulation and offline-only SettingsChange), 18 registered MCP read tools with explicit platform management grants. Existing principals gain no permissions automatically. Current [Settings/REST/MCP matrix](oip-0084-rest-mcp-parity.md); historical milestone descriptions below remain unchanged.
+
 > OIP-008.2 feature adds seven historical read capabilities (24 total); current [Diagnostics/REST/MCP mapping](oip-0082-rest-mcp-parity.md). Historical milestone descriptions below remain unchanged.
 
 > OIP-008 Feature-Stand: 17 Capabilities, neun MCP-Tools im Principal-Modus; aktuelles [Scope-/Paritätsinventar](oip-008-rest-mcp-parity.md). Die folgenden Angaben dokumentieren den früheren Meilenstein.

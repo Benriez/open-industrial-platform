@@ -143,6 +143,8 @@ pub fn router_with_identity(
     web_dir: Option<&str>,
 ) -> Router {
     let routes = Router::new()
+        .route("/api/v2/settings", get(settings_read))
+        .route("/api/v2/management", get(management_read))
         .route("/api/v2/organizations", get(organizations))
         .route("/api/v2/infrastructures", get(infrastructures))
         .route("/api/v2/sites", get(sites))
@@ -552,3 +554,24 @@ diagnostic_handler!(
     DiagnosticPage,
     DiagnosticPage
 );
+
+async fn settings_read(
+    Authorized(s): Authorized,
+    q: Result<Query<SettingsQuery>, axum::extract::rejection::QueryRejection>,
+) -> Result<Json<SettingsSnapshot>, CapabilityErrorResponse> {
+    let Query(q) = q.map_err(|_| CapabilityErrorResponse(diagnostic_invalid()))?;
+    match call(s, CapabilityRequest::SettingsRead(q)).await? {
+        CapabilityOutput::Settings(v) => Ok(Json(v)),
+        _ => Err(mismatch()),
+    }
+}
+async fn management_read(
+    Authorized(s): Authorized,
+    q: Result<Query<ManagementQuery>, axum::extract::rejection::QueryRejection>,
+) -> Result<Json<ManagementReport>, CapabilityErrorResponse> {
+    let Query(q) = q.map_err(|_| CapabilityErrorResponse(diagnostic_invalid()))?;
+    match call(s, CapabilityRequest::McpManagementRead(q)).await? {
+        CapabilityOutput::Management(v) => Ok(Json(v)),
+        _ => Err(mismatch()),
+    }
+}

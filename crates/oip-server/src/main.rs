@@ -86,6 +86,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     }
     let mcp = args.iter().any(|a| a == "--mcp-stdio");
     let mcp_rest = args.iter().any(|a| a == "--mcp-rest");
+    let mut settings_change = None;
     let mut provision = None;
     let mut adoption = None;
     let mut inspect_legacy = false;
@@ -120,6 +121,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         let value = args.get(i).ok_or("missing argument value")?;
         i += 1;
         match arg.as_str() {
+            "--settings-change" => settings_change = Some(value.clone()),
             "--provision" => provision = Some(value.clone()),
             "--adopt-legacy" => adoption = Some(value.clone()),
             "--config" => {}
@@ -136,6 +138,35 @@ async fn run() -> Result<(), Box<dyn Error>> {
         }
     }
     config.validate()?;
+    if let Some(path) = settings_change {
+        if daemon
+            || mcp
+            || mcp_rest
+            || demo
+            || ipc_config.is_some()
+            || policy_path.is_some()
+            || provision.is_some()
+            || adoption.is_some()
+            || inspect_legacy
+        {
+            return Err("settings administration is offline only".into());
+        }
+        let file = std::fs::File::open(path)?;
+        use std::io::Read;
+        let mut bytes = Vec::new();
+        file.take(4097).read_to_end(&mut bytes)?;
+        if bytes.len() > 4096 {
+            return Err("settings change too large".into());
+        }
+        let change = serde_json::from_slice(&bytes).map_err(|_| "invalid typed settings change")?;
+        let result = oip_storage::SqliteStore::change_settings_file(
+            &config.database,
+            change,
+            oip_server::state::now_ms(),
+        )?;
+        println!("{}", serde_json::to_string(&result)?);
+        return Ok(());
+    }
     if (inspect_legacy || provision.is_some() || adoption.is_some())
         && (daemon || mcp || mcp_rest || ipc_config.is_some() || policy_path.is_some() || demo)
     {
@@ -255,6 +286,21 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let (tx, rx) = watch::channel("normal".to_owned());
     let runtime = CoreRuntime::start(config.clone(), if demo { Some(tx) } else { None }).await?;
     let state = runtime.state.clone();
+    {
+        let mut info = state.management.lock().map_err(|_| "management lock")?;
+        info.mcp_mode = if daemon {
+            "local_ipc"
+        } else if mcp {
+            "stdio_owned"
+        } else {
+            "unavailable"
+        }
+        .into();
+        #[cfg(unix)]
+        if let Some(ipc) = &ipc {
+            info.session_limit = Some(ipc.session_limit());
+        }
+    }
     let stop = CancellationToken::new();
     let simulator = if demo {
         let c = stop.clone();

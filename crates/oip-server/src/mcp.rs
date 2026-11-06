@@ -93,7 +93,9 @@ struct ToolSpec {
     id: CapabilityId,
     description: &'static str,
 }
-const TOOLS: [ToolSpec; 16] = [
+const TOOLS: [ToolSpec; 18] = [
+    ToolSpec{name:"oip_settings_read",id:CapabilityId::SettingsRead,description:"Read authorized typed setting definitions or effective startup values at an explicit scope; no mutation or credential access."},
+    ToolSpec{name:"oip_mcp_management_read",id:CapabilityId::McpManagementRead,description:"Platform-authorized MCP/system management information. Read-only; missing session telemetry and unsupported controls are explicit."},
     ToolSpec {name:"oip_event_history_read",id:CapabilityId::EventHistoryRead,description:"Authorized bounded historical event history; stable persisted evidence, no inferred root cause. Time range uses Unix milliseconds; continuation cursor is principal/query bound and expires after five minutes."},
     ToolSpec {name:"oip_event_detail_read",id:CapabilityId::EventDetailRead,description:"Authorized bounded historical event detail; stable persisted evidence, no inferred root cause. Time range uses Unix milliseconds; continuation cursor is principal/query bound and expires after five minutes."},
     ToolSpec {name:"oip_data_gaps_read",id:CapabilityId::DataGapsRead,description:"Authorized bounded historical data gaps; stable persisted evidence, no inferred root cause. Time range uses Unix milliseconds; continuation cursor is principal/query bound and expires after five minutes."},
@@ -125,6 +127,10 @@ const RESOURCES: [(&str, CapabilityId); 7] = [
 ];
 fn input_schema(id: CapabilityId) -> Value {
     let mut v = match id {
+        CapabilityId::SettingsRead => serde_json::to_value(schemars::schema_for!(SettingsQuery)),
+        CapabilityId::McpManagementRead => {
+            serde_json::to_value(schemars::schema_for!(ManagementQuery))
+        }
         CapabilityId::EventHistoryRead
         | CapabilityId::EventDetailRead
         | CapabilityId::DataGapsRead
@@ -252,6 +258,9 @@ fn unit_request(id: CapabilityId) -> CapabilityRequest {
 }
 fn output_schema(id: CapabilityId) -> Value {
     let tag = match id {
+        CapabilityId::SettingsRead => "settings",
+        CapabilityId::McpManagementRead => "management",
+        CapabilityId::SettingsChange => "settings_changed",
         CapabilityId::EvidenceRead => "evidence",
         CapabilityId::EventHistoryRead
         | CapabilityId::EventDetailRead
@@ -330,11 +339,12 @@ fn output_schema(id: CapabilityId) -> Value {
 /// Operator/test catalog, derived from the same allowlist as runtime discovery.
 /// It is not an MCP tool and never grants permissions.
 pub fn capability_mapping() -> Value {
-    json!({"protocol":"2026-07-28","legacy_protocol":"2025-11-25","sdk":"rmcp 3.8.0","capabilities":CapabilityId::ALL.into_iter().map(|id| {
+    static CACHE: std::sync::OnceLock<Value> = std::sync::OnceLock::new();
+    CACHE.get_or_init(|| json!({"protocol":"2026-07-28","legacy_protocol":"2025-11-25","sdk":"rmcp 3.8.0","capabilities":CapabilityId::ALL.into_iter().map(|id| {
         let tool=TOOLS.iter().find(|t|t.id==id);
         let resource=RESOURCES.iter().find(|(_,c)|*c==id).map(|(uri,_)|*uri);
-        json!({"capability":id,"core_status":"IMPLEMENTED","rest":true,"mcp_status":if id.descriptor().mutating {"BLOCKED"}else{"IMPLEMENTED"},"tool":tool.map(|t|t.name),"resource":resource,"source_resource":if id==CapabilityId::SourcesRead {Some("oip://v1/sources/{id}/health")}else{None},"permissions":id.descriptor().permission,"input_schema":tool.map(|_|input_schema(id)),"output_schema":if id.descriptor().mutating {None}else{Some(output_schema(id))},"test":"crates/oip-server/tests/mcp.rs"})
-    }).collect::<Vec<_>>()})
+        json!({"capability":id,"core_status":if id==CapabilityId::SettingsChange {"OFFLINE_OPERATOR_ONLY"}else{"IMPLEMENTED"},"rest":id!=CapabilityId::SettingsChange,"mcp_status":if id.descriptor().mutating {"BLOCKED"}else{"IMPLEMENTED"},"tool":tool.map(|t|t.name),"resource":resource,"source_resource":if id==CapabilityId::SourcesRead {Some("oip://v1/sources/{id}/health")}else{None},"permissions":id.descriptor().permission,"input_schema":tool.map(|_|input_schema(id)),"output_schema":if id.descriptor().mutating {None}else{Some(output_schema(id))},"test":"crates/oip-server/tests/mcp.rs"})
+    }).collect::<Vec<_>>()})).clone()
 }
 fn bounded(output: CapabilityOutput) -> Result<Value, ErrorData> {
     let bytes = serde_json::to_vec(&output)
@@ -593,4 +603,11 @@ impl ServerHandler for McpAdapter {
             .await
             .map(Into::into)
     }
+}
+
+pub fn tool_description(id: CapabilityId) -> &'static str {
+    TOOLS
+        .iter()
+        .find(|t| t.id == id)
+        .map_or("", |t| t.description)
 }

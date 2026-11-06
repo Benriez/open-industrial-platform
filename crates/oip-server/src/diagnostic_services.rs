@@ -125,6 +125,9 @@ impl ApplicationServices {
         id: CapabilityId,
         mut q: DiagnosticQuery,
     ) -> Result<CapabilityOutput, CapabilityError> {
+        if q.limit.is_none() {
+            q.limit = Some(self.history_default(&q));
+        }
         let limit = q.validate()?;
         let is_event = matches!(
             id,

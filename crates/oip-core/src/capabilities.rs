@@ -32,6 +32,9 @@ pub enum CapabilityId {
     EvidenceRead,
     DiagnosticFindingsRead,
     ObservationHistoryRead,
+    SettingsRead,
+    McpManagementRead,
+    SettingsChange,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
@@ -45,6 +48,9 @@ pub enum Permission {
     EventsRead,
     OpcuaRead,
     SimulationControl,
+    SettingsRead,
+    SettingsWrite,
+    McpManagementRead,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
@@ -57,7 +63,7 @@ pub struct CapabilityDescriptor {
     pub audit: String,
 }
 impl CapabilityId {
-    pub const ALL: [Self; 24] = [
+    pub const ALL: [Self; 27] = [
         Self::CoreHealthRead,
         Self::CoreLivenessRead,
         Self::CoreReadinessRead,
@@ -82,10 +88,28 @@ impl CapabilityId {
         Self::EvidenceRead,
         Self::DiagnosticFindingsRead,
         Self::ObservationHistoryRead,
+        Self::SettingsRead,
+        Self::McpManagementRead,
+        Self::SettingsChange,
     ];
     pub fn descriptor(self) -> CapabilityDescriptor {
         use CapabilityId::*;
         let (permission, input, output) = match self {
+            SettingsRead => (
+                vec![Permission::SettingsRead],
+                "SettingsQuery",
+                "SettingsSnapshot",
+            ),
+            McpManagementRead => (
+                vec![Permission::McpManagementRead],
+                "ManagementQuery",
+                "ManagementReport",
+            ),
+            SettingsChange => (
+                vec![Permission::SettingsWrite],
+                "SettingsChange",
+                "SettingsChangeResult",
+            ),
             EventHistoryRead | EventDetailRead => (
                 vec![Permission::EventsRead, Permission::TelemetryRead],
                 "DiagnosticQuery",
@@ -191,10 +215,10 @@ impl CapabilityId {
         CapabilityDescriptor {
             id: self,
             permission,
-            mutating: self == SimulationScenarioSet,
+            mutating: matches!(self, SimulationScenarioSet | SettingsChange),
             input_type: input.into(),
             output_type: output.into(),
-            audit: if self == SimulationScenarioSet {
+            audit: if matches!(self, SimulationScenarioSet | SettingsChange) {
                 "decision_and_outcome_local_log"
             } else {
                 "execution_local_log"
@@ -277,10 +301,16 @@ pub enum CapabilityRequest {
     EvidenceRead(DiagnosticQuery),
     DiagnosticFindingsRead(DiagnosticQuery),
     ObservationHistoryRead(DiagnosticQuery),
+    SettingsRead(SettingsQuery),
+    McpManagementRead(ManagementQuery),
+    SettingsChange(SettingsChange),
 }
 impl CapabilityRequest {
     pub fn id(&self) -> CapabilityId {
         match self {
+            Self::SettingsRead(_) => CapabilityId::SettingsRead,
+            Self::McpManagementRead(_) => CapabilityId::McpManagementRead,
+            Self::SettingsChange(_) => CapabilityId::SettingsChange,
             Self::EventHistoryRead(_) => CapabilityId::EventHistoryRead,
             Self::EventDetailRead(_) => CapabilityId::EventDetailRead,
             Self::DataGapsRead(_) => CapabilityId::DataGapsRead,
@@ -312,6 +342,9 @@ impl CapabilityRequest {
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 #[serde(tag = "type", content = "value", rename_all = "snake_case")]
 pub enum CapabilityOutput {
+    Settings(SettingsSnapshot),
+    Management(ManagementReport),
+    SettingsChanged(SettingsChangeResult),
     DiagnosticPage(DiagnosticPage),
     Evidence(Box<EvidenceSet>),
     CoreHealth(CoreHealth),

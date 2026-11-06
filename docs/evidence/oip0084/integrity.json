@@ -1,0 +1,12 @@
+{
+  "baseline_source_files": 382,
+  "external_backup_sha256": "7a89c6334928e01fe3011db1977ea7b8132d967c311984234cb136dd6dc2d60d",
+  "main_unchanged": true,
+  "ui_files_byte_identical": 83,
+  "design_sha256": "bd9f9d8696ed48676055ee9a2cd0afb29e6c3d59e0945e662d925306f73c753e",
+  "cargo_lock_unchanged": true,
+  "workspace_members": 8,
+  "foreign_handoff_writes": false,
+  "foreign_process_control": false,
+  "no_operator_database_opened": true
+}

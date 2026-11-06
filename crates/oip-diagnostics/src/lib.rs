@@ -1,11 +1,13 @@
 //! Deterministic factual findings, independent of transports and storage.
 use oip_core::*;
+pub const DOCUMENTED_GAP_RULE_ID: &str = "oip.documented-collection-gap";
+pub const DOCUMENTED_GAP_RULE_VERSION: u32 = 1;
 /// A documented gap proves that a collection interruption was recorded, not its cause.
 pub fn documented_gap(gap: &CollectionGap) -> DiagnosticFinding {
     DiagnosticFinding {
         id: gap.id.clone(),
-        rule_id: "oip.documented-collection-gap".into(),
-        rule_version: 1,
+        rule_id: DOCUMENTED_GAP_RULE_ID.into(),
+        rule_version: DOCUMENTED_GAP_RULE_VERSION,
         statement: "A collection gap was documented; its underlying cause is not established"
             .into(),
         evidence: vec![EvidenceReference {

@@ -1,0 +1,13 @@
+# OIP-008.4 — Authorization
+
+Three permissions are added to the existing Permission enum: SettingsRead, SettingsWrite, McpManagementRead. **Existing roles receive none automatically.** No schema migration inserts grants or principals. New explicit local plans may bind these permissions using existing Platform/Organization/Infrastructure/Site/Source RoleBinding semantics. Principal identity remains server-bound by the existing protected IPC credential/peer mechanism or REST Authorization header; actor/grants/scopes in read parameters are invalid.
+
+SettingsRead requires the exact requested target (or an existing ancestor grant), without parent-discovery relaxation. Platform metadata is platform-only. A scoped reader may consume its history-page-size override/inherited non-sensitive default, not another organization's record or platform metadata. SourceRead alone grants no SettingsRead/Write. Source IDs are validated canonically; no free string-prefix authorization.
+
+McpManagementRead is additionally gated at Platform, even if someone provisions that permission at a tenant target. It may reveal the authorized platform's catalog/runtime/system details, but never credential contents or private IPC profile paths. Tenant readers do not see global connected principals, inventory counts or management state. ClientConfiguration is a template, not a permission grant. Discovery filters new read tools by central policy; execution rechecks the target.
+
+SettingsChange requires SettingsWrite at the change target AND an exclusive local OS operator invocation. HTTP/MCP CapabilityService execution rejects it. No role/credential/listener/source/security key can be constructed through SettingKey. An organization-bound writer cannot target Platform or another organization. Authorization failures do not echo foreign names or records. Invalid scopes remain inside the common execution audit path; unavailable/unauthorized adapters never fall back to legacy all-access.
+
+Reads share the current execution audit port, including validated settings target scope and correlation ID. Offline persistence has a separate atomic metadata audit, with OS authority distinct from selected policy principal. Neither constitutes productive remote IAM or durable tamper-proof audit.
+
+The dedicated setup helper requires an explicit --settings-operator-principal selection and only writes a **new** private setup directory. Provisioning remains a separately invoked offline operator step. The user-controlled local plan is not an untrusted request body accepted by a daemon. No production multi-user protection against hostile same-UID processes is claimed.

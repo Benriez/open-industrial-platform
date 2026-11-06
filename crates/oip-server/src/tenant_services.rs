@@ -118,6 +118,8 @@ impl ApplicationServices {
             _ => self.source_for(&request),
         };
         let mut scope = match &request {
+            CapabilityRequest::SettingsRead(q) => q.target().ok(),
+            CapabilityRequest::McpManagementRead(_) => Some(AccessScope::Platform),
             CapabilityRequest::OrganizationsRead(q)
             | CapabilityRequest::InfrastructuresRead(q)
             | CapabilityRequest::SitesRead(q) => q
@@ -213,6 +215,12 @@ impl ApplicationServices {
         let id = request.id();
         if id.descriptor().mutating {
             return Err(denied());
+        }
+        if let SettingsRead(q) = &request {
+            return self.settings_read(context, q.clone());
+        }
+        if let McpManagementRead(q) = &request {
+            return self.management_read(context, q.clone());
         }
         if matches!(
             request,

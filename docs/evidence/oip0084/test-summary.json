@@ -1,0 +1,416 @@
+{
+  "baseline": "0e20f7283a8815242aaa71a2066a9944cb8cafc8",
+  "branch": "feature/oip-0084-application-settings",
+  "status": "PASS",
+  "external_receipt": "/Users/benny/Documents/OIP-Handoffs/core-0084-settings-20261106T182412Z",
+  "rust_workspace": 144,
+  "storage_overlapping": 35,
+  "opcua_interop": 37,
+  "open_only": 2,
+  "flutter": 80,
+  "browser": 16,
+  "native_macos": 1,
+  "schema": 5,
+  "declared_capabilities": 27,
+  "read_capabilities": 25,
+  "mcp_tools_with_explicit_platform_management_grants": 18,
+  "legacy_principal_tools_without_new_grants": 16,
+  "new_settings_keys": 3,
+  "categories": 7,
+  "safe_change_channel": "exclusive offline OS operator + scoped SettingsWrite; RequiresRestart",
+  "live_writes": "not exposed",
+  "session_inventory": "UNSUPPORTED",
+  "settings_e2e": [
+    {
+      "phase": "01_real_schema4_migration",
+      "status": "PASS",
+      "details": {
+        "schema": 5,
+        "before_counts": {
+          "organizations": 2,
+          "infrastructures": 3,
+          "sites": 4,
+          "source_placements": 4,
+          "observations": 40,
+          "collection_events": 52,
+          "data_gaps": 4,
+          "source_health_history": 32
+        },
+        "ids_and_payloads_preserved": true,
+        "backup_sha256": "5596d771a2de4f0bbd7dc21350de4758396f37daceb74443376a10b55b5cadf7"
+      }
+    },
+    {
+      "phase": "02_settings_parity_security",
+      "status": "PASS",
+      "details": {
+        "mcp_clients": 8,
+        "operator_tools": 18,
+        "scoped_tools": 17,
+        "safe_writes": 7,
+        "running_write_rejected": true,
+        "sessions_inventory": "unsupported",
+        "config_preview": "valid_placeholder_template_no_grants",
+        "performance": {
+          "catalog": {
+            "rest": {
+              "samples": 25,
+              "p50_ms": 0.6505410419777036,
+              "p95_ms": 0.7631250191479921
+            },
+            "mcp": {
+              "samples": 25,
+              "p50_ms": 1.4210420195013285,
+              "p95_ms": 1.6603339463472366
+            }
+          },
+          "effective": {
+            "rest": {
+              "samples": 25,
+              "p50_ms": 0.751083018258214,
+              "p95_ms": 1.0230840416625142
+            },
+            "mcp": {
+              "samples": 25,
+              "p50_ms": 1.8965420313179493,
+              "p95_ms": 2.207666984759271
+            }
+          },
+          "mcp_status": {
+            "rest": {
+              "samples": 25,
+              "p50_ms": 0.5225000204518437,
+              "p95_ms": 0.750750070437789
+            },
+            "mcp": {
+              "samples": 25,
+              "p50_ms": 0.8292499696835876,
+              "p95_ms": 1.1801249347627163
+            }
+          },
+          "sessions_unavailable": {
+            "rest": {
+              "samples": 25,
+              "p50_ms": 0.44466706458479166,
+              "p95_ms": 0.6454579997807741
+            },
+            "mcp": {
+              "samples": 25,
+              "p50_ms": 0.525166979059577,
+              "p95_ms": 0.6835419917479157
+            }
+          },
+          "offline_save": {
+            "samples": 6,
+            "p50_ms": 24.97695805504918,
+            "p95_ms": 37.358750007115304,
+            "includes": "CLI process startup, ownership, schema validation, CAS+audit transaction; no live apply"
+          },
+          "resources": {
+            "rss_kib_cpu_percent": "36256  10.3",
+            "ingestion_before": 48,
+            "ingestion_after": 63,
+            "method": "one OS process sample during eight attached clients; not peak/steady-state measurement"
+          }
+        }
+      }
+    },
+    {
+      "phase": "03_disconnect_recovery_integrity",
+      "status": "PASS",
+      "details": {
+        "restart": true,
+        "sigkill": true,
+        "persisted_effective_settings": true,
+        "no_duplicate_keys": true,
+        "foreign_keys": true,
+        "integrity": true,
+        "historical_keys_preserved": true
+      }
+    }
+  ],
+  "performance": {
+    "catalog": {
+      "rest": {
+        "samples": 25,
+        "p50_ms": 0.6505410419777036,
+        "p95_ms": 0.7631250191479921
+      },
+      "mcp": {
+        "samples": 25,
+        "p50_ms": 1.4210420195013285,
+        "p95_ms": 1.6603339463472366
+      }
+    },
+    "effective": {
+      "rest": {
+        "samples": 25,
+        "p50_ms": 0.751083018258214,
+        "p95_ms": 1.0230840416625142
+      },
+      "mcp": {
+        "samples": 25,
+        "p50_ms": 1.8965420313179493,
+        "p95_ms": 2.207666984759271
+      }
+    },
+    "mcp_status": {
+      "rest": {
+        "samples": 25,
+        "p50_ms": 0.5225000204518437,
+        "p95_ms": 0.750750070437789
+      },
+      "mcp": {
+        "samples": 25,
+        "p50_ms": 0.8292499696835876,
+        "p95_ms": 1.1801249347627163
+      }
+    },
+    "sessions_unavailable": {
+      "rest": {
+        "samples": 25,
+        "p50_ms": 0.44466706458479166,
+        "p95_ms": 0.6454579997807741
+      },
+      "mcp": {
+        "samples": 25,
+        "p50_ms": 0.525166979059577,
+        "p95_ms": 0.6835419917479157
+      }
+    },
+    "offline_save": {
+      "samples": 6,
+      "p50_ms": 24.97695805504918,
+      "p95_ms": 37.358750007115304,
+      "includes": "CLI process startup, ownership, schema validation, CAS+audit transaction; no live apply"
+    },
+    "resources": {
+      "rss_kib_cpu_percent": "36256  10.3",
+      "ingestion_before": 48,
+      "ingestion_after": 63,
+      "method": "one OS process sample during eight attached clients; not peak/steady-state measurement"
+    }
+  },
+  "checks": [
+    {
+      "name": "fmt-final",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "check-final",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "--workspace",
+        "--all-targets"
+      ],
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "clippy-latest",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "settings-latest",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "oip-server",
+        "--test",
+        "settings"
+      ],
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "storage-latest",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "oip-storage"
+      ],
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "build-latest",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "old_harnesses": [
+    {
+      "case": "diagnostics",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "case": "migration",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "case": "headless",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "case": "mcp",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "case": "legacy",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "case": "sqlperf",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "case": "appperf",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "flutter_checks": [
+    {
+      "name": "dart-format",
+      "command": [
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib",
+        "test",
+        "integration_test"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform/apps/flutter",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "flutter-analyze",
+      "command": [
+        "flutter",
+        "analyze"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform/apps/flutter",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "flutter-tests",
+      "command": [
+        "flutter",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform/apps/flutter",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "flutter-web",
+      "command": [
+        "flutter",
+        "build",
+        "web",
+        "--release",
+        "--web-renderer",
+        "canvaskit",
+        "--no-web-resources-cdn",
+        "--pwa-strategy=none",
+        "--output=/Users/benny/Documents/OIP-Handoffs/core-0084-settings-20261106T182412Z/flutter-web"
+      ],
+      "cwd": "/Users/benny/Code/open-industrial-platform/apps/flutter",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "ui_checks": [
+    {
+      "name": "browser",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "interactions",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "visual",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "native_macos",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "demo_core_shutdown",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "gates": {
+    "G1": "PASS",
+    "G2": "PASS",
+    "G3": "PASS",
+    "G4": "PASS",
+    "G5": "PASS",
+    "G6": "PASS",
+    "G7": "PASS",
+    "G8": "PASS",
+    "G9": "PASS",
+    "G10": "PASS",
+    "G11": "PASS",
+    "G12": "PASS",
+    "G13": "PASS",
+    "G14": "PASS",
+    "G15": "PASS",
+    "G16": "PASS",
+    "G17": "PASS",
+    "G18": "PASS"
+  },
+  "production_release": false,
+  "push": false,
+  "merge": false,
+  "deployment": false
+}

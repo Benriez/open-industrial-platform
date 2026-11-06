@@ -334,6 +334,9 @@ impl LocalIpc {
             rest_policy: config.rest_policy,
         })
     }
+    pub fn session_limit(&self) -> usize {
+        self.max_sessions
+    }
     pub fn rest_context(&self) -> Option<oip_core::ExecutionContext> {
         self.rest_policy.as_ref().map(McpPolicy::execution_context)
     }

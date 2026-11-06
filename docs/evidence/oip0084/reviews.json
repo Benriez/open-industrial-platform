@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "reviewers": [
+    {
+      "session": "/root/review_settings_0084",
+      "scope": "Settings/domain/storage/CAS/migration/apply/recovery",
+      "mode": "independent read-only code and evidence review; tests executed by parent",
+      "blocking_findings_open": 0,
+      "fixed": [
+        "actor null redaction instead of invented provenance",
+        "canonical scope \u2194 FK consistency and immutable targets",
+        "negative test uses unused mismatched scope key"
+      ]
+    },
+    {
+      "session": "/root/review_security_0084",
+      "scope": "MCP/authorization/paths/config export/scope/limits",
+      "mode": "independent read-only code and evidence review; tests executed by parent",
+      "blocking_findings_open": 0,
+      "fixed": [
+        "audited invalid settings scope",
+        "offline-only capability mapping",
+        "OS operator authority distinct from on-behalf policy principal",
+        "short-held mutex and cached schema mapping",
+        "actual worktree HEAD/index/ref build provenance"
+      ]
+    }
+  ],
+  "source_binding": {
+    "crates/oip-core/src/settings.rs": "ac0cf5bfd1e0eece0d7b0ddf02439a46ffb3055ddabae8b5bb43f0679bf6c0b0",
+    "crates/oip-storage/src/settings.rs": "a7405be8e079622c0d845985a942cfcc467b6ba1570d740c6fbe933f283bcd90",
+    "crates/oip-server/src/settings_services.rs": "8b549bf472224e3fa2a83ee4f4f88a58739d261664461dea2927a5c51fde5da1",
+    "crates/oip-server/src/tenant_services.rs": "737ecb6cfa30ea376aea61930f2d45e13b471ecafabd92c9d6b2664c8a830d69",
+    "crates/oip-server/src/mcp.rs": "35722e79d1754172d9a21d826bac422367c9f59c33752415491e7ec2855b0cc1",
+    "crates/oip-server/build.rs": "cbac491fb9bbe13382173f97664568e214409f46b0d2e508f95ccde176411b55",
+    "crates/oip-server/tests/settings.rs": "5ec7a793684db53cd832ec72fbca6a736bc971eb88296bcd6a1cb37162696d76",
+    "tests/oip0084/acceptance.py": "d5da8db6495e5b183fc02b62b486553d13cafc879117d1ef775916a05d707b23"
+  },
+  "release_e2e_sha256": "8cc9c9ea741e9c77f9f3cd43d1435ff9c6be0ac26e7187e860d87a1298ea0cc2"
+}

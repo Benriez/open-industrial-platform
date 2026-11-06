@@ -1,0 +1,8 @@
+{
+  "scanner": "gitleaks 8.30.1",
+  "scanner_exit_code": 1,
+  "reviewed_false_positives": 27,
+  "unresolved": 0,
+  "status": "PASS_WITH_REVIEWED_FALSE_POSITIVES",
+  "details": "external secret-scan-reviewed.json binds each unchanged file/line/rule/content to canonical baseline; scanner rules unchanged"
+}

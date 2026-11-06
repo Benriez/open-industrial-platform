@@ -176,6 +176,13 @@ impl ApplicationServices {
         use CapabilityRequest::*;
         let s = &self.state;
         match request {
+            SettingsRead(_) | McpManagementRead(_) | SettingsChange(_) => {
+                Err(CapabilityError::new(
+                    CapabilityErrorCode::PermissionDenied,
+                    "PRINCIPAL_REQUIRED",
+                    "Provisioned principal required",
+                ))
+            }
             EventHistoryRead(_)
             | EventDetailRead(_)
             | DataGapsRead(_)
@@ -479,6 +486,7 @@ impl CapabilityService for ApplicationServices {
                                         | CapabilityId::QueueRead
                                         | CapabilityId::SystemStatusRead
                                         | CapabilityId::SnapshotRead
+                                        | CapabilityId::McpManagementRead
                                 ) && h
                                     .plan
                                     .bindings
@@ -499,7 +507,10 @@ impl CapabilityService for ApplicationServices {
             .filter(|id| {
                 !matches!(
                     id,
-                    CapabilityId::OrganizationsRead
+                    CapabilityId::SettingsRead
+                        | CapabilityId::McpManagementRead
+                        | CapabilityId::SettingsChange
+                        | CapabilityId::OrganizationsRead
                         | CapabilityId::InfrastructuresRead
                         | CapabilityId::SitesRead
                         | CapabilityId::ScopedSnapshotRead
