@@ -1,0 +1,157 @@
+{
+  "scope": "OIP canonical main, iteration 1: controlled integration of the real device onboarding feature",
+  "canonical_source_commit": "ae4c6bab4fb87ff2c7b15a21b0104b2d5a12af7f",
+  "canonical_source_tree": "f72cb667c16b6e6a75efd72b725c81031788fd26",
+  "previous_canonical_source_commit": "49a86bb0aa9f737fe9392eb2b5421e1ffe2f8c68",
+  "integration_method": "git merge --ff-only feature/real-device-onboarding-integration",
+  "merge_commit_created": false,
+  "history_rewritten": false,
+  "tracked_files_in_source_revision": 438,
+  "source_manifest_sha256": "16b9a815bee276e383aa1ca9e2616ff601ce2026d0629aab40e4f4083ad7ae09",
+  "source_manifest_scope": "all tracked files of the canonical source revision; the later documentation commit of this iteration changes no Rust, Flutter, contract or harness file",
+  "reviewed_candidate_tree_unchanged": true,
+  "runtime_code_changed_in_this_iteration": false,
+  "gates": {
+    "cargo_fmt_check": {
+      "status": "PASS",
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0
+    },
+    "cargo_check": {
+      "status": "PASS",
+      "command": "cargo check --locked --workspace --all-targets",
+      "exit_code": 0
+    },
+    "cargo_clippy": {
+      "status": "PASS",
+      "command": "cargo clippy --locked --workspace --all-targets -- -D warnings",
+      "exit_code": 0,
+      "warnings_denied": true
+    },
+    "cargo_test_workspace": {
+      "status": "PASS",
+      "command": "cargo test --locked --workspace -- --test-threads=1",
+      "passed": 167,
+      "failed": 0,
+      "storage_tests_contained": 44
+    },
+    "cargo_test_opcua_default_backend": {
+      "status": "PASS",
+      "command": "cargo test --locked -p oip-opcua --features open62541-backend -- --test-threads=1",
+      "passed": 37,
+      "failed": 0
+    },
+    "cargo_test_opcua_open62541_only": {
+      "status": "PASS",
+      "command": "cargo test --locked -p oip-opcua --no-default-features --features open62541-backend -- --test-threads=1",
+      "passed": 2,
+      "failed": 0,
+      "note": "overlapping group with the default backend run, not an additional unique test count"
+    },
+    "cargo_build_server_and_mcp_probe": {
+      "status": "PASS",
+      "command": "cargo build --locked -p oip-server --bin oip-server --example mcp_probe",
+      "exit_code": 0
+    },
+    "cargo_deny": {
+      "status": "PASS",
+      "command": "cargo deny check advisories licenses bans sources",
+      "tool_version": "cargo-deny 0.20.2",
+      "advisories": "ok",
+      "bans": "ok",
+      "licenses": "ok",
+      "sources": "ok",
+      "note": "the three documented RUSTSEC exceptions were already present in deny.toml before this iteration and were neither added nor widened"
+    },
+    "flutter_analyze": {
+      "status": "PASS",
+      "command": "flutter analyze",
+      "exit_code": 0
+    },
+    "flutter_test": {
+      "status": "PASS",
+      "command": "flutter test",
+      "passed": 84,
+      "failed": 0
+    },
+    "flutter_web_release_canvaskit": {
+      "status": "PASS",
+      "command": "flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none",
+      "exit_code": 0
+    },
+    "flutter_web_release_html": {
+      "status": "PASS",
+      "command": "flutter build web --release --web-renderer html --no-web-resources-cdn --pwa-strategy=none --output build/web-html",
+      "exit_code": 0
+    },
+    "real_device_acceptance": {
+      "status": "PASS",
+      "command": "python3 tests/real_device/acceptance.py",
+      "exit_code": 0,
+      "phases_passed": 7,
+      "phases": [
+        "browser_identity_online_writer",
+        "ssh_handshake_confirmation_monitoring",
+        "restart_sigkill_identity",
+        "actual_flutter_ssh_onboarding",
+        "no_clients_ingestion_progress",
+        "host_key_change_blocks_collection",
+        "eight_official_mcp_clients"
+      ],
+      "own_processes_stopped": true,
+      "ssh_target": "owned loopback OpenSSH fixture with test generated keys",
+      "physical_raspberry_pi_tested": false
+    }
+  },
+  "actual_flutter_onboarding": {
+    "status": "PASS",
+    "path": "Flutter web release -> authenticated HTTP -> shared Core -> owned loopback OpenSSH",
+    "host_key_consent": true,
+    "identity_confirmation": true,
+    "existing_device_id_preserved": true,
+    "http_only_cookie": true,
+    "no_browser_token_storage": true,
+    "loaded_build_sha256": "91f88d8d3cd2682469ff3f10f428ff8b8d3907bcfb71aecce143178d46befb31",
+    "page_errors": [],
+    "external_requests": [],
+    "hardware": "owned loopback SSH fixture, not the private Raspberry Pi"
+  },
+  "measurements": {
+    "official_mcp_connection_read_ms": {
+      "samples": 20,
+      "p50": 3.9282499346882105,
+      "p95": 4.844209062866867,
+      "attached_clients": 8,
+      "note": "short local observation, not an SLA"
+    },
+    "core_sample": {
+      "rss_kib": 30768,
+      "cpu_percent": 15.2,
+      "note": "single sample, not an endurance result"
+    },
+    "ingestion_without_clients": {
+      "before": 140,
+      "after": 150
+    }
+  },
+  "not_claimed": [
+    "physical Raspberry-Pi acceptance",
+    "real installation activation or schema 7 migration of the personal database",
+    "native macOS build or test result",
+    "productive remote or browser identity",
+    "hostile same-UID isolation",
+    "tamper-proof durable audit",
+    "OT or endurance certification",
+    "a production release"
+  ],
+  "safety": {
+    "push": false,
+    "deployment": false,
+    "public_listener": false,
+    "personal_database_modified": false,
+    "personal_database_sha256": "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e",
+    "personal_database_schema": 6,
+    "foreign_processes_signalled": false,
+    "private_device_contacted": false
+  }
+}

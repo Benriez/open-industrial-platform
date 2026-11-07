@@ -160,3 +160,14 @@ secrets/
 !/docs/evidence/oip0085/reviews.json
 !/docs/evidence/oip0085/integrity.json
 !/docs/evidence/oip0085/security.json
+
+# Real device onboarding: curated summaries only. Raw logs, DBs, credentials,
+# browser captures and the SSH fixture stay external.
+/docs/evidence/oip-real-device/**
+!/docs/evidence/oip-real-device/
+!/docs/evidence/oip-real-device/test-summary.json
+!/docs/evidence/oip-real-device/review.json
+
+# Local agent loop state (session bookkeeping, never source).
+/.opencode/
+

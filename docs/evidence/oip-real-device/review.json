@@ -1,0 +1,104 @@
+{
+  "scope": "read-only source review of the integrated real device onboarding feature against docs/architecture/real-device-onboarding.md",
+  "reviewed_commit": "ae4c6bab4fb87ff2c7b15a21b0104b2d5a12af7f",
+  "method": "delegated automated source review by a read-only review agent, executed against the canonical working tree",
+  "is_independent_human_review": false,
+  "note": "this is an additional automated review pass; it is not an independent human reviewer and it does not replace one",
+  "execution_evidence": "none: the review was source reading only, no build, test, database or network access",
+  "areas_with_no_defect_found": [
+    "no cookie-only mutation path: every cookie authorized mutating route requires exact Origin and x-oip-csrf",
+    "GET /api/v2/browser/session does not leak the CSRF value to an unauthenticated caller and the server has no CORS layer",
+    "session tokens are stored as SHA-256 digests, cookies are host-only, HttpOnly, SameSite=Strict, Path=/ with the session TTL",
+    "SSE revalidates the browser session for every projection",
+    "no shell is used for SSH; every argument is a separate argv entry, hosts and users are validated",
+    "subprocess deadlines, output bounds, kill/wait on cancellation and pinned known_hosts handling are in place",
+    "UID 0 and unverifiable UIDs are rejected before authentication verification and before every fact query",
+    "plan ownership, plan expiry and the 64/4 plan limits are enforced",
+    "the source limit of 32 is validated against the complete prospective hierarchy before any SQL",
+    "only the daemon opens the SqliteStore; foreign keys are enforced and deferred to commit",
+    "device_connection_audit has no update or delete path in application code",
+    "no handler, adapter or MCP tool can supply a Principal, a grant, a private key path or a fabricated verification fact"
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "medium",
+      "location": "crates/oip-server/src/ssh.rs:414-424, crates/oip-server/src/ssh.rs:519",
+      "defect": "The server never enforces the contract rule that RSA keys require at least 2048 bits. ssh-keygen -lf already prints the key size but only the fingerprint is kept; enforcement is delegated to the RequiredRSASize=2048 ssh client option of the user connection. A weak ssh-rsa host key can be scanned, displayed, explicitly trusted and pinned.",
+      "contract_reference": "docs/architecture/real-device-onboarding.md:48",
+      "suggested_fix": "parse the key size from the ssh-keygen -lf output in ssh::scan/pin_file and reject ssh-rsa keys below 2048 bits with a typed fault before the key is offered or pinned; keep RequiredRSASize as defence in depth",
+      "status": "open"
+    },
+    {
+      "id": "F2",
+      "severity": "low",
+      "location": "crates/oip-server/src/ssh.rs:316",
+      "defect": "REMOTE HOST IDENTIFICATION HAS CHANGED and Host key verification failed are both mapped to SSH_HOST_KEY_CHANGED, so an unknown host key is reported as a host key rotation alarm.",
+      "contract_reference": "docs/architecture/real-device-onboarding.md:23, docs/architecture/real-device-onboarding.md:66",
+      "suggested_fix": "map only REMOTE HOST IDENTIFICATION HAS CHANGED to SSH_HOST_KEY_CHANGED and give the unknown key case its own code and status",
+      "status": "open"
+    },
+    {
+      "id": "F3",
+      "severity": "low",
+      "location": "crates/oip-server/src/browser_session.rs:93-100",
+      "defect": "The invalid code limiter is evaluated before the grant lookup, so sixteen malformed codes block the operator's valid single use code for sixty seconds. The exposure is limited to local processes because require_origin keeps cross site browsers out.",
+      "contract_reference": "docs/architecture/real-device-onboarding.md:36",
+      "suggested_fix": "evaluate the failure gate after the grant lookup and use a decaying per source limiter so a legitimate code can never be blocked",
+      "status": "open"
+    },
+    {
+      "id": "F4",
+      "severity": "low",
+      "location": "crates/oip-server/src/ssh.rs:733-802, crates/oip-storage/src/connection.rs:5",
+      "defect": "The maximal host report the parser can build exceeds the 128 KiB payload_json CHECK of device_connections, so a legal but extreme remote report fails the commit with an opaque storage error instead of a typed fault.",
+      "contract_reference": "docs/architecture/real-device-onboarding.md:50, docs/architecture/real-device-onboarding.md:58",
+      "suggested_fix": "reconcile the parser bound with the schema bound and length check the serialised record before the transaction so the failure is typed",
+      "status": "open"
+    },
+    {
+      "id": "F5",
+      "severity": "low",
+      "location": "crates/oip-server/src/connection_service.rs:96-134",
+      "defect": "The read path of GET /api/v2/device-connections?plan_id=... requires DeviceConnectionConfigure, while the contract places that read under DeviceConnectionRead. Conservative over restriction, not a privilege escalation.",
+      "contract_reference": "docs/architecture/real-device-onboarding.md:15",
+      "suggested_fix": "parameterise the plan check with the capability id, Read for the query path and Configure for the action paths",
+      "status": "open"
+    },
+    {
+      "id": "F6",
+      "severity": "low",
+      "location": "crates/oip-server/src/browser_session.rs:97-103",
+      "defect": "The session capacity check runs after the single use grant was already removed, so a valid code is destroyed when 64 sessions exist.",
+      "contract_reference": "docs/architecture/real-device-onboarding.md:36",
+      "suggested_fix": "check the session capacity before removing the grant and evict expired sessions first",
+      "status": "open"
+    },
+    {
+      "id": "F7",
+      "severity": "low",
+      "location": "crates/oip-server/src/ssh.rs:323-332",
+      "defect": "The SSH work directory is created with the process umask and only afterwards chmod'ed to 0700, which leaves a brief world readable window. The content is public host keys only.",
+      "contract_reference": "docs/architecture/real-device-onboarding.md:48",
+      "suggested_fix": "create the directory with DirBuilder::mode(0o700) so the mode is set atomically with creation",
+      "status": "open"
+    }
+  ],
+  "test_gaps": [
+    {
+      "id": "R1",
+      "location": "crates/oip-server/tests/",
+      "gap": "No Rust level test covers the browser session, CSRF and Origin flow; those assertions exist only in the external harness tests/real_device/acceptance.py.",
+      "suggested_tests": [
+        "cookie only POST without x-oip-csrf on /api/v2/device-connections is rejected",
+        "cookie only POST without x-oip-csrf on /api/v2/inventory/apply is rejected",
+        "a wrong x-oip-csrf value is rejected",
+        "DELETE /api/v2/browser/session without CSRF is rejected",
+        "a session revoked during an SSE stream stops the delivery of projections",
+        "GET /api/v2/browser/session without a cookie returns csrf_token null"
+      ],
+      "status": "open"
+    }
+  ],
+  "planned_next_step": "N1 in docs/OIP_RELEASE_PROGRESS.md: fix F1, F2, F3, F6 and F7 and add the R1 tests on an isolated feature branch, then re-run the complete gate set and integrate with a controlled fast forward. F4 and F5 change a storage bound and an authorization rule and are handled as separate, explicitly reviewed sub steps."
+}
