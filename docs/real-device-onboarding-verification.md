@@ -182,6 +182,20 @@ Measured on canonical `main` (`1287e23`): `cargo fmt`, `cargo check` and `cargo 
 
 These samples are the host report of the owned loopback fixture on this machine. No physical Raspberry-Pi was contacted, the real installation was not activated and the personal database is unchanged at schema 6. The event history and the diagnostics surfaces stay unconnected, because `events_read` is not proven for every operator principal.
 
+## Addendum — the managed overview shows the real authorized infrastructure
+
+The Core delivers the authorized source registry, the authorized placement and the authorized observations in the scoped projection. The client dropped all of it: the overview asked for the temperature of the demo entity `M-01` and the metric `temperature`, the trend accumulator accepted only that pair, and the chart drew the caption *Temperatur · M-01*. In the managed mode the measured series was therefore always empty, the tile showed `—`, and the ribbon showed three rows for dimensions the projection does not carry. The contract had already named the rule: *"Overview: counts from authorized returned inventory, sources from actual source registry; no fake host CPU/RAM/network metrics"*.
+
+The managed overview now draws the session's scope and nothing else. The source registry is shown with the health the Core measured, the placement of the source in the authorized hierarchy and the measured values. The measured series are taken from the authorized observations, one series per authorized source, so no source and no fallback primary is preferred and no global selection payload is invented. The metric of a series is named in the chart and in the source card, and the rule that picks it is deterministic.
+
+The accumulator rules of the demo stay unchanged: a change of the measured scope and a source time that moves backwards start a new display window, an identical source time and value is not appended twice, and a series keeps at most 60 received points. The gap limit of a measured series now follows the cadence the series itself showed, with the demo limit as its floor, so a real source that publishes every 30 seconds is not broken at every point while the demo behaviour stays exactly as it was.
+
+The status vocabulary of the source registry had no label and no colour: `disconnected`, `healthy`, `valid` and `invalid` were rendered as raw English strings. They are mapped now.
+
+Measured on canonical `main` (`1e6b743`): `flutter analyze` exits 0 with no issue, `flutter test` passes 100 tests, the real device harness passes all eight phases and the canonical regression passes all eight cases with no failed and no blocked case. The browser receipt names what the operator now sees on the landing page of the managed mode: the authorized source `SSH host browser-existing`, the source registry section, the measured metric `host.memory_total_bytes` with the value 17179869184, and no demo coordinate.
+
+No Rust source changed in this iteration, so the Rust workspace results of iteration 9 remain valid for this tree. No physical Raspberry-Pi was contacted, the real installation was not activated and the personal database is unchanged at schema 6. The network view still shows its loading message; it is recorded as the next READY item.
+
 ## Addendum — the schema2 adoption case and the parity gate
 
 The schema2 adoption of the OIP-008 milestone could not be re-verified because the historical protected binary of that milestone is not part of the workspace any more. `tests/oip007_baseline.py` rebuilds that writer from the verified OIP-007 baseline commit `a27e7b1`; it extracts the source with `git archive`, so no worktree registration and no canonical checkout state is touched. The result records the source commit, the hash of the rebuild and the hash of the historical binary, and it states that a rebuild is not byte identical, so the identity of the historical protected binary is not claimed.

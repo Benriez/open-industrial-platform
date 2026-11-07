@@ -13,17 +13,17 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `1287e23` (`feat(flutter): show the persisted observation history in the device view`) |
-| Canonical source tree | `f1d3f1933a3f5ac38f516a993e04b5bfe3d82f97` |
-| Previous canonical source revision | `e12c009` (iteration 8, monitoring measurements in the operator panel) |
-| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in nine controlled steps |
-| Tracked files in the canonical source revision | 449, source manifest SHA-256 `3db92de41a3395c2d6577f64b86dd196f38e148d229539e7a7bd86dfe86018d4` |
+| Canonical source revision | `1e6b743` (`feat(flutter): show the real authorized infrastructure in the managed overview`) |
+| Canonical source tree | `826417d787ecf18d2e05f564a05f54c579f0b8b6` |
+| Previous canonical source revision | `1287e23` (iteration 9, persisted observation history in the device view) |
+| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in ten controlled steps |
+| Tracked files in the canonical source revision | 450, source manifest SHA-256 `cdec06ca337c7c4b39388c589582a01dda9e3ac565b40c9261e0a36ff221565f` |
 | Documentation commit on top | changes only `docs/OIP_RELEASE_PROGRESS.md`, `docs/evidence/oip-real-device/*.json` and `docs/real-device-onboarding-verification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
 
-The canonical tree carries nine controlled integrations: iteration 1 integrated the reviewed
+The canonical tree carries ten controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
 integrated the isolated harness branch `feature/oip-native-macos-harness` (`b19092d`), iteration 4
@@ -34,7 +34,8 @@ iteration 5 integrated the isolated contract branch `feature/oip-009-context-con
 (`6df189f`) and the isolated parity gate branch `feature/oip-parity-gate-convergence`
 (`f4b89ed`), iteration 8 the isolated monitoring branch
 `feature/oip-monitoring-observations` (`2ec4829` and `e12c009`), iteration 9 the isolated
-history branch `feature/oip-observation-history` (`1287e23`). No iteration weakened a contract
+history branch `feature/oip-observation-history` (`1287e23`), iteration 10 the isolated
+overview branch `feature/oip-managed-overview` (`1e6b743`). No iteration weakened a contract
 rule, and none activated the installation.
 
 ## 2. Acceptance gates and their measured status
@@ -42,18 +43,18 @@ rule, and none activated the installation.
 Legend: `PROVED` = measured in this run on canonical `main`; `WITHHELD` = deliberately not
 claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 
-| Gate | Status | Evidence (this run, canonical `main` = `1287e23`) |
+| Gate | Status | Evidence (this run, canonical `main` = `1e6b743`) |
 |---|---|---|
 | Rust format check | PROVED | `cargo fmt --all -- --check` → exit 0 |
 | Rust workspace check | PROVED | `cargo check --locked --workspace --all-targets` → exit 0 |
 | Rust clippy, warnings denied | PROVED | `cargo clippy --locked --workspace --all-targets -- -D warnings` → exit 0 |
-| Rust workspace tests | PROVED | 181 passed, 0 failed (45 of them Storage) |
+| Rust workspace tests | PROVED | 181 passed, 0 failed (45 of them Storage); no Rust source changed in iteration 10, so the result of iteration 9 stays valid for this tree |
 | OPC-UA default backend | PROVED | 37 passed, 0 failed |
 | OPC-UA open62541-only backend | PROVED | 2 passed, 0 failed (overlapping group) |
 | Dependency policy | PROVED | `cargo deny check advisories licenses bans sources` → advisories ok, bans ok, licenses ok, sources ok |
 | Server binary + official MCP probe | PROVED | `cargo build --locked -p oip-server --bin oip-server --example mcp_probe` → exit 0 |
 | Flutter static analysis | PROVED | `flutter analyze` → exit 0, no issues |
-| Flutter widget/unit suite | PROVED | 97 passed, 0 failed |
+| Flutter widget/unit suite | PROVED | 100 passed, 0 failed |
 | Flutter web release, CanvasKit | PROVED | `flutter build web --release --web-renderer canvaskit …` → exit 0 |
 | Flutter web release, HTML | PROVED | `flutter build web --release --web-renderer html …` → exit 0 |
 | Browser identity + writer ownership | PROVED | `tests/real_device/acceptance.py` phase `browser_identity_online_writer` → PASS |
@@ -66,6 +67,7 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | 8 official MCP SDK clients | PROVED | phase `eight_official_mcp_clients` → PASS, REST/MCP parity |
 | Weak host key rejected by the server | PROVED | phase `weak_host_key_is_rejected_by_the_server` → PASS, `SSH_HOST_KEY_TOO_WEAK`, no binding created |
 | Browser session boundary in Rust | PROVED | `crates/oip-server/tests/browser_session.rs` → 6 tests: exact Origin, single-use code, CSRF on every write, revoked session, revoked projection stream and the cookie path of the persisted history |
+| Managed overview shows the authorized infrastructure | PROVED | `apps/flutter/test/managed_overview_test.dart` → 3 tests; the source registry, its real health, its placement and the measured series are rendered and the demo coordinates are gone; the browser receipt compares the rendered overview with the source registry and the measurement the Core received over SSH (`SSH host browser-existing`, `host.memory_total_bytes` = 17179869184) |
 | Persisted observation history in the device view | PROVED | `tests/real_device/acceptance.py` phase `actual_flutter_ssh_onboarding` → PASS; the Core persisted 10 samples of the connected device, the operator view rendered them as history and the browser receipt compares them against the Core answer; `apps/flutter/test/observation_history_test.dart` → 8 tests |
 | Native macOS build and test | PROVED | `tests/oip008/ui_regression.py` → native build 11.6 s with the build marker, native integration test 39.1 s with the `All tests passed!` marker, against an owned isolated demo core |
 | Legacy browser, interaction and visual regression | PROVED | browser 80.4 s, interactions 47.1 s, visual 63.4 s on the separately built HTML renderer |
@@ -103,7 +105,8 @@ Each item names the next *delimited* step, its gate and its blocker and carries 
 | N5 production advisories and security | **DONE** for the three documented exceptions | the production security work stays open and unclaimed |
 | N6 persisted observation history | **DONE** | closed in iteration 9 |
 | N7 monitoring measurements in the panel | **DONE** | closed in iteration 8 |
-| N8 real multi-infrastructure overview | **READY** | the next step of the loop |
+| N8 real multi-infrastructure overview | **DONE** | closed in iteration 10 |
+| N9 the network view of the authorized placement | **READY** | the next step of the loop |
 
 A blocked item never stops the loop while an independent READY item exists. Items that need an
 explicit operator decision (N1b, N4) or that would change a rule instead of enforcing one are
@@ -275,7 +278,7 @@ See the iteration log below.
 The device connection panel now renders the current authorized observations of the connection
 view. See the iteration log below.
 
-### N8 — The managed overview shows the real authorized infrastructure — **READY**
+### N8 — The managed overview shows the real authorized infrastructure — **DONE, closed in iteration 10**
 
 In the managed mode the overview is still driven by the coordinates of the demo. The trend
 accumulator only accepts the entity `M-01` and the metric `temperature`
@@ -304,6 +307,33 @@ The gate is `flutter analyze`, `flutter test`, the real device harness and the c
 regression. `GET /api/v2/sources` (`crates/oip-server/src/api.rs:202`) is a possible second step
 for the per-source health, but it is not required for this one: the scoped snapshot already carries
 the authorized sources.
+
+**Result.** The managed overview draws the session's scope: the source registry with the health the
+Core measured, the placement of the source in the authorized hierarchy and one measured series per
+authorized source. No source and no fallback primary is preferred, no global selection payload is
+invented and the demo coordinates are gone. See the iteration log below.
+
+### N9 — The network view shows the authorized placement — **READY**
+
+The network view shows *"Topologie wird geladen"* when the projection carries no topology
+(`apps/flutter/lib/features/network.dart:246-248`). The scoped projection has no topology array at
+all, so that message promises data that will never arrive; it is a loading state without a loader.
+The authorized `locations` of the projection — organization, infrastructure, site and source — are
+the real placement of the session and are already delivered
+(`crates/oip-server/src/tenant_services.rs:584-587`).
+
+The next delimited step is client-side and changes no contract, permission or server rule:
+
+1. `apps/flutter/lib/features/network.dart`: draw the authorized placement of the session instead of
+   the loading message, and name the registered nodes only. No link is guessed, no reachability is
+   turned green and no topology is invented.
+2. The sources of the session keep their own placement; the hierarchy names are only shown when the
+   authorized hierarchy API delivered them for that scope.
+3. `apps/flutter/test/` a widget test with the scoped fixture that asserts that the network view
+   shows the authorized placement and never a permanent loading state.
+
+The gate is `flutter analyze`, `flutter test`, the real device harness and the canonical
+regression.
 
 ## 4. Iteration log
 
@@ -650,6 +680,101 @@ real device acceptance results of iteration 5 remain valid for this tree. No phy
 Raspberry-Pi was contacted, the real installation was not activated, the personal database is
 unchanged at schema 6 and the productive identity, hostile same-UID, durable audit and OT
 boundaries stay open. F5 remains open and paused.
+
+### Iteration 10 — the managed overview shows the real authorized infrastructure
+
+**Step.** Make the managed overview draw the session's authorized scope instead of the coordinates
+of the demo. One isolated commit on the branch `feature/oip-managed-overview` (`1e6b743`),
+integrated with a real `git merge --ff-only`.
+
+**The gap.** The Core delivers the authorized `sources`, the authorized `locations` and the
+authorized `observations` in the scoped projection
+(`crates/oip-server/src/tenant_services.rs:540-591`). The client dropped all of it: the overview
+asked for the temperature of the demo entity `M-01` and the metric `temperature`
+(`apps/flutter/lib/models/contracts.dart:239-245`), the trend accumulator accepted only that pair
+(`apps/flutter/lib/app/controller.dart:172-188`), and the chart drew the caption *Temperatur · M-01*
+(`apps/flutter/lib/widgets/trend.dart:77`). In the managed mode the measured series was therefore
+always empty, the tile showed `—` and the ribbon showed three rows for dimensions the projection
+does not carry. The contract had already named the rule: *"Overview: counts from authorized
+returned inventory, sources from actual source registry; no fake host CPU/RAM/network metrics"*
+(`docs/architecture/oip-0085-real-inventory-flutter-contract.md:21`).
+
+**What changed.**
+
+* `apps/flutter/lib/models/contracts.dart`: the authorized `sources` and `locations` of the scoped
+  projection are no longer dropped. `ScopedSource` mirrors the `SourceHealth` of the Core, and
+  `ScopedLocation` the `HierarchyLocation`; `Snapshot` keeps both and can resolve the placement of
+  a source.
+* `apps/flutter/lib/app/controller.dart`: the measured series are no longer the demo pair. The
+  legacy rule stays exactly as it was — the temperature of `M-01` of the primary source — and the
+  managed rule measures the numeric observations of the authorized sources, one series per
+  authorized source. The metric of a series is the one with the most received samples, a tie is
+  broken by the metric identifier, so the choice is deterministic and visible. The accumulator
+  rules stay unchanged: a change of the measured scope starts a new display window, a source time
+  that moves backwards starts a new window, an identical source time and value is not appended
+  twice and a series keeps at most 60 received points.
+* `apps/flutter/lib/widgets/trend.dart`: the chart names the metric it measured instead of
+  *Temperatur*, and the gap limit follows the cadence the series itself showed — the median
+  interval of the series with a tolerance of half of it and the demo limit as its floor. The demo
+  limit of 2.5 s stays the limit of the legacy demo, so the demo behaviour is unchanged; a real
+  source publishes every 30 s and its points are connected instead of being broken at every point.
+  A source time jump is still never connected into a line over a data gap.
+* `apps/flutter/lib/features/overview.dart`: the source registry with the health the Core measured,
+  the placement of the source in the authorized hierarchy and the measured values are shown. The
+  rows for the OPC-UA, subscription and network dimensions belong to the legacy demo; in the
+  managed mode the source registry of the session is shown instead of dimensions the projection
+  does not deliver. The demo tile *Temperatur M-01* and the demo entity in the alarm check and in
+  the device focus are gone in the managed mode.
+* `apps/flutter/lib/design_system/theme.dart`: the status vocabulary of the source registry had no
+  label and no colour — `disconnected`, `healthy`, `valid` and `invalid` were rendered as raw
+  English strings. They are mapped now.
+* `apps/flutter/test/managed_overview_test.dart` (new): three tests — the managed overview renders
+  the authorized source, its real health, its placement and its real measurement and no demo
+  coordinate; the controller measures one series per authorized source and extends it with a later
+  measurement; the gap limit of a real cadence is not the demo limit while the legacy rule keeps
+  its own.
+* `apps/flutter/test/browser_onboarding.mjs`: the rendered overview is compared with the source
+  registry and the measurement that the Core received over SSH, and the receipt names them.
+* `docs/architecture/oip-0085-real-inventory-flutter-contract.md`: names the surface and its proof.
+
+**Measured result on canonical `main` (`1e6b743`)** — actual Flutter web release → authenticated
+HTTP → shared Core → owned loopback OpenSSH → genuine macOS host facts:
+
+```
+cargo fmt --all -- --check                                       exit 0 (no Rust source changed)
+flutter analyze                                                    exit 0, no issues
+flutter test                                                       100 passed, 0 failed
+python3 tests/real_device/acceptance.py                           8 phases PASS, exit 0
+  PASS browser_identity_online_writer
+  PASS ssh_handshake_confirmation_monitoring
+  PASS restart_sigkill_identity
+  PASS actual_flutter_ssh_onboarding     <- the persisted history and the managed overview
+  PASS no_clients_ingestion_progress
+  PASS host_key_change_blocks_collection
+  PASS weak_host_key_is_rejected_by_the_server
+  PASS eight_official_mcp_clients
+python3 tests/canonical_regression.py                             8 cases PASS, no failed, no blocked
+```
+
+The browser receipt (`target/oip-real-device-e2e/browser/report.json`) names what the operator now
+sees on the landing page of the managed mode:
+
+```
+rendered_overview  authorized_source SSH host browser-existing
+                   source_registry_section true
+                   measured_metric host.memory_total_bytes
+                   measured_value 17179869184
+                   demo_coordinates_absent true
+```
+
+**Not claimed.** The measurement is the host report of the owned loopback fixture on this machine,
+not a physical Raspberry-Pi verdict. No personal device was contacted, the real installation was not
+activated and the personal database is unchanged at schema 6. The network view still shows its
+loading message and is recorded as the next READY item; the event history and the diagnostics
+surfaces stay unconnected, because `events_read` is not proven for every operator principal. The
+productive identity, hostile same-UID, durable audit and OT boundaries stay open. F5 remains open
+and paused. No Rust source changed in this iteration, so the Rust workspace results of iteration 9
+remain valid for this tree.
 
 ### Iteration 9 — the persisted history reaches the operator view
 
