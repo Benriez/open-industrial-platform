@@ -73,10 +73,16 @@ def daemon(name):return start(name,[BIN,'--daemon','--config',RUN/'core.json','-
 def sim(i,name):return start(name,[SIM,'--port',PORTS[i],'--seed',42+i*7,'--tick-ms',250])
 def sources(p='platform-reader'):return {s['id']:s for s in get('/api/v2/sources',p)}
 def parity(c):
- a={s['id']:s for s in c.call('sources_read')};b=sources(c.principal);assert set(a)==set(b)
- for k in a:
-  for field in ['connection','reachability','service','freshness','validity']:assert a[k][field]==b[k][field],(field,a,b)
- return sorted(a)
+ # Both transports read the live registry, so a source that is still warming up
+ # can be observed in two different states. The gate waits for the bounded
+ # convergence of the compared fields and still fails when they never agree.
+ deadline=time.monotonic()+30
+ while True:
+  a={s['id']:s for s in c.call('sources_read')};b=sources(c.principal);assert set(a)==set(b)
+  differences=[(k,field,a[k][field],b[k][field]) for k in a for field in ['connection','reachability','service','freshness','validity'] if a[k][field]!=b[k][field]]
+  if not differences:return sorted(a)
+  if time.monotonic()>deadline:raise AssertionError(('rest_mcp_parity',differences))
+  time.sleep(.2)
 def snapshot_scope(snapshot,expected):
  assert {s['id'] for s in snapshot['sources']}==set(expected)
  assert all(o['data_source_id'] in expected for o in snapshot['observations'])
