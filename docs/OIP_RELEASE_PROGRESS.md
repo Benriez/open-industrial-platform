@@ -13,25 +13,26 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `111dff1` (`test(core): add a reproducible canonical regression run and repair stale gates`) |
-| Canonical source tree | `7090367b0a30815db9b29ddeef41c3acc2c68719` |
-| Previous canonical source revision | `d32c9d1` (iteration 5, OIP-009 contract) |
-| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in six controlled steps |
-| Tracked files in the canonical source revision | 444, source manifest SHA-256 `03097acab2dcadd9a7dc5c0c83af6bde32614a1c5784a91bbb1877cb005c59e3` |
+| Canonical source revision | `f4b89ed` (`test(core): let the REST and MCP parity gate wait for a bounded convergence`) |
+| Canonical source tree | `ab3c6fd923932476ea5b71ba45513dfd85390e20` |
+| Previous canonical source revision | `111dff1` (iteration 6, canonical regression run) |
+| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in seven controlled steps |
+| Tracked files in the canonical source revision | 445, source manifest SHA-256 `9d32797172c8f83f9a336798373c00314246a0dc328df669cbc1650ec81255ab` |
 | Documentation commit on top | changes only `docs/OIP_RELEASE_PROGRESS.md`, `docs/evidence/oip-real-device/*.json` and `docs/real-device-onboarding-verification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
 
-The canonical tree carries six controlled integrations: iteration 1 integrated the reviewed
+The canonical tree carries seven controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
 integrated the isolated harness branch `feature/oip-native-macos-harness` (`b19092d`), iteration 4
 integrated the isolated payload branch `feature/oip-connection-payload-bound` (`5a48b0c`) and
 iteration 5 integrated the isolated contract branch `feature/oip-009-context-contract`
-(`d32c9d1`) and iteration 6 the isolated regression branch
-`feature/oip-canonical-regression` (`111dff1`). No iteration weakened a contract rule, and
-none activated the installation.
+(`d32c9d1`), iteration 6 the isolated regression branch `feature/oip-canonical-regression`
+(`111dff1`), iteration 7 the isolated baseline branch `feature/oip-007-baseline-adoption`
+(`6df189f`) and the isolated parity gate branch `feature/oip-parity-gate-convergence`
+(`f4b89ed`). No iteration weakened a contract rule, and none activated the installation.
 
 ## 2. Acceptance gates and their measured status
 
@@ -63,7 +64,7 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Browser session boundary in Rust | PROVED | `crates/oip-server/tests/browser_session.rs` → 5 tests: exact Origin, single-use code, CSRF on every write, revoked session, revoked projection stream |
 | Native macOS build and test | PROVED | `tests/oip008/ui_regression.py` → native build 11.6 s with the build marker, native integration test 39.1 s with the `All tests passed!` marker, against an owned isolated demo core |
 | Legacy browser, interaction and visual regression | PROVED | browser 80.4 s, interactions 47.1 s, visual 63.4 s on the separately built HTML renderer |
-| Milestone acceptance harnesses on the canonical tree | PROVED | `tests/canonical_regression.py`: OIP-008, OIP-008.2, OIP-008.2 schema3 migration, OIP-008.4, OIP-008.5, OIP-008.5 migration and the UI regression all PASS on the canonical tree |
+| Milestone acceptance harnesses on the canonical tree | PROVED | `tests/canonical_regression.py`: OIP-008, OIP-008.2, OIP-008.2 schema3 migration, OIP-008.4, OIP-008.5, OIP-008.5 migration, the UI regression and the schema2 adoption all PASS on the canonical tree, no failed and no blocked case |
 | Physical Raspberry-Pi acceptance | **WITHHELD** | no endpoint, SSH user or approved identity was supplied; no personal device was contacted |
 | Real installation activation (schema 7) | **BLOCKED** | requires a separate operator decision plus a fresh protected backup; forbidden in this loop |
 | Productive remote/browser identity | **OPEN** | loopback local operator session only; no HTTPS, no remote identity, no hostile same-UID isolation |
@@ -186,12 +187,25 @@ belongs to the still withheld hardware verdict.
 
 ### N5 — Production advisories and remaining security work
 
-RUSTSEC-2023-0071, RUSTSEC-2023-0089 and RUSTSEC-2024-0449 remain documented and ignored
-with the existing local-only exceptions; no exception was added or widened. The `deny.toml`
-ignore reasons for RUSTSEC-2023-0089 and RUSTSEC-2024-0449 do not match the actual advisory
-subjects and should be corrected against the advisory database. Productive remote/browser
-identity, hostile same-UID isolation, tamper-proof durable audit and OT/endurance certification
-stay open and are not claimed by this release.
+**The three documented exceptions were verified against the advisory database in iteration 7
+and are correct, necessary and unavoidable.** The earlier note in this file that the ignore
+reasons of RUSTSEC-2023-0089 and RUSTSEC-2024-0449 would not match the advisory subjects was
+wrong and is corrected here:
+
+| Id | Crate | Subject | In the tree via | Patched |
+|---|---|---|---|---|
+| RUSTSEC-2023-0071 | `rsa` 0.9.10 | Marvin attack, timing side channel of the private key | `async-opcua-client`, `async-opcua-crypto` → `oip-opcua` | none (`patched = []`, still affected in 0.9.10) |
+| RUSTSEC-2023-0089 | `atomic-polyfill` 1.0.3 | unmaintained (informational) | `heapless` → `postcard` → `async-opcua-server`, embedded targets only | none (`patched = []`) |
+| RUSTSEC-2024-0449 | `unsafe-libyaml` 0.2.11 | unmaintained (informational) | `serde_yaml` → `async-opcua-core` | none (`patched = []`) |
+
+All three are informational or unfixable in the upstream crates, so no dependency upgrade can
+clear them; the local only exceptions stay as they are, with the unchanged review date. The
+advisory of RUSTSEC-2023-0071 itself names the accepted scope: "Local use on a non-compromised
+computer is fine", and the OIP-002 exception limits the usage to explicitly trusted loopback
+tests.
+
+Productive remote/browser identity, hostile same-UID isolation, tamper-proof durable audit and
+OT/endurance certification stay open and are not claimed by this release.
 
 ## 4. Iteration log
 
@@ -538,6 +552,61 @@ real device acceptance results of iteration 5 remain valid for this tree. No phy
 Raspberry-Pi was contacted, the real installation was not activated, the personal database is
 unchanged at schema 6 and the productive identity, hostile same-UID, durable audit and OT
 boundaries stay open. F5 remains open and paused.
+
+### Iteration 7 — the schema2 adoption case and a stable parity gate
+
+**Step.** Restore the one acceptance case that could not be re-verified, and remove a race from
+a gate that decides the result of a whole regression run. Two isolated branches were used:
+`feature/oip-007-baseline-adoption` (`6df189f`) and
+`feature/oip-parity-gate-convergence` (`f4b89ed`), both integrated with a real
+`git merge --ff-only`.
+
+**The blocked case.** The schema2 adoption of the OIP-008 milestone needs a writer that still
+creates the schema2 layout. The historical protected binary of that milestone is not part of
+the workspace any more, so the case stayed blocked. `tests/oip007_baseline.py` rebuilds that
+writer from the verified OIP-007 baseline commit `a27e7b1`: it extracts the source with
+`git archive`, so no worktree registration and no canonical checkout state is touched, and it
+builds into its own destination directory. The result records the source commit, the hash of
+the rebuild and the hash of the historical binary, and it states that a rebuild is not byte
+identical, so **the identity of the historical protected binary is not claimed**. The canonical
+regression runner uses the prepared writer when it exists and records its hash and origin.
+
+**The race.** In the first canonical run of this iteration the OIP-008 acceptance case failed
+although it had passed with identical code in iteration 6. The reason was in the gate itself:
+it compared the live source state of the MCP transport with the live source state of the REST
+transport, and while a source is still warming up the two reads can observe two different
+states (`freshness: unknown` against `fresh`, `service: unknown` against `healthy`). The gate
+now waits for the compared fields to converge within a bounded deadline and still fails when
+they never agree. The strength of the gate is unchanged. The hardened gate passed in three
+consecutive runs and in the canonical run below.
+
+**Measured result on canonical `main` (`f4b89ed`)** — every case, no failure, no blocked case:
+
+```
+oip008_acceptance          PASS  30.9 s
+oip0082_acceptance         PASS  51.6 s
+oip0082_schema3_migration  PASS  25.6 s
+oip0084_acceptance         PASS  22.7 s
+oip0085_acceptance         PASS   9.2 s
+oip0085_migration          PASS  15.3 s
+oip008_ui_regression       PASS 323.1 s
+oip008_legacy_migration    PASS   8.4 s   schema2 writer rebuilt from a27e7b1, schema2 adopted
+                                         into schema3, 46 observations / 48 events / 2 gaps kept,
+                                         same observation keys, both refusal paths still refuse
+```
+
+**Advisory exceptions verified (N5).** The three documented exceptions were checked against
+the local advisory database and against the dependency graph. All three are correct,
+necessary and unavoidable; the earlier note in this file that two of the ignore reasons would
+not match the advisory subjects was wrong and is corrected in the N5 section.
+
+**Not claimed.** The schema2 adoption is proven with a writer rebuilt from the verified OIP-007
+baseline commit, not with the historical protected binary, whose byte identity cannot be
+reproduced and is not asserted. The product source is unchanged in this iteration, so the Rust,
+Flutter and real device acceptance results of iteration 5 remain valid for this tree. No
+physical Raspberry-Pi was contacted, the real installation was not activated, the personal
+database is unchanged at schema 6 and the productive identity, hostile same-UID, durable audit
+and OT boundaries stay open. F5 remains open and paused.
 
 ## 5. Evidence index
 

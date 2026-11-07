@@ -1,13 +1,13 @@
 {
   "scope": "OIP canonical main: two controlled integrations (iteration 1 real device onboarding feature, iteration 2 its conformance fixes)",
-  "canonical_source_commit": "111dff13017089f30055a498fe6c92f6decbaf6b",
-  "canonical_source_tree": "7090367b0a30815db9b29ddeef41c3acc2c68719",
-  "previous_canonical_source_commit": "d32c9d19de13a519b5e7c2dcd84aeb976df72186",
-  "integration_method": "six real git merge --ff-only integrations, no merge commit, no history rewrite",
+  "canonical_source_commit": "f4b89ed20fccc1d060b2ef55bdb0828c698dd4ee",
+  "canonical_source_tree": "ab3c6fd923932476ea5b71ba45513dfd85390e20",
+  "previous_canonical_source_commit": "111dff13017089f30055a498fe6c92f6decbaf6b",
+  "integration_method": "seven real git merge --ff-only integrations, no merge commit, no history rewrite",
   "merge_commit_created": false,
   "history_rewritten": false,
-  "tracked_files_in_source_revision": 444,
-  "source_manifest_sha256": "03097acab2dcadd9a7dc5c0c83af6bde32614a1c5784a91bbb1877cb005c59e3",
+  "tracked_files_in_source_revision": 445,
+  "source_manifest_sha256": "9d32797172c8f83f9a336798373c00314246a0dc328df669cbc1650ec81255ab",
   "source_manifest_scope": "all tracked files of the canonical source revision",
   "reviewed_candidate_tree_unchanged": true,
   "runtime_code_changed_in_this_iteration": true,
@@ -464,6 +464,104 @@
         },
         "legacy_schema2_adoption": "not re-verified; verified historically in the OIP-008 receipt with the then protected binary"
       }
+    },
+    {
+      "iteration": 7,
+      "scope": "restore the schema2 adoption case with a rebuilt OIP-007 writer, and remove the sampling race from the REST/MCP parity gate",
+      "canonical_source_commit": "f4b89ed20fccc1d060b2ef55bdb0828c698dd4ee",
+      "canonical_source_tree": "ab3c6fd923932476ea5b71ba45513dfd85390e20",
+      "tracked_files": 445,
+      "source_manifest_sha256": "9d32797172c8f83f9a336798373c00314246a0dc328df669cbc1650ec81255ab",
+      "development_isolation": "branches feature/oip-007-baseline-adoption (6df189f) and feature/oip-parity-gate-convergence (f4b89ed) in isolated worktrees, both integrated with git merge --ff-only",
+      "runtime_code_changed": false,
+      "product_source_changed": false,
+      "harness_changed": [
+        "tests/oip007_baseline.py (new: rebuilds the OIP-007 schema2 writer from the verified baseline commit with git archive)",
+        "tests/canonical_regression.py (uses the prepared schema2 writer and records its hash and origin)",
+        "tests/oip008/acceptance.py (the REST/MCP parity gate waits for a bounded convergence)"
+      ],
+      "canonical_regression": {
+        "status": "PASS",
+        "failed": [],
+        "blocked": [],
+        "cases": [
+          {
+            "name": "oip008_acceptance",
+            "status": "PASS",
+            "seconds": 30.9
+          },
+          {
+            "name": "oip0082_acceptance",
+            "status": "PASS",
+            "seconds": 51.6
+          },
+          {
+            "name": "oip0082_schema3_migration",
+            "status": "PASS",
+            "seconds": 25.6
+          },
+          {
+            "name": "oip0084_acceptance",
+            "status": "PASS",
+            "seconds": 22.7
+          },
+          {
+            "name": "oip0085_acceptance",
+            "status": "PASS",
+            "seconds": 9.2
+          },
+          {
+            "name": "oip0085_migration",
+            "status": "PASS",
+            "seconds": 15.3
+          },
+          {
+            "name": "oip008_ui_regression",
+            "status": "PASS",
+            "seconds": 323.1
+          },
+          {
+            "name": "oip008_legacy_migration",
+            "status": "PASS",
+            "seconds": 8.4,
+            "baseline_binary_sha256": "314cf640c7b87856566e324ab98f000c71d71537a6ff79e2ed933d736651d57e",
+            "baseline_source_commit": "a27e7b1e01dc1cb6f4d97c34319b0aa6d7321871",
+            "byte_identical_to_historical_binary": false,
+            "before_counts": {
+              "observations": 46,
+              "events": 48,
+              "gaps": 2
+            },
+            "same_observation_keys": true,
+            "unattested_refused": true,
+            "changed_evidence_refused": true,
+            "legacy_migrated": true
+          }
+        ]
+      },
+      "advisory_exceptions_verified": {
+        "database": "local cargo-deny advisory database",
+        "RUSTSEC-2023-0071": {
+          "crate": "rsa 0.9.10",
+          "subject": "Marvin attack, timing side channel",
+          "in_tree_via": "async-opcua-client, async-opcua-crypto -> oip-opcua",
+          "patched": []
+        },
+        "RUSTSEC-2023-0089": {
+          "crate": "atomic-polyfill 1.0.3",
+          "subject": "unmaintained",
+          "in_tree_via": "heapless -> postcard -> async-opcua-server (embedded targets)",
+          "patched": []
+        },
+        "RUSTSEC-2024-0449": {
+          "crate": "unsafe-libyaml 0.2.11",
+          "subject": "unmaintained",
+          "in_tree_via": "serde_yaml -> async-opcua-core",
+          "patched": []
+        },
+        "conclusion": "the three documented local only exceptions are correct, necessary and cannot be cleared by a dependency upgrade; no exception was added or widened"
+      },
+      "corrected_claim": "the earlier note that the ignore reasons of RUSTSEC-2023-0089 and RUSTSEC-2024-0449 would not match the advisory subjects was wrong and is corrected"
     }
   ],
   "measured_on_canonical_main": {
@@ -473,7 +571,7 @@
     "flutter_test": "86 passed, 0 failed",
     "real_device_acceptance_phases": 8,
     "ui_regression": "browser 80.4 s, interactions 47.1 s, visual 63.4 s, native build 11.6 s, native test 39.1 s, all PASS",
-    "milestone_acceptance_harnesses": "7 PASS, 1 BLOCKED (schema2 adoption without a protected OIP-007 binary)"
+    "milestone_acceptance_harnesses": "8 PASS, no failed and no blocked case"
   },
   "status": "INTEGRATED_AND_VERIFIED_ON_CANONICAL_MAIN; PHYSICAL_HARDWARE_ACCEPTANCE_AND_INSTALLATION_ACTIVATION_PENDING",
   "gates_detail": {

@@ -156,6 +156,16 @@ Measured on canonical `main` (`111dff1`): OIP-008 acceptance PASS, OIP-008.2 acc
 
 The product source is unchanged in this iteration, so the Rust, Flutter and real device acceptance results of the previous iteration remain valid for this tree.
 
+## Addendum — the schema2 adoption case and the parity gate
+
+The schema2 adoption of the OIP-008 milestone could not be re-verified because the historical protected binary of that milestone is not part of the workspace any more. `tests/oip007_baseline.py` rebuilds that writer from the verified OIP-007 baseline commit `a27e7b1`; it extracts the source with `git archive`, so no worktree registration and no canonical checkout state is touched. The result records the source commit, the hash of the rebuild and the hash of the historical binary, and it states that a rebuild is not byte identical, so the identity of the historical protected binary is not claimed.
+
+In the first canonical run of this iteration the OIP-008 acceptance case failed although it had passed with identical code before. The gate itself compared the live source state of the MCP transport with the live source state of the REST transport; while a source is still warming up, the two reads can observe two different states. The gate now waits for the compared fields to converge within a bounded deadline and still fails when they never agree.
+
+Measured on canonical `main` (`f4b89ed`): all eight milestone acceptance cases pass with no failed and no blocked case — OIP-008 acceptance, OIP-008.2 acceptance, OIP-008.2 schema3 migration, OIP-008.4 acceptance, OIP-008.5 acceptance, OIP-008.5 migration, the UI regression with its browser, interaction, visual, native build and native test steps, and the schema2 adoption with 46 observations, 48 events and 2 gaps kept, the same observation keys, both refusal paths still refusing and the adoption into schema3 reported.
+
+The three documented advisory exceptions were checked against the local advisory database and against the dependency graph: RUSTSEC-2023-0071 is `rsa` 0.9.10 (Marvin attack, `patched = []`), RUSTSEC-2023-0089 is `atomic-polyfill` 1.0.3 (unmaintained, `patched = []`) and RUSTSEC-2024-0449 is `unsafe-libyaml` 0.2.11 (unmaintained, `patched = []`). All three are present in the tree through the paths named in `deny.toml`, none of them has an upstream fix, and the existing local only exceptions stay unchanged and unwidened.
+
 ## Addendum — the OIP-009 browser session, SSE and context seam contract
 
 Five places in the tree defer the browser session, the SSE boundary and the global context to OIP-009, and this document states that the final OIP-009 payload must be reconciled three ways. The implemented part now exists and is verified, so it is written down as the boundary any payload has to satisfy: `docs/architecture/oip-009-browser-session-sse.md`.
