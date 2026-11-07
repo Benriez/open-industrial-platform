@@ -150,9 +150,9 @@ impl ApplicationServices {
             return Err(diagnostic_invalid());
         }
         let mut sources = if let Some(p) = &context.principal {
-            let h = self.state.hierarchy.as_ref().ok_or_else(inaccessible)?;
+            let h = self.state.hierarchy().ok_or_else(inaccessible)?;
             self.tenant_sources(
-                h,
+                &h,
                 p,
                 id,
                 &SourceQuery {
@@ -187,7 +187,7 @@ impl ApplicationServices {
                 .collect()
         };
         if let Some(device) = &q.device {
-            let source = if let Some(h) = &self.state.hierarchy {
+            let source = if let Some(h) = &self.state.hierarchy() {
                 h.source_for_device(device.as_str()).cloned()
             } else {
                 self.state.snapshot().ok().and_then(|v| {

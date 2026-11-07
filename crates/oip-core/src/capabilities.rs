@@ -38,6 +38,8 @@ pub enum CapabilityId {
     InventoryRead,
     InventoryPlanRead,
     InventoryChange,
+    DeviceConnectionRead,
+    DeviceConnectionConfigure,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
@@ -67,7 +69,7 @@ pub struct CapabilityDescriptor {
     pub audit: String,
 }
 impl CapabilityId {
-    pub const ALL: [Self; 30] = [
+    pub const ALL: [Self; 32] = [
         Self::CoreHealthRead,
         Self::CoreLivenessRead,
         Self::CoreReadinessRead,
@@ -98,10 +100,26 @@ impl CapabilityId {
         Self::InventoryRead,
         Self::InventoryPlanRead,
         Self::InventoryChange,
+        Self::DeviceConnectionRead,
+        Self::DeviceConnectionConfigure,
     ];
     pub fn descriptor(self) -> CapabilityDescriptor {
         use CapabilityId::*;
         let (permission, input, output) = match self {
+            DeviceConnectionRead => (
+                vec![Permission::DevicesRead, Permission::TelemetryRead],
+                "ConnectionQuery",
+                "ConnectionResult",
+            ),
+            DeviceConnectionConfigure => (
+                vec![
+                    Permission::InventoryManage,
+                    Permission::DevicesRead,
+                    Permission::TelemetryRead,
+                ],
+                "ConnectionAction",
+                "ConnectionResult",
+            ),
             InventoryRead => (
                 vec![Permission::DevicesRead],
                 "InventoryQuery",
@@ -239,13 +257,19 @@ impl CapabilityId {
             permission,
             mutating: matches!(
                 self,
-                SimulationScenarioSet | SettingsChange | InventoryChange
+                SimulationScenarioSet
+                    | SettingsChange
+                    | InventoryChange
+                    | DeviceConnectionConfigure
             ),
             input_type: input.into(),
             output_type: output.into(),
             audit: if matches!(
                 self,
-                SimulationScenarioSet | SettingsChange | InventoryChange
+                SimulationScenarioSet
+                    | SettingsChange
+                    | InventoryChange
+                    | DeviceConnectionConfigure
             ) {
                 "decision_and_outcome_local_log"
             } else {
@@ -335,6 +359,8 @@ pub enum CapabilityRequest {
     InventoryRead(InventoryQuery),
     InventoryPlanRead(InventoryPlanQuery),
     InventoryChange(InventoryAdministration),
+    DeviceConnectionRead(ConnectionQuery),
+    DeviceConnectionConfigure(ConnectionAction),
 }
 impl CapabilityRequest {
     pub fn id(&self) -> CapabilityId {
@@ -345,6 +371,8 @@ impl CapabilityRequest {
             Self::InventoryRead(_) => CapabilityId::InventoryRead,
             Self::InventoryPlanRead(_) => CapabilityId::InventoryPlanRead,
             Self::InventoryChange(_) => CapabilityId::InventoryChange,
+            Self::DeviceConnectionRead(_) => CapabilityId::DeviceConnectionRead,
+            Self::DeviceConnectionConfigure(_) => CapabilityId::DeviceConnectionConfigure,
             Self::EventHistoryRead(_) => CapabilityId::EventHistoryRead,
             Self::EventDetailRead(_) => CapabilityId::EventDetailRead,
             Self::DataGapsRead(_) => CapabilityId::DataGapsRead,
@@ -376,6 +404,7 @@ impl CapabilityRequest {
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 #[serde(tag = "type", content = "value", rename_all = "snake_case")]
 pub enum CapabilityOutput {
+    Connection(Box<ConnectionResult>),
     Inventory(InventoryPage),
     InventoryPlan(InventoryPlan),
     Settings(SettingsSnapshot),

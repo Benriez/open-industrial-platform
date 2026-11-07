@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Run unchanged browser/native clients against an owned local demo core; assert teardown."""
 import subprocess,pathlib,socket,time,urllib.request,os,signal,json
-ROOT=pathlib.Path(__file__).resolve().parents[2];OUT=ROOT/'target/oip008-ui';OUT.mkdir(exist_ok=True);UI=pathlib.Path('/Users/benny/Code/open-industrial-platform/apps/flutter');RUN=ROOT/'target'/('oip0061-ui-'+str(os.getpid()));RUN.mkdir(parents=True)
+ROOT=pathlib.Path(__file__).resolve().parents[2];OUT=pathlib.Path(os.environ.get('OIP_EVIDENCE_DIR',ROOT/'target/oip008-ui'));OUT.mkdir(parents=True,exist_ok=True);UI=pathlib.Path(os.environ.get('OIP_UI_DIR',ROOT/'apps/flutter'));RUN=ROOT/'target'/('oip0061-ui-'+str(os.getpid()));RUN.mkdir(parents=True)
 def port():
  with socket.socket() as s:s.bind(('127.0.0.1',0));return s.getsockname()[1]
 h,p=port(),port();url=f'http://127.0.0.1:{h}'
-with (OUT/'ui-backend.log').open('w') as log:core=subprocess.Popen([str(ROOT/'target/debug/oip-server'),'--demo','--web-dir',str(UI/'build/web'),'--port',str(h),'--opcua-port',str(p),'--database',str(RUN/'demo.sqlite')],cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
+with (OUT/'ui-backend.log').open('w') as log:core=subprocess.Popen([os.environ.get('OIP_SERVER_BIN',str(ROOT/'target/debug/oip-server')),'--demo','--web-dir',os.environ.get('OIP_WEB_DIR',str(UI/'build/web')),'--port',str(h),'--opcua-port',str(p),'--database',str(RUN/'demo.sqlite')],cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
 results=[]
 def ready():
  start=time.monotonic()
@@ -21,7 +21,18 @@ try:
  commands=[('browser',['node','test/browser_oip004.mjs']),('interactions',['node','test/browser_spectrum.mjs']),('visual',['node','test/browser_visual_oip004.mjs']),('native_macos',['flutter','test','integration_test/live_dashboard_test.dart','-d','macos','--dart-define=OIP_API_URL='+url,'--reporter','expanded'])]
  for name,cmd in commands:
   env['OIP_EVIDENCE_DIR']=str(OUT/({'browser':'browser','interactions':'interactions','visual':'visual'}.get(name,'native')))
-  with (OUT/(name+'-console.log')).open('w') as f:code=subprocess.call(cmd,cwd=UI,env=env,stdout=f,stderr=subprocess.STDOUT)
+  with (OUT/(name+'-console.log')).open('w') as f:
+   test=subprocess.Popen(cmd,cwd=UI,env=env,stdout=f,stderr=subprocess.STDOUT,start_new_session=True)
+   try:code=test.wait(timeout=300)
+   except subprocess.TimeoutExpired:
+    # Only the explicitly owned test process group, never other Xcode/previews.
+    os.killpg(test.pid,signal.SIGTERM)
+    try:test.wait(timeout=10)
+    except subprocess.TimeoutExpired:os.killpg(test.pid,signal.SIGKILL);test.wait()
+    code=124
+  # Flutter can exit zero when interrupted before running a native test.
+  # Exit status alone must never turn a cancelled build into acceptance.
+  if name=='native_macos' and code==0 and 'All tests passed!' not in (OUT/(name+'-console.log')).read_text():code=125
   results.append({'name':name,'exit_code':code,'status':'PASS' if code==0 else 'FAIL'});assert code==0,name
  ready()
 finally:

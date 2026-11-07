@@ -3,6 +3,7 @@ use super::*;
 
 struct Writer {
     app: Application<SqliteStore>,
+    registry: watch::Sender<RegistrySnapshot>,
     view: watch::Sender<CoreView>,
     notifications: watch::Sender<u64>,
     owner: std::sync::Weak<Inner>,
@@ -13,6 +14,21 @@ struct Writer {
     health_uncommitted: bool,
 }
 impl Writer {
+    fn refresh_registry(&self) -> Result<(), CapabilityError> {
+        let store = &self.app.repository;
+        let state = RegistrySnapshot {
+            hierarchy: store
+                .hierarchy()
+                .map_err(|_| mutation_error())?
+                .map(Arc::new),
+            inventory: Arc::new(store.inventory_records().map_err(|_| mutation_error())?),
+            connections: Arc::new(store.connection_records().map_err(|_| mutation_error())?),
+            attempts: Arc::new(store.connection_attempts().map_err(|_| mutation_error())?),
+        };
+        self.registry.send_replace(state);
+        self.notifications.send_modify(|n| *n = n.wrapping_add(1));
+        Ok(())
+    }
     fn publish(&mut self) {
         self.publish_at(now_ms());
     }
@@ -130,6 +146,7 @@ pub(super) fn spawn(
     view: watch::Sender<CoreView>,
     notifications: watch::Sender<u64>,
     owner: std::sync::Weak<Inner>,
+    registry: watch::Sender<RegistrySnapshot>,
 ) -> std::io::Result<JoinHandle<()>> {
     // Opaque epoch prevents inference of the installation-wide run counter from IDs.
     use std::io::Read;
@@ -140,6 +157,7 @@ pub(super) fn spawn(
         .spawn(move || {
             let mut writer = Writer {
                 app,
+                registry,
                 view,
                 notifications,
                 owner,
@@ -151,6 +169,91 @@ pub(super) fn spawn(
             };
             while let Some(command) = commands.blocking_recv() {
                 match command {
+                    Command::InventoryOnline(request, reply) => {
+                        let result = if writer.expired() {
+                            Err(mutation_error())
+                        } else {
+                            writer
+                                .app
+                                .repository
+                                .inventory_admin(
+                                    request,
+                                    true,
+                                    now_ms(),
+                                    "authenticated_core_authority",
+                                )
+                                .map_err(|_| mutation_error())
+                                .and_then(|plan| {
+                                    writer.refresh_registry()?;
+                                    Ok(plan)
+                                })
+                        };
+                        let _ = reply.send(result);
+                    }
+                    Command::ConnectionCommit(request, definition, reply) => {
+                        let result = (|| {
+                            if writer.expired() {
+                                return Err(mutation_error());
+                            }
+                            writer
+                                .app
+                                .repository
+                                .connection_commit(&request, &definition, now_ms())
+                                .map_err(|_| mutation_error())?;
+                            if writer.app.attach_persisted_source(definition).is_err() {
+                                writer.app.persistence_failed();
+                                writer.refresh_registry()?;
+                                return Err(CapabilityError::new(
+                                    CapabilityErrorCode::PersistenceUnavailable,
+                                    "APPLY_PENDING_RESTART",
+                                    "Binding persisted; runtime apply needs a controlled restart",
+                                ));
+                            }
+                            writer
+                                .app
+                                .configure_source_cadence(
+                                    &request.connection.source_id,
+                                    (request.connection.poll_seconds * 2000 + 15000) as i64,
+                                )
+                                .map_err(|_| mutation_error())?;
+                            writer.refresh_registry()
+                        })();
+                        let _ = reply.send(result);
+                    }
+                    Command::ConnectionControl(p, id, revision, enabled, seconds, reply) => {
+                        let result = (|| {
+                            if writer.expired() {
+                                return Err(mutation_error());
+                            }
+                            let c = writer
+                                .app
+                                .repository
+                                .connection_control(&p, &id, revision, enabled, seconds, now_ms())
+                                .map_err(|_| mutation_error())?;
+                            writer
+                                .app
+                                .configure_source_cadence(
+                                    &c.source_id,
+                                    (seconds * 2000 + 15000) as i64,
+                                )
+                                .map_err(|_| mutation_error())?;
+                            writer.refresh_registry()
+                        })();
+                        let _ = reply.send(result);
+                    }
+                    Command::ConnectionAttempt(attempt, success, reply) => {
+                        let result = writer
+                            .app
+                            .repository
+                            .connection_attempt(&attempt, success)
+                            .map_err(|_| "connection evidence persistence unavailable".to_string())
+                            .and_then(|_| {
+                                writer
+                                    .refresh_registry()
+                                    .map_err(|_| "registry refresh failed".to_string())
+                            });
+                        let _ = reply.send(result);
+                    }
                     Command::Started => writer.app.started(),
                     Command::Connecting(id) => {
                         let _ = writer.app.connecting(&id);
@@ -204,4 +307,12 @@ pub(super) fn spawn(
             // observation reached disk. Never silently claim a coordinated stop.
             writer.finish(false);
         })
+}
+
+fn mutation_error() -> CapabilityError {
+    CapabilityError::new(
+        CapabilityErrorCode::InvalidInput,
+        "REGISTRATION_POLICY_OR_REVISION_CONFLICT",
+        "Operation rejected; reread current authorized inventory and revision",
+    )
 }

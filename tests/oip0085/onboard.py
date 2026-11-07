@@ -4,7 +4,7 @@ No network discovery, credential export, daemon launch or silent global grant.
 """
 import argparse,csv,io,json,os,pathlib,secrets,subprocess,tempfile,uuid,sys
 ROOT=pathlib.Path(__file__).resolve().parents[2]
-p=argparse.ArgumentParser();p.add_argument('--binary',type=pathlib.Path,default=ROOT/'target/debug/oip-server');sub=p.add_subparsers(dest='operation',required=True)
+p=argparse.ArgumentParser();p.add_argument('--binary',type=pathlib.Path,default=pathlib.Path(os.environ.get('OIP_SERVER_BIN',ROOT/'target/debug/oip-server')));sub=p.add_subparsers(dest='operation',required=True)
 i=sub.add_parser('init');i.add_argument('--directory',type=pathlib.Path,required=True)
 for name in ['organization','infrastructure','site','operator']:i.add_argument('--'+name+'-name',required=True)
 i.add_argument('--port',type=int,default=8080);i.add_argument('--apply',action='store_true')
@@ -53,6 +53,7 @@ if a.operation in ['list','show']:
  raise SystemExit(invoke(a.config,'--inventory-query',{'principal':a.principal,'query':query}))
 if a.operation=='cleanup-plan':raise SystemExit(invoke(a.config,'--inventory-cleanup-plan',{'principal':a.principal}))
 if a.operation in ['add','update']:
+ sys.stderr.write('Inventory only: this command does not connect to a device, verify SSH identity or enable monitoring.\n')
  if a.operation=='update':
   if all(v is None for v in [a.name,a.type,a.site,a.description,a.metadata]):p.error('update requires an explicit changed field')
   record=current_device(a.config,a.principal,a.id)

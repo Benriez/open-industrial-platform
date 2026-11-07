@@ -61,6 +61,64 @@ fn app() -> Application<SqliteStore> {
     a.started();
     a
 }
+
+#[test]
+fn per_source_poll_cadence_applies_to_health_and_samples_without_fresh_restore() {
+    let mut a = app();
+    let slow = DataSourceId::new("a").unwrap();
+    let fast = DataSourceId::new("b").unwrap();
+    a.configure_source_cadence(&slow, 5000).unwrap();
+    for id in [&slow, &fast] {
+        a.connected(id).unwrap();
+        a.ingest(id, event(id.as_str(), 0, 1000), 1000).unwrap();
+    }
+    let view = a.view(2000);
+    assert_eq!(
+        view.sources
+            .iter()
+            .find(|s| s.id == slow)
+            .unwrap()
+            .freshness,
+        Freshness::Fresh
+    );
+    assert_eq!(
+        view.sources
+            .iter()
+            .find(|s| s.id == fast)
+            .unwrap()
+            .freshness,
+        Freshness::Stale
+    );
+    assert_eq!(
+        view.observations
+            .iter()
+            .find(|o| o.data_source_id == slow)
+            .unwrap()
+            .freshness,
+        Freshness::Fresh
+    );
+    assert_eq!(
+        view.observations
+            .iter()
+            .find(|o| o.data_source_id == fast)
+            .unwrap()
+            .freshness,
+        Freshness::Stale
+    );
+    assert!(a
+        .view(7001)
+        .observations
+        .iter()
+        .all(|o| o.freshness == Freshness::Stale));
+    let mut restored = Application::initialize(a.repository, definitions(), 8000, 500).unwrap();
+    restored.started();
+    restored.configure_source_cadence(&slow, 5000).unwrap();
+    assert!(restored
+        .view(8000)
+        .observations
+        .iter()
+        .all(|o| o.freshness == Freshness::Stale));
+}
 fn path(name: &str) -> PathBuf {
     let p = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/oip004-tests");
     std::fs::create_dir_all(&p).unwrap();

@@ -21,6 +21,7 @@ use tokio_util::sync::CancellationToken;
 use tracing::Instrument;
 
 const MAGIC: &[u8; 8] = b"OIPIPC1\n";
+const WEB_MAGIC: &[u8; 8] = b"OIPWEB1\n";
 const AUTH_TIMEOUT: Duration = Duration::from_secs(2);
 const MAX_CLIENTS: usize = 32;
 const SESSION_DRAIN: Duration = Duration::from_secs(8);
@@ -352,7 +353,7 @@ impl LocalIpc {
         for a in self.authorities.iter() {
             match &a.policy.principal {
                 Some(p)
-                    if state.hierarchy.as_ref().is_some_and(|h| {
+                    if state.hierarchy().as_ref().is_some_and(|h| {
                         h.plan.principals.iter().any(|x| &x.id == p && x.enabled)
                     }) => {}
                 None if state.legacy_access => {}
@@ -367,6 +368,22 @@ impl LocalIpc {
         self,
         service: Arc<dyn CapabilityService>,
         stop: CancellationToken,
+    ) -> io::Result<()> {
+        self.run_inner(service, stop, None).await
+    }
+    pub async fn run_with_browser(
+        self,
+        service: Arc<dyn CapabilityService>,
+        stop: CancellationToken,
+        browser: Arc<crate::browser_session::BrowserSessions>,
+    ) -> io::Result<()> {
+        self.run_inner(service, stop, Some(browser)).await
+    }
+    async fn run_inner(
+        self,
+        service: Arc<dyn CapabilityService>,
+        stop: CancellationToken,
+        browser: Option<Arc<crate::browser_session::BrowserSessions>>,
     ) -> io::Result<()> {
         let mut sessions = JoinSet::new();
         let mut sequence = 0u64;
@@ -383,9 +400,9 @@ impl LocalIpc {
                     if sessions.len()>=self.max_sessions { tracing::warn!(code="ipc_session_limit","client rejected at session limit");drop(stream);continue; }
                     sequence+=1;
                     let id=sequence;
-                    let authorities=self.authorities.clone(); let service=service.clone(); let cancel=stop.child_token();
+                    let authorities=self.authorities.clone(); let service=service.clone(); let cancel=stop.child_token(); let browser=browser.clone();
                     sessions.spawn(async move {
-                        if session(stream, authorities, service, cancel).await.is_err() { tracing::warn!(code="ipc_session_rejected_or_closed","local session rejected or transport closed"); }
+                        if session(stream, authorities, service, cancel, browser).await.is_err() { tracing::warn!(code="ipc_session_rejected_or_closed","local session rejected or transport closed"); }
                     }.instrument(tracing::info_span!("mcp_session",session_id=id)));
                     tracing::info!(code="ipc_session_admitted",session_id=id,active_sessions=sessions.len(),"bounded session admitted");
                 }
@@ -414,18 +431,34 @@ async fn session(
     authorities: Arc<Vec<Authority>>,
     service: Arc<dyn CapabilityService>,
     stop: CancellationToken,
+    browser: Option<Arc<crate::browser_session::BrowserSessions>>,
 ) -> io::Result<()> {
     let peer = stream.peer_cred()?;
-    let policy = tokio::select! {
+    let (policy, web_login) = tokio::select! {
         _=stop.cancelled()=>return Ok(()),
         result=tokio::time::timeout(AUTH_TIMEOUT,async {
             let mut magic=[0;8];let mut secret=[0;32]; stream.read_exact(&mut magic).await?;stream.read_exact(&mut secret).await?;
-            if &magic!=MAGIC { return Err(denied()); }
+            if &magic!=MAGIC && &magic!=WEB_MAGIC { return Err(denied()); }
             let authority=authorities.iter().find(|a| a.uid==peer.uid() && secret_equal(&a.secret,&secret)).ok_or_else(denied)?;
             stream.write_all(&[1]).await?;
-            Ok::<_,io::Error>(authority.policy.clone())
+            Ok::<_,io::Error>((authority.policy.clone(), &magic==WEB_MAGIC))
         })=>result.map_err(|_|denied())??,
     };
+    if web_login {
+        let principal = policy.principal.ok_or_else(denied)?;
+        let code = browser
+            .ok_or_else(denied)?
+            .issue(principal)
+            .map_err(|_| denied())?;
+        let data = serde_json::to_vec(
+            &serde_json::json!({"login_code":code,"expires_in_seconds":120,"single_use":true}),
+        )
+        .map_err(|_| invalid())?;
+        tokio::time::timeout(AUTH_TIMEOUT, stream.write_all(&data))
+            .await
+            .map_err(|_| denied())??;
+        return Ok(());
+    }
     tracing::info!(code="ipc_authorized",peer_uid=peer.uid(),peer_pid=?peer.pid(),principal=?policy.principal,actor=%policy.actor,source_scope=?policy.sources,"server-bound local authority");
     let adapter = McpAdapter::new(service, policy).map_err(|_| invalid())?;
     let (read, write) = stream.into_split();
@@ -443,7 +476,11 @@ async fn session(
 /// Local transport adapter only. Authenticated bytes after the prelude are
 /// relayed unchanged; the daemon's official SDK owns framing/correlation/cancel.
 /// No reconnect in the middle of a session: client must create a new MCP session.
-pub async fn bridge(socket: &Path, credential_file: &Path) -> io::Result<()> {
+async fn authenticated_connect(
+    socket: &Path,
+    credential_file: &Path,
+    magic: &[u8; 8],
+) -> io::Result<UnixStream> {
     let uid = local_uid()?;
     let parent = socket.parent().ok_or_else(invalid)?;
     plain_path(socket)?;
@@ -460,7 +497,7 @@ pub async fn bridge(socket: &Path, credential_file: &Path) -> io::Result<()> {
         return Err(denied());
     }
     tokio::time::timeout(AUTH_TIMEOUT, async {
-        stream.write_all(MAGIC).await?;
+        stream.write_all(magic).await?;
         stream.write_all(&secret).await?;
         let mut reply = [0];
         stream.read_exact(&mut reply).await?;
@@ -471,6 +508,33 @@ pub async fn bridge(socket: &Path, credential_file: &Path) -> io::Result<()> {
     })
     .await
     .map_err(|_| denied())??;
+    Ok(stream)
+}
+pub async fn browser_login(socket: &Path, credential_file: &Path) -> io::Result<String> {
+    let mut stream = authenticated_connect(socket, credential_file, WEB_MAGIC).await?;
+    let mut data = Vec::new();
+    tokio::time::timeout(
+        AUTH_TIMEOUT,
+        (&mut stream).take(1025).read_to_end(&mut data),
+    )
+    .await
+    .map_err(|_| denied())??;
+    if data.len() > 1024 {
+        return Err(invalid());
+    }
+    let text = String::from_utf8(data).map_err(|_| invalid())?;
+    let value: serde_json::Value = serde_json::from_str(&text).map_err(|_| invalid())?;
+    if value
+        .get("login_code")
+        .and_then(|s| s.as_str())
+        .is_none_or(|s| s.len() != 64 || !s.bytes().all(|b| b.is_ascii_hexdigit()))
+    {
+        return Err(invalid());
+    }
+    Ok(text)
+}
+pub async fn bridge(socket: &Path, credential_file: &Path) -> io::Result<()> {
+    let stream = authenticated_connect(socket, credential_file, MAGIC).await?;
     let (mut read, mut write) = stream.into_split();
     let input = async {
         let result = tokio::io::copy(&mut tokio::io::stdin(), &mut write).await;

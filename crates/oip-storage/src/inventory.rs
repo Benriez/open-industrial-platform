@@ -134,7 +134,7 @@ impl SqliteStore {
                 rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
             )?,
         };
-        if db.schema_version()? != 6 {
+        if !matches!(db.schema_version()?, 6 | 7) {
             return Err(StorageError::Hierarchy(
                 "INVENTORY_MIGRATION_REQUIRED; run controlled runtime migration separately",
             ));
@@ -153,7 +153,7 @@ impl SqliteStore {
         let authority = "local_os_operator_unverified_platform".to_string();
         db.inventory_admin(request, apply, at_ms, &authority)
     }
-    fn inventory_admin(
+    pub fn inventory_admin(
         &mut self,
         request: InventoryAdministration,
         apply: bool,
@@ -272,7 +272,7 @@ impl SqliteStore {
                 rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
             )?,
         };
-        if db.schema_version()? != 6 {
+        if !matches!(db.schema_version()?, 6 | 7) {
             return Err(StorageError::Hierarchy("INVENTORY_MIGRATION_REQUIRED"));
         }
         Ok((db.hierarchy()?.ok_or_else(bad)?, db.inventory_records()?))
@@ -515,12 +515,12 @@ mod tests {
         d.connection
             .execute_batch("DROP TABLE inventory_devices")
             .unwrap();
-        assert_eq!(d.migrate().unwrap(), 6);
+        assert_eq!(d.migrate().unwrap(), 7);
         assert_eq!(
             d.settings_records().unwrap()[0].value,
             SettingValue::Integer(7)
         );
-        assert_eq!(d.migrate().unwrap(), 6);
+        assert_eq!(d.migrate().unwrap(), 7);
         assert_eq!(
             d.hierarchy().unwrap().unwrap().plan,
             HierarchyRegistry::new(plan()).unwrap().plan

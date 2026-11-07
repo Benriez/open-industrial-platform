@@ -13,6 +13,7 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::path::Path;
 use thiserror::Error;
+mod connection;
 mod history;
 mod inventory;
 mod settings;
@@ -120,6 +121,11 @@ const MIGRATIONS: &[Migration] = &[
         name: "independent_device_inventory",
         sql: inventory::INVENTORY_SQL,
     },
+    Migration {
+        version: 7,
+        name: "verified_device_connections",
+        sql: connection::CONNECTION_SQL,
+    },
 ];
 
 #[derive(Debug, Error)]
@@ -186,7 +192,7 @@ impl SqliteStore {
     }
 
     pub fn migrate(&mut self) -> Result<u32, StorageError> {
-        self.migrate_to(6)
+        self.migrate_to(7)
     }
     fn migrate_to(&mut self, maximum: u32) -> Result<u32, StorageError> {
         // Validate history BEFORE any DDL. A corrupt migration ledger must never
@@ -911,8 +917,8 @@ mod tests {
         let path = test_path("migration");
         std::fs::create_dir_all(path.parent().expect("parent")).expect("create test dir");
         let mut store = SqliteStore::open(&path).expect("open");
-        assert_eq!(store.schema_version().expect("version"), 6);
-        assert_eq!(store.migrate().expect("second migration"), 6);
+        assert_eq!(store.schema_version().expect("version"), 7);
+        assert_eq!(store.migrate().expect("second migration"), 7);
         store
             .connection
             .execute("PRAGMA user_version = 0", [])
@@ -923,7 +929,7 @@ mod tests {
         ));
         store
             .connection
-            .execute("PRAGMA user_version = 6", [])
+            .execute("PRAGMA user_version = 7", [])
             .expect("restore version");
         store
             .connection

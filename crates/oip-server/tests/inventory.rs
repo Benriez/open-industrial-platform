@@ -43,6 +43,72 @@ fn ctx(p: &str) -> ExecutionContext {
     }
     .execution_context()
 }
+
+#[tokio::test]
+async fn online_inventory_uses_owned_writer_and_atomic_revision_conflicts() {
+    let (state, service, _, _) = fixture().await;
+    let admin = ctx("platform-reader");
+    let row = state
+        .inventory()
+        .iter()
+        .find(|r| r.device.id.as_str() == "manual-a")
+        .unwrap()
+        .clone();
+    let mut first = row.device.clone();
+    first.display_name = "First CAS update".into();
+    let mut second = row.device.clone();
+    second.display_name = "Concurrent CAS update".into();
+    let request = |device| {
+        CapabilityRequest::InventoryChange(InventoryAdministration {
+            principal: PrincipalId::new("platform-reader").unwrap(),
+            changes: vec![InventoryChange::Update {
+                device,
+                expected_revision: row.revision,
+            }],
+        })
+    };
+    let (a, b) = tokio::join!(
+        service.execute(&admin, request(first)),
+        service.execute(&admin, request(second))
+    );
+    assert_ne!(
+        a.is_ok(),
+        b.is_ok(),
+        "exactly one transaction may advance a revision"
+    );
+    assert_eq!(
+        state
+            .inventory()
+            .iter()
+            .find(|r| r.device.id == row.device.id)
+            .unwrap()
+            .revision,
+        row.revision + 1
+    );
+    let forged = CapabilityRequest::InventoryChange(InventoryAdministration {
+        principal: PrincipalId::new("platform-reader").unwrap(),
+        changes: vec![InventoryChange::Update {
+            device: row.device.clone(),
+            expected_revision: row.revision + 1,
+        }],
+    });
+    assert!(service.execute(&ctx("reader-org-b"), forged).await.is_err());
+    // Online archive remains unavailable: historical associations need the explicit offline operator path.
+    assert!(service
+        .execute(
+            &admin,
+            CapabilityRequest::InventoryChange(InventoryAdministration {
+                principal: PrincipalId::new("platform-reader").unwrap(),
+                changes: vec![InventoryChange::Archive {
+                    id: row.device.id,
+                    expected_revision: row.revision + 1
+                }],
+            })
+        )
+        .await
+        .is_err());
+    assert!(state.shutdown().await.clean);
+}
 #[tokio::test]
 async fn default_runtime_empty_without_sources_devices_events_or_demo() {
     let dir = dir();
@@ -271,7 +337,7 @@ async fn plan_read_no_mutation_and_forged_context_denied() {
     };
     assert!(!plan.applied);
     assert!(state
-        .inventory
+        .inventory()
         .iter()
         .all(|r| r.registration == RegistrationStatus::Registered));
     let mut c = ctx("reader-org-a");
@@ -292,7 +358,7 @@ async fn plan_read_no_mutation_and_forged_context_denied() {
     )
     .is_err());
     assert!(serde_json::from_value::<InventoryChange>(serde_json::json!({"operation":"update","device":{"id":"manual-a","display_name":"rename","device_type":"server","site_id":"site-a1"},"expected_revision":1})).is_err());
-    let mut plan = state.hierarchy.as_ref().unwrap().plan.clone();
+    let mut plan = state.hierarchy().as_ref().unwrap().plan.clone();
     plan.sources.push(SourcePlacement {
         source_id: DataSourceId::new("associated-test").unwrap(),
         site_id: SiteId::new("site-a1").unwrap(),
@@ -303,7 +369,7 @@ async fn plan_read_no_mutation_and_forged_context_denied() {
     let CapabilityOutput::Inventory(offline) =
         oip_server::inventory_services::inventory_projection(
             Some(&h),
-            &state.inventory,
+            &state.inventory(),
             &[],
             &ctx("reader-org-a"),
             InventoryQuery::default(),

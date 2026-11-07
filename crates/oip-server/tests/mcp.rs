@@ -679,7 +679,7 @@ async fn resource_models_match_direct_service_and_rest_including_sse_projections
         assert_eq!(direct["value"], http, "{uri}");
     }
     let mapping = oip_server::mcp::capability_mapping();
-    assert_eq!(mapping["capabilities"].as_array().unwrap().len(), 30);
+    assert_eq!(mapping["capabilities"].as_array().unwrap().len(), 32);
     assert_eq!(
         mapping["capabilities"]
             .as_array()
@@ -687,7 +687,7 @@ async fn resource_models_match_direct_service_and_rest_including_sse_projections
             .iter()
             .filter(|c| c["mcp_status"] == "BLOCKED")
             .count(),
-        3
+        4
     );
     assert!(s.shutdown().await.clean);
 }

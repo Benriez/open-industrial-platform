@@ -188,7 +188,23 @@ impl AsyncOpcUaClient {
     }
 
     pub async fn shutdown(&self) -> Result<(), AdapterError> {
-        let result = tokio::time::timeout(Duration::from_secs(2), self.session.disconnect()).await;
+        // Stop queue admission before the protocol close. Under overflow a
+        // pending control-event send otherwise blocks the session poll loop,
+        // which is also needed to acknowledge CloseSession. Closing retains
+        // already queued events; it does not pretend they reached the Core.
+        if let Some(receiver) = self.events.lock().await.as_mut() {
+            receiver.close();
+        }
+        // Poll the SDK's existing connection-state watch, without initiating a
+        // connection. An offline peer cannot acknowledge CloseSession and must
+        // retain the short cleanup budget. A connected flooded subscription may
+        // need longer to delete monitored items. CoreRuntime still bounds both.
+        let connected = matches!(
+            tokio::time::timeout(Duration::ZERO, self.session.wait_for_connection()).await,
+            Ok(true)
+        );
+        let close_budget = Duration::from_secs(if connected { 8 } else { 2 });
+        let result = tokio::time::timeout(close_budget, self.session.disconnect()).await;
         self.event_task.0.abort();
         let _ = tokio::time::timeout(Duration::from_secs(1), async {
             while !self.event_task.0.is_finished() {
@@ -541,6 +557,12 @@ async fn subscribe_session(
             0,
             true,
             DataChangeCallback::new(move |value, item| {
+                // Once shutdown closes admission, discard callbacks before the
+                // per-node lookup/conversion. Otherwise a flooded subscription
+                // can starve the same event loop needed for CloseSession.
+                if event_sender.is_closed() {
+                    return;
+                }
                 let node_id = &item.item_to_monitor().node_id;
                 let metric = monitored_metrics
                     .iter()

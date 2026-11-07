@@ -135,9 +135,7 @@ impl ApplicationServices {
                 "invalid-context".into()
             },
             principal: context.principal.clone(),
-            hierarchy: source
-                .and_then(|s| self.state.hierarchy.as_ref()?.location(s))
-                .cloned(),
+            hierarchy: source.and_then(|s| self.state.hierarchy().as_ref()?.location(s).cloned()),
             capability: id,
             // Log only enrolled resource IDs, never a caller's arbitrary target string.
             target: match source {
@@ -174,8 +172,14 @@ impl ApplicationServices {
         use CapabilityRequest::*;
         let s = &self.state;
         match request {
-            InventoryRead(_) | InventoryPlanRead(_) | InventoryChange(_) | SettingsRead(_)
-            | McpManagementRead(_) | SettingsChange(_) => Err(CapabilityError::new(
+            DeviceConnectionRead(_)
+            | DeviceConnectionConfigure(_)
+            | InventoryRead(_)
+            | InventoryPlanRead(_)
+            | InventoryChange(_)
+            | SettingsRead(_)
+            | McpManagementRead(_)
+            | SettingsChange(_) => Err(CapabilityError::new(
                 CapabilityErrorCode::PermissionDenied,
                 "PRINCIPAL_REQUIRED",
                 "Provisioned principal required",
@@ -475,7 +479,7 @@ impl ApplicationServices {
 impl CapabilityService for ApplicationServices {
     fn discover(&self, context: &ExecutionContext) -> Vec<CapabilityDescriptor> {
         if let Some(p) = &context.principal {
-            if let Some(h) = &self.state.hierarchy {
+            if let Some(h) = &self.state.hierarchy() {
                 return CapabilityId::ALL
                     .into_iter()
                     .filter(|id| {
@@ -510,7 +514,9 @@ impl CapabilityService for ApplicationServices {
             .filter(|id| {
                 !matches!(
                     id,
-                    CapabilityId::InventoryRead
+                    CapabilityId::DeviceConnectionRead
+                        | CapabilityId::DeviceConnectionConfigure
+                        | CapabilityId::InventoryRead
                         | CapabilityId::InventoryPlanRead
                         | CapabilityId::InventoryChange
                         | CapabilityId::SettingsRead
@@ -539,7 +545,7 @@ impl CapabilityService for ApplicationServices {
         >,
     > {
         Box::pin(async move {
-            if self.state.hierarchy.is_none() {
+            if self.state.hierarchy().is_none() {
                 if let CapabilityRequest::InventoryRead(q) = &request {
                     let result = self.inventory_read(context, q.clone());
                     self.audit.record(&self.audit_event(
@@ -557,7 +563,7 @@ impl CapabilityService for ApplicationServices {
                 }
             }
 
-            if self.state.hierarchy.is_some() && context.principal.is_some() {
+            if self.state.hierarchy().is_some() && context.principal.is_some() {
                 return self.execute_tenant(context, request).await;
             }
             if !self.state.legacy_access {

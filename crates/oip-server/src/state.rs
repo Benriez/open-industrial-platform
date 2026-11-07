@@ -39,6 +39,24 @@ struct EventCommand {
     reply: oneshot::Sender<Result<IngestOutcome, String>>,
 }
 enum Command {
+    InventoryOnline(
+        InventoryAdministration,
+        oneshot::Sender<Result<InventoryPlan, CapabilityError>>,
+    ),
+    ConnectionCommit(
+        Box<VerifiedConnectionCommit>,
+        SourceDefinition,
+        oneshot::Sender<Result<(), CapabilityError>>,
+    ),
+    ConnectionControl(
+        PrincipalId,
+        DeviceId,
+        u64,
+        bool,
+        u64,
+        oneshot::Sender<Result<(), CapabilityError>>,
+    ),
+    ConnectionAttempt(ConnectionAttempt, bool, oneshot::Sender<Result<(), String>>),
     Event(EventCommand),
     Abandon,
     Connecting(DataSourceId),
@@ -65,12 +83,21 @@ struct Inner {
     capacity: usize,
 }
 #[derive(Clone)]
+pub struct RegistrySnapshot {
+    pub hierarchy: Option<Arc<HierarchyRegistry>>,
+    pub inventory: Arc<Vec<InventoryRecord>>,
+    pub connections: Arc<Vec<DeviceConnectionRecord>>,
+    pub attempts: Arc<Vec<ConnectionAttempt>>,
+}
+#[derive(Clone)]
 pub struct AppState {
+    pub ssh: Arc<crate::connection_service::ConnectionHub>,
+    pub browser_sessions: Arc<crate::browser_session::BrowserSessions>,
     pub settings: Arc<Vec<SettingRecord>>,
     pub settings_loaded_ms: i64,
     pub management: Arc<Mutex<crate::settings_services::ManagementRuntime>>,
     pub history: Arc<crate::diagnostic_services::DiagnosticReads>,
-    pub hierarchy: Option<Arc<HierarchyRegistry>>,
+    registry: watch::Receiver<RegistrySnapshot>,
     pub legacy_access: bool,
     inner: Arc<Inner>,
     pub updates: watch::Sender<u64>,
@@ -80,7 +107,6 @@ pub struct AppState {
     pub catalogs: Arc<RwLock<BTreeMap<DataSourceId, Vec<BrowseEntry>>>>,
     pub scenario_tx: Option<watch::Sender<String>>,
     pub primary: Option<DataSourceId>,
-    pub inventory: Arc<Vec<InventoryRecord>>,
     pub stopping: tokio_util::sync::CancellationToken,
 }
 impl AppState {
@@ -115,9 +141,22 @@ impl AppState {
             .hierarchy()
             .map_err(|_| "hierarchy unavailable")?
             .map(Arc::new);
+        let connections = Arc::new(
+            store
+                .connection_records()
+                .map_err(|_| "connection registry unavailable")?,
+        );
+        let attempts = Arc::new(
+            store
+                .connection_attempts()
+                .map_err(|_| "connection attempts unavailable")?,
+        );
         if let Some(h) = &hierarchy {
-            let ids: std::collections::BTreeSet<_> =
+            let mut ids: std::collections::BTreeSet<_> =
                 config.sources.iter().map(|s| s.id.as_str()).collect();
+            for c in connections.iter() {
+                ids.insert(c.source_id.as_str());
+            }
             if ids
                 != h.plan
                     .sources
@@ -135,11 +174,22 @@ impl AppState {
             && hierarchy
                 .as_ref()
                 .is_none_or(|h| h.plan.legacy_single_infrastructure);
-        let definitions = config
+        let mut definitions = config
             .sources
             .iter()
             .map(SourceConfig::definition)
             .collect::<Result<Vec<_>, _>>()?;
+        use oip_core::CoreRepository;
+        let saved = store.definitions().map_err(|_| "source definitions")?;
+        for c in connections.iter() {
+            definitions.push(
+                saved
+                    .iter()
+                    .find(|d| d.id == c.source_id && d.origin_class == OriginClass::External)
+                    .ok_or("SSH source definition missing")?
+                    .clone(),
+            );
+        }
         let inventory = Arc::new(store.inventory_records().map_err(|_| "invalid inventory")?);
         if let Some(h) = &hierarchy {
             for row in inventory.iter() {
@@ -157,6 +207,42 @@ impl AppState {
         } else if !inventory.is_empty() {
             return Err("unassigned inventory without hierarchy".into());
         }
+        for c in connections.iter() {
+            c.endpoint
+                .validate()
+                .map_err(|_| "invalid stored SSH endpoint")?;
+            oip_core::validate_poll_seconds(c.poll_seconds)
+                .map_err(|_| "invalid stored SSH cadence")?;
+            let h = hierarchy.as_ref().ok_or("SSH binding requires hierarchy")?;
+            let row = inventory
+                .iter()
+                .find(|r| r.device.id == c.device_id)
+                .ok_or("SSH inventory binding missing")?;
+            let location = h
+                .location(&c.source_id)
+                .ok_or("SSH source placement missing")?;
+            if !h
+                .plan
+                .sources
+                .iter()
+                .any(|s| s.source_id == c.source_id && s.device_id == c.device_id)
+                || location.site_id != row.device.site_id
+                || c.revision == 0
+                || c.host_key.len() > 16384
+                || !c.fingerprint.starts_with("SHA256:")
+                || !c.host_key.starts_with("ssh-") && !c.host_key.starts_with("ecdsa-")
+                || c.host_key.chars().any(char::is_control)
+                || !h
+                    .plan
+                    .principals
+                    .iter()
+                    .any(|p| p.id == c.authorized_principal)
+                || c.identity.hostname.is_empty()
+                || !matches!(c.identity.operating_system.as_str(), "Linux" | "Darwin")
+            {
+                return Err("invalid persisted SSH binding".into());
+            }
+        }
         let settings = Arc::new(
             store
                 .settings_records()
@@ -171,8 +257,26 @@ impl AppState {
         let history = Arc::new(crate::diagnostic_services::DiagnosticReads::new(
             store.history_reader().map_err(|_| "history_reader")?,
         ));
-        let app = Application::initialize(store, definitions, now_ms(), config.stale_after_ms)
+        let ssh = Arc::new(crate::connection_service::ConnectionHub::new(
+            config.ssh.clone().unwrap_or_default(),
+            hierarchy.as_deref(),
+            config
+                .database
+                .parent()
+                .unwrap_or_else(|| std::path::Path::new(".")),
+        )?);
+        let mut app = Application::initialize(store, definitions, now_ms(), config.stale_after_ms)
             .map_err(|e| e.to_string())?;
+        for c in connections.iter() {
+            app.configure_source_cadence(&c.source_id, (c.poll_seconds * 2000 + 15000) as i64)
+                .map_err(|_| "source cadence")?;
+        }
+        let (registry_tx, registry) = watch::channel(RegistrySnapshot {
+            hierarchy,
+            inventory,
+            connections,
+            attempts,
+        });
         let initial = app.view(now_ms());
         let (view_tx, view) = watch::channel(initial);
         let (updates, _) = watch::channel(0u64);
@@ -192,16 +296,17 @@ impl AppState {
         });
         let weak = Arc::downgrade(&inner);
         let notifications = updates.clone();
-        let worker = writer::spawn(app, rx, view_tx, notifications, weak)
+        let worker = writer::spawn(app, rx, view_tx, notifications, weak, registry_tx)
             .map_err(|_| "writer_thread_start")?;
         *inner.thread.lock().map_err(|_| "thread lock")? = Some(worker);
         Ok(Self {
+            ssh,
+            browser_sessions: Arc::new(crate::browser_session::BrowserSessions::default()),
             settings,
             settings_loaded_ms,
             management,
             history,
-            inventory,
-            hierarchy,
+            registry,
             legacy_access,
             inner,
             updates,
@@ -225,6 +330,86 @@ impl AppState {
                 .map(|s| DataSourceId::new(&s.id).map_err(|_| "id"))
                 .transpose()?,
         })
+    }
+    pub fn registry(&self) -> RegistrySnapshot {
+        self.registry.borrow().clone()
+    }
+    pub fn hierarchy(&self) -> Option<Arc<HierarchyRegistry>> {
+        self.registry.borrow().hierarchy.clone()
+    }
+    pub fn inventory(&self) -> Arc<Vec<InventoryRecord>> {
+        self.registry.borrow().inventory.clone()
+    }
+    pub fn connections(&self) -> Arc<Vec<DeviceConnectionRecord>> {
+        self.registry.borrow().connections.clone()
+    }
+    pub async fn inventory_online(
+        &self,
+        request: InventoryAdministration,
+    ) -> Result<InventoryPlan, CapabilityError> {
+        if self.stopping.is_cancelled() {
+            return Err(denied());
+        }
+
+        let (tx, rx) = oneshot::channel();
+        self.inner
+            .tx
+            .send(Command::InventoryOnline(request, tx))
+            .await
+            .map_err(|_| denied())?;
+        rx.await.map_err(|_| denied())?
+    }
+    pub async fn connection_commit(
+        &self,
+        request: VerifiedConnectionCommit,
+        definition: SourceDefinition,
+    ) -> Result<(), CapabilityError> {
+        if self.stopping.is_cancelled() {
+            return Err(denied());
+        }
+
+        let (tx, rx) = oneshot::channel();
+        self.inner
+            .tx
+            .send(Command::ConnectionCommit(Box::new(request), definition, tx))
+            .await
+            .map_err(|_| denied())?;
+        rx.await.map_err(|_| denied())?
+    }
+    pub async fn connection_control(
+        &self,
+        p: PrincipalId,
+        id: DeviceId,
+        revision: u64,
+        enabled: bool,
+        seconds: u64,
+    ) -> Result<(), CapabilityError> {
+        if self.stopping.is_cancelled() {
+            return Err(denied());
+        }
+
+        let (tx, rx) = oneshot::channel();
+        self.inner
+            .tx
+            .send(Command::ConnectionControl(
+                p, id, revision, enabled, seconds, tx,
+            ))
+            .await
+            .map_err(|_| denied())?;
+        rx.await.map_err(|_| denied())?
+    }
+    pub async fn connection_attempt(
+        &self,
+        a: ConnectionAttempt,
+        success: bool,
+    ) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.inner
+            .tx
+            .send(Command::ConnectionAttempt(a, success, tx))
+            .await
+            .map_err(|_| "writer stopped")?;
+        rx.await.map_err(|_| "writer stopped")?
     }
     pub fn view(&self) -> CoreView {
         let mut v = self.inner.view.borrow().clone();
@@ -432,7 +617,8 @@ impl AppState {
                 .map(|s| Device {
                     data_source_id: Some(s.id.clone()),
                     is_faulted: false,
-                    id: if let Some(p) = self.hierarchy.as_ref().and_then(|h| h.placement(&s.id)) {
+                    id: if let Some(p) = self.hierarchy().as_ref().and_then(|h| h.placement(&s.id))
+                    {
                         p.device_id.to_string()
                     } else if Some(&s.id) == self.primary.as_ref() {
                         s.entity_id.to_string()
@@ -442,7 +628,12 @@ impl AppState {
                     name: s.name.clone(),
                     kind: "Industrial".into(),
                     location: "Local simulation".into(),
-                    connection: "OPC UA".into(),
+                    connection: if self.connections().iter().any(|c| c.source_id == s.id) {
+                        "SSH"
+                    } else {
+                        "OPC UA"
+                    }
+                    .into(),
                     simulated: s.simulated,
                     health: Health {
                         reachability: match s.reachability {
@@ -471,13 +662,13 @@ impl AppState {
         };
         if self.scenario_tx.is_none() {
             devices.retain(|d| {
-                self.inventory
+                self.inventory()
                     .iter()
                     .find(|r| r.device.id.as_str() == d.id)
                     .is_none_or(|r| r.registration == RegistrationStatus::Registered)
             });
             for record in self
-                .inventory
+                .inventory()
                 .iter()
                 .filter(|r| r.registration == RegistrationStatus::Registered)
             {
@@ -520,6 +711,23 @@ impl AppState {
             }
         }
         for device in &mut devices {
+            if let Some(c) = self
+                .connections()
+                .iter()
+                .find(|c| c.device_id.as_str() == device.id)
+            {
+                device.health.reachability = match ssh_inventory_connectivity(
+                    c,
+                    v.sources.iter().find(|s| s.id == c.source_id),
+                ) {
+                    InventoryConnectivity::ObservedReachable => "reachable",
+                    InventoryConnectivity::ObservedUnreachable => "unreachable",
+                    InventoryConnectivity::Unknown => "unknown",
+                }
+                .into();
+                device.health.agent_availability = "not_applicable".into();
+                device.health.service_health = "not_evaluated".into();
+            }
             if self.legacy_access && device.id == "M-01" {
                 device.data_source_id = self.primary.clone();
             }

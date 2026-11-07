@@ -7,22 +7,48 @@ impl ApplicationServices {
         ctx: &ExecutionContext,
         q: InventoryQuery,
     ) -> Result<CapabilityOutput, CapabilityError> {
-        inventory_projection(
-            self.state.hierarchy.as_deref(),
-            &self.state.inventory,
+        let output = inventory_projection(
+            self.state.hierarchy().as_deref(),
+            &self.state.inventory(),
             &self.state.view().sources,
             ctx,
             q,
-        )
+        )?;
+        let CapabilityOutput::Inventory(mut page) = output else {
+            return Err(inventory_invalid());
+        };
+        let registry = self.state.registry();
+        let view = self.state.view();
+        for item in &mut page.items {
+            if let Some(c) = registry
+                .connections
+                .iter()
+                .find(|c| c.device_id == item.record.device.id)
+            {
+                let source = view.sources.iter().find(|s| s.id == c.source_id);
+                item.monitoring_simulated = Some(false);
+                item.connectivity = ssh_inventory_connectivity(c, source);
+                item.telemetry = if !c.enabled {
+                    MonitoringAvailability::CollectorConfigured
+                } else {
+                    match source.map(|s| s.freshness) {
+                        Some(Freshness::Fresh) => MonitoringAvailability::Receiving,
+                        Some(Freshness::Stale) => MonitoringAvailability::Stale,
+                        _ => MonitoringAvailability::CollectorConfigured,
+                    }
+                };
+            }
+        }
+        Ok(CapabilityOutput::Inventory(page))
     }
     pub(crate) fn inventory_plan_read(
         &self,
         ctx: &ExecutionContext,
         q: InventoryPlanQuery,
     ) -> Result<CapabilityOutput, CapabilityError> {
-        let h = self.state.hierarchy.as_ref().ok_or_else(denied)?;
+        let h = self.state.hierarchy().ok_or_else(denied)?;
         let p = ctx.principal.as_ref().ok_or_else(denied)?;
-        validate_inventory_plan(h, p, &self.state.inventory, &q.changes)
+        validate_inventory_plan(&h, p, &self.state.inventory(), &q.changes)
             .map(CapabilityOutput::InventoryPlan)
     }
 }
@@ -206,6 +232,7 @@ pub fn inventory_projection(
         limit,
         has_more,
         status: status.into(),
-        management_channel: "exclusive_local_operator; offline_requires_restart".into(),
+        management_channel:
+            "authenticated_local_operator; online_atomic_writer; offline_cli_exclusive".into(),
     }))
 }

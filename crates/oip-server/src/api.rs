@@ -23,6 +23,7 @@ struct ApiContext {
     service: Arc<ApplicationServices>,
     authority: Option<ExecutionContext>,
     credentials: crate::identity::RestIdentities,
+    browser_token: Option<String>,
 }
 struct Authorized(ApiContext);
 impl FromRequestParts<ApiContext> for Authorized {
@@ -40,6 +41,29 @@ impl FromRequestParts<ApiContext> for Authorized {
                             .to_str()
                             .map_err(|_| CapabilityErrorResponse(denied()))?,
                     )
+                    .map_err(CapabilityErrorResponse)?,
+            );
+        } else if let Some(token) = crate::browser_session::cookie(&parts.headers) {
+            s.browser_token = Some(token.to_owned());
+            let changing =
+                parts.method != axum::http::Method::GET && parts.method != axum::http::Method::HEAD;
+            let csrf = if changing {
+                crate::browser_session::require_origin(&parts.headers)
+                    .map_err(CapabilityErrorResponse)?;
+                Some(
+                    parts
+                        .headers
+                        .get("x-oip-csrf")
+                        .and_then(|v| v.to_str().ok())
+                        .ok_or_else(|| CapabilityErrorResponse(denied()))?,
+                )
+            } else {
+                None
+            };
+            s.authority = Some(
+                s.state
+                    .browser_sessions
+                    .authenticate(token, csrf)
                     .map_err(CapabilityErrorResponse)?,
             );
         } else if !s.state.legacy_access {
@@ -93,6 +117,15 @@ async fn call(
     s: ApiContext,
     request: CapabilityRequest,
 ) -> Result<CapabilityOutput, CapabilityErrorResponse> {
+    let mut s = s;
+    if let Some(token) = &s.browser_token {
+        s.authority = Some(
+            s.state
+                .browser_sessions
+                .authenticate(token, None)
+                .map_err(CapabilityErrorResponse)?,
+        );
+    }
     let mut context = s.service.local_context();
     if let Some(authority) = s.authority {
         context.principal = authority.principal;
@@ -143,8 +176,23 @@ pub fn router_with_identity(
     web_dir: Option<&str>,
 ) -> Router {
     let routes = Router::new()
+        .route(
+            "/api/v2/browser/session",
+            get(browser_session).delete(browser_logout),
+        )
+        .route(
+            "/api/v2/browser/login",
+            post(browser_login).layer(axum::extract::DefaultBodyLimit::max(1024)),
+        )
         .route("/api/v2/installation/status", get(installation_status))
         .route("/api/v2/inventory/devices", get(inventory_read))
+        .route("/api/v2/inventory/apply", post(inventory_apply))
+        .route(
+            "/api/v2/device-connections",
+            get(connection_read)
+                .post(connection_configure)
+                .layer(axum::extract::DefaultBodyLimit::max(32 * 1024)),
+        )
         .route("/api/v2/inventory/plan", post(inventory_plan))
         .route("/api/v2/settings", get(settings_read))
         .route("/api/v2/management", get(management_read))
@@ -200,6 +248,7 @@ pub fn router_with_identity(
             service,
             authority,
             credentials,
+            browser_token: None,
         })
 }
 
@@ -231,7 +280,25 @@ async fn local_origin(request: Request, next: Next) -> Response {
         )
         .into_response();
     }
-    next.run(request).await
+    let private_api = request.uri().path().starts_with("/api/");
+    let mut response = next.run(request).await;
+    response
+        .headers_mut()
+        .insert("x-frame-options", HeaderValue::from_static("DENY"));
+    response.headers_mut().insert(
+        "content-security-policy",
+        HeaderValue::from_static("frame-ancestors 'none'"),
+    );
+    response
+        .headers_mut()
+        .insert("referrer-policy", HeaderValue::from_static("no-referrer"));
+    if private_api {
+        response.headers_mut().insert(
+            axum::http::header::CACHE_CONTROL,
+            HeaderValue::from_static("no-store"),
+        );
+    }
+    response
 }
 
 async fn status(Authorized(s): Authorized) -> Result<Json<SystemStatus>, CapabilityErrorResponse> {
@@ -582,7 +649,7 @@ async fn management_read(
 async fn installation_status(
     axum::extract::State(s): axum::extract::State<ApiContext>,
 ) -> Result<Json<InventoryPage>, CapabilityErrorResponse> {
-    if s.state.hierarchy.is_some() {
+    if s.state.hierarchy().is_some() {
         return Err(CapabilityErrorResponse(denied()));
     }
     match call(
@@ -612,6 +679,114 @@ async fn inventory_plan(
     let Json(q) = body.map_err(|_| CapabilityErrorResponse(inventory_invalid()))?;
     match call(s, CapabilityRequest::InventoryPlanRead(q)).await? {
         CapabilityOutput::InventoryPlan(v) => Ok(Json(v)),
+        _ => Err(mismatch()),
+    }
+}
+
+async fn browser_session(
+    axum::extract::State(s): axum::extract::State<ApiContext>,
+    headers: axum::http::HeaderMap,
+) -> Response {
+    let mut response = Json(s.state.browser_sessions.info(
+        crate::browser_session::cookie(&headers),
+        s.state.legacy_access,
+    ))
+    .into_response();
+    response.headers_mut().insert(
+        axum::http::header::CACHE_CONTROL,
+        HeaderValue::from_static("no-store"),
+    );
+    response
+}
+async fn browser_login(
+    axum::extract::State(s): axum::extract::State<ApiContext>,
+    headers: axum::http::HeaderMap,
+    body: Result<Json<BrowserLogin>, axum::extract::rejection::JsonRejection>,
+) -> Result<Response, CapabilityErrorResponse> {
+    crate::browser_session::require_origin(&headers).map_err(CapabilityErrorResponse)?;
+    let Json(body) = body.map_err(|_| CapabilityErrorResponse(denied()))?;
+    let (token, info) = s
+        .state
+        .browser_sessions
+        .login(&body.code)
+        .map_err(CapabilityErrorResponse)?;
+    let mut response = Json(info).into_response();
+    response.headers_mut().insert(
+        axum::http::header::SET_COOKIE,
+        format!(
+            "{}={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800",
+            crate::browser_session::COOKIE
+        )
+        .parse()
+        .map_err(|_| CapabilityErrorResponse(denied()))?,
+    );
+    response.headers_mut().insert(
+        axum::http::header::CACHE_CONTROL,
+        HeaderValue::from_static("no-store"),
+    );
+    Ok(response)
+}
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BrowserLogin {
+    code: String,
+}
+async fn browser_logout(
+    Authorized(s): Authorized,
+    headers: axum::http::HeaderMap,
+) -> Result<Response, CapabilityErrorResponse> {
+    crate::browser_session::require_origin(&headers).map_err(CapabilityErrorResponse)?;
+    let token = crate::browser_session::cookie(&headers)
+        .ok_or_else(|| CapabilityErrorResponse(denied()))?;
+    s.state.browser_sessions.logout(token);
+    let mut response = Json(serde_json::json!({"logged_out":true})).into_response();
+    response.headers_mut().insert(
+        axum::http::header::SET_COOKIE,
+        HeaderValue::from_static("oip_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0"),
+    );
+    Ok(response)
+}
+
+async fn inventory_apply(
+    Authorized(s): Authorized,
+    body: Result<Json<InventoryPlanQuery>, axum::extract::rejection::JsonRejection>,
+) -> Result<Json<InventoryPlan>, CapabilityErrorResponse> {
+    let Json(q) = body.map_err(|_| CapabilityErrorResponse(inventory_invalid()))?;
+    let principal = s
+        .authority
+        .as_ref()
+        .and_then(|a| a.principal.clone())
+        .ok_or_else(|| CapabilityErrorResponse(denied()))?;
+    match call(
+        s,
+        CapabilityRequest::InventoryChange(InventoryAdministration {
+            principal,
+            changes: q.changes,
+        }),
+    )
+    .await?
+    {
+        CapabilityOutput::InventoryPlan(p) => Ok(Json(p)),
+        _ => Err(mismatch()),
+    }
+}
+async fn connection_read(
+    Authorized(s): Authorized,
+    q: Result<Query<ConnectionQuery>, axum::extract::rejection::QueryRejection>,
+) -> Result<Json<ConnectionResult>, CapabilityErrorResponse> {
+    let Query(q) = q.map_err(|_| CapabilityErrorResponse(inventory_invalid()))?;
+    match call(s, CapabilityRequest::DeviceConnectionRead(q)).await? {
+        CapabilityOutput::Connection(r) => Ok(Json(*r)),
+        _ => Err(mismatch()),
+    }
+}
+async fn connection_configure(
+    Authorized(s): Authorized,
+    q: Result<Json<ConnectionAction>, axum::extract::rejection::JsonRejection>,
+) -> Result<Json<ConnectionResult>, CapabilityErrorResponse> {
+    let Json(q) = q.map_err(|_| CapabilityErrorResponse(inventory_invalid()))?;
+    match call(s, CapabilityRequest::DeviceConnectionConfigure(q)).await? {
+        CapabilityOutput::Connection(r) => Ok(Json(*r)),
         _ => Err(mismatch()),
     }
 }

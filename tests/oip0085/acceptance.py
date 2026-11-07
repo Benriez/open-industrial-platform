@@ -26,8 +26,8 @@ try:
  empty=get('/api/v2/installation/status',None);assert empty['status']=='No infrastructure configured' and empty['items']==[];assert sql('SELECT count(*) n FROM source_identities')[0]['n']==0 and count()==0 and sql('SELECT count(*) n FROM collection_events')[0]['n']==0
  assert req('/api/v2/inventory/devices',None)[0]==403;stop(d);record('01_empty_normal_runtime',{'devices':0,'sources':0,'observations':0,'events':0,'simulator_started':False})
  p=start('provision-personal-fixture',[BIN,'--config',RUN/'core.json','--provision',RUN/'plan.json']);assert p.wait(timeout=15)==0
- # Empty schema6 was initialized by the actual normal runtime, no implicit demo hierarchy.
- assert sql('PRAGMA user_version')[0]['user_version']==6
+ # Empty schema7 was initialized by the actual normal runtime, no implicit demo hierarchy.
+ assert sql('PRAGMA user_version')[0]['user_version']==7
  d=daemon('empty-provisioned');wait(lambda:req('/api/v2/inventory/devices')[0]==200,'provisioned empty inventory');assert inv()['status']=='No devices registered';assert req('/api/v2/installation/status',None)[0]==403;assert get('/api/v2/sources')==[];stop(d)
  first=device('manual-first','site-a1','AMD EVO-X2','single_board_computer');body=[register(first)];before=hashlib.sha256(DB.read_bytes()).hexdigest();apply(body,False);assert hashlib.sha256(DB.read_bytes()).hexdigest()==before
  apply(body,p='inventory-org-a');apply(body,p='inventory-org-a');assert sql('SELECT count(*) n FROM inventory_devices')[0]['n']==1;assert sql('SELECT count(*) n FROM inventory_audit')[0]['n']==1
@@ -94,7 +94,7 @@ try:
  (OUT/'association-snapshot.json').write_text(json.dumps(associated,indent=2));assert {r['record']['device']['id'] for r in assoc_get('/api/v2/inventory/devices','reader-source-b')['items']}=={'device-a'}
  stop(ad);stop(simproc);assert sql('SELECT count(*) n FROM core_sources')[0]['n']==0
  record('04_separate_actual_source_association',{'same_device_identity':True,'source_origin':'simulation_test_only','receiving_after_actual_observations':True,'device_connectivity_not_inferred':True,'normal_inventory_database_sources':0})
- REPORT.update(status='PASS',schema=6)
+ REPORT.update(status='PASS',schema=7)
 except Exception:
  REPORT['status']='FAIL';raise
 finally:

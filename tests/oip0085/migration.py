@@ -21,7 +21,7 @@ try:
  before={t:sql('SELECT * FROM '+t+' ORDER BY rowid') for t in tables};assert before['observations'] and before['data_gaps'] and before['source_health_history'] and before['settings']
  backup=OUT/'schema5-pristine.sqlite';subprocess.run([SQL,'-readonly',str(DB),'.backup '+str(backup)],check=True);backup.chmod(0o600)
  dry=RUN/'dry.json';dry.write_text(json.dumps({'principal':'platform-reader','changes':[]}));physical=DB.read_bytes();p=start('schema5-dry-run-no-migration',[BIN,'--config',RUN/'core.json','--inventory-plan',dry]);assert p.wait(timeout=15)!=0;assert DB.read_bytes()==physical and sql('PRAGMA user_version')[0]['user_version']==5
- d=daemon('schema6-upgrade');wait(lambda:len(sources())==4,'schema6 startup');assert sql('PRAGMA user_version')[0]['user_version']==6
+ d=daemon('schema6-upgrade');wait(lambda:len(sources())==4,'schema6 startup');assert sql('PRAGMA user_version')[0]['user_version']==7
  inventory=get('/api/v2/inventory/devices','platform-reader')['items'];assert len(inventory)==4
  assert {r['record']['device']['id'] for r in inventory}=={r['device_id'] for r in before['source_placements']}
  assert all(r['record']['origin']=='existing_simulation_source' and r['record']['device']['device_type']=='other' and r['record']['created_ms'] is None and r['record']['registered_by'] is None for r in inventory)
@@ -31,11 +31,11 @@ try:
  for table,rows in before.items():
   current=sql('SELECT * FROM '+table+' ORDER BY rowid')
   assert all(r in current for r in rows),(table,len(rows),len(current))
- ledger=sql('SELECT version,checksum FROM schema_migrations ORDER BY version');assert [r['version'] for r in ledger]==[1,2,3,4,5,6]
+ ledger=sql('SELECT version,checksum FROM schema_migrations ORDER BY version');assert [r['version'] for r in ledger]==[1,2,3,4,5,6,7]
  assert sql('PRAGMA foreign_key_check')==[] and sql('PRAGMA integrity_check')[0]['integrity_check']=='ok'
  d=daemon('idempotent-reopen');wait(lambda:len(sources())==4,'idempotent reopen');stop(d);assert sql('SELECT count(*) n FROM inventory_devices')[0]['n']==4
- REPORT.update(status='PASS',schema=6,preserved_tables={t:len(rows) for t,rows in before.items()},history_ids_payloads_settings_and_policies_preserved=True,source_origins_preserved=True,no_fabricated_old_timestamps=True,dry_run_schema5_unchanged=True,foreign_keys=True,integrity=True,ledger=ledger,backup_sha256=hashlib.sha256(backup.read_bytes()).hexdigest())
- print('PASS genuine schema5→6 migration, historical identities and settings preserved',flush=True)
+ REPORT.update(status='PASS',schema=7,preserved_tables={t:len(rows) for t,rows in before.items()},history_ids_payloads_settings_and_policies_preserved=True,source_origins_preserved=True,no_fabricated_old_timestamps=True,dry_run_schema5_unchanged=True,foreign_keys=True,integrity=True,ledger=ledger,backup_sha256=hashlib.sha256(backup.read_bytes()).hexdigest())
+ print('PASS genuine schema5→7 migration, historical identities and settings preserved',flush=True)
 except Exception:
  REPORT['status']='FAIL';raise
 finally:

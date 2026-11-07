@@ -16,6 +16,7 @@ pub struct Application<R: CoreRepository> {
     health: CoreHealth,
     phase: Lifecycle,
     stale_after_ms: i64,
+    source_cadence: BTreeMap<DataSourceId, i64>,
 }
 impl<R: CoreRepository> Application<R> {
     pub fn initialize(
@@ -126,7 +127,66 @@ impl<R: CoreRepository> Application<R> {
             },
             phase: Lifecycle::Initializing,
             stale_after_ms,
+            source_cadence: BTreeMap::new(),
         })
+    }
+    /// Attach a definition already atomically registered by the Core writer.
+    pub fn attach_persisted_source(&mut self, d: SourceDefinition) -> Result<(), ApplicationError> {
+        if self.sources.contains_key(&d.id) {
+            return Err(ApplicationError::RegistrationConflict);
+        }
+        if d.metrics.is_empty()
+            || d.required_metrics.is_empty()
+            || !self
+                .repository
+                .definitions()
+                .map_err(ApplicationError::Persistence)?
+                .iter()
+                .any(|v| v == &d)
+        {
+            return Err(ApplicationError::RegistrationConflict);
+        }
+        let health = SourceHealth {
+            id: d.id.clone(),
+            name: d.name.clone(),
+            entity_id: d.entity_id.clone(),
+            simulated: d.origin_class == OriginClass::Simulation,
+            reachability: Reachability::Unknown,
+            connection: ConnectionHealth::Unknown,
+            service: ServiceHealth::Unknown,
+            freshness: Freshness::Unknown,
+            validity: Validity::Unknown,
+            last_received_ms: None,
+            accepted: 0,
+            duplicates: 0,
+            out_of_order: 0,
+            rejected: 0,
+            reconnect_attempts: 0,
+            dropped: 0,
+            last_error: None,
+        };
+        self.sources.insert(
+            d.id.clone(),
+            SourceState {
+                definition: d,
+                health,
+                watermarks: BTreeMap::new(),
+                gap_start: None,
+            },
+        );
+        Ok(())
+    }
+    /// Transport-neutral source cadence; no stored sample becomes fresh by changing policy.
+    pub fn configure_source_cadence(
+        &mut self,
+        id: &DataSourceId,
+        stale_ms: i64,
+    ) -> Result<(), ApplicationError> {
+        if !(1000..=7_215_000).contains(&stale_ms) || !self.sources.contains_key(id) {
+            return Err(ApplicationError::RegistrationConflict);
+        }
+        self.source_cadence.insert(id.clone(), stale_ms);
+        Ok(())
     }
     pub fn started(&mut self) {
         self.phase = Lifecycle::Ready;
@@ -350,62 +410,81 @@ impl<R: CoreRepository> Application<R> {
         Ok(())
     }
     pub fn view(&self, now: i64) -> CoreView {
-        let mut sources: Vec<_> =
-            self.sources
-                .values()
-                .map(|s| {
-                    let mut h = s.health.clone();
-                    let required: Vec<_> = s
-                        .definition
-                        .required_metrics
-                        .iter()
-                        .map(|m| {
-                            self.latest
-                                .get(&(
-                                    s.definition.id.clone(),
-                                    s.definition.entity_id.clone(),
-                                    m.clone(),
-                                ))
-                                .filter(|_| s.watermarks.contains_key(m))
-                        })
-                        .collect();
-                    if required.iter().any(|o| o.is_none()) {
-                        h.freshness = Freshness::Unknown;
-                        if h.service != ServiceHealth::Degraded {
-                            h.service = ServiceHealth::Unknown;
-                        }
-                    } else {
-                        if required.iter().flatten().any(|o| !o.is_usable()) {
-                            h.service = ServiceHealth::Degraded;
-                            h.validity = Validity::Invalid;
-                        }
-                        if required
-                            .iter()
-                            .flatten()
-                            .any(|o| freshness(s, o, now, self.stale_after_ms) == Freshness::Stale)
-                        {
-                            h.freshness = Freshness::Stale;
-                        } else if required.iter().flatten().any(|o| {
-                            freshness(s, o, now, self.stale_after_ms) == Freshness::Unknown
-                        }) {
-                            h.freshness = Freshness::Unknown;
-                        }
+        let mut sources: Vec<_> = self
+            .sources
+            .values()
+            .map(|s| {
+                let mut h = s.health.clone();
+                let required: Vec<_> = s
+                    .definition
+                    .required_metrics
+                    .iter()
+                    .map(|m| {
+                        self.latest
+                            .get(&(
+                                s.definition.id.clone(),
+                                s.definition.entity_id.clone(),
+                                m.clone(),
+                            ))
+                            .filter(|_| s.watermarks.contains_key(m))
+                    })
+                    .collect();
+                if required.iter().any(|o| o.is_none()) {
+                    h.freshness = Freshness::Unknown;
+                    if h.service != ServiceHealth::Degraded {
+                        h.service = ServiceHealth::Unknown;
                     }
+                } else {
+                    if required.iter().flatten().any(|o| !o.is_usable()) {
+                        h.service = ServiceHealth::Degraded;
+                        h.validity = Validity::Invalid;
+                    }
+                    if required.iter().flatten().any(|o| {
+                        freshness(
+                            s,
+                            o,
+                            now,
+                            self.source_cadence
+                                .get(&s.definition.id)
+                                .copied()
+                                .unwrap_or(self.stale_after_ms),
+                        ) == Freshness::Stale
+                    }) {
+                        h.freshness = Freshness::Stale;
+                    } else if required.iter().flatten().any(|o| {
+                        freshness(
+                            s,
+                            o,
+                            now,
+                            self.source_cadence
+                                .get(&s.definition.id)
+                                .copied()
+                                .unwrap_or(self.stale_after_ms),
+                        ) == Freshness::Unknown
+                    }) {
+                        h.freshness = Freshness::Unknown;
+                    }
+                }
 
-                    h.freshness = match h.last_received_ms {
-                        Some(last) if now < last => Freshness::Unknown,
-                        Some(last)
-                            if now.saturating_sub(last) > self.stale_after_ms
-                                || h.connection != ConnectionHealth::Connected =>
-                        {
-                            Freshness::Stale
-                        }
-                        Some(_) => h.freshness,
-                        None => Freshness::Unknown,
-                    };
-                    h
-                })
-                .collect();
+                h.freshness = match h.last_received_ms {
+                    Some(last) if now < last => Freshness::Unknown,
+                    Some(last)
+                        if now.saturating_sub(last)
+                            > self
+                                .source_cadence
+                                .get(&s.definition.id)
+                                .copied()
+                                .unwrap_or(self.stale_after_ms)
+                            || h.connection != ConnectionHealth::Connected =>
+                    {
+                        Freshness::Stale
+                    }
+                    Some(_) => h.freshness,
+                    None => Freshness::Unknown,
+                };
+                h
+            })
+            .collect();
         let healthy = |s: &&SourceHealth| {
             s.connection == ConnectionHealth::Connected
                 && s.service == ServiceHealth::Healthy
@@ -437,7 +516,15 @@ impl<R: CoreRepository> Application<R> {
                     .sources
                     .get(&o.data_source_id)
                     .map_or(Freshness::Unknown, |s| {
-                        freshness(s, &o, now, self.stale_after_ms)
+                        freshness(
+                            s,
+                            &o,
+                            now,
+                            self.source_cadence
+                                .get(&o.data_source_id)
+                                .copied()
+                                .unwrap_or(self.stale_after_ms),
+                        )
                     });
                 o
             })

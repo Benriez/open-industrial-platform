@@ -33,7 +33,7 @@ impl ApplicationServices {
         q: SettingsQuery,
     ) -> Result<CapabilityOutput, CapabilityError> {
         let target = q.target()?;
-        let h = self.state.hierarchy.as_ref().ok_or_else(denied)?;
+        let h = self.state.hierarchy().ok_or_else(denied)?;
         let p = ctx.principal.as_ref().ok_or_else(denied)?;
         if !h.permits(p, CapabilityId::SettingsRead, &target, false) {
             return Err(denied());
@@ -54,7 +54,7 @@ impl ApplicationServices {
             vec![]
         } else {
             keys.iter()
-                .map(|k| effective_setting(&self.state.settings, Some(h), &target, *k))
+                .map(|k| effective_setting(&self.state.settings, Some(&h), &target, *k))
                 .map(|mut e| {
                     // Actor identity of an ancestor override is not needed to consume an effective value.
                     if let Some(r) = &mut e.persisted {
@@ -74,7 +74,7 @@ impl ApplicationServices {
         q: ManagementQuery,
     ) -> Result<CapabilityOutput, CapabilityError> {
         let p = ctx.principal.as_ref().ok_or_else(denied)?;
-        let h = self.state.hierarchy.as_ref().ok_or_else(denied)?;
+        let h = self.state.hierarchy().ok_or_else(denied)?;
         if !h.platform(p, CapabilityId::McpManagementRead) {
             return Err(denied());
         }
@@ -228,7 +228,10 @@ impl ApplicationServices {
                     "active_infrastructure",
                     "no global selection; use explicit authorized request context".into(),
                 );
-                fact("inventory_devices", self.state.inventory.len().to_string());
+                fact(
+                    "inventory_devices",
+                    self.state.inventory().len().to_string(),
+                );
                 fact("sites", h.plan.sites.len().to_string());
                 fact(
                     "demo_controls_enabled",
@@ -287,7 +290,7 @@ impl ApplicationServices {
             .unwrap_or(AccessScope::Platform);
         match effective_setting(
             &self.state.settings,
-            self.state.hierarchy.as_deref(),
+            self.state.hierarchy().as_deref(),
             &scope,
             SettingKey::HistoryPageSize,
         )

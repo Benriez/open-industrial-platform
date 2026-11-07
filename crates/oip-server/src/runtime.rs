@@ -274,6 +274,10 @@ impl CoreRuntime {
                 cancel.clone(),
             )));
         }
+        workers.push(tokio::spawn(crate::connection_service::supervise(
+            state.clone(),
+            cancel.clone(),
+        )));
         if let Err(error) = state.started().await {
             cancel.cancel();
             for task in workers {
@@ -316,6 +320,15 @@ impl CoreRuntime {
                     adapter_failures += 1;
                 }
             }
+        }
+        if tokio::time::timeout(
+            self.timeout.max(Duration::from_secs(2)),
+            self.state.ssh.shutdown(),
+        )
+        .await
+        .is_err()
+        {
+            adapter_failures += 1;
         }
         self.ticker.abort();
         let _ = (&mut self.ticker).await;

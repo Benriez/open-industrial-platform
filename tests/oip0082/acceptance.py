@@ -4,9 +4,9 @@ Runtime credentials/databases remain in private /private/tmp; sanitized report u
 """
 import concurrent.futures,hashlib,json,os,pathlib,select,secrets,signal,socket,subprocess,threading,time,urllib.request,urllib.error
 ROOT=pathlib.Path(__file__).resolve().parents[2]
-OUT=ROOT/'target'/'oip0082-e2e';OUT.mkdir(parents=True,exist_ok=True)
-RUN=pathlib.Path('/private/tmp')/('oip82-'+str(os.getpid()));RUN.mkdir(mode=0o700)
-BIN=ROOT/'target/debug/oip-server';SDK=ROOT/'target/debug/examples/mcp_probe';SIM=ROOT/'target/debug/oip-simulated-server';SQL='/opt/homebrew/opt/sqlite/bin/sqlite3'
+OUT=pathlib.Path(os.environ.get('OIP_EVIDENCE_DIR',ROOT/'target'/'oip0082-e2e'));OUT.mkdir(parents=True,exist_ok=True)
+RUN=pathlib.Path('/private/tmp')/('oip82-'+str(os.getpid())+'-'+str(time.time_ns()));RUN.mkdir(mode=0o700)
+BIN=pathlib.Path(os.environ.get('OIP_SERVER_BIN',ROOT/'target/debug/oip-server'));SDK=BIN.parent/'examples/mcp_probe';SIM=BIN.parent/'oip-simulated-server';SQL='/opt/homebrew/opt/sqlite/bin/sqlite3'
 PROCS=[];REPORT={'baseline':'79639ff42c68ee2ede34862929822a4789845268','phases':[],'runtime_directory':str(RUN),'model_used':False};CLIENTS=[]
 def port():
  with socket.socket() as s:s.bind(('127.0.0.1',0));return s.getsockname()[1]
@@ -163,7 +163,7 @@ try:
  assert result==expected
  for c,org in [(A,'org-a'),(B,'org-a'),(C,'org-b')]:
   assert [o['id'] for o in c.call('organizations_read')['items']]==[org]
-  assert len(c.command({'op':'tools'})['result']['tools'])==17
+  assert len(c.command({'op':'tools'})['result']['tools'])==18
   for resource in c.command({'op':'resources'})['result']['resources']:assert resource['uri'] not in ['oip://v1/core/health','oip://v1/snapshot/current','oip://v1/core/queue']
   allowed=expected[[A,B,C].index(c)];snapshot_scope(c.resource('oip://v2/snapshot/current'),allowed)
   devices=c.call('devices_read');assert {d['data_source_id'] for d in devices}==set(allowed)
@@ -175,7 +175,7 @@ try:
  site=Client('reader-site-a1','client-site');source=Client('reader-source-b','client-source');assert len(site.call('sources_read'))==2;assert len(source.call('sources_read'))==1
  for c in [A,B,C]:
   own=c.call('sources_read')[0]['id'];page=c.call('opcua_nodes_read',{'source':own,'folder':'all','limit':100});assert page['limit']==100 and page['total']>=1000
- record('02_real_clients_scope_parity',{'principals':[c.principal for c in [A,B,C]],'source_sets':result,'tools':17,'node_page_limit':100})
+ record('02_real_clients_scope_parity',{'principals':[c.principal for c in [A,B,C]],'source_sets':result,'tools':18,'node_page_limit':100})
  for c,args in [(B,{'infrastructure':'infra-b1'}),(C,{'site':'site-a1'}),(A,{'organization':'org-b'}),(A,{'source':'source-d'}),(source,{'source':'source-a'})]:c.denied('sources_read',args)
  for args in [{'principal':'platform-reader'},{'actor':'platform-reader'},{'permissions':['core_read']},{'sources':{'kind':'all'}},{'limit':101},{'offset':-1}]:B.denied('sources_read',args)
  B.denied('simulation_scenario_set',{'scenario':'offline'})

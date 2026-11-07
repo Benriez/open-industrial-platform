@@ -19,9 +19,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         .json()
         .with_writer(std::io::stderr)
         .with_env_filter(
-            if std::env::args()
-                .any(|a| matches!(a.as_str(), "--mcp-stdio" | "--mcp-bridge" | "--daemon"))
-            {
+            if std::env::args().any(|a| {
+                matches!(
+                    a.as_str(),
+                    "--mcp-stdio" | "--mcp-bridge" | "--daemon" | "--browser-login"
+                )
+            }) {
                 // SDK trace/debug can contain complete untrusted requests. Do not
                 // allow a more specific RUST_LOG directive to override redaction.
                 tracing_subscriber::EnvFilter::new("warn,oip_server=info,rmcp=off")
@@ -75,6 +78,26 @@ async fn run() -> Result<(), Box<dyn Error>> {
         {
             return Err("local IPC is currently supported on Unix only".into());
         }
+    }
+    if args.first().is_some_and(|a| a == "--browser-login") {
+        #[cfg(unix)]
+        {
+            if args.len() != 5 || args[1] != "--ipc-socket" || args[3] != "--ipc-credential" {
+                return Err(
+                    "browser-login usage: --browser-login --ipc-socket ABS --ipc-credential ABS"
+                        .into(),
+                );
+            }
+            let value = oip_server::mcp::ipc::browser_login(
+                std::path::Path::new(&args[2]),
+                std::path::Path::new(&args[4]),
+            )
+            .await?;
+            println!("{value}");
+            return Ok(());
+        }
+        #[cfg(not(unix))]
+        return Err("local browser login currently supports Unix only".into());
     }
     let daemon = args.iter().any(|a| a == "--daemon");
     let mut ipc_config = None;
@@ -487,10 +510,15 @@ async fn run() -> Result<(), Box<dyn Error>> {
     );
     let transport_stop = CancellationToken::new();
     let mcp_stop = transport_stop.clone();
+    let browser_sessions = state.browser_sessions.clone();
     let mcp_run = async move {
         #[cfg(unix)]
         if let Some(ipc) = ipc {
-            if ipc.run(service, mcp_stop.clone()).await.is_err() {
+            if ipc
+                .run_with_browser(service, mcp_stop.clone(), browser_sessions)
+                .await
+                .is_err()
+            {
                 tracing::error!(code = "ipc_listener_failed", "local IPC listener failed");
             }
             return;

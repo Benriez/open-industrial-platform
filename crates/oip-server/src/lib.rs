@@ -19,3 +19,9 @@ pub mod identity;
 pub mod settings_services;
 
 pub mod inventory_services;
+
+pub mod browser_session;
+
+pub mod ssh;
+
+pub mod connection_service;

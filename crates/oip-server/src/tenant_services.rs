@@ -94,7 +94,7 @@ impl ApplicationServices {
     ) -> Result<CapabilityOutput, CapabilityError> {
         let id = request.id();
         let principal = context.principal.as_ref().ok_or_else(denied)?;
-        let h = self.state.hierarchy.as_ref().ok_or_else(denied)?;
+        let h = self.state.hierarchy().ok_or_else(denied)?;
         if context.actor != principal.as_str()
             || !h
                 .plan
@@ -176,7 +176,7 @@ impl ApplicationServices {
                     | InventoryChange::Update { device, .. } => Some(device.site_id.clone()),
                     InventoryChange::Archive { id, .. } => self
                         .state
-                        .inventory
+                        .inventory()
                         .iter()
                         .find(|r| &r.device.id == id)
                         .map(|r| r.device.site_id.clone()),
@@ -190,7 +190,7 @@ impl ApplicationServices {
         } else {
             None
         };
-        let result = self.run_tenant(h, principal, context, request).await;
+        let result = self.run_tenant(&h, principal, context, request).await;
         interrupted.event = None;
         event.authorized = result.is_ok()
             || result.as_ref().is_err_and(|e| {
@@ -243,6 +243,15 @@ impl ApplicationServices {
                     }
                 }
             }
+            if let Ok(CapabilityOutput::Connection(output)) = &result {
+                if let Some(plan) = &output.plan {
+                    event.target = plan.device_id.to_string();
+                    event.scope = Some(AccessScope::Site(plan.site_id.clone()));
+                } else if let Some(connection) = &output.connection {
+                    event.target = connection.device_id.to_string();
+                    event.scope = Some(AccessScope::Source(connection.source_id.clone()));
+                }
+            }
             if let Ok(CapabilityOutput::InventoryPlan(plan)) = &result {
                 event.target = format!("authorized-inventory-plan:{}", plan.actions.len());
                 event.scope = inventory_plan_site.map(AccessScope::Site);
@@ -279,6 +288,32 @@ impl ApplicationServices {
     ) -> Result<CapabilityOutput, CapabilityError> {
         use CapabilityRequest::*;
         let id = request.id();
+        if let DeviceConnectionRead(q) = &request {
+            return self.connection_read(context, q.clone());
+        }
+        if let DeviceConnectionConfigure(q) = &request {
+            return self.connection_configure(context, q.clone()).await;
+        }
+        if let InventoryChange(q) = &request {
+            if &q.principal != p {
+                return Err(denied());
+            }
+            if q.changes
+                .iter()
+                .any(|c| matches!(c, oip_core::InventoryChange::Archive { .. }))
+            {
+                return Err(CapabilityError::new(
+                    CapabilityErrorCode::OperationNotSupported,
+                    "OFFLINE_ARCHIVE_REQUIRED",
+                    "Archive remains an explicit offline operation",
+                ));
+            }
+            return self
+                .state
+                .inventory_online(q.clone())
+                .await
+                .map(CapabilityOutput::InventoryPlan);
+        }
         if id.descriptor().mutating {
             return Err(denied());
         }
@@ -379,9 +414,10 @@ impl ApplicationServices {
                 let Some(source) = h.source_for_device(&q.id) else {
                     let row = self
                         .state
-                        .inventory
+                        .inventory()
                         .iter()
                         .find(|r| r.device.id.as_str() == q.id)
+                        .cloned()
                         .ok_or_else(inaccessible)?;
                     if !h.permits(p, id, &AccessScope::Site(row.device.site_id.clone()), false) {
                         return Err(inaccessible());
@@ -466,7 +502,7 @@ impl ApplicationServices {
                         .is_some_and(|s| allowed.contains(s))
                         || self
                             .state
-                            .inventory
+                            .inventory()
                             .iter()
                             .find(|r| r.device.id.as_str() == d.id)
                             .is_some_and(|r| {
@@ -519,7 +555,7 @@ impl ApplicationServices {
                                 .is_some_and(|s| allowed.contains(s))
                                 || self
                                     .state
-                                    .inventory
+                                    .inventory()
                                     .iter()
                                     .find(|r| r.device.id.as_str() == v.id)
                                     .is_some_and(|r| {
