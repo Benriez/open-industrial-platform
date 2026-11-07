@@ -1,107 +1,31 @@
 {
-  "scope": "OIP canonical main, iteration 1: controlled integration of the real device onboarding feature",
-  "canonical_source_commit": "ae4c6bab4fb87ff2c7b15a21b0104b2d5a12af7f",
-  "canonical_source_tree": "f72cb667c16b6e6a75efd72b725c81031788fd26",
-  "previous_canonical_source_commit": "49a86bb0aa9f737fe9392eb2b5421e1ffe2f8c68",
-  "integration_method": "git merge --ff-only feature/real-device-onboarding-integration",
+  "scope": "OIP canonical main: two controlled integrations (iteration 1 real device onboarding feature, iteration 2 its conformance fixes)",
+  "canonical_source_commit": "fc828ac4a0afd2020fef646b4630eb0ab90f99cc",
+  "canonical_source_tree": "2c7e72bd0882ab9fa4324216183c628600fa64dc",
+  "previous_canonical_source_commit": "ae4c6bab4fb87ff2c7b15a21b0104b2d5a12af7f",
+  "integration_method": "two real git merge --ff-only integrations, no merge commit, no history rewrite",
   "merge_commit_created": false,
   "history_rewritten": false,
-  "tracked_files_in_source_revision": 438,
-  "source_manifest_sha256": "16b9a815bee276e383aa1ca9e2616ff601ce2026d0629aab40e4f4083ad7ae09",
-  "source_manifest_scope": "all tracked files of the canonical source revision; the later documentation commit of this iteration changes no Rust, Flutter, contract or harness file",
+  "tracked_files_in_source_revision": 442,
+  "source_manifest_sha256": "a48347578ce325b613b1cf67d5c19dcdb3921cb7ba26ecda97f3e214cc0c8420",
+  "source_manifest_scope": "all tracked files of the canonical source revision",
   "reviewed_candidate_tree_unchanged": true,
-  "runtime_code_changed_in_this_iteration": false,
+  "runtime_code_changed_in_this_iteration": true,
   "gates": {
-    "cargo_fmt_check": {
-      "status": "PASS",
-      "command": "cargo fmt --all -- --check",
-      "exit_code": 0
-    },
-    "cargo_check": {
-      "status": "PASS",
-      "command": "cargo check --locked --workspace --all-targets",
-      "exit_code": 0
-    },
-    "cargo_clippy": {
-      "status": "PASS",
-      "command": "cargo clippy --locked --workspace --all-targets -- -D warnings",
-      "exit_code": 0,
-      "warnings_denied": true
-    },
-    "cargo_test_workspace": {
-      "status": "PASS",
-      "command": "cargo test --locked --workspace -- --test-threads=1",
-      "passed": 167,
-      "failed": 0,
-      "storage_tests_contained": 44
-    },
-    "cargo_test_opcua_default_backend": {
-      "status": "PASS",
-      "command": "cargo test --locked -p oip-opcua --features open62541-backend -- --test-threads=1",
-      "passed": 37,
-      "failed": 0
-    },
-    "cargo_test_opcua_open62541_only": {
-      "status": "PASS",
-      "command": "cargo test --locked -p oip-opcua --no-default-features --features open62541-backend -- --test-threads=1",
-      "passed": 2,
-      "failed": 0,
-      "note": "overlapping group with the default backend run, not an additional unique test count"
-    },
-    "cargo_build_server_and_mcp_probe": {
-      "status": "PASS",
-      "command": "cargo build --locked -p oip-server --bin oip-server --example mcp_probe",
-      "exit_code": 0
-    },
-    "cargo_deny": {
-      "status": "PASS",
-      "command": "cargo deny check advisories licenses bans sources",
-      "tool_version": "cargo-deny 0.20.2",
-      "advisories": "ok",
-      "bans": "ok",
-      "licenses": "ok",
-      "sources": "ok",
-      "note": "the three documented RUSTSEC exceptions were already present in deny.toml before this iteration and were neither added nor widened"
-    },
-    "flutter_analyze": {
-      "status": "PASS",
-      "command": "flutter analyze",
-      "exit_code": 0
-    },
-    "flutter_test": {
-      "status": "PASS",
-      "command": "flutter test",
-      "passed": 84,
-      "failed": 0
-    },
-    "flutter_web_release_canvaskit": {
-      "status": "PASS",
-      "command": "flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none",
-      "exit_code": 0
-    },
-    "flutter_web_release_html": {
-      "status": "PASS",
-      "command": "flutter build web --release --web-renderer html --no-web-resources-cdn --pwa-strategy=none --output build/web-html",
-      "exit_code": 0
-    },
-    "real_device_acceptance": {
-      "status": "PASS",
-      "command": "python3 tests/real_device/acceptance.py",
-      "exit_code": 0,
-      "phases_passed": 7,
-      "phases": [
-        "browser_identity_online_writer",
-        "ssh_handshake_confirmation_monitoring",
-        "restart_sigkill_identity",
-        "actual_flutter_ssh_onboarding",
-        "no_clients_ingestion_progress",
-        "host_key_change_blocks_collection",
-        "eight_official_mcp_clients"
-      ],
-      "own_processes_stopped": true,
-      "ssh_target": "owned loopback OpenSSH fixture with test generated keys",
-      "physical_raspberry_pi_tested": false
-    }
+    "cargo_fmt_check": "PASS",
+    "cargo_check": "PASS",
+    "cargo_clippy_denied_warnings": "PASS",
+    "cargo_test_workspace": "175 passed, 0 failed",
+    "cargo_test_opcua_default_backend": "37 passed",
+    "cargo_test_opcua_open62541_only": "2 passed",
+    "cargo_build_server_and_mcp_probe": "PASS",
+    "cargo_deny": "PASS (advisories, bans, licenses, sources ok)",
+    "flutter_analyze": "PASS",
+    "flutter_test": "84 passed",
+    "flutter_web_release_canvaskit": "PASS",
+    "flutter_web_release_html": "PASS",
+    "real_device_acceptance": "8 phases PASS",
+    "new_rust_test_group": "crates/oip-server/tests/browser_session.rs, 5 tests"
   },
   "actual_flutter_onboarding": {
     "status": "PASS",
@@ -111,7 +35,7 @@
     "existing_device_id_preserved": true,
     "http_only_cookie": true,
     "no_browser_token_storage": true,
-    "loaded_build_sha256": "91f88d8d3cd2682469ff3f10f428ff8b8d3907bcfb71aecce143178d46befb31",
+    "loaded_build_sha256": "98b7296ea226853571fbdb8b6e165aeebe63753d8e018110dbe2c252e4a2ed43",
     "page_errors": [],
     "external_requests": [],
     "hardware": "owned loopback SSH fixture, not the private Raspberry Pi"
@@ -119,15 +43,12 @@
   "measurements": {
     "official_mcp_connection_read_ms": {
       "samples": 20,
-      "p50": 3.9282499346882105,
-      "p95": 4.844209062866867,
-      "attached_clients": 8,
-      "note": "short local observation, not an SLA"
+      "p50": 4.511291976086795,
+      "p95": 4.800375085324049
     },
     "core_sample": {
-      "rss_kib": 30768,
-      "cpu_percent": 15.2,
-      "note": "single sample, not an endurance result"
+      "rss_kib": 31088,
+      "cpu_percent": 14.8
     },
     "ingestion_without_clients": {
       "before": 140,
@@ -153,5 +74,217 @@
     "personal_database_schema": 6,
     "foreign_processes_signalled": false,
     "private_device_contacted": false
+  },
+  "iterations": [
+    {
+      "iteration": 1,
+      "scope": "controlled integration of the reviewed real device onboarding candidate into canonical main",
+      "canonical_source_commit": "ae4c6bab4fb87ff2c7b15a21b0104b2d5a12af7f",
+      "canonical_source_tree": "f72cb667c16b6e6a75efd72b725c81031788fd26",
+      "tracked_files": 438,
+      "source_manifest_sha256": "16b9a815bee276e383aa1ca9e2616ff601ce2026d0629aab40e4f4083ad7ae09",
+      "runtime_code_changed": false,
+      "gates": {
+        "cargo_fmt_check": "PASS",
+        "cargo_check": "PASS",
+        "cargo_clippy_denied_warnings": "PASS",
+        "cargo_test_workspace": "167 passed, 0 failed",
+        "cargo_test_opcua_default_backend": "37 passed",
+        "cargo_test_opcua_open62541_only": "2 passed",
+        "cargo_build_server_and_mcp_probe": "PASS",
+        "cargo_deny": "PASS",
+        "flutter_analyze": "PASS",
+        "flutter_test": "84 passed",
+        "flutter_web_release_canvaskit": "PASS",
+        "flutter_web_release_html": "PASS",
+        "real_device_acceptance": "7 phases PASS"
+      },
+      "measurements": {
+        "official_mcp_connection_read_ms": {
+          "samples": 20,
+          "p50": 3.9282499346882105,
+          "p95": 4.844209062866867
+        },
+        "core_sample": {
+          "rss_kib": 30768,
+          "cpu_percent": 15.2
+        },
+        "ingestion_without_clients": {
+          "before": 140,
+          "after": 150
+        }
+      }
+    },
+    {
+      "iteration": 2,
+      "scope": "conformance fixes F1, F2, F3, F6, F7 and the Rust test group R1 for the browser session boundary",
+      "canonical_source_commit": "fc828ac4a0afd2020fef646b4630eb0ab90f99cc",
+      "canonical_source_tree": "2c7e72bd0882ab9fa4324216183c628600fa64dc",
+      "tracked_files": 442,
+      "source_manifest_sha256": "a48347578ce325b613b1cf67d5c19dcdb3921cb7ba26ecda97f3e214cc0c8420",
+      "development_isolation": "branch feature/oip-real-device-conformance in an isolated worktree with its own CARGO_TARGET_DIR and its own Flutter web build; integrated afterwards with git merge --ff-only",
+      "runtime_code_changed": true,
+      "fixed_findings": [
+        "F1",
+        "F2",
+        "F3",
+        "F6",
+        "F7"
+      ],
+      "fixed_test_gaps": [
+        "R1"
+      ],
+      "still_open": [
+        "F4",
+        "F5"
+      ],
+      "gates": {
+        "cargo_fmt_check": "PASS",
+        "cargo_check": "PASS",
+        "cargo_clippy_denied_warnings": "PASS",
+        "cargo_test_workspace": "175 passed, 0 failed",
+        "cargo_test_opcua_default_backend": "37 passed",
+        "cargo_test_opcua_open62541_only": "2 passed",
+        "cargo_build_server_and_mcp_probe": "PASS",
+        "cargo_deny": "PASS (advisories, bans, licenses, sources ok)",
+        "flutter_analyze": "PASS",
+        "flutter_test": "84 passed",
+        "flutter_web_release_canvaskit": "PASS",
+        "flutter_web_release_html": "PASS",
+        "real_device_acceptance": "8 phases PASS",
+        "new_rust_test_group": "crates/oip-server/tests/browser_session.rs, 5 tests"
+      },
+      "new_acceptance_phase": {
+        "phase": "weak_host_key_is_rejected_by_the_server",
+        "status": "PASS",
+        "details": {
+          "code": "SSH_HOST_KEY_TOO_WEAK",
+          "offered_for_acceptance": false,
+          "pinned": false,
+          "no_binding_created": true
+        }
+      },
+      "measurements": {
+        "official_mcp_connection_read_ms": {
+          "samples": 20,
+          "p50": 4.511291976086795,
+          "p95": 4.800375085324049
+        },
+        "core_sample": {
+          "rss_kib": 31088,
+          "cpu_percent": 14.8
+        },
+        "ingestion_without_clients": {
+          "before": 140,
+          "after": 150
+        }
+      }
+    }
+  ],
+  "measured_on_canonical_main": {
+    "cargo_test_workspace": "175 passed, 0 failed",
+    "cargo_test_opcua_default_backend": "37 passed",
+    "cargo_test_opcua_open62541_only": "2 passed",
+    "flutter_test": "84 passed",
+    "real_device_acceptance_phases": 8
+  },
+  "status": "INTEGRATED_AND_VERIFIED_ON_CANONICAL_MAIN; PHYSICAL_HARDWARE_ACCEPTANCE_AND_INSTALLATION_ACTIVATION_PENDING",
+  "gates_detail": {
+    "cargo_fmt_check": {
+      "command": "cargo fmt --all -- --check",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "cargo_check": {
+      "command": "cargo check --locked --workspace --all-targets",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "cargo_clippy": {
+      "command": "cargo clippy --locked --workspace --all-targets -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "warnings_denied": true
+    },
+    "cargo_test_workspace": {
+      "command": "cargo test --locked --workspace -- --test-threads=1",
+      "status": "PASS",
+      "passed": 175,
+      "failed": 0,
+      "storage_tests_contained": 44
+    },
+    "cargo_test_opcua_default_backend": {
+      "command": "cargo test --locked -p oip-opcua --features open62541-backend -- --test-threads=1",
+      "status": "PASS",
+      "passed": 37,
+      "failed": 0
+    },
+    "cargo_test_opcua_open62541_only": {
+      "command": "cargo test --locked -p oip-opcua --no-default-features --features open62541-backend -- --test-threads=1",
+      "status": "PASS",
+      "passed": 2,
+      "failed": 0,
+      "note": "overlapping group with the default backend run"
+    },
+    "cargo_build_server_and_mcp_probe": {
+      "command": "cargo build --locked -p oip-server --bin oip-server --example mcp_probe",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "cargo_deny": {
+      "command": "cargo deny check advisories licenses bans sources",
+      "status": "PASS",
+      "tool_version": "cargo-deny 0.20.2",
+      "advisories": "ok",
+      "bans": "ok",
+      "licenses": "ok",
+      "sources": "ok"
+    },
+    "flutter_analyze": {
+      "command": "flutter analyze",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "flutter_test": {
+      "command": "flutter test",
+      "status": "PASS",
+      "passed": 84,
+      "failed": 0
+    },
+    "flutter_web_release_canvaskit": {
+      "command": "flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "flutter_web_release_html": {
+      "command": "flutter build web --release --web-renderer html --no-web-resources-cdn --pwa-strategy=none --output build/web-html",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "real_device_acceptance": {
+      "command": "python3 tests/real_device/acceptance.py",
+      "status": "PASS",
+      "exit_code": 0,
+      "phases_passed": 8,
+      "phases": [
+        "browser_identity_online_writer",
+        "ssh_handshake_confirmation_monitoring",
+        "restart_sigkill_identity",
+        "actual_flutter_ssh_onboarding",
+        "no_clients_ingestion_progress",
+        "host_key_change_blocks_collection",
+        "weak_host_key_is_rejected_by_the_server",
+        "eight_official_mcp_clients"
+      ],
+      "own_processes_stopped": true,
+      "ssh_target": "owned loopback OpenSSH fixture with test generated keys",
+      "physical_raspberry_pi_tested": false
+    },
+    "browser_session_rust_tests": {
+      "command": "cargo test --locked -p oip-server --test browser_session",
+      "status": "PASS",
+      "passed": 5,
+      "failed": 0
+    }
   }
 }

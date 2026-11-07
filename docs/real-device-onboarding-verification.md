@@ -102,3 +102,20 @@ The merged tree was re-proved on the canonical branch: format, check, clippy wit
 An additional read-only source review against this contract is recorded in `docs/evidence/oip-real-device/review.json`. It is an automated review pass and not an independent human review. It found seven conformance gaps (F1-F7) and one missing Rust-level test group (R1); none of them is fixed in this integration. They are the first open item in `docs/OIP_RELEASE_PROGRESS.md`.
 
 Nothing in this addendum changes the acceptance boundaries above: the private Raspberry Pi was not contacted, the real installation was not activated, the personal SQLite database is unchanged at schema 6, the native macOS build is still not proved and the productive identity, hostile same-UID, durable audit and OT boundaries stay open.
+
+## Addendum — conformance fixes after the canonical integration
+
+An automated read-only source review against `docs/architecture/real-device-onboarding.md` found seven conformance gaps in the integrated feature and one missing Rust test group. Six of the eight were fixed in the isolated branch `feature/oip-real-device-conformance` and integrated into canonical `main` with a real `git merge --ff-only` as `fc828ac4a0afd2020fef646b4630eb0ab90f99cc`, tree `2c7e72bd0882ab9fa4324216183c628600fa64dc`.
+
+- The server now reads the size of every offered host key itself and rejects a key below the accepted minimum before it is offered for acceptance or pinned. The attempt fails with the typed fault `SSH_HOST_KEY_TOO_WEAK` and creates no binding. The `RequiredRSASize=2048` client option stays as defence in depth.
+- A changed host key and an unknown host key are separate outcomes. Only `REMOTE HOST IDENTIFICATION HAS CHANGED` maps to `SSH_HOST_KEY_CHANGED`; an unpinned host reports `SSH_HOST_KEY_UNKNOWN` and the operator status `host_key_unknown`. The split was verified against the installed OpenSSH 10.2 with an owned loopback fixture: a changed key produces the rotation banner, a host without a pinned entry does not.
+- Rejected pairing codes no longer block a valid single-use grant, the rejection accounting stays capped, and a full session table no longer consumes an issued grant.
+- The private SSH work directory is created with the owner-only mode instead of being briefly world readable.
+- `crates/oip-server/tests/browser_session.rs` adds five Rust integration tests for the exact Origin, the single-use pairing code, the CSRF requirement on every cookie authorized write, a revoked session and a revoked projection stream. The browser session boundary is therefore covered inside the repository and not only by the external harness.
+- The owned loopback fixture can serve a deliberately weak 1024 bit RSA host key, and the acceptance harness proves that the server rejects it end to end.
+
+Verified on the canonical tree after the integration: format, check, clippy with denied warnings, **175** workspace tests, both OPC-UA backend configurations, the dependency policy check, the server and official MCP probe build, Flutter analysis, **84** Flutter tests, both web release renderers and the acceptance harness with **eight** passing phases including the new weak host key rejection. The machine-readable result is `docs/evidence/oip-real-device/test-summary.json`.
+
+The remaining findings F4 (the maximal host report the parser can build exceeds the stored payload bound) and F5 (the plan read path requires the configure capability while the contract lists it under the read capability) are deliberately not mixed into this fix, because both change a rule instead of enforcing the existing one. They are tracked as N1b in `docs/OIP_RELEASE_PROGRESS.md`.
+
+The review itself was an automated pass, not an independent human reviewer, and the fixes were implemented and verified by the implementing session.

@@ -13,21 +13,19 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `ae4c6bab4fb87ff2c7b15a21b0104b2d5a12af7f` |
-| Canonical source tree | `f72cb667c16b6e6a75efd72b725c81031788fd26` |
-| Previous canonical source revision | `49a86bb0aa9f737fe9392eb2b5421e1ffe2f8c68` (OIP-008.5) |
-| Integration method | real `git merge --ff-only feature/real-device-onboarding-integration`, no merge commit, no rewrite |
-| Tracked files in the canonical source revision | 438, source manifest SHA-256 `16b9a815bee276e383aa1ca9e2616ff601ce2026d0629aab40e4f4083ad7ae09` |
-| This iteration's commit | documentation only: this file, the verification addendum, two curated evidence files and `.gitignore`. No Rust, Flutter, contract or harness file is modified. |
+| Canonical source revision | `fc828ac4a0afd2020fef646b4630eb0ab90f99cc` |
+| Canonical source tree | `2c7e72bd0882ab9fa4324216183c628600fa64dc` |
+| Previous canonical source revision | `ae4c6bab4fb87ff2c7b15a21b0104b2d5a12af7f` (iteration 1 integration) |
+| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in two controlled steps |
+| Tracked files in the canonical source revision | 442, source manifest SHA-256 `a48347578ce325b613b1cf67d5c19dcdb3921cb7ba26ecda97f3e214cc0c8420` |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
 
-The canonical source tree is byte-identical to the previously reviewed candidate
-`ae4c6ba` / tree `f72cb66` from the P0 handoff
-(`/Users/benny/Documents/OIP-Handoffs/core-real-onboarding-p0-20261107T025455Z/`).
-This iteration changed **no runtime code**; it integrated the already reviewed feature and
-re-proved it on the canonical tree.
+The canonical tree carries two controlled integrations: iteration 1 integrated the reviewed
+real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
+the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`). Neither
+iteration weakened a contract rule, and neither activated the installation.
 
 ## 2. Acceptance gates and their measured status
 
@@ -39,7 +37,7 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Rust format check | PROVED | `cargo fmt --all -- --check` → exit 0 |
 | Rust workspace check | PROVED | `cargo check --locked --workspace --all-targets` → exit 0 |
 | Rust clippy, warnings denied | PROVED | `cargo clippy --locked --workspace --all-targets -- -D warnings` → exit 0 |
-| Rust workspace tests | PROVED | 167 passed, 0 failed (44 of them Storage) |
+| Rust workspace tests | PROVED | 175 passed, 0 failed (44 of them Storage) |
 | OPC-UA default backend | PROVED | 37 passed, 0 failed |
 | OPC-UA open62541-only backend | PROVED | 2 passed, 0 failed (overlapping group) |
 | Dependency policy | PROVED | `cargo deny check advisories licenses bans sources` → advisories ok, bans ok, licenses ok, sources ok |
@@ -55,6 +53,8 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Ingestion without any client | PROVED | phase `no_clients_ingestion_progress` → PASS, 140 → 150 observations |
 | Host-key rotation blocked | PROVED | phase `host_key_change_blocks_collection` → PASS, 0 new observations after the block |
 | 8 official MCP SDK clients | PROVED | phase `eight_official_mcp_clients` → PASS, REST/MCP parity |
+| Weak host key rejected by the server | PROVED | phase `weak_host_key_is_rejected_by_the_server` → PASS, `SSH_HOST_KEY_TOO_WEAK`, no binding created |
+| Browser session boundary in Rust | PROVED | `crates/oip-server/tests/browser_session.rs` → 5 tests: exact Origin, single-use code, CSRF on every write, revoked session, revoked projection stream |
 | Physical Raspberry-Pi acceptance | **WITHHELD** | no endpoint, SSH user or approved identity was supplied; no personal device was contacted |
 | Real installation activation (schema 7) | **BLOCKED** | requires a separate operator decision plus a fresh protected backup; forbidden in this loop |
 | Native macOS build/test | **OPEN** | the P0 handoff recorded the native build blocked inside SwiftBuild toolchain discovery; not re-attempted yet |
@@ -66,8 +66,8 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 ### Short local measurements (not an SLA)
 
 * Official MCP `device_connection_read`: 20 sequential samples with 8 attached clients,
-  p50 3.93 ms, p95 4.84 ms.
-* One Core sample while the harness ran: 30,768 KiB RSS, 15.2 % CPU.
+  p50 4.51 ms, p95 4.80 ms.
+* One Core sample while the harness ran: 31,088 KiB RSS, 14.8 % CPU.
 * Ingestion advanced 140 → 150 observations after all browser and MCP clients disconnected.
 
 ## 3. Open items, in execution order
@@ -82,20 +82,35 @@ findings below. They are contract conformance defects, not new architecture. Fix
 isolated feature branch, add Rust-level regression tests, re-run the full gate set above and
 integrate with the same controlled fast-forward.
 
-| Id | Severity | Location | Defect | Contract reference |
-|---|---|---|---|---|
-| F1 | medium | `crates/oip-server/src/ssh.rs:414-424`, `:519` | The server never enforces "RSA keys require at least 2048 bits". `ssh-keygen -lf` already prints the key size, but only the fingerprint is kept; enforcement is delegated to the `RequiredRSASize=2048` client option of the *user* connection. A weak `ssh-rsa` host key can therefore be scanned, shown, trusted and pinned. | `docs/architecture/real-device-onboarding.md:48` |
-| F2 | low/medium | `crates/oip-server/src/ssh.rs:316` | `REMOTE HOST IDENTIFICATION HAS CHANGED` **and** `Host key verification failed` are both mapped to `SSH_HOST_KEY_CHANGED`, so an unknown key is reported as a rotation alarm. | `docs/architecture/real-device-onboarding.md:23`, `:66` |
-| F3 | low | `crates/oip-server/src/browser_session.rs:93-100` | The invalid-code limiter is evaluated *before* the grant lookup, so 16 malformed codes block the operator's valid single-use code for 60 s. Local-process availability bug inside the session boundary. | `docs/architecture/real-device-onboarding.md:36` |
-| F4 | low | `crates/oip-server/src/ssh.rs:733-802` vs `crates/oip-storage/src/connection.rs:5` | The maximal host report the parser can build (up to ~128 KiB of interface/disk text) exceeds the 128 KiB `payload_json` CHECK, so a legal but extreme remote report fails the commit with an opaque storage error instead of a typed fault. | `docs/architecture/real-device-onboarding.md:50`, `:58` |
-| F5 | low | `crates/oip-server/src/connection_service.rs:96-134` | The read path requires `DeviceConnectionConfigure`; the contract places `GET /device-connections?plan_id=…` under `DeviceConnectionRead`. Conservative over-restriction, not an escalation. | `docs/architecture/real-device-onboarding.md:15` |
-| F6 | low | `crates/oip-server/src/browser_session.rs:97-103` | The session-capacity check runs after the single-use grant was already consumed, so a valid code is destroyed when 64 sessions exist. | `docs/architecture/real-device-onboarding.md:36` |
-| F7 | low | `crates/oip-server/src/ssh.rs:323-332` | The SSH work directory is created with the process umask and only afterwards chmod'ed to 0700, leaving a brief world-readable window. | `docs/architecture/real-device-onboarding.md:48` |
-| R1 | test gap | `crates/oip-server/tests/` | No Rust-level test covers the browser session/CSRF/Origin flow; those assertions only exist in the external harness `tests/real_device/acceptance.py`. Add: cookie-only POST without `x-oip-csrf` → 403; wrong CSRF → 403; `DELETE /api/v2/browser/session` without CSRF → 403; session revoked mid-SSE stops delivery; `GET /api/v2/browser/session` without a cookie returns `csrf_token: null`. | `docs/architecture/real-device-onboarding.md:37-39` |
+**Status: F1, F2, F3, F6, F7 and R1 are fixed and verified in iteration 2.** F4 and F5 remain
+open and are split off as N1b below because they change a storage bound and an authorization
+rule and need their own explicit review.
 
-Gate for N1: `cargo fmt/check/clippy --locked --workspace --all-targets`, `cargo test --locked
---workspace`, both OPC-UA backend configurations, `cargo deny check`, `flutter analyze`,
-`flutter test`, both web release builds and a re-run of `tests/real_device/acceptance.py`.
+| Id | Severity | Location | Defect | Contract reference | Status |
+|---|---|---|---|---|---|
+| F1 | medium | `crates/oip-server/src/ssh.rs` (`minimum_key_bits`, `parse_key_report`, `scan`) | The server never enforced "RSA keys require at least 2048 bits". `ssh-keygen -lf` already prints the key size, but only the fingerprint was kept; enforcement was delegated to the `RequiredRSASize=2048` client option of the *user* connection. A weak `ssh-rsa` host key could be scanned, shown, trusted and pinned. | `docs/architecture/real-device-onboarding.md:48` | **fixed** |
+| F2 | low/medium | `crates/oip-server/src/ssh.rs` (`run`) and `crates/oip-server/src/connection_service.rs` (`read`) | `REMOTE HOST IDENTIFICATION HAS CHANGED` **and** `Host key verification failed` were both mapped to `SSH_HOST_KEY_CHANGED`, so an unknown key was reported as a rotation alarm. | `docs/architecture/real-device-onboarding.md:23`, `:66` | **fixed** |
+| F3 | low | `crates/oip-server/src/browser_session.rs` (`login`) | The invalid-code limiter was evaluated *before* the grant lookup, so 16 malformed codes blocked the operator's valid single-use code for 60 s. Local-process availability bug inside the session boundary. | `docs/architecture/real-device-onboarding.md:36` | **fixed** |
+| F4 | low | `crates/oip-server/src/ssh.rs` (`parse`) vs `crates/oip-storage/src/connection.rs` | The maximal host report the parser can build (up to ~128 KiB of interface/disk text) exceeds the 128 KiB `payload_json` CHECK, so a legal but extreme remote report fails the commit with an opaque storage error instead of a typed fault. | `docs/architecture/real-device-onboarding.md:50`, `:58` | open → N1b |
+| F5 | low | `crates/oip-server/src/connection_service.rs` (`check_plan`) | The read path requires `DeviceConnectionConfigure`; the contract places `GET /device-connections?plan_id=…` under `DeviceConnectionRead`. Conservative over-restriction, not an escalation. | `docs/architecture/real-device-onboarding.md:15` | open → N1b |
+| F6 | low | `crates/oip-server/src/browser_session.rs` (`login`) | The session-capacity check ran after the single-use grant was already consumed, so a valid code was destroyed when 64 sessions existed. | `docs/architecture/real-device-onboarding.md:36` | **fixed** |
+| F7 | low | `crates/oip-server/src/ssh.rs` (`private_workdir`) | The SSH work directory was created with the process umask and only afterwards chmod'ed to 0700, leaving a brief world-readable window. | `docs/architecture/real-device-onboarding.md:48` | **fixed** |
+| R1 | test gap | `crates/oip-server/tests/browser_session.rs` | No Rust-level test covered the browser session/CSRF/Origin flow; those assertions only existed in the external harness `tests/real_device/acceptance.py`. | `docs/architecture/real-device-onboarding.md:37-39` | **fixed** |
+
+### N1b — Remaining conformance items (storage bound and authorization rule)
+
+Two findings are deliberately *not* mixed into the security fix, because both change a rule
+instead of enforcing the existing one and need their own review and evidence:
+
+* **F4 (storage bound).** Reconcile the maximal host report the SSH parser can build with the
+  128 KiB `device_connections.payload_json` CHECK, and length check the serialised record
+  before the transaction so an extreme report fails with a typed fault instead of a rollback.
+  Gate: a regression test that commits a maximal report and one that proves a typed failure.
+* **F5 (authorization rule).** Decide, against the contract table in
+  `docs/architecture/real-device-onboarding.md:15`, whether `GET /api/v2/device-connections?plan_id=…`
+  is governed by `DeviceConnectionRead`. The change loosens a permission and therefore needs an
+  explicit authorization review, a negative test for a foreign principal and a parity update in
+  `docs/architecture/oip-008-rest-mcp-parity.md` if the capability matrix changes.
 
 ### N2 — Native macOS build and test (open acceptance item)
 
@@ -188,15 +203,90 @@ the personal database is unchanged.
 `docs/evidence/oip-real-device/test-summary.json`,
 `docs/evidence/oip-real-device/review.json`, `.gitignore`.
 
+### Iteration 2 — conformance fixes F1, F2, F3, F6, F7 and the Rust test group R1
+
+**Step.** Close the reviewed conformance gaps of the integrated feature in an isolated branch
+and integrate the verified result. No contract rule was relaxed, no architecture decision was
+taken and no installation was activated.
+
+**Isolation.** Branch `feature/oip-real-device-conformance` in the worktree
+`/Users/benny/Code/open-industrial-platform-worktrees/real-device-conformance`, created from
+the canonical `main` at `b0096e1`. The branch was built and tested with its own
+`CARGO_TARGET_DIR` (`target/conformance`) and with its own Flutter web build, so neither the
+canonical binary nor the canonical web assets were replaced during development. The branch was
+integrated afterwards with a real `git merge --ff-only`.
+
+**What changed.**
+
+* `crates/oip-server/src/ssh.rs`: the server now reads the size of every offered host key
+  itself (`minimum_key_bits`, `parse_key_report`) and rejects a key below the accepted minimum
+  before it is offered for acceptance or pinned. The attempt fails with the typed fault
+  `SSH_HOST_KEY_TOO_WEAK`; `RequiredRSASize=2048` remains as defence in depth.
+* `crates/oip-server/src/ssh.rs`: only `REMOTE HOST IDENTIFICATION HAS CHANGED` maps to
+  `SSH_HOST_KEY_CHANGED`. An unpinned host now reports `SSH_HOST_KEY_UNKNOWN` and the operator
+  status `host_key_unknown`, which the Flutter panel renders explicitly.
+* `crates/oip-server/src/browser_session.rs`: rejected codes no longer block a valid
+  single-use grant; the rejection accounting stays capped at 16 entries. A full session table
+  no longer consumes an issued grant.
+* `crates/oip-server/src/ssh.rs`: the private SSH work directory is created with the
+  owner-only mode instead of being briefly world readable.
+* `crates/oip-server/tests/browser_session.rs` (new): five Rust integration tests for the
+  exact Origin, the single-use pairing code, the CSRF requirement on every cookie authorized
+  write, a revoked session and a revoked projection stream.
+* `tests/real_device/ssh_fixture.py` and `tests/real_device/acceptance.py`: the owned loopback
+  fixture can serve a deliberately weak 1024 bit RSA host key, and the harness proves that the
+  server rejects it end to end.
+* `docs/architecture/real-device-onboarding.md`: the normative contract now states that the
+  server enforces the key size itself, that a changed and an unknown key are separate
+  outcomes, and that rejected codes never block a valid grant.
+
+**Empirical basis for the fault split.** The classification was verified against the installed
+OpenSSH 10.2 on this machine with an owned loopback fixture: a changed key produces
+`REMOTE HOST IDENTIFICATION HAS CHANGED` together with `Host key verification failed`, while a
+host without a pinned entry produces only `Host key verification failed`. The rotation case
+therefore still maps to `SSH_HOST_KEY_CHANGED` and the acceptance harness still observes
+`host_key_changed`.
+
+**Commands and measured results.** Branch gates in the isolated worktree, then the same gate
+set on the canonical tree after the fast-forward:
+
+```
+cargo fmt --all -- --check                                       # exit 0
+cargo check --locked --workspace --all-targets                    # exit 0
+cargo clippy --locked --workspace --all-targets -- -D warnings    # exit 0
+cargo test --locked --workspace -- --test-threads=1               # 175 passed, 0 failed
+cargo test --locked -p oip-opcua --features open62541-backend      # 37 passed
+cargo test --locked -p oip-opcua --no-default-features --features open62541-backend  # 2 passed
+cargo build --locked -p oip-server --bin oip-server --example mcp_probe   # exit 0
+cargo deny check advisories licenses bans sources                 # advisories/bans/licenses/sources ok
+flutter analyze                                                    # exit 0
+flutter test                                                       # 84 passed
+flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none
+flutter build web --release --web-renderer html --no-web-resources-cdn --pwa-strategy=none --output build/web-html
+python3 tests/real_device/acceptance.py                           # 8 phases PASS, exit 0
+```
+
+**Result.** The canonical tree enforces the RSA minimum host key size itself, distinguishes a
+changed from an unknown host key, cannot lock the operator out of the browser session and
+creates its private SSH work directory with the correct mode from the start. The browser
+session boundary is now covered by Rust tests inside the repository instead of only by the
+external harness.
+
+**Not claimed.** No physical Raspberry-Pi was contacted, the real installation was not
+activated, the personal database is unchanged at schema 6, the native macOS build is still not
+proved and the productive identity, hostile same-UID, durable audit and OT boundaries stay
+open. F4 and F5 remain open as N1b.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
-| `docs/evidence/oip-real-device/test-summary.json` | machine-readable gate results of iteration 1 |
-| `docs/evidence/oip-real-device/review.json` | findings of the delegated read-only source review (F1-F7, R1) |
-| `target/oip-real-device-e2e/report.json` | full acceptance report of the SSH/browser/MCP harness (local, not tracked) |
-| `target/oip-real-device-e2e/browser/report.json` | browser receipt of the actual Flutter onboarding run (local, not tracked) |
-| `target/oip-real-device-e2e/browser/*.png` | screenshots of login, endpoint input, host-key consent, identity confirmation, persisted binding and live monitoring (local, not tracked) |
+| `docs/evidence/oip-real-device/test-summary.json` | machine-readable gate results of iteration 1 and iteration 2 |
+| `docs/evidence/oip-real-device/review.json` | findings of the delegated read-only source review (F1-F7, R1) with their current state |
+| `target/oip-canonical-e2e/report.json` | full acceptance report of the SSH/browser/MCP harness on canonical `main` (local, not tracked) |
+| `target/oip-canonical-e2e/browser/report.json` | browser receipt of the actual Flutter onboarding run (local, not tracked) |
+| `target/oip-canonical-e2e/browser/*.png` | screenshots of login, endpoint input, host-key consent, identity confirmation, persisted binding and live monitoring (local, not tracked) |
+| `target/oip-conformance-e2e/report.json` | the same acceptance report from the isolated branch build before the integration (local, not tracked) |
 | `/Users/benny/Documents/OIP-Handoffs/core-real-onboarding-p0-20261107T025455Z/` | private P0 handoff receipt of the reviewed candidate (unchanged) |
 
 ## 6. Safety boundaries observed
