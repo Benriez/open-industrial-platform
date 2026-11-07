@@ -3,6 +3,8 @@ import '../app/controller.dart';
 import '../design_system/theme.dart';
 import '../models/contracts.dart';
 import '../widgets/components.dart';
+import 'device_onboarding.dart';
+import 'device_connection_panel.dart';
 
 class DevicesPage extends StatefulWidget {
   final OipController controller;
@@ -83,6 +85,18 @@ class _DevicesPageState extends State<DevicesPage> {
         const SectionTitle('Geräte & Dienste',
             'Ein gemeinsames Inventar. Jede Quelle bleibt erkennbar.',
             accent: OipTokens.blue),
+        if (widget.controller.managed)
+          Padding(
+            padding: const EdgeInsets.only(bottom: OipTokens.s4),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                    key: const Key('add-device'),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Gerät hinzufügen'),
+                    onPressed: () =>
+                        showDeviceOnboarding(context, widget.controller))),
+          ),
         GradientCard(
           accent: OipTokens.blue,
           padding: const EdgeInsets.all(OipTokens.s3),
@@ -143,7 +157,9 @@ class _DevicesPageState extends State<DevicesPage> {
         if (devices.isEmpty)
           StateMessage(
             'Keine Geräte gefunden',
-            'Suche oder Filter anpassen.',
+            widget.controller.managed && snapshot.devices.isEmpty
+                ? 'Noch kein Gerät registriert. Inventarregistrierung und Monitoring werden getrennt eingerichtet.'
+                : 'Suche oder Filter anpassen.',
             icon: Icons.search_off_outlined,
             action: TextButton(
               onPressed: () => _update(() {
@@ -457,10 +473,25 @@ class DeviceDetailDialog extends StatefulWidget {
 
 class _DeviceDetailDialogState extends State<DeviceDetailDialog> {
   late final Future<List<Observation>> metrics;
+  late final int contextRevision = widget.controller.contextRevision;
+  void contextChanged() {
+    if (mounted && widget.controller.contextRevision != contextRevision) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(contextChanged);
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
+    widget.controller.addListener(contextChanged);
     metrics = widget.controller.api.deviceMetrics(widget.device.id);
   }
 
@@ -477,7 +508,10 @@ class _DeviceDetailDialogState extends State<DeviceDetailDialog> {
             .where((o) =>
                 device.sourceId != null &&
                 o.sourceId == device.sourceId &&
-                o.entityId == device.id.split(':').last)
+                o.entityId ==
+                    (widget.controller.managed
+                        ? device.id
+                        : device.id.split(':').last))
             .toList() ??
         <Observation>[];
     final width = MediaQuery.sizeOf(context).width;
@@ -522,11 +556,18 @@ class _DeviceDetailDialogState extends State<DeviceDetailDialog> {
               Text(
                   '${device.kind} · ${device.location} · ${device.connection}'),
               const SizedBox(height: OipTokens.s4),
-              const InlineNotice(
-                'Read-only als Standard',
-                'Diese Ansicht verändert weder Gerät noch Adapter. Fehlende Messquellen werden nicht durch Schätzwerte ersetzt.',
+              InlineNotice(
+                widget.controller.managed
+                    ? 'SSH-Abfragen bleiben read-only'
+                    : 'Read-only als Standard',
+                widget.controller.managed
+                    ? 'Verbindung und Monitoring werden über die autorisierte Core-Verwaltung eingerichtet. Auf dem Gerät wird nichts installiert oder konfiguriert. Fehlende Messwerte bleiben unbekannt.'
+                    : 'Diese Ansicht verändert weder Gerät noch Adapter. Fehlende Messquellen werden nicht durch Schätzwerte ersetzt.',
                 icon: Icons.lock_outline,
               ),
+              if (widget.controller.managed)
+                DeviceConnectionPanel(
+                    controller: widget.controller, deviceId: device.id),
               const SizedBox(height: OipTokens.s5),
               const SectionTitle('Fünf unabhängige Statusdimensionen',
                   'Erreichbarkeit ist kein Nachweis eines gesunden Dienstes.'),
@@ -594,8 +635,12 @@ class _DeviceDetailDialogState extends State<DeviceDetailDialog> {
               ),
               const SizedBox(height: OipTokens.s4),
               InlineNotice(
-                'Historie noch nicht verfügbar',
-                'Serverseitiger Historienendpunkt noch nicht implementiert. Der Overview zeigt ausschließlich empfangene Sitzungspunkte.',
+                widget.controller.managed
+                    ? 'Historie in dieser Ansicht noch nicht angebunden'
+                    : 'Historie noch nicht verfügbar',
+                widget.controller.managed
+                    ? 'Autorisierte historische REST-v2-Abfragen existieren im Core. Diese Detailansicht zeigt aktuelle Messwerte; keine Historie wird aus Live-Samples rekonstruiert.'
+                    : 'Serverseitiger Historienendpunkt noch nicht implementiert. Der Overview zeigt ausschließlich empfangene Sitzungspunkte.',
                 icon: Icons.history,
                 color: OipTokens.statusColor(context, 'degraded'),
               ),

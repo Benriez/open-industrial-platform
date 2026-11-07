@@ -134,7 +134,7 @@ class SystemStatus {
   final String? primarySourceId;
   final bool demoControls, simulated;
   final int? lastReceivedMs;
-  final int generatedMs, persisted;
+  final int? generatedMs, persisted;
   final double? cpu, gpu, ram;
   SystemStatus.fromJson(Json j)
       : primarySourceId = j['primary_source_id'] as String?,
@@ -146,8 +146,8 @@ class SystemStatus {
         demoControls = j['demo_controls'] as bool,
         simulated = j['simulated'] as bool,
         lastReceivedMs = j['last_received_ms'] as int?,
-        generatedMs = j['generated_at_ms'] as int,
-        persisted = j['persisted_observations'] as int,
+        generatedMs = j['generated_at_ms'] as int?,
+        persisted = j['persisted_observations'] as int?,
         cpu = (j['cpu_percent'] as num?)?.toDouble(),
         gpu = (j['gpu_percent'] as num?)?.toDouble(),
         ram = (j['ram_percent'] as num?)?.toDouble();
@@ -243,6 +243,41 @@ class Snapshot {
           o.entityId == 'M-01' &&
           o.metricId == 'temperature')
       .firstOrNull;
+
+  /// Authorized v2 projection: absent global health/counts stay unknown.
+  /// Collection events are not UI incidents; no synthetic topology is constructed.
+  factory Snapshot.fromScopedJson(Json j) {
+    final sources = (j['sources'] as List).cast<Json>();
+    final received = sources
+        .map((s) => s['last_received_ms'])
+        .whereType<int>()
+        .toList()
+      ..sort();
+    return Snapshot.fromJson({
+      'core': <String, dynamic>{},
+      'system': {
+        'primary_source_id': null,
+        'scenario': 'not_applicable',
+        'opcua_status': 'unknown',
+        'subscription_status': 'unknown',
+        'network_status': 'unknown',
+        'security_blocker':
+            'RUSTSEC-2023-0071 / RUSTSEC-2023-0089 / RUSTSEC-2024-0449',
+        'demo_controls': false,
+        'simulated': sources.any((s) => s['simulated'] == true),
+        'last_received_ms': received.lastOrNull,
+        'generated_at_ms': null,
+        'persisted_observations': null,
+        'cpu_percent': null,
+        'gpu_percent': null,
+        'ram_percent': null,
+      },
+      'devices': j['devices'],
+      'metrics': j['observations'],
+      'incidents': <dynamic>[],
+      'topology': <dynamic>[],
+    });
+  }
   Snapshot.fromJson(Json j)
       : core = CoreHealthView.fromJson(
             j['core'] is Json ? j['core'] as Json : const {}),
