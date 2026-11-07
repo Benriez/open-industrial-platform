@@ -8,7 +8,15 @@ h,p=port(),port();url=f'http://127.0.0.1:{h}'
 # The legacy web regression reads the rendered text from the document, so it
 # needs the HTML renderer build. The CanvasKit build stays the artifact of the
 # real SSH onboarding run. The served directory is recorded in the result.
-WEB=os.environ.get('OIP_WEB_DIR') or str(UI/('build/web-html' if (UI/'build/web-html').is_dir() else 'build/web'))
+WEB=os.environ.get('OIP_WEB_DIR')
+if not WEB:
+ # The legacy web regression reads the rendered text from the document. Without
+ # the HTML renderer build the harness would serve a CanvasKit build whose text
+ # is painted on a canvas and report a product failure that is really a missing
+ # artifact.
+ if not (UI/'build/web-html').is_dir():
+  raise SystemExit('apps/flutter/build/web-html is missing; build the HTML renderer first: flutter build web --release --web-renderer html --no-web-resources-cdn --pwa-strategy=none --output build/web-html')
+ WEB=str(UI/'build/web-html')
 with (OUT/'ui-backend.log').open('w') as log:core=subprocess.Popen([os.environ.get('OIP_SERVER_BIN',str(ROOT/'target/debug/oip-server')),'--demo','--web-dir',WEB,'--port',str(h),'--opcua-port',str(p),'--database',str(RUN/'demo.sqlite')],cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
 results=[]
 def ready():

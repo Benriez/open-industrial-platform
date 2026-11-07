@@ -2,7 +2,9 @@
 """Migrate a genuinely generated OIP-007 schema2 DB using the preserved baseline binary."""
 import hashlib,json,os,pathlib,signal,socket,subprocess,time
 R=pathlib.Path(__file__).resolve().parents[2];D=pathlib.Path('/private/tmp')/('oip8-legacy-'+str(os.getpid()));D.mkdir(mode=0o700);O=R/'target/oip008-legacy';O.mkdir(exist_ok=True)
-BASE=pathlib.Path('/Users/benny/Code/open-industrial-platform/target/debug/oip-server');NEW=R/'target/debug/oip-server';SIM=R/'target/debug/oip-simulated-server';SQL='/opt/homebrew/opt/sqlite/bin/sqlite3';DB=D/'legacy.sqlite';P=[];report={'baseline_binary_sha256':hashlib.sha256(BASE.read_bytes()).hexdigest()}
+# The schema2 writer has to be a protected OIP-007 binary. The canonical binary is only the
+# default so that an accidental run without the protected baseline stays visibly wrong.
+BASE=pathlib.Path(os.environ.get('OIP007_BASELINE_BINARY','/Users/benny/Code/open-industrial-platform/target/debug/oip-server'));NEW=R/'target/debug/oip-server';SIM=R/'target/debug/oip-simulated-server';SQL='/opt/homebrew/opt/sqlite/bin/sqlite3';DB=D/'legacy.sqlite';P=[];report={'baseline_binary_sha256':hashlib.sha256(BASE.read_bytes()).hexdigest()}
 def port():
  with socket.socket() as s:s.bind(('127.0.0.1',0));return s.getsockname()[1]
 def start(name,args):
