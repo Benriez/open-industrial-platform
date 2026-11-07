@@ -152,10 +152,30 @@ try {
   }
   assert(seenOverview.size===wantedOverview.length,'the managed overview does not show the authorized source and its measurement');
   await capture('08-managed-overview');
+  // The network view must show the authorized placement of the session. The
+  // scoped projection carries no topology, so a loading state would promise
+  // data that never arrives.
+  await page.getByRole('button',{name:'Navigation Netzwerk & VPN',exact:true}).click();
+  await page.waitForTimeout(1200);
+  const networkTop=await page.locator('body').ariaSnapshot();
+  assert(!networkTop.includes('Topologie wird geladen'),'the network view still shows a loading state');
+  assert(!networkTop.includes('Remote Site'),'the demo zones are still rendered in the managed network view');
+  const wantedNetwork=['Autorisierte Platzierung','org-a · infra-a1 · site-a1','Quelle '+observed.connection.source_id];
+  const seenNetwork=new Set();
+  for(let i=0;i<40;i++){
+    const snapshot=await page.locator('body').ariaSnapshot();
+    for(const w of wantedNetwork)if(snapshot.includes(w))seenNetwork.add(w);
+    if(seenNetwork.size===wantedNetwork.length)break;
+    await page.mouse.move(700,600);
+    await page.mouse.wheel(0,400);
+    await page.waitForTimeout(150);
+  }
+  assert(seenNetwork.size===wantedNetwork.length,'the network view does not show the authorized placement');
+  await capture('09-managed-network');
   await page.getByRole('button',{name:'Operator abmelden',exact:true}).click();
   await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_overview:{authorized_source:'SSH host browser-existing',source_registry_section:true,measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,demo_coordinates_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
+  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_overview:{authorized_source:'SSH host browser-existing',source_registry_section:true,measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,demo_coordinates_absent:true},rendered_network:{authorized_placement:'org-a · infra-a1 · site-a1',source:observed.connection.source_id,loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
 } catch(e) {
   await writeFile(resolve(out,'ssh-requests.json'),JSON.stringify(sshRequests,null,2));
   await capture('failure');

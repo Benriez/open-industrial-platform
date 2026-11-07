@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:oip_dashboard/core/sse.dart';
 import 'package:oip_dashboard/models/contracts.dart';
 import 'package:oip_dashboard/services/api.dart';
@@ -172,4 +174,142 @@ class FakeApi implements OipApi {
     closeCalls++;
     disconnect();
   }
+}
+
+/// One measured value of the authorized projection, exactly as the Core
+/// serializes it.
+Json scopedObservation({
+  required String metricId,
+  required Object? value,
+  Object unit = 'none',
+  int sourceMs = 1700000000000,
+  int receivedMs = 1700000000100,
+  String freshness = 'fresh',
+  String quality = 'good',
+  String entityId = 'device-a',
+  String sourceId = 'source-ssh',
+}) =>
+    {
+      'entity_id': entityId,
+      'data_source_id': sourceId,
+      'metric_id': metricId,
+      'value': value,
+      'unit': unit,
+      'quality': quality,
+      'freshness': freshness,
+      'timestamps': {
+        'source': sourceMs,
+        'server': null,
+        'received': receivedMs,
+      },
+      'status_code': 0,
+      'collection_error': null,
+      'simulation_origin': null,
+    };
+
+/// The scoped projection of a session that may see exactly one SSH source.
+///
+/// The shape is the payload of `GET /api/v2/snapshot`: the source registry
+/// with the health the Core measured, the device of the source, the
+/// observations that were received and the placement of the source.
+Json scopedSnapshot({int sourceMs = 1700000000000, int memory = 17179869184}) => {
+      'sources': [
+        {
+          'id': 'source-ssh',
+          'name': 'SSH host device-a',
+          'entity_id': 'device-a',
+          'simulated': false,
+          'reachability': 'reachable',
+          'connection': 'connected',
+          'service': 'healthy',
+          'freshness': 'fresh',
+          'validity': 'valid',
+          'last_received_ms': sourceMs + 100,
+          'accepted': 12,
+          'duplicates': 0,
+          'out_of_order': 0,
+          'rejected': 0,
+          'reconnect_attempts': 0,
+          'dropped': 0,
+          'last_error': null,
+        }
+      ],
+      'devices': [
+        {
+          'id': 'device-a',
+          'is_faulted': false,
+          'data_source_id': 'source-ssh',
+          'name': 'SSH device',
+          'kind': 'server',
+          'location': 'site-a1',
+          'connection': 'SSH',
+          'simulated': false,
+          'health': {
+            'reachability': 'reachable',
+            'vpn_transport': 'not_applicable',
+            'agent_availability': 'not_applicable',
+            'service_health': 'not_evaluated',
+            'telemetry_freshness': 'fresh'
+          }
+        }
+      ],
+      'observations': [
+        scopedObservation(
+            metricId: 'host.os', value: {'text': 'Darwin'}, sourceMs: sourceMs),
+        scopedObservation(
+            metricId: 'host.memory_total_bytes',
+            value: {'unsigned_integer': memory},
+            unit: {'custom': 'bytes'},
+            sourceMs: sourceMs),
+        scopedObservation(
+            metricId: 'host.uptime_seconds',
+            value: {'float': 12345.5},
+            unit: {'custom': 'seconds'},
+            sourceMs: sourceMs),
+      ],
+      'events': <dynamic>[],
+      'locations': [
+        {
+          'organization_id': 'org-a',
+          'infrastructure_id': 'infra-a1',
+          'site_id': 'site-a1',
+          'source_id': 'source-ssh'
+        }
+      ],
+    };
+
+/// An API client that serves the scoped projection of a managed session.
+class ManagedApi extends RestApi {
+  final StreamController<ServerEvent> events;
+  ManagedApi(http.Client client, this.events)
+      : super(Uri.parse('http://127.0.0.1:8080'), client: client);
+  @override
+  Stream<ServerEvent> stream() => events.stream;
+}
+
+/// A client whose session is valid exactly once, so the controller stops
+/// instead of reconnecting forever.
+http.Client managedClient(Json Function() snapshot) {
+  var sessions = 0;
+  return MockClient((request) async {
+    if (request.url.path.endsWith('/session')) {
+      sessions++;
+      return http.Response(
+          jsonEncode(sessions == 1
+              ? {
+                  'authenticated': true,
+                  'principal_id': 'bound-by-server',
+                  'csrf_token': null,
+                  'mode': 'local_operator_session'
+                }
+              : {
+                  'authenticated': false,
+                  'principal_id': null,
+                  'csrf_token': null,
+                  'mode': 'login_required'
+                }),
+          200);
+    }
+    return http.Response(jsonEncode(snapshot()), 200);
+  });
 }

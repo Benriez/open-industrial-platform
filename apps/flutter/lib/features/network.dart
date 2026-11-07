@@ -33,15 +33,22 @@ class _NetworkPageState extends State<NetworkPage> {
   @override
   Widget build(BuildContext context) {
     final snapshot = widget.controller.snapshot!;
-    final zones = <String>[
-      'LAN',
-      'Tailnet',
-      'Remote Site',
-      ...snapshot.devices
-          .map((device) => device.location)
-          .where((zone) => !['LAN', 'Tailnet', 'Remote Site'].contains(zone))
-          .toSet(),
-    ];
+    final managed = widget.controller.managed;
+    // The legacy demo groups the nodes in fixed network zones. The managed
+    // mode knows no such zones: the authorized placement of the session is
+    // the site of the registered node.
+    final zones = managed
+        ? (snapshot.devices.map((device) => device.location).toSet().toList()
+          ..sort())
+        : <String>[
+            'LAN',
+            'Tailnet',
+            'Remote Site',
+            ...snapshot.devices
+                .map((device) => device.location)
+                .where((zone) => !['LAN', 'Tailnet', 'Remote Site'].contains(zone))
+                .toSet(),
+          ];
     final zoneDevices = {
       for (final zone in zones)
         zone:
@@ -125,12 +132,15 @@ class _NetworkPageState extends State<NetworkPage> {
                           ),
                         ),
                       ),
-                      for (var column = 0; column < zones.length; column++)
+                        for (var column = 0; column < zones.length; column++)
                         _ZoneBand(
                           left: 12 + column * columnWidth,
                           width: 260,
                           height: canvasHeight - 24,
                           zone: zones[column],
+                          zoneLabel: managed
+                              ? '${zoneDevices[zones[column]]!.length} Geräte · Standort'
+                              : null,
                           count: zoneDevices[zones[column]]!.length,
                           status: _zoneStatus(zones[column],
                               zoneDevices[zones[column]]!, snapshot),
@@ -244,11 +254,38 @@ class _NetworkPageState extends State<NetworkPage> {
                 ? 'Alle Latenzen und Verluste in dieser Ansicht sind Demo-Fixtures.'
                 : 'Latenzen und Verluste werden ausschließlich aus API-Pfaden angezeigt.'),
         if (snapshot.topology.isEmpty)
-          const StateMessage('Topologie wird geladen',
-              'Der Live-Stream liefert das gemeinsame Rust-Modell.'),
+          managed
+              ? const InlineNotice(
+                  'Keine Verbindungspfade in der autorisierten Projektion',
+                  'Die Projektion der Sitzung enthält keine Topologie. Es wird kein Pfad geraten und keine Erreichbarkeit eingefärbt.',
+                  icon: Icons.hub_outlined,
+                )
+              : const StateMessage('Topologie wird geladen',
+                  'Der Live-Stream liefert das gemeinsame Rust-Modell.'),
         ...snapshot.topology
             .map((link) => _link(context, link, snapshot.devices)),
         const SizedBox(height: OipTokens.s4),
+        if (managed) ...[
+          const SectionTitle(
+              'Autorisierte Platzierung',
+              'Organisation, Infrastruktur, Standort und Quelle der Sitzung · keine erfundenen Verbindungen',
+              accent: OipTokens.cyan),
+          if (snapshot.locations.isEmpty)
+            const InlineNotice(
+              'Keine Platzierung geliefert',
+              'Die autorisierte Projektion nennt keine Platzierung. Das ist kein Nachweis einer fehlenden Infrastruktur.',
+              icon: Icons.account_tree_outlined,
+            )
+          else
+            for (final location in snapshot.locations)
+              _PlacementRow(
+                location: location,
+                devices: snapshot.devices
+                    .where((device) => device.location == location.siteId)
+                    .toList(),
+              ),
+          const SizedBox(height: OipTokens.s4),
+        ],
         const Panel(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,6 +384,10 @@ class _NetworkPageState extends State<NetworkPage> {
 class _ZoneBand extends StatelessWidget {
   final double left, width, height;
   final String zone, status;
+
+  /// The caption of the band. The legacy demo names a logical zone; the
+  /// managed mode names the authorized site.
+  final String? zoneLabel;
   final int count;
   final Color accent;
   const _ZoneBand({
@@ -357,6 +398,7 @@ class _ZoneBand extends StatelessWidget {
     required this.count,
     required this.status,
     required this.accent,
+    this.zoneLabel,
   });
 
   @override
@@ -391,7 +433,7 @@ class _ZoneBand extends StatelessWidget {
                               ?.copyWith(
                                   color: OipTokens.readableAccent(
                                       context, accent))),
-                      Text('$count Geräte · logische Zone',
+                      Text(zoneLabel ?? '$count Geräte · logische Zone',
                           style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ),
@@ -468,6 +510,45 @@ class _TopologyNode extends StatelessWidget {
       ),
     );
   }
+}
+
+/// One authorized placement of the session.
+///
+/// The projection delivers the identifiers of the placement. Nothing is
+/// derived from a name, an address or a device identifier, and no link
+/// between two placements is invented.
+class _PlacementRow extends StatelessWidget {
+  final ScopedLocation location;
+  final List<Device> devices;
+  const _PlacementRow({required this.location, required this.devices});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: OipTokens.s3),
+        child: Panel(
+          padding: const EdgeInsets.all(OipTokens.s4),
+          accent: OipTokens.cyan,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                  '${location.organizationId} · ${location.infrastructureId} · ${location.siteId}',
+                  style: Theme.of(context).textTheme.titleSmall),
+              Text('Quelle ${location.sourceId}',
+                  style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: OipTokens.s2),
+              Text(
+                devices.isEmpty
+                    ? 'Kein registriertes Gerät an diesem Standort.'
+                    : devices
+                        .map((device) =>
+                            '${device.name} · ${known(device.health.reachability)}')
+                        .join(' · '),
+                style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ),
+        ),
+      );
 }
 
 class _TopologyPainter extends CustomPainter {

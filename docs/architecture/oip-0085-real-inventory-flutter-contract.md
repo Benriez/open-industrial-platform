@@ -30,6 +30,14 @@ The gap limit of a measured series follows the cadence the series itself showed:
 
 `apps/flutter/test/managed_overview_test.dart` proves that the managed overview renders the authorized source, its real health, its placement and its real measurement, that the demo coordinates are gone and that the controller measures one series per authorized source. `apps/flutter/test/browser_onboarding.mjs` proves it against the actual Core: the rendered overview is compared with the source registry and the measurement that the Core received over SSH.
 
+## The managed network view shows the authorized placement
+
+The network view shows the registered nodes and the paths that the API delivered. The scoped projection of a managed session carries no topology at all, so a loading state for the topology would promise data that never arrives. The managed network view therefore states that fact, draws no path, and colours no reachability green. The zones of the legacy demo are not shown in the managed mode; the zone of a node is the authorized site of the session.
+
+The authorized placement of the session is shown with the identifiers the Core delivered for it: organization, infrastructure, site and source, with the registered nodes of that site. Nothing is derived from a name, an address or a device identifier, and no link between two placements is invented.
+
+`apps/flutter/test/managed_network_test.dart` proves that the managed network view shows the authorized placement and the registered node, that it shows no loading state and that the demo zones are gone. `apps/flutter/test/browser_onboarding.mjs` proves it against the actual Core.
+
 Existing v1/SSE projections include authorized manual devices with empty telemetry and unknown status. SystemStatus.primary_source_id is nullable when no source exists; prior source-bearing responses retain the same string value. The old UI must handle this in its future integration, not invent a fallback primary. Default normal core does not automatically serve old webassets. Explicit isolated demo UI regression remains supported separately.
 
 Errors: invalid schema/type/filter/page → structured InvalidInput; missing/foreign IDs → generic inaccessible; no grant → denied. Never show foreign names through errors or counters. Plan/apply revision conflict requires reread and deliberate retry, never blind overwrite. No inventory SSE change feed/replay is added: existing SSE scoped snapshots and authenticated REST resync remain. Read-only MCP/REST share the same ApplicationServices; UI filtering is never authorization.
