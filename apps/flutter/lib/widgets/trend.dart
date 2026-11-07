@@ -3,7 +3,17 @@ import 'package:flutter/material.dart';
 import '../models/contracts.dart';
 import '../design_system/theme.dart';
 
-bool continuesTrend(Observation? previous, Observation current) {
+bool continuesTrend(Observation? previous, Observation current) =>
+    continuesSeries(previous, current, 2500);
+
+/// The continuity rule of a measured series.
+///
+/// The legacy demo publishes every second and connects points that are at
+/// most 2.5 s apart. A real source publishes on its own cadence, so the limit
+/// follows the cadence the series itself showed: a point that arrives later
+/// than one and a half times the median interval of the series is a gap and
+/// is not connected over it.
+bool continuesSeries(Observation? previous, Observation current, int gapLimit) {
   if (current.number == null || current.quality != 'good') return false;
   if (previous == null ||
       current.sourceMs == null ||
@@ -13,12 +23,56 @@ bool continuesTrend(Observation? previous, Observation current) {
     return false;
   }
   final elapsed = current.sourceMs! - previous.sourceMs!;
-  return elapsed > 0 && elapsed <= 2500;
+  return elapsed > 0 && elapsed <= gapLimit;
+}
+
+/// The gap limit of a measured series.
+///
+/// The limit follows the cadence the series showed: the median interval
+/// between two received points, with a tolerance of half of it. The floor is
+/// the limit of the legacy demo, so the demo behaviour stays exactly as it
+/// was.
+int seriesGapLimit(List<Observation> samples) {
+  final intervals = <int>[];
+  for (var i = 1; i < samples.length; i++) {
+    final previous = samples[i - 1].sourceMs;
+    final current = samples[i].sourceMs;
+    if (previous != null && current != null && current > previous) {
+      intervals.add(current - previous);
+    }
+  }
+  if (intervals.isEmpty) return 2500;
+  intervals.sort();
+  final median = intervals[intervals.length ~/ 2];
+  final limit = (median * 3) ~/ 2;
+  return limit > 2500 ? limit : 2500;
 }
 
 class TrendChart extends StatelessWidget {
   final List<Observation> samples;
-  const TrendChart(this.samples, {super.key});
+
+  /// The name of the measured series. The legacy demo measures the
+  /// temperature; a real source names the metric it measured.
+  final String title;
+
+  /// The unit of the measured series.
+  final String unit;
+
+  /// The unit as it is read out.
+  final String semanticUnit;
+
+  /// The caption that names the measured series.
+  final String caption;
+
+  /// Whether the gap limit follows the cadence of the measured series.
+  final bool adaptiveGap;
+  const TrendChart(this.samples,
+      {super.key,
+      this.title = 'Temperaturverlauf',
+      this.unit = '°C',
+      this.semanticUnit = 'Grad Celsius',
+      this.caption = 'Temperatur · M-01',
+      this.adaptiveGap = false});
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +82,10 @@ class TrendChart extends StatelessWidget {
         numbers.isEmpty ? null : numbers.reduce((a, b) => a < b ? a : b);
     final max =
         numbers.isEmpty ? null : numbers.reduce((a, b) => a > b ? a : b);
+    final limit = adaptiveGap ? seriesGapLimit(samples) : 2500;
     return Semantics(
       label:
-          'Temperaturverlauf, ${samples.length} empfangene Messpunkte, Minimum ${min?.toStringAsFixed(1) ?? 'unbekannt'}, Maximum ${max?.toStringAsFixed(1) ?? 'unbekannt'} Grad Celsius',
+          '$title, ${samples.length} empfangene Messpunkte, Minimum ${min?.toStringAsFixed(1) ?? 'unbekannt'}, Maximum ${max?.toStringAsFixed(1) ?? 'unbekannt'} $semanticUnit',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -45,6 +100,7 @@ class TrendChart extends StatelessWidget {
                 Theme.of(context).colorScheme.outline,
                 Theme.of(context).textTheme.bodySmall ??
                     const TextStyle(fontSize: 11),
+                limit,
               ),
             ),
           ),
@@ -55,14 +111,14 @@ class TrendChart extends StatelessWidget {
                 child: Text(
                   min == null
                       ? 'Warte auf Messwerte'
-                      : 'Min ${min.toStringAsFixed(1)} °C',
+                      : 'Min ${min.toStringAsFixed(1)} $unit',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
               const SizedBox(width: OipTokens.s2),
               Expanded(
                 child: Text(
-                  max == null ? '—' : 'Max ${max.toStringAsFixed(1)} °C',
+                  max == null ? '—' : 'Max ${max.toStringAsFixed(1)} $unit',
                   textAlign: TextAlign.right,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
@@ -74,8 +130,7 @@ class TrendChart extends StatelessWidget {
             spacing: OipTokens.s3,
             runSpacing: OipTokens.s1,
             children: [
-              Text('Temperatur · M-01',
-                  style: Theme.of(context).textTheme.bodySmall),
+              Text(caption, style: Theme.of(context).textTheme.bodySmall),
               Text('${samples.length}/60 Sitzungspunkte · virtuelle Quellzeit',
                   style: Theme.of(context).textTheme.bodySmall),
             ],
@@ -90,8 +145,9 @@ class _TrendPainter extends CustomPainter {
   final List<Observation> samples;
   final Color color, accent, grid;
   final TextStyle labelStyle;
+  final int gapLimit;
   _TrendPainter(List<Observation> values, this.color, this.accent, this.grid,
-      this.labelStyle)
+      this.labelStyle, this.gapLimit)
       : samples = List.of(values);
 
   @override
@@ -150,7 +206,7 @@ class _TrendPainter extends CustomPainter {
     Offset? lastPoint;
     for (var i = 0; i < samples.length; i++) {
       final sample = samples[i];
-      if (!continuesTrend(previous, sample)) pen = false;
+      if (!continuesSeries(previous, sample, gapLimit)) pen = false;
       final number = sample.number;
       if (number == null || sample.quality != 'good') {
         previous = sample;
@@ -211,5 +267,6 @@ class _TrendPainter extends CustomPainter {
       accent != old.accent ||
       grid != old.grid ||
       labelStyle != old.labelStyle ||
+      gapLimit != old.gapLimit ||
       !listEquals(samples, old.samples);
 }

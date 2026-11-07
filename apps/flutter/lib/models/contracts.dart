@@ -224,6 +224,64 @@ class CoreHealthView {
             : null;
 }
 
+/// One source of the authorized source registry.
+///
+/// The Core delivers the health of every source the session may see. The
+/// overview shows exactly these; no source is preferred and none is invented.
+class ScopedSource {
+  final String id, name, entityId;
+  final bool simulated;
+  final String reachability, connection, service, freshness, validity;
+  final int? lastReceivedMs;
+  final int accepted, duplicates, outOfOrder, rejected, reconnectAttempts, dropped;
+  final String? lastError;
+  ScopedSource.fromJson(Json j)
+      : id = j['id'] as String,
+        name = j['name'] as String,
+        entityId = j['entity_id'] as String,
+        simulated = j['simulated'] as bool,
+        reachability = j['reachability'] as String,
+        connection = j['connection'] as String,
+        service = j['service'] as String,
+        freshness = j['freshness'] as String,
+        validity = j['validity'] as String,
+        lastReceivedMs = j['last_received_ms'] as int?,
+        accepted = j['accepted'] as int,
+        duplicates = j['duplicates'] as int,
+        outOfOrder = j['out_of_order'] as int,
+        rejected = j['rejected'] as int,
+        reconnectAttempts = j['reconnect_attempts'] as int,
+        dropped = j['dropped'] as int,
+        lastError = j['last_error'] as String?;
+}
+
+/// The placement of a source in the authorized hierarchy.
+///
+/// The projection carries the identifiers of the placement, never a name of
+/// a scope that the session may not see.
+class ScopedLocation {
+  final String organizationId, infrastructureId, siteId, sourceId;
+  ScopedLocation.fromJson(Json j)
+      : organizationId = j['organization_id'] as String,
+        infrastructureId = j['infrastructure_id'] as String,
+        siteId = j['site_id'] as String,
+        sourceId = j['source_id'] as String;
+}
+
+/// One measured series of the live projection.
+///
+/// A series is identified by the source, the entity and the metric it
+/// measures. The legacy demo has exactly one; the managed mode has one per
+/// authorized source, so no source is preferred and no fallback primary is
+/// invented.
+class TrendSeries {
+  final String sourceId, entityId, metricId, unit;
+  final List<Observation> samples;
+  TrendSeries(this.sourceId, this.entityId, this.metricId, this.unit,
+      this.samples);
+  String get key => '$sourceId|$entityId|$metricId';
+}
+
 class Snapshot {
   final CoreHealthView core;
   final SystemStatus system;
@@ -231,6 +289,8 @@ class Snapshot {
   final List<Observation> metrics;
   final List<Incident> incidents;
   final List<NetworkLink> topology;
+  final List<ScopedSource> sources;
+  final List<ScopedLocation> locations;
   String? get primarySourceId =>
       system.primarySourceId ??
       (metrics.map((o) => o.sourceId).toSet().length == 1
@@ -243,6 +303,14 @@ class Snapshot {
           o.entityId == 'M-01' &&
           o.metricId == 'temperature')
       .firstOrNull;
+
+  /// The placement of a source in the authorized hierarchy.
+  ScopedLocation? locationOf(String sourceId) {
+    for (final location in locations) {
+      if (location.sourceId == sourceId) return location;
+    }
+    return null;
+  }
 
   /// Authorized v2 projection: absent global health/counts stay unknown.
   /// Collection events are not UI incidents; no synthetic topology is constructed.
@@ -276,6 +344,8 @@ class Snapshot {
       'metrics': j['observations'],
       'incidents': <dynamic>[],
       'topology': <dynamic>[],
+      'sources': j['sources'],
+      'locations': j['locations'] ?? <dynamic>[],
     });
   }
   Snapshot.fromJson(Json j)
@@ -293,6 +363,12 @@ class Snapshot {
             .toList(),
         topology = (j['topology'] as List)
             .map((v) => NetworkLink.fromJson(v as Json))
+            .toList(),
+        sources = ((j['sources'] as List?) ?? const [])
+            .map((v) => ScopedSource.fromJson(v as Json))
+            .toList(),
+        locations = ((j['locations'] as List?) ?? const [])
+            .map((v) => ScopedLocation.fromJson(v as Json))
             .toList();
 }
 

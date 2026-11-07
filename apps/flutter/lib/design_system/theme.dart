@@ -108,6 +108,8 @@ abstract final class OipTokens {
       case 'offline':
       case 'unreachable':
       case 'critical':
+      case 'disconnected':
+      case 'invalid':
         return dark ? red : const Color(0xffb32635);
       case 'degraded':
       case 'stale':
@@ -126,6 +128,8 @@ abstract final class OipTokens {
       case 'reachable':
       case 'fresh':
       case 'good':
+      case 'healthy':
+      case 'valid':
         return dark ? cyan : const Color(0xff08766f);
       case 'info':
       default:
@@ -171,6 +175,10 @@ abstract final class OipTokens {
         'waiting' => 'Wartet auf Daten',
         'reconnecting' => 'Verbindung wird aufgebaut',
         'connected' => 'Verbunden',
+        'disconnected' => 'Getrennt',
+        'healthy' => 'Gesund',
+        'valid' => 'Gültig',
+        'invalid' => 'Ungültig',
         'active' => 'Aktiv',
         'fresh' => 'Aktuell',
         'stale' => 'Veraltet',

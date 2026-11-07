@@ -134,10 +134,28 @@ try {
   const local=await readFile(resolve(process.env.OIP_WEB_DIR,'main.dart.js'));
   assert.equal(createHash('sha256').update(loaded).digest('hex'),createHash('sha256').update(local).digest('hex'));
   await page.getByRole('button',{name:'Details schließen',exact:true}).click();
+  // The managed overview must show the authorized source registry and the
+  // measurement that the Core received, not the coordinates of the demo.
+  await page.getByRole('button',{name:'Navigation Übersicht',exact:true}).click();
+  await page.waitForTimeout(1500);
+  const top=await page.locator('body').ariaSnapshot();
+  assert(!top.includes('Temperatur M-01'),'the demo coordinates are still rendered in the managed overview');
+  const wantedOverview=['Autorisierte Infrastruktur','SSH host browser-existing','host.memory_total_bytes',String(memory.value.unsigned_integer)];
+  const seenOverview=new Set();
+  for(let i=0;i<40;i++){
+    const snapshot=await page.locator('body').ariaSnapshot();
+    for(const w of wantedOverview)if(snapshot.includes(w))seenOverview.add(w);
+    if(seenOverview.size===wantedOverview.length)break;
+    await page.mouse.move(700,600);
+    await page.mouse.wheel(0,400);
+    await page.waitForTimeout(150);
+  }
+  assert(seenOverview.size===wantedOverview.length,'the managed overview does not show the authorized source and its measurement');
+  await capture('08-managed-overview');
   await page.getByRole('button',{name:'Operator abmelden',exact:true}).click();
   await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
+  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_overview:{authorized_source:'SSH host browser-existing',source_registry_section:true,measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,demo_coordinates_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
 } catch(e) {
   await writeFile(resolve(out,'ssh-requests.json'),JSON.stringify(sshRequests,null,2));
   await capture('failure');

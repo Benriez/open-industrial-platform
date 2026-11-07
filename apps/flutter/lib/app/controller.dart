@@ -22,7 +22,7 @@ class OipController extends ChangeNotifier {
     onboardingScope = scope;
     contextRevision++;
     // Caller OIP-009 owns selection. Never retain a previous context's display cache.
-    history.clear();
+    series.clear();
     snapshot = null;
     reconnect();
   }
@@ -30,7 +30,7 @@ class OipController extends ChangeNotifier {
   Future<void> login(String code) async {
     browserSession = await management!.login(code);
     contextRevision++;
-    history.clear();
+    series.clear();
     snapshot = null;
     error = null;
     reconnect();
@@ -47,7 +47,7 @@ class OipController extends ChangeNotifier {
       failure = apiErrorMessage(e,
           'Lokale Ansicht abgemeldet. Serverseitige Abmeldung nicht bestätigt; die Sitzung läuft spätestens nach 30 Minuten ab.');
     } finally {
-      history.clear();
+      series.clear();
       snapshot = null;
       browserSession = null;
       connection = 'login_required';
@@ -62,7 +62,22 @@ class OipController extends ChangeNotifier {
   bool _closed = false;
   int _epoch = 0;
   DateTime? lastMessage;
-  final List<Observation> history = [];
+
+  /// The measured series of the live projection.
+  ///
+  /// The legacy demo measures exactly one series. The managed mode measures
+  /// one series per authorized source, so no source is preferred and no
+  /// fallback primary is invented.
+  final List<TrendSeries> series = [];
+
+  /// The first measured series. The legacy view and the regression tests use
+  /// it; it stays empty while no measurement was received.
+  List<Observation> get history =>
+      series.isEmpty ? const <Observation>[] : series.first.samples;
+
+  /// The key the current series belong to. A change of the key starts a new
+  /// display window, exactly like a change of the primary source did.
+  String? _seriesKey;
   OipController(
     this.api, {
     this.retryDelay = const Duration(seconds: 1),
@@ -87,12 +102,12 @@ class OipController extends ChangeNotifier {
               previousPrincipal != browserSession?.principalId) {
             contextRevision++;
             snapshot = null;
-            history.clear();
+            series.clear();
           }
           if (managed && !browserSession!.authenticated) {
             contextRevision++;
             snapshot = null;
-            history.clear();
+            series.clear();
             connection = 'login_required';
             error = null;
             notifyListeners();
@@ -102,7 +117,7 @@ class OipController extends ChangeNotifier {
         final initial = await api.initial();
         if (_closed || epoch != _epoch) return;
         // A REST resync starts a new display window; SSE has no full replay.
-        history.clear();
+        series.clear();
         _accept(initial);
         notifyListeners();
         await for (final event in api.stream().timeout(streamTimeout)) {
@@ -167,25 +182,109 @@ class OipController extends ChangeNotifier {
   }
 
   void _accept(Snapshot value) {
-    if (snapshot?.primarySourceId != value.primarySourceId) history.clear();
+    final key = _seriesKeyOf(value);
+    if (_seriesKey != key) {
+      _seriesKey = key;
+      series.clear();
+    }
     snapshot = value;
-    for (final o in value.metrics.where((o) =>
-        o.sourceId == value.primarySourceId &&
-        value.primarySourceId != null &&
-        o.entityId == 'M-01' &&
-        o.metricId == 'temperature' &&
-        o.freshness == 'fresh' &&
-        o.sourceMs != null)) {
-      if (history.isNotEmpty && o.sourceMs! < history.last.sourceMs!) {
-        history.clear();
-      }
-      if (history.isEmpty ||
-          history.last.sourceMs != o.sourceMs ||
-          history.last.value != o.value) {
-        history.add(o);
-        if (history.length > 60) history.removeAt(0);
+    _accumulate(value);
+  }
+
+  /// The key the measured series belong to.
+  ///
+  /// The legacy demo measures the temperature of its primary source; the
+  /// managed mode measures every authorized source of the session.
+  String _seriesKeyOf(Snapshot value) {
+    if (!managed) return value.primarySourceId ?? '';
+    final ids = value.sources.map((s) => s.id).toList()..sort();
+    return ids.join('|');
+  }
+
+  /// The measurements of the projection that may extend a series.
+  ///
+  /// The legacy rule stays exactly as it was: the temperature of the entity
+  /// `M-01` of the primary source. The managed rule takes the numeric
+  /// measurements of the authorized sources; a stale or unknown measurement
+  /// never extends a series.
+  List<Observation> _measurements(Snapshot value) => managed
+      ? value.metrics
+          .where((o) =>
+              o.sourceId != null &&
+              o.freshness == 'fresh' &&
+              o.sourceMs != null &&
+              o.number != null)
+          .toList()
+      : value.metrics
+          .where((o) =>
+              o.sourceId == value.primarySourceId &&
+              value.primarySourceId != null &&
+              o.entityId == 'M-01' &&
+              o.metricId == 'temperature' &&
+              o.freshness == 'fresh' &&
+              o.sourceMs != null)
+          .toList();
+
+  void _accumulate(Snapshot value) {
+    final groups = <String, List<Observation>>{};
+    for (final o in _measurements(value)) {
+      groups
+          .putIfAbsent('${o.sourceId}|${o.entityId}|${o.metricId}', () => [])
+          .add(o);
+    }
+    final chosen = _chosen(groups);
+    final bySource = <String, String>{};
+    for (final group in chosen) {
+      bySource[group.sourceId] = group.key;
+      final existing = series.where((s) => s.key == group.key).firstOrNull;
+      final target = existing ??
+          TrendSeries(group.sourceId, group.entityId, group.metricId,
+              group.unit, <Observation>[]);
+      if (existing == null) series.add(target);
+      for (final o in group.samples) {
+        // A source time that moves backwards starts a new display window.
+        if (target.samples.isNotEmpty &&
+            o.sourceMs! < target.samples.last.sourceMs!) {
+          target.samples.clear();
+        }
+        if (target.samples.isEmpty ||
+            target.samples.last.sourceMs != o.sourceMs ||
+            target.samples.last.value != o.value) {
+          target.samples.add(o);
+          if (target.samples.length > 60) target.samples.removeAt(0);
+        }
       }
     }
+    // A source shows exactly one series. A series of a source that is not
+    // measured in this projection keeps its received points.
+    final keep = bySource.values.toSet();
+    series.removeWhere(
+        (s) => bySource.containsKey(s.sourceId) && !keep.contains(s.key));
+  }
+
+  /// The series that are drawn.
+  ///
+  /// The legacy demo measures one series. The managed mode draws one series
+  /// per authorized source: the metric with the most received samples, a tie
+  /// is broken by the metric identifier. No source and no metric of another
+  /// scope is preferred.
+  List<_SeriesGroup> _chosen(Map<String, List<Observation>> groups) {
+    final result = <_SeriesGroup>[];
+    final bySource = <String, List<_SeriesGroup>>{};
+    for (final entry in groups.entries) {
+      final parts = entry.key.split('|');
+      final group = _SeriesGroup(parts[0], parts[1], parts[2],
+          entry.value.firstOrNull?.symbol ?? '', entry.value);
+      bySource.putIfAbsent(group.sourceId, () => []).add(group);
+    }
+    for (final candidates in bySource.values) {
+      candidates.sort((a, b) {
+        final byCount = b.samples.length.compareTo(a.samples.length);
+        return byCount != 0 ? byCount : a.metricId.compareTo(b.metricId);
+      });
+      result.add(candidates.first);
+    }
+    return result;
   }
 
   Future<void> setScenario(String value) async {
@@ -220,4 +319,14 @@ class OipController extends ChangeNotifier {
     api.close();
     super.dispose();
   }
+}
+
+/// One measured group of the projection: the measurements of one source, one
+/// entity and one metric.
+class _SeriesGroup {
+  final String sourceId, entityId, metricId, unit;
+  final List<Observation> samples;
+  _SeriesGroup(this.sourceId, this.entityId, this.metricId, this.unit,
+      this.samples);
+  String get key => '$sourceId|$entityId|$metricId';
 }

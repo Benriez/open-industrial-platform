@@ -15,7 +15,11 @@ class OverviewPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final snapshot = controller.snapshot!;
     final temperature = snapshot.primaryTemperature;
-    final alarm = snapshot.hasAlarm(deviceId: 'M-01');
+    // The legacy demo has exactly one entity; the managed mode knows no
+    // preferred entity and asks for the alarm of any authorized device.
+    final alarm = controller.managed
+        ? snapshot.hasAlarm()
+        : snapshot.hasAlarm(deviceId: 'M-01');
     final zoneCount = snapshot.devices.map((device) => device.location).toSet();
     final reachable = snapshot.devices
         .where((device) => device.health.reachability == 'reachable')
@@ -84,15 +88,27 @@ class OverviewPage extends StatelessWidget {
                           : 'stale'),
                 ),
               ),
-              _ribbonValue(context, 'OPC UA SOURCE',
-                  known(snapshot.system.opcua), snapshot.system.opcua),
-              _ribbonValue(
-                  context,
-                  'SUBSCRIPTION',
-                  known(snapshot.system.subscription),
-                  snapshot.system.subscription),
-              _ribbonValue(context, 'NETWORK', known(snapshot.system.network),
-                  snapshot.system.network),
+              // The managed projection carries no OPC-UA, subscription or
+              // network dimension. Those rows belong to the legacy demo; in
+              // the managed mode the source registry of the session is shown
+              // instead of dimensions the projection does not deliver.
+              if (!controller.managed) ...[
+                _ribbonValue(context, 'OPC UA SOURCE',
+                    known(snapshot.system.opcua), snapshot.system.opcua),
+                _ribbonValue(
+                    context,
+                    'SUBSCRIPTION',
+                    known(snapshot.system.subscription),
+                    snapshot.system.subscription),
+                _ribbonValue(context, 'NETWORK',
+                    known(snapshot.system.network), snapshot.system.network),
+              ],
+              if (controller.managed)
+                _ribbonValue(
+                    context,
+                    'QUELLEN',
+                    '${snapshot.sources.length}',
+                    snapshot.sources.isEmpty ? 'unknown' : 'fresh'),
               _ribbonValue(
                   context,
                   'DATENFRISCHE',
@@ -135,40 +151,60 @@ class OverviewPage extends StatelessWidget {
                     : snapshot.incidents.isEmpty
                         ? OipTokens.lime
                         : OipTokens.statusColor(context, 'degraded')),
-            MetricCard(
-              'Temperatur M-01',
-              temperature == null
-                  ? '—'
-                  : '${temperature.display} ${temperature.symbol}',
-              controller.stale
-                  ? 'Veraltet · letzter bekannter Wert'
-                  : alarm
-                      ? 'Alarm vom OPC-UA-Datenmodell gemeldet'
-                      : 'OPC UA → SQLite → SSE',
-              Icons.thermostat_outlined,
-              color: alarm
-                  ? OipTokens.statusColor(context, 'alarm')
-                  : temperature == null
-                      ? OipTokens.muted(context)
-                      : OipTokens.violet,
-            ),
+            if (controller.managed)
+              MetricCard(
+                'Autorisierte Quellen',
+                '${snapshot.sources.length}',
+                snapshot.sources.isEmpty
+                    ? 'Die Sitzung sieht keine Quelle der Registry.'
+                    : snapshot.sources
+                        .map((source) => source.name)
+                        .take(2)
+                        .join(' · '),
+                Icons.hub_outlined,
+                color: OipTokens.cyan,
+              )
+            else
+              MetricCard(
+                'Temperatur M-01',
+                temperature == null
+                    ? '—'
+                    : '${temperature.display} ${temperature.symbol}',
+                controller.stale
+                    ? 'Veraltet · letzter bekannter Wert'
+                    : alarm
+                        ? 'Alarm vom OPC-UA-Datenmodell gemeldet'
+                        : 'OPC UA → SQLite → SSE',
+                Icons.thermostat_outlined,
+                color: alarm
+                    ? OipTokens.statusColor(context, 'alarm')
+                    : temperature == null
+                        ? OipTokens.muted(context)
+                        : OipTokens.violet,
+              ),
           ],
         ),
         const SizedBox(height: OipTokens.s4),
         LayoutBuilder(builder: (context, box) {
-          final chart = ChartContainer(
-            title: 'Live-Telemetrie / Maschinensignal',
-            subtitle: 'Empfangene OPC-UA-Werte · keine interpolierten Lücken',
-            accent: OipTokens.cyan,
-            action: StatusPill(
-              simulated ? 'SIM' : 'API',
-              color: OipTokens.statusColor(context, 'info'),
-              icon: simulated
-                  ? Icons.science_outlined
-                  : Icons.cloud_done_outlined,
-            ),
-            child: RepaintBoundary(child: TrendChart(controller.history)),
-          );
+          final charts = controller.managed
+              ? _managedCharts(context, snapshot)
+              : [
+                  ChartContainer(
+                    title: 'Live-Telemetrie / Maschinensignal',
+                    subtitle:
+                        'Empfangene OPC-UA-Werte · keine interpolierten Lücken',
+                    accent: OipTokens.cyan,
+                    action: StatusPill(
+                      simulated ? 'SIM' : 'API',
+                      color: OipTokens.statusColor(context, 'info'),
+                      icon: simulated
+                          ? Icons.science_outlined
+                          : Icons.cloud_done_outlined,
+                    ),
+                    child: RepaintBoundary(
+                        child: TrendChart(controller.history)),
+                  ),
+                ];
           final events = SectionContainer(
             title: 'Aktive Incidents',
             subtitle: 'Evidenz vor Annahmen · Auswahl öffnet Diagnose',
@@ -216,17 +252,55 @@ class OverviewPage extends StatelessWidget {
           );
           return box.maxWidth >= OipTokens.desktop
               ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Expanded(flex: 3, child: chart),
+                  Expanded(
+                      flex: 3,
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (final chart in charts) ...[
+                              chart,
+                              const SizedBox(height: OipTokens.s4),
+                            ],
+                          ])),
                   const SizedBox(width: OipTokens.s4),
                   Expanded(flex: 2, child: events),
                 ])
               : Column(children: [
-                  chart,
-                  const SizedBox(height: OipTokens.s4),
+                  for (final chart in charts) ...[
+                    chart,
+                    const SizedBox(height: OipTokens.s4),
+                  ],
                   events,
                 ]);
         }),
         const SizedBox(height: OipTokens.s6),
+        if (controller.managed) ...[
+          const SectionTitle('Autorisierte Infrastruktur',
+              'Quellen der Sitzung aus dem Quellregister des Core · jede Quelle bleibt erkennbar',
+              accent: OipTokens.cyan),
+          if (snapshot.sources.isEmpty)
+            const InlineNotice(
+              'Keine autorisierte Quelle',
+              'Die Sitzung sieht keine Quelle der Registry. Das ist kein Nachweis einer gesunden Anlage.',
+              icon: Icons.hub_outlined,
+            )
+          else
+            ResponsiveGrid(
+              minWidth: 300,
+              maxColumns: 2,
+              children: snapshot.sources
+                  .map((source) => _SourceCard(
+                        source: source,
+                        location: snapshot.locationOf(source.id),
+                        values: snapshot.metrics
+                            .where((observation) =>
+                                observation.sourceId == source.id)
+                            .toList(),
+                      ))
+                  .toList(),
+            ),
+          const SizedBox(height: OipTokens.s6),
+        ],
         SectionTitle(
           'System & Datenpfad',
           'Fehlende Telemetrie bleibt ausdrücklich unbekannt.',
@@ -301,6 +375,57 @@ class OverviewPage extends StatelessWidget {
         ]),
       ]);
 
+  List<Widget> _managedCharts(BuildContext context, Snapshot snapshot) {
+    if (controller.series.isEmpty) {
+      return [
+        ChartContainer(
+          title: 'Live-Telemetrie der autorisierten Quellen',
+          subtitle: 'Aus der autorisierten Projektion · keine Ersatzwerte',
+          accent: OipTokens.cyan,
+          action: StatusPill(
+            'API',
+            color: OipTokens.statusColor(context, 'info'),
+            icon: Icons.cloud_done_outlined,
+          ),
+          child: const InlineNotice(
+            'Noch keine Messwerte',
+            'Die autorisierte Projektion hat noch keinen Messpunkt geliefert. Es wird kein Wert ersetzt.',
+            icon: Icons.timeline,
+          ),
+        ),
+      ];
+    }
+    return controller.series.map((series) {
+      final source = snapshot.sources
+          .where((candidate) => candidate.id == series.sourceId)
+          .firstOrNull;
+      final name = source?.name ?? series.sourceId;
+      return ChartContainer(
+        title: '${series.metricId} · $name',
+        subtitle:
+            'Empfangene Werte der autorisierten Quelle · keine interpolierten Lücken',
+        accent: OipTokens.cyan,
+        action: StatusPill(
+          source?.simulated == true ? 'SIM' : 'API',
+          color: OipTokens.statusColor(context, 'info'),
+          icon: source?.simulated == true
+              ? Icons.science_outlined
+              : Icons.cloud_done_outlined,
+        ),
+        child: RepaintBoundary(
+          child: TrendChart(
+            series.samples,
+            title: '${series.metricId} · Verlauf',
+            unit: series.unit,
+            semanticUnit: series.unit.isEmpty ? 'Einheit unbekannt' : series.unit,
+            caption: '${series.metricId} · ${series.entityId}',
+            adaptiveGap: true,
+          ),
+        ),
+      );
+    }).toList();
+  }
+
   List<Device> _focusDevices(List<Device> devices) {
     final result = <Device>[];
     void add(Iterable<Device> candidates) {
@@ -313,10 +438,71 @@ class OverviewPage extends StatelessWidget {
     }
 
     add(devices.where((device) => device.isFaulted));
-    add(devices.where((device) => device.id == 'M-01'));
+    if (!controller.managed) add(devices.where((device) => device.id == 'M-01'));
     add(devices);
     return result;
   }
+}
+
+/// One source of the authorized source registry.
+///
+/// The card shows the health the Core measured for this source, its placement
+/// in the authorized hierarchy and the values that were actually received.
+class _SourceCard extends StatelessWidget {
+  final ScopedSource source;
+  final ScopedLocation? location;
+  final List<Observation> values;
+  const _SourceCard(
+      {required this.source, required this.location, required this.values});
+
+  @override
+  Widget build(BuildContext context) => GradientCard(
+        accent: OipTokens.cyan,
+        padding: const EdgeInsets.all(OipTokens.s4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(source.name,
+                style: Theme.of(context).textTheme.titleMedium),
+            Text('${source.id} · Entity ${source.entityId}',
+                style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: OipTokens.s3),
+            FactGrid(
+              minWidth: 180,
+              children: [
+                Fact('Verbindung', known(source.connection)),
+                Fact('Erreichbarkeit', known(source.reachability)),
+                Fact('Dienst', known(source.service)),
+                Fact('Frische', known(source.freshness)),
+                Fact('Gültigkeit', known(source.validity)),
+                Fact('Letzter Empfang', timestamp(source.lastReceivedMs)),
+                if (location != null)
+                  Fact('Platzierung',
+                      '${location!.organizationId} · ${location!.infrastructureId} · ${location!.siteId}'),
+                Fact('Zähler',
+                    '${source.accepted} angenommen · ${source.rejected} verworfen · ${source.dropped} verloren'),
+                if (source.lastError != null)
+                  Fact('Letzter Fehler', source.lastError!,
+                      valueColor: OipTokens.statusColor(context, 'critical')),
+              ],
+            ),
+            const SizedBox(height: OipTokens.s3),
+            if (values.isEmpty)
+              Text('Keine Messwerte dieser Quelle empfangen.',
+                  style: Theme.of(context).textTheme.bodySmall)
+            else
+              for (final value in values)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: OipTokens.s1),
+                  child: Text(
+                    '${value.metricId} · ${value.display} ${value.symbol} · '
+                    '${known(value.quality)} · ${known(value.freshness)}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+          ],
+        ),
+      );
 }
 
 class _IncidentSummary extends StatelessWidget {
