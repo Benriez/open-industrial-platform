@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../design_system/theme.dart';
 import '../features/devices.dart';
+import '../features/operator_login.dart';
 import '../features/overview.dart';
 import '../features/network.dart';
 import '../features/opcua.dart';
@@ -427,14 +428,16 @@ class _TopBar extends StatelessWidget {
                     StatusPill(
                       live
                           ? 'LIVE · API'
-                          : controller.connection == 'connecting'
-                              ? 'VERBINDE'
-                              : 'RECONNECT',
+                          : controller.loginRequired
+                              ? 'ANMELDUNG ERFORDERLICH'
+                              : controller.connection == 'connecting'
+                                  ? 'VERBINDE'
+                                  : 'RECONNECT',
                       color: OipTokens.statusColor(
                           context, live ? 'connected' : 'degraded'),
                       showDot: true,
                     ),
-                    if (snapshot != null)
+                    if (snapshot != null && snapshot.system.demoControls)
                       SizedBox(
                         width: narrow ? 220 : 236,
                         child: DropdownButtonFormField<String>(
@@ -469,7 +472,10 @@ class _TopBar extends StatelessWidget {
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2)),
                     if (!narrow)
-                      Text('Read-only · Self-hosted',
+                      Text(
+                          controller.managed
+                              ? 'SSH read-only · lokaler Operator'
+                              : 'Read-only · Self-hosted',
                           style: Theme.of(context).textTheme.bodySmall),
                   ],
                 ),
@@ -540,7 +546,9 @@ class _PageContent extends StatelessWidget {
               ),
             ),
           ),
-        if (snapshot == null)
+        if (controller.loginRequired)
+          OperatorLogin(controller)
+        else if (snapshot == null)
           StateMessage(
             controller.error == null
                 ? 'Verbindung zum lokalen OIP-Server'
@@ -574,9 +582,18 @@ class _PageContent extends StatelessWidget {
           spacing: OipTokens.s3,
           runSpacing: OipTokens.s1,
           children: [
+            if (controller.managed &&
+                controller.browserSession?.authenticated == true)
+              TextButton.icon(
+                  onPressed: controller.logout,
+                  icon: const Icon(Icons.logout, size: 16),
+                  label: const Text('Operator abmelden')),
             Text('OIP / 005 UI · SPECTRUM',
                 style: Theme.of(context).textTheme.labelSmall),
-            Text('Lokale Entwicklung und Simulation',
+            Text(
+                controller.managed
+                    ? 'Reale Infrastruktur · lokale Operator-Sitzung'
+                    : 'Lokale Entwicklung und Simulation',
                 style: Theme.of(context).textTheme.bodySmall),
             Text(
               snapshot == null

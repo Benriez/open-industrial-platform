@@ -1,0 +1,47 @@
+# Flutter device connection contract
+
+Workstream `feature/real-device-connection-ui`, baseline `49a86bb0aa9f737fe9392eb2b5421e1ffe2f8c68`. Pairs with `feature/real-device-connection-core`; the Core architecture and limits are defined in its `docs/architecture/real-device-onboarding.md`. No canonical main or independent OIP-009/UI copy is overwritten.
+
+## Identity and transport
+
+The application first reads `GET /api/v2/browser/session`. `mode=explicit_legacy_demo` retains the existing v1 simulation regression path. Real mode requires an authenticated local operator session; there is no anonymous fallback to v1/global snapshots.
+
+The operator explicitly issues a short-lived single-use code using the authenticated local CLI, then enters it into the login panel. `POST /api/v2/browser/login` creates a host-only HttpOnly SameSite=Strict cookie. Only a CSRF value is held in Flutter memory; the durable IPC credential/private SSH key never enters the browser. No token is placed in URL, LocalStorage, SessionStorage or web assets. The code field is cleared on submission and disposed with the panel.
+
+Cookie-authorized mutations carry `x-oip-csrf`; the browser supplies its same-origin Origin header. `DELETE /api/v2/browser/session` revokes the session. Expiry, logout and Principal/context changes clear snapshots/history and invalidate inspectors/dialogs. A failed server logout still clears the local display; revocation cannot be claimed if the server is unreachable. Sessions have absolute expiry, not an unbounded sliding renewal.
+
+Real initial state is `GET /api/v2/snapshot`; live projections are `/api/v2/stream`. The server reauthorizes every SSE projection, including after session expiry/logout. The v2 contract has no global health, persistence counters or invented incidents/topology. Their absence remains unknown in Flutter. Collection events are not converted into synthetic incidents. Full authorized resynchronization is supported; complete replay is not claimed.
+
+Native authenticated cookie transport is not implemented by this web workflow. The prior native explicit-demo integration remains a separate regression. Productive remote/browser identity and hostile same-user process isolation remain open; loopback HTTP is local development only.
+
+## Context compatibility
+
+`OnboardingScope` carries optional Organization, Infrastructure and Site IDs from the global context. `OipController.setInfrastructureContext` is the OIP-009 integration seam: advance context revision, invalidate old display state and resynchronize. This change does not add a competing global infrastructure selector. The final OIP-009 payload must undergo a three-way reconciliation of controller/API/contracts/Devices changes before integration.
+
+The wizard obtains only authorized hierarchy items via `/api/v2/organizations`, `/infrastructures?organization=…`, `/sites?infrastructure=…`, with bounded pages. Parent selection never creates grants. Existing-device placement is fixed; current inventory revision and metadata come from `/api/v2/inventory/devices?id=…`. Display names do not establish identity.
+
+## Five-phase onboarding
+
+1. **Gerät hinzufügen / Gerät auswählen:** select authorized hierarchy, a display name and typed device category. Existing device UUID, placement and name are preserved for connection setup.
+2. **Verbindung konfigurieren:** choose SSH Linux/macOS or explicitly **Nur Inventar, keine Verbindung** for new inventory. SSH requires an explicitly entered host/IP, port, non-root user and server-authorized local identity profile. Optional aliases are preconfigured server tuples. No private-key field or network scan exists. Missing profiles prevent testing; copying configuration does not grant access. OPC UA requires its existing separate authorized source path; SNMP/Windows/Android/VPN monitoring are unavailable here.
+3. **Verbindung testen:** POST `/api/v2/device-connections` with `operation=start`, typed existing/new target and endpoint. Poll the Principal-owned opaque plan. Actual connecting/authenticating/reading stages come from Core execution, not simulated progress. Unknown host keys require the operator to verify and accept the exact displayed fingerprint before `verify`; changed keys cannot be accepted through this flow.
+4. **Gerät bestätigen:** display actual OS/hostname/architecture/CPU/model/memory/uptime/local disks/interfaces and capture/provenance/unavailable fields. A required operator checkbox confirms the observed identity. `confirm` persists the existing UUID with CAS or creates the pending new UUID. Flutter first saves with monitoring disabled; successful verification alone is not continuous monitoring.
+5. **Monitoring aktivieren:** explicitly activate the saved read-only collector with an interval10–3600 seconds and its connection revision, or leave it disabled and configure later. `Collecting` is shown only when actual samples arrive. Registration, verification, enabled configuration and data freshness are independent.
+
+Manual inventory registration uses the same central `InventoryChange` capability through POST `/api/v2/inventory/apply`, limited to authorized online register/update. It reports Registered/Unknown/NoCollector/NotEvaluated and does not open a network connection. Archival and other destructive operations are not exposed by the wizard.
+
+## DTOs and errors
+
+`ConnectionResult` includes `profiles[]`, optional `plan`, optional `connection`, and optional `last_attempt`. Profiles expose only ID/label/authentication kind/authorized alias names; no key/agent/credential path. Plans expose plan/device/site identity, exact endpoint, real stage, public fingerprint/trust decision, optional actual HostInformation, typed fault and expiry. Other Principals cannot read or act on the plan.
+
+Connection views contain device/source IDs, endpoint, public fingerprint, verified historical identity and capture time, enabled state, configured polling interval, configuration revision, last attempt/success/fault and current authorized observations. The Inspector refreshes at a bounded five-second cadence and disposes its timer. Actual live device metrics also use the v2 snapshot. No local shadow inventory or telemetry database is created.
+
+Core validation and authorization remain authoritative. Invalid host/port/user/profile, missing/untrusted/changed host key, authentication failure, unsupported OS, timeout, output limit, foreign IDs, revision conflicts, plan expiry/capacity and storage/apply errors are explicit failures. The UI never marks a failed proposal connected, silently overwrites a revision or removes the original inventory device. A cancelled pending dialog cancels only its own proposal. A committed binding is controlled through its separate monitoring revision.
+
+SSH capture timestamps use Core collector time, not a claimed remote clock; server time is absent. Restored samples remain stale until actual new receipt. Interface-reported addresses are not reachability probes. GPU, temperature and CPU utilization remain unavailable unless a future implemented sensor supplies them. Service/host health is not inferred from successful SSH authentication.
+
+## Verification scope
+
+`test/onboarding_contract_test.dart` covers scoped-data honesty, session expiry/cache invalidation and CSRF/request identity contracts. `test/browser_onboarding.mjs` drives the actual Flutter release against the actual Rust daemon and an owned loopback OpenSSH fixture, with host-key/identity confirmation, persistent existing ID and subsequent actual observations. No HTTP response is mocked in that browser E2E. The runtime fixture is isolated from the operator database and personal hosts.
+
+The browser test independently compares the displayed host-key evidence with the fixture's generated public key and verifies the served `main.dart.js` hash, HttpOnly cookie, logout and absence of token storage/external requests. Physical Raspberry-Pi SSH and monitoring acceptance require the operator's explicit endpoint/user/local identity and independent host-key/identity confirmation. A loopback fixture cannot establish those hardware verdicts.

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../models/contracts.dart';
+import '../models/onboarding.dart';
 import '../services/api.dart';
 
 class OipController extends ChangeNotifier {
@@ -10,6 +11,51 @@ class OipController extends ChangeNotifier {
   final Duration streamTimeout;
   Snapshot? snapshot;
   String connection = 'connecting';
+  BrowserSession? browserSession;
+  int contextRevision = 0;
+  OnboardingScope onboardingScope = const OnboardingScope();
+  DeviceManagementApi? get management =>
+      api is DeviceManagementApi ? api as DeviceManagementApi : null;
+  bool get managed => management?.managed == true;
+  bool get loginRequired => connection == 'login_required';
+  void setInfrastructureContext(OnboardingScope scope) {
+    onboardingScope = scope;
+    contextRevision++;
+    // Caller OIP-009 owns selection. Never retain a previous context's display cache.
+    history.clear();
+    snapshot = null;
+    reconnect();
+  }
+
+  Future<void> login(String code) async {
+    browserSession = await management!.login(code);
+    contextRevision++;
+    history.clear();
+    snapshot = null;
+    error = null;
+    reconnect();
+  }
+
+  Future<void> logout() async {
+    contextRevision++;
+    _epoch++;
+    api.disconnect();
+    String? failure;
+    try {
+      await management!.logout();
+    } catch (e) {
+      failure = apiErrorMessage(e,
+          'Lokale Ansicht abgemeldet. Serverseitige Abmeldung nicht bestätigt; die Sitzung läuft spätestens nach 30 Minuten ab.');
+    } finally {
+      history.clear();
+      snapshot = null;
+      browserSession = null;
+      connection = 'login_required';
+      error = failure;
+      if (!_closed) notifyListeners();
+    }
+  }
+
   String? error;
   String? scenarioError;
   bool scenarioBusy = false;
@@ -23,7 +69,8 @@ class OipController extends ChangeNotifier {
     this.streamTimeout = const Duration(seconds: 6),
   });
   bool get stale =>
-      connection != 'live' || snapshot?.system.opcua != 'connected';
+      connection != 'live' ||
+      (!managed && snapshot?.system.opcua != 'connected');
 
   Future<void> start() async {
     final epoch = ++_epoch;
@@ -32,6 +79,26 @@ class OipController extends ChangeNotifier {
       try {
         connection = snapshot == null ? 'connecting' : 'reconnecting';
         notifyListeners();
+        if (management != null) {
+          final previousPrincipal = browserSession?.principalId;
+          browserSession = await management!.session();
+          if (_closed || epoch != _epoch) return;
+          if (previousPrincipal != null &&
+              previousPrincipal != browserSession?.principalId) {
+            contextRevision++;
+            snapshot = null;
+            history.clear();
+          }
+          if (managed && !browserSession!.authenticated) {
+            contextRevision++;
+            snapshot = null;
+            history.clear();
+            connection = 'login_required';
+            error = null;
+            notifyListeners();
+            return;
+          }
+        }
         final initial = await api.initial();
         if (_closed || epoch != _epoch) return;
         // A REST resync starts a new display window; SSE has no full replay.
@@ -72,7 +139,9 @@ class OipController extends ChangeNotifier {
 
   Snapshot _decodeSnapshot(String data) {
     try {
-      return Snapshot.fromJson(jsonDecode(data) as Json);
+      return managed
+          ? Snapshot.fromScopedJson(jsonDecode(data) as Json)
+          : Snapshot.fromJson(jsonDecode(data) as Json);
     } catch (_) {
       throw const ApiFailure(
         'Der Live-Snapshot verletzt den erwarteten Datenvertrag.',

@@ -110,7 +110,7 @@ class OverviewPage extends StatelessWidget {
             MetricCard(
                 'Erfasste Geräte',
                 '${snapshot.devices.length}',
-                'Rust-Inventar · ${zoneCount.length} Netzwerkzonen',
+                'Rust-Inventar · ${zoneCount.length} ${controller.managed ? 'Standortangaben' : 'Netzwerkzonen'}',
                 Icons.dns_outlined,
                 color: OipTokens.blue),
             MetricCard(
@@ -121,14 +121,20 @@ class OverviewPage extends StatelessWidget {
                 color: OipTokens.cyan),
             MetricCard(
                 'Aktive Hinweise',
-                '${snapshot.incidents.length}',
-                simulated
-                    ? 'Deterministische Demoszenarien'
-                    : 'Vom Backend gelieferte Hinweise',
+                controller.managed
+                    ? 'Nicht ausgewertet'
+                    : '${snapshot.incidents.length}',
+                controller.managed
+                    ? 'Keine Incident-Auswertung in dieser Projektion'
+                    : simulated
+                        ? 'Deterministische Demoszenarien'
+                        : 'Vom Backend gelieferte Hinweise',
                 Icons.radar,
-                color: snapshot.incidents.isEmpty
-                    ? OipTokens.lime
-                    : OipTokens.statusColor(context, 'degraded')),
+                color: controller.managed
+                    ? OipTokens.muted(context)
+                    : snapshot.incidents.isEmpty
+                        ? OipTokens.lime
+                        : OipTokens.statusColor(context, 'degraded')),
             MetricCard(
               'Temperatur M-01',
               temperature == null
@@ -177,10 +183,16 @@ class OverviewPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (snapshot.incidents.isEmpty)
-                  const InlineNotice(
-                    'Keine aktiven Incidents',
-                    'Messwerte prüfen; fehlende Befunde werden nicht ergänzt.',
-                    icon: Icons.verified_outlined,
+                  InlineNotice(
+                    controller.managed
+                        ? 'Incidents hier nicht ausgewertet'
+                        : 'Keine aktiven Incidents',
+                    controller.managed
+                        ? 'Die autorisierte Live-Projektion enthält keine Incident-Auswertung. Das ist kein Nachweis eines gesunden Geräts.'
+                        : 'Messwerte prüfen; fehlende Befunde werden nicht ergänzt.',
+                    icon: controller.managed
+                        ? Icons.help_outline
+                        : Icons.verified_outlined,
                   ),
                 ...snapshot.incidents.take(3).map((incident) => Padding(
                       padding: const EdgeInsets.only(bottom: OipTokens.s3),
@@ -252,7 +264,7 @@ class OverviewPage extends StatelessWidget {
                 color: OipTokens.pink),
             MetricCard(
                 'Persistierte Werte',
-                '${snapshot.system.persisted}',
+                snapshot.system.persisted?.toString() ?? 'Nicht freigegeben',
                 'SQLite · Netzwerkstatus: ${known(snapshot.system.network)}',
                 Icons.data_object,
                 color: OipTokens.lime),

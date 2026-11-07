@@ -13,6 +13,9 @@ const systemChrome='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome
 const browser=await chromium.launch({executablePath:process.env.CHROME_PATH ?? (existsSync(systemChrome)?systemChrome:undefined),headless:true});
 const context=await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});
 const page=await context.newPage();
+// HTML regression build exposes both AX proxy text and painted paragraphs.
+// Require painted/visible text, avoiding ambiguous duplicate matches.
+function text(...args){return page.getByText(...args).filter({visible:true}).first();}
 const errors=[];const external=[];const checks=[];
 page.on('pageerror',e=>errors.push(e.message));
 page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
@@ -31,9 +34,9 @@ try{
   const ready=await context.request.post(base+'/api/v1/demo/scenario',{data:{scenario:'normal'}});
   assert.equal(ready.status(),200);
   await page.goto(base,{waitUntil:'domcontentloaded'});
-  await page.getByText('Deine Infrastruktur. Ein Bild.',{exact:true}).waitFor({timeout:45000});
-  await page.getByText('LIVE · API',{exact:false}).waitFor();
-  await page.getByText('ERFASSTE GERÄTE',{exact:true}).hover();
+  await text('Deine Infrastruktur. Ein Bild.',{exact:true}).waitFor({timeout:45000});
+  await text('LIVE · API',{exact:false}).waitFor();
+  await text('ERFASSTE GERÄTE',{exact:true}).hover();
   await capture('spectrum-hover-overview');
   for(let i=0;i<7;i++)await page.keyboard.press('Tab');
   await capture('spectrum-keyboard-focus');
@@ -51,22 +54,22 @@ try{
   const clip=page.getByRole('button',{name:/Telemetry:/}).first();
   await clip.waitFor();
   await clip.click();
-  await page.getByText('COLLECTION EVENT · KEINE KAUSALBEHAUPTUNG',{exact:true}).waitFor();
+  await text('COLLECTION EVENT · KEINE KAUSALBEHAUPTUNG',{exact:true}).waitFor();
   await capture('spectrum-diagnostics-timeline-inspector');
-  await page.getByText('Spuren ausblenden',{exact:true}).click();
-  await page.getByText('Klassische Ereignisliste aktiv',{exact:true}).waitFor();
-  await page.getByText('Collection-Ereignisse',{exact:true}).waitFor();
-  await page.getByText('Spuren zeigen',{exact:true}).click();
+  await text('Spuren ausblenden',{exact:true}).click();
+  await text('Klassische Ereignisliste aktiv',{exact:true}).waitFor();
+  await text('Collection-Ereignisse',{exact:true}).waitFor();
+  await text('Spuren zeigen',{exact:true}).click();
   checks.push('Real event timeline selection, inspector and list fallback');
 
   await page.getByRole('button',{name:/Darstellung wechseln/}).click();
-  await page.getByText('DAYLIGHT',{exact:true}).waitFor();
+  await text('DAYLIGHT',{exact:true}).waitFor();
   await page.getByRole('button',{name:/Darstellung wechseln/}).click();
-  await page.getByText('GRAPHITE',{exact:true}).waitFor();
+  await text('GRAPHITE',{exact:true}).waitFor();
   await nav('Übersicht');
   await capture('spectrum-graphite-overview');
   await page.getByRole('button',{name:/Darstellung wechseln/}).click();
-  await page.getByText('SPECTRUM',{exact:true}).waitFor();
+  await text('SPECTRUM',{exact:true}).waitFor();
   checks.push('Spectrum, Daylight and Graphite browser switching');
 
   assert.deepEqual(external,[]);
