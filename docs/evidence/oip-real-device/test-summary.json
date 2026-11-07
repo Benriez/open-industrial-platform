@@ -1,13 +1,13 @@
 {
   "scope": "OIP canonical main: two controlled integrations (iteration 1 real device onboarding feature, iteration 2 its conformance fixes)",
-  "canonical_source_commit": "fc828ac4a0afd2020fef646b4630eb0ab90f99cc",
-  "canonical_source_tree": "2c7e72bd0882ab9fa4324216183c628600fa64dc",
-  "previous_canonical_source_commit": "ae4c6bab4fb87ff2c7b15a21b0104b2d5a12af7f",
-  "integration_method": "two real git merge --ff-only integrations, no merge commit, no history rewrite",
+  "canonical_source_commit": "b19092d",
+  "canonical_source_tree": "a45555428c165365ab14f7248a20c3382379e648",
+  "previous_canonical_source_commit": "fc828ac4a0afd2020fef646b4630eb0ab90f99cc",
+  "integration_method": "three real git merge --ff-only integrations, no merge commit, no history rewrite",
   "merge_commit_created": false,
   "history_rewritten": false,
   "tracked_files_in_source_revision": 442,
-  "source_manifest_sha256": "a48347578ce325b613b1cf67d5c19dcdb3921cb7ba26ecda97f3e214cc0c8420",
+  "source_manifest_sha256": "32373b5375a3898f5c49747bfef83a833320a13066d98402de731799ef113c36",
   "source_manifest_scope": "all tracked files of the canonical source revision",
   "reviewed_candidate_tree_unchanged": true,
   "runtime_code_changed_in_this_iteration": true,
@@ -179,6 +179,85 @@
           "after": 150
         }
       }
+    },
+    {
+      "iteration": 3,
+      "scope": "native macOS build and test, and a reliable UI regression harness",
+      "canonical_source_commit": "b19092d",
+      "canonical_source_tree": "a45555428c165365ab14f7248a20c3382379e648",
+      "tracked_files": 442,
+      "source_manifest_sha256": "32373b5375a3898f5c49747bfef83a833320a13066d98402de731799ef113c36",
+      "development_isolation": "branch feature/oip-native-macos-harness in an isolated worktree, integrated afterwards with git merge --ff-only",
+      "runtime_code_changed": false,
+      "product_code_changed": false,
+      "harness_changed": "tests/oip008/ui_regression.py",
+      "diagnosis": {
+        "toolchain": "Xcode 26.6, Swift 6.3.3, Flutter 3.22.0, CocoaPods 1.15.2",
+        "flutter_devices_seconds": 7.0,
+        "cold_native_build_seconds": 497.2,
+        "root_cause": "the UI regression harness applied one 300 second bound to the web steps and to the native step, and the native test ran its build inside the test command where the default twelve minute test timeout expired during the load phase",
+        "renderer_correction": "the legacy web regression reads the rendered text from the document and therefore needs the separately built HTML renderer; the CanvasKit build paints the text on a canvas"
+      },
+      "ui_regression": {
+        "harness": "tests/oip008/ui_regression.py",
+        "status": "PASS",
+        "served_web_dir": "apps/flutter/build/web-html",
+        "steps": [
+          {
+            "name": "browser",
+            "exit_code": 0,
+            "seconds": 80.4,
+            "status": "PASS"
+          },
+          {
+            "name": "interactions",
+            "exit_code": 0,
+            "seconds": 47.1,
+            "status": "PASS"
+          },
+          {
+            "name": "visual",
+            "exit_code": 0,
+            "seconds": 63.4,
+            "status": "PASS"
+          },
+          {
+            "name": "native_build",
+            "exit_code": 0,
+            "seconds": 11.6,
+            "status": "PASS",
+            "marker": "Built build/macos/Build/Products/Debug/oip_dashboard.app",
+            "marker_found": true
+          },
+          {
+            "name": "native_macos",
+            "exit_code": 0,
+            "seconds": 39.1,
+            "status": "PASS",
+            "marker": "All tests passed!",
+            "marker_found": true
+          },
+          {
+            "name": "demo_core_shutdown",
+            "exit_code": 0,
+            "status": "PASS"
+          }
+        ],
+        "native_scope": "compatibility and regression check in the explicit isolated demo mode; native authenticated session cookie transport is not claimed",
+        "repeated_run": {
+          "browser": 88.1,
+          "interactions": 47.9,
+          "visual": 60.4,
+          "native_build": 12.7,
+          "native_macos": 34.4,
+          "status": "PASS"
+        }
+      },
+      "not_claimed": [
+        "a native product path with authenticated session cookies",
+        "physical Raspberry-Pi acceptance",
+        "real installation activation"
+      ]
     }
   ],
   "measured_on_canonical_main": {
@@ -186,7 +265,8 @@
     "cargo_test_opcua_default_backend": "37 passed",
     "cargo_test_opcua_open62541_only": "2 passed",
     "flutter_test": "84 passed",
-    "real_device_acceptance_phases": 8
+    "real_device_acceptance_phases": 8,
+    "ui_regression": "browser 80.4 s, interactions 47.1 s, visual 63.4 s, native build 11.6 s, native test 39.1 s, all PASS"
   },
   "status": "INTEGRATED_AND_VERIFIED_ON_CANONICAL_MAIN; PHYSICAL_HARDWARE_ACCEPTANCE_AND_INSTALLATION_ACTIVATION_PENDING",
   "gates_detail": {

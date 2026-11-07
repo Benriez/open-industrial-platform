@@ -13,20 +13,21 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `fc828ac4a0afd2020fef646b4630eb0ab90f99cc` |
-| Canonical source tree | `2c7e72bd0882ab9fa4324216183c628600fa64dc` |
-| Previous canonical source revision | `ae4c6bab4fb87ff2c7b15a21b0104b2d5a12af7f` (iteration 1 integration) |
-| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in two controlled steps |
-| Tracked files in the canonical source revision | 442, source manifest SHA-256 `a48347578ce325b613b1cf67d5c19dcdb3921cb7ba26ecda97f3e214cc0c8420` |
+| Canonical source revision | `b19092d` (`fix(harness): split the native macOS build from the native test`) |
+| Canonical source tree | `a45555428c165365ab14f7248a20c3382379e648` |
+| Previous canonical source revision | `fc828ac4a0afd2020fef646b4630eb0ab90f99cc` (iteration 2, conformance fixes) |
+| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in three controlled steps |
+| Tracked files in the canonical source revision | 442, source manifest SHA-256 `32373b5375a3898f5c49747bfef83a833320a13066d98402de731799ef113c36` |
 | Documentation commit on top | changes only `docs/OIP_RELEASE_PROGRESS.md`, `docs/evidence/oip-real-device/*.json` and `docs/real-device-onboarding-verification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
 
-The canonical tree carries two controlled integrations: iteration 1 integrated the reviewed
+The canonical tree carries three controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
-the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`). Neither
-iteration weakened a contract rule, and neither activated the installation.
+the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
+integrated the isolated harness branch `feature/oip-native-macos-harness` (`b19092d`). No
+iteration weakened a contract rule, and none activated the installation.
 
 ## 2. Acceptance gates and their measured status
 
@@ -56,9 +57,10 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | 8 official MCP SDK clients | PROVED | phase `eight_official_mcp_clients` → PASS, REST/MCP parity |
 | Weak host key rejected by the server | PROVED | phase `weak_host_key_is_rejected_by_the_server` → PASS, `SSH_HOST_KEY_TOO_WEAK`, no binding created |
 | Browser session boundary in Rust | PROVED | `crates/oip-server/tests/browser_session.rs` → 5 tests: exact Origin, single-use code, CSRF on every write, revoked session, revoked projection stream |
+| Native macOS build and test | PROVED | `tests/oip008/ui_regression.py` → native build 11.6 s with the build marker, native integration test 39.1 s with the `All tests passed!` marker, against an owned isolated demo core |
+| Legacy browser, interaction and visual regression | PROVED | browser 80.4 s, interactions 47.1 s, visual 63.4 s on the separately built HTML renderer |
 | Physical Raspberry-Pi acceptance | **WITHHELD** | no endpoint, SSH user or approved identity was supplied; no personal device was contacted |
 | Real installation activation (schema 7) | **BLOCKED** | requires a separate operator decision plus a fresh protected backup; forbidden in this loop |
-| Native macOS build/test | **OPEN** | the P0 handoff recorded the native build blocked inside SwiftBuild toolchain discovery; not re-attempted yet |
 | Productive remote/browser identity | **OPEN** | loopback local operator session only; no HTTPS, no remote identity, no hostile same-UID isolation |
 | Durable tamper-proof audit | **OPEN** | audit is append-only in application code, the SQLite file itself stays writable by the daemon user |
 | OT / endurance certification | **OPEN** | not claimed; the measurements below are short local observations, not an SLA |
@@ -73,8 +75,10 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 
 ## 3. Open items, in execution order
 
-Each item names the next *delimited* step, its gate and its blocker. The loop continues with
-item **N1**; the remaining items stay untouched until the preceding one is verified.
+Each item names the next *delimited* step, its gate and its blocker. N1 and N2 are closed. The
+loop continues with item **N1b**; the remaining items stay untouched until the preceding one is
+verified. Items that need an explicit operator decision (N4) or that would change a rule instead
+of enforcing one (F5 inside N1b) are not started by the loop without a separate release.
 
 ### N1 — Close the conformance gaps found by the delegated source review (Core)
 
@@ -113,16 +117,34 @@ instead of enforcing the existing one and need their own review and evidence:
   explicit authorization review, a negative test for a foreign principal and a parity update in
   `docs/architecture/oip-008-rest-mcp-parity.md` if the capability matrix changes.
 
-### N2 — Native macOS build and test (open acceptance item)
+### N2 — Native macOS build and test (open acceptance item) — **closed in iteration 3**
 
 The P0 handoff recorded the native build blocked inside SwiftBuild toolchain discovery
 (`QNXSDP.findInstallations → LocalFS.listdir → __getattrlist`); Flutter returned zero without
 running a test, and the raw exit code was corrected by a hash-bound receipt. No native PASS
-is claimed. The next step is a bounded attempt that (a) owns and bounds the process group,
-(b) requires a positive test-completion marker instead of an exit code and (c) records the
-actual toolchain state. OIP-008.6 already ran one native macOS integration test on an
-isolated demo database, so the capability exists; the blocker must be diagnosed, not assumed.
-Gate: a real native test result with a completion marker, or a documented blocker.
+was claimed.
+
+**Measured result: the native macOS build and the native integration test work.** The cause was
+not a broken toolchain but two bounds that were too short for a cold native build on this shared
+machine: the UI regression harness applied a single 300 second bound to the web steps *and* to
+the native step, and the native test ran its build inside the test command, where the default
+test timeout of twelve minutes expired during the load phase. A cold `flutter build macos
+--debug` needs about eight minutes here (497 s measured), the warm build 12.7 s and the native
+integration test 34.4 s.
+
+The harness now runs the native build as its own step with its own bound and a positive build
+marker, runs the native integration test with an explicit `--timeout 30m` and its own bound,
+records the elapsed seconds and the marker of every step, and never accepts a step without its
+marker. The legacy web regression now receives the separately built HTML renderer, because it
+reads the rendered text from the document while the CanvasKit build paints it on a canvas.
+
+Result on canonical `main` (`b19092d`): browser 80.4 s, interactions 47.1 s, visual 63.4 s,
+native build 11.6 s with the `Built build/macos/.../oip_dashboard.app` marker, native
+integration test 39.1 s with the `All tests passed!` marker, demo core shutdown exit 0.
+
+The native path stays what the contract allows: a compatibility and regression check in the
+explicit isolated demo mode. Native authenticated session-cookie transport is still not claimed
+and the native app is not the product path.
 
 ### N3 — OIP-009 browser session / SSE / global context contract (contract gap)
 
@@ -278,6 +300,57 @@ activated, the personal database is unchanged at schema 6, the native macOS buil
 proved and the productive identity, hostile same-UID, durable audit and OT boundaries stay
 open. F4 and F5 remain open as N1b.
 
+### Iteration 3 — native macOS build and test, and a reliable UI regression harness
+
+**Step.** Close the open acceptance item "native macOS compilation was blocked" and make the UI
+regression harness produce a reliable verdict. The work was done on the isolated branch
+`feature/oip-native-macos-harness` in the worktree
+`/Users/benny/Code/open-industrial-platform-worktrees/native-macos-harness` and integrated with
+a real `git merge --ff-only`.
+
+**Diagnosis before the fix.** The toolchain was inspected first: Xcode 26.6 at
+`/Applications/Xcode.app/Contents/Developer`, Swift 6.3.3, Flutter 3.22.0, `flutter devices`
+lists the macOS desktop device in 7 s, CocoaPods 1.15.2 with the Pods already installed. A cold
+`flutter build macos --debug` then **succeeded** in 497.2 s and produced
+`build/macos/Build/Products/Debug/oip_dashboard.app`. The toolchain is healthy; the P0
+"blocker" was an interrupted and over-bounded attempt, not a missing capability.
+
+**What changed** (`tests/oip008/ui_regression.py`, the only file):
+
+* The native macOS build became its own step with its own 1800 s bound and the positive
+  marker `Built build/macos/Build/Products/Debug/oip_dashboard.app`. A build that exits zero
+  without producing the app is not accepted.
+* The native integration test runs with `--timeout 30m` and its own 1800 s bound and keeps the
+  positive marker `All tests passed!`. Exit status alone never turns a cancelled build into
+  acceptance.
+* Every step records its elapsed seconds and whether its required marker was seen.
+* The web steps keep their 300 s bound, and the owned process group bound is unchanged.
+* The legacy web regression receives the separately built HTML renderer by default and the
+  served directory is recorded in the result. With the CanvasKit build the painted text is not
+  in the document, so the text locator never matched and the harness reported a product
+  failure that was a renderer mismatch.
+
+**Measured result on canonical `main` (`b19092d`)**, harness `tests/oip008/ui_regression.py`
+against an owned demo core on a random loopback port:
+
+```
+browser        exit 0   80.4 s
+interactions   exit 0   47.1 s
+visual         exit 0   63.4 s
+native_build   exit 0   11.6 s   marker "Built build/macos/Build/Products/Debug/oip_dashboard.app" found
+native_macos   exit 0   39.1 s   marker "All tests passed!" found
+demo_core_shutdown exit 0
+```
+
+The run was repeated after the integration and produced the same verdict (browser 88.1 s,
+interactions 47.9 s, visual 60.4 s, native build 12.7 s, native test 34.4 s in the first run),
+so the result is reproducible and not a single lucky run.
+
+**Not claimed.** The native run is a compatibility and regression check in the explicit
+isolated demo mode, exactly as the contract allows. Native authenticated session-cookie
+transport is still not claimed, no personal database was touched, no private device was
+contacted and the physical Raspberry-Pi acceptance stays withheld.
+
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -288,6 +361,7 @@ open. F4 and F5 remain open as N1b.
 | `target/oip-canonical-e2e/browser/report.json` | browser receipt of the actual Flutter onboarding run (local, not tracked) |
 | `target/oip-canonical-e2e/browser/*.png` | screenshots of login, endpoint input, host-key consent, identity confirmation, persisted binding and live monitoring (local, not tracked) |
 | `target/oip-conformance-e2e/report.json` | the same acceptance report from the isolated branch build before the integration (local, not tracked) |
+| `target/oip008-ui-canonical/ui-regression.json` | UI regression result of iteration 3 with the per step durations and markers (local, not tracked) |
 | `/Users/benny/Documents/OIP-Handoffs/core-real-onboarding-p0-20261107T025455Z/` | private P0 handoff receipt of the reviewed candidate (unchanged) |
 
 ## 6. Safety boundaries observed

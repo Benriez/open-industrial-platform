@@ -119,3 +119,15 @@ Verified on the canonical tree after the integration: format, check, clippy with
 The remaining findings F4 (the maximal host report the parser can build exceeds the stored payload bound) and F5 (the plan read path requires the configure capability while the contract lists it under the read capability) are deliberately not mixed into this fix, because both change a rule instead of enforcing the existing one. They are tracked as N1b in `docs/OIP_RELEASE_PROGRESS.md`.
 
 The review itself was an automated pass, not an independent human reviewer, and the fixes were implemented and verified by the implementing session.
+
+## Addendum — native macOS build and test
+
+The P0 handoff recorded the native macOS build as blocked inside SwiftBuild toolchain discovery and explicitly withheld a native verdict. That item is now closed by a real result.
+
+The toolchain was inspected first and is healthy: Xcode 26.6 at `/Applications/Xcode.app/Contents/Developer`, Swift 6.3.3, Flutter 3.22.0, CocoaPods 1.15.2, and `flutter devices` lists the macOS desktop device in 7 s. A cold `flutter build macos --debug` succeeds in 497.2 s and produces `build/macos/Build/Products/Debug/oip_dashboard.app`.
+
+The cause of the previous "blocker" was two bounds that were too short for a cold native build on this shared machine, not a missing capability: the UI regression harness applied one 300 second bound to the web steps and to the native step, and the native test ran its build inside the test command where the default twelve minute test timeout expired during the load phase. The harness now runs the native build as its own step with its own bound and a positive build marker, runs the native integration test with an explicit `--timeout 30m` and its own bound, records the elapsed seconds and the marker of every step, and never accepts a step without its marker. The legacy web regression additionally receives the separately built HTML renderer, because it reads the rendered text from the document while the CanvasKit build paints it on a canvas.
+
+Measured on canonical `main` (`b19092d`), against an owned demo core on a random loopback port: browser 88.1 s, interactions 47.9 s, visual 60.4 s, native build 12.7 s with the `Built build/macos/Build/Products/Debug/oip_dashboard.app` marker, native integration test 34.4 s with the `All tests passed!` marker, demo core shutdown exit 0.
+
+The native result stays inside the boundary of this document: it is a compatibility and regression check in the explicit isolated demo mode. Native authenticated session-cookie transport is still not claimed, the private Raspberry Pi was not contacted, the real installation was not activated and the personal SQLite database is unchanged at schema 6.
