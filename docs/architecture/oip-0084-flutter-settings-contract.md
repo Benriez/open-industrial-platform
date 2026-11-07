@@ -1,6 +1,6 @@
 # OIP-008.4 — Future Flutter Settings contract v2.2
 
-No Flutter source, dependency, widget, asset, native configuration or UI handoff is changed. A safe authenticated browser session/SSE design remains OIP-009; the existing local bearer/IPC trust model must not be bypassed. No bearer in URLs, web assets or LocalStorage.
+No Flutter source, dependency, widget, asset, native configuration or UI handoff is changed. A safe authenticated browser session/SSE design remains OIP-009; the implemented and verified part of that boundary is documented in [oip-009-browser-session-sse.md](oip-009-browser-session-sse.md); the existing local bearer/IPC trust model must not be bypassed. No bearer in URLs, web assets or LocalStorage.
 
 ## Navigation
 

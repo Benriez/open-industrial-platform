@@ -30,7 +30,7 @@ Finding: {id,rule_id,rule_version,statement,evidence:[{category,id,source}],miss
 
 ## Authentication, scopes, caches and errors
 
-Same existing server-bound principal; valid local Bearer in Authorization header for REST. No Webasset/URL/LocalStorage credential storage. A secure browser-session/SSE authentication design remains OIP-009. An anonymous Flutter request in multi mode is denied; no legacy All-Access fallback.
+Same existing server-bound principal; valid local Bearer in Authorization header for REST. No Webasset/URL/LocalStorage credential storage. A secure browser-session/SSE authentication design remains OIP-009; the implemented and verified part of that boundary is documented in [oip-009-browser-session-sse.md](oip-009-browser-session-sse.md). An anonymous Flutter request in multi mode is denied; no legacy All-Access fallback.
 
 Cache key includes principal/auth generation + selected organization/infrastructure/site/source/device + capability + entire query. Scope/principal changes cancel in-flight requests, discard cursors and all old evidence/selection/trend caches. Cursor remains query-bound and expires after300s/restart; retain stable IDs to deduplicate after a fresh query. Older than the two recent continuation tokens can become invalid even within TTL. Retry near-page responses without inventing exactly-once behavior. Treat HISTORY_BUSY as bounded backoff, not offline;400 cursor invalid means restart query;403/404 cannot expose foreign names.
 

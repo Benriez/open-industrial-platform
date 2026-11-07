@@ -145,3 +145,13 @@ Verified on canonical `main` (`5a48b0c`): format, check, clippy with denied warn
 One honest observation: during the first canonical OPC-UA run the timing-sensitive test `async_opcua::client::tests::reconnect_recreates_subscription_and_reports_gap` failed once under machine load. It then passed in three consecutive isolated runs and in the repeated complete suite (37 passed, 0 failed). The change touches no OPC-UA code, and the observation is recorded rather than hidden.
 
 The review finding F5 remains open and deliberately paused: it would loosen a permission, which is a security decision rather than a conformance fix, and it is not taken without an explicit release. The physical Raspberry Pi acceptance and the controlled activation of the real installation remain outstanding, and the personal SQLite database is unchanged at schema 6.
+
+## Addendum — the OIP-009 browser session, SSE and context seam contract
+
+Five places in the tree defer the browser session, the SSE boundary and the global context to OIP-009, and this document states that the final OIP-009 payload must be reconciled three ways. The implemented part now exists and is verified, so it is written down as the boundary any payload has to satisfy: `docs/architecture/oip-009-browser-session-sse.md`.
+
+It describes the one-use pairing code, the session and its bound, the exact Origin and CSRF rules, the revocation, the token hygiene, the SSE revalidation per projection and the context seam with its cache invalidation, and names the place that proves each rule. Two Flutter contract tests close the test gap around the seam: a context change advances `contextRevision` and clears the display cache, and another operator Principal invalidates the display cache.
+
+The document explicitly does not decide the global Organization / Infrastructure / Site selection. That payload stays with the independent UI workstreams, still needs the three-way reconciliation of controller, API and contracts/Devices, and may not introduce a second context object or a second security model. The canonical tree still has no global context selection; `setInfrastructureContext` has no caller and the operator sees the scope of the session Principal.
+
+Verified on canonical `main` (`d32c9d1`): format and clippy with denied warnings, **180** workspace tests, Flutter analysis without issues, **86** Flutter tests and the acceptance harness with **eight** passing phases, including the browser identity and the real Flutter onboarding over the authenticated session.

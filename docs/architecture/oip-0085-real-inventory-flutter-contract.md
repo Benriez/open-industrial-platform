@@ -1,6 +1,6 @@
 # OIP-008.5 — Real inventory Flutter contract v2.3
 
-Flutter sources and all existing UI handoffs are unchanged. The current canonical Flutter build is not a secured real-infrastructure onboarding UI. No screenshots or functioning browser-write workflow is claimed. Browser identity/session/SSE integration remains OIP-009. No bearer in URLs, webassets or LocalStorage and no anonymous tenant bypass.
+Flutter sources and all existing UI handoffs are unchanged. The current canonical Flutter build is not a secured real-infrastructure onboarding UI. No screenshots or functioning browser-write workflow is claimed. Browser identity/session/SSE integration remains OIP-009; the implemented and verified part of that boundary is documented in [oip-009-browser-session-sse.md](oip-009-browser-session-sse.md). No bearer in URLs, webassets or LocalStorage and no anonymous tenant bypass.
 
 ## First run and context
 

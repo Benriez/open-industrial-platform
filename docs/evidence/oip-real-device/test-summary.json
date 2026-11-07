@@ -1,13 +1,13 @@
 {
   "scope": "OIP canonical main: two controlled integrations (iteration 1 real device onboarding feature, iteration 2 its conformance fixes)",
-  "canonical_source_commit": "5a48b0c27460b354241833c0972c2dfc5f261eec",
-  "canonical_source_tree": "30067d5da42880f272fb62201f31702dbdf4beac",
-  "previous_canonical_source_commit": "b19092d",
-  "integration_method": "four real git merge --ff-only integrations, no merge commit, no history rewrite",
+  "canonical_source_commit": "d32c9d19de13a519b5e7c2dcd84aeb976df72186",
+  "canonical_source_tree": "a8b0eaafa501ad49449ce0faaf1fab3d26d127fa",
+  "previous_canonical_source_commit": "5a48b0c27460b354241833c0972c2dfc5f261eec",
+  "integration_method": "five real git merge --ff-only integrations, no merge commit, no history rewrite",
   "merge_commit_created": false,
   "history_rewritten": false,
-  "tracked_files_in_source_revision": 442,
-  "source_manifest_sha256": "d77516de0b4c2e91a107c2fe779fabb863327d4d503d01dfb6904e6d4d04e046",
+  "tracked_files_in_source_revision": 443,
+  "source_manifest_sha256": "d74c70dbd1890866dc0b167484e2c5df7c3785a433be38d3a60ede0565857502",
   "source_manifest_scope": "all tracked files of the canonical source revision",
   "reviewed_candidate_tree_unchanged": true,
   "runtime_code_changed_in_this_iteration": true,
@@ -310,13 +310,67 @@
           "cpu_percent": 15.2
         }
       }
+    },
+    {
+      "iteration": 5,
+      "scope": "the OIP-009 browser session, SSE and global context seam contract, plus the missing seam tests",
+      "canonical_source_commit": "d32c9d19de13a519b5e7c2dcd84aeb976df72186",
+      "canonical_source_tree": "a8b0eaafa501ad49449ce0faaf1fab3d26d127fa",
+      "tracked_files": 443,
+      "source_manifest_sha256": "d74c70dbd1890866dc0b167484e2c5df7c3785a433be38d3a60ede0565857502",
+      "development_isolation": "branch feature/oip-009-context-contract in an isolated worktree, integrated afterwards with git merge --ff-only",
+      "runtime_code_changed": false,
+      "rust_source_changed": false,
+      "rust_source_unchanged_against": "5a48b0c",
+      "flutter_test_changed": true,
+      "new_contract_document": "docs/architecture/oip-009-browser-session-sse.md",
+      "new_tests": 2,
+      "gates": {
+        "cargo_fmt_check": "PASS",
+        "cargo_clippy_denied_warnings": "PASS",
+        "cargo_test_workspace": "180 passed, 0 failed",
+        "flutter_analyze": "PASS, no issues",
+        "flutter_test": "86 passed, 0 failed",
+        "real_device_acceptance": "8 phases PASS"
+      },
+      "acceptance_phases": [
+        "browser_identity_online_writer",
+        "ssh_handshake_confirmation_monitoring",
+        "restart_sigkill_identity",
+        "actual_flutter_ssh_onboarding",
+        "no_clients_ingestion_progress",
+        "host_key_change_blocks_collection",
+        "weak_host_key_is_rejected_by_the_server",
+        "eight_official_mcp_clients"
+      ],
+      "browser_receipt": {
+        "status": "PASS",
+        "page_errors": [],
+        "external_requests": [],
+        "loaded_build_sha256": "98b7296ea226853571fbdb8b6e165aeebe63753d8e018110dbe2c252e4a2ed43"
+      },
+      "measurements": {
+        "official_mcp_connection_read_ms": {
+          "samples": 20,
+          "p50": 4.295167047530413,
+          "p95": 4.722792073152959
+        },
+        "core_sample": {
+          "rss_kib": 28064,
+          "cpu_percent": 2.2
+        }
+      },
+      "still_open": [
+        "the global Organization / Infrastructure / Site selection payload (OIP-009, owned by the independent UI workstreams, three way reconciliation required)",
+        "F5 (authorization rule), paused because it loosens a permission"
+      ]
     }
   ],
   "measured_on_canonical_main": {
     "cargo_test_workspace": "180 passed, 0 failed",
     "cargo_test_opcua_default_backend": "37 passed",
     "cargo_test_opcua_open62541_only": "2 passed",
-    "flutter_test": "84 passed",
+    "flutter_test": "86 passed, 0 failed",
     "real_device_acceptance_phases": 8,
     "ui_regression": "browser 80.4 s, interactions 47.1 s, visual 63.4 s, native build 11.6 s, native test 39.1 s, all PASS"
   },

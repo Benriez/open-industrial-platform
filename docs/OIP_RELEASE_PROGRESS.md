@@ -13,22 +13,23 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `5a48b0c` (`fix(core): bound the verified host report to the stored record size`) |
-| Canonical source tree | `30067d5da42880f272fb62201f31702dbdf4beac` |
-| Previous canonical source revision | `b19092d` (iteration 3, native macOS harness) |
-| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in four controlled steps |
-| Tracked files in the canonical source revision | 442, source manifest SHA-256 `d77516de0b4c2e91a107c2fe779fabb863327d4d503d01dfb6904e6d4d04e046` |
+| Canonical source revision | `d32c9d1` (`docs(core): state the OIP-009 browser session, SSE and context seam contract`) |
+| Canonical source tree | `a8b0eaafa501ad49449ce0faaf1fab3d26d127fa` |
+| Previous canonical source revision | `5a48b0c` (iteration 4, bounded host report) |
+| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in five controlled steps |
+| Tracked files in the canonical source revision | 443, source manifest SHA-256 `d74c70dbd1890866dc0b167484e2c5df7c3785a433be38d3a60ede0565857502` |
 | Documentation commit on top | changes only `docs/OIP_RELEASE_PROGRESS.md`, `docs/evidence/oip-real-device/*.json` and `docs/real-device-onboarding-verification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
 
-The canonical tree carries four controlled integrations: iteration 1 integrated the reviewed
+The canonical tree carries five controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
 integrated the isolated harness branch `feature/oip-native-macos-harness` (`b19092d`), iteration 4
-integrated the isolated payload branch `feature/oip-connection-payload-bound` (`5a48b0c`). No
-iteration weakened a contract rule, and none activated the installation.
+integrated the isolated payload branch `feature/oip-connection-payload-bound` (`5a48b0c`) and
+iteration 5 integrated the isolated contract branch `feature/oip-009-context-contract`
+(`d32c9d1`). No iteration weakened a contract rule, and none activated the installation.
 
 ## 2. Acceptance gates and their measured status
 
@@ -46,7 +47,7 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Dependency policy | PROVED | `cargo deny check advisories licenses bans sources` → advisories ok, bans ok, licenses ok, sources ok |
 | Server binary + official MCP probe | PROVED | `cargo build --locked -p oip-server --bin oip-server --example mcp_probe` → exit 0 |
 | Flutter static analysis | PROVED | `flutter analyze` → exit 0, no issues |
-| Flutter widget/unit suite | PROVED | 84 passed, 0 failed |
+| Flutter widget/unit suite | PROVED | 86 passed, 0 failed |
 | Flutter web release, CanvasKit | PROVED | `flutter build web --release --web-renderer canvaskit …` → exit 0 |
 | Flutter web release, HTML | PROVED | `flutter build web --release --web-renderer html …` → exit 0 |
 | Browser identity + writer ownership | PROVED | `tests/real_device/acceptance.py` phase `browser_identity_online_writer` → PASS |
@@ -148,7 +149,7 @@ The native path stays what the contract allows: a compatibility and regression c
 explicit isolated demo mode. Native authenticated session-cookie transport is still not claimed
 and the native app is not the product path.
 
-### N3 — OIP-009 browser session / SSE / global context contract (contract gap)
+### N3 — OIP-009 browser session / SSE / global context contract — **closed in iteration 5**
 
 `docs/oip-0082-verification.md:116`, `docs/oip-0084-verification.md:134`,
 `docs/architecture/oip-0085-real-inventory-flutter-contract.md:3` and
@@ -156,10 +157,20 @@ and the native app is not the product path.
 The implemented part (one-use pairing code, `HttpOnly; SameSite=Strict` cookie, exact Origin,
 `x-oip-csrf`, session-scoped SSE revalidation, `setInfrastructureContext` cache invalidation)
 exists in the canonical tree; the *contract document* and the global Organization /
-Infrastructure / Site selection do not. The contract document may only describe what is
-implemented and must not invent a second global switcher; the final OIP-009 payload still
-requires the three-way reconciliation of controller, API, contracts and the independent UI
-workstreams. No architecture decision is taken in this file.
+Infrastructure / Site selection did not.
+
+**The contract document now exists**: `docs/architecture/oip-009-browser-session-sse.md`. It
+states the implemented and verified boundary — the pairing code, the session and its bound, the
+exact Origin and CSRF rules, the revocation, the token hygiene, the SSE revalidation per
+projection and the context seam with its cache invalidation — and names where each rule is
+proved. It explicitly does **not** decide the global selection payload and states the
+conditions a payload has to meet.
+
+**The global selection payload remains open** and is not part of this release. It belongs to
+the independent UI workstreams and still requires the three-way reconciliation of controller,
+API and contracts/Devices named in `docs/architecture/real-device-onboarding.md:90`. The
+canonical tree still has no global context selection: `setInfrastructureContext` has no
+caller, and the operator sees the scope of the session Principal.
 
 ### N4 — Controlled activation of the real installation (operator decision required)
 
@@ -417,6 +428,54 @@ recorded instead of being hidden.
 **Not claimed.** No physical Raspberry-Pi was contacted, the real installation was not
 activated, the personal database is unchanged at schema 6 and the productive identity,
 hostile same-UID, durable audit and OT boundaries stay open. F5 remains open and paused.
+
+### Iteration 5 — the OIP-009 browser session, SSE and context seam contract
+
+**Step.** Close the contract gap that five documents defer to OIP-009, without deciding the
+payload that OIP-009 still owns. Isolated branch
+`feature/oip-009-context-contract` in the worktree
+`/Users/benny/Code/open-industrial-platform-worktrees/oip-009-contract`, created from the
+canonical `main` at `3f23ad7` and integrated with a real `git merge --ff-only` as `d32c9d1`.
+
+**What changed.**
+
+* `docs/architecture/oip-009-browser-session-sse.md` (new): the implemented and verified
+  boundary of the browser session, the SSE stream and the global context seam, each rule with
+  the place that proves it, plus an explicit section on what this document does not decide.
+* `docs/architecture/oip-0082-diagnostics-flutter-contract.md`,
+  `docs/architecture/oip-0084-flutter-settings-contract.md` and
+  `docs/architecture/oip-0085-real-inventory-flutter-contract.md`: their deferral now points
+  at the new contract instead of leaving the reader without a reference.
+* `apps/flutter/test/onboarding_contract_test.dart`: two new contract tests close the test gap
+  around the seam — a context change advances `contextRevision` and clears the display cache,
+  and another operator Principal invalidates the display cache.
+
+**The Rust source is unchanged** against the previous canonical source revision `5a48b0c`
+(`git diff 5a48b0c -- crates/` is empty), so the Core gate results of iteration 4 remain valid
+and were re-run on the canonical tree anyway.
+
+**Commands and measured results** on the canonical tree after the fast-forward:
+
+```
+cargo fmt --all -- --check                                       # exit 0
+cargo clippy --locked --workspace --all-targets -- -D warnings    # exit 0
+cargo test --locked --workspace -- --test-threads=1               # 180 passed, 0 failed
+flutter analyze                                                    # exit 0, no issues
+flutter test                                                       # 86 passed, 0 failed
+python3 tests/real_device/acceptance.py                           # 8 phases PASS, exit 0
+```
+
+The acceptance harness is the end-to-end proof of the contract subject: the browser identity
+with the one-use code and the CSRF/Origin rules, the real Flutter onboarding over the
+authenticated session, the host key rotation denial, the weak host key rejection and the eight
+official MCP clients all pass. The browser receipt reports no page error and no external
+request, and the served build hash is unchanged.
+
+**Not claimed.** The global Organization / Infrastructure / Site selection is still not
+implemented and is not decided here. No physical Raspberry-Pi was contacted, the real
+installation was not activated, the personal database is unchanged at schema 6 and the
+productive identity, hostile same-UID, durable audit and OT boundaries stay open. F5 remains
+open and paused.
 
 ## 5. Evidence index
 
