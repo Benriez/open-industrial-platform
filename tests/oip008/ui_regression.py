@@ -22,12 +22,22 @@ def ready():
   time.sleep(.1)
 try:
  ready();env=dict(os.environ,OIP_URL=url,OIP_EVIDENCE_DIR=str(OUT/'browser'))
- commands=[('browser',['node','test/browser_oip004.mjs']),('interactions',['node','test/browser_spectrum.mjs']),('visual',['node','test/browser_visual_oip004.mjs']),('native_macos',['flutter','test','integration_test/live_dashboard_test.dart','-d','macos','--dart-define=OIP_API_URL='+url,'--reporter','expanded'])]
+ commands=[
+  ('browser',['node','test/browser_oip004.mjs'],None),
+  ('interactions',['node','test/browser_spectrum.mjs'],None),
+  ('visual',['node','test/browser_visual_oip004.mjs'],None),
+  # The native macOS build is slow on this machine, so it is a separate step
+  # with its own bound and its own positive build marker.
+  ('native_build',['flutter','build','macos','--debug'],'Built build/macos/Build/Products/Debug/oip_dashboard.app'),
+  # The native integration test needs its own timeout: the default test timeout
+  # also covers the native build and expires before the test itself runs.
+  ('native_macos',['flutter','test','integration_test/live_dashboard_test.dart','-d','macos','--dart-define=OIP_API_URL='+url,'--reporter','expanded','--timeout','30m'],'All tests passed!'),
+ ]
  # A cold native macOS build needs about eight minutes on this machine, the web
  # steps stay short. The bound only protects the owned process group; it never
  # replaces the positive test completion marker.
- bounds={'browser':300,'interactions':300,'visual':300,'native_macos':1800}
- for name,cmd in commands:
+ bounds={'browser':300,'interactions':300,'visual':300,'native_build':1800,'native_macos':1800}
+ for name,cmd,marker in commands:
   env['OIP_EVIDENCE_DIR']=str(OUT/({'browser':'browser','interactions':'interactions','visual':'visual'}.get(name,'native')))
   with (OUT/(name+'-console.log')).open('w') as f:
    test=subprocess.Popen(cmd,cwd=UI,env=env,stdout=f,stderr=subprocess.STDOUT,start_new_session=True)
@@ -42,9 +52,9 @@ try:
    seconds=round(time.monotonic()-started,1)
   # Flutter can exit zero when interrupted before running a native test.
   # Exit status alone must never turn a cancelled build into acceptance.
-  marker='All tests passed!' in (OUT/(name+'-console.log')).read_text(errors='replace')
-  if name=='native_macos' and code==0 and not marker:code=125
-  results.append({'name':name,'exit_code':code,'seconds':seconds,'test_completion_marker':marker,'status':'PASS' if code==0 else 'FAIL'});assert code==0,name
+  found=marker is None or marker in (OUT/(name+'-console.log')).read_text(errors='replace')
+  if marker is not None and code==0 and not found:code=125
+  results.append({'name':name,'exit_code':code,'seconds':seconds,'marker_required':marker,'marker_found':found,'status':'PASS' if code==0 else 'FAIL'});assert code==0,name
  ready()
 finally:
  if core.poll() is None:core.send_signal(signal.SIGINT)
