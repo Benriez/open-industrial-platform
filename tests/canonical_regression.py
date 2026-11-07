@@ -93,7 +93,8 @@ CASES = [
         "timeout": 900,
         "reports": ["target/oip008-legacy/report.json"],
         "baseline_env_only": ("OIP007_BASELINE_BINARY",),
-        "baseline_reason": "the harness has to create a genuine schema2 database, which only a protected OIP-007 binary can do; the canonical binary creates schema3 or later",
+        "baseline_prepared": "target/oip-007-baseline/target/debug/oip-server",
+        "baseline_reason": "the harness has to create a genuine schema2 database, which only an OIP-007 schema2 writer can do; the canonical binary creates schema3 or later. Build it with python3 tests/oip007_baseline.py",
     },
 ]
 
@@ -145,12 +146,18 @@ def run_case(case, evidence):
     if case.get("baseline_env_only"):
         variable = case["baseline_env_only"][0]
         if not env.get(variable):
-            return {
-                "name": name,
-                "status": "BLOCKED",
-                "reason": case["baseline_reason"],
-                "seconds": 0.0,
-            }
+            # A schema2 writer rebuilt from the verified OIP-007 baseline commit
+            # is used when it was prepared; otherwise the case stays blocked.
+            prepared = ROOT / case["baseline_prepared"]
+            if prepared.is_file():
+                env[variable] = str(prepared)
+            else:
+                return {
+                    "name": name,
+                    "status": "BLOCKED",
+                    "reason": case["baseline_reason"],
+                    "seconds": 0.0,
+                }
     started = time.monotonic()
     process = subprocess.run(
         [sys.executable, str(ROOT / case["script"]), *command_arguments],
@@ -171,6 +178,11 @@ def run_case(case, evidence):
         "status": "PASS" if process.returncode == 0 else "FAIL",
         "log": str(log),
     }
+    if case.get("baseline_env_only"):
+        binary = pathlib.Path(env[case["baseline_env_only"][0]])
+        if binary.is_file():
+            result["baseline_binary_sha256"] = hashlib.sha256(binary.read_bytes()).hexdigest()
+            result["baseline_source"] = "rebuilt from the verified OIP-007 baseline commit a27e7b1; the identity of the historical protected binary is not claimed"
     for candidate in case["reports"]:
         report = (
             (evidence / name / pathlib.Path(candidate).name)
