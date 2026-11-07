@@ -156,6 +156,18 @@ Measured on canonical `main` (`111dff1`): OIP-008 acceptance PASS, OIP-008.2 acc
 
 The product source is unchanged in this iteration, so the Rust, Flutter and real device acceptance results of the previous iteration remain valid for this tree.
 
+## Addendum — the monitoring measurements in the operator panel
+
+The Core collected the host report of a connected device and published the resulting observations in the connection view, and the Flutter client parsed them, but the device connection panel rendered only the empty case and dropped every real measurement. The surface dedicated to connection and monitoring therefore showed the state `Collecting` but never a collected value, although the Flutter contract requires the connection view to contain the current authorized observations and requires the browser E2E to verify subsequent actual observations.
+
+The panel now renders the current authorized observations with their metric identifier, value, unit, quality, freshness and capture time. Long text reports stay collapsed behind an expansion and are never presented as a complete value in the preview; a missing value stays unknown and is not replaced by a substitute.
+
+Measured on canonical `main` (`e12c009`): `flutter analyze` exits 0 with no issue, `flutter test` passes 89 tests, the real device harness passes all eight phases and the canonical regression passes all eight cases with no failed and no blocked case. The browser receipt names the ten observations that the Core received from the owned loopback fixture and that the operator now sees in the panel — `host.architecture`, `host.cpu_info`, `host.disks`, `host.hostname`, `host.interfaces`, `host.memory_total_bytes`, `host.memory_used_bytes`, `host.model`, `host.os`, `host.uptime_seconds` — with `host.os` = `Darwin` and `host.memory_total_bytes` = 17179869184, all `fresh`. The browser E2E compares the rendered panel with the observations that the Core reports for the same device, so a rendered measurement is never a value invented in the test.
+
+The harness defect found on the way: the browser script imports the Playwright module with a dynamic import, and a relative specifier is resolved as a package name by Node, so the relative value documented in the progress file failed with `Cannot find package 'apps'` and the browser phase could not run. The harness now resolves the module against the repository root, hands an absolute path to the browser script and reports a missing module before the browser phase.
+
+These values are the host report of the owned loopback fixture on this machine. No physical Raspberry-Pi was contacted, the real installation was not activated and the personal database is unchanged at schema 6. The persisted observation history is still not connected; it is recorded as the next READY item.
+
 ## Addendum — the schema2 adoption case and the parity gate
 
 The schema2 adoption of the OIP-008 milestone could not be re-verified because the historical protected binary of that milestone is not part of the workspace any more. `tests/oip007_baseline.py` rebuilds that writer from the verified OIP-007 baseline commit `a27e7b1`; it extracts the source with `git archive`, so no worktree registration and no canonical checkout state is touched. The result records the source commit, the hash of the rebuild and the hash of the historical binary, and it states that a rebuild is not byte identical, so the identity of the historical protected binary is not claimed.

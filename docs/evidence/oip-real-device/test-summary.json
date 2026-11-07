@@ -1,13 +1,13 @@
 {
   "scope": "OIP canonical main: two controlled integrations (iteration 1 real device onboarding feature, iteration 2 its conformance fixes)",
-  "canonical_source_commit": "f4b89ed20fccc1d060b2ef55bdb0828c698dd4ee",
-  "canonical_source_tree": "ab3c6fd923932476ea5b71ba45513dfd85390e20",
-  "previous_canonical_source_commit": "111dff13017089f30055a498fe6c92f6decbaf6b",
-  "integration_method": "seven real git merge --ff-only integrations, no merge commit, no history rewrite",
+  "canonical_source_commit": "e12c00963b865be9bb0c7f7c366d42ba4bf0c4b2",
+  "canonical_source_tree": "56307de71e612563e38cf2657d7bf1cd34a0ce35",
+  "previous_canonical_source_commit": "f4b89ed20fccc1d060b2ef55bdb0828c698dd4ee",
+  "integration_method": "eight real git merge --ff-only integrations, no merge commit, no history rewrite",
   "merge_commit_created": false,
   "history_rewritten": false,
-  "tracked_files_in_source_revision": 445,
-  "source_manifest_sha256": "9d32797172c8f83f9a336798373c00314246a0dc328df669cbc1650ec81255ab",
+  "tracked_files_in_source_revision": 446,
+  "source_manifest_sha256": "23277ea50a08d9b9cc874dabc1482e59eece54706f86e0b87c55a3c28adf95de",
   "source_manifest_scope": "all tracked files of the canonical source revision",
   "reviewed_candidate_tree_unchanged": true,
   "runtime_code_changed_in_this_iteration": true,
@@ -562,16 +562,120 @@
         "conclusion": "the three documented local only exceptions are correct, necessary and cannot be cleared by a dependency upgrade; no exception was added or widened"
       },
       "corrected_claim": "the earlier note that the ignore reasons of RUSTSEC-2023-0089 and RUSTSEC-2024-0449 would not match the advisory subjects was wrong and is corrected"
+    },
+    {
+      "iteration": 8,
+      "scope": "make the monitoring measurements that the Core collects and publishes visible in the Flutter device connection panel, and prove them in the real browser end to end",
+      "canonical_source_commit": "e12c00963b865be9bb0c7f7c366d42ba4bf0c4b2",
+      "canonical_source_tree": "56307de71e612563e38cf2657d7bf1cd34a0ce35",
+      "tracked_files": 446,
+      "source_manifest_sha256": "23277ea50a08d9b9cc874dabc1482e59eece54706f86e0b87c55a3c28adf95de",
+      "development_isolation": "branch feature/oip-monitoring-observations (2ec4829 and e12c009) in an isolated worktree, integrated with git merge --ff-only",
+      "runtime_code_changed": true,
+      "product_source_changed": true,
+      "product_change_scope": "Flutter client only: apps/flutter/lib/features/device_connection_panel.dart renders the current authorized observations; no Rust source, no permission rule, no storage layout and no server behaviour changed",
+      "harness_changed": [
+        "apps/flutter/test/monitoring_observations_test.dart (new: three widget tests for the rendered measurements, an unknown value and the honest empty state)",
+        "apps/flutter/test/browser_onboarding.mjs (compares the rendered panel with the observations that the Core reports for the same device and writes them into the receipt)",
+        "tests/real_device/acceptance.py (the Playwright module is addressed with an absolute path; the documented relative value could never resolve)"
+      ],
+      "contract_updated": "docs/architecture/real-device-onboarding-flutter-contract.md names the rendering and its proof; the rule itself already existed and is enforced now",
+      "flutter": {
+        "analyze": "exit 0, no issues",
+        "test": "89 passed, 0 failed"
+      },
+      "real_device_acceptance": {
+        "status": "PASS",
+        "phases": 8,
+        "phase_names": [
+          "browser_identity_online_writer",
+          "ssh_handshake_confirmation_monitoring",
+          "restart_sigkill_identity",
+          "actual_flutter_ssh_onboarding",
+          "no_clients_ingestion_progress",
+          "host_key_change_blocks_collection",
+          "weak_host_key_is_rejected_by_the_server",
+          "eight_official_mcp_clients"
+        ],
+        "rendered_measurements": {
+          "observed_metrics": [
+            "host.architecture",
+            "host.cpu_info",
+            "host.disks",
+            "host.hostname",
+            "host.interfaces",
+            "host.memory_total_bytes",
+            "host.memory_used_bytes",
+            "host.model",
+            "host.os",
+            "host.uptime_seconds"
+          ],
+          "host_os": "Darwin",
+          "memory_total_bytes": 17179869184,
+          "all_fresh": true,
+          "evidence": "target/oip-real-device-e2e/browser/report.json",
+          "hardware": "owned loopback SSH fixture on this machine, actual host facts; not a physical Raspberry-Pi verdict"
+        }
+      },
+      "canonical_regression": {
+        "status": "PASS",
+        "failed": [],
+        "blocked": [],
+        "cases": [
+          {
+            "name": "oip008_acceptance",
+            "status": "PASS",
+            "seconds": 41.8
+          },
+          {
+            "name": "oip0082_acceptance",
+            "status": "PASS",
+            "seconds": 43.2
+          },
+          {
+            "name": "oip0082_schema3_migration",
+            "status": "PASS",
+            "seconds": 24.9
+          },
+          {
+            "name": "oip0084_acceptance",
+            "status": "PASS",
+            "seconds": 29.9
+          },
+          {
+            "name": "oip0085_acceptance",
+            "status": "PASS",
+            "seconds": 5.4
+          },
+          {
+            "name": "oip0085_migration",
+            "status": "PASS",
+            "seconds": 12.0
+          },
+          {
+            "name": "oip008_ui_regression",
+            "status": "PASS",
+            "seconds": 863.0
+          },
+          {
+            "name": "oip008_legacy_migration",
+            "status": "PASS",
+            "seconds": 5.0
+          }
+        ]
+      },
+      "rust_workspace_unchanged": "no Rust source changed in this iteration, so the Rust workspace results of iteration 5 (180 tests) remain valid for this tree"
     }
   ],
   "measured_on_canonical_main": {
     "cargo_test_workspace": "180 passed, 0 failed",
     "cargo_test_opcua_default_backend": "37 passed",
     "cargo_test_opcua_open62541_only": "2 passed",
-    "flutter_test": "86 passed, 0 failed",
+    "flutter_test": "89 passed, 0 failed",
     "real_device_acceptance_phases": 8,
     "ui_regression": "browser 80.4 s, interactions 47.1 s, visual 63.4 s, native build 11.6 s, native test 39.1 s, all PASS",
-    "milestone_acceptance_harnesses": "8 PASS, no failed and no blocked case"
+    "milestone_acceptance_harnesses": "8 PASS, no failed and no blocked case",
+    "monitoring_measurements_in_the_operator_panel": "10 host observations rendered and compared against the Core response of the same device"
   },
   "status": "INTEGRATED_AND_VERIFIED_ON_CANONICAL_MAIN; PHYSICAL_HARDWARE_ACCEPTANCE_AND_INSTALLATION_ACTIVATION_PENDING",
   "gates_detail": {

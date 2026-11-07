@@ -13,17 +13,17 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `f4b89ed` (`test(core): let the REST and MCP parity gate wait for a bounded convergence`) |
-| Canonical source tree | `ab3c6fd923932476ea5b71ba45513dfd85390e20` |
-| Previous canonical source revision | `111dff1` (iteration 6, canonical regression run) |
-| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in seven controlled steps |
-| Tracked files in the canonical source revision | 445, source manifest SHA-256 `9d32797172c8f83f9a336798373c00314246a0dc328df669cbc1650ec81255ab` |
+| Canonical source revision | `e12c009` (`test(core): address the browser module of the real device harness by an absolute path`) |
+| Canonical source tree | `56307de71e612563e38cf2657d7bf1cd34a0ce35` |
+| Previous canonical source revision | `f4b89ed` (iteration 7, schema2 adoption and parity gate) |
+| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eight controlled steps |
+| Tracked files in the canonical source revision | 446, source manifest SHA-256 `23277ea50a08d9b9cc874dabc1482e59eece54706f86e0b87c55a3c28adf95de` |
 | Documentation commit on top | changes only `docs/OIP_RELEASE_PROGRESS.md`, `docs/evidence/oip-real-device/*.json` and `docs/real-device-onboarding-verification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
 
-The canonical tree carries seven controlled integrations: iteration 1 integrated the reviewed
+The canonical tree carries eight controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
 integrated the isolated harness branch `feature/oip-native-macos-harness` (`b19092d`), iteration 4
@@ -32,7 +32,9 @@ iteration 5 integrated the isolated contract branch `feature/oip-009-context-con
 (`d32c9d1`), iteration 6 the isolated regression branch `feature/oip-canonical-regression`
 (`111dff1`), iteration 7 the isolated baseline branch `feature/oip-007-baseline-adoption`
 (`6df189f`) and the isolated parity gate branch `feature/oip-parity-gate-convergence`
-(`f4b89ed`). No iteration weakened a contract rule, and none activated the installation.
+(`f4b89ed`), iteration 8 the isolated monitoring branch
+`feature/oip-monitoring-observations` (`2ec4829` and `e12c009`). No iteration weakened a contract
+rule, and none activated the installation.
 
 ## 2. Acceptance gates and their measured status
 
@@ -50,10 +52,11 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Dependency policy | PROVED | `cargo deny check advisories licenses bans sources` → advisories ok, bans ok, licenses ok, sources ok |
 | Server binary + official MCP probe | PROVED | `cargo build --locked -p oip-server --bin oip-server --example mcp_probe` → exit 0 |
 | Flutter static analysis | PROVED | `flutter analyze` → exit 0, no issues |
-| Flutter widget/unit suite | PROVED | 86 passed, 0 failed |
+| Flutter widget/unit suite | PROVED | 89 passed, 0 failed |
 | Flutter web release, CanvasKit | PROVED | `flutter build web --release --web-renderer canvaskit …` → exit 0 |
 | Flutter web release, HTML | PROVED | `flutter build web --release --web-renderer html …` → exit 0 |
 | Browser identity + writer ownership | PROVED | `tests/real_device/acceptance.py` phase `browser_identity_online_writer` → PASS |
+| Monitoring measurements in the operator panel | PROVED | `tests/real_device/acceptance.py` phase `actual_flutter_ssh_onboarding` → PASS; the rendered panel shows the ten host observations the Core received over SSH, compared against the Core response of the same device (`host.os` = `Darwin`, `host.memory_total_bytes` = 17179869184, all `fresh`); `apps/flutter/test/monitoring_observations_test.dart` → 3 tests |
 | SSH handshake, identity confirmation, monitoring | PROVED | phase `ssh_handshake_confirmation_monitoring` → PASS, actual local macOS host facts (`facts_os: Darwin`) |
 | Restart / SIGKILL recovery | PROVED | phase `restart_sigkill_identity` → PASS, integrity `ok`, foreign keys clean, 0 duplicate keys |
 | Actual Flutter → HTTP → Core → OpenSSH | PROVED | phase `actual_flutter_ssh_onboarding` → PASS, browser receipt `target/oip-real-device-e2e/browser/report.json` |
@@ -81,21 +84,38 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 
 ## 3. Open items, in execution order
 
-Each item names the next *delimited* step, its gate and its blocker. N1 and N2 are closed. The
-loop continues with item **N1b**; the remaining items stay untouched until the preceding one is
-verified. Items that need an explicit operator decision (N4) or that would change a rule instead
-of enforcing one (F5 inside N1b) are not started by the loop without a separate release.
+Each item names the next *delimited* step, its gate and its blocker and carries one state:
 
-### N1 — Close the conformance gaps found by the delegated source review (Core)
+* **READY** — released and executable by the loop. The loop continues with the first READY item.
+* **BLOCKED_OPERATOR** — needs an explicit operator decision. The loop does not start it.
+* **BLOCKED_DEPENDENCY** — needs a result another workstream owns. The loop does not invent it.
+* **DONE** — closed and measured.
+
+| Item | State | Next delimited step |
+|---|---|---|
+| N1 conformance findings (Core) | **DONE** | closed in iteration 2, F4 closed in iteration 4 |
+| N1b F5 authorization rule | **BLOCKED_OPERATOR** | loosening a permission needs an explicit release |
+| N2 native macOS build and test | **DONE** | closed in iteration 3 |
+| N3 global selection payload | **BLOCKED_DEPENDENCY** | three-way reconciliation with the independent UI workstreams |
+| N4 real installation activation | **BLOCKED_OPERATOR** | operator decision plus a fresh protected schema-6 backup |
+| N5 production advisories and security | **DONE** for the three documented exceptions | the production security work stays open and unclaimed |
+| N6 persisted observation history | **READY** | the next step of the loop |
+| N7 monitoring measurements in the panel | **DONE** | closed in iteration 8 |
+
+A blocked item never stops the loop while an independent READY item exists. Items that need an
+explicit operator decision (N1b, N4) or that would change a rule instead of enforcing one are
+not started by the loop without a separate release.
+
+### N1 — Close the conformance gaps found by the delegated source review (Core) — **DONE**
 
 A read-only source review against `docs/architecture/real-device-onboarding.md` produced the
 findings below. They are contract conformance defects, not new architecture. Fix them on an
 isolated feature branch, add Rust-level regression tests, re-run the full gate set above and
 integrate with the same controlled fast-forward.
 
-**Status: F1, F2, F3, F6, F7 and R1 are fixed and verified in iteration 2.** F4 and F5 remain
-open and are split off as N1b below because they change a storage bound and an authorization
-rule and need their own explicit review.
+**Status: F1, F2, F3, F6, F7 and R1 are fixed and verified in iteration 2, F4 in iteration 4.**
+F5 is split off as N1b below because it changes an authorization rule and needs its own explicit
+review.
 
 | Id | Severity | Location | Defect | Contract reference | Status |
 |---|---|---|---|---|---|
@@ -108,7 +128,7 @@ rule and need their own explicit review.
 | F7 | low | `crates/oip-server/src/ssh.rs` (`private_workdir`) | The SSH work directory was created with the process umask and only afterwards chmod'ed to 0700, leaving a brief world-readable window. | `docs/architecture/real-device-onboarding.md:48` | **fixed** |
 | R1 | test gap | `crates/oip-server/tests/browser_session.rs` | No Rust-level test covered the browser session/CSRF/Origin flow; those assertions only existed in the external harness `tests/real_device/acceptance.py`. | `docs/architecture/real-device-onboarding.md:37-39` | **fixed** |
 
-### N1b — Remaining conformance items (authorization rule)
+### N1b — Remaining conformance items (authorization rule) — **BLOCKED_OPERATOR**
 
 **F4 (storage bound) is closed in iteration 4.** The parser now charges every collected disk
 name, mount, interface name and address against a report budget, the server compares the
@@ -124,7 +144,7 @@ report is refused with an explicit fault instead of a rollback.
   parity update in `docs/architecture/oip-008-rest-mcp-parity.md` if the capability matrix
   changes, and the normal capability, scope and audit gate set.
 
-### N2 — Native macOS build and test (open acceptance item) — **closed in iteration 3**
+### N2 — Native macOS build and test (open acceptance item) — **DONE, closed in iteration 3**
 
 The P0 handoff recorded the native build blocked inside SwiftBuild toolchain discovery
 (`QNXSDP.findInstallations → LocalFS.listdir → __getattrlist`); Flutter returned zero without
@@ -153,7 +173,7 @@ The native path stays what the contract allows: a compatibility and regression c
 explicit isolated demo mode. Native authenticated session-cookie transport is still not claimed
 and the native app is not the product path.
 
-### N3 — OIP-009 browser session / SSE / global context contract — **closed in iteration 5**
+### N3 — OIP-009 browser session / SSE / global context contract — **contract DONE (iteration 5), global selection payload BLOCKED_DEPENDENCY**
 
 `docs/oip-0082-verification.md:116`, `docs/oip-0084-verification.md:134`,
 `docs/architecture/oip-0085-real-inventory-flutter-contract.md:3` and
@@ -176,7 +196,7 @@ API and contracts/Devices named in `docs/architecture/real-device-onboarding.md:
 canonical tree still has no global context selection: `setInfrastructureContext` has no
 caller, and the operator sees the scope of the session Principal.
 
-### N4 — Controlled activation of the real installation (operator decision required)
+### N4 — Controlled activation of the real installation — **BLOCKED_OPERATOR**
 
 Blocked by explicit instruction and by risk. The candidate opens schema 7; the personal
 database is at schema 6 and must not be changed here. Required before activation: a fresh
@@ -185,7 +205,7 @@ one `--browser-login` code, the explicitly confirmed endpoint for
 `tools/configure_ssh_profile.py` (dry run first) and the physical Raspberry-Pi acceptance that
 belongs to the still withheld hardware verdict.
 
-### N5 — Production advisories and remaining security work
+### N5 — Production advisories and remaining security work — **the three documented exceptions are DONE; the production work stays open**
 
 **The three documented exceptions were verified against the advisory database in iteration 7
 and are correct, necessary and unavoidable.** The earlier note in this file that the ignore
@@ -206,6 +226,46 @@ tests.
 
 Productive remote/browser identity, hostile same-UID isolation, tamper-proof durable audit and
 OT/endurance certification stay open and are not claimed by this release.
+
+### N6 — Persisted observation history in the device view — **READY**
+
+The Core already serves the persisted history, the DTOs, the permissions and the query contract
+exist, and the Flutter client names the gap itself: the device dialog states *"Autorisierte
+historische REST-v2-Abfragen existieren im Core"* and the diagnostics view states *"Noch kein
+persistierter Diagnoselauf"*. The seven routes `GET /api/v2/observations/history`,
+`/api/v2/events/history`, `/api/v2/events/detail`, `/api/v2/diagnostics/gaps`,
+`/api/v2/diagnostics/health-history`, `/api/v2/diagnostics/evidence` and
+`/api/v2/diagnostics/findings` are registered in `crates/oip-server/src/api.rs:207-213`, they are
+authorized by `crates/oip-core/src/capabilities.rs:153-181` and their REST/MCP parity is proven in
+`crates/oip-server/tests/diagnostics.rs:271-334` and `tests/oip0082/acceptance.py:98-150`.
+
+The next delimited step is one client feature plus one test group:
+
+1. `apps/flutter/lib/services/api.dart`: add an `observationHistory({required String deviceId})`
+   method to `DeviceManagementApi` and implement it as
+   `GET /api/v2/observations/history?device=<id>`. The device scope is used deliberately, so no
+   global Organization/Infrastructure/Site payload is invented; the SSH source placement already
+   resolves the device to its source (`crates/oip-core/src/diagnostics.rs:13`).
+2. `apps/flutter/lib/features/devices.dart`: replace the *"Historie noch nicht angebunden"*
+   notice with the returned history, each sample explicitly labelled as historical. A stored
+   sample is `stale` by definition (`tests/oip0082/acceptance.py:106`) and must never be drawn as
+   a live value. `truncated` and `next_cursor` have to be surfaced; `DiagnosticPage` has no total.
+3. `crates/oip-server/tests/browser_session.rs`: close the test gap that the seven history routes
+   are currently proven only with a `Bearer` token (`crates/oip-server/tests/diagnostics.rs:314-328`)
+   and not at all with the browser session cookie. The test asserts 200 for the bound device, 404
+   `RESOURCE_NOT_ACCESSIBLE` for a foreign scope, 403 `PERMISSION_DENIED` for a principal without
+   the capability and 403 without a session. It changes no permission rule.
+
+**Boundaries.** The history needs a file-backed SQLite database; an in-memory database answers
+`HISTORY_UNAVAILABLE` (`crates/oip-storage/src/history.rs:56-70`). The personal database is not
+touched by this step. `events_read` is not guaranteed for every operator principal, so the
+observation history is the first surface; the event history follows only when the capability is
+proven.
+
+### N7 — Monitoring measurements in the operator panel — **DONE, closed in iteration 8**
+
+The device connection panel now renders the current authorized observations of the connection
+view. See the iteration log below.
 
 ## 4. Iteration log
 
@@ -552,6 +612,89 @@ real device acceptance results of iteration 5 remain valid for this tree. No phy
 Raspberry-Pi was contacted, the real installation was not activated, the personal database is
 unchanged at schema 6 and the productive identity, hostile same-UID, durable audit and OT
 boundaries stay open. F5 remains open and paused.
+
+### Iteration 8 — the monitoring measurements reach the operator panel
+
+**Step.** Make the monitoring measurements that the Core already collects and publishes visible
+in the surface that is dedicated to connection and monitoring, and prove it in the real browser
+end to end. Two isolated commits on the branch `feature/oip-monitoring-observations`
+(`2ec4829`, `e12c009`), both integrated with a real `git merge --ff-only`.
+
+**The defect.** The Core collects the host report of a connected device and publishes the
+resulting observations in the connection view (`crates/oip-server/src/connection_service.rs:303`).
+The Flutter client parsed them (`apps/flutter/lib/models/onboarding.dart:70`) but the device
+connection panel rendered **only the empty case** and dropped every real measurement
+(`apps/flutter/lib/features/device_connection_panel.dart:143`). The Flutter contract requires the
+connection view to contain the current authorized observations
+(`docs/architecture/real-device-onboarding-flutter-contract.md:37`) and requires the browser E2E
+to verify "subsequent actual observations" (`:45`). Neither held: the panel showed the state
+`Collecting` but never a collected value, and the browser E2E only waited for the state string.
+
+**What changed.**
+
+* `apps/flutter/lib/features/device_connection_panel.dart`: the panel renders the current
+  authorized observations with their metric identifier, value, unit, quality, freshness and
+  capture time. Long text reports (disks, interfaces) stay collapsed behind an expansion and are
+  never presented as a complete value in the preview. A missing value stays unknown and is not
+  replaced by a substitute.
+* `apps/flutter/test/monitoring_observations_test.dart` (new): three widget tests — the rendered
+  measurements with their unit and state, an unknown value that is not replaced by a substitute,
+  and the honest empty state.
+* `apps/flutter/test/browser_onboarding.mjs`: after the `Collecting` state, the rendered panel is
+  compared with the observations that the Core reports **for the same device**. The expected
+  values are read back from the Core and are never invented in the test; the measured values are
+  written into the browser receipt.
+* `docs/architecture/real-device-onboarding-flutter-contract.md`: names the rendering and its
+  proof.
+* `tests/real_device/acceptance.py`: the Playwright module is addressed with an absolute path.
+  The relative value documented in this file could never work, because a dynamic import resolves
+  a relative specifier as a package name; the browser phase failed with
+  `Cannot find package 'apps'`. The harness now resolves the module against the repository root
+  and reports a missing module before the browser phase instead of inside the node error.
+
+**Measured result on canonical `main` (`e12c009`)** — actual Flutter web release → authenticated
+HTTP → shared Core → owned loopback OpenSSH → genuine macOS host facts:
+
+```
+flutter analyze                                                    exit 0, no issues
+flutter test                                                       89 passed, 0 failed
+python3 tests/real_device/acceptance.py                           8 phases PASS, exit 0
+  PASS browser_identity_online_writer
+  PASS ssh_handshake_confirmation_monitoring
+  PASS restart_sigkill_identity
+  PASS actual_flutter_ssh_onboarding     <- the rendered measurements
+  PASS no_clients_ingestion_progress
+  PASS host_key_change_blocks_collection
+  PASS weak_host_key_is_rejected_by_the_server
+  PASS eight_official_mcp_clients
+python3 tests/canonical_regression.py                             8 cases PASS, no failed, no blocked
+  oip008_acceptance           PASS  41.8 s
+  oip0082_acceptance          PASS  43.2 s
+  oip0082_schema3_migration   PASS  24.9 s
+  oip0084_acceptance          PASS  29.9 s
+  oip0085_acceptance          PASS   5.4 s
+  oip0085_migration           PASS  12.0 s
+  oip008_ui_regression        PASS 863.0 s   (browser 80.4 s, interactions 47.1 s, visual 63.4 s,
+                                                 native build 11.6 s, native macOS test 39.1 s,
+                                                 every step with its marker)
+  oip008_legacy_migration     PASS   5.0 s
+```
+
+The browser receipt (`target/oip-real-device-e2e/browser/report.json`) names the ten observations
+that the Core received from the owned fixture and that the operator now sees in the panel:
+
+```
+host.architecture  host.cpu_info   host.disks      host.hostname  host.interfaces
+host.memory_total_bytes  host.memory_used_bytes  host.model  host.os  host.uptime_seconds
+host_os = Darwin        memory_total_bytes = 17179869184        all fresh
+```
+
+**Not claimed.** The measurement values are the host report of the owned loopback fixture on this
+machine, not a physical Raspberry-Pi verdict. No personal device was contacted, the real
+installation was not activated, the personal database is unchanged at schema 6, the persisted
+history is still not connected (N6) and the productive identity, hostile same-UID, durable audit
+and OT boundaries stay open. F5 remains open and paused. The Rust source is unchanged in this
+iteration, so the Rust workspace results of iteration 5 remain valid for this tree.
 
 ### Iteration 7 — the schema2 adoption case and a stable parity gate
 
