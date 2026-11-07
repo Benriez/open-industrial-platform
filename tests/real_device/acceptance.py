@@ -174,6 +174,17 @@ try:
         blocked=count();time.sleep(1);assert count()==blocked
         assert get('/api/v2/inventory/devices?id=existing-pi')['items'][0]['record']['device']['id']=='existing-pi'
         record('host_key_change_blocks_collection',{'changed_key_rejected':True,'existing_id_unchanged':True,'new_observations_after_block':0})
+        # The server enforces the accepted minimum host key size itself. A weak
+        # key is never offered for acceptance and never pinned.
+        weak_body={'changes':[{'operation':'register','device':{'id':'weak-key-device','display_name':'Weak host key fixture','device_type':'server','site_id':'site-a1','metadata':{}}}]}
+        assert request('/api/v2/inventory/apply',weak_body)[0]==200
+        owned_fixture.rotate(kind='rsa',bits=1024)
+        weak=change({'operation':'start','target':{'kind':'existing','id':'weak-key-device','expected_revision':1},'endpoint':endpoint()})['plan']['plan_id']
+        wait(lambda:get('/api/v2/device-connections?plan_id='+weak)['plan']['stage']=='failed','weak host key is rejected')
+        rejection=get('/api/v2/device-connections?plan_id='+weak)['plan']['error']
+        assert rejection['code']=='SSH_HOST_KEY_TOO_WEAK',rejection
+        assert not get('/api/v2/device-connections?device_id=weak-key-device')['connection']
+        record('weak_host_key_is_rejected_by_the_server',{'code':rejection['code'],'offered_for_acceptance':False,'pinned':False,'no_binding_created':True})
     record('eight_official_mcp_clients',{'clients':8,'shared_core':True,'disconnect_isolated':True})
     REPORT['status']='PASS'
 finally:

@@ -36,8 +36,10 @@ StrictModes yes
 LogLevel ERROR
 ''')
         self.process=None;self.start()
-    def key(self,name):
-        subprocess.run(['/usr/bin/ssh-keygen','-q','-t','ed25519','-N','','-f',str(self.directory/name)],check=True,stdout=subprocess.DEVNULL)
+    def key(self,name,kind='ed25519',bits=None):
+        args=['/usr/bin/ssh-keygen','-q','-t',kind,'-N','','-f',str(self.directory/name)]
+        if bits:args+=['-b',str(bits)]
+        subprocess.run(args,check=True,stdout=subprocess.DEVNULL)
     def start(self):
         self.log=(self.directory/'sshd.log').open('a')
         self.process=subprocess.Popen(['/usr/sbin/sshd','-D','-e','-f',str(self.config)],stdout=self.log,stderr=self.log)
@@ -52,11 +54,12 @@ LogLevel ERROR
         if self.process and self.process.poll() is None:self.process.terminate()
         if self.process:self.process.wait(timeout=10)
         if hasattr(self,'log'):self.log.close()
-    def rotate(self):
+    def rotate(self,kind='ed25519',bits=None):
         self.stop()
         # Only keys generated and owned by this fixture. Preserve previous public identity.
         for suffix in ['', '.pub']:(self.directory/('host'+suffix)).rename(self.directory/('old-host'+suffix))
-        self.key('host');self.start()
+        self.key('host',kind,bits)
+        self.start()
     def metadata(self):return {'directory':str(self.directory),'pid':self.process.pid,'port':self.port,'user':self.user,'loopback_only':True,'private_key_content_recorded':False}
 
 if __name__=='__main__':

@@ -119,6 +119,8 @@ class _DeviceConnectionPanelState extends State<DeviceConnectionPanel> {
                 'Unreachable · tatsächlicher Verbindungsversuch fehlgeschlagen',
               'stale' => 'Stale · Messwerte veraltet',
               'host_key_changed' => 'Host-Key geändert · Verbindung blockiert',
+              'host_key_unknown' =>
+                'Host-Key unbekannt · Identität vor der nächsten Verbindung bestätigen',
               _ => c.status
             },
             key: const Key('device-monitoring-status')),

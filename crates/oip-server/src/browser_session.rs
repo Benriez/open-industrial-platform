@@ -12,6 +12,9 @@ const SESSION_TTL: Duration = Duration::from_secs(1800);
 const GRANT_TTL: Duration = Duration::from_secs(120);
 const MAX_SESSIONS: usize = 64;
 const MAX_GRANTS: usize = 32;
+/// Bounded record of rejected codes. The counter never blocks a valid single-use
+/// grant; it only keeps the rejection state itself bounded.
+const MAX_FAILED: usize = 16;
 pub const COOKIE: &str = "oip_session";
 struct Grant {
     principal: PrincipalId,
@@ -90,17 +93,22 @@ impl BrowserSessions {
     pub fn login(&self, code: &str) -> Result<(String, SessionInfo), CapabilityError> {
         let mut e = self.entries.lock().map_err(|_| denied())?;
         e.prune();
-        if e.failed.len() >= 16 || code.len() != 64 || !code.bytes().all(|b| b.is_ascii_hexdigit())
-        {
+        if code.len() != 64 || !code.bytes().all(|b| b.is_ascii_hexdigit()) {
             return Err(denied());
         }
-        let Some(grant) = e.grants.remove(&digest(code)) else {
-            e.failed.push(Instant::now());
-            return Err(denied());
-        };
+        // A full session table must not destroy a valid single-use grant: the
+        // operator can still redeem the code once a session ended.
         if e.sessions.len() >= MAX_SESSIONS {
             return Err(denied());
         }
+        let Some(grant) = e.grants.remove(&digest(code)) else {
+            // Bounded rejection accounting. Earlier invalid attempts never block
+            // a valid grant, and the recorded state stays capped.
+            if e.failed.len() < MAX_FAILED {
+                e.failed.push(Instant::now());
+            }
+            return Err(denied());
+        };
         let token = random_token().map_err(|_| denied())?;
         let csrf = random_token().map_err(|_| denied())?;
         let info = SessionInfo {
@@ -242,5 +250,38 @@ mod tests {
         assert!(require_origin(&h).is_err());
         h.insert("origin", "http://127.0.0.1:18086".parse().unwrap());
         assert!(require_origin(&h).is_ok());
+    }
+    #[test]
+    fn rejected_codes_never_block_a_valid_single_use_grant() {
+        let sessions = BrowserSessions::default();
+        let p = PrincipalId::new("local-principal").unwrap();
+        let code = sessions.issue(p.clone()).unwrap();
+        let wrong = "b".repeat(64);
+        for _ in 0..(MAX_FAILED + 4) {
+            assert!(sessions.login(&wrong).is_err());
+        }
+        // The rejection accounting stays bounded and does not block the operator.
+        assert!(sessions.entries.lock().unwrap().failed.len() <= MAX_FAILED);
+        let (token, info) = sessions.login(&code).expect("valid grant must survive");
+        assert!(sessions.authenticate(&token, None).is_ok());
+        assert_eq!(info.principal_id, Some(p));
+        // The grant is still single use.
+        assert!(sessions.login(&code).is_err());
+    }
+    #[test]
+    fn a_full_session_table_does_not_consume_the_grant() {
+        let sessions = BrowserSessions::default();
+        let p = PrincipalId::new("local-principal").unwrap();
+        let mut tokens = Vec::new();
+        for _ in 0..MAX_SESSIONS {
+            let code = sessions.issue(p.clone()).unwrap();
+            let (token, _) = sessions.login(&code).unwrap();
+            tokens.push(token);
+        }
+        let spare = sessions.issue(p.clone()).unwrap();
+        assert!(sessions.login(&spare).is_err());
+        sessions.logout(&tokens[0]);
+        // The refused attempt did not destroy the single-use code.
+        assert!(sessions.login(&spare).is_ok());
     }
 }

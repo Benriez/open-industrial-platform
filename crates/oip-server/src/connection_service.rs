@@ -253,6 +253,12 @@ impl ConnectionHub {
                     .is_some_and(|e| e.code == "SSH_HOST_KEY_CHANGED")
                 {
                     "host_key_changed"
+                } else if c
+                    .last_error
+                    .as_ref()
+                    .is_some_and(|e| e.code == "SSH_HOST_KEY_UNKNOWN")
+                {
+                    "host_key_unknown"
                 } else if c.last_error.as_ref().is_some_and(|e| {
                     matches!(e.code.as_str(), "SSH_ENDPOINT_UNREACHABLE" | "SSH_TIMEOUT")
                 }) {

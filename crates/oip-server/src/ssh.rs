@@ -52,6 +52,29 @@ pub struct PublicHostKey {
     pub key: String,
     pub fingerprint: String,
 }
+/// Minimum accepted host key size per key type. The contract requires RSA keys
+/// of at least 2048 bits; the remaining types have a fixed size by algorithm.
+fn minimum_key_bits(key_type: &str) -> Option<u32> {
+    match key_type {
+        "ssh-rsa" => Some(2048),
+        "ssh-ed25519" => Some(256),
+        "ecdsa-sha2-nistp256" => Some(256),
+        "ecdsa-sha2-nistp384" => Some(384),
+        "ecdsa-sha2-nistp521" => Some(521),
+        _ => None,
+    }
+}
+/// The size and fingerprint reported by `ssh-keygen -lf`. The size is used to
+/// reject weak host keys instead of trusting the client option alone.
+fn parse_key_report(text: &str) -> Option<(u32, String)> {
+    let mut fields = text.split_whitespace();
+    let bits = fields.next()?.parse::<u32>().ok()?;
+    let fingerprint = fields.next()?;
+    if !fingerprint.starts_with("SHA256:") {
+        return None;
+    }
+    Some((bits, fingerprint.to_string()))
+}
 pub fn fault(code: &str) -> ConnectionFault {
     ConnectionFault {
         code: code.into(),
@@ -62,6 +85,12 @@ pub fn fault(code: &str) -> ConnectionFault {
             }
             "SSH_HOST_KEY_CHANGED" => {
                 "SSH host key differs from the trusted binding; connection blocked"
+            }
+            "SSH_HOST_KEY_UNKNOWN" => {
+                "SSH host key is not the pinned key; the host identity must be confirmed again before any connection"
+            }
+            "SSH_HOST_KEY_TOO_WEAK" => {
+                "SSH host key is below the accepted minimum size and was rejected"
             }
             "SSH_ENDPOINT_UNREACHABLE" => {
                 "The explicitly configured SSH endpoint could not be reached"
@@ -313,7 +342,7 @@ async fn run(
             let _ = stdin.shutdown().await;
         }
     }
-    let result = tokio::select! {biased;_=cancel.cancelled()=>Err(fault("SSH_CANCELLED")),result=tokio::time::timeout(Duration::from_secs(10),async{tokio::try_join!(bounded(stdout,limit),bounded(stderr,16384),child.wait())})=>match result{Err(_)=>Err(fault("SSH_TIMEOUT")),Ok(Err(_))=>Err(fault("SSH_OUTPUT_LIMIT")),Ok(Ok((out,err,status)))=>if status.success(){Ok(out)}else{let err=String::from_utf8_lossy(&err);Err(fault(if err.contains("OIP_UNSUPPORTED_OS"){"SSH_UNSUPPORTED_OS"}else if err.contains("OIP_PRIVILEGED_ACCOUNT"){"SSH_PRIVILEGED_ACCOUNT"}else if err.contains("REMOTE HOST IDENTIFICATION HAS CHANGED")||err.contains("Host key verification failed"){"SSH_HOST_KEY_CHANGED"}else if err.contains("Permission denied")||err.contains("Authentication failed"){"SSH_AUTHENTICATION_FAILED"}else if err.contains("Connection refused")||err.contains("No route to host")||err.contains("Could not resolve hostname"){"SSH_ENDPOINT_UNREACHABLE"}else if err.contains("timed out"){"SSH_TIMEOUT"}else{"SSH_FAILED"}))}}};
+    let result = tokio::select! {biased;_=cancel.cancelled()=>Err(fault("SSH_CANCELLED")),result=tokio::time::timeout(Duration::from_secs(10),async{tokio::try_join!(bounded(stdout,limit),bounded(stderr,16384),child.wait())})=>match result{Err(_)=>Err(fault("SSH_TIMEOUT")),Ok(Err(_))=>Err(fault("SSH_OUTPUT_LIMIT")),Ok(Ok((out,err,status)))=>if status.success(){Ok(out)}else{let err=String::from_utf8_lossy(&err);Err(fault(if err.contains("OIP_UNSUPPORTED_OS"){"SSH_UNSUPPORTED_OS"}else if err.contains("OIP_PRIVILEGED_ACCOUNT"){"SSH_PRIVILEGED_ACCOUNT"}else if err.contains("REMOTE HOST IDENTIFICATION HAS CHANGED"){"SSH_HOST_KEY_CHANGED"}else if err.contains("Host key verification failed")||err.contains("no matching host key type found"){"SSH_HOST_KEY_UNKNOWN"}else if err.contains("Permission denied")||err.contains("Authentication failed"){"SSH_AUTHENTICATION_FAILED"}else if err.contains("Connection refused")||err.contains("No route to host")||err.contains("Could not resolve hostname"){"SSH_ENDPOINT_UNREACHABLE"}else if err.contains("timed out"){"SSH_TIMEOUT"}else{"SSH_FAILED"}))}}};
     if result.is_err() {
         let _ = child.kill().await;
         let _ = child.wait().await;
@@ -322,12 +351,25 @@ async fn run(
 }
 pub fn private_workdir(path: &Path) -> Result<(), ConnectionFault> {
     if !path.exists() {
-        std::fs::create_dir(path).map_err(|_| fault("SSH_PROFILE_UNAVAILABLE"))?;
         #[cfg(unix)]
         {
-            use std::os::unix::fs::PermissionsExt;
+            use std::os::unix::fs::{DirBuilderExt, PermissionsExt};
+            // The owner-only mode is applied at creation, so the directory is
+            // never briefly readable by other users.
+            let mut builder = std::fs::DirBuilder::new();
+            builder.mode(0o700);
+            match builder.create(path) {
+                Ok(()) => {}
+                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {}
+                Err(_) => return Err(fault("SSH_PROFILE_UNAVAILABLE")),
+            }
+            // Guarantee the exact owner-only mode even under an unusual umask.
             std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o700))
                 .map_err(|_| fault("SSH_PROFILE_UNAVAILABLE"))?;
+        }
+        #[cfg(not(unix))]
+        {
+            std::fs::create_dir(path).map_err(|_| fault("SSH_PROFILE_UNAVAILABLE"))?;
         }
     }
     safe_path(path)?;
@@ -410,17 +452,17 @@ pub async fn scan(
             return Err(fault("SSH_OUTPUT_LIMIT"));
         }
         let key = format!("{} {}", parts[1], parts[2]);
+        let minimum = minimum_key_bits(parts[1]).ok_or_else(|| fault("SSH_FAILED"))?;
         let pin = pin_file(dir, &key)?;
         let mut cmd = Command::new("/usr/bin/ssh-keygen");
         cmd.args(["-lf"]).arg(&pin.0).args(["-E", "sha256"]);
         let out = run(cmd, None, cancel, 2048).await?;
         let text = String::from_utf8(out).map_err(|_| fault("SSH_FAILED"))?;
-        let fingerprint = text
-            .split_whitespace()
-            .nth(1)
-            .filter(|s| s.starts_with("SHA256:"))
-            .ok_or_else(|| fault("SSH_FAILED"))?
-            .to_string();
+        let (bits, fingerprint) = parse_key_report(&text).ok_or_else(|| fault("SSH_FAILED"))?;
+        // A weak key is never shown for acceptance and never pinned.
+        if bits < minimum {
+            return Err(fault("SSH_HOST_KEY_TOO_WEAK"));
+        }
         keys.push(PublicHostKey { key, fingerprint });
     }
     if keys.is_empty() {
@@ -1027,5 +1069,33 @@ mod tests {
     fn duplicate_markers_or_unsupported_os_fail() {
         assert!(parse(b"__OIP_OS__\nLinux\n__OIP_OS__\nDarwin\n", 1).is_err());
         assert!(parse(b"__OIP_OS__\nWindows\n__OIP_END__", 1).is_err());
+    }
+    #[test]
+    fn host_key_size_is_parsed_and_enforced_by_the_server() {
+        assert_eq!(
+            parse_key_report("2048 SHA256:abcdefghijklmnopqrstuvwxyz0123456789 root@host (RSA)"),
+            Some((
+                2048,
+                "SHA256:abcdefghijklmnopqrstuvwxyz0123456789".to_string()
+            ))
+        );
+        assert_eq!(
+            parse_key_report("256 SHA256:abcdefghijklmnopqrstuvwxyz0123456789 host (ED25519)"),
+            Some((
+                256,
+                "SHA256:abcdefghijklmnopqrstuvwxyz0123456789".to_string()
+            ))
+        );
+        // A report without a usable size or fingerprint is never accepted.
+        assert!(parse_key_report("SHA256:abcdef host (RSA)").is_none());
+        assert!(parse_key_report("2048 MD5:abcdef host (RSA)").is_none());
+        assert!(parse_key_report("").is_none());
+        // RSA below 2048 bits is rejected by the server, not only by the client.
+        assert_eq!(minimum_key_bits("ssh-rsa"), Some(2048));
+        assert_eq!(minimum_key_bits("ssh-ed25519"), Some(256));
+        assert_eq!(minimum_key_bits("ecdsa-sha2-nistp384"), Some(384));
+        assert_eq!(minimum_key_bits("ssh-dss"), None);
+        assert!(1024u32 < minimum_key_bits("ssh-rsa").unwrap());
+        assert!(2048u32 >= minimum_key_bits("ssh-rsa").unwrap());
     }
 }
