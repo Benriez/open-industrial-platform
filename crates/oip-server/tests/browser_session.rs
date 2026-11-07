@@ -132,6 +132,113 @@ fn registration(id: &str) -> Value {
     json!({"changes":[{"operation":"register","device":{"id":id,"display_name":"Browser session fixture","device_type":"server","site_id":"site-a1","metadata":{}}}]})
 }
 
+/// A file-backed, multi-infrastructure state with one persisted observation.
+///
+/// The history reader needs a real SQLite file; an in-memory database answers
+/// `HISTORY_UNAVAILABLE`. The source placements of the plan are kept, so a
+/// device scoped query can resolve its source. A principal that is bound to a
+/// scope but does not hold `telemetry_read` is added, because the permission
+/// sets of the bindings of a principal are unioned.
+fn history_state() -> (AppState, PathBuf) {
+    let dir = dir();
+    let path = dir.join("history.sqlite");
+    let mut plan: ProvisioningPlan = serde_json::from_str(include_str!(
+        "../../../examples/multi-infrastructure-plan.json"
+    ))
+    .unwrap();
+    plan.principals.push(Principal {
+        id: PrincipalId::new("no-telemetry").unwrap(),
+        name: "No telemetry fixture".into(),
+        enabled: true,
+    });
+    plan.roles.push(ReadRole {
+        id: RoleId::new("no-telemetry").unwrap(),
+        name: "no telemetry".into(),
+        permissions: [Permission::EventsRead].into(),
+    });
+    plan.bindings.push(RoleBinding {
+        principal_id: PrincipalId::new("no-telemetry").unwrap(),
+        role_id: RoleId::new("no-telemetry").unwrap(),
+        scope: AccessScope::Organization(OrganizationId::new("org-a").unwrap()),
+    });
+    let config: CoreConfig = serde_json::from_str(include_str!(
+        "../../../examples/multi-infrastructure-core.json"
+    ))
+    .unwrap();
+    let definitions = config
+        .sources
+        .iter()
+        .map(|s| s.definition().unwrap())
+        .collect::<Vec<_>>();
+    {
+        let _o = oip_storage::DatabaseOwnership::acquire(&path).unwrap();
+        let mut db = SqliteStore::open(&path).unwrap();
+        db.provision(plan, &definitions, None).unwrap();
+        // One persisted observation of the source of device-a. It needs a
+        // receive time, because a sample without one never matches the
+        // history query.
+        let ctx = EventContext {
+            data_source_id: DataSourceId::new("source-a").unwrap(),
+            origin_class: OriginClass::Simulation,
+        };
+        db.ingest_event(
+            &ctx,
+            &ClientEvent::Observation(Box::new(ObservationEnvelope {
+                entity_id: EntityId::new("M-01").unwrap(),
+                data_source_id: DataSourceId::new("source-a").unwrap(),
+                metric_id: MetricId::new("temperature").unwrap(),
+                value: Some(MetricValue::Float(61.2)),
+                unit: Unit::Celsius,
+                quality: DataQuality::Good,
+                freshness: Freshness::Fresh,
+                timestamps: Timestamps {
+                    source: Timestamp::from_unix_millis(1000),
+                    server: Some(Timestamp::from_unix_millis(1010)),
+                    received: Some(Timestamp::from_unix_millis(1020)),
+                },
+                status_code: None,
+                collection_error: None,
+                simulation_origin: Some(SimulationOrigin {
+                    origin_id: "oip-local-simulation-v1".into(),
+                    seed: None,
+                    scenario: None,
+                    virtual_time_ms: None,
+                    sequence: None,
+                }),
+            })),
+        )
+        .unwrap();
+    }
+    let state = AppState::configured(SqliteStore::open(&path).unwrap(), &config, None).unwrap();
+    (state, dir)
+}
+
+/// A browser session for a named principal of the provisioned hierarchy.
+async fn login_as(app: &Router, state: &AppState, principal: &str) -> String {
+    let code = state
+        .browser_sessions
+        .issue(PrincipalId::new(principal).unwrap())
+        .unwrap();
+    let (status, body, headers) = send(
+        app.clone(),
+        "POST",
+        "/api/v2/browser/login",
+        vec![("origin", ORIGIN.to_string())],
+        Some(json!({"code": code})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    headers
+        .get("set-cookie")
+        .expect("a session cookie")
+        .to_str()
+        .unwrap()
+        .split(';')
+        .next()
+        .unwrap()
+        .to_string()
+}
+
 #[tokio::test]
 async fn login_requires_the_exact_origin_and_a_single_use_code() {
     let state = state();
@@ -410,4 +517,117 @@ async fn a_revoked_session_stops_the_projection_stream() {
         reported,
         "the stream must stop delivering projections after the revocation"
     );
+}
+
+/// The persisted history is authorized by the browser session cookie.
+///
+/// The seven history routes were proven with a bearer token only. The session
+/// cookie is the transport that the operator UI uses, so its boundary is
+/// proven here: a bound device is served, a foreign scope and an unknown
+/// device stay invisible, a principal without the capability is refused and a
+/// request without a session is refused.
+#[tokio::test]
+async fn the_persisted_history_is_authorized_by_the_browser_session_cookie() {
+    let (state, dir) = history_state();
+    let app = api::router(state.clone(), "missing");
+    let bound = login_as(&app, &state, "reader-org-a").await;
+    let foreign = login_as(&app, &state, "reader-org-b").await;
+    let without_capability = login_as(&app, &state, "no-telemetry").await;
+
+    // The bound device is served with the persisted sample of its source.
+    let (status, body, _) = send(
+        app.clone(),
+        "GET",
+        "/api/v2/observations/history?device=device-a",
+        vec![("cookie", bound.clone())],
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let items = body["items"].as_array().expect("a list of items");
+    assert_eq!(items.len(), 1, "{body}");
+    assert_eq!(items[0]["category"], "observation");
+    let observation = &items[0]["record"]["observation"];
+    assert_eq!(observation["data_source_id"], "source-a");
+    assert_eq!(observation["metric_id"], "temperature");
+    // A stored sample is history; the Core never reports it as a live value.
+    assert_eq!(observation["freshness"], "stale");
+    assert_eq!(observation["value"]["float"], 61.2);
+    // The page reports the continuation, not a total.
+    assert_eq!(body["truncated"], false);
+    assert!(body["next_cursor"].is_null(), "{body}");
+    assert!(body.get("total").is_none(), "{body}");
+    assert_eq!(body["missing_evidence"].as_array().unwrap().len(), 1);
+    assert!(body["time_semantics"]
+        .as_str()
+        .unwrap()
+        .contains("received time"));
+
+    // A device outside the scope of the principal stays invisible. The answer
+    // never names the foreign device or its source. device-a belongs to org-a
+    // and device-d to org-b.
+    for (cookie, device) in [(foreign.clone(), "device-a"), (bound.clone(), "device-d")] {
+        let (status, body, _) = send(
+            app.clone(),
+            "GET",
+            &format!("/api/v2/observations/history?device={device}"),
+            vec![("cookie", cookie)],
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::NOT_FOUND, "{body}");
+        assert_eq!(body["code"], "RESOURCE_NOT_ACCESSIBLE");
+        assert_eq!(body["kind"], "resource_not_found");
+    }
+    // An unknown device is refused the same way.
+    let (status, body, _) = send(
+        app.clone(),
+        "GET",
+        "/api/v2/observations/history?device=device-absent",
+        vec![("cookie", bound.clone())],
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NOT_FOUND, "{body}");
+    assert_eq!(body["code"], "RESOURCE_NOT_ACCESSIBLE");
+
+    // A principal that holds no telemetry_read never receives the history.
+    let (status, body, _) = send(
+        app.clone(),
+        "GET",
+        "/api/v2/observations/history?device=device-a",
+        vec![("cookie", without_capability)],
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "{body}");
+    assert_eq!(body["code"], "PERMISSION_DENIED");
+    assert_eq!(body["kind"], "permission_denied");
+
+    // A request without a session is refused as well.
+    let (status, body, _) = send(
+        app.clone(),
+        "GET",
+        "/api/v2/observations/history?device=device-a",
+        vec![],
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "{body}");
+    assert_eq!(body["code"], "PERMISSION_DENIED");
+
+    // An unbounded page is refused instead of being answered.
+    let (status, body, _) = send(
+        app.clone(),
+        "GET",
+        "/api/v2/observations/history?device=device-a&limit=0",
+        vec![("cookie", bound)],
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST, "{body}");
+    assert_eq!(body["code"], "INVALID_DIAGNOSTIC_QUERY");
+
+    state.shutdown().await;
+    std::fs::remove_dir_all(dir).unwrap();
 }

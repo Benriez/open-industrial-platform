@@ -5,6 +5,7 @@ import '../models/contracts.dart';
 import '../widgets/components.dart';
 import 'device_onboarding.dart';
 import 'device_connection_panel.dart';
+import 'device_history.dart';
 
 class DevicesPage extends StatefulWidget {
   final OipController controller;
@@ -634,16 +635,17 @@ class _DeviceDetailDialogState extends State<DeviceDetailDialog> {
                 },
               ),
               const SizedBox(height: OipTokens.s4),
-              InlineNotice(
-                widget.controller.managed
-                    ? 'Historie in dieser Ansicht noch nicht angebunden'
-                    : 'Historie noch nicht verfügbar',
-                widget.controller.managed
-                    ? 'Autorisierte historische REST-v2-Abfragen existieren im Core. Diese Detailansicht zeigt aktuelle Messwerte; keine Historie wird aus Live-Samples rekonstruiert.'
-                    : 'Serverseitiger Historienendpunkt noch nicht implementiert. Der Overview zeigt ausschließlich empfangene Sitzungspunkte.',
-                icon: Icons.history,
-                color: OipTokens.statusColor(context, 'degraded'),
-              ),
+              if (widget.controller.managed)
+                DeviceHistorySection(
+                    api: widget.controller.management!,
+                    deviceId: device.id)
+              else
+                InlineNotice(
+                  'Historie noch nicht verfügbar',
+                  'Serverseitiger Historienendpunkt noch nicht implementiert. Der Overview zeigt ausschließlich empfangene Sitzungspunkte.',
+                  icon: Icons.history,
+                  color: OipTokens.statusColor(context, 'degraded'),
+                ),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(

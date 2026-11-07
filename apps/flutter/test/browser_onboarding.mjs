@@ -101,6 +101,32 @@ try {
   for(let i=0;i<60;i++){ rendered=await page.locator('body').ariaSnapshot(); if(rendered.includes('host.os')&&rendered.includes(os.value.text)&&rendered.includes('host.memory_total_bytes')&&rendered.includes(String(memory.value.unsigned_integer)))break; if(i===59)throw Error('The rendered panel does not show the collected measurements'); await page.waitForTimeout(250); }
   assert(rendered.includes(os.value.text));
   assert(rendered.includes(String(memory.value.unsigned_integer)));
+  // The persisted history of the device must be reachable in the device view.
+  // The samples are read back from the Core, never invented here, and the
+  // receive times on the screen must be the receive times the Core stored.
+  const history=(await (await context.request.get(base+'/api/v2/observations/history?device=browser-existing&limit=20')).json());
+  const stored=history.items.filter(i=>i.category==='observation').map(i=>i.record.observation);
+  assert(stored.length>0,'the Core persisted no observation for the device');
+  assert(stored.every(o=>o.freshness==='stale'),'a stored sample must never be reported as live');
+  const stamp=ms=>new Date(ms).toISOString().replace('T',' ').replace('Z',' UTC');
+  const wanted=stored.slice(0,6).map(o=>o.metric_id+' · Historie');
+  const stamps=stored.slice(0,6).map(o=>stamp(o.timestamps.received));
+  const seen=new Set(),seenStamps=new Set();
+  let section=false;
+  for(let i=0;i<80;i++){
+    const snapshot=await page.locator('body').ariaSnapshot();
+    if(snapshot.includes('Persistierte Messhistorie'))section=true;
+    for(const w of wanted)if(snapshot.includes(w))seen.add(w);
+    for(const s of stamps)if(snapshot.includes(s))seenStamps.add(s);
+    if(section&&seen.size>=3&&seenStamps.size>=1)break;
+    await page.mouse.move(1100,600);
+    await page.mouse.wheel(0,400);
+    await page.waitForTimeout(120);
+  }
+  assert(section,'the persisted history is not rendered in the device view');
+  assert(seen.size>=3,'the rendered history does not show the persisted samples of the Core');
+  assert(seenStamps.size>=1,'the rendered history does not show the receive time the Core stored');
+  await capture('07-persisted-history');
   const cookies=await context.cookies();assert(cookies.some(c=>c.name==='oip_session'&&c.httpOnly&&c.sameSite==='Strict'));
   assert.equal(await page.evaluate(()=>localStorage.length),0);
   assert.equal(await page.evaluate(()=>sessionStorage.length),0);
@@ -111,7 +137,7 @@ try {
   await page.getByRole('button',{name:'Operator abmelden',exact:true}).click();
   await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
+  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
 } catch(e) {
   await writeFile(resolve(out,'ssh-requests.json'),JSON.stringify(sshRequests,null,2));
   await capture('failure');

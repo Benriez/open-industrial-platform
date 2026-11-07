@@ -4,6 +4,7 @@ import '../core/sse.dart';
 import '../core/event_connection.dart';
 import 'event_transport.dart';
 import '../models/contracts.dart';
+import '../models/history.dart';
 import '../models/onboarding.dart';
 
 abstract class OipApi {
@@ -44,6 +45,13 @@ abstract class DeviceManagementApi {
   Future<void> register(Json device);
   Future<ConnectionResult> connection({String? deviceId, String? planId});
   Future<ConnectionResult> configure(Json action);
+
+  /// The persisted observation history of one device.
+  ///
+  /// The scope is the device itself, so no global organization, infrastructure
+  /// or site selection is needed and none is invented.
+  Future<HistoryPage> observationHistory(
+      {required String deviceId, String? cursor, int limit = 20});
 }
 
 class RestApi implements OipApi, DeviceManagementApi {
@@ -133,6 +141,18 @@ class RestApi implements OipApi, DeviceManagementApi {
   Future<ConnectionResult> configure(Json action) async =>
       ConnectionResult.fromJson(
           await _change('/api/v2/device-connections', action) as Json);
+
+  @override
+  Future<HistoryPage> observationHistory(
+      {required String deviceId, String? cursor, int limit = 20}) =>
+      _parseContract('/api/v2/observations/history', () async {
+        final value = await _get('/api/v2/observations/history', {
+          'device': deviceId,
+          'limit': '$limit',
+          if (cursor != null) 'cursor': cursor,
+        }) as Json;
+        return HistoryPage.fromJson(value);
+      });
 
   RestApi(this.base, {http.Client? client}) : _rest = client ?? http.Client();
   Uri uri(String path, [Map<String, String>? query]) {

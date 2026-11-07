@@ -162,7 +162,17 @@ try:
             p=subprocess.run(['node',os.environ['OIP_BROWSER_SCRIPT']],env=env,cwd=ROOT,stdout=log,stderr=log,timeout=180)
         assert p.returncode==0,'Actual Flutter onboarding failed; inspect browser receipt'
         assert get('/api/v2/device-connections?device_id=browser-existing')['connection']['status']=='collecting'
-        record('actual_flutter_ssh_onboarding',{'existing_id':'browser-existing','real_loopback_ssh':True,'no_private_hardware_contact':True})
+        # The Core persists the samples of the connected device and serves them
+        # for the authorized device scope. A stored sample is history.
+        def persisted():
+            page=get('/api/v2/observations/history?device=browser-existing&limit=20')
+            items=[i for i in page['items'] if i['category']=='observation']
+            return items or None
+        samples=wait(persisted,'persisted history of the connected device',timeout=30)
+        assert all(i['record']['observation']['freshness']=='stale' for i in samples),'a stored sample must never be reported as live'
+        assert all(i['record']['observation']['data_source_id'] for i in samples)
+        assert len(samples)<=20
+        record('actual_flutter_ssh_onboarding',{'existing_id':'browser-existing','real_loopback_ssh':True,'no_private_hardware_contact':True,'persisted_history_samples':len(samples),'persisted_history_is_stale':True})
     readers=[Client('reader-org-a','ssh-parallel-'+str(i)) for i in range(8)]
     import concurrent.futures
     with concurrent.futures.ThreadPoolExecutor(8) as pool:

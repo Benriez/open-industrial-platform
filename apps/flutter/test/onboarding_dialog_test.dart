@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oip_dashboard/app/controller.dart';
 import 'package:oip_dashboard/features/device_onboarding.dart';
 import 'package:oip_dashboard/models/contracts.dart';
+import 'package:oip_dashboard/models/history.dart';
 import 'package:oip_dashboard/models/onboarding.dart';
 import 'package:oip_dashboard/services/api.dart';
 import 'support.dart';
@@ -46,6 +47,17 @@ class InventoryOnlyApi extends FakeApi implements DeviceManagementApi {
   @override
   Future<ConnectionResult> configure(Json action) async =>
       throw StateError('Manual registration must never execute SSH');
+
+  @override
+  Future<HistoryPage> observationHistory(
+          {required String deviceId, String? cursor, int limit = 20}) async =>
+      HistoryPage.fromJson({
+        'items': <dynamic>[],
+        'truncated': false,
+        'next_cursor': null,
+        'missing_evidence': <String>[],
+        'time_semantics': '',
+      });
 }
 
 void main() {
