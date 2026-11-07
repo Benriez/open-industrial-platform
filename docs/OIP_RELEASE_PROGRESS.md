@@ -18,6 +18,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Previous canonical source revision | `ae4c6bab4fb87ff2c7b15a21b0104b2d5a12af7f` (iteration 1 integration) |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in two controlled steps |
 | Tracked files in the canonical source revision | 442, source manifest SHA-256 `a48347578ce325b613b1cf67d5c19dcdb3921cb7ba26ecda97f3e214cc0c8420` |
+| Documentation commit on top | changes only `docs/OIP_RELEASE_PROGRESS.md`, `docs/evidence/oip-real-device/*.json` and `docs/real-device-onboarding-verification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
