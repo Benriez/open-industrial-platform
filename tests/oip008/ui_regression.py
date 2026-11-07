@@ -5,7 +5,11 @@ ROOT=pathlib.Path(__file__).resolve().parents[2];OUT=pathlib.Path(os.environ.get
 def port():
  with socket.socket() as s:s.bind(('127.0.0.1',0));return s.getsockname()[1]
 h,p=port(),port();url=f'http://127.0.0.1:{h}'
-with (OUT/'ui-backend.log').open('w') as log:core=subprocess.Popen([os.environ.get('OIP_SERVER_BIN',str(ROOT/'target/debug/oip-server')),'--demo','--web-dir',os.environ.get('OIP_WEB_DIR',str(UI/'build/web')),'--port',str(h),'--opcua-port',str(p),'--database',str(RUN/'demo.sqlite')],cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
+# The legacy web regression reads the rendered text from the document, so it
+# needs the HTML renderer build. The CanvasKit build stays the artifact of the
+# real SSH onboarding run. The served directory is recorded in the result.
+WEB=os.environ.get('OIP_WEB_DIR') or str(UI/('build/web-html' if (UI/'build/web-html').is_dir() else 'build/web'))
+with (OUT/'ui-backend.log').open('w') as log:core=subprocess.Popen([os.environ.get('OIP_SERVER_BIN',str(ROOT/'target/debug/oip-server')),'--demo','--web-dir',WEB,'--port',str(h),'--opcua-port',str(p),'--database',str(RUN/'demo.sqlite')],cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
 results=[]
 def ready():
  start=time.monotonic()
@@ -45,6 +49,6 @@ try:
 finally:
  if core.poll() is None:core.send_signal(signal.SIGINT)
  core.wait(timeout=20);results.append({'name':'demo_core_shutdown','exit_code':core.returncode,'status':'PASS' if core.returncode==0 else 'FAIL'})
- (OUT/'ui-regression.json').write_text(json.dumps({'url':url,'process_id':core.pid,'results':results},indent=2))
+ (OUT/'ui-regression.json').write_text(json.dumps({'url':url,'web_dir':WEB,'process_id':core.pid,'results':results},indent=2))
 assert core.returncode==0,'core shutdown failed'
 print(json.dumps(results))
