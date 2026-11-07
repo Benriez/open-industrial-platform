@@ -86,6 +86,21 @@ try {
   await page.getByRole('button',{name:'Zum Geräteinventar',exact:true}).click();
   for(let i=0;i<140;i++){ if((await page.locator('body').ariaSnapshot()).includes('Collecting · aktuelle Messwerte empfangen'))break; if(i===139)throw Error('No rendered actual Collecting state'); await page.waitForTimeout(250); }
   await capture('06-real-monitoring');
+  // The panel must show the measurements the Core actually received over SSH.
+  // The expected values are read back from the Core, never invented here, and
+  // they must be the same values that the operator sees in the browser.
+  const observed=(await (await context.request.get(base+'/api/v2/device-connections?device_id=browser-existing')).json());
+  const observations=observed.connection.observations;
+  assert(Array.isArray(observations)&&observations.length>0,'Core reports no authorized observations');
+  const os=observations.find(o=>o.metric_id==='host.os');
+  const memory=observations.find(o=>o.metric_id==='host.memory_total_bytes');
+  assert(os&&typeof os.value.text==='string'&&os.value.text.length>0,'no host operating system observation');
+  assert(memory&&memory.value.unsigned_integer>0,'no real memory observation');
+  assert.equal(os.freshness,'fresh');
+  let rendered='';
+  for(let i=0;i<60;i++){ rendered=await page.locator('body').ariaSnapshot(); if(rendered.includes('host.os')&&rendered.includes(os.value.text)&&rendered.includes('host.memory_total_bytes')&&rendered.includes(String(memory.value.unsigned_integer)))break; if(i===59)throw Error('The rendered panel does not show the collected measurements'); await page.waitForTimeout(250); }
+  assert(rendered.includes(os.value.text));
+  assert(rendered.includes(String(memory.value.unsigned_integer)));
   const cookies=await context.cookies();assert(cookies.some(c=>c.name==='oip_session'&&c.httpOnly&&c.sameSite==='Strict'));
   assert.equal(await page.evaluate(()=>localStorage.length),0);
   assert.equal(await page.evaluate(()=>sessionStorage.length),0);
@@ -96,7 +111,7 @@ try {
   await page.getByRole('button',{name:'Operator abmelden',exact:true}).click();
   await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
+  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
 } catch(e) {
   await writeFile(resolve(out,'ssh-requests.json'),JSON.stringify(sshRequests,null,2));
   await capture('failure');

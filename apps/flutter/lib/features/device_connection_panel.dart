@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../app/controller.dart';
+import '../design_system/theme.dart';
+import '../models/contracts.dart';
 import '../models/onboarding.dart';
 import '../services/api.dart';
 import '../widgets/components.dart';
@@ -140,10 +142,52 @@ class _DeviceConnectionPanelState extends State<DeviceConnectionPanel> {
                 Text('Polling: ${c.pollSeconds} s · Revision ${c.revision}'),
             value: c.enabled,
             onChanged: busy ? null : (v) => toggle(c, v)),
+        const SizedBox(height: OipTokens.s4),
+        const SectionTitle('Aktuelle Messwerte',
+            'Vom autorisierten Gerät tatsächlich gelesene Werte · keine Ersatzwerte'),
         if (c.observations.isEmpty)
           const Text(
-              'Noch keine aktuellen Messwerte. Verifizierung allein ist kein kontinuierliches Monitoring.'),
+              'Noch keine aktuellen Messwerte. Verifizierung allein ist kein kontinuierliches Monitoring.')
+        else
+          ...c.observations.map((o) => MeasurementRow(o)),
       ],
     ]);
+  }
+}
+
+/// One authorized measurement that the Core actually received from the device.
+///
+/// The value, its unit, the quality, the freshness and the capture time come
+/// from the Core response. Nothing is derived, rounded up or substituted here.
+class MeasurementRow extends StatelessWidget {
+  final Observation observation;
+  const MeasurementRow(this.observation, {super.key});
+
+  /// Longer texts (disk and interface reports) stay collapsed until the
+  /// operator opens them; the preview is never shown as the complete value.
+  static const int previewLength = 120;
+
+  @override
+  Widget build(BuildContext context) {
+    final value = '${observation.display} ${observation.symbol}'.trim();
+    final caption = '${known(observation.quality)} · '
+        '${known(observation.freshness)} · ${timestamp(observation.sourceMs)}';
+    if (value.length <= previewLength) {
+      return Fact(observation.metricId, '$value · $caption');
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: OipTokens.s2),
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: const EdgeInsets.only(bottom: OipTokens.s2),
+        title: Text(observation.metricId,
+            style: Theme.of(context)
+                .textTheme
+                .labelSmall
+                ?.copyWith(fontSize: 9, letterSpacing: .75)),
+        subtitle: Text('${value.substring(0, previewLength)}… · $caption'),
+        children: [SelectableText(value)],
+      ),
+    );
   }
 }
