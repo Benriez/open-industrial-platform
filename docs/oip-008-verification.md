@@ -125,6 +125,8 @@ flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pw
 
 Die Legacy-Migration benötigt das unveränderte Baseline-Binary im Haupt-Checkout; der Test dokumentiert dessen tatsächlichen Hash und prüft das erzeugte Schema2. SQLite-CLI ≥3.37, vorhandenes Chrome/Playwright, Flutter/macOS/Xcode und cargo-deny wurden wiederverwendet; keine globalen Installationen oder Services aktiviert.
 
+Hinweis (Iteration 3 des Release-Loops, `docs/OIP_RELEASE_PROGRESS.md`): `tests/oip008/ui_regression.py` führt den nativen macOS-Schritt jetzt als eigenen Build-Schritt mit eigenem Zeitfenster und positiver Build-Markierung aus, der native Integrationstest läuft mit explizitem `--timeout 30m`, und die Legacy-Webschritte erhalten den getrennt gebauten HTML-Renderer. Damit ist der native macOS-Nachweis auf diesem Rechner reproduzierbar; die historischen Gates dieses Meilensteins bleiben unverändert.
+
 ## Security, Git und verbleibende Arbeiten
 
 RUSTSEC-2023-0071 bleibt Produktionsblocker; RUSTSEC-2023-0089 und RUSTSEC-2024-0449 bleiben offene Ausnahmen. cargo-deny PASS behebt diese Befunde nicht. Keine produktiven OT-Verbindungen, Writes, Maschinensteuerung, öffentlichen Listener, neuen Remote-Endpunkte, Secrets in Git oder Cloud-Dienste.
