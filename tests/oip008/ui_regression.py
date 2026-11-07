@@ -19,21 +19,28 @@ def ready():
 try:
  ready();env=dict(os.environ,OIP_URL=url,OIP_EVIDENCE_DIR=str(OUT/'browser'))
  commands=[('browser',['node','test/browser_oip004.mjs']),('interactions',['node','test/browser_spectrum.mjs']),('visual',['node','test/browser_visual_oip004.mjs']),('native_macos',['flutter','test','integration_test/live_dashboard_test.dart','-d','macos','--dart-define=OIP_API_URL='+url,'--reporter','expanded'])]
+ # A cold native macOS build needs about eight minutes on this machine, the web
+ # steps stay short. The bound only protects the owned process group; it never
+ # replaces the positive test completion marker.
+ bounds={'browser':300,'interactions':300,'visual':300,'native_macos':1800}
  for name,cmd in commands:
   env['OIP_EVIDENCE_DIR']=str(OUT/({'browser':'browser','interactions':'interactions','visual':'visual'}.get(name,'native')))
   with (OUT/(name+'-console.log')).open('w') as f:
    test=subprocess.Popen(cmd,cwd=UI,env=env,stdout=f,stderr=subprocess.STDOUT,start_new_session=True)
-   try:code=test.wait(timeout=300)
+   started=time.monotonic()
+   try:code=test.wait(timeout=bounds[name])
    except subprocess.TimeoutExpired:
     # Only the explicitly owned test process group, never other Xcode/previews.
     os.killpg(test.pid,signal.SIGTERM)
     try:test.wait(timeout=10)
     except subprocess.TimeoutExpired:os.killpg(test.pid,signal.SIGKILL);test.wait()
     code=124
+   seconds=round(time.monotonic()-started,1)
   # Flutter can exit zero when interrupted before running a native test.
   # Exit status alone must never turn a cancelled build into acceptance.
-  if name=='native_macos' and code==0 and 'All tests passed!' not in (OUT/(name+'-console.log')).read_text():code=125
-  results.append({'name':name,'exit_code':code,'status':'PASS' if code==0 else 'FAIL'});assert code==0,name
+  marker='All tests passed!' in (OUT/(name+'-console.log')).read_text(errors='replace')
+  if name=='native_macos' and code==0 and not marker:code=125
+  results.append({'name':name,'exit_code':code,'seconds':seconds,'test_completion_marker':marker,'status':'PASS' if code==0 else 'FAIL'});assert code==0,name
  ready()
 finally:
  if core.poll() is None:core.send_signal(signal.SIGINT)
