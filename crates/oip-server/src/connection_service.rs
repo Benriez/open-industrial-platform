@@ -32,6 +32,14 @@ pub struct ConnectionHub {
 fn bad(code: &str, msg: &str) -> CapabilityError {
     connection_error(code, msg)
 }
+/// A verified host report is only storable while its serialised record stays
+/// inside the bound of the connection table. The check happens before any write,
+/// so an extreme report fails with an explicit fault instead of a rollback.
+fn connection_payload_fits(c: &DeviceConnectionRecord) -> bool {
+    serde_json::to_string(c)
+        .map(|payload| payload.len() <= CONNECTION_PAYLOAD_MAX_BYTES)
+        .unwrap_or(false)
+}
 fn uuid() -> Result<String, CapabilityError> {
     let x = crate::browser_session::random_token().map_err(|_| denied())?;
     let b = u8::from_str_radix(&x[16..18], 16).map_err(|_| denied())?;
@@ -615,6 +623,23 @@ impl ConnectionHub {
                     last_error: None,
                 };
                 let definition = ssh::definition(&c);
+                if !connection_payload_fits(&c) {
+                    let e = bad(
+                        "SSH_REPORT_TOO_LARGE",
+                        "The verified host report is larger than the stored record bound; nothing was persisted",
+                    );
+                    self.update(
+                        &plan_id,
+                        ConnectionStage::Failed,
+                        None,
+                        None,
+                        Some(ConnectionFault {
+                            code: e.code.clone(),
+                            message: e.message.clone(),
+                        }),
+                    );
+                    return Err(e);
+                }
                 let committed = state
                     .connection_commit(
                         VerifiedConnectionCommit {
@@ -953,6 +978,65 @@ pub async fn supervise(
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn record(identity: HostInformation) -> DeviceConnectionRecord {
+        DeviceConnectionRecord {
+            device_id: DeviceId::new("unit-device").unwrap(),
+            source_id: DataSourceId::new("unit-source").unwrap(),
+            authorized_principal: PrincipalId::new("unit-principal").unwrap(),
+            endpoint: SshEndpoint {
+                alias: None,
+                host: "127.0.0.1".into(),
+                port: 22,
+                user: "operator".into(),
+                identity_profile: "unit".into(),
+            },
+            host_key: "ssh-ed25519 AAAA".into(),
+            fingerprint: "SHA256:unit".into(),
+            verified_at_ms: 1,
+            identity,
+            enabled: false,
+            poll_seconds: 60,
+            revision: 1,
+            last_attempt_ms: None,
+            last_success_ms: None,
+            last_error: None,
+        }
+    }
+    fn host(addresses: Vec<String>) -> HostInformation {
+        HostInformation {
+            hostname: "unit".into(),
+            operating_system: "Linux".into(),
+            architecture: "aarch64".into(),
+            cpu_info: None,
+            model: None,
+            stable_host_id_sha256: None,
+            memory_total_bytes: Some(1024),
+            memory_used_bytes: None,
+            uptime_seconds: None,
+            disks: Vec::new(),
+            interfaces: vec![NetworkInterfaceInformation {
+                name: "en0".into(),
+                addresses,
+            }],
+            captured_at_ms: 1,
+            unavailable: Vec::new(),
+            provenance: "unit".into(),
+        }
+    }
+    #[test]
+    fn a_verified_report_that_cannot_be_stored_is_refused_before_any_write() {
+        let normal = record(host(vec!["192.0.2.1".into()]));
+        assert!(connection_payload_fits(&normal));
+        // An extreme report exceeds the stored record bound and must not be
+        // handed to the writer as if it were storable.
+        let long = "2001:db8::".repeat(24);
+        let extreme = record(host(
+            (0..32)
+                .flat_map(|_| (0..32).map(|_| long.clone()))
+                .collect::<Vec<String>>(),
+        ));
+        assert!(!connection_payload_fits(&extreme));
+    }
     #[tokio::test]
     async fn abandoned_supervisor_cannot_detach_collector_tasks() {
         let tracker = tokio_util::task::TaskTracker::new();

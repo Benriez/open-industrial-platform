@@ -52,6 +52,10 @@ pub struct PublicHostKey {
     pub key: String,
     pub fingerprint: String,
 }
+/// Collected text budget of one host report. The stored connection record is
+/// bounded by `oip_core::CONNECTION_PAYLOAD_MAX_BYTES`; the report text stays
+/// well below it so a verified report is always storable.
+const MAX_HOST_REPORT_TEXT: usize = 48 * 1024;
 /// Minimum accepted host key size per key type. The contract requires RSA keys
 /// of at least 2048 bits; the remaining types have a fixed size by algorithm.
 fn minimum_key_bits(key_type: &str) -> Option<u32> {
@@ -773,6 +777,10 @@ pub fn parse(bytes: &[u8], at: i64) -> Result<HostInformation, ConnectionFault> 
     }
     .filter(|v| v.is_finite() && *v >= 0.);
     let mut disks = Vec::new();
+    // The stored connection record is bounded. The collected host report must
+    // stay below that bound, otherwise a legal but extreme remote report would
+    // fail the commit with an opaque storage error.
+    let mut budget = MAX_HOST_REPORT_TEXT;
     for line in field("__OIP_DISKS__").lines().skip(1).take(33) {
         let p = line.split_whitespace().collect::<Vec<_>>();
         if p.len() >= 6 {
@@ -782,9 +790,15 @@ pub fn parse(bytes: &[u8], at: i64) -> Result<HostInformation, ConnectionFault> 
                 number(p[3]).and_then(|v| v.checked_mul(1024)),
             ) {
                 if u <= t {
+                    let filesystem: String = redact_filesystem(p[0]).chars().take(256).collect();
+                    let mount: String = p[5..].join(" ").chars().take(512).collect();
+                    budget = budget.saturating_sub(filesystem.len() + mount.len());
+                    if budget == 0 {
+                        return Err(fault("SSH_OUTPUT_LIMIT"));
+                    }
                     disks.push(DiskInformation {
-                        filesystem: redact_filesystem(p[0]),
-                        mount: p[5..].join(" ").chars().take(512).collect(),
+                        filesystem,
+                        mount,
                         total_bytes: t,
                         used_bytes: u,
                         available_bytes: a,
@@ -808,14 +822,19 @@ pub fn parse(bytes: &[u8], at: i64) -> Result<HostInformation, ConnectionFault> 
                         a.iter()
                             .filter_map(|v| v.get("local")?.as_str())
                             .take(32)
-                            .map(str::to_string)
-                            .collect()
+                            .map(|v| v.chars().take(128).collect::<String>())
+                            .collect::<Vec<String>>()
                     })
                     .unwrap_or_default();
-                interfaces.push(NetworkInterfaceInformation {
-                    name: name.chars().take(128).collect(),
-                    addresses,
-                });
+                let name = name.chars().take(128).collect::<String>();
+                budget = budget.saturating_sub(name.len());
+                for address in &addresses {
+                    budget = budget.saturating_sub(address.len());
+                }
+                if budget == 0 {
+                    return Err(fault("SSH_OUTPUT_LIMIT"));
+                }
+                interfaces.push(NetworkInterfaceInformation { name, addresses });
             }
         }
     } else {
@@ -832,7 +851,12 @@ pub fn parse(bytes: &[u8], at: i64) -> Result<HostInformation, ConnectionFault> 
                 if p.len() > 1 && matches!(p[0], "inet" | "inet6") {
                     if let Some(i) = interfaces.last_mut() {
                         if i.addresses.len() < 32 {
-                            i.addresses.push(p[1].chars().take(128).collect());
+                            let address: String = p[1].chars().take(128).collect();
+                            budget = budget.saturating_sub(address.len());
+                            if budget == 0 {
+                                return Err(fault("SSH_OUTPUT_LIMIT"));
+                            }
+                            i.addresses.push(address);
                         }
                     }
                 }
@@ -1069,6 +1093,76 @@ mod tests {
     fn duplicate_markers_or_unsupported_os_fail() {
         assert!(parse(b"__OIP_OS__\nLinux\n__OIP_OS__\nDarwin\n", 1).is_err());
         assert!(parse(b"__OIP_OS__\nWindows\n__OIP_END__", 1).is_err());
+    }
+    #[test]
+    fn an_extreme_host_report_is_refused_instead_of_overflowing_the_record() {
+        // 32 interfaces with 32 long addresses exceed the stored record bound.
+        let mut network = String::from("[");
+        for i in 0..32 {
+            if i > 0 {
+                network.push(',');
+            }
+            network.push_str(&format!("{{\"ifname\":\"en{i}\",\"addr_info\":["));
+            for a in 0..32 {
+                if a > 0 {
+                    network.push(',');
+                }
+                network.push_str(&format!("{{\"local\":\"{}\"}}", "2001:db8::".repeat(40)));
+            }
+            network.push_str("]}");
+        }
+        network.push(']');
+        let input = format!(
+            "__OIP_OS__\nLinux\n__OIP_HOSTNAME__\nfixture\n__OIP_ARCH__\naarch64\n__OIP_NETWORK__\n{network}\n__OIP_END__\n"
+        );
+        let error = parse(input.as_bytes(), 1).expect_err("an extreme report must be refused");
+        assert_eq!(error.code, "SSH_OUTPUT_LIMIT");
+    }
+    #[test]
+    fn a_realistic_host_report_stays_inside_the_stored_record_bound() {
+        let mut disks = String::from("Filesystem 1024-blocks Used Available Capacity Mounted on\n");
+        for i in 0..32 {
+            disks.push_str(&format!("/dev/sda{i} 1024 512 512 50% /mnt/data-{i}\n"));
+        }
+        let mut network = String::from("[");
+        for i in 0..32 {
+            if i > 0 {
+                network.push(',');
+            }
+            network.push_str(&format!(
+                "{{\"ifname\":\"en{i}\",\"addr_info\":[{{\"local\":\"192.0.2.{i}\"}}]}}"
+            ));
+        }
+        network.push(']');
+        let input = format!(
+            "__OIP_OS__\nLinux\n__OIP_HOSTNAME__\nfixture\n__OIP_ARCH__\naarch64\n__OIP_DISKS__\n{disks}\n__OIP_NETWORK__\n{network}\n__OIP_END__\n"
+        );
+        let report = parse(input.as_bytes(), 1).expect("a realistic report must be accepted");
+        assert_eq!(report.disks.len(), 32);
+        assert_eq!(report.interfaces.len(), 32);
+        // The collected text stays far below the stored record bound.
+        let text: usize = report
+            .disks
+            .iter()
+            .map(|d| d.filesystem.len() + d.mount.len())
+            .sum::<usize>()
+            + report
+                .interfaces
+                .iter()
+                .map(|i| i.name.len() + i.addresses.iter().map(|a| a.len()).sum::<usize>())
+                .sum::<usize>();
+        assert!(text <= MAX_HOST_REPORT_TEXT);
+        assert!(text < oip_core::CONNECTION_PAYLOAD_MAX_BYTES);
+    }
+    #[test]
+    fn an_oversized_disk_name_is_bounded_in_the_report() {
+        let long = "/dev/".to_string() + &"x".repeat(4096);
+        let input = format!(
+            "__OIP_OS__\nLinux\n__OIP_HOSTNAME__\nfixture\n__OIP_ARCH__\naarch64\n__OIP_DISKS__\nFilesystem 1024-blocks Used Available Capacity Mounted on\n{long} 1024 512 512 50% /mnt\n__OIP_END__\n"
+        );
+        let report = parse(input.as_bytes(), 1).expect("a long mount name must be bounded");
+        assert_eq!(report.disks.len(), 1);
+        assert!(report.disks[0].filesystem.len() <= 256);
     }
     #[test]
     fn host_key_size_is_parsed_and_enforced_by_the_server() {

@@ -215,6 +215,21 @@ impl SqliteStore {
 mod tests {
     use super::*;
     #[test]
+    fn stored_payload_bound_matches_the_shared_domain_constant() {
+        // The schema limit and the server side guard must be the same value, so
+        // a verified host report is either storable or rejected explicitly.
+        assert!(
+            CONNECTION_SQL.contains(&format!(
+                "octet_length(payload_json)<={CONNECTION_PAYLOAD_MAX_BYTES}"
+            )),
+            "the device_connections CHECK must use the shared bound"
+        );
+        assert!(CONNECTION_SQL.contains(&format!(
+            "octet_length(payload_json)<={}",
+            CONNECTION_ATTEMPT_PAYLOAD_MAX_BYTES
+        )));
+    }
+    #[test]
     fn shared_source_limit_rejects_binding_before_inventory_or_source_writes() {
         let mut plan: ProvisioningPlan = serde_json::from_str(include_str!(
             "../../../examples/multi-infrastructure-plan.json"

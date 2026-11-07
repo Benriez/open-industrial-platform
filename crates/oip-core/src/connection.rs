@@ -136,6 +136,12 @@ pub struct NetworkInterfaceInformation {
     pub name: String,
     pub addresses: Vec<String>,
 }
+/// Upper bound of the stored connection record in bytes. The storage schema and
+/// the server use the same value, so a verified host report is either storable
+/// or rejected with an explicit fault before any write.
+pub const CONNECTION_PAYLOAD_MAX_BYTES: usize = 131_072;
+/// Upper bound of the stored latest connection attempt in bytes.
+pub const CONNECTION_ATTEMPT_PAYLOAD_MAX_BYTES: usize = 16_384;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 pub struct HostInformation {
