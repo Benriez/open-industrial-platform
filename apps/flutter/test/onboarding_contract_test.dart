@@ -6,6 +6,7 @@ import 'package:http/testing.dart';
 import 'package:oip_dashboard/models/contracts.dart';
 import 'package:oip_dashboard/services/api.dart';
 import 'package:oip_dashboard/app/controller.dart';
+import 'package:oip_dashboard/models/onboarding.dart';
 import 'package:oip_dashboard/core/sse.dart';
 
 class SessionApi extends RestApi {
@@ -54,6 +55,110 @@ void main() {
     expect(controller.snapshot, isNull);
     expect(controller.history, isEmpty);
     expect(controller.contextRevision, greaterThan(before));
+    controller.dispose();
+  });
+  test(
+      'An infrastructure context change advances the revision and clears the display cache',
+      () async {
+    var snapshots = 0;
+    final events = StreamController<ServerEvent>.broadcast();
+    final empty = {
+      'sources': [],
+      'devices': [],
+      'observations': [],
+      'events': [],
+      'locations': []
+    };
+    final client = MockClient((r) async {
+      if (r.url.path.endsWith('/session')) {
+        return http.Response(
+            jsonEncode({
+              'authenticated': true,
+              'principal_id': 'bound-by-server',
+              'csrf_token': null,
+              'mode': 'local_operator_session'
+            }),
+            200);
+      }
+      snapshots++;
+      if (snapshots > 1) {
+        // The resynchronisation after a context change must not restore the
+        // previous context before the operator asked for it.
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+      }
+      return http.Response(jsonEncode(empty), 200);
+    });
+    final controller = OipController(SessionApi(client, events.stream),
+        retryDelay: const Duration(milliseconds: 1));
+    final running = controller.start();
+    for (var i = 0; i < 50 && controller.snapshot == null; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 2));
+    }
+    expect(controller.snapshot, isNotNull);
+    final before = controller.contextRevision;
+    controller.setInfrastructureContext(const OnboardingScope(
+        organization: 'org-a', infrastructure: 'infra-a1', site: 'site-a1'));
+    // The scope is stored, the revision advances and the display cache of the
+    // previous context is gone.
+    expect(controller.onboardingScope.organization, 'org-a');
+    expect(controller.onboardingScope.infrastructure, 'infra-a1');
+    expect(controller.onboardingScope.site, 'site-a1');
+    expect(controller.contextRevision, greaterThan(before));
+    expect(controller.snapshot, isNull);
+    expect(controller.history, isEmpty);
+    await events.close();
+    await running;
+    controller.dispose();
+  });
+  test(
+      'A different operator principal invalidates the display cache',
+      () async {
+    var sessions = 0;
+    var snapshots = 0;
+    final events = StreamController<ServerEvent>.broadcast();
+    final empty = {
+      'sources': [],
+      'devices': [],
+      'observations': [],
+      'events': [],
+      'locations': []
+    };
+    final client = MockClient((r) async {
+      if (r.url.path.endsWith('/session')) {
+        sessions++;
+        return http.Response(
+            jsonEncode({
+              'authenticated': true,
+              'principal_id': sessions == 1 ? 'principal-a' : 'principal-b',
+              'csrf_token': null,
+              'mode': 'local_operator_session'
+            }),
+            200);
+      }
+      snapshots++;
+      if (snapshots > 1) {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+      }
+      return http.Response(jsonEncode(empty), 200);
+    });
+    final controller = OipController(SessionApi(client, events.stream),
+        retryDelay: const Duration(milliseconds: 1));
+    final running = controller.start();
+    for (var i = 0; i < 50 && controller.snapshot == null; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 2));
+    }
+    expect(controller.snapshot, isNotNull);
+    final before = controller.contextRevision;
+    controller.reconnect();
+    for (var i = 0; i < 50 && controller.contextRevision == before; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+    }
+    // Another principal must not keep the display state of the first one.
+    expect(controller.contextRevision, greaterThan(before));
+    expect(controller.snapshot, isNull);
+    expect(controller.history, isEmpty);
+    await events.close();
+    await running;
     controller.dispose();
   });
   test(
