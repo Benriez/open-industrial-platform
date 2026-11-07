@@ -79,7 +79,7 @@ impl ApplicationServices {
             return Err(denied());
         }
         let info = self.state.management.lock().map_err(|_| denied())?.clone();
-        let mut report=ManagementReport{section:q.section,availability:"read_only".into(),facts:vec![],tools:vec![],client_configuration:None,limitations:vec!["Local development identity; hostile same-UID processes are not isolated".into(),"No remote MCP or browser administrative session; no durable tamper-resistant audit".into()]};
+        let mut report=ManagementReport{section:q.section,availability:"read_only".into(),facts:vec![],tools:vec![],client_configuration:None,limitations:vec!["Local development identity; hostile same-UID processes are not isolated".into(),"Local browser operator sessions require explicit IPC pairing; no remote MCP or production browser identity; no durable tamper-resistant audit".into()]};
         let mut fact = |name: &str, value: String| {
             report.facts.push(ManagementFact {
                 name: name.into(),
@@ -243,7 +243,7 @@ impl ApplicationServices {
                 );
                 fact(
                     "device_management",
-                    "typed local offline registration/update/archive/import; no browser writes"
+                    "typed authorized online registration/update and SSH connection control; offline archive/import"
                         .into(),
                 );
                 fact(

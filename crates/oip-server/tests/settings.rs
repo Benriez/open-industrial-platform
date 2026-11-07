@@ -314,6 +314,7 @@ async fn management_catalog_schema_and_configuration_redaction() {
         ManagementSection::System,
         ManagementSection::Security,
         ManagementSection::DiagnosticRules,
+        ManagementSection::Infrastructure,
     ] {
         let out = s
             .execute(
@@ -331,6 +332,21 @@ async fn management_catalog_schema_and_configuration_redaction() {
             serde_json::Value::Object(tool.output_schema.as_ref().unwrap().as_ref().clone());
         assert!(jsonschema::validator_for(&schema).unwrap().is_valid(&value));
         if let CapabilityOutput::Management(r) = out {
+            assert!(r
+                .limitations
+                .iter()
+                .any(|v| v.contains("explicit IPC pairing")));
+            if matches!(r.section, ManagementSection::Infrastructure) {
+                let management = r
+                    .facts
+                    .iter()
+                    .find(|v| v.name == "device_management")
+                    .unwrap();
+                assert!(management
+                    .value
+                    .contains("authorized online registration/update"));
+                assert!(management.value.contains("offline archive/import"));
+            }
             if let Some(c) = r.client_configuration {
                 let config: serde_json::Value =
                     serde_json::from_str(&c.configuration_json).unwrap();
