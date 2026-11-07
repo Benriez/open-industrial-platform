@@ -11,6 +11,13 @@ for n in ast.parse(base.read_text().replace("('oip82-'+str(os.getpid()))","('oip
 exec(compile(ast.Module(body=nodes,type_ignores=[]),str(base),'exec'),globals())
 OUT=pathlib.Path(os.environ['OIP_EVIDENCE_DIR']); OUT.mkdir(parents=True,exist_ok=True)
 BIN=pathlib.Path(os.environ['OIP_SERVER_BIN']);SDK=BIN.parent/'examples/mcp_probe'
+# The browser script imports the Playwright module by specifier. A relative
+# specifier would be resolved as a package name, so the module is always
+# addressed with an absolute path.
+_browser_module=os.environ.get('PLAYWRIGHT_MODULE') or 'apps/flutter/test/node_modules/playwright/index.mjs'
+_browser_module=pathlib.Path(_browser_module)
+if not _browser_module.is_absolute(): _browser_module=ROOT/_browser_module
+os.environ['PLAYWRIGHT_MODULE']=str(_browser_module)
 config.update(sources=[],web_dir=os.environ.get('OIP_WEB_DIR'))
 plan=json.loads((ROOT/'examples/multi-infrastructure-plan.json').read_text())
 plan['sources']=[];plan['bindings']=[b for b in plan['bindings'] if b['scope']['kind']!='source']
@@ -146,6 +153,8 @@ try:
     assert sql('select count(*) n from (select observation_key from observations group by observation_key having count(*)>1)')[0]['n']==0
     record('restart_sigkill_identity',{'same_device_id':True,'config_survives':True,'integrity':'ok','foreign_keys':True,'duplicate_keys':0})
     if os.environ.get('OIP_BROWSER_SCRIPT'):
+        if not pathlib.Path(os.environ['PLAYWRIGHT_MODULE']).is_file():
+            raise SystemExit('Playwright module not found: '+os.environ['PLAYWRIGHT_MODULE'])
         body={'changes':[{'operation':'register','device':{'id':'browser-existing','display_name':'Browser SSH fixture','device_type':'server','site_id':'site-a1','metadata':{}}}]}
         assert request('/api/v2/inventory/apply',body)[0]==200
         env=dict(os.environ,OIP_URL=URL,OIP_IPC_SOCKET=str(SOCK),OIP_BROWSER_CREDENTIAL=str(RUN/'reader-org-a.credential'),OIP_BROWSER_EVIDENCE=str(OUT/'browser'))
