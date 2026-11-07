@@ -13,17 +13,17 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `e12c009` (`test(core): address the browser module of the real device harness by an absolute path`) |
-| Canonical source tree | `56307de71e612563e38cf2657d7bf1cd34a0ce35` |
-| Previous canonical source revision | `f4b89ed` (iteration 7, schema2 adoption and parity gate) |
-| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eight controlled steps |
-| Tracked files in the canonical source revision | 446, source manifest SHA-256 `23277ea50a08d9b9cc874dabc1482e59eece54706f86e0b87c55a3c28adf95de` |
+| Canonical source revision | `1287e23` (`feat(flutter): show the persisted observation history in the device view`) |
+| Canonical source tree | `f1d3f1933a3f5ac38f516a993e04b5bfe3d82f97` |
+| Previous canonical source revision | `e12c009` (iteration 8, monitoring measurements in the operator panel) |
+| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in nine controlled steps |
+| Tracked files in the canonical source revision | 449, source manifest SHA-256 `3db92de41a3395c2d6577f64b86dd196f38e148d229539e7a7bd86dfe86018d4` |
 | Documentation commit on top | changes only `docs/OIP_RELEASE_PROGRESS.md`, `docs/evidence/oip-real-device/*.json` and `docs/real-device-onboarding-verification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
 
-The canonical tree carries eight controlled integrations: iteration 1 integrated the reviewed
+The canonical tree carries nine controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
 integrated the isolated harness branch `feature/oip-native-macos-harness` (`b19092d`), iteration 4
@@ -33,7 +33,8 @@ iteration 5 integrated the isolated contract branch `feature/oip-009-context-con
 (`111dff1`), iteration 7 the isolated baseline branch `feature/oip-007-baseline-adoption`
 (`6df189f`) and the isolated parity gate branch `feature/oip-parity-gate-convergence`
 (`f4b89ed`), iteration 8 the isolated monitoring branch
-`feature/oip-monitoring-observations` (`2ec4829` and `e12c009`). No iteration weakened a contract
+`feature/oip-monitoring-observations` (`2ec4829` and `e12c009`), iteration 9 the isolated
+history branch `feature/oip-observation-history` (`1287e23`). No iteration weakened a contract
 rule, and none activated the installation.
 
 ## 2. Acceptance gates and their measured status
@@ -41,18 +42,18 @@ rule, and none activated the installation.
 Legend: `PROVED` = measured in this run on canonical `main`; `WITHHELD` = deliberately not
 claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 
-| Gate | Status | Evidence (this run, canonical `main` = `ae4c6ba`) |
+| Gate | Status | Evidence (this run, canonical `main` = `1287e23`) |
 |---|---|---|
 | Rust format check | PROVED | `cargo fmt --all -- --check` → exit 0 |
 | Rust workspace check | PROVED | `cargo check --locked --workspace --all-targets` → exit 0 |
 | Rust clippy, warnings denied | PROVED | `cargo clippy --locked --workspace --all-targets -- -D warnings` → exit 0 |
-| Rust workspace tests | PROVED | 180 passed, 0 failed (45 of them Storage) |
+| Rust workspace tests | PROVED | 181 passed, 0 failed (45 of them Storage) |
 | OPC-UA default backend | PROVED | 37 passed, 0 failed |
 | OPC-UA open62541-only backend | PROVED | 2 passed, 0 failed (overlapping group) |
 | Dependency policy | PROVED | `cargo deny check advisories licenses bans sources` → advisories ok, bans ok, licenses ok, sources ok |
 | Server binary + official MCP probe | PROVED | `cargo build --locked -p oip-server --bin oip-server --example mcp_probe` → exit 0 |
 | Flutter static analysis | PROVED | `flutter analyze` → exit 0, no issues |
-| Flutter widget/unit suite | PROVED | 89 passed, 0 failed |
+| Flutter widget/unit suite | PROVED | 97 passed, 0 failed |
 | Flutter web release, CanvasKit | PROVED | `flutter build web --release --web-renderer canvaskit …` → exit 0 |
 | Flutter web release, HTML | PROVED | `flutter build web --release --web-renderer html …` → exit 0 |
 | Browser identity + writer ownership | PROVED | `tests/real_device/acceptance.py` phase `browser_identity_online_writer` → PASS |
@@ -64,7 +65,8 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Host-key rotation blocked | PROVED | phase `host_key_change_blocks_collection` → PASS, 0 new observations after the block |
 | 8 official MCP SDK clients | PROVED | phase `eight_official_mcp_clients` → PASS, REST/MCP parity |
 | Weak host key rejected by the server | PROVED | phase `weak_host_key_is_rejected_by_the_server` → PASS, `SSH_HOST_KEY_TOO_WEAK`, no binding created |
-| Browser session boundary in Rust | PROVED | `crates/oip-server/tests/browser_session.rs` → 5 tests: exact Origin, single-use code, CSRF on every write, revoked session, revoked projection stream |
+| Browser session boundary in Rust | PROVED | `crates/oip-server/tests/browser_session.rs` → 6 tests: exact Origin, single-use code, CSRF on every write, revoked session, revoked projection stream and the cookie path of the persisted history |
+| Persisted observation history in the device view | PROVED | `tests/real_device/acceptance.py` phase `actual_flutter_ssh_onboarding` → PASS; the Core persisted 10 samples of the connected device, the operator view rendered them as history and the browser receipt compares them against the Core answer; `apps/flutter/test/observation_history_test.dart` → 8 tests |
 | Native macOS build and test | PROVED | `tests/oip008/ui_regression.py` → native build 11.6 s with the build marker, native integration test 39.1 s with the `All tests passed!` marker, against an owned isolated demo core |
 | Legacy browser, interaction and visual regression | PROVED | browser 80.4 s, interactions 47.1 s, visual 63.4 s on the separately built HTML renderer |
 | Milestone acceptance harnesses on the canonical tree | PROVED | `tests/canonical_regression.py`: OIP-008, OIP-008.2, OIP-008.2 schema3 migration, OIP-008.4, OIP-008.5, OIP-008.5 migration, the UI regression and the schema2 adoption all PASS on the canonical tree, no failed and no blocked case |
@@ -99,8 +101,9 @@ Each item names the next *delimited* step, its gate and its blocker and carries 
 | N3 global selection payload | **BLOCKED_DEPENDENCY** | three-way reconciliation with the independent UI workstreams |
 | N4 real installation activation | **BLOCKED_OPERATOR** | operator decision plus a fresh protected schema-6 backup |
 | N5 production advisories and security | **DONE** for the three documented exceptions | the production security work stays open and unclaimed |
-| N6 persisted observation history | **READY** | the next step of the loop |
+| N6 persisted observation history | **DONE** | closed in iteration 9 |
 | N7 monitoring measurements in the panel | **DONE** | closed in iteration 8 |
+| N8 real multi-infrastructure overview | **READY** | the next step of the loop |
 
 A blocked item never stops the loop while an independent READY item exists. Items that need an
 explicit operator decision (N1b, N4) or that would change a rule instead of enforcing one are
@@ -227,7 +230,7 @@ tests.
 Productive remote/browser identity, hostile same-UID isolation, tamper-proof durable audit and
 OT/endurance certification stay open and are not claimed by this release.
 
-### N6 — Persisted observation history in the device view — **READY**
+### N6 — Persisted observation history in the device view — **DONE, closed in iteration 9**
 
 The Core already serves the persisted history, the DTOs, the permissions and the query contract
 exist, and the Flutter client names the gap itself: the device dialog states *"Autorisierte
@@ -262,10 +265,45 @@ touched by this step. `events_read` is not guaranteed for every operator princip
 observation history is the first surface; the event history follows only when the capability is
 proven.
 
+**Result.** The device view requests the history for the device itself, every sample is rendered
+as history with the receive time the Core guarantees, and the stable id of a sample deduplicates a
+refresh. The browser session cookie authorizes the route; the new Rust test proves that boundary.
+See the iteration log below.
+
 ### N7 — Monitoring measurements in the operator panel — **DONE, closed in iteration 8**
 
 The device connection panel now renders the current authorized observations of the connection
 view. See the iteration log below.
+
+### N8 — The managed overview shows the real authorized infrastructure — **READY**
+
+In the managed mode the overview is still driven by the coordinates of the demo. The trend
+accumulator only accepts the entity `M-01` and the metric `temperature`
+(`apps/flutter/lib/app/controller.dart:172-188`), and the temperature tile of the overview expects
+the same pair (`apps/flutter/lib/models/contracts.dart:239-245`). A managed device reports
+`host.*` metrics under its own device id (`crates/oip-server/src/ssh.rs:1002`), so the trend of the
+landing page stays empty and the tile shows `—` although the Core delivers the values. The scoped
+snapshot additionally carries the `sources` array and the `locations`, and the client drops both
+(`apps/flutter/lib/models/contracts.dart:249-280`).
+
+The next delimited step is purely client-side and changes no contract, permission or server rule:
+
+1. `apps/flutter/lib/models/contracts.dart`: keep the authorized `sources` and `locations` of the
+   scoped snapshot instead of discarding them.
+2. `apps/flutter/lib/app/controller.dart`: fill the trend from the authorized observations of the
+   selected source instead of the hardcoded demo coordinates, with the same continuity and epoch
+   rules that the legacy path uses.
+3. `apps/flutter/lib/features/overview.dart`: show the authorized sources with their real
+   connection, reachability, service and freshness instead of placeholders, and name the source of
+   every tile.
+4. `apps/flutter/test/` a widget test with a scoped fixture that asserts that the managed overview
+   renders the authorized source and its real metric, and that no `M-01` literal remains in the
+   managed path.
+
+The gate is `flutter analyze`, `flutter test`, the real device harness and the canonical
+regression. `GET /api/v2/sources` (`crates/oip-server/src/api.rs:202`) is a possible second step
+for the per-source health, but it is not required for this one: the scoped snapshot already carries
+the authorized sources.
 
 ## 4. Iteration log
 
@@ -612,6 +650,107 @@ real device acceptance results of iteration 5 remain valid for this tree. No phy
 Raspberry-Pi was contacted, the real installation was not activated, the personal database is
 unchanged at schema 6 and the productive identity, hostile same-UID, durable audit and OT
 boundaries stay open. F5 remains open and paused.
+
+### Iteration 9 — the persisted history reaches the operator view
+
+**Step.** Connect the persisted observation history that the Core already stores and serves to the
+Flutter device view, and close the test gap that the seven history routes were proven only with a
+bearer token. One isolated commit on the branch `feature/oip-observation-history` (`1287e23`),
+integrated with a real `git merge --ff-only`.
+
+**The gap.** The Core stores the samples of a connected device and serves them through
+`GET /api/v2/observations/history` (`crates/oip-server/src/api.rs:213`,
+`crates/oip-storage/src/lib.rs:673`). The Flutter client named the gap itself: the device dialog
+stated *"Autorisierte historische REST-v2-Abfragen existieren im Core"*, and the history was never
+requested. The device scope was already sufficient — the device is resolved to its source through
+the authoritative source registration (`crates/oip-core/src/hierarchy.rs:298`), so no organization,
+infrastructure or site selection had to be invented.
+
+**What changed.**
+
+* `apps/flutter/lib/models/history.dart` (new): the DTO of the page — `items`, `truncated`,
+  `next_cursor`, `missing_evidence`, `time_semantics` — and of the adjacently tagged item
+  `{"category":"observation","record":{"id":…,"observation":…}}`. The page has no total.
+* `apps/flutter/lib/services/api.dart`: `observationHistory({deviceId, cursor, limit})` on
+  `DeviceManagementApi`, implemented as `GET /api/v2/observations/history?device=…&limit=…`.
+* `apps/flutter/lib/features/device_history.dart` (new) and `apps/flutter/lib/features/devices.dart`:
+  the device view replaces the *"Historie noch nicht angebunden"* notice with the stored samples.
+  Every row is named as history, reports the stored value, its unit, the quality, the freshness
+  and the receive time the Core guarantees, and the `missing_evidence` and the time semantics of
+  the answer are shown instead of being hidden. The stable id of a sample deduplicates a refresh.
+* `crates/oip-server/tests/browser_session.rs`: the missing cookie path of the history route. The
+  bound device is served with its persisted sample, a foreign scope and an unknown device are
+  refused with `RESOURCE_NOT_ACCESSIBLE`, a principal without `telemetry_read` is refused with
+  `PERMISSION_DENIED`, a request without a session is refused and an unbounded page is refused
+  with `INVALID_DIAGNOSTIC_QUERY`.
+* `apps/flutter/test/observation_history_test.dart` (new): eight tests — the device scope without
+  a global scope, the continuation with the cursor of the Core, an item of another category that
+  is counted and not dropped, the rendering as history, the continuation, the recovery from a
+  device that is not accessible yet, the honest empty state and the refused history.
+* `apps/flutter/test/browser_onboarding.mjs` and `tests/real_device/acceptance.py`: the real proof.
+  The harness asserts that the Core persisted the samples of the connected device and that they
+  are stale; the browser compares the rendered history with the answer of the Core for the same
+  device and writes the persisted samples into the receipt.
+* `docs/architecture/oip-0082-diagnostics-flutter-contract.md`: names the surface and its proof.
+
+**The defect found on the way.** The history was loaded once, when the device dialog was opened —
+and the dialog is opened *before* the connection is confirmed. The answer of a device without a
+source is `RESOURCE_NOT_ACCESSIBLE`, so the section kept that answer forever and never showed the
+samples that the collector stored a moment later. The section now follows the persisted state on a
+bounded cadence, exactly like the connection panel follows the live observations, and the recovery
+is proven by a widget test.
+
+**Measured result on canonical `main` (`1287e23`)** — actual Flutter web release → authenticated
+HTTP → shared Core → owned loopback OpenSSH → genuine macOS host facts:
+
+```
+cargo fmt --all -- --check                                       exit 0
+cargo check --locked --workspace --all-targets                    exit 0
+cargo clippy --locked --workspace --all-targets -- -D warnings    exit 0
+cargo test --locked --workspace -- --test-threads=1               181 passed, 0 failed
+cargo test --locked -p oip-opcua --features open62541-backend      37 passed
+cargo test --locked -p oip-opcua --no-default-features --features open62541-backend  2 passed
+flutter analyze                                                    exit 0, no issues
+flutter test                                                       97 passed, 0 failed
+python3 tests/real_device/acceptance.py                           8 phases PASS, exit 0
+  PASS browser_identity_online_writer
+  PASS ssh_handshake_confirmation_monitoring
+  PASS restart_sigkill_identity
+  PASS actual_flutter_ssh_onboarding     <- the persisted history
+  PASS no_clients_ingestion_progress
+  PASS host_key_change_blocks_collection
+  PASS weak_host_key_is_rejected_by_the_server
+  PASS eight_official_mcp_clients
+python3 tests/canonical_regression.py                             8 cases PASS, no failed, no blocked
+  oip008_acceptance           PASS  32.9 s
+  oip0082_acceptance          PASS  39.9 s
+  oip0082_schema3_migration   PASS  24.2 s
+  oip0084_acceptance          PASS  23.7 s
+  oip0085_acceptance          PASS   6.2 s
+  oip0085_migration           PASS   7.6 s
+  oip008_ui_regression        PASS 225.6 s   (browser 80.4 s, interactions 47.1 s, visual 63.4 s,
+                                                 native build 11.6 s, native macOS test 39.1 s,
+                                                 every step with its marker)
+  oip008_legacy_migration     PASS   7.7 s
+```
+
+The browser receipt (`target/oip-real-device-e2e/browser/report.json`) names the persisted samples
+that the Core stored for the connected device and that the operator now sees as history:
+
+```
+persisted_samples 10     rendered_samples 6     all_stale true     receive_times_shown 1
+first_receive_time 2026-11-07 21:21:11.293 UTC
+metrics host.architecture  host.interfaces  host.cpu_info  host.uptime_seconds
+        host.memory_used_bytes  host.memory_total_bytes
+```
+
+**Not claimed.** The samples are the host report of the owned loopback fixture on this machine,
+not a physical Raspberry-Pi verdict. No personal device was contacted, the real installation was
+not activated, the personal database is unchanged at schema 6. The event history and the
+diagnostics surfaces stay unconnected, because `events_read` is not proven for every operator
+principal. The productive identity, hostile same-UID, durable audit and OT boundaries stay open.
+F5 remains open and paused. No Rust source changed in this iteration, so the Rust workspace
+results of iteration 8 remain valid for the unchanged crates.
 
 ### Iteration 8 — the monitoring measurements reach the operator panel
 

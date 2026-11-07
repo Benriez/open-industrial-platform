@@ -166,7 +166,21 @@ Measured on canonical `main` (`e12c009`): `flutter analyze` exits 0 with no issu
 
 The harness defect found on the way: the browser script imports the Playwright module with a dynamic import, and a relative specifier is resolved as a package name by Node, so the relative value documented in the progress file failed with `Cannot find package 'apps'` and the browser phase could not run. The harness now resolves the module against the repository root, hands an absolute path to the browser script and reports a missing module before the browser phase.
 
-These values are the host report of the owned loopback fixture on this machine. No physical Raspberry-Pi was contacted, the real installation was not activated and the personal database is unchanged at schema 6. The persisted observation history is still not connected; it is recorded as the next READY item.
+These values are the host report of the owned loopback fixture on this machine. No physical Raspberry-Pi was contacted, the real installation was not activated and the personal database is unchanged at schema 6. The persisted observation history is connected in iteration 9; it was the next READY item of the previous iteration.
+
+## Addendum — the persisted observation history in the device view
+
+The Core already stored the samples of a connected device and served them through `GET /api/v2/observations/history`. The Flutter client named the gap itself: the device dialog stated that the authorized historical REST v2 queries exist in the Core, and the history was never requested. The device scope was already sufficient, because the device is resolved to its source through the authoritative source registration; no organization, infrastructure or site selection had to be invented.
+
+The device view now requests the history for the device itself. Every row is named as history, reports the stored value, its unit, the quality, the freshness and the receive time the Core guarantees, and the `missing_evidence` and the time semantics of the answer are shown instead of being hidden. The stable id of a sample deduplicates a refresh, the cursor that the Core hands out walks forward to the newer entries, and the surface states that there is no total.
+
+The browser session cookie authorizes this route, and that boundary was proven only with a bearer token. The new test in `crates/oip-server/tests/browser_session.rs` proves it with the cookie: the bound device is served with its persisted sample, a foreign scope and an unknown device are refused with `RESOURCE_NOT_ACCESSIBLE`, a principal without `telemetry_read` is refused with `PERMISSION_DENIED`, a request without a session is refused and an unbounded page is refused with `INVALID_DIAGNOSTIC_QUERY`. No permission rule, contract rule, storage layout or server behaviour is changed.
+
+The defect found on the way: the history was loaded once, when the device dialog was opened, and the dialog is opened before the connection is confirmed. The answer of a device without a source is `RESOURCE_NOT_ACCESSIBLE`, so the section kept that answer forever and never showed the samples the collector stored a moment later. The section now follows the persisted state on a bounded cadence, exactly like the connection panel follows the live observations, and the recovery is proven by a widget test.
+
+Measured on canonical `main` (`1287e23`): `cargo fmt`, `cargo check` and `cargo clippy` exit 0, the Rust workspace passes 181 tests, `flutter analyze` exits 0 with no issue, `flutter test` passes 97 tests, the real device harness passes all eight phases and the canonical regression passes all eight cases with no failed and no blocked case. The browser receipt names the persisted samples that the Core stored for the connected device and that the operator now sees as history — ten persisted samples, all `stale`, with the receive time of the first sample `2026-11-07 21:21:11.293 UTC`.
+
+These samples are the host report of the owned loopback fixture on this machine. No physical Raspberry-Pi was contacted, the real installation was not activated and the personal database is unchanged at schema 6. The event history and the diagnostics surfaces stay unconnected, because `events_read` is not proven for every operator principal.
 
 ## Addendum — the schema2 adoption case and the parity gate
 

@@ -1,13 +1,13 @@
 {
   "scope": "OIP canonical main: two controlled integrations (iteration 1 real device onboarding feature, iteration 2 its conformance fixes)",
-  "canonical_source_commit": "e12c00963b865be9bb0c7f7c366d42ba4bf0c4b2",
-  "canonical_source_tree": "56307de71e612563e38cf2657d7bf1cd34a0ce35",
-  "previous_canonical_source_commit": "f4b89ed20fccc1d060b2ef55bdb0828c698dd4ee",
-  "integration_method": "eight real git merge --ff-only integrations, no merge commit, no history rewrite",
+  "canonical_source_commit": "1287e23d0199c4d8e26988e558af34093ad29ef3",
+  "canonical_source_tree": "f1d3f1933a3f5ac38f516a993e04b5bfe3d82f97",
+  "previous_canonical_source_commit": "e12c00963b865be9bb0c7f7c366d42ba4bf0c4b2",
+  "integration_method": "nine real git merge --ff-only integrations, no merge commit, no history rewrite",
   "merge_commit_created": false,
   "history_rewritten": false,
-  "tracked_files_in_source_revision": 446,
-  "source_manifest_sha256": "23277ea50a08d9b9cc874dabc1482e59eece54706f86e0b87c55a3c28adf95de",
+  "tracked_files_in_source_revision": 449,
+  "source_manifest_sha256": "3db92de41a3395c2d6577f64b86dd196f38e148d229539e7a7bd86dfe86018d4",
   "source_manifest_scope": "all tracked files of the canonical source revision",
   "reviewed_candidate_tree_unchanged": true,
   "runtime_code_changed_in_this_iteration": true,
@@ -665,17 +665,130 @@
         ]
       },
       "rust_workspace_unchanged": "no Rust source changed in this iteration, so the Rust workspace results of iteration 5 (180 tests) remain valid for this tree"
+    },
+    {
+      "iteration": 9,
+      "scope": "connect the persisted observation history that the Core already stores and serves to the Flutter device view, and close the missing cookie path test of the history route",
+      "canonical_source_commit": "1287e23d0199c4d8e26988e558af34093ad29ef3",
+      "canonical_source_tree": "f1d3f1933a3f5ac38f516a993e04b5bfe3d82f97",
+      "tracked_files": 449,
+      "source_manifest_sha256": "3db92de41a3395c2d6577f64b86dd196f38e148d229539e7a7bd86dfe86018d4",
+      "development_isolation": "branch feature/oip-observation-history (1287e23) in an isolated worktree, integrated with git merge --ff-only",
+      "runtime_code_changed": true,
+      "product_source_changed": true,
+      "product_change_scope": "Flutter client only: apps/flutter/lib/models/history.dart, apps/flutter/lib/features/device_history.dart, apps/flutter/lib/features/devices.dart and apps/flutter/lib/services/api.dart; no Rust source, no permission rule, no storage layout and no server behaviour changed",
+      "harness_changed": [
+        "crates/oip-server/tests/browser_session.rs (new test: the cookie path of GET /api/v2/observations/history - bound device 200 with the persisted sample, foreign scope and unknown device 404 RESOURCE_NOT_ACCESSIBLE, principal without telemetry_read 403 PERMISSION_DENIED, no session 403, unbounded page 400 INVALID_DIAGNOSTIC_QUERY)",
+        "apps/flutter/test/observation_history_test.dart (new: eight tests - device scope without a global scope, continuation with the cursor, another category counted and not dropped, rendering as history, the continuation, the recovery from a device that is not accessible yet, the honest empty state and the refused history)",
+        "apps/flutter/test/browser_onboarding.mjs (compares the rendered history with the answer of the Core for the same device and writes the persisted samples into the receipt)",
+        "tests/real_device/acceptance.py (asserts that the samples of the connected device reach the Core database and that they are stale)"
+      ],
+      "contract_updated": "docs/architecture/oip-0082-diagnostics-flutter-contract.md names the device scoped surface and its proof; the rules it already carried are unchanged",
+      "flutter": {
+        "analyze": "exit 0, no issues",
+        "test": "97 passed, 0 failed"
+      },
+      "rust": {
+        "fmt": "exit 0",
+        "check": "exit 0",
+        "clippy": "exit 0, warnings denied",
+        "workspace_tests": "181 passed, 0 failed",
+        "opcua_default_backend": "37 passed",
+        "opcua_open62541_only": "2 passed"
+      },
+      "real_device_acceptance": {
+        "status": "PASS",
+        "phases": 8,
+        "phase_names": [
+          "browser_identity_online_writer",
+          "ssh_handshake_confirmation_monitoring",
+          "restart_sigkill_identity",
+          "actual_flutter_ssh_onboarding",
+          "no_clients_ingestion_progress",
+          "host_key_change_blocks_collection",
+          "weak_host_key_is_rejected_by_the_server",
+          "eight_official_mcp_clients"
+        ],
+        "persisted_history": {
+          "device": "browser-existing",
+          "persisted_samples": 10,
+          "rendered_samples": 6,
+          "all_stale": true,
+          "receive_times_shown": 1,
+          "first_receive_time": "2026-11-07 21:21:11.293 UTC",
+          "metrics": [
+            "host.architecture",
+            "host.interfaces",
+            "host.cpu_info",
+            "host.uptime_seconds",
+            "host.memory_used_bytes",
+            "host.memory_total_bytes"
+          ],
+          "evidence": "target/oip-real-device-e2e/browser/report.json",
+          "hardware": "owned loopback SSH fixture on this machine, actual host facts; not a physical Raspberry-Pi verdict"
+        }
+      },
+      "canonical_regression": {
+        "status": "PASS",
+        "failed": [],
+        "blocked": [],
+        "cases": [
+          {
+            "name": "oip008_acceptance",
+            "status": "PASS",
+            "seconds": 32.9
+          },
+          {
+            "name": "oip0082_acceptance",
+            "status": "PASS",
+            "seconds": 39.9
+          },
+          {
+            "name": "oip0082_schema3_migration",
+            "status": "PASS",
+            "seconds": 24.2
+          },
+          {
+            "name": "oip0084_acceptance",
+            "status": "PASS",
+            "seconds": 23.7
+          },
+          {
+            "name": "oip0085_acceptance",
+            "status": "PASS",
+            "seconds": 6.2
+          },
+          {
+            "name": "oip0085_migration",
+            "status": "PASS",
+            "seconds": 7.6
+          },
+          {
+            "name": "oip008_ui_regression",
+            "status": "PASS",
+            "seconds": 225.6
+          },
+          {
+            "name": "oip008_legacy_migration",
+            "status": "PASS",
+            "seconds": 7.7
+          }
+        ]
+      },
+      "defect_found_and_fixed": "The history was loaded once, when the device dialog was opened, and the dialog is opened before the connection is confirmed. The answer of a device without a source is RESOURCE_NOT_ACCESSIBLE, so the section kept that answer and never showed the samples the collector stored later. The section now follows the persisted state on a bounded cadence; the recovery is proven by a widget test.",
+      "not_claimed": "The event history and the diagnostics surfaces stay unconnected because events_read is not proven for every operator principal. No personal device was contacted, the real installation was not activated and the personal database is unchanged at schema 6."
     }
   ],
   "measured_on_canonical_main": {
-    "cargo_test_workspace": "180 passed, 0 failed",
+    "cargo_test_workspace": "181 passed, 0 failed",
     "cargo_test_opcua_default_backend": "37 passed",
     "cargo_test_opcua_open62541_only": "2 passed",
-    "flutter_test": "89 passed, 0 failed",
+    "flutter_test": "97 passed, 0 failed",
     "real_device_acceptance_phases": 8,
     "ui_regression": "browser 80.4 s, interactions 47.1 s, visual 63.4 s, native build 11.6 s, native test 39.1 s, all PASS",
     "milestone_acceptance_harnesses": "8 PASS, no failed and no blocked case",
-    "monitoring_measurements_in_the_operator_panel": "10 host observations rendered and compared against the Core response of the same device"
+    "monitoring_measurements_in_the_operator_panel": "10 host observations rendered and compared against the Core response of the same device",
+    "persisted_observation_history_in_the_device_view": "10 persisted samples of the connected device rendered as history and compared against the Core answer of the same device"
   },
   "status": "INTEGRATED_AND_VERIFIED_ON_CANONICAL_MAIN; PHYSICAL_HARDWARE_ACCEPTANCE_AND_INSTALLATION_ACTIVATION_PENDING",
   "gates_detail": {
