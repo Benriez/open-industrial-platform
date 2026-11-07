@@ -1,13 +1,13 @@
 {
   "scope": "OIP canonical main: two controlled integrations (iteration 1 real device onboarding feature, iteration 2 its conformance fixes)",
-  "canonical_source_commit": "b19092d",
-  "canonical_source_tree": "a45555428c165365ab14f7248a20c3382379e648",
-  "previous_canonical_source_commit": "fc828ac4a0afd2020fef646b4630eb0ab90f99cc",
-  "integration_method": "three real git merge --ff-only integrations, no merge commit, no history rewrite",
+  "canonical_source_commit": "5a48b0c27460b354241833c0972c2dfc5f261eec",
+  "canonical_source_tree": "30067d5da42880f272fb62201f31702dbdf4beac",
+  "previous_canonical_source_commit": "b19092d",
+  "integration_method": "four real git merge --ff-only integrations, no merge commit, no history rewrite",
   "merge_commit_created": false,
   "history_rewritten": false,
   "tracked_files_in_source_revision": 442,
-  "source_manifest_sha256": "32373b5375a3898f5c49747bfef83a833320a13066d98402de731799ef113c36",
+  "source_manifest_sha256": "d77516de0b4c2e91a107c2fe779fabb863327d4d503d01dfb6904e6d4d04e046",
   "source_manifest_scope": "all tracked files of the canonical source revision",
   "reviewed_candidate_tree_unchanged": true,
   "runtime_code_changed_in_this_iteration": true,
@@ -258,10 +258,62 @@
         "physical Raspberry-Pi acceptance",
         "real installation activation"
       ]
+    },
+    {
+      "iteration": 4,
+      "scope": "F4: bound the verified host report to the stored record size",
+      "canonical_source_commit": "5a48b0c27460b354241833c0972c2dfc5f261eec",
+      "canonical_source_tree": "30067d5da42880f272fb62201f31702dbdf4beac",
+      "tracked_files": 442,
+      "source_manifest_sha256": "d77516de0b4c2e91a107c2fe779fabb863327d4d503d01dfb6904e6d4d04e046",
+      "development_isolation": "branch feature/oip-connection-payload-bound in an isolated worktree with its own target directory, integrated afterwards with git merge --ff-only",
+      "runtime_code_changed": true,
+      "fixed_findings": [
+        "F4"
+      ],
+      "still_open": [
+        "F5"
+      ],
+      "paused_findings": [
+        "F5"
+      ],
+      "new_tests": 5,
+      "gates": {
+        "cargo_fmt_check": "PASS",
+        "cargo_check": "PASS",
+        "cargo_clippy_denied_warnings": "PASS",
+        "cargo_test_workspace": "180 passed, 0 failed",
+        "cargo_test_opcua_default_backend": "37 passed",
+        "cargo_test_opcua_open62541_only": "2 passed",
+        "cargo_build_server_and_mcp_probe": "PASS",
+        "cargo_deny": "PASS (advisories, bans, licenses, sources ok)",
+        "flutter_analyze": "PASS",
+        "flutter_test": "84 passed",
+        "real_device_acceptance": "8 phases PASS"
+      },
+      "observed_flake": {
+        "test": "async_opcua::client::tests::reconnect_recreates_subscription_and_reports_gap",
+        "first_canonical_run": "failed once under machine load (36 passed, 1 failed)",
+        "isolated_reruns": "3 consecutive passes (3.95 s, 4.54 s, 8.32 s)",
+        "repeated_full_suite": "37 passed, 0 failed (140.48 s)",
+        "relation_to_this_change": "none; the change touches no OPC-UA code",
+        "note": "recorded instead of hidden"
+      },
+      "measurements": {
+        "official_mcp_connection_read_ms": {
+          "samples": 20,
+          "p50": 4.05562506057322,
+          "p95": 4.277790896594524
+        },
+        "core_sample": {
+          "rss_kib": 30752,
+          "cpu_percent": 15.2
+        }
+      }
     }
   ],
   "measured_on_canonical_main": {
-    "cargo_test_workspace": "175 passed, 0 failed",
+    "cargo_test_workspace": "180 passed, 0 failed",
     "cargo_test_opcua_default_backend": "37 passed",
     "cargo_test_opcua_open62541_only": "2 passed",
     "flutter_test": "84 passed",

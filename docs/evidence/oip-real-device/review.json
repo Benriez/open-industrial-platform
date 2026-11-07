@@ -60,8 +60,9 @@
       "defect": "The maximal host report the parser can build exceeds the 128 KiB payload_json CHECK of device_connections, so a legal but extreme remote report fails the commit with an opaque storage error instead of a typed fault.",
       "contract_reference": "docs/architecture/real-device-onboarding.md:50, docs/architecture/real-device-onboarding.md:58",
       "suggested_fix": "reconcile the parser bound with the schema bound and length check the serialised record before the transaction so the failure is typed",
-      "status": "open",
-      "next_step": "N1b in docs/OIP_RELEASE_PROGRESS.md: reconcile the parser bound with the storage CHECK and fail with a typed fault"
+      "status": "fixed",
+      "fixed_in": "5a48b0c27460b354241833c0972c2dfc5f261eec",
+      "fix": "The parser charges every collected disk name, mount, interface name and address against a report budget and refuses an oversized report with SSH_OUTPUT_LIMIT. Before the write the server compares the serialised record with the shared domain bound and refuses a record that cannot be stored with SSH_REPORT_TOO_LARGE, so no partial binding is created. The storage schema keeps its bound and a test proves that both use the same value."
     },
     {
       "id": "F5",
@@ -70,8 +71,8 @@
       "defect": "The read path of GET /api/v2/device-connections?plan_id=... requires DeviceConnectionConfigure, while the contract places that read under DeviceConnectionRead. Conservative over restriction, not a privilege escalation.",
       "contract_reference": "docs/architecture/real-device-onboarding.md:15",
       "suggested_fix": "parameterise the plan check with the capability id, Read for the query path and Configure for the action paths",
-      "status": "open",
-      "next_step": "N1b in docs/OIP_RELEASE_PROGRESS.md: explicit authorization review before the capability of a plan read is changed"
+      "status": "open_paused",
+      "next_step": "Deliberately paused: the change loosens a permission and is a security decision, not a conformance fix. It needs an explicit release, a negative test for a foreign principal and a principal without InventoryManage, and a parity update."
     },
     {
       "id": "F6",
@@ -114,6 +115,6 @@
       "fix": "crates/oip-server/tests/browser_session.rs adds five Rust integration tests: exact Origin, single-use pairing code, CSRF on every cookie authorized write, revoked session and revoked projection stream."
     }
   ],
-  "planned_next_step": "N1b in docs/OIP_RELEASE_PROGRESS.md: F4 (storage bound) and F5 (authorization rule) as separate, explicitly reviewed sub steps. N2 native macOS and N3 the OIP-009 contract follow.",
+  "planned_next_step": "N3 in docs/OIP_RELEASE_PROGRESS.md: the OIP-009 browser session, SSE and global context contract, which may only describe what is implemented. N1b/F5 stays paused until an explicit release of the permission change.",
   "review_note": "The findings below were produced by an automated read-only review pass. The fixes in fc828ac were implemented and verified by the implementing session, not by an independent reviewer."
 }

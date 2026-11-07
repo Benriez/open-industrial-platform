@@ -131,3 +131,17 @@ The cause of the previous "blocker" was two bounds that were too short for a col
 Measured on canonical `main` (`b19092d`), against an owned demo core on a random loopback port: browser 88.1 s, interactions 47.9 s, visual 60.4 s, native build 12.7 s with the `Built build/macos/Build/Products/Debug/oip_dashboard.app` marker, native integration test 34.4 s with the `All tests passed!` marker, demo core shutdown exit 0.
 
 The native result stays inside the boundary of this document: it is a compatibility and regression check in the explicit isolated demo mode. Native authenticated session-cookie transport is still not claimed, the private Raspberry Pi was not contacted, the real installation was not activated and the personal SQLite database is unchanged at schema 6.
+
+## Addendum — the verified host report is bounded to the stored record size
+
+The stored connection record is limited to 128 KiB, but the SSH parser bounded the disk name and the interface addresses only by the subprocess output. A legal but extreme remote report could therefore reach the writer and fail the commit with an opaque storage rollback instead of an explicit fault, and the plan reported a generic error.
+
+The parser now charges every collected disk name, mount, interface name and address against a report budget and refuses an oversized report with the existing typed fault `SSH_OUTPUT_LIMIT`; a single disk name is bounded to 256 characters and an address to 128 characters. Before the write, the server serialises the record and compares it with the bound that the domain crate and the storage schema share; a record that cannot be stored is refused with the typed fault `SSH_REPORT_TOO_LARGE`, the plan fails with that fault and no partial binding is created. The storage schema keeps its limit, and a test proves that the schema limit and the shared domain constant are the same value.
+
+Five new tests cover the behaviour: an extreme report is refused with `SSH_OUTPUT_LIMIT`, a realistic maximal report stays inside the stored bound, an oversized disk name is bounded, a record that cannot be stored is refused before any write, and the schema limit equals the shared constant.
+
+Verified on canonical `main` (`5a48b0c`): format, check, clippy with denied warnings, **180** workspace tests, both OPC-UA backend configurations, the dependency policy check, the server and official MCP probe build, Flutter analysis, **84** Flutter tests and the acceptance harness with **eight** passing phases, including the actual Flutter onboarding and the weak host key rejection.
+
+One honest observation: during the first canonical OPC-UA run the timing-sensitive test `async_opcua::client::tests::reconnect_recreates_subscription_and_reports_gap` failed once under machine load. It then passed in three consecutive isolated runs and in the repeated complete suite (37 passed, 0 failed). The change touches no OPC-UA code, and the observation is recorded rather than hidden.
+
+The review finding F5 remains open and deliberately paused: it would loosen a permission, which is a security decision rather than a conformance fix, and it is not taken without an explicit release. The physical Raspberry Pi acceptance and the controlled activation of the real installation remain outstanding, and the personal SQLite database is unchanged at schema 6.

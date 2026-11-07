@@ -13,20 +13,21 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `b19092d` (`fix(harness): split the native macOS build from the native test`) |
-| Canonical source tree | `a45555428c165365ab14f7248a20c3382379e648` |
-| Previous canonical source revision | `fc828ac4a0afd2020fef646b4630eb0ab90f99cc` (iteration 2, conformance fixes) |
-| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in three controlled steps |
-| Tracked files in the canonical source revision | 442, source manifest SHA-256 `32373b5375a3898f5c49747bfef83a833320a13066d98402de731799ef113c36` |
+| Canonical source revision | `5a48b0c` (`fix(core): bound the verified host report to the stored record size`) |
+| Canonical source tree | `30067d5da42880f272fb62201f31702dbdf4beac` |
+| Previous canonical source revision | `b19092d` (iteration 3, native macOS harness) |
+| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in four controlled steps |
+| Tracked files in the canonical source revision | 442, source manifest SHA-256 `d77516de0b4c2e91a107c2fe779fabb863327d4d503d01dfb6904e6d4d04e046` |
 | Documentation commit on top | changes only `docs/OIP_RELEASE_PROGRESS.md`, `docs/evidence/oip-real-device/*.json` and `docs/real-device-onboarding-verification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
 
-The canonical tree carries three controlled integrations: iteration 1 integrated the reviewed
+The canonical tree carries four controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
-integrated the isolated harness branch `feature/oip-native-macos-harness` (`b19092d`). No
+integrated the isolated harness branch `feature/oip-native-macos-harness` (`b19092d`), iteration 4
+integrated the isolated payload branch `feature/oip-connection-payload-bound` (`5a48b0c`). No
 iteration weakened a contract rule, and none activated the installation.
 
 ## 2. Acceptance gates and their measured status
@@ -39,7 +40,7 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Rust format check | PROVED | `cargo fmt --all -- --check` → exit 0 |
 | Rust workspace check | PROVED | `cargo check --locked --workspace --all-targets` → exit 0 |
 | Rust clippy, warnings denied | PROVED | `cargo clippy --locked --workspace --all-targets -- -D warnings` → exit 0 |
-| Rust workspace tests | PROVED | 175 passed, 0 failed (44 of them Storage) |
+| Rust workspace tests | PROVED | 180 passed, 0 failed (45 of them Storage) |
 | OPC-UA default backend | PROVED | 37 passed, 0 failed |
 | OPC-UA open62541-only backend | PROVED | 2 passed, 0 failed (overlapping group) |
 | Dependency policy | PROVED | `cargo deny check advisories licenses bans sources` → advisories ok, bans ok, licenses ok, sources ok |
@@ -96,26 +97,27 @@ rule and need their own explicit review.
 | F1 | medium | `crates/oip-server/src/ssh.rs` (`minimum_key_bits`, `parse_key_report`, `scan`) | The server never enforced "RSA keys require at least 2048 bits". `ssh-keygen -lf` already prints the key size, but only the fingerprint was kept; enforcement was delegated to the `RequiredRSASize=2048` client option of the *user* connection. A weak `ssh-rsa` host key could be scanned, shown, trusted and pinned. | `docs/architecture/real-device-onboarding.md:48` | **fixed** |
 | F2 | low/medium | `crates/oip-server/src/ssh.rs` (`run`) and `crates/oip-server/src/connection_service.rs` (`read`) | `REMOTE HOST IDENTIFICATION HAS CHANGED` **and** `Host key verification failed` were both mapped to `SSH_HOST_KEY_CHANGED`, so an unknown key was reported as a rotation alarm. | `docs/architecture/real-device-onboarding.md:23`, `:66` | **fixed** |
 | F3 | low | `crates/oip-server/src/browser_session.rs` (`login`) | The invalid-code limiter was evaluated *before* the grant lookup, so 16 malformed codes blocked the operator's valid single-use code for 60 s. Local-process availability bug inside the session boundary. | `docs/architecture/real-device-onboarding.md:36` | **fixed** |
-| F4 | low | `crates/oip-server/src/ssh.rs` (`parse`) vs `crates/oip-storage/src/connection.rs` | The maximal host report the parser can build (up to ~128 KiB of interface/disk text) exceeds the 128 KiB `payload_json` CHECK, so a legal but extreme remote report fails the commit with an opaque storage error instead of a typed fault. | `docs/architecture/real-device-onboarding.md:50`, `:58` | open → N1b |
-| F5 | low | `crates/oip-server/src/connection_service.rs` (`check_plan`) | The read path requires `DeviceConnectionConfigure`; the contract places `GET /device-connections?plan_id=…` under `DeviceConnectionRead`. Conservative over-restriction, not an escalation. | `docs/architecture/real-device-onboarding.md:15` | open → N1b |
+| F4 | low | `crates/oip-server/src/ssh.rs` (`parse`) vs `crates/oip-storage/src/connection.rs` | The maximal host report the parser can build (up to ~128 KiB of interface/disk text) exceeds the 128 KiB `payload_json` CHECK, so a legal but extreme remote report fails the commit with an opaque storage error instead of a typed fault. | `docs/architecture/real-device-onboarding.md:50`, `:58` | **fixed** in iteration 4 |
+| F5 | low | `crates/oip-server/src/connection_service.rs` (`check_plan`) | The read path requires `DeviceConnectionConfigure`; the contract places `GET /device-connections?plan_id=…` under `DeviceConnectionRead`. Conservative over-restriction, not an escalation. | `docs/architecture/real-device-onboarding.md:15` | **open and paused** → N1b |
 | F6 | low | `crates/oip-server/src/browser_session.rs` (`login`) | The session-capacity check ran after the single-use grant was already consumed, so a valid code was destroyed when 64 sessions existed. | `docs/architecture/real-device-onboarding.md:36` | **fixed** |
 | F7 | low | `crates/oip-server/src/ssh.rs` (`private_workdir`) | The SSH work directory was created with the process umask and only afterwards chmod'ed to 0700, leaving a brief world-readable window. | `docs/architecture/real-device-onboarding.md:48` | **fixed** |
 | R1 | test gap | `crates/oip-server/tests/browser_session.rs` | No Rust-level test covered the browser session/CSRF/Origin flow; those assertions only existed in the external harness `tests/real_device/acceptance.py`. | `docs/architecture/real-device-onboarding.md:37-39` | **fixed** |
 
-### N1b — Remaining conformance items (storage bound and authorization rule)
+### N1b — Remaining conformance items (authorization rule)
 
-Two findings are deliberately *not* mixed into the security fix, because both change a rule
-instead of enforcing the existing one and need their own review and evidence:
+**F4 (storage bound) is closed in iteration 4.** The parser now charges every collected disk
+name, mount, interface name and address against a report budget, the server compares the
+serialised record with the shared bound from the domain crate before the write, and an extreme
+report is refused with an explicit fault instead of a rollback.
 
-* **F4 (storage bound).** Reconcile the maximal host report the SSH parser can build with the
-  128 KiB `device_connections.payload_json` CHECK, and length check the serialised record
-  before the transaction so an extreme report fails with a typed fault instead of a rollback.
-  Gate: a regression test that commits a maximal report and one that proves a typed failure.
-* **F5 (authorization rule).** Decide, against the contract table in
-  `docs/architecture/real-device-onboarding.md:15`, whether `GET /api/v2/device-connections?plan_id=…`
-  is governed by `DeviceConnectionRead`. The change loosens a permission and therefore needs an
-  explicit authorization review, a negative test for a foreign principal and a parity update in
-  `docs/architecture/oip-008-rest-mcp-parity.md` if the capability matrix changes.
+* **F5 (authorization rule) — open and deliberately paused.** The contract table in
+  `docs/architecture/real-device-onboarding.md:15` places `GET /device-connections?plan_id=…`
+  under `DeviceConnectionRead`, while the implementation requires `DeviceConnectionConfigure`.
+  The change *loosens* a permission and therefore is a security decision, not a conformance
+  fix. The loop does not take it without an explicit release. When it is released it needs:
+  a negative test for a foreign principal and a principal without `InventoryManage`, a
+  parity update in `docs/architecture/oip-008-rest-mcp-parity.md` if the capability matrix
+  changes, and the normal capability, scope and audit gate set.
 
 ### N2 — Native macOS build and test (open acceptance item) — **closed in iteration 3**
 
@@ -350,6 +352,71 @@ so the result is reproducible and not a single lucky run.
 isolated demo mode, exactly as the contract allows. Native authenticated session-cookie
 transport is still not claimed, no personal database was touched, no private device was
 contacted and the physical Raspberry-Pi acceptance stays withheld.
+
+### Iteration 4 — F4: bound the verified host report to the stored record size
+
+**Step.** Close the remaining storage conformance finding F4 on an isolated branch and
+integrate the verified result. F5 stays open and paused, because it loosens a permission.
+
+**Isolation.** Branch `feature/oip-connection-payload-bound` in the worktree
+`/Users/benny/Code/open-industrial-platform-worktrees/payload-bound`, created from the
+canonical `main` at `c4d3bd9`, built and tested with its own target directory and integrated
+afterwards with a real `git merge --ff-only` as `5a48b0c`.
+
+**The defect.** The stored connection record is limited to 128 KiB
+(`device_connections.payload_json`), but the SSH parser bounded the disk name and the
+interface addresses only by the subprocess output. A legal but extreme remote report
+therefore reached the writer and failed the commit with an opaque storage rollback instead of
+an explicit fault, and the plan reported a generic error.
+
+**What changed.**
+
+* `crates/oip-core/src/connection.rs`: `CONNECTION_PAYLOAD_MAX_BYTES` (131072) and
+  `CONNECTION_ATTEMPT_PAYLOAD_MAX_BYTES` (16384) are now shared domain constants.
+* `crates/oip-server/src/ssh.rs`: every collected disk name, mount, interface name and address
+  is charged against a report budget of 48 KiB; an oversized report is refused with the
+  existing typed fault `SSH_OUTPUT_LIMIT`. A single disk name is additionally bounded to 256
+  characters and an address to 128 characters.
+* `crates/oip-server/src/connection_service.rs`: before the write, the record is serialised
+  and compared with the shared bound. A record that cannot be stored is refused with the typed
+  fault `SSH_REPORT_TOO_LARGE`, the plan fails with that fault and no partial binding is
+  created.
+* `crates/oip-storage/src/connection.rs`: the schema keeps its bound and a new test proves that
+  the schema limit and the shared domain constant are the same value.
+* `docs/architecture/real-device-onboarding.md`: the contract states the report budget, the two
+  explicit faults and that no partial binding is created.
+
+**New tests (5).** An extreme report is refused with `SSH_OUTPUT_LIMIT`; a realistic maximal
+report stays inside the stored record bound; an oversized disk name is bounded in the report; a
+record that cannot be stored is refused before any write; the storage schema limit equals the
+shared domain constant.
+
+**Commands and measured results** on the canonical tree after the fast-forward:
+
+```
+cargo fmt --all -- --check                                       # exit 0
+cargo check --locked --workspace --all-targets                    # exit 0
+cargo clippy --locked --workspace --all-targets -- -D warnings    # exit 0
+cargo test --locked --workspace -- --test-threads=1               # 180 passed, 0 failed
+cargo test --locked -p oip-opcua --features open62541-backend      # 37 passed
+cargo test --locked -p oip-opcua --no-default-features --features open62541-backend  # 2 passed
+cargo build --locked -p oip-server --bin oip-server --example mcp_probe   # exit 0
+cargo deny check advisories licenses bans sources                 # advisories/bans/licenses/sources ok
+flutter analyze                                                    # exit 0
+flutter test                                                       # 84 passed
+python3 tests/real_device/acceptance.py                           # 8 phases PASS, exit 0
+```
+
+**One observed flake, reported honestly.** During the first canonical OPC-UA run the
+timing-sensitive test `async_opcua::client::tests::reconnect_recreates_subscription_and_reports_gap`
+failed once while the machine was loaded (36 passed, 1 failed). It then passed in three
+consecutive isolated runs (3.95 s, 4.54 s, 8.32 s) and in the repeated complete OPC-UA run
+(37 passed, 0 failed, 140.48 s). The change touches no OPC-UA code; the observation is
+recorded instead of being hidden.
+
+**Not claimed.** No physical Raspberry-Pi was contacted, the real installation was not
+activated, the personal database is unchanged at schema 6 and the productive identity,
+hostile same-UID, durable audit and OT boundaries stay open. F5 remains open and paused.
 
 ## 5. Evidence index
 
