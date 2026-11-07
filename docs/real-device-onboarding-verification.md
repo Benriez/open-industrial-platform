@@ -146,6 +146,16 @@ One honest observation: during the first canonical OPC-UA run the timing-sensiti
 
 The review finding F5 remains open and deliberately paused: it would loosen a permission, which is a security decision rather than a conformance fix, and it is not taken without an explicit release. The physical Raspberry Pi acceptance and the controlled activation of the real installation remain outstanding, and the personal SQLite database is unchanged at schema 6.
 
+## Addendum — the milestone acceptance gates on the canonical tree
+
+The milestone acceptance harnesses had not been re-run after the real device onboarding integration, and two of them had silently gone stale: the schema3 migration harness still expected the upgraded schema to be 6 instead of 7, and the OIP-008 acceptance harness still expected exactly 17 MCP read tools for the reader role instead of 18, because the device connection read tool is visible to that role as well. Both gates failed on the canonical tree until the expectations were corrected to the measured reality; the gates stay exact.
+
+`tests/canonical_regression.py` now runs the milestone harnesses over the canonical tree with one reproducible entry point. Every case owns its own runtime directory, ports and credentials. A case that needs a protected historical binary is only executed when that binary exists and its hash matches the recorded value; otherwise it is reported as BLOCKED with the reason instead of being run with a substitute.
+
+Measured on canonical `main` (`111dff1`): OIP-008 acceptance PASS, OIP-008.2 acceptance PASS, OIP-008.2 schema3 migration PASS, OIP-008.4 acceptance PASS, OIP-008.5 acceptance PASS, OIP-008.5 migration PASS and the UI regression PASS with its browser, interaction, visual, native build and native test steps. The schema2 adoption case is BLOCKED because the workspace holds no protected OIP-007 binary; that migration was verified historically in the OIP-008 receipt and is not claimed as re-verified here.
+
+The product source is unchanged in this iteration, so the Rust, Flutter and real device acceptance results of the previous iteration remain valid for this tree.
+
 ## Addendum — the OIP-009 browser session, SSE and context seam contract
 
 Five places in the tree defer the browser session, the SSE boundary and the global context to OIP-009, and this document states that the final OIP-009 payload must be reconciled three ways. The implemented part now exists and is verified, so it is written down as the boundary any payload has to satisfy: `docs/architecture/oip-009-browser-session-sse.md`.

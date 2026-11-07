@@ -13,23 +13,25 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `d32c9d1` (`docs(core): state the OIP-009 browser session, SSE and context seam contract`) |
-| Canonical source tree | `a8b0eaafa501ad49449ce0faaf1fab3d26d127fa` |
-| Previous canonical source revision | `5a48b0c` (iteration 4, bounded host report) |
-| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in five controlled steps |
-| Tracked files in the canonical source revision | 443, source manifest SHA-256 `d74c70dbd1890866dc0b167484e2c5df7c3785a433be38d3a60ede0565857502` |
+| Canonical source revision | `111dff1` (`test(core): add a reproducible canonical regression run and repair stale gates`) |
+| Canonical source tree | `7090367b0a30815db9b29ddeef41c3acc2c68719` |
+| Previous canonical source revision | `d32c9d1` (iteration 5, OIP-009 contract) |
+| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in six controlled steps |
+| Tracked files in the canonical source revision | 444, source manifest SHA-256 `03097acab2dcadd9a7dc5c0c83af6bde32614a1c5784a91bbb1877cb005c59e3` |
 | Documentation commit on top | changes only `docs/OIP_RELEASE_PROGRESS.md`, `docs/evidence/oip-real-device/*.json` and `docs/real-device-onboarding-verification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
 
-The canonical tree carries five controlled integrations: iteration 1 integrated the reviewed
+The canonical tree carries six controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
 integrated the isolated harness branch `feature/oip-native-macos-harness` (`b19092d`), iteration 4
 integrated the isolated payload branch `feature/oip-connection-payload-bound` (`5a48b0c`) and
 iteration 5 integrated the isolated contract branch `feature/oip-009-context-contract`
-(`d32c9d1`). No iteration weakened a contract rule, and none activated the installation.
+(`d32c9d1`) and iteration 6 the isolated regression branch
+`feature/oip-canonical-regression` (`111dff1`). No iteration weakened a contract rule, and
+none activated the installation.
 
 ## 2. Acceptance gates and their measured status
 
@@ -61,6 +63,7 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Browser session boundary in Rust | PROVED | `crates/oip-server/tests/browser_session.rs` → 5 tests: exact Origin, single-use code, CSRF on every write, revoked session, revoked projection stream |
 | Native macOS build and test | PROVED | `tests/oip008/ui_regression.py` → native build 11.6 s with the build marker, native integration test 39.1 s with the `All tests passed!` marker, against an owned isolated demo core |
 | Legacy browser, interaction and visual regression | PROVED | browser 80.4 s, interactions 47.1 s, visual 63.4 s on the separately built HTML renderer |
+| Milestone acceptance harnesses on the canonical tree | PROVED | `tests/canonical_regression.py`: OIP-008, OIP-008.2, OIP-008.2 schema3 migration, OIP-008.4, OIP-008.5, OIP-008.5 migration and the UI regression all PASS on the canonical tree |
 | Physical Raspberry-Pi acceptance | **WITHHELD** | no endpoint, SSH user or approved identity was supplied; no personal device was contacted |
 | Real installation activation (schema 7) | **BLOCKED** | requires a separate operator decision plus a fresh protected backup; forbidden in this loop |
 | Productive remote/browser identity | **OPEN** | loopback local operator session only; no HTTPS, no remote identity, no hostile same-UID isolation |
@@ -476,6 +479,65 @@ implemented and is not decided here. No physical Raspberry-Pi was contacted, the
 installation was not activated, the personal database is unchanged at schema 6 and the
 productive identity, hostile same-UID, durable audit and OT boundaries stay open. F5 remains
 open and paused.
+
+### Iteration 6 — a reproducible canonical regression run and two repaired stale gates
+
+**Step.** Re-run the milestone acceptance harnesses on the canonical tree after six
+integrations and make the run reproducible with one entry point. The step was carried out on
+the isolated branch `feature/oip-canonical-regression` in the worktree
+`/Users/benny/Code/open-industrial-platform-worktrees/canonical-regression` and integrated
+with a real `git merge --ff-only` as `111dff1`.
+
+**What the run found.** Two acceptance gates had silently gone stale when the real device
+onboarding integration moved the canonical schema and the MCP tool surface, and nobody had
+re-run them since:
+
+* `tests/oip0082/schema3_migration.py` expected the upgraded schema to be **6**. The canonical
+  schema is **7** since the connection tables were added, so the gate failed on the canonical
+  tree. The expectation now names the schema the canonical binary actually reaches, and the
+  harness still asserts an exact value.
+* `tests/oip008/acceptance.py` expected exactly **17** MCP read tools for the reader role.
+  `oip_device_connection_read` is visible to that role as well, so the policy filtered catalog
+  has **18**. The exact catalog was measured for all three reader clients before the
+  expectation was changed.
+
+Both repairs keep the gate exact; only the stale number changed.
+
+**New runner.** `tests/canonical_regression.py` runs the milestone harnesses over the
+canonical tree with one reproducible entry point. Every case owns its own runtime directory
+under `/private/tmp`, its own ports and its own credentials. A case that needs a protected
+historical binary is only executed when that binary exists **and** its hash matches the
+recorded value; otherwise the case is reported as `BLOCKED` with the reason instead of being
+run with a substitute. `tests/oip008/legacy_migration.py` can now use a protected OIP-007
+binary through `OIP007_BASELINE_BINARY`, and `tests/oip008/ui_regression.py` stops with a
+clear message when the HTML renderer build is missing instead of serving a CanvasKit build and
+reporting a product failure that is really a missing artifact.
+
+**Measured result on canonical `main` (`111dff1`)**:
+
+```
+oip008_acceptance          PASS  53.8 s
+oip0082_acceptance         PASS  32.9 s
+oip0082_schema3_migration  PASS  25.3 s
+oip0084_acceptance         PASS  25.6 s
+oip0085_acceptance         PASS   5.0 s
+oip0085_migration          PASS   7.2 s
+oip008_ui_regression       PASS 264.4 s   browser 75.4 s, interactions 47.8 s, visual 61.1 s,
+                                             native build 32.2 s, native test 30.6 s, core exit 0
+oip008_legacy_migration    BLOCKED        no protected OIP-007 binary in the workspace
+```
+
+The blocked case is the schema2 adoption: the harness has to create a genuine schema2
+database, which only a protected OIP-007 binary can do. The canonical binary creates schema3
+or later, so the case is reported as blocked with the reason instead of being run with a
+substitute. The schema2 adoption was verified historically in the OIP-008 receipt with the
+then protected binary; it is not claimed as re-verified here.
+
+**Not claimed.** The product source is unchanged in this iteration, so the Rust, Flutter and
+real device acceptance results of iteration 5 remain valid for this tree. No physical
+Raspberry-Pi was contacted, the real installation was not activated, the personal database is
+unchanged at schema 6 and the productive identity, hostile same-UID, durable audit and OT
+boundaries stay open. F5 remains open and paused.
 
 ## 5. Evidence index
 

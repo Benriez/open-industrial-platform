@@ -1,13 +1,13 @@
 {
   "scope": "OIP canonical main: two controlled integrations (iteration 1 real device onboarding feature, iteration 2 its conformance fixes)",
-  "canonical_source_commit": "d32c9d19de13a519b5e7c2dcd84aeb976df72186",
-  "canonical_source_tree": "a8b0eaafa501ad49449ce0faaf1fab3d26d127fa",
-  "previous_canonical_source_commit": "5a48b0c27460b354241833c0972c2dfc5f261eec",
-  "integration_method": "five real git merge --ff-only integrations, no merge commit, no history rewrite",
+  "canonical_source_commit": "111dff13017089f30055a498fe6c92f6decbaf6b",
+  "canonical_source_tree": "7090367b0a30815db9b29ddeef41c3acc2c68719",
+  "previous_canonical_source_commit": "d32c9d19de13a519b5e7c2dcd84aeb976df72186",
+  "integration_method": "six real git merge --ff-only integrations, no merge commit, no history rewrite",
   "merge_commit_created": false,
   "history_rewritten": false,
-  "tracked_files_in_source_revision": 443,
-  "source_manifest_sha256": "d74c70dbd1890866dc0b167484e2c5df7c3785a433be38d3a60ede0565857502",
+  "tracked_files_in_source_revision": 444,
+  "source_manifest_sha256": "03097acab2dcadd9a7dc5c0c83af6bde32614a1c5784a91bbb1877cb005c59e3",
   "source_manifest_scope": "all tracked files of the canonical source revision",
   "reviewed_candidate_tree_unchanged": true,
   "runtime_code_changed_in_this_iteration": true,
@@ -364,6 +364,106 @@
         "the global Organization / Infrastructure / Site selection payload (OIP-009, owned by the independent UI workstreams, three way reconciliation required)",
         "F5 (authorization rule), paused because it loosens a permission"
       ]
+    },
+    {
+      "iteration": 6,
+      "scope": "a reproducible canonical regression run over the milestone acceptance harnesses, and the repair of two stale gates",
+      "canonical_source_commit": "111dff13017089f30055a498fe6c92f6decbaf6b",
+      "canonical_source_tree": "7090367b0a30815db9b29ddeef41c3acc2c68719",
+      "tracked_files": 444,
+      "source_manifest_sha256": "03097acab2dcadd9a7dc5c0c83af6bde32614a1c5784a91bbb1877cb005c59e3",
+      "development_isolation": "branch feature/oip-canonical-regression in an isolated worktree, integrated afterwards with git merge --ff-only",
+      "runtime_code_changed": false,
+      "product_source_changed": false,
+      "harness_changed": [
+        "tests/canonical_regression.py (new reproducible runner)",
+        "tests/oip008/acceptance.py (MCP read tool catalog 17 -> 18)",
+        "tests/oip0082/schema3_migration.py (upgraded schema 6 -> 7)",
+        "tests/oip008/legacy_migration.py (protected OIP-007 baseline through OIP007_BASELINE_BINARY)",
+        "tests/oip008/ui_regression.py (clear failure when the HTML renderer build is missing)"
+      ],
+      "stale_gates_found": [
+        {
+          "gate": "tests/oip0082/schema3_migration.py",
+          "was": 6,
+          "now": 7,
+          "reason": "the canonical schema is 7 since the connection tables were added"
+        },
+        {
+          "gate": "tests/oip008/acceptance.py",
+          "was": 17,
+          "now": 18,
+          "reason": "oip_device_connection_read is visible to the reader role, the policy filtered catalog has 18 tools"
+        }
+      ],
+      "canonical_regression": {
+        "status": "PASS",
+        "failed": [],
+        "blocked": [
+          "oip008_legacy_migration"
+        ],
+        "cases": [
+          {
+            "name": "oip008_acceptance",
+            "status": "PASS",
+            "seconds": 53.8
+          },
+          {
+            "name": "oip0082_acceptance",
+            "status": "PASS",
+            "seconds": 32.9
+          },
+          {
+            "name": "oip0082_schema3_migration",
+            "status": "PASS",
+            "seconds": 25.3
+          },
+          {
+            "name": "oip0084_acceptance",
+            "status": "PASS",
+            "seconds": 25.6
+          },
+          {
+            "name": "oip0085_acceptance",
+            "status": "PASS",
+            "seconds": 5.0
+          },
+          {
+            "name": "oip0085_migration",
+            "status": "PASS",
+            "seconds": 7.2
+          },
+          {
+            "name": "oip008_ui_regression",
+            "status": "PASS",
+            "seconds": 264.4,
+            "steps": {
+              "browser": 75.4,
+              "interactions": 47.8,
+              "visual": 61.1,
+              "native_build": 32.2,
+              "native_macos": 30.6
+            }
+          },
+          {
+            "name": "oip008_legacy_migration",
+            "status": "BLOCKED",
+            "reason": "the harness has to create a genuine schema2 database, which only a protected OIP-007 binary can do; the canonical binary creates schema3 or later"
+          }
+        ],
+        "protected_baselines_used": {
+          "oip008": {
+            "sha256": "889a36b2cf0d761796662e0437a18c2ed43dc8c1b1da82d70fecdd5a055865c6"
+          },
+          "oip0083": {
+            "sha256": "3b682dfaff8479f13804d28e6fe1288bedcfea8af0b409c8f8dc22d422b9ac39"
+          },
+          "oip0084": {
+            "sha256": "73d70d8105914db20210c95268b5733ca2ec19c959c4c29fa57cb93c1935fe58"
+          }
+        },
+        "legacy_schema2_adoption": "not re-verified; verified historically in the OIP-008 receipt with the then protected binary"
+      }
     }
   ],
   "measured_on_canonical_main": {
@@ -372,7 +472,8 @@
     "cargo_test_opcua_open62541_only": "2 passed",
     "flutter_test": "86 passed, 0 failed",
     "real_device_acceptance_phases": 8,
-    "ui_regression": "browser 80.4 s, interactions 47.1 s, visual 63.4 s, native build 11.6 s, native test 39.1 s, all PASS"
+    "ui_regression": "browser 80.4 s, interactions 47.1 s, visual 63.4 s, native build 11.6 s, native test 39.1 s, all PASS",
+    "milestone_acceptance_harnesses": "7 PASS, 1 BLOCKED (schema2 adoption without a protected OIP-007 binary)"
   },
   "status": "INTEGRATED_AND_VERIFIED_ON_CANONICAL_MAIN; PHYSICAL_HARDWARE_ACCEPTANCE_AND_INSTALLATION_ACTIVATION_PENDING",
   "gates_detail": {
