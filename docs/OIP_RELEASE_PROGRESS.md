@@ -1745,11 +1745,49 @@ section through the category `Diagnostics` of the settings navigation.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 28 — the verified connection of a device in the surface
+
+**Status: PROVED on canonical `main`.**
+The last gap of the device management gate G4 was the association of a device with a **verified**
+connection through the surface: the administration surface could register, update and archive a
+device, but nobody had shown that the surface shows the connection of a device — with the host key
+the operator confirmed and the identity the Core really verified.
+
+`tests/oip_device_connection.py` starts the release binary with an **owned loopback SSH fixture**
+(a real OpenSSH server with a real host key on the loopback of the machine; no system service, no
+personal endpoint, no private key in a receipt) and performs the whole handshake through the
+authorized managed session:
+
+1. the device is registered through the inventory of the authorized scope;
+2. the connection is started, the Core presents the host key of the fixture and waits for the
+   consent of the operator (`SHA256:PVA1Yx1uOkaKGQyK39dmqfCRdLnWxdNgOARfm1G1IHA`);
+3. the host key is confirmed, the identity of the host is verified and the identity confirmation
+   enables the read-only monitoring with a polling of 10 s;
+4. the device collects — the state of the connection is `collecting`.
+
+The browser journey (`apps/flutter/test/browser_device_connection.mjs`) then opens the device
+workspace, selects the device and reads the connection panel of the approved surface. Measured
+(`docs/evidence/oip-device-connection/device-connection.json`): 8 checks, no JavaScript error —
+
+* the inventory of the scope lists the device;
+* the panel `Verbindung & Monitoring` is shown with the state `Collecting`;
+* the **confirmed host key** is shown — the same fingerprint the Core presented;
+* the endpoint of the verified connection is shown;
+* the read-only monitoring is shown with its polling and its revision;
+* behind the expansion `Tatsächlich verifizierte Identität` the really verified identity of the
+  host stands: `MacBookPro.fritz.box`, `Darwin`, 17 179 869 184 bytes of memory — and the Core
+  names the sensors it could not read (`gpu`, `temperature`, `cpu_utilization`) instead of
+  inventing them.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH
+to a foreign endpoint, no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-device-connection/device-connection.json` | the measured verified connection of a device in the approved surface against the real Core and an owned loopback SSH fixture (iteration 28) |
 | `docs/evidence/oip-workstation-data/workstation-data.json` | the measured functional depth of the six workstations against the real Core: the real hierarchy, device, placement, nodes, events and settings, and no identifier of the other organization (iteration 27) |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the measured parity of the OPC-UA address space between the official MCP tool and the REST routes against the real backend (iteration 25) |
 | `docs/evidence/oip-stability/stability.json` | the measured extended stability run of the release binary: 30 minutes, 60 samples, the resource use, the collection rate, the death of a collector and the clean shutdown (iteration 23) |

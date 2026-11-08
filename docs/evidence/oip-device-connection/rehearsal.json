@@ -1,0 +1,284 @@
+{
+  "schema": "oip-device-connection-rehearsal-v1",
+  "steps": [
+    "the instance runs",
+    "the device is registered",
+    "the connection is verified and confirmed",
+    "the device collects"
+  ],
+  "ssh_fixture": {
+    "port": 53786,
+    "user": "benny",
+    "loopback_only": true
+  },
+  "host_key_fingerprint": "SHA256:PVA1Yx1uOkaKGQyK39dmqfCRdLnWxdNgOARfm1G1IHA",
+  "verified_identity": {
+    "hostname": "MacBookPro.fritz.box",
+    "operating_system": "Darwin",
+    "memory_total_bytes": 17179869184
+  },
+  "connection": {
+    "device_id": "existing-pi",
+    "source_id": "95953c93-8379-446e-b0fe-f53922db6bfb",
+    "endpoint": {
+      "host": "127.0.0.1",
+      "port": 53786,
+      "user": "benny",
+      "identity_profile": "fixture",
+      "alias": null
+    },
+    "fingerprint": "SHA256:PVA1Yx1uOkaKGQyK39dmqfCRdLnWxdNgOARfm1G1IHA",
+    "verified_identity": {
+      "hostname": "MacBookPro.fritz.box",
+      "operating_system": "Darwin",
+      "architecture": "arm64",
+      "cpu_info": "Apple M1 Pro",
+      "model": "MacBookPro18,3",
+      "stable_host_id_sha256": null,
+      "memory_total_bytes": 17179869184,
+      "memory_used_bytes": 13004275712,
+      "uptime_seconds": 802198.0,
+      "disks": [
+        {
+          "filesystem": "/dev/disk3s1s1",
+          "mount": "/",
+          "total_bytes": 994662584320,
+          "used_bytes": 12577067008,
+          "available_bytes": 6264229888
+        },
+        {
+          "filesystem": "/dev/disk3s6",
+          "mount": "/System/Volumes/VM",
+          "total_bytes": 994662584320,
+          "used_bytes": 11826520064,
+          "available_bytes": 6264229888
+        },
+        {
+          "filesystem": "/dev/disk3s2",
+          "mount": "/System/Volumes/Preboot",
+          "total_bytes": 994662584320,
+          "used_bytes": 10806693888,
+          "available_bytes": 6264229888
+        },
+        {
+          "filesystem": "/dev/disk3s4",
+          "mount": "/System/Volumes/Update",
+          "total_bytes": 994662584320,
+          "used_bytes": 8474624,
+          "available_bytes": 6264229888
+        },
+        {
+          "filesystem": "/dev/disk1s2",
+          "mount": "/System/Volumes/xarts",
+          "total_bytes": 524288000,
+          "used_bytes": 6311936,
+          "available_bytes": 503578624
+        },
+        {
+          "filesystem": "/dev/disk1s1",
+          "mount": "/System/Volumes/iSCPreboot",
+          "total_bytes": 524288000,
+          "used_bytes": 5890048,
+          "available_bytes": 503578624
+        },
+        {
+          "filesystem": "/dev/disk1s3",
+          "mount": "/System/Volumes/Hardware",
+          "total_bytes": 524288000,
+          "used_bytes": 3530752,
+          "available_bytes": 503578624
+        },
+        {
+          "filesystem": "/dev/disk3s5",
+          "mount": "/System/Volumes/Data",
+          "total_bytes": 994662584320,
+          "used_bytes": 950368247808,
+          "available_bytes": 6264229888
+        }
+      ],
+      "interfaces": [
+        {
+          "name": "lo0",
+          "addresses": [
+            "127.0.0.1",
+            "::1",
+            "fe80::1%lo0"
+          ]
+        },
+        {
+          "name": "gif0",
+          "addresses": []
+        },
+        {
+          "name": "stf0",
+          "addresses": []
+        },
+        {
+          "name": "anpi1",
+          "addresses": []
+        },
+        {
+          "name": "anpi2",
+          "addresses": []
+        },
+        {
+          "name": "anpi0",
+          "addresses": []
+        },
+        {
+          "name": "en4",
+          "addresses": []
+        },
+        {
+          "name": "en5",
+          "addresses": []
+        },
+        {
+          "name": "en6",
+          "addresses": []
+        },
+        {
+          "name": "en1",
+          "addresses": []
+        },
+        {
+          "name": "en2",
+          "addresses": []
+        },
+        {
+          "name": "en3",
+          "addresses": []
+        },
+        {
+          "name": "bridge0",
+          "addresses": []
+        },
+        {
+          "name": "utun0",
+          "addresses": [
+            "fe80::c521:1aac:ad72:d54f%utun0"
+          ]
+        },
+        {
+          "name": "ap1",
+          "addresses": []
+        },
+        {
+          "name": "en0",
+          "addresses": [
+            "fe80::1878:bbf6:2742:a111%en0",
+            "192.168.1.219",
+            "fd14:75ec:3e81:0:ea:ed57:96b6:2113"
+          ]
+        },
+        {
+          "name": "utun1",
+          "addresses": [
+            "fe80::39ff:4771:b6c:63be%utun1"
+          ]
+        },
+        {
+          "name": "awdl0",
+          "addresses": [
+            "fe80::701c:4aff:fec2:902e%awdl0"
+          ]
+        },
+        {
+          "name": "llw0",
+          "addresses": [
+            "fe80::701c:4aff:fec2:902e%llw0"
+          ]
+        },
+        {
+          "name": "utun3",
+          "addresses": [
+            "fe80::378a:3e38:7093:eadb%utun3"
+          ]
+        },
+        {
+          "name": "utun4",
+          "addresses": [
+            "fe80::ce81:b1c:bd2c:69e%utun4"
+          ]
+        },
+        {
+          "name": "utun2",
+          "addresses": [
+            "fe80::7ceb:d263:d038:12f%utun2",
+            "100.72.167.42",
+            "fd7a:115c:a1e0::1234:a72a"
+          ]
+        }
+      ],
+      "captured_at_ms": 1794177290590,
+      "unavailable": [
+        "gpu",
+        "temperature",
+        "cpu_utilization"
+      ],
+      "provenance": "authenticated SSH host report; fixed read-only query; capture time is Core time, remote measurement clocks unknown; no hardware attestation or inferred sensors"
+    },
+    "verified_at_ms": 1794177290590,
+    "monitoring_enabled": true,
+    "poll_seconds": 10,
+    "revision": 1,
+    "last_attempt_ms": 1794177290590,
+    "last_success_ms": 1794177290590,
+    "error": null,
+    "status": "collector_configured",
+    "observations": []
+  },
+  "connection_status": "collecting",
+  "browser_receipt": {
+    "schema": "oip-device-connection-v1",
+    "scope": "the verified connection of a device in the approved surface against the real Core",
+    "base": "http://127.0.0.1:53789",
+    "expected_fingerprint": "SHA256:PVA1Yx1uOkaKGQyK39dmqfCRdLnWxdNgOARfm1G1IHA",
+    "findings": [
+      {
+        "check": "browser-login accepted",
+        "ok": true,
+        "detail": "{\"status\":200}"
+      },
+      {
+        "check": "the inventory of the scope lists the device",
+        "ok": true,
+        "detail": "Existing inventory identity \u00b7 existing-pi\nGer\u00e4t Existing inventory identity existing-pi ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 95953c93-8379-446e-b0fe-f53922db6bfb \u00b7 10 Observations \u00b7 Reachability Erreichb"
+      },
+      {
+        "check": "the connection panel of the device is shown",
+        "ok": true,
+        "detail": "the panel is missing"
+      },
+      {
+        "check": "the state of the connection is shown",
+        "ok": true,
+        "detail": "the state collecting is not shown as \"Collecting\""
+      },
+      {
+        "check": "the host key of the confirmed connection is shown",
+        "ok": true,
+        "detail": "the fingerprint of the fixture is missing"
+      },
+      {
+        "check": "the endpoint of the verified connection is shown",
+        "ok": true,
+        "detail": "the endpoint is missing"
+      },
+      {
+        "check": "the monitoring of the device is shown",
+        "ok": true,
+        "detail": "the read-only monitoring is missing"
+      },
+      {
+        "check": "the verified identity of the host is shown",
+        "ok": true,
+        "detail": "the identity of the host is missing"
+      }
+    ],
+    "errors": []
+  },
+  "checks": 8,
+  "status": "PASS",
+  "finished_utc": "2026-11-08T22:36:11Z"
+}

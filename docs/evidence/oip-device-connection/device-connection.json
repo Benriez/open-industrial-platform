@@ -1,0 +1,49 @@
+{
+  "schema": "oip-device-connection-v1",
+  "scope": "the verified connection of a device in the approved surface against the real Core",
+  "base": "http://127.0.0.1:53789",
+  "expected_fingerprint": "SHA256:PVA1Yx1uOkaKGQyK39dmqfCRdLnWxdNgOARfm1G1IHA",
+  "findings": [
+    {
+      "check": "browser-login accepted",
+      "ok": true,
+      "detail": "{\"status\":200}"
+    },
+    {
+      "check": "the inventory of the scope lists the device",
+      "ok": true,
+      "detail": "Existing inventory identity · existing-pi\nGerät Existing inventory identity existing-pi auswählen · SingleBoardComputer · 95953c93-8379-446e-b0fe-f53922db6bfb · 10 Observations · Reachability Erreichb"
+    },
+    {
+      "check": "the connection panel of the device is shown",
+      "ok": true,
+      "detail": "the panel is missing"
+    },
+    {
+      "check": "the state of the connection is shown",
+      "ok": true,
+      "detail": "the state collecting is not shown as \"Collecting\""
+    },
+    {
+      "check": "the host key of the confirmed connection is shown",
+      "ok": true,
+      "detail": "the fingerprint of the fixture is missing"
+    },
+    {
+      "check": "the endpoint of the verified connection is shown",
+      "ok": true,
+      "detail": "the endpoint is missing"
+    },
+    {
+      "check": "the monitoring of the device is shown",
+      "ok": true,
+      "detail": "the read-only monitoring is missing"
+    },
+    {
+      "check": "the verified identity of the host is shown",
+      "ok": true,
+      "detail": "the identity of the host is missing"
+    }
+  ],
+  "errors": []
+}
