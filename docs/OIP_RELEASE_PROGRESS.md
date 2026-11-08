@@ -1676,17 +1676,17 @@ no push, no deployment, no system service.
 
 ### Iteration 26 — the final acceptance of the release candidate, bound to the tree
 
-**Status: PROVED on canonical `main` (`4458d34`), tree `09f4cad`.**
+**Status: PROVED on canonical `main` (`4300123`), tree `7dd49ef`.**
 The canonical acceptance was run once more on the clean tree after every change of this
 iteration, with the **release** binary and the delivered web bundle
-(`target/oip-canonical-regression-final/`). The receipt names the tested artefacts:
+(`target/oip-canonical-regression-final2/`). The receipt names the tested artefacts:
 
 | Artefact | Value |
 |---|---|
-| the tested revision | `4458d347a203d6038ced5dc63dc0f0c40c8bfe51` |
-| the tested tree | `09f4cad5fc737cfd4fba28bf7d8005715eff491f` |
+| the tested revision | `4300123fd301b63609706be692d893fff94b8eb5` |
+| the tested tree | `7dd49ef28c5aa38da9647bd231598b434dfafb70` |
 | the tree during the run | clean (`source_dirty: false`) |
-| the release binary (`target/release/oip-server`) | `835ed0a197f41d8dbc9460f9cdf5a997ae54417647012d161b612606f9cd24bc` |
+| the release binary (`target/release/oip-server`) | `5d33d4972875adf5a12216fb1402c488921e7d98e599ff85e3030ba4802fe43f` |
 | the official MCP probe | `029bf9f4505dd483d62196992d0443498a3e5a242f35a3192a4ef125227cfb08` |
 | the served `main.dart.js` | `b09bb5ff4a16825ddf350f9278aa94a378f42222bbb5e23af0f76ed7bef2b844`, 3 031 151 bytes |
 | the served bundle equals the local build | **yes**, byte by byte |
@@ -1702,10 +1702,14 @@ The visual acceptance of the operator stays **pending**: the gate proves that th
 surface is the approved Spectrum-2027 shell and that it matches the committed technical
 references, but only the operator can accept it.
 
-**One honest remark about the binaries.** The web bundle is byte-identical between the builds
-(`b09bb5ff…`), the Rust release binary is not: the gate rebuilds it and its sha256 differs from
-the build of the earlier rehearsals (`76d18b6e…`, `6afee854…`). Every receipt names the binary
-it actually executed, and no receipt claims a hash of a binary it did not run.
+**One honest remark about the binaries and about this binding.** The web bundle is
+byte-identical between the builds (`b09bb5ff…`), the Rust release binary is not: the gate rebuilds
+it and its sha256 differs from the build of the earlier rehearsals (`76d18b6e…`, `6afee854…`,
+`835ed0a1…`). Every receipt names the binary it actually executed, and no receipt claims a hash
+of a binary it did not run. The commit after the tested revision (`d4a0a9d`, the rehearsal of the
+transport parity) and the binding commit itself add **only** a test script and documentation — no
+line of the Core or of the Flutter application — and the served bundle of the tested tree is the
+byte-identical asset (`b09bb5ff…`) that the gate proved.
 
 No personal database change (`9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e`,
 `user_version` 6), no schema-7 activation of the personal installation, no private SSH, no push,
