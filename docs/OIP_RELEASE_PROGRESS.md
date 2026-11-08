@@ -1438,6 +1438,16 @@ without an accessible name, no JavaScript error and no external request.
 Both receipts write their own receipt into the evidence of the run, so a later integration that
 breaks the shared scope or the naming of a control is detected by the canonical gate itself.
 
+**The final acceptance of the integrated candidate** ran on the clean canonical tree
+`4d8f5654e8a8ed02c6a8c90c17a10487a54715f7` (tree `f9791425da26987a637abacc39dc7b531e2d8faf`,
+`source_dirty=false`): **344/344 Flutter tests**, **175 browser findings with zero failures**,
+13 captures, the stable-shell visual comparison PASS, the global context receipt (4 options, 17
+findings, zero failures) and the accessibility receipt (154 controls, none without an accessible
+name) and **8/8 managed acceptance phases PASS**. The delivered bundle
+`b09bb5ff4a16825ddf350f9278aa94a378f42222bbb5e23af0f76ed7bef2b844` is byte-identical local and
+served. The receipts of that run: precheck `f481979fbc76…`, browser `4566db42b715…`, visual
+`7e3d2341157a…`.
+
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 

@@ -1,7 +1,7 @@
 {
   "schema": "oip-accessibility-receipt-v1",
   "scope": "name and role coverage of the rendered surface of the six workstations; not a full WCAG audit",
-  "base": "http://127.0.0.1:8096",
+  "base": "http://127.0.0.1:62606",
   "stations": [
     {
       "workstation": "overview",
@@ -15,8 +15,8 @@
     },
     {
       "workstation": "devices",
-      "controls": 31,
-      "focusable": 23,
+      "controls": 37,
+      "focusable": 29,
       "unnamed": 0,
       "unnamedFocusable": 0,
       "roles": [
@@ -25,7 +25,7 @@
     },
     {
       "workstation": "network",
-      "controls": 20,
+      "controls": 22,
       "focusable": 14,
       "unnamed": 0,
       "unnamedFocusable": 0,
@@ -35,7 +35,7 @@
     },
     {
       "workstation": "opcua",
-      "controls": 26,
+      "controls": 25,
       "focusable": 12,
       "unnamed": 0,
       "unnamedFocusable": 0,
@@ -45,8 +45,8 @@
     },
     {
       "workstation": "diagnostics",
-      "controls": 19,
-      "focusable": 13,
+      "controls": 30,
+      "focusable": 15,
       "unnamed": 0,
       "unnamedFocusable": 0,
       "roles": [
@@ -64,7 +64,7 @@
       ]
     }
   ],
-  "controls_total": 136,
+  "controls_total": 154,
   "unnamed_total": 0,
   "findings": [
     {
