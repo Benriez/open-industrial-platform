@@ -74,7 +74,7 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Native macOS build and test | PROVED | `tests/oip008/ui_regression.py` → native build 11.6 s with the build marker, native integration test 39.1 s with the `All tests passed!` marker, against an owned isolated demo core |
 | Legacy browser, interaction and visual regression | PROVED | browser 80.4 s, interactions 47.1 s, visual 63.4 s on the separately built HTML renderer |
 | Milestone acceptance harnesses on the canonical tree | PROVED | `tests/canonical_regression.py`: OIP-008, OIP-008.2, OIP-008.2 schema3 migration, OIP-008.4, OIP-008.5, OIP-008.5 migration, the UI regression and the schema2 adoption all PASS on the canonical tree, no failed and no blocked case |
-| Canonical Spectrum-2027 UI baseline and design regression gate | **PROVED** | `OIP_CANONICAL_UI_GATE=1 python3 tests/real_device/acceptance.py` → PASS on `dc7bbb8dc94b18242b70080cfa0b08b3b6c72753` (tree `23ee1796a2ac888c787866f4723657695de8ddc8`): 335/335 Flutter tests, 175 browser findings with zero failures, 13 captures of the six workstations at 1440 px and 1920 px, the stable-shell visual comparison with both negative-control classes, all 8/8 managed acceptance phases including the actual Flutter SSH onboarding. Local and served bundle are byte-identical: `169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa`. Operator visual acceptance remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE` |
+| Canonical Spectrum-2027 UI baseline and design regression gate | **PROVED** | `OIP_CANONICAL_UI_GATE=1 python3 tests/real_device/acceptance.py` → PASS on canonical `main` = `525f5c86d6baf5f27d5b13bd648d2d17794bb5a5` (tree `b5b23c6f2ac0d3ee02e09837933027facdeb6042`): 335/335 Flutter tests, 175 browser findings with zero failures, 13 captures of the six workstations at 1440 px and 1920 px, the stable-shell visual comparison with both negative-control classes, all 8/8 managed acceptance phases including the actual Flutter SSH onboarding. Local and served bundle are byte-identical: `169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa`. Operator visual acceptance remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE` |
 | Physical Raspberry-Pi acceptance | **WITHHELD** | no endpoint, SSH user or approved identity was supplied; no personal device was contacted |
 | Real installation activation (schema 7) | **BLOCKED** | requires a separate operator decision plus a fresh protected backup; forbidden in this loop |
 | Productive remote/browser identity | **OPEN** | loopback local operator session only; no HTTPS, no remote identity, no hostile same-UID isolation |
@@ -1210,10 +1210,26 @@ the committed reference hash remains mandatory. **M-01 is forbidden only as the 
 overview metric**, not on real OPC-UA nodes. **AGENT-FIRST is forbidden in the sidebar and allowed
 only in the technical Settings context.**
 
-**Visual status and integration boundary.** All six current workstation captures are technical
-evidence only. Operator visual acceptance remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`. N11 stays
-`BLOCKED_DEPENDENCY` for main integration until ownership is reconciled. No commit, merge, push,
-deployment, personal database change, schema-7 activation or private SSH was performed.
+**Integration into canonical `main`.** After the reconciliation the candidate was integrated with a
+real `git merge --ff-only`, no merge commit and no history rewrite. Canonical `main` is now
+`525f5c86d6baf5f27d5b13bd648d2d17794bb5a5`, tree `b5b23c6f2ac0d3ee02e09837933027facdeb6042`, working tree clean. The final acceptance run was executed **on canonical
+`main`**: the precheck hashed the clean tree (`source_dirty=false`), the Flutter suite measured
+**335/335 PASS**, the browser recorded **175 findings with zero failures** and 13 captures, the
+stable-shell visual comparison passed at 1440 and 1920 with both negative-control classes, and
+all eight managed acceptance phases passed, including the actual Flutter SSH onboarding that
+renders the Core's own `host.os` and `host.memory_total_bytes` measurements and the ten persisted
+observation samples. Local and served `main.dart.js` are byte-identical:
+`169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa`. The rebuild of the same source in the isolated worktree produced the same bundle hash,
+so the delivered assets are reproducible.
+
+Receipt hashes of that run: precheck `9b2ca4f1951a19166f25e2299faf2983b296b4b81603d0ac509f85a29dfe3e74`, browser `6fa467c7f9373897f4ca31ca7a406b7190083cfec55b154d59c53f42bea4a1c2`, visual `d53fa8f5cb5ba70665184ece2a52c8299e8be6d475d5bb41f0a925a39a187df7`.
+
+**Visual status and safety boundary.** All six current workstation captures are technical
+evidence only. Operator visual acceptance remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`. No push,
+deployment, schema-7 activation, private SSH connection or change to the personal installation
+database was performed; the personal database is untouched at SHA-256
+`9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e` with `user_version` 6. The
+concurrent release-loop candidate was never modified and remains in its own isolated worktree.
 
 ## 5. Evidence index
 

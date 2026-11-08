@@ -1079,8 +1079,8 @@
  },
  "canonical_ui_gate": {
   "scope": "iteration 12: the Spectrum-2027 canonical UI baseline and its design regression gate",
-  "source_revision": "dc7bbb8dc94b18242b70080cfa0b08b3b6c72753",
-  "source_tree": "23ee1796a2ac888c787866f4723657695de8ddc8",
+  "source_revision": "525f5c86d6baf5f27d5b13bd648d2d17794bb5a5",
+  "source_tree": "b5b23c6f2ac0d3ee02e09837933027facdeb6042",
   "bundle_sha256": "169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa",
   "served_bundle_sha256": "169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa",
   "bundle_matches_local_build": true,
@@ -1102,9 +1102,9 @@
    "visual": "target/oip-real-device-e2e/canonical-ui/visual-comparison.json"
   },
   "receipt_sha256": {
-   "precheck": "a9dc70a45ba17a3ffa002850121ccc698c7c8d903da3c538e1ff97ed56929e95",
-   "browser": "9de3d0a54cdf2f17bf496d7f0ed5748a5ba7b0931b904047e50d5046166e713e",
-   "visual": "b7e083549962522460627a0e00b838fd4df294538dbeda693634ae874785ece8"
+   "precheck": "9b2ca4f1951a19166f25e2299faf2983b296b4b81603d0ac509f85a29dfe3e74",
+   "browser": "6fa467c7f9373897f4ca31ca7a406b7190083cfec55b154d59c53f42bea4a1c2",
+   "visual": "d53fa8f5cb5ba70665184ece2a52c8299e8be6d475d5bb41f0a925a39a187df7"
   },
   "rendered_overview": {
    "approved_surface": "unified_infrastructure_view",
@@ -1119,6 +1119,8 @@
   },
   "rendered_measurements": "host.os and host.memory_total_bytes of the owned loopback SSH fixture",
   "rendered_history": "10 persisted samples, 6 rendered, all reported as stale",
-  "evidence_images": "docs/evidence/oip-canonical-ui/*.png (13 captures of the six workstations)"
+  "evidence_images": "docs/evidence/oip-canonical-ui/*.png (13 captures of the six workstations)",
+  "working_tree_clean": true,
+  "measured_on": "canonical main after git merge --ff-only"
  }
 }

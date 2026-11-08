@@ -18,14 +18,14 @@
  "integrationCandidate": {
   "sourceWorktree": "/Users/benny/Code/open-industrial-platform-worktrees/spectrum-2027-ui",
   "sourceBaseHead": "037afda92ac02ffc91dceb322d905a57dd2fc4ef",
-  "sourceCommittedSpectrumRevision": "dc7bbb8dc94b18242b70080cfa0b08b3b6c72753",
+  "sourceCommittedSpectrumRevision": "525f5c86d6baf5f27d5b13bd648d2d17794bb5a5",
   "sourceState": "the integration snapshot was committed on the candidate branch below; the gate hashes the real working tree through a temporary index",
   "snapshotArchive": "/Users/benny/.local/share/oip-canonical-ui/20261108T030129Z/snapshot.tar.gz",
   "snapshotArchiveSha256": "8c81ed6fb1ea624a3047a33db284d441d704b2ddd081268826c7922236f2acc3",
   "snapshotRoundtrip": "PASS",
   "integrationWorktree": "/Users/benny/Code/open-industrial-platform-worktrees/spectrum-2027-ui",
   "integrationBranch": "feature/oip-spectrum-2027-ui",
-  "mainMerged": false,
+  "mainMerged": true,
   "pushed": false,
   "deployed": false,
   "reconciliation": "Two executions prepared this integration in parallel from the same authority payload: this worktree and the concurrent release loop candidate feature/oip-canonical-ui-regression-gate. They were reconciled into one candidate instead of integrated twice. The gate, the visual comparison, the acceptance-workflow integration and this manifest come from the concurrent candidate; the cadence-aware continuity rule, the verified onboarding activation and the management-adapter guards come from this worktree. No file of the concurrent execution was modified."
@@ -150,8 +150,8 @@
  "candidateVerification": {
   "runner": "OIP_CANONICAL_UI_GATE=1 python3 tests/real_device/acceptance.py with OIP_EVIDENCE_DIR=target/oip-real-device-e2e (case oip_canonical_ui_gate of tests/canonical_regression.py)",
   "status": "PASS",
-  "sourceRevision": "dc7bbb8dc94b18242b70080cfa0b08b3b6c72753",
-  "sourceTree": "23ee1796a2ac888c787866f4723657695de8ddc8",
+  "sourceRevision": "525f5c86d6baf5f27d5b13bd648d2d17794bb5a5",
+  "sourceTree": "b5b23c6f2ac0d3ee02e09837933027facdeb6042",
   "localBundleSha256": "169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa",
   "servedBundleSha256": "169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa",
   "flutterTests": "335/335 PASS",
@@ -178,17 +178,17 @@
   },
   "operatorVisualApproval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
   "receipt": "target/oip-real-device-e2e/report.json",
-  "mainMerged": false,
+  "mainMerged": true,
   "pushed": false,
   "deployed": false,
-  "measuredOn": "candidate branch feature/oip-spectrum-2027-ui, integrated into canonical main with git merge --ff-only",
+  "measuredOn": "canonical main after git merge --ff-only, working tree clean",
   "mergedGateReceipt": {
    "precheck": "target/oip-real-device-e2e/canonical-ui/canonical-ui-gate.json",
    "browser": "target/oip-real-device-e2e/browser/browser-canonical-ui-gate.json",
    "visual": "target/oip-real-device-e2e/canonical-ui/visual-comparison.json",
-   "precheckReceiptSha256": "a9dc70a45ba17a3ffa002850121ccc698c7c8d903da3c538e1ff97ed56929e95",
-   "browserReceiptSha256": "9de3d0a54cdf2f17bf496d7f0ed5748a5ba7b0931b904047e50d5046166e713e",
-   "visualReceiptSha256": "b7e083549962522460627a0e00b838fd4df294538dbeda693634ae874785ece8"
+   "precheckReceiptSha256": "9b2ca4f1951a19166f25e2299faf2983b296b4b81603d0ac509f85a29dfe3e74",
+   "browserReceiptSha256": "6fa467c7f9373897f4ca31ca7a406b7190083cfec55b154d59c53f42bea4a1c2",
+   "visualReceiptSha256": "d53fa8f5cb5ba70665184ece2a52c8299e8be6d475d5bb41f0a925a39a187df7"
   }
  }
 }
