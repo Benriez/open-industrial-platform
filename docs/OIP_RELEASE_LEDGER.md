@@ -21,7 +21,7 @@ application. The binding rules come from `AGENTS.md`,
 | G8 six functional views | READY (partial) | Overview, Devices & Services, Network & VPN, Diagnostics & Events, Settings and the OPC-UA Browser all render in the browser gate at 1440 px and 1920 px against the authorized backend, and the diagnostics view now shows the persisted evidence of the Core (documented gaps, health transitions, the named diagnosis-history state). Unsupported protocols stay labelled; the OPC-UA parity of the real backend is not yet re-inventoried. |
 | G9 macOS build, install, start/stop, logging, backup/restore | READY (partial) | The release build exists and is proven: `target/release/oip-server` and the official MCP probe are executed by the canonical gate, which passes with the release binary (8/8 phases, 175 browser findings with zero failures, 339/339 Flutter tests). `docs/runbooks/operations.md` describes the local operations and `tools/oip_ops.py` performs them; `tests/oip_operations.py` proves the sequence against a disposable instance: provisioning, start, status, log, backup with an integrity check, the refused restore of a running instance, the clean shutdown without uncommitted observations, restore, start, restart and stop, plus the three refusals of the personal installation. Remaining: the local installation as a launch agent needs operator authorization, and the macOS application bundle is not built. |
 | G10 security release review | BLOCKED_OPERATOR | Three advisory exceptions documented (N5). Open: productive browser/remote identity, same-UID isolation, durable audit, credential protection, scope enforcement review. Production-security scope needs explicit operator acceptance. |
-| G11 acceptance, a11y, perf, resilience, upgrade/rollback | READY (partial) | The canonical regression passes with the **release** binary and the release web bundle (measured receipt in `target/oip-release-binary/`). The accessibility receipt of the six workstations measures the name and role coverage of the rendered surface: 136 controls, none without an accessible name, no JavaScript error, no external request (`docs/evidence/oip-accessibility/accessibility.json`); it is not a full WCAG audit. Missing: upgrade/rollback procedure, extended stability run, and the performance baseline of the release build. |
+| G11 acceptance, a11y, perf, resilience, upgrade/rollback | READY (partial) | The canonical regression passes with the **release** binary and the release web bundle (measured receipt in `target/oip-release-binary/`). The accessibility receipt of the six workstations measures the name and role coverage of the rendered surface: 136 controls, none without an accessible name, no JavaScript error, no external request (`docs/evidence/oip-accessibility/accessibility.json`); it is not a full WCAG audit. The upgrade and the rollback of a local instance are rehearsed against a protected historical binary and the current release binary: the store is migrated from schema 3 to 7 with the data intact and the backup restores the previous state (`docs/evidence/oip-upgrade-rollback/upgrade-rollback.json`). Missing: extended stability run and the performance baseline of the release build. |
 | G12 operator acceptance | BLOCKED_OPERATOR | Requires the operator to launch, authenticate, configure and connect real devices. |
 
 ## Next READY tasks (independent of blockers)
@@ -29,9 +29,11 @@ application. The binding rules come from `AGENTS.md`,
 1. **N17 (G9, G11)**: build the macOS application bundle of the Flutter client and prove that it
    starts, shows the approved shell and shuts down cleanly. The Core side of the local operations
    is DONE; the application bundle is the remaining half of G9.
-2. **N18 (G11)**: upgrade and rollback procedure for a local instance: a rehearsed upgrade of the
-   Core binary against a copy of the data store and the rollback into the previous binary with
-   the previous data store. Nothing of this exists in the tree yet.
+2. **N18 (G11)**: the upgrade and the rollback of a local instance are rehearsed and documented
+   (`docs/runbooks/operations.md` §6, `tests/oip_upgrade_rollback.py`). The remaining part is the
+   rehearsal of the **daemon** handover with the historical binary: it binds its local clients to
+   the actor policy of its era and refuses a start without a provisioned principal of that era.
+   The data store and its handover are proven; the daemon of the historical release is not.
 3. **N19 (G11)**: the performance baseline of the release build: first paint of the delivered
    bundle, the time to the interactive shell and the measured resource use of the Core under the
    managed acceptance load. The harness already measures the Core's RSS and CPU; the client side

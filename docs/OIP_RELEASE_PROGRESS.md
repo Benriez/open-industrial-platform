@@ -1319,6 +1319,36 @@ the application already gets.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 15 — the upgrade and the rollback of a local instance
+
+**Status: PROVED on canonical `main` (`62cadc2`).**
+An upgrade of a local instance is a handover of the data store to the new binary.
+`tests/oip_upgrade_rollback.py` rehearses it against a protected historical binary (the OIP-008.4
+release, sha256 `73d70d8105914db20210c95268b5733ca2ec19c959c4c29fa57cb93c1935fe58`) and the current
+release binary (`76d18b6e14a329b365daca16fd970e431b5f05c3340320054453abaa82a26ccd`).
+
+**Measured result.** The historical binary provisions the store at schema 3 with two
+organizations. The release binary serves the same store, migrates it to schema 7 and keeps the
+organizations. The backup taken before the upgrade restores the previous state — the schema is 3
+again — and the historical release adopts the restored store. The receipt is
+`docs/evidence/oip-upgrade-rollback/upgrade-rollback.json`.
+
+**Three rules of the handover, found while proving it.** The runtime sources must exactly match
+the provisioned registry, otherwise the Core refuses to start with `runtime sources must exactly
+match provisioned registry`. The data store must be owner-private, otherwise it is refused with
+`database/sidecar must be owned by operator with private permissions`. And the configuration of an
+instance is not portable between releases: a historical binary refuses the fields of a newer
+configuration and the other way round, so the upgrade keeps the configuration of the era of the
+instance until the instance has been migrated.
+
+**Not rehearsed.** The daemon handover with the historical binary: it binds its local clients to
+the actor policy of its era and refuses a start without a provisioned principal of that era. The
+data store and its handover are proven; the daemon of the historical release is not, and the
+receipt says so.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
