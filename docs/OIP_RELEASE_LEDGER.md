@@ -14,7 +14,7 @@ application. The binding rules come from `AGENTS.md`,
 | G1 integrated Core + six workstations | DONE | The Spectrum-2027 Engineering Workstations are the canonical application of `main` since `ddb446e` (contract `docs/design/OIP_CANONICAL_UI_BASELINE.md`). The managed diagnostics capability of `feature/oip-managed-diagnostics` (`55d4f50`) is reconciled into the approved workspace: the capability was carried over, the opaque continuation and the limits of the answer were restored in `7fc612e`. All six workstations render against the real authorized backend; the browser gate proves 175 findings with zero failures over them. |
 | G2 auth, sessions, REST/SSE/MCP parity, org isolation | READY (partial) | Browser session contract and parity gate recorded as passing; hostile same-UID and productive identity remain open (see G10). |
 | G3 global infrastructure context | BLOCKED_DEPENDENCY | N3: global selection payload needs three-way reconciliation with UI workstreams. Not invented here. |
-| G4 device management in Flutter | READY (partial) | Create/onboard proven on the loopback SSH fixture; update/archive coverage not inventoried as evidence. |
+| G4 device management in Flutter | READY (partial) | The Core owns the inventory and supports the register, the update and the archive. The client could not write the update at all: the Flutter API knew the register only and the approved device workspace had no administration. That gap is closed (`8b06720`): the administration surface of the device names the revision it works on, sends the full replacement the Core requires and shows the refusal of the Core verbatim. Proven by the widget test and by the real-device journey: the update of a device through the surface with the revision advancing from 1 to 2. The **archive is an offline operation of the Core** — the managed session refuses it with `OFFLINE_ARCHIVE_REQUIRED` — so the surface names the offline procedure instead of offering a refused write; the offline archive itself is not yet proven by a rehearsal. Remaining: the rehearsal of the offline archive and the association of a device with a verified connection through the surface. |
 | G5 real device connections | BLOCKED_OPERATOR | Fixture only. No physical device contacted; needs operator-approved target. F5 permission rule (N1b) is also BLOCKED_OPERATOR. |
 | G6 monitoring | READY (partial) | Measurements and history proven against the fixture. Long-run stability and reconnect on real hardware not evidenced. |
 | G7 Spectrum-2027 UX preserved | DONE | Integrated into canonical `main` with a real `git merge --ff-only` after the two parallel executions were reconciled into one candidate. The binding contract is `docs/design/OIP_CANONICAL_UI_BASELINE.md` with the prohibited regressions R1-R10; the permanent gate is `tests/canonical_ui_gate.py` (build provenance, widget gate, browser gate, stable-shell visual comparison with negative controls) and runs inside the canonical acceptance workflow. The OIP/005 dashboard, the gradient KPI cards, the `M-01` defaults, the "Normalbetrieb" context and the AGENT-FIRST sidebar footer are prohibited regressions and are proven absent. Operator visual acceptance stays `VISUAL_PENDING_OPERATOR_ACCEPTANCE`. |
@@ -29,16 +29,20 @@ application. The binding rules come from `AGENTS.md`,
 1. **N17 (G9, G11)**: build the macOS application bundle of the Flutter client and prove that it
    starts, shows the approved shell and shuts down cleanly. The Core side of the local operations
    is DONE; the application bundle is the remaining half of G9.
-2. **N18 (G11)**: the upgrade and the rollback of a local instance are rehearsed and documented
+2. **N20 (G4)**: rehearse the **offline archive** of a device against a disposable instance with
+   the Core stopped (`--inventory-plan`), prove that the record and its history survive, and
+   document the procedure next to the update in `docs/runbooks/operations.md`. The managed session
+   refuses the archive online by contract; the offline path is the supported one.
+3. **N18 (G11)**: the upgrade and the rollback of a local instance are rehearsed and documented
    (`docs/runbooks/operations.md` §6, `tests/oip_upgrade_rollback.py`). The remaining part is the
    rehearsal of the **daemon** handover with the historical binary: it binds its local clients to
    the actor policy of its era and refuses a start without a provisioned principal of that era.
    The data store and its handover are proven; the daemon of the historical release is not.
-3. **N19 (G11)**: the performance baseline of the release build: first paint of the delivered
+4. **N19 (G11)**: the performance baseline of the release build: first paint of the delivered
    bundle, the time to the interactive shell and the measured resource use of the Core under the
    managed acceptance load. The harness already measures the Core's RSS and CPU; the client side
    has no baseline yet.
-4. **N16 (G6, G8)**: the persisted evidence of the diagnostics view now reaches the operator
+5. **N16 (G6, G8)**: the persisted evidence of the diagnostics view now reaches the operator
    surface, proven against the Core that stores the documented gaps and the health transitions.
    The remaining gap is the diagnostic continuation in the browser journey against a Core whose
    page is truncated.
