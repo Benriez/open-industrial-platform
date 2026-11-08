@@ -1587,10 +1587,66 @@ bounds, the displays of the machine and the placement of the bundle.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 23 — the extended stability run of the release binary
+
+**Status: PROVED on canonical `main`.**
+The acceptance harness measures the Core for a few seconds. Nothing measured it over a
+sustained run, and the reconnect of a collection was only a code path.
+
+`tests/oip_stability.py` runs the **release** binary against four real collectors for 30 minutes
+and takes 60 samples (`docs/evidence/oip-stability/stability.json`):
+
+| Measurement | Result |
+|---|---|
+| the liveness of the Core | 60 of 60 probes answered with 200 |
+| the resident memory | between 17 280 and 19 728 KiB, **−1 184 KiB** from the first to the last sample |
+| the CPU | 2.12 % on average, 4.8 % at most |
+| the collection | 41 549 observations, 1 396 per minute, constant over the run |
+| the growth of the store | 536 KiB to 78 MiB under the load of the collectors |
+| the log | 16 KiB to 137 KiB — no runaway |
+| the death of a collector | noticed and recorded as a documented gap, the collection resumed 3 s later |
+| the end | clean shutdown, `pragma integrity_check` answers `ok` |
+
+The resident memory does not grow over the run: the Core holds its working set and the writer
+does not accumulate. The store grows with the observations of the collectors, as it must.
+
+### Iteration 24 — the continuation of a truncated diagnostic page
+
+**Status: PROVED on canonical `main`.**
+The persisted evidence of the diagnostics view is a page of the Core, cut off at 50 entries with
+an opaque cursor for the continuation. The client followed the cursor and merged the pages by the
+stable Core IDs — that was proven by a widget test against a fixture. What was missing is the
+**browser journey against a real Core whose page really is truncated**.
+
+`tests/oip_diagnostic_continuation.py` creates that Core: the collector of one source is cycled
+until the Core has documented more gaps than a page holds — every gap is a real interruption of a
+real collection, 45 cycles in this run — and the browser journey
+(`apps/flutter/test/browser_diagnostic_continuation.mjs`) then follows the evidence in the
+approved shell. Measured (`docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json`):
+
+* the Core answers the first page with 50 entries, `truncated: true` and a cursor;
+* the surface offers the continuation for the gaps and for the health history;
+* the continuation asks the same authorized route with the opaque cursor of the Core
+  (`4240ab50…`, `4a564390…`, `7c8d8702…`);
+* the pages are disjoint: 51 rows of gaps, 51 distinct — no row is repeated and no row is lost;
+* the health history needed three continuations (50 + 50 + 50 + 9 transitions) and ends
+  truncated: `false`;
+* the offer of a kind disappears exactly when its last page is reached;
+* the evidence stays painted and its disclosed limits stay visible; no failure of the evidence is
+  shown.
+
+20 checks, no error, no page error. The journey works against the **release** binary and the
+delivered web bundle — not against a fixture.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
+| `docs/evidence/oip-stability/stability.json` | the measured extended stability run of the release binary: 30 minutes, 60 samples, the resource use, the collection rate, the death of a collector and the clean shutdown (iteration 23) |
+| `docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json` | the measured browser receipt of the continuation of a truncated diagnostic page against the real Core (iteration 24) |
 | `docs/evidence/oip-macos-app/macos-app.json` | the measured result of the macOS application bundle: the build, the start, the requests of the bundle, the refusal of the Core, the termination without an orphan and the start again (iteration 22) |
 | `docs/evidence/oip-historical-daemon/historical-daemon.json` | the measured result of the daemon handover with the protected historical binary: the refused shape of OIP-007, the started daemon of the era, the scoped reads, the collection, the takeover and the restored store (iteration 21) |
 | `docs/evidence/oip-offline-archive/offline-archive.json` | the measured result of the offline archive of a device (iteration 20) |
