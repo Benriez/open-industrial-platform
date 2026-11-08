@@ -1,0 +1,240 @@
+#!/usr/bin/env python3
+"""The release manifest of the current release.
+
+The operator decides which artefacts may be signed and distributed. The
+decision needs a list: every artefact of the release, its digest, the
+provenance of its build and the receipt that proved it.
+
+This tool writes that list and proves it:
+
+  * `target/release/oip-server` — the Core;
+  * `target/release/examples/mcp_probe` — the official MCP probe;
+  * `apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app` — the
+    macOS application bundle (a digest over every file of the bundle);
+  * `apps/flutter/build/web/` — the delivered web release (the digest of
+    `main.dart.js` and the digest over every asset).
+
+The manifest names the revision and the tree it was built from, the build
+commands, the toolchain versions, the digests of the acceptance receipts and
+the state of the operator's visual acceptance.
+
+`--verify` recomputes every digest and compares it with the written manifest:
+the manifest is a receipt, not a promise.
+
+Usage:
+  python3 tools/oip_release_manifest.py [--out DIR] [--verify]
+"""
+import argparse
+import hashlib
+import json
+import os
+import pathlib
+import shutil
+import subprocess
+import sys
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+ARTIFACTS = {
+    "the_core": ROOT / "target/release/oip-server",
+    "the_official_mcp_probe": ROOT / "target/release/examples/mcp_probe",
+    "the_macos_application_bundle": ROOT / "apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
+    "the_web_release": ROOT / "apps/flutter/build/web",
+}
+RECEIPTS = {
+    "the_canonical_gate": ROOT / "target/oip-canonical-regression-honesty/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
+    "the_canonical_ui_gate": ROOT / "target/oip-canonical-regression-honesty/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
+    "the_acceptance_report": ROOT / "target/oip-canonical-regression-honesty/oip_canonical_ui_gate/report.json",
+    "the_global_context": ROOT / "docs/evidence/oip-global-context/global-context.json",
+    "the_accessibility": ROOT / "docs/evidence/oip-accessibility/accessibility.json",
+    "the_performance": ROOT / "docs/evidence/oip-performance/performance.json",
+    "the_security_review": ROOT / "docs/evidence/oip-security-review/security-review.json",
+    "the_macos_application": ROOT / "docs/evidence/oip-macos-app/macos-app.json",
+    "the_transport_parity": ROOT / "docs/evidence/oip-transport-parity/transport-parity.json",
+}
+
+
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def digest_tree(root):
+    """The digest over every file of a directory and its file list.
+
+    The digest is over the sorted list of the relative paths and their
+    contents, so it is independent of the order of the file system.
+    """
+    entries = []
+    for path in sorted(root.rglob("*")):
+        if not path.is_file():
+            continue
+        relative = path.relative_to(root).as_posix()
+        entries.append({"path": relative, "bytes": path.stat().st_size,
+                        "sha256": sha256_file(path)})
+    digest = hashlib.sha256()
+    for entry in entries:
+        digest.update(entry["path"].encode())
+        digest.update(b"\0")
+        digest.update(entry["sha256"].encode())
+        digest.update(b"\0")
+    return digest.hexdigest(), entries
+
+
+def tool_version(command):
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=120)
+        return (result.stdout or result.stderr).strip().splitlines()[0]
+    except Exception:
+        return "unknown"
+
+
+def git(*arguments):
+    result = subprocess.run(["git", *arguments], cwd=ROOT, capture_output=True, text=True)
+    return result.stdout.strip()
+
+
+def build_manifest():
+    manifest = {
+        "schema": "oip-release-manifest-v1",
+        "the_revision": git("rev-parse", "HEAD"),
+        "the_tree": git("rev-parse", "HEAD^{tree}"),
+        "the_branch": git("rev-parse", "--abbrev-ref", "HEAD"),
+        "the_working_tree_is_clean": not git("status", "--porcelain"),
+        "the_toolchain": {
+            "rustc": tool_version(["rustc", "--version"]),
+            "cargo": tool_version(["cargo", "--version"]),
+            "flutter": tool_version(["flutter", "--version"]),
+            "dart": tool_version(["dart", "--version"]),
+        },
+        "the_build_commands": {
+            "the_core": "cargo build --release --bin oip-server --example mcp_probe",
+            "the_web_release": ("flutter build web --release --web-renderer canvaskit "
+                                "--no-web-resources-cdn --pwa-strategy=none"),
+            "the_macos_application_bundle": ("flutter build macos --release "
+                                              "--dart-define=OIP_API_URL=<url of the instance>"),
+        },
+        "the_artifacts": {},
+        "the_receipts": {},
+    }
+    for name, path in ARTIFACTS.items():
+        if not path.exists():
+            manifest["the_artifacts"][name] = {"present": False, "path": str(path)}
+            continue
+        if path.is_file():
+            manifest["the_artifacts"][name] = {
+                "present": True, "path": str(path.relative_to(ROOT)),
+                "bytes": path.stat().st_size, "sha256": sha256_file(path),
+            }
+            continue
+        digest, entries = digest_tree(path)
+        entry = {
+            "present": True, "path": str(path.relative_to(ROOT)),
+            "files": len(entries), "bytes": sum(item["bytes"] for item in entries),
+            "sha256": digest,
+        }
+        if name == "the_web_release":
+            main = path / "main.dart.js"
+            entry["the_main_bundle_sha256"] = sha256_file(main) if main.is_file() else None
+            entry["the_main_bundle_bytes"] = main.stat().st_size if main.is_file() else None
+        manifest["the_artifacts"][name] = entry
+        if name == "the_macos_application_bundle":
+            manifest["the_artifacts"][name]["the_executable_sha256"] = next(
+                (item["sha256"] for item in entries
+                 if item["path"] == "Contents/MacOS/oip_dashboard"), None)
+    for name, path in RECEIPTS.items():
+        if path.is_file():
+            manifest["the_receipts"][name] = {
+                "path": str(path.relative_to(ROOT)), "sha256": sha256_file(path),
+            }
+        else:
+            manifest["the_receipts"][name] = {"present": False, "path": str(path)}
+    return manifest
+
+
+def write_manifest(manifest, out):
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "oip-release-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    lines = []
+    for name, artifact in sorted(manifest["the_artifacts"].items()):
+        if artifact.get("present") and artifact.get("sha256"):
+            lines.append(f"{artifact['sha256']}  {artifact['path']}")
+    for name, receipt in sorted(manifest["the_receipts"].items()):
+        if receipt.get("sha256"):
+            lines.append(f"{receipt['sha256']}  {receipt['path']}")
+    (out / "SHA256SUMS").write_text("\n".join(lines) + "\n")
+
+
+def verify(manifest, out):
+    """Every digest of the written manifest is recomputed."""
+    problems = []
+    for name, artifact in manifest["the_artifacts"].items():
+        path = ROOT / artifact["path"]
+        if not artifact.get("present"):
+            problems.append(f"{name}: the artefact is absent")
+            continue
+        if path.is_file():
+            digest = sha256_file(path)
+        else:
+            digest, _ = digest_tree(path)
+        if digest != artifact.get("sha256"):
+            problems.append(f"{name}: {digest} != {artifact.get('sha256')}")
+    for name, receipt in manifest["the_receipts"].items():
+        path = ROOT / receipt["path"]
+        if not receipt.get("sha256"):
+            continue
+        if not path.is_file():
+            problems.append(f"{name}: the receipt is absent")
+            continue
+        if sha256_file(path) != receipt["sha256"]:
+            problems.append(f"{name}: the receipt changed")
+    written = (out / "SHA256SUMS").read_text().splitlines()
+    for line in written:
+        digest, name = line.split("  ", 1)
+        path = ROOT / name
+        if not path.exists():
+            problems.append(f"{name}: the file of the checksum list is absent")
+            continue
+        if path.is_file():
+            recomputed = sha256_file(path)
+        else:
+            recomputed, _ = digest_tree(path)
+        if recomputed != digest:
+            problems.append(f"{name}: the checksum does not match")
+    return problems
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", default=str(ROOT / "docs/release"))
+    parser.add_argument("--verify", action="store_true")
+    args = parser.parse_args()
+    out = pathlib.Path(args.out)
+
+    if args.verify:
+        manifest = json.loads((out / "oip-release-manifest.json").read_text())
+        problems = verify(manifest, out)
+        print(json.dumps({"verified": not problems, "problems": problems}, indent=2))
+        return 0 if not problems else 1
+
+    manifest = build_manifest()
+    write_manifest(manifest, out)
+    problems = verify(manifest, out)
+    manifest["the_manifest_verifies"] = not problems
+    manifest["the_problems"] = problems
+    (out / "oip-release-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    print(json.dumps({
+        "the_revision": manifest["the_revision"],
+        "the_tree": manifest["the_tree"],
+        "the_artifacts": {name: artifact.get("sha256")
+                          for name, artifact in manifest["the_artifacts"].items()},
+        "the_manifest_verifies": manifest["the_manifest_verifies"],
+        "the_problems": problems,
+    }, indent=2))
+    return 0 if manifest["the_manifest_verifies"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

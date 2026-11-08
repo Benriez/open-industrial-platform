@@ -81,7 +81,7 @@ class _OperatorLoginState extends State<OperatorLogin> {
                             : 'Operator-Sitzung autorisieren')),
                     const SizedBox(height: 8),
                     const Text(
-                        'Keine langfristigen Zugangsdaten im Browser. Die lokale Sitzung endet nach 30 Minuten oder beim Abmelden.'),
+                        'Keine langfristigen Zugangsdaten im Browser. Die lokale Sitzung endet nach 30 Minuten, beim Abmelden oder mit einem Neustart der Instanz — die Sitzung liegt im Speicher des Core.'),
                   ],
                 ))),
       ));

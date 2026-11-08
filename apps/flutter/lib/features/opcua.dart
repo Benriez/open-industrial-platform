@@ -912,7 +912,14 @@ class _OpcuaPageState extends State<OpcuaPage> {
         _statusLine(context, 'Subscription', known(sourceSubscription),
             status: sourceSubscription),
         _statusLine(
-            context, 'Szenario', scenarios[system.scenario] ?? system.scenario),
+            context,
+            'Szenario',
+            // The scenario is a concept of the demo. The authorized scope
+            // carries no scenario: the line names that instead of showing an
+            // internal wire value as a fact.
+            system.demoControls
+                ? (scenarios[system.scenario] ?? known(system.scenario))
+                : 'nicht geliefert'),
         _statusLine(context, 'Ursprung',
             (source?.simulated ?? system.simulated) ? 'Simulation' : 'Backend'),
         const Hairline(),

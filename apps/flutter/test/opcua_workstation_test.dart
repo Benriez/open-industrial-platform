@@ -5,6 +5,8 @@ import 'package:oip_dashboard/app/app.dart';
 import 'package:oip_dashboard/app/controller.dart';
 import 'package:oip_dashboard/models/contracts.dart';
 import 'package:oip_dashboard/widgets/workstation.dart';
+
+import 'infrastructure_support.dart';
 import 'support.dart';
 
 /// Regression coverage for the OPC UA workstation (context rail, explorer,
@@ -227,6 +229,33 @@ void main() {
       });
     }
   }
+  testWidgets(
+      'The authorized scope shows no scenario as an internal wire value',
+      (tester) async {
+    // The scenario is a concept of the demo. The authorized projection of a
+    // tenant carries none: the source panel names that instead of showing
+    // "authorized_context" as a fact.
+    final api = FakeApi();
+    final controller = OipController(api)
+      ..snapshot = infrastructureFixture().snapshot.toSnapshot()
+      ..connection = 'live';
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1440, 1000);
+    await tester.binding.setSurfaceSize(const Size(1440, 1000));
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      await tester.binding.setSurfaceSize(null);
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
+    await tester.pumpAndSettle();
+    await _navigate(tester, 1440);
+
+    expect(find.text('nicht geliefert'), findsWidgets);
+    expect(find.text('authorized_context'), findsNothing);
+  });
 }
 
 Future<_TestApp> _bootstrap(

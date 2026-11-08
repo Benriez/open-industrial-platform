@@ -602,7 +602,14 @@ class _PageContent extends StatelessWidget {
                   ? 'Security-Blocker werden vom Server geladen'
                   : snapshot.system.blocker == 'none'
                       ? 'Kein Security-Blocker gemeldet'
-                      : '${snapshot.system.blocker} offen',
+                      : snapshot.system.blocker == 'unknown'
+                          // The scoped snapshot of a tenant carries no
+                          // platform fact. The blocker of the platform is
+                          // therefore not delivered to this session: the
+                          // footer names that instead of showing a
+                          // placeholder as an open blocker.
+                          ? 'Security-Blocker: an diese Sitzung nicht geliefert'
+                          : '${snapshot.system.blocker} offen',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             if (controller.hasAuthorizedContext)
