@@ -93,6 +93,7 @@ CASES = [
         "timeout": 2400,
         "reports": ["@evidence/report.json", "@evidence/browser/browser-canonical-ui-gate.json"],
         "env": {"OIP_CANONICAL_UI_GATE": "1"},
+        "env_override": {"OIP_SERVER_BIN": "OIP_CANONICAL_SERVER_BIN"},
         "env_paths": {
             "OIP_SERVER_BIN": "target/debug/oip-server",
             "OIP_WEB_DIR": "apps/flutter/build/web",
@@ -148,7 +149,15 @@ def run_case(case, evidence):
     for key, value in case.get("env", {}).items():
         env[key] = value
     for key, value in case.get("env_paths", {}).items():
-        env[key] = str(ROOT / value)
+        # A caller may point a case at another verified binary of the same
+        # contract, for example the release build instead of the debug build.
+        # The override is explicit, the default path stays the canonical one
+        # and the receipt of the case names the binary that was executed.
+        override = case.get("env_override", {}).get(key)
+        if override and os.environ.get(override):
+            env[key] = os.environ[override]
+        else:
+            env[key] = str(ROOT / value)
     if case.get("baseline"):
         state, reason = baseline_state(case["baseline"])
         if state is None:

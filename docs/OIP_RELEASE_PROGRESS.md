@@ -1231,6 +1231,42 @@ database was performed; the personal database is untouched at SHA-256
 `9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e` with `user_version` 6. The
 concurrent release-loop candidate was never modified and remains in its own isolated worktree.
 
+### Iteration 13 — the persisted evidence of the managed diagnostics reaches the approved workspace
+
+**Status: PROVED on canonical `main` (`7fc612e`).**
+The Spectrum-2027 integration carried the capability of the managed diagnostics view, but not its
+continuation and not its limits: the opaque cursor of the Core was dropped from both routes, the
+merge of a continued page by the stable Core IDs was lost, and the view stopped naming the limits
+of the answer, the time and origin semantics of the Core, and the fact that a truncated page
+without a cursor is explicitly incomplete. The isolated candidate `feature/oip-managed-diagnostics`
+(`55d4f50`) contributed no file that `main` lacked, but its capability was only partly present.
+
+**Restored inside the approved workspace.** Both routes ask for the continuation with the opaque
+cursor of the Core and merge the answer by the stable Core IDs, so no row is duplicated. A failed
+continuation keeps the evidence that is already loaded and offers a fresh authorized query instead
+of hiding the proof it already holds. The marker distance of a documented gap is named as a marker
+distance and never as a measured outage duration. The limits of the answer, the time and origin
+semantics and the state that the Core names for the diagnosis history stay visible. The binding
+contract of OIP-0082 carries the rules again.
+
+**Proof.** `apps/flutter/test/managed_diagnostics_test.dart` is reconciled to the Spectrum-2027
+shell and proves the rendered gap, the health transition, the unknown previous state of the first
+transition, the limits of the answer, the Core-named diagnosis-history state, the incomplete page
+without a cursor and the continuation that merges without duplicating. The actual browser journey
+reads the accessible names of the rendered surface, because Flutter publishes the rendered text of
+a workstation as the accessible names of its semantics nodes.
+
+**Measured result.** `OIP_CANONICAL_UI_GATE=1 python3 tests/real_device/acceptance.py` on canonical
+`main`: **339/339 Flutter tests**, **175 browser findings with zero failures**, 13 captures, the
+stable-shell visual comparison PASS and **8/8 managed acceptance phases PASS**, including the
+actual Flutter SSH onboarding. The onboarding receipt now carries
+`rendered_diagnostics: {persisted_evidence_section: true, diagnosis_history_status: not_implemented,
+health_transitions: 50, documented_gaps: 2}` — the evidence the Core actually holds, read back
+from the Core and compared with the rendered surface. The delivered bundle is
+`a83a18def0ad4149dcba84452731a64083042e43bbafa1b260f3e3bad5873041`, local and served
+byte-identical. No personal database change, no schema-7 activation, no private SSH, no push, no
+deployment.
+
 ## 5. Evidence index
 
 | Artifact | Content |
