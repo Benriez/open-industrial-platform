@@ -1674,10 +1674,48 @@ in the ledger.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 26 — the final acceptance of the release candidate, bound to the tree
+
+**Status: PROVED on canonical `main` (`4458d34`), tree `09f4cad`.**
+The canonical acceptance was run once more on the clean tree after every change of this
+iteration, with the **release** binary and the delivered web bundle
+(`target/oip-canonical-regression-final/`). The receipt names the tested artefacts:
+
+| Artefact | Value |
+|---|---|
+| the tested revision | `4458d347a203d6038ced5dc63dc0f0c40c8bfe51` |
+| the tested tree | `09f4cad5fc737cfd4fba28bf7d8005715eff491f` |
+| the tree during the run | clean (`source_dirty: false`) |
+| the release binary (`target/release/oip-server`) | `835ed0a197f41d8dbc9460f9cdf5a997ae54417647012d161b612606f9cd24bc` |
+| the official MCP probe | `029bf9f4505dd483d62196992d0443498a3e5a242f35a3192a4ef125227cfb08` |
+| the served `main.dart.js` | `b09bb5ff4a16825ddf350f9278aa94a378f42222bbb5e23af0f76ed7bef2b844`, 3 031 151 bytes |
+| the served bundle equals the local build | **yes**, byte by byte |
+| the Flutter tests | 344 passed, 0 failed |
+| the browser gate | 175 findings, 0 failed, 13 captures, no console error, no external request |
+| the visual comparison | **PASS** |
+| the eight functional phases | 8 of 8 **PASS** |
+| the verdict of the gate receipt | **PASS** |
+| the operator visual approval | `VISUAL_PENDING_OPERATOR_ACCEPTANCE` |
+| the own processes | stopped |
+
+The visual acceptance of the operator stays **pending**: the gate proves that the rendered
+surface is the approved Spectrum-2027 shell and that it matches the committed technical
+references, but only the operator can accept it.
+
+**One honest remark about the binaries.** The web bundle is byte-identical between the builds
+(`b09bb5ff…`), the Rust release binary is not: the gate rebuilds it and its sha256 differs from
+the build of the earlier rehearsals (`76d18b6e…`, `6afee854…`). Every receipt names the binary
+it actually executed, and no receipt claims a hash of a binary it did not run.
+
+No personal database change (`9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e`,
+`user_version` 6), no schema-7 activation of the personal installation, no private SSH, no push,
+no deployment, no system service, no foreign process touched.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
+| `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the measured parity of the OPC-UA address space between the official MCP tool and the REST routes against the real backend (iteration 25) |
 | `docs/evidence/oip-stability/stability.json` | the measured extended stability run of the release binary: 30 minutes, 60 samples, the resource use, the collection rate, the death of a collector and the clean shutdown (iteration 23) |
 | `docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json` | the measured browser receipt of the continuation of a truncated diagnostic page against the real Core (iteration 24) |
