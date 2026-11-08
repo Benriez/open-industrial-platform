@@ -104,14 +104,18 @@ abstract class OipApi {
       CollectionEvents(await collectionEvents(), 'unknown');
 
   /// The documented gaps of the authorized sources.
-  Future<DiagnosticPage> diagnosticGaps({int limit = 50}) async {
+  ///
+  /// The scope is the session of the principal; no source is preferred and
+  /// no global selection payload is invented. The cursor is the opaque
+  /// continuation token of the Core.
+  Future<DiagnosticPage> diagnosticGaps({int limit = 50, String? cursor}) async {
     throw const ApiFailure(
         'Dokumentierte Lücken werden von diesem API-Client nicht unterstützt.',
         code: 'UNSUPPORTED');
   }
 
   /// The health transitions of the authorized sources.
-  Future<DiagnosticPage> healthHistory({int limit = 50}) async {
+  Future<DiagnosticPage> healthHistory({int limit = 50, String? cursor}) async {
     throw const ApiFailure(
         'Der Gesundheitsverlauf wird von diesem API-Client nicht unterstützt.',
         code: 'UNSUPPORTED');
@@ -300,16 +304,20 @@ class RestApi implements OipApi, DeviceManagementApi {
   }
 
   @override
-  Future<DiagnosticPage> diagnosticGaps({int limit = 50}) async {
-    final value =
-        await _settingsGet('/api/v2/diagnostics/gaps', {'limit': '$limit'});
+  Future<DiagnosticPage> diagnosticGaps({int limit = 50, String? cursor}) async {
+    final value = await _settingsGet('/api/v2/diagnostics/gaps', {
+      'limit': '$limit',
+      if (cursor != null) 'cursor': cursor,
+    });
     return DiagnosticPage.fromJson(value.$1);
   }
 
   @override
-  Future<DiagnosticPage> healthHistory({int limit = 50}) async {
-    final value = await _settingsGet('/api/v2/diagnostics/health-history',
-        {'limit': '$limit'});
+  Future<DiagnosticPage> healthHistory({int limit = 50, String? cursor}) async {
+    final value = await _settingsGet('/api/v2/diagnostics/health-history', {
+      'limit': '$limit',
+      if (cursor != null) 'cursor': cursor,
+    });
     return DiagnosticPage.fromJson(value.$1);
   }
 

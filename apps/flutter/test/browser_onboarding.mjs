@@ -20,6 +20,25 @@ await context.route('**/*',r=>{
   if(u.protocol.startsWith('http') && u.origin!==base){external.push(u.origin);return r.abort();}
   return r.continue();
 });
+/// The accessible names of the rendered surface.
+///
+/// Flutter renders into a canvas and publishes the rendered text as the
+/// accessible names of its semantics nodes. A proof about a rendered text
+/// therefore reads these names.
+async function accessibleLabels(page){
+  return await page.evaluate(()=>{
+    const out=[];
+    document.querySelectorAll('flt-semantics').forEach(el=>{
+      const label=el.getAttribute('aria-label');
+      if(label) out.push(label);
+      for(const child of el.childNodes){
+        if(child.nodeType===3) out.push(child.textContent||'');
+      }
+    });
+    return out.join('\n');
+  });
+}
+
 async function typeInto(locator, text) { for(let n=0;!(await locator.isEditable());n++){if(n===100)throw Error('Field did not become editable');await page.waitForTimeout(100);} await locator.click({force:true}); await page.waitForTimeout(250); await page.keyboard.press('Meta+A'); await page.waitForTimeout(80); await page.keyboard.press('Backspace'); await page.waitForTimeout(120); await page.keyboard.type(text,{delay:100}); await page.waitForTimeout(150); await page.keyboard.press('Tab'); await page.waitForTimeout(100); }
 const capture=async name=>page.screenshot({path:resolve(out,name+'.png')});
 try {
@@ -195,6 +214,36 @@ try {
   }
   assert(seenOverview.size===wantedOverview.length,'the managed overview does not show the authorized source registry');
   await capture('08-managed-overview');
+  // The diagnostics view must show the persisted evidence of the session and
+  // the state that the Core itself names for the diagnosis history.
+  //
+  // Flutter merges the rendered text of a workstation into the accessible
+  // names of its semantics nodes. The proof therefore reads the accessible
+  // labels of the rendered surface, not the source of the client.
+  await page.getByRole('button',{name:'Navigation Diagnose & Ereignisse',exact:true}).click();
+  await page.waitForTimeout(1500);
+  const healthPage=(await (await context.request.get(base+'/api/v2/diagnostics/health-history?limit=50')).json());
+  const gapsPage=(await (await context.request.get(base+'/api/v2/diagnostics/gaps?limit=50')).json());
+  const eventsPage=(await (await context.request.get(base+'/api/v2/events')).json());
+  assert(Array.isArray(healthPage.items)&&Array.isArray(gapsPage.items),'the Core answered no diagnostic evidence page');
+  const status=eventsPage.diagnosis_history_status;
+  const statusLabel=({not_implemented:'Diagnosehistorie: nicht implementiert',demo_only:'Diagnosehistorie: nur Demo'})[status]||('Diagnosehistorie: '+status);
+  const wantedDiagnostics=['PERSISTIERTE EVIDENZ',statusLabel];
+  if(healthPage.items.length) wantedDiagnostics.push('Gesundheitsverlauf · '+healthPage.items[0].record.source);
+  if(gapsPage.items.length) wantedDiagnostics.push('Dokumentierte Lücke · '+gapsPage.items[0].record.source);
+  const seenDiagnostics=new Set();
+  for(let i=0;i<40;i++){
+    const labels=await accessibleLabels(page);
+    for(const w of wantedDiagnostics)if(labels.includes(w))seenDiagnostics.add(w);
+    if(seenDiagnostics.size===wantedDiagnostics.length)break;
+    await page.mouse.move(700,600);
+    await page.mouse.wheel(0,400);
+    await page.waitForTimeout(150);
+  }
+  assert(seenDiagnostics.size===wantedDiagnostics.length,
+    'the managed diagnostics view does not show the persisted evidence; missing: '+
+    wantedDiagnostics.filter(w=>!seenDiagnostics.has(w)).join(' | '));
+  await capture('10-managed-diagnostics');
   // The network view must show the authorized placement of the session. The
   // scoped projection carries no topology, so a loading state would promise
   // data that never arrives.
@@ -221,7 +270,7 @@ try {
   await page.getByRole('button',{name:'Operator abmelden',exact:true}).click();
   await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[1]+'/'+sources[2],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'device engineering workspace of the approved UI',demo_coordinates_absent:true},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
+  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[1]+'/'+sources[2],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'device engineering workspace of the approved UI',demo_coordinates_absent:true},rendered_diagnostics:{approved_surface:'persisted_evidence',persisted_evidence_section:true,diagnosis_history_status:status,health_transitions:healthPage.items.length,documented_gaps:gapsPage.items.length},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
 } catch(e) {
   await writeFile(resolve(out,'ssh-requests.json'),JSON.stringify(sshRequests,null,2));
   await capture('failure');

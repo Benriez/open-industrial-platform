@@ -185,18 +185,37 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
 
   /// The persisted evidence exists only for an authorized transport. The legacy
   /// demo serves no diagnostic history and never pretends to.
-  Future<void> _loadEvidence() async {
+  ///
+  /// A continuation asks the same authorized route with the opaque cursor of
+  /// the Core and merges the answer by the stable Core IDs, so no row is
+  /// duplicated. A failed continuation keeps the evidence that is already
+  /// loaded and offers a fresh authorized query.
+  Future<void> _loadEvidence({bool moreGaps = false, bool moreHealth = false}) async {
     if (!widget.controller.managed) return;
     final current = ++evidenceGeneration;
+    setState(() => evidenceBusy = true);
     try {
       final status = await widget.controller.api.collectionEventsWithStatus();
-      final gapPage = await widget.controller.api.diagnosticGaps();
-      final healthPage = await widget.controller.api.healthHistory();
+      final gapPage = moreHealth
+          ? null
+          : await widget.controller.api
+              .diagnosticGaps(cursor: moreGaps ? documentedGaps?.nextCursor : null);
+      final healthPage = moreGaps
+          ? null
+          : await widget.controller.api
+              .healthHistory(cursor: moreHealth ? healthTransitions?.nextCursor : null);
       if (!mounted || current != evidenceGeneration) return;
       setState(() {
         diagnosisHistoryStatus = status.diagnosisHistoryStatus;
-        documentedGaps = gapPage;
-        healthTransitions = healthPage;
+        if (gapPage != null) {
+          documentedGaps =
+              moreGaps ? documentedGaps!.followedBy(gapPage) : gapPage;
+        }
+        if (healthPage != null) {
+          healthTransitions = moreHealth
+              ? healthTransitions!.followedBy(healthPage)
+              : healthPage;
+        }
         evidenceError = null;
         evidenceLoaded = true;
       });
@@ -206,8 +225,15 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
         evidenceError = error;
         evidenceLoaded = true;
       });
+    } finally {
+      if (mounted && current == evidenceGeneration) {
+        setState(() => evidenceBusy = false);
+      }
     }
   }
+
+  /// A continuation of the authorized query is running.
+  bool evidenceBusy = false;
 
   Future<void> _loadSources({bool automatic = false}) async {
     if (loadingSources || (automatic && searchFocus.hasFocus)) return;
@@ -697,6 +723,9 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
             color: OipTokens.statusColor(context, 'degraded'),
           ),
           const SizedBox(height: OipTokens.s3),
+          // A failed continuation keeps the evidence that is already loaded
+          // and offers a fresh authorized query. It never hides the proof it
+          // already holds.
           if (evidenceError != null)
             StateMessage(
               'Persistierte Evidenz nicht verfügbar',
@@ -706,15 +735,17 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
               ),
               compact: true,
               action: TextButton(
-                  onPressed: _loadEvidence, child: const Text('Erneut laden')),
-            )
-          else if (!evidenceLoaded || gaps == null || health == null)
+                onPressed: evidenceBusy ? null : _loadEvidence,
+                child: const Text('Erneut laden'),
+              ),
+            ),
+          if (gaps != null && health != null)
+            _evidence(context, gaps, health)
+          else if (evidenceError == null)
             const Padding(
               padding: EdgeInsets.all(OipTokens.s4),
               child: Center(child: CircularProgressIndicator()),
-            )
-          else
-            _evidence(context, gaps, health),
+            ),
         ],
       ),
     );
@@ -740,7 +771,7 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
               Fact('Dokumentierte Lücke · ${gap.source}',
                   '${timestamp(gap.documentedStartMs)} → '
                   '${timestamp(gap.documentedEndMs)}'
-                  '${gap.durationMs == null ? '' : ' · ${gap.durationMs} ms'}'),
+                  '${gap.durationMs == null ? ' · unbekannter Markerabstand' : ' · Markerabstand: ${gap.durationMs} ms, keine gemessene Ausfalldauer'}'),
               Fact('Grund', '${gap.reason} · Herkunft: ${gap.origin}'),
             ]),
           ),
@@ -757,10 +788,42 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
               Fact('Provenienz', transition.provenance),
             ]),
           ),
+        _continuation(gaps, 'Lücken',
+            () => _loadEvidence(moreGaps: true)),
+        _continuation(health, 'Gesundheitsverlauf',
+            () => _loadEvidence(moreHealth: true)),
+        if (gaps.timeSemantics.isNotEmpty || health.timeSemantics.isNotEmpty)
+          ExpansionTile(
+            title: const Text('Zeit- und Herkunftssemantik'),
+            children: [
+              Text(gaps.timeSemantics),
+              Text(health.timeSemantics),
+              const Text('Markerabstände sind keine gemessenen Ausfalldauern. '
+                  'Historische Zustände beweisen keine aktuelle Erreichbarkeit.'),
+            ],
+          ),
         if (notes.isNotEmpty)
           Text('Grenzen dieser Evidenz: ${notes.join(' ')}',
               style: Theme.of(context).textTheme.bodySmall),
       ],
+    );
+  }
+
+  /// The continuation of an authorized diagnostic page.
+  ///
+  /// A truncated answer without a cursor is explicitly incomplete; it never
+  /// implies that the evidence was read completely.
+  Widget _continuation(DiagnosticPage page, String label, VoidCallback load) {
+    if (!page.truncated) return const SizedBox.shrink();
+    if (page.nextCursor == null) {
+      return Text('$label: Antwort gekürzt; keine Fortsetzung verfügbar.');
+    }
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: evidenceBusy ? null : load,
+        child: Text('$label: weitere Einträge laden'),
+      ),
     );
   }
 

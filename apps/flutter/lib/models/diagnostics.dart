@@ -86,6 +86,21 @@ class DiagnosticPage {
     );
   }
 
+  /// Continue the same authorized query without duplicating stable Core IDs.
+  DiagnosticPage followedBy(DiagnosticPage page) => DiagnosticPage._(
+        gaps: {
+          for (final gap in [...gaps, ...page.gaps]) gap.id: gap
+        }.values.toList(),
+        transitions: {
+          for (final item in [...transitions, ...page.transitions])
+            item.id: item
+        }.values.toList(),
+        truncated: page.truncated,
+        nextCursor: page.nextCursor,
+        missingEvidence: {...missingEvidence, ...page.missingEvidence}.toList(),
+        timeSemantics: page.timeSemantics,
+      );
+
   const DiagnosticPage._({
     required this.gaps,
     required this.transitions,

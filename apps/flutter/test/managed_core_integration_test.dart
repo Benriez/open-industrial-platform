@@ -19,7 +19,7 @@ class EvidenceApi extends FakeApi {
           replaySupported: false, resyncRequired: true);
 
   @override
-  Future<DiagnosticPage> diagnosticGaps({int limit = 50}) async =>
+  Future<DiagnosticPage> diagnosticGaps({int limit = 50, String? cursor}) async =>
       DiagnosticPage.fromJson({
         'items': [
           {
@@ -43,7 +43,7 @@ class EvidenceApi extends FakeApi {
       });
 
   @override
-  Future<DiagnosticPage> healthHistory({int limit = 50}) async =>
+  Future<DiagnosticPage> healthHistory({int limit = 50, String? cursor}) async =>
       DiagnosticPage.fromJson({
         'items': [
           {
