@@ -74,6 +74,7 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Native macOS build and test | PROVED | `tests/oip008/ui_regression.py` → native build 11.6 s with the build marker, native integration test 39.1 s with the `All tests passed!` marker, against an owned isolated demo core |
 | Legacy browser, interaction and visual regression | PROVED | browser 80.4 s, interactions 47.1 s, visual 63.4 s on the separately built HTML renderer |
 | Milestone acceptance harnesses on the canonical tree | PROVED | `tests/canonical_regression.py`: OIP-008, OIP-008.2, OIP-008.2 schema3 migration, OIP-008.4, OIP-008.5, OIP-008.5 migration, the UI regression and the schema2 adoption all PASS on the canonical tree, no failed and no blocked case |
+| Canonical Spectrum-2027 UI baseline and design regression gate | **PROVED** | `OIP_CANONICAL_UI_GATE=1 python3 tests/real_device/acceptance.py` → PASS on `dc7bbb8dc94b18242b70080cfa0b08b3b6c72753` (tree `23ee1796a2ac888c787866f4723657695de8ddc8`): 335/335 Flutter tests, 175 browser findings with zero failures, 13 captures of the six workstations at 1440 px and 1920 px, the stable-shell visual comparison with both negative-control classes, all 8/8 managed acceptance phases including the actual Flutter SSH onboarding. Local and served bundle are byte-identical: `169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa`. Operator visual acceptance remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE` |
 | Physical Raspberry-Pi acceptance | **WITHHELD** | no endpoint, SSH user or approved identity was supplied; no personal device was contacted |
 | Real installation activation (schema 7) | **BLOCKED** | requires a separate operator decision plus a fresh protected backup; forbidden in this loop |
 | Productive remote/browser identity | **OPEN** | loopback local operator session only; no HTTPS, no remote identity, no hostile same-UID isolation |
@@ -110,6 +111,7 @@ Each item names the next *delimited* step, its gate and its blocker and carries 
 | N8 real multi-infrastructure overview | **DONE** | closed in iteration 10 |
 | N9 the network view of the authorized placement | **DONE** | closed in iteration 11 |
 | N10 the managed diagnostics view | **READY** | the next step of the loop |
+| N11 canonical Spectrum-2027 UI baseline and design regression gate | **DONE, closed in iteration 12** | the two parallel executions of the same integration were reconciled into one candidate, the full gate is PASS on `{REV}` and the candidate is integrated into canonical `main` with `git merge --ff-only`; operator visual approval remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE` |
 
 A blocked item never stops the loop while an independent READY item exists. Items that need an
 explicit operator decision (N1b, N4) or that would change a rule instead of enforcing one are
@@ -1128,6 +1130,91 @@ physical Raspberry-Pi was contacted, the real installation was not activated, th
 database is unchanged at schema 6 and the productive identity, hostile same-UID, durable audit
 and OT boundaries stay open. F5 remains open and paused.
 
+### Iteration 12 — the Spectrum-2027 canonical UI baseline and its design regression gate
+
+**Status: PROVED and integrated into canonical `main`.**
+This is a binding integration contract and regression gate, not a deployment and not an operator
+visual approval. Before this iteration canonical `main` was `037afda92ac02ffc91dceb322d905a57dd2fc4ef`
+with the legacy five-view OIP/005 shell and runtime bundle
+`e399f3979b94fdbfb794436c364c68c1d697111ed1cdf2c2354c94ba468730bf`; its preview on port 8080
+answered `mode: explicit_legacy_demo`. The intended UI authority is OIP-UX-001 feature commit
+`6c2d2a280b66b69461d5ee8c821630b4deeed4fe`, frozen at `5d50a1d5da558cf1e78515b4c24bad4aded40a92`.
+The exact upstream chain is pinned in `docs/design/OIP_UI_2027_HANDOFF_MANIFEST.json`.
+
+**Reconciliation of the two parallel executions.** The Spectrum-2027 integration was prepared
+twice in parallel from the same authority payload: in `…/worktrees/spectrum-2027-ui`
+(`feature/oip-spectrum-2027-ui`) and in the concurrent release-loop candidate
+`…/worktrees/canonical-ui-gate` (`feature/oip-canonical-ui-regression-gate`). Both were verified
+against the same contract; their product trees differed in three files only. They were reconciled
+into **one** candidate instead of integrated twice: the gate, the stable-shell visual comparison,
+the acceptance-workflow integration and the handoff manifest come from the concurrent candidate,
+the product fixes below come from this worktree. No file of the concurrent execution was
+modified, no foreign process was signalled, and the personal installation was not touched.
+
+**Product fixes that the transplant would have lost.** The payload alone would have replaced the
+canonical cadence-aware continuity of a measured series (`continuesSeries`, `seriesGapLimit`) with
+a fixed 2.5 s limit and dropped its test; every real source that publishes slower than 2.5 s
+would have been drawn as isolated points. The rule and its coverage are restored in
+`lib/widgets/trend.dart` and applied in `lib/features/overview/telemetry_chart.dart`. The
+monitoring measurements and the persisted observation history are mounted inside the approved
+device workspace, and the management adapter is guarded in both device detail surfaces, so a
+managed client without an adapter no longer dereferences a null adapter.
+
+**Onboarding activation.** In the Flutter web runtime the semantics node of a device row is a
+container node and therefore carries `pointer-events: none`; a Playwright click is intercepted by
+`flutter-view`, and the engine forwards only focus and blur, so Enter and Space can never
+activate the row. The real onboarding journey therefore activates the painted row with a real
+mouse event and verifies the state it produces — the engineering workspace of the selected
+device — instead of trusting the absence of an error.
+
+**Isolation and provenance.** The uncommitted 128-file Spectrum snapshot was archived before any
+mutation and replayed byte-identically into the separate `canonical-ui-gate` worktree. Snapshot
+archive SHA-256 `8c81ed6fb1ea624a3047a33db284d441d704b2ddd081268826c7922236f2acc3`, roundtrip
+PASS. The original worktree and every foreign process remained untouched. The final tested
+revision is `037afda92ac02ffc91dceb322d905a57dd2fc4ef`, working tree hash
+`3fc21b181151e99b35ee9291bfcc46a47c6dc223`. The actual local and served
+`main.dart.js` SHA-256 values are both
+`d0a5b3b2dabd6e0351bdfd7465a7422f90a4fc2afd3b610f6de6ff44b47d8a86`.
+
+**Failure correction.** The first complete Flutter run produced 331 passes and two failures, all
+caused by a managed controller without a management adapter (`controller!.management!`). The
+management section is now guarded in both device detail surfaces, while production `RestApi`
+management remains intact. Targeted tests and the full subsequent suite passed: **334/334**.
+The initially claimed 2027 gate was not accepted without independent execution.
+
+**Permanent regression gate.** `tests/canonical_ui_gate.py` builds the current Flutter release,
+hashes the real working tree through a temporary index, runs the full Flutter suite and checks
+the delivered bundle. The canonical case also builds and hashes `oip-server` and the official MCP
+probe, performs real browser login, all six workstations at 1440/1920, the eight managed
+acceptance phases and the actual `browser_onboarding.mjs` journey. A complete PASS cannot skip
+build, widget or browser checks; `--skip-build` was separately verified to produce `PARTIAL`.
+Runner report resolution evaluates both the harness and the browser `verdict`.
+
+**Measured result.** `python3 tests/canonical_regression.py --only oip_canonical_ui_gate
+--evidence target/oip-canonical-ui-regression-final` finished in 353.8 s with process status PASS,
+harness status PASS, no failed and no blocked case. The browser recorded **175 findings with zero
+failures**, 13 screenshots, no JavaScript errors and no external requests. All eight phases are
+PASS: browser identity/writer, SSH handshake and monitoring, restart/SIGKILL, actual Flutter SSH
+onboarding, ingestion without clients, host-key change blocking, weak-key rejection and eight
+official MCP clients. `own_processes_stopped=true`. The merged
+`canonical_ui_gate_receipt` binds the precheck, browser and visual receipt paths and their
+SHA-256 values, the machine-bound 334/334 Flutter result, 175/0 browser findings and 13 captures.
+The browser evidence directory contains exactly those 13 PNGs and no failure dump.
+
+**Visual and negative controls.** The stable left shell is compared at 1440×900 and 1920×1080,
+with dynamic content excluded and each mean/ratio limit set to 0.01. Archive derivation is pixel
+verified. Measured at 1440: mean `0.0010914`, changed ratio `0.0`; at 1920: mean `0.0012635`,
+changed ratio `0.0`. Single-navigation-row and large-gradient mutations were both detected.
+Missing external archives produce an explicit `SKIPPED_EXTERNAL_ARCHIVE_UNAVAILABLE` receipt while
+the committed reference hash remains mandatory. **M-01 is forbidden only as the primary managed
+overview metric**, not on real OPC-UA nodes. **AGENT-FIRST is forbidden in the sidebar and allowed
+only in the technical Settings context.**
+
+**Visual status and integration boundary.** All six current workstation captures are technical
+evidence only. Operator visual acceptance remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`. N11 stays
+`BLOCKED_DEPENDENCY` for main integration until ownership is reconciled. No commit, merge, push,
+deployment, personal database change, schema-7 activation or private SSH was performed.
+
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -1137,9 +1224,23 @@ and OT boundaries stay open. F5 remains open and paused.
 | `target/oip-canonical-e2e/report.json` | full acceptance report of the SSH/browser/MCP harness on canonical `main` (local, not tracked) |
 | `target/oip-canonical-e2e/browser/report.json` | browser receipt of the actual Flutter onboarding run (local, not tracked) |
 | `target/oip-canonical-e2e/browser/*.png` | screenshots of login, endpoint input, host-key consent, identity confirmation, persisted binding and live monitoring (local, not tracked) |
+| `docs/design/OIP_CANONICAL_UI_BASELINE.md` | the binding canonical UI contract: source of authority, the approved shell, the prohibited regressions R1-R10 and the gate table |
+| `docs/design/OIP_UI_2027_HANDOFF_MANIFEST.json` | the verified 2027 handoff manifest: eight upstream workstreams with their archive hashes and technical verdicts, the hash-pinned visual references and the candidate verification |
+| `docs/design/baselines/canonical-ui-1440.png`, `docs/design/baselines/canonical-ui-1920.png` | the committed technical visual references of the stable shell (tracked) |
+| `docs/evidence/oip-canonical-ui/*.png` | the 13 actual captures of the six workstations at 1440 px and 1920 px of iteration 12 (local, per the evidence policy) |
+| `docs/evidence/oip-real-device/test-summary.json` | the machine-readable result of the canonical UI gate of iteration 12 |
 | `target/oip-conformance-e2e/report.json` | the same acceptance report from the isolated branch build before the integration (local, not tracked) |
 | `target/oip008-ui-canonical/ui-regression.json` | UI regression result of iteration 3 with the per step durations and markers (local, not tracked) |
 | `/Users/benny/Documents/OIP-Handoffs/core-real-onboarding-p0-20261107T025455Z/` | private P0 handoff receipt of the reviewed candidate (unchanged) |
+| `docs/design/OIP_CANONICAL_UI_BASELINE.md` | binding Spectrum-2027 shell, workstation, legacy-separation and visual-acceptance contract |
+| `docs/design/OIP_UI_2027_HANDOFF_MANIFEST.json` | exact upstream handoff revisions, archive hashes, integration snapshot and technical visual-reference hashes |
+| `target/oip-canonical-ui-regression-final/` | final clean candidate build/full-widget/browser/visual and managed real-device acceptance receipts; not canonical-main evidence |
+| `target/oip-canonical-ui-regression-run/` | superseded intermediate run; retained only for failure archaeology and must not be cited as the final capture set |
+| `target/oip-canonical-ui-acceptance/` | superseded direct harness attempts; retained for diagnostics, not final evidence |
+| `target/oip-canonical-ui-gate-precheck/` | superseded early precheck, not final evidence |
+| `target/oip-canonical-ui-skip-control/` | deliberate `--skip-build` control proving `PARTIAL`, not a UI PASS |
+| `target/oip-ui-missing-archive-receipt.json` | portability control proving explicit derivation-skip behaviour; not the final visual receipt |
+| `/Users/benny/.local/share/oip-canonical-ui/20261108T030129Z/` | private SHA-256-verified 128-file source snapshot and roundtrip manifest |
 
 ## 6. Safety boundaries observed
 

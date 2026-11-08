@@ -18,7 +18,7 @@
  "integrationCandidate": {
   "sourceWorktree": "/Users/benny/Code/open-industrial-platform-worktrees/spectrum-2027-ui",
   "sourceBaseHead": "037afda92ac02ffc91dceb322d905a57dd2fc4ef",
-  "sourceCommittedSpectrumRevision": null,
+  "sourceCommittedSpectrumRevision": "dc7bbb8dc94b18242b70080cfa0b08b3b6c72753",
   "sourceState": "the integration snapshot was committed on the candidate branch below; the gate hashes the real working tree through a temporary index",
   "snapshotArchive": "/Users/benny/.local/share/oip-canonical-ui/20261108T030129Z/snapshot.tar.gz",
   "snapshotArchiveSha256": "8c81ed6fb1ea624a3047a33db284d441d704b2ddd081268826c7922236f2acc3",
@@ -150,8 +150,8 @@
  "candidateVerification": {
   "runner": "OIP_CANONICAL_UI_GATE=1 python3 tests/real_device/acceptance.py with OIP_EVIDENCE_DIR=target/oip-real-device-e2e (case oip_canonical_ui_gate of tests/canonical_regression.py)",
   "status": "PASS",
-  "sourceRevision": "037afda92ac02ffc91dceb322d905a57dd2fc4ef (base revision of the candidate branch)",
-  "sourceTree": "2b06903bbb83ea188bd0841500627b81582ed181 (working-tree hash of the tested candidate)",
+  "sourceRevision": "dc7bbb8dc94b18242b70080cfa0b08b3b6c72753",
+  "sourceTree": "23ee1796a2ac888c787866f4723657695de8ddc8",
   "localBundleSha256": "169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa",
   "servedBundleSha256": "169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa",
   "flutterTests": "335/335 PASS",
@@ -181,7 +181,7 @@
   "mainMerged": false,
   "pushed": false,
   "deployed": false,
-  "measuredOn": "candidate branch feature/oip-spectrum-2027-ui",
+  "measuredOn": "candidate branch feature/oip-spectrum-2027-ui, integrated into canonical main with git merge --ff-only",
   "mergedGateReceipt": {
    "precheck": "target/oip-real-device-e2e/canonical-ui/canonical-ui-gate.json",
    "browser": "target/oip-real-device-e2e/browser/browser-canonical-ui-gate.json",

@@ -1,17 +1,144 @@
 {
-  "scope": "OIP canonical main: two controlled integrations (iteration 1 real device onboarding feature, iteration 2 its conformance fixes)",
-  "canonical_source_commit": "e9036efb69387b2789f80ff22d8b62bc7d4f783c",
-  "canonical_source_tree": "665a9a566779534c6646a4e53acf8955be1839fc",
-  "previous_canonical_source_commit": "1e6b74355b2559127865beabaa3c97f492560e58",
-  "integration_method": "eleven real git merge --ff-only integrations, no merge commit, no history rewrite",
-  "merge_commit_created": false,
-  "history_rewritten": false,
-  "tracked_files_in_source_revision": 451,
-  "source_manifest_sha256": "cfd9fc247352cbcd457a0fed3b59d7b2a60e1413ee41831f35db458df15f39eb",
-  "source_manifest_scope": "all tracked files of the canonical source revision",
-  "reviewed_candidate_tree_unchanged": true,
-  "runtime_code_changed_in_this_iteration": true,
-  "gates": {
+ "scope": "OIP canonical main: two controlled integrations (iteration 1 real device onboarding feature, iteration 2 its conformance fixes)",
+ "canonical_source_commit": "e9036efb69387b2789f80ff22d8b62bc7d4f783c",
+ "canonical_source_tree": "665a9a566779534c6646a4e53acf8955be1839fc",
+ "previous_canonical_source_commit": "1e6b74355b2559127865beabaa3c97f492560e58",
+ "integration_method": "eleven real git merge --ff-only integrations, no merge commit, no history rewrite",
+ "merge_commit_created": false,
+ "history_rewritten": false,
+ "tracked_files_in_source_revision": 451,
+ "source_manifest_sha256": "cfd9fc247352cbcd457a0fed3b59d7b2a60e1413ee41831f35db458df15f39eb",
+ "source_manifest_scope": "all tracked files of the canonical source revision",
+ "reviewed_candidate_tree_unchanged": true,
+ "runtime_code_changed_in_this_iteration": true,
+ "gates": {
+  "cargo_fmt_check": "PASS",
+  "cargo_check": "PASS",
+  "cargo_clippy_denied_warnings": "PASS",
+  "cargo_test_workspace": "175 passed, 0 failed",
+  "cargo_test_opcua_default_backend": "37 passed",
+  "cargo_test_opcua_open62541_only": "2 passed",
+  "cargo_build_server_and_mcp_probe": "PASS",
+  "cargo_deny": "PASS (advisories, bans, licenses, sources ok)",
+  "flutter_analyze": "PASS",
+  "flutter_test": "84 passed",
+  "flutter_web_release_canvaskit": "PASS",
+  "flutter_web_release_html": "PASS",
+  "real_device_acceptance": "8 phases PASS",
+  "new_rust_test_group": "crates/oip-server/tests/browser_session.rs, 5 tests"
+ },
+ "actual_flutter_onboarding": {
+  "status": "PASS",
+  "path": "Flutter web release -> authenticated HTTP -> shared Core -> owned loopback OpenSSH",
+  "host_key_consent": true,
+  "identity_confirmation": true,
+  "existing_device_id_preserved": true,
+  "http_only_cookie": true,
+  "no_browser_token_storage": true,
+  "loaded_build_sha256": "98b7296ea226853571fbdb8b6e165aeebe63753d8e018110dbe2c252e4a2ed43",
+  "page_errors": [],
+  "external_requests": [],
+  "hardware": "owned loopback SSH fixture, not the private Raspberry Pi"
+ },
+ "measurements": {
+  "official_mcp_connection_read_ms": {
+   "samples": 20,
+   "p50": 4.511291976086795,
+   "p95": 4.800375085324049
+  },
+  "core_sample": {
+   "rss_kib": 31088,
+   "cpu_percent": 14.8
+  },
+  "ingestion_without_clients": {
+   "before": 140,
+   "after": 150
+  }
+ },
+ "not_claimed": [
+  "physical Raspberry-Pi acceptance",
+  "real installation activation or schema 7 migration of the personal database",
+  "native macOS build or test result",
+  "productive remote or browser identity",
+  "hostile same-UID isolation",
+  "tamper-proof durable audit",
+  "OT or endurance certification",
+  "a production release"
+ ],
+ "safety": {
+  "push": false,
+  "deployment": false,
+  "public_listener": false,
+  "personal_database_modified": false,
+  "personal_database_sha256": "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e",
+  "personal_database_schema": 6,
+  "foreign_processes_signalled": false,
+  "private_device_contacted": false
+ },
+ "iterations": [
+  {
+   "iteration": 1,
+   "scope": "controlled integration of the reviewed real device onboarding candidate into canonical main",
+   "canonical_source_commit": "ae4c6bab4fb87ff2c7b15a21b0104b2d5a12af7f",
+   "canonical_source_tree": "f72cb667c16b6e6a75efd72b725c81031788fd26",
+   "tracked_files": 438,
+   "source_manifest_sha256": "16b9a815bee276e383aa1ca9e2616ff601ce2026d0629aab40e4f4083ad7ae09",
+   "runtime_code_changed": false,
+   "gates": {
+    "cargo_fmt_check": "PASS",
+    "cargo_check": "PASS",
+    "cargo_clippy_denied_warnings": "PASS",
+    "cargo_test_workspace": "167 passed, 0 failed",
+    "cargo_test_opcua_default_backend": "37 passed",
+    "cargo_test_opcua_open62541_only": "2 passed",
+    "cargo_build_server_and_mcp_probe": "PASS",
+    "cargo_deny": "PASS",
+    "flutter_analyze": "PASS",
+    "flutter_test": "84 passed",
+    "flutter_web_release_canvaskit": "PASS",
+    "flutter_web_release_html": "PASS",
+    "real_device_acceptance": "7 phases PASS"
+   },
+   "measurements": {
+    "official_mcp_connection_read_ms": {
+     "samples": 20,
+     "p50": 3.9282499346882105,
+     "p95": 4.844209062866867
+    },
+    "core_sample": {
+     "rss_kib": 30768,
+     "cpu_percent": 15.2
+    },
+    "ingestion_without_clients": {
+     "before": 140,
+     "after": 150
+    }
+   }
+  },
+  {
+   "iteration": 2,
+   "scope": "conformance fixes F1, F2, F3, F6, F7 and the Rust test group R1 for the browser session boundary",
+   "canonical_source_commit": "fc828ac4a0afd2020fef646b4630eb0ab90f99cc",
+   "canonical_source_tree": "2c7e72bd0882ab9fa4324216183c628600fa64dc",
+   "tracked_files": 442,
+   "source_manifest_sha256": "a48347578ce325b613b1cf67d5c19dcdb3921cb7ba26ecda97f3e214cc0c8420",
+   "development_isolation": "branch feature/oip-real-device-conformance in an isolated worktree with its own CARGO_TARGET_DIR and its own Flutter web build; integrated afterwards with git merge --ff-only",
+   "runtime_code_changed": true,
+   "fixed_findings": [
+    "F1",
+    "F2",
+    "F3",
+    "F6",
+    "F7"
+   ],
+   "fixed_test_gaps": [
+    "R1"
+   ],
+   "still_open": [
+    "F4",
+    "F5"
+   ],
+   "gates": {
     "cargo_fmt_check": "PASS",
     "cargo_check": "PASS",
     "cargo_clippy_denied_warnings": "PASS",
@@ -26,1055 +153,972 @@
     "flutter_web_release_html": "PASS",
     "real_device_acceptance": "8 phases PASS",
     "new_rust_test_group": "crates/oip-server/tests/browser_session.rs, 5 tests"
-  },
-  "actual_flutter_onboarding": {
+   },
+   "new_acceptance_phase": {
+    "phase": "weak_host_key_is_rejected_by_the_server",
     "status": "PASS",
-    "path": "Flutter web release -> authenticated HTTP -> shared Core -> owned loopback OpenSSH",
-    "host_key_consent": true,
-    "identity_confirmation": true,
-    "existing_device_id_preserved": true,
-    "http_only_cookie": true,
-    "no_browser_token_storage": true,
-    "loaded_build_sha256": "98b7296ea226853571fbdb8b6e165aeebe63753d8e018110dbe2c252e4a2ed43",
-    "page_errors": [],
-    "external_requests": [],
-    "hardware": "owned loopback SSH fixture, not the private Raspberry Pi"
-  },
-  "measurements": {
+    "details": {
+     "code": "SSH_HOST_KEY_TOO_WEAK",
+     "offered_for_acceptance": false,
+     "pinned": false,
+     "no_binding_created": true
+    }
+   },
+   "measurements": {
     "official_mcp_connection_read_ms": {
-      "samples": 20,
-      "p50": 4.511291976086795,
-      "p95": 4.800375085324049
+     "samples": 20,
+     "p50": 4.511291976086795,
+     "p95": 4.800375085324049
     },
     "core_sample": {
-      "rss_kib": 31088,
-      "cpu_percent": 14.8
+     "rss_kib": 31088,
+     "cpu_percent": 14.8
     },
     "ingestion_without_clients": {
-      "before": 140,
-      "after": 150
+     "before": 140,
+     "after": 150
     }
+   }
   },
-  "not_claimed": [
+  {
+   "iteration": 3,
+   "scope": "native macOS build and test, and a reliable UI regression harness",
+   "canonical_source_commit": "b19092d",
+   "canonical_source_tree": "a45555428c165365ab14f7248a20c3382379e648",
+   "tracked_files": 442,
+   "source_manifest_sha256": "32373b5375a3898f5c49747bfef83a833320a13066d98402de731799ef113c36",
+   "development_isolation": "branch feature/oip-native-macos-harness in an isolated worktree, integrated afterwards with git merge --ff-only",
+   "runtime_code_changed": false,
+   "product_code_changed": false,
+   "harness_changed": "tests/oip008/ui_regression.py",
+   "diagnosis": {
+    "toolchain": "Xcode 26.6, Swift 6.3.3, Flutter 3.22.0, CocoaPods 1.15.2",
+    "flutter_devices_seconds": 7.0,
+    "cold_native_build_seconds": 497.2,
+    "root_cause": "the UI regression harness applied one 300 second bound to the web steps and to the native step, and the native test ran its build inside the test command where the default twelve minute test timeout expired during the load phase",
+    "renderer_correction": "the legacy web regression reads the rendered text from the document and therefore needs the separately built HTML renderer; the CanvasKit build paints the text on a canvas"
+   },
+   "ui_regression": {
+    "harness": "tests/oip008/ui_regression.py",
+    "status": "PASS",
+    "served_web_dir": "apps/flutter/build/web-html",
+    "steps": [
+     {
+      "name": "browser",
+      "exit_code": 0,
+      "seconds": 80.4,
+      "status": "PASS"
+     },
+     {
+      "name": "interactions",
+      "exit_code": 0,
+      "seconds": 47.1,
+      "status": "PASS"
+     },
+     {
+      "name": "visual",
+      "exit_code": 0,
+      "seconds": 63.4,
+      "status": "PASS"
+     },
+     {
+      "name": "native_build",
+      "exit_code": 0,
+      "seconds": 11.6,
+      "status": "PASS",
+      "marker": "Built build/macos/Build/Products/Debug/oip_dashboard.app",
+      "marker_found": true
+     },
+     {
+      "name": "native_macos",
+      "exit_code": 0,
+      "seconds": 39.1,
+      "status": "PASS",
+      "marker": "All tests passed!",
+      "marker_found": true
+     },
+     {
+      "name": "demo_core_shutdown",
+      "exit_code": 0,
+      "status": "PASS"
+     }
+    ],
+    "native_scope": "compatibility and regression check in the explicit isolated demo mode; native authenticated session cookie transport is not claimed",
+    "repeated_run": {
+     "browser": 88.1,
+     "interactions": 47.9,
+     "visual": 60.4,
+     "native_build": 12.7,
+     "native_macos": 34.4,
+     "status": "PASS"
+    }
+   },
+   "not_claimed": [
+    "a native product path with authenticated session cookies",
     "physical Raspberry-Pi acceptance",
-    "real installation activation or schema 7 migration of the personal database",
-    "native macOS build or test result",
-    "productive remote or browser identity",
-    "hostile same-UID isolation",
-    "tamper-proof durable audit",
-    "OT or endurance certification",
-    "a production release"
-  ],
-  "safety": {
-    "push": false,
-    "deployment": false,
-    "public_listener": false,
-    "personal_database_modified": false,
-    "personal_database_sha256": "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e",
-    "personal_database_schema": 6,
-    "foreign_processes_signalled": false,
-    "private_device_contacted": false
+    "real installation activation"
+   ]
   },
-  "iterations": [
-    {
-      "iteration": 1,
-      "scope": "controlled integration of the reviewed real device onboarding candidate into canonical main",
-      "canonical_source_commit": "ae4c6bab4fb87ff2c7b15a21b0104b2d5a12af7f",
-      "canonical_source_tree": "f72cb667c16b6e6a75efd72b725c81031788fd26",
-      "tracked_files": 438,
-      "source_manifest_sha256": "16b9a815bee276e383aa1ca9e2616ff601ce2026d0629aab40e4f4083ad7ae09",
-      "runtime_code_changed": false,
-      "gates": {
-        "cargo_fmt_check": "PASS",
-        "cargo_check": "PASS",
-        "cargo_clippy_denied_warnings": "PASS",
-        "cargo_test_workspace": "167 passed, 0 failed",
-        "cargo_test_opcua_default_backend": "37 passed",
-        "cargo_test_opcua_open62541_only": "2 passed",
-        "cargo_build_server_and_mcp_probe": "PASS",
-        "cargo_deny": "PASS",
-        "flutter_analyze": "PASS",
-        "flutter_test": "84 passed",
-        "flutter_web_release_canvaskit": "PASS",
-        "flutter_web_release_html": "PASS",
-        "real_device_acceptance": "7 phases PASS"
-      },
-      "measurements": {
-        "official_mcp_connection_read_ms": {
-          "samples": 20,
-          "p50": 3.9282499346882105,
-          "p95": 4.844209062866867
-        },
-        "core_sample": {
-          "rss_kib": 30768,
-          "cpu_percent": 15.2
-        },
-        "ingestion_without_clients": {
-          "before": 140,
-          "after": 150
-        }
-      }
-    },
-    {
-      "iteration": 2,
-      "scope": "conformance fixes F1, F2, F3, F6, F7 and the Rust test group R1 for the browser session boundary",
-      "canonical_source_commit": "fc828ac4a0afd2020fef646b4630eb0ab90f99cc",
-      "canonical_source_tree": "2c7e72bd0882ab9fa4324216183c628600fa64dc",
-      "tracked_files": 442,
-      "source_manifest_sha256": "a48347578ce325b613b1cf67d5c19dcdb3921cb7ba26ecda97f3e214cc0c8420",
-      "development_isolation": "branch feature/oip-real-device-conformance in an isolated worktree with its own CARGO_TARGET_DIR and its own Flutter web build; integrated afterwards with git merge --ff-only",
-      "runtime_code_changed": true,
-      "fixed_findings": [
-        "F1",
-        "F2",
-        "F3",
-        "F6",
-        "F7"
-      ],
-      "fixed_test_gaps": [
-        "R1"
-      ],
-      "still_open": [
-        "F4",
-        "F5"
-      ],
-      "gates": {
-        "cargo_fmt_check": "PASS",
-        "cargo_check": "PASS",
-        "cargo_clippy_denied_warnings": "PASS",
-        "cargo_test_workspace": "175 passed, 0 failed",
-        "cargo_test_opcua_default_backend": "37 passed",
-        "cargo_test_opcua_open62541_only": "2 passed",
-        "cargo_build_server_and_mcp_probe": "PASS",
-        "cargo_deny": "PASS (advisories, bans, licenses, sources ok)",
-        "flutter_analyze": "PASS",
-        "flutter_test": "84 passed",
-        "flutter_web_release_canvaskit": "PASS",
-        "flutter_web_release_html": "PASS",
-        "real_device_acceptance": "8 phases PASS",
-        "new_rust_test_group": "crates/oip-server/tests/browser_session.rs, 5 tests"
-      },
-      "new_acceptance_phase": {
-        "phase": "weak_host_key_is_rejected_by_the_server",
-        "status": "PASS",
-        "details": {
-          "code": "SSH_HOST_KEY_TOO_WEAK",
-          "offered_for_acceptance": false,
-          "pinned": false,
-          "no_binding_created": true
-        }
-      },
-      "measurements": {
-        "official_mcp_connection_read_ms": {
-          "samples": 20,
-          "p50": 4.511291976086795,
-          "p95": 4.800375085324049
-        },
-        "core_sample": {
-          "rss_kib": 31088,
-          "cpu_percent": 14.8
-        },
-        "ingestion_without_clients": {
-          "before": 140,
-          "after": 150
-        }
-      }
-    },
-    {
-      "iteration": 3,
-      "scope": "native macOS build and test, and a reliable UI regression harness",
-      "canonical_source_commit": "b19092d",
-      "canonical_source_tree": "a45555428c165365ab14f7248a20c3382379e648",
-      "tracked_files": 442,
-      "source_manifest_sha256": "32373b5375a3898f5c49747bfef83a833320a13066d98402de731799ef113c36",
-      "development_isolation": "branch feature/oip-native-macos-harness in an isolated worktree, integrated afterwards with git merge --ff-only",
-      "runtime_code_changed": false,
-      "product_code_changed": false,
-      "harness_changed": "tests/oip008/ui_regression.py",
-      "diagnosis": {
-        "toolchain": "Xcode 26.6, Swift 6.3.3, Flutter 3.22.0, CocoaPods 1.15.2",
-        "flutter_devices_seconds": 7.0,
-        "cold_native_build_seconds": 497.2,
-        "root_cause": "the UI regression harness applied one 300 second bound to the web steps and to the native step, and the native test ran its build inside the test command where the default twelve minute test timeout expired during the load phase",
-        "renderer_correction": "the legacy web regression reads the rendered text from the document and therefore needs the separately built HTML renderer; the CanvasKit build paints the text on a canvas"
-      },
-      "ui_regression": {
-        "harness": "tests/oip008/ui_regression.py",
-        "status": "PASS",
-        "served_web_dir": "apps/flutter/build/web-html",
-        "steps": [
-          {
-            "name": "browser",
-            "exit_code": 0,
-            "seconds": 80.4,
-            "status": "PASS"
-          },
-          {
-            "name": "interactions",
-            "exit_code": 0,
-            "seconds": 47.1,
-            "status": "PASS"
-          },
-          {
-            "name": "visual",
-            "exit_code": 0,
-            "seconds": 63.4,
-            "status": "PASS"
-          },
-          {
-            "name": "native_build",
-            "exit_code": 0,
-            "seconds": 11.6,
-            "status": "PASS",
-            "marker": "Built build/macos/Build/Products/Debug/oip_dashboard.app",
-            "marker_found": true
-          },
-          {
-            "name": "native_macos",
-            "exit_code": 0,
-            "seconds": 39.1,
-            "status": "PASS",
-            "marker": "All tests passed!",
-            "marker_found": true
-          },
-          {
-            "name": "demo_core_shutdown",
-            "exit_code": 0,
-            "status": "PASS"
-          }
-        ],
-        "native_scope": "compatibility and regression check in the explicit isolated demo mode; native authenticated session cookie transport is not claimed",
-        "repeated_run": {
-          "browser": 88.1,
-          "interactions": 47.9,
-          "visual": 60.4,
-          "native_build": 12.7,
-          "native_macos": 34.4,
-          "status": "PASS"
-        }
-      },
-      "not_claimed": [
-        "a native product path with authenticated session cookies",
-        "physical Raspberry-Pi acceptance",
-        "real installation activation"
-      ]
-    },
-    {
-      "iteration": 4,
-      "scope": "F4: bound the verified host report to the stored record size",
-      "canonical_source_commit": "5a48b0c27460b354241833c0972c2dfc5f261eec",
-      "canonical_source_tree": "30067d5da42880f272fb62201f31702dbdf4beac",
-      "tracked_files": 442,
-      "source_manifest_sha256": "d77516de0b4c2e91a107c2fe779fabb863327d4d503d01dfb6904e6d4d04e046",
-      "development_isolation": "branch feature/oip-connection-payload-bound in an isolated worktree with its own target directory, integrated afterwards with git merge --ff-only",
-      "runtime_code_changed": true,
-      "fixed_findings": [
-        "F4"
-      ],
-      "still_open": [
-        "F5"
-      ],
-      "paused_findings": [
-        "F5"
-      ],
-      "new_tests": 5,
-      "gates": {
-        "cargo_fmt_check": "PASS",
-        "cargo_check": "PASS",
-        "cargo_clippy_denied_warnings": "PASS",
-        "cargo_test_workspace": "180 passed, 0 failed",
-        "cargo_test_opcua_default_backend": "37 passed",
-        "cargo_test_opcua_open62541_only": "2 passed",
-        "cargo_build_server_and_mcp_probe": "PASS",
-        "cargo_deny": "PASS (advisories, bans, licenses, sources ok)",
-        "flutter_analyze": "PASS",
-        "flutter_test": "84 passed",
-        "real_device_acceptance": "8 phases PASS"
-      },
-      "observed_flake": {
-        "test": "async_opcua::client::tests::reconnect_recreates_subscription_and_reports_gap",
-        "first_canonical_run": "failed once under machine load (36 passed, 1 failed)",
-        "isolated_reruns": "3 consecutive passes (3.95 s, 4.54 s, 8.32 s)",
-        "repeated_full_suite": "37 passed, 0 failed (140.48 s)",
-        "relation_to_this_change": "none; the change touches no OPC-UA code",
-        "note": "recorded instead of hidden"
-      },
-      "measurements": {
-        "official_mcp_connection_read_ms": {
-          "samples": 20,
-          "p50": 4.05562506057322,
-          "p95": 4.277790896594524
-        },
-        "core_sample": {
-          "rss_kib": 30752,
-          "cpu_percent": 15.2
-        }
-      }
-    },
-    {
-      "iteration": 5,
-      "scope": "the OIP-009 browser session, SSE and global context seam contract, plus the missing seam tests",
-      "canonical_source_commit": "d32c9d19de13a519b5e7c2dcd84aeb976df72186",
-      "canonical_source_tree": "a8b0eaafa501ad49449ce0faaf1fab3d26d127fa",
-      "tracked_files": 443,
-      "source_manifest_sha256": "d74c70dbd1890866dc0b167484e2c5df7c3785a433be38d3a60ede0565857502",
-      "development_isolation": "branch feature/oip-009-context-contract in an isolated worktree, integrated afterwards with git merge --ff-only",
-      "runtime_code_changed": false,
-      "rust_source_changed": false,
-      "rust_source_unchanged_against": "5a48b0c",
-      "flutter_test_changed": true,
-      "new_contract_document": "docs/architecture/oip-009-browser-session-sse.md",
-      "new_tests": 2,
-      "gates": {
-        "cargo_fmt_check": "PASS",
-        "cargo_clippy_denied_warnings": "PASS",
-        "cargo_test_workspace": "180 passed, 0 failed",
-        "flutter_analyze": "PASS, no issues",
-        "flutter_test": "86 passed, 0 failed",
-        "real_device_acceptance": "8 phases PASS"
-      },
-      "acceptance_phases": [
-        "browser_identity_online_writer",
-        "ssh_handshake_confirmation_monitoring",
-        "restart_sigkill_identity",
-        "actual_flutter_ssh_onboarding",
-        "no_clients_ingestion_progress",
-        "host_key_change_blocks_collection",
-        "weak_host_key_is_rejected_by_the_server",
-        "eight_official_mcp_clients"
-      ],
-      "browser_receipt": {
-        "status": "PASS",
-        "page_errors": [],
-        "external_requests": [],
-        "loaded_build_sha256": "98b7296ea226853571fbdb8b6e165aeebe63753d8e018110dbe2c252e4a2ed43"
-      },
-      "measurements": {
-        "official_mcp_connection_read_ms": {
-          "samples": 20,
-          "p50": 4.295167047530413,
-          "p95": 4.722792073152959
-        },
-        "core_sample": {
-          "rss_kib": 28064,
-          "cpu_percent": 2.2
-        }
-      },
-      "still_open": [
-        "the global Organization / Infrastructure / Site selection payload (OIP-009, owned by the independent UI workstreams, three way reconciliation required)",
-        "F5 (authorization rule), paused because it loosens a permission"
-      ]
-    },
-    {
-      "iteration": 6,
-      "scope": "a reproducible canonical regression run over the milestone acceptance harnesses, and the repair of two stale gates",
-      "canonical_source_commit": "111dff13017089f30055a498fe6c92f6decbaf6b",
-      "canonical_source_tree": "7090367b0a30815db9b29ddeef41c3acc2c68719",
-      "tracked_files": 444,
-      "source_manifest_sha256": "03097acab2dcadd9a7dc5c0c83af6bde32614a1c5784a91bbb1877cb005c59e3",
-      "development_isolation": "branch feature/oip-canonical-regression in an isolated worktree, integrated afterwards with git merge --ff-only",
-      "runtime_code_changed": false,
-      "product_source_changed": false,
-      "harness_changed": [
-        "tests/canonical_regression.py (new reproducible runner)",
-        "tests/oip008/acceptance.py (MCP read tool catalog 17 -> 18)",
-        "tests/oip0082/schema3_migration.py (upgraded schema 6 -> 7)",
-        "tests/oip008/legacy_migration.py (protected OIP-007 baseline through OIP007_BASELINE_BINARY)",
-        "tests/oip008/ui_regression.py (clear failure when the HTML renderer build is missing)"
-      ],
-      "stale_gates_found": [
-        {
-          "gate": "tests/oip0082/schema3_migration.py",
-          "was": 6,
-          "now": 7,
-          "reason": "the canonical schema is 7 since the connection tables were added"
-        },
-        {
-          "gate": "tests/oip008/acceptance.py",
-          "was": 17,
-          "now": 18,
-          "reason": "oip_device_connection_read is visible to the reader role, the policy filtered catalog has 18 tools"
-        }
-      ],
-      "canonical_regression": {
-        "status": "PASS",
-        "failed": [],
-        "blocked": [
-          "oip008_legacy_migration"
-        ],
-        "cases": [
-          {
-            "name": "oip008_acceptance",
-            "status": "PASS",
-            "seconds": 53.8
-          },
-          {
-            "name": "oip0082_acceptance",
-            "status": "PASS",
-            "seconds": 32.9
-          },
-          {
-            "name": "oip0082_schema3_migration",
-            "status": "PASS",
-            "seconds": 25.3
-          },
-          {
-            "name": "oip0084_acceptance",
-            "status": "PASS",
-            "seconds": 25.6
-          },
-          {
-            "name": "oip0085_acceptance",
-            "status": "PASS",
-            "seconds": 5.0
-          },
-          {
-            "name": "oip0085_migration",
-            "status": "PASS",
-            "seconds": 7.2
-          },
-          {
-            "name": "oip008_ui_regression",
-            "status": "PASS",
-            "seconds": 264.4,
-            "steps": {
-              "browser": 75.4,
-              "interactions": 47.8,
-              "visual": 61.1,
-              "native_build": 32.2,
-              "native_macos": 30.6
-            }
-          },
-          {
-            "name": "oip008_legacy_migration",
-            "status": "BLOCKED",
-            "reason": "the harness has to create a genuine schema2 database, which only a protected OIP-007 binary can do; the canonical binary creates schema3 or later"
-          }
-        ],
-        "protected_baselines_used": {
-          "oip008": {
-            "sha256": "889a36b2cf0d761796662e0437a18c2ed43dc8c1b1da82d70fecdd5a055865c6"
-          },
-          "oip0083": {
-            "sha256": "3b682dfaff8479f13804d28e6fe1288bedcfea8af0b409c8f8dc22d422b9ac39"
-          },
-          "oip0084": {
-            "sha256": "73d70d8105914db20210c95268b5733ca2ec19c959c4c29fa57cb93c1935fe58"
-          }
-        },
-        "legacy_schema2_adoption": "not re-verified; verified historically in the OIP-008 receipt with the then protected binary"
-      }
-    },
-    {
-      "iteration": 7,
-      "scope": "restore the schema2 adoption case with a rebuilt OIP-007 writer, and remove the sampling race from the REST/MCP parity gate",
-      "canonical_source_commit": "f4b89ed20fccc1d060b2ef55bdb0828c698dd4ee",
-      "canonical_source_tree": "ab3c6fd923932476ea5b71ba45513dfd85390e20",
-      "tracked_files": 445,
-      "source_manifest_sha256": "9d32797172c8f83f9a336798373c00314246a0dc328df669cbc1650ec81255ab",
-      "development_isolation": "branches feature/oip-007-baseline-adoption (6df189f) and feature/oip-parity-gate-convergence (f4b89ed) in isolated worktrees, both integrated with git merge --ff-only",
-      "runtime_code_changed": false,
-      "product_source_changed": false,
-      "harness_changed": [
-        "tests/oip007_baseline.py (new: rebuilds the OIP-007 schema2 writer from the verified baseline commit with git archive)",
-        "tests/canonical_regression.py (uses the prepared schema2 writer and records its hash and origin)",
-        "tests/oip008/acceptance.py (the REST/MCP parity gate waits for a bounded convergence)"
-      ],
-      "canonical_regression": {
-        "status": "PASS",
-        "failed": [],
-        "blocked": [],
-        "cases": [
-          {
-            "name": "oip008_acceptance",
-            "status": "PASS",
-            "seconds": 30.9
-          },
-          {
-            "name": "oip0082_acceptance",
-            "status": "PASS",
-            "seconds": 51.6
-          },
-          {
-            "name": "oip0082_schema3_migration",
-            "status": "PASS",
-            "seconds": 25.6
-          },
-          {
-            "name": "oip0084_acceptance",
-            "status": "PASS",
-            "seconds": 22.7
-          },
-          {
-            "name": "oip0085_acceptance",
-            "status": "PASS",
-            "seconds": 9.2
-          },
-          {
-            "name": "oip0085_migration",
-            "status": "PASS",
-            "seconds": 15.3
-          },
-          {
-            "name": "oip008_ui_regression",
-            "status": "PASS",
-            "seconds": 323.1
-          },
-          {
-            "name": "oip008_legacy_migration",
-            "status": "PASS",
-            "seconds": 8.4,
-            "baseline_binary_sha256": "314cf640c7b87856566e324ab98f000c71d71537a6ff79e2ed933d736651d57e",
-            "baseline_source_commit": "a27e7b1e01dc1cb6f4d97c34319b0aa6d7321871",
-            "byte_identical_to_historical_binary": false,
-            "before_counts": {
-              "observations": 46,
-              "events": 48,
-              "gaps": 2
-            },
-            "same_observation_keys": true,
-            "unattested_refused": true,
-            "changed_evidence_refused": true,
-            "legacy_migrated": true
-          }
-        ]
-      },
-      "advisory_exceptions_verified": {
-        "database": "local cargo-deny advisory database",
-        "RUSTSEC-2023-0071": {
-          "crate": "rsa 0.9.10",
-          "subject": "Marvin attack, timing side channel",
-          "in_tree_via": "async-opcua-client, async-opcua-crypto -> oip-opcua",
-          "patched": []
-        },
-        "RUSTSEC-2023-0089": {
-          "crate": "atomic-polyfill 1.0.3",
-          "subject": "unmaintained",
-          "in_tree_via": "heapless -> postcard -> async-opcua-server (embedded targets)",
-          "patched": []
-        },
-        "RUSTSEC-2024-0449": {
-          "crate": "unsafe-libyaml 0.2.11",
-          "subject": "unmaintained",
-          "in_tree_via": "serde_yaml -> async-opcua-core",
-          "patched": []
-        },
-        "conclusion": "the three documented local only exceptions are correct, necessary and cannot be cleared by a dependency upgrade; no exception was added or widened"
-      },
-      "corrected_claim": "the earlier note that the ignore reasons of RUSTSEC-2023-0089 and RUSTSEC-2024-0449 would not match the advisory subjects was wrong and is corrected"
-    },
-    {
-      "iteration": 8,
-      "scope": "make the monitoring measurements that the Core collects and publishes visible in the Flutter device connection panel, and prove them in the real browser end to end",
-      "canonical_source_commit": "e12c00963b865be9bb0c7f7c366d42ba4bf0c4b2",
-      "canonical_source_tree": "56307de71e612563e38cf2657d7bf1cd34a0ce35",
-      "tracked_files": 446,
-      "source_manifest_sha256": "23277ea50a08d9b9cc874dabc1482e59eece54706f86e0b87c55a3c28adf95de",
-      "development_isolation": "branch feature/oip-monitoring-observations (2ec4829 and e12c009) in an isolated worktree, integrated with git merge --ff-only",
-      "runtime_code_changed": true,
-      "product_source_changed": true,
-      "product_change_scope": "Flutter client only: apps/flutter/lib/features/device_connection_panel.dart renders the current authorized observations; no Rust source, no permission rule, no storage layout and no server behaviour changed",
-      "harness_changed": [
-        "apps/flutter/test/monitoring_observations_test.dart (new: three widget tests for the rendered measurements, an unknown value and the honest empty state)",
-        "apps/flutter/test/browser_onboarding.mjs (compares the rendered panel with the observations that the Core reports for the same device and writes them into the receipt)",
-        "tests/real_device/acceptance.py (the Playwright module is addressed with an absolute path; the documented relative value could never resolve)"
-      ],
-      "contract_updated": "docs/architecture/real-device-onboarding-flutter-contract.md names the rendering and its proof; the rule itself already existed and is enforced now",
-      "flutter": {
-        "analyze": "exit 0, no issues",
-        "test": "89 passed, 0 failed"
-      },
-      "real_device_acceptance": {
-        "status": "PASS",
-        "phases": 8,
-        "phase_names": [
-          "browser_identity_online_writer",
-          "ssh_handshake_confirmation_monitoring",
-          "restart_sigkill_identity",
-          "actual_flutter_ssh_onboarding",
-          "no_clients_ingestion_progress",
-          "host_key_change_blocks_collection",
-          "weak_host_key_is_rejected_by_the_server",
-          "eight_official_mcp_clients"
-        ],
-        "rendered_measurements": {
-          "observed_metrics": [
-            "host.architecture",
-            "host.cpu_info",
-            "host.disks",
-            "host.hostname",
-            "host.interfaces",
-            "host.memory_total_bytes",
-            "host.memory_used_bytes",
-            "host.model",
-            "host.os",
-            "host.uptime_seconds"
-          ],
-          "host_os": "Darwin",
-          "memory_total_bytes": 17179869184,
-          "all_fresh": true,
-          "evidence": "target/oip-real-device-e2e/browser/report.json",
-          "hardware": "owned loopback SSH fixture on this machine, actual host facts; not a physical Raspberry-Pi verdict"
-        }
-      },
-      "canonical_regression": {
-        "status": "PASS",
-        "failed": [],
-        "blocked": [],
-        "cases": [
-          {
-            "name": "oip008_acceptance",
-            "status": "PASS",
-            "seconds": 41.8
-          },
-          {
-            "name": "oip0082_acceptance",
-            "status": "PASS",
-            "seconds": 43.2
-          },
-          {
-            "name": "oip0082_schema3_migration",
-            "status": "PASS",
-            "seconds": 24.9
-          },
-          {
-            "name": "oip0084_acceptance",
-            "status": "PASS",
-            "seconds": 29.9
-          },
-          {
-            "name": "oip0085_acceptance",
-            "status": "PASS",
-            "seconds": 5.4
-          },
-          {
-            "name": "oip0085_migration",
-            "status": "PASS",
-            "seconds": 12.0
-          },
-          {
-            "name": "oip008_ui_regression",
-            "status": "PASS",
-            "seconds": 863.0
-          },
-          {
-            "name": "oip008_legacy_migration",
-            "status": "PASS",
-            "seconds": 5.0
-          }
-        ]
-      },
-      "rust_workspace_unchanged": "no Rust source changed in this iteration, so the Rust workspace results of iteration 5 (180 tests) remain valid for this tree"
-    },
-    {
-      "iteration": 9,
-      "scope": "connect the persisted observation history that the Core already stores and serves to the Flutter device view, and close the missing cookie path test of the history route",
-      "canonical_source_commit": "1287e23d0199c4d8e26988e558af34093ad29ef3",
-      "canonical_source_tree": "f1d3f1933a3f5ac38f516a993e04b5bfe3d82f97",
-      "tracked_files": 449,
-      "source_manifest_sha256": "3db92de41a3395c2d6577f64b86dd196f38e148d229539e7a7bd86dfe86018d4",
-      "development_isolation": "branch feature/oip-observation-history (1287e23) in an isolated worktree, integrated with git merge --ff-only",
-      "runtime_code_changed": true,
-      "product_source_changed": true,
-      "product_change_scope": "Flutter client only: apps/flutter/lib/models/history.dart, apps/flutter/lib/features/device_history.dart, apps/flutter/lib/features/devices.dart and apps/flutter/lib/services/api.dart; no Rust source, no permission rule, no storage layout and no server behaviour changed",
-      "harness_changed": [
-        "crates/oip-server/tests/browser_session.rs (new test: the cookie path of GET /api/v2/observations/history - bound device 200 with the persisted sample, foreign scope and unknown device 404 RESOURCE_NOT_ACCESSIBLE, principal without telemetry_read 403 PERMISSION_DENIED, no session 403, unbounded page 400 INVALID_DIAGNOSTIC_QUERY)",
-        "apps/flutter/test/observation_history_test.dart (new: eight tests - device scope without a global scope, continuation with the cursor, another category counted and not dropped, rendering as history, the continuation, the recovery from a device that is not accessible yet, the honest empty state and the refused history)",
-        "apps/flutter/test/browser_onboarding.mjs (compares the rendered history with the answer of the Core for the same device and writes the persisted samples into the receipt)",
-        "tests/real_device/acceptance.py (asserts that the samples of the connected device reach the Core database and that they are stale)"
-      ],
-      "contract_updated": "docs/architecture/oip-0082-diagnostics-flutter-contract.md names the device scoped surface and its proof; the rules it already carried are unchanged",
-      "flutter": {
-        "analyze": "exit 0, no issues",
-        "test": "97 passed, 0 failed"
-      },
-      "rust": {
-        "fmt": "exit 0",
-        "check": "exit 0",
-        "clippy": "exit 0, warnings denied",
-        "workspace_tests": "181 passed, 0 failed",
-        "opcua_default_backend": "37 passed",
-        "opcua_open62541_only": "2 passed"
-      },
-      "real_device_acceptance": {
-        "status": "PASS",
-        "phases": 8,
-        "phase_names": [
-          "browser_identity_online_writer",
-          "ssh_handshake_confirmation_monitoring",
-          "restart_sigkill_identity",
-          "actual_flutter_ssh_onboarding",
-          "no_clients_ingestion_progress",
-          "host_key_change_blocks_collection",
-          "weak_host_key_is_rejected_by_the_server",
-          "eight_official_mcp_clients"
-        ],
-        "persisted_history": {
-          "device": "browser-existing",
-          "persisted_samples": 10,
-          "rendered_samples": 6,
-          "all_stale": true,
-          "receive_times_shown": 1,
-          "first_receive_time": "2026-11-07 21:21:11.293 UTC",
-          "metrics": [
-            "host.architecture",
-            "host.interfaces",
-            "host.cpu_info",
-            "host.uptime_seconds",
-            "host.memory_used_bytes",
-            "host.memory_total_bytes"
-          ],
-          "evidence": "target/oip-real-device-e2e/browser/report.json",
-          "hardware": "owned loopback SSH fixture on this machine, actual host facts; not a physical Raspberry-Pi verdict"
-        }
-      },
-      "canonical_regression": {
-        "status": "PASS",
-        "failed": [],
-        "blocked": [],
-        "cases": [
-          {
-            "name": "oip008_acceptance",
-            "status": "PASS",
-            "seconds": 32.9
-          },
-          {
-            "name": "oip0082_acceptance",
-            "status": "PASS",
-            "seconds": 39.9
-          },
-          {
-            "name": "oip0082_schema3_migration",
-            "status": "PASS",
-            "seconds": 24.2
-          },
-          {
-            "name": "oip0084_acceptance",
-            "status": "PASS",
-            "seconds": 23.7
-          },
-          {
-            "name": "oip0085_acceptance",
-            "status": "PASS",
-            "seconds": 6.2
-          },
-          {
-            "name": "oip0085_migration",
-            "status": "PASS",
-            "seconds": 7.6
-          },
-          {
-            "name": "oip008_ui_regression",
-            "status": "PASS",
-            "seconds": 225.6
-          },
-          {
-            "name": "oip008_legacy_migration",
-            "status": "PASS",
-            "seconds": 7.7
-          }
-        ]
-      },
-      "defect_found_and_fixed": "The history was loaded once, when the device dialog was opened, and the dialog is opened before the connection is confirmed. The answer of a device without a source is RESOURCE_NOT_ACCESSIBLE, so the section kept that answer and never showed the samples the collector stored later. The section now follows the persisted state on a bounded cadence; the recovery is proven by a widget test.",
-      "not_claimed": "The event history and the diagnostics surfaces stay unconnected because events_read is not proven for every operator principal. No personal device was contacted, the real installation was not activated and the personal database is unchanged at schema 6."
-    },
-    {
-      "iteration": 10,
-      "scope": "make the managed overview draw the authorized scope of the session instead of the coordinates of the demo",
-      "canonical_source_commit": "1e6b74355b2559127865beabaa3c97f492560e58",
-      "canonical_source_tree": "826417d787ecf18d2e05f564a05f54c579f0b8b6",
-      "tracked_files": 450,
-      "source_manifest_sha256": "cdec06ca337c7c4b39388c589582a01dda9e3ac565b40c9261e0a36ff221565f",
-      "development_isolation": "branch feature/oip-managed-overview (1e6b743) in an isolated worktree, integrated with git merge --ff-only",
-      "runtime_code_changed": true,
-      "product_source_changed": true,
-      "product_change_scope": "Flutter client only: apps/flutter/lib/models/contracts.dart, apps/flutter/lib/app/controller.dart, apps/flutter/lib/widgets/trend.dart, apps/flutter/lib/features/overview.dart and apps/flutter/lib/design_system/theme.dart; no Rust source, no permission rule, no storage layout and no server behaviour changed",
-      "harness_changed": [
-        "apps/flutter/test/managed_overview_test.dart (new: three tests - the managed overview renders the authorized source, its real health, its placement and its real measurement without any demo coordinate; the controller measures one series per authorized source and extends it with a later measurement; the gap limit of a real cadence is not the demo limit while the legacy rule keeps its own)",
-        "apps/flutter/test/browser_onboarding.mjs (compares the rendered managed overview with the source registry and the measurement the Core received over SSH and writes them into the receipt)"
-      ],
-      "contract_updated": "docs/architecture/oip-0085-real-inventory-flutter-contract.md names the managed overview and its proof; the rule it already carried (counts from the authorized inventory, sources from the actual source registry, no fake host metrics) is enforced now",
-      "flutter": {
-        "analyze": "exit 0, no issues",
-        "test": "100 passed, 0 failed"
-      },
-      "rust": "no Rust source changed in this iteration, so the Rust workspace results of iteration 9 (181 tests) remain valid for this tree; cargo fmt --all -- --check exits 0",
-      "real_device_acceptance": {
-        "status": "PASS",
-        "phases": 8,
-        "phase_names": [
-          "browser_identity_online_writer",
-          "ssh_handshake_confirmation_monitoring",
-          "restart_sigkill_identity",
-          "actual_flutter_ssh_onboarding",
-          "no_clients_ingestion_progress",
-          "host_key_change_blocks_collection",
-          "weak_host_key_is_rejected_by_the_server",
-          "eight_official_mcp_clients"
-        ],
-        "rendered_overview": {
-          "authorized_source": "SSH host browser-existing",
-          "source_registry_section": true,
-          "measured_metric": "host.memory_total_bytes",
-          "measured_value": 17179869184,
-          "demo_coordinates_absent": true,
-          "evidence": "target/oip-real-device-e2e/browser/report.json",
-          "hardware": "owned loopback SSH fixture on this machine, actual host facts; not a physical Raspberry-Pi verdict"
-        }
-      },
-      "canonical_regression": {
-        "status": "PASS",
-        "failed": [],
-        "blocked": [],
-        "cases": [
-          {
-            "name": "oip008_acceptance",
-            "status": "PASS",
-            "seconds": 27.7
-          },
-          {
-            "name": "oip0082_acceptance",
-            "status": "PASS",
-            "seconds": 39.4
-          },
-          {
-            "name": "oip0082_schema3_migration",
-            "status": "PASS",
-            "seconds": 30.2
-          },
-          {
-            "name": "oip0084_acceptance",
-            "status": "PASS",
-            "seconds": 31.1
-          },
-          {
-            "name": "oip0085_acceptance",
-            "status": "PASS",
-            "seconds": 6.5
-          },
-          {
-            "name": "oip0085_migration",
-            "status": "PASS",
-            "seconds": 13.2
-          },
-          {
-            "name": "oip008_ui_regression",
-            "status": "PASS",
-            "seconds": 244.1
-          },
-          {
-            "name": "oip008_legacy_migration",
-            "status": "PASS",
-            "seconds": 4.3
-          }
-        ]
-      },
-      "not_claimed": "The network view still shows its loading message and is recorded as the next READY item. No personal device was contacted, the real installation was not activated and the personal database is unchanged at schema 6."
-    },
-    {
-      "iteration": 11,
-      "scope": "make the managed network view show the authorized placement of the session instead of a loading state for a topology the projection never carries",
-      "canonical_source_commit": "e9036efb69387b2789f80ff22d8b62bc7d4f783c",
-      "canonical_source_tree": "665a9a566779534c6646a4e53acf8955be1839fc",
-      "tracked_files": 451,
-      "source_manifest_sha256": "cfd9fc247352cbcd457a0fed3b59d7b2a60e1413ee41831f35db458df15f39eb",
-      "development_isolation": "branch feature/oip-network-placement (e9036ef) in an isolated worktree, integrated with git merge --ff-only",
-      "runtime_code_changed": true,
-      "product_source_changed": true,
-      "product_change_scope": "Flutter client only: apps/flutter/lib/features/network.dart; no Rust source, no permission rule, no storage layout and no server behaviour changed",
-      "harness_changed": [
-        "apps/flutter/test/managed_network_test.dart (new: the managed network view shows the authorized placement and the registered node, shows no loading state and shows no demo zone)",
-        "apps/flutter/test/support.dart (the scoped fixture of a managed session moved into the shared test support)",
-        "apps/flutter/test/browser_onboarding.mjs (compares the rendered network view with the placement that the Core delivered and writes it into the receipt)"
-      ],
-      "contract_updated": "docs/architecture/oip-0085-real-inventory-flutter-contract.md names the managed network view and its proof; the rule it already carried (registered nodes only, no guessed links or green reachability) is enforced now",
-      "flutter": {
-        "analyze": "exit 0, no issues",
-        "test": "101 passed, 0 failed"
-      },
-      "rust": "no Rust source changed in this iteration, so the Rust workspace results of iteration 9 (181 tests) remain valid for this tree; cargo fmt --all -- --check exits 0",
-      "real_device_acceptance": {
-        "status": "PASS",
-        "phases": 8,
-        "phase_names": [
-          "browser_identity_online_writer",
-          "ssh_handshake_confirmation_monitoring",
-          "restart_sigkill_identity",
-          "actual_flutter_ssh_onboarding",
-          "no_clients_ingestion_progress",
-          "host_key_change_blocks_collection",
-          "weak_host_key_is_rejected_by_the_server",
-          "eight_official_mcp_clients"
-        ],
-        "rendered_network": {
-          "authorized_placement": "org-a · infra-a1 · site-a1",
-          "source": "38fceec2-6e77-4afa-a59a-f395aef20f91",
-          "loading_state_absent": true,
-          "demo_zones_absent": true,
-          "evidence": "target/oip-real-device-e2e/browser/report.json",
-          "hardware": "owned loopback SSH fixture on this machine, actual host facts; not a physical Raspberry-Pi verdict"
-        }
-      },
-      "canonical_regression": {
-        "status": "PASS",
-        "failed": [],
-        "blocked": [],
-        "cases": [
-          {
-            "name": "oip008_acceptance",
-            "status": "PASS",
-            "seconds": 30.4
-          },
-          {
-            "name": "oip0082_acceptance",
-            "status": "PASS",
-            "seconds": 40.3
-          },
-          {
-            "name": "oip0082_schema3_migration",
-            "status": "PASS",
-            "seconds": 17.1
-          },
-          {
-            "name": "oip0084_acceptance",
-            "status": "PASS",
-            "seconds": 31.8
-          },
-          {
-            "name": "oip0085_acceptance",
-            "status": "PASS",
-            "seconds": 13.3
-          },
-          {
-            "name": "oip0085_migration",
-            "status": "PASS",
-            "seconds": 7.2
-          },
-          {
-            "name": "oip008_ui_regression",
-            "status": "PASS",
-            "seconds": 256.0
-          },
-          {
-            "name": "oip008_legacy_migration",
-            "status": "PASS",
-            "seconds": 4.2
-          }
-        ]
-      },
-      "not_claimed": "The managed diagnostics view still shows its placeholder and is recorded as the next READY item. No personal device was contacted, the real installation was not activated and the personal database is unchanged at schema 6."
-    }
-  ],
-  "measured_on_canonical_main": {
-    "cargo_test_workspace": "181 passed, 0 failed",
+  {
+   "iteration": 4,
+   "scope": "F4: bound the verified host report to the stored record size",
+   "canonical_source_commit": "5a48b0c27460b354241833c0972c2dfc5f261eec",
+   "canonical_source_tree": "30067d5da42880f272fb62201f31702dbdf4beac",
+   "tracked_files": 442,
+   "source_manifest_sha256": "d77516de0b4c2e91a107c2fe779fabb863327d4d503d01dfb6904e6d4d04e046",
+   "development_isolation": "branch feature/oip-connection-payload-bound in an isolated worktree with its own target directory, integrated afterwards with git merge --ff-only",
+   "runtime_code_changed": true,
+   "fixed_findings": [
+    "F4"
+   ],
+   "still_open": [
+    "F5"
+   ],
+   "paused_findings": [
+    "F5"
+   ],
+   "new_tests": 5,
+   "gates": {
+    "cargo_fmt_check": "PASS",
+    "cargo_check": "PASS",
+    "cargo_clippy_denied_warnings": "PASS",
+    "cargo_test_workspace": "180 passed, 0 failed",
     "cargo_test_opcua_default_backend": "37 passed",
     "cargo_test_opcua_open62541_only": "2 passed",
-    "flutter_test": "101 passed, 0 failed",
-    "real_device_acceptance_phases": 8,
-    "ui_regression": "browser 80.4 s, interactions 47.1 s, visual 63.4 s, native build 11.6 s, native test 39.1 s, all PASS",
-    "milestone_acceptance_harnesses": "8 PASS, no failed and no blocked case",
-    "monitoring_measurements_in_the_operator_panel": "10 host observations rendered and compared against the Core response of the same device",
-    "persisted_observation_history_in_the_device_view": "10 persisted samples of the connected device rendered as history and compared against the Core answer of the same device",
-    "managed_overview_shows_the_authorized_infrastructure": "the source registry, its real health, its placement and the measured series are rendered; the demo coordinates are gone",
-    "managed_network_view_shows_the_authorized_placement": "the placement the Core delivered is rendered; the loading state and the demo zones are gone"
-  },
-  "status": "INTEGRATED_AND_VERIFIED_ON_CANONICAL_MAIN; PHYSICAL_HARDWARE_ACCEPTANCE_AND_INSTALLATION_ACTIVATION_PENDING",
-  "gates_detail": {
-    "cargo_fmt_check": {
-      "command": "cargo fmt --all -- --check",
-      "status": "PASS",
-      "exit_code": 0
+    "cargo_build_server_and_mcp_probe": "PASS",
+    "cargo_deny": "PASS (advisories, bans, licenses, sources ok)",
+    "flutter_analyze": "PASS",
+    "flutter_test": "84 passed",
+    "real_device_acceptance": "8 phases PASS"
+   },
+   "observed_flake": {
+    "test": "async_opcua::client::tests::reconnect_recreates_subscription_and_reports_gap",
+    "first_canonical_run": "failed once under machine load (36 passed, 1 failed)",
+    "isolated_reruns": "3 consecutive passes (3.95 s, 4.54 s, 8.32 s)",
+    "repeated_full_suite": "37 passed, 0 failed (140.48 s)",
+    "relation_to_this_change": "none; the change touches no OPC-UA code",
+    "note": "recorded instead of hidden"
+   },
+   "measurements": {
+    "official_mcp_connection_read_ms": {
+     "samples": 20,
+     "p50": 4.05562506057322,
+     "p95": 4.277790896594524
     },
-    "cargo_check": {
-      "command": "cargo check --locked --workspace --all-targets",
-      "status": "PASS",
-      "exit_code": 0
-    },
-    "cargo_clippy": {
-      "command": "cargo clippy --locked --workspace --all-targets -- -D warnings",
-      "status": "PASS",
-      "exit_code": 0,
-      "warnings_denied": true
-    },
-    "cargo_test_workspace": {
-      "command": "cargo test --locked --workspace -- --test-threads=1",
-      "status": "PASS",
-      "passed": 175,
-      "failed": 0,
-      "storage_tests_contained": 44
-    },
-    "cargo_test_opcua_default_backend": {
-      "command": "cargo test --locked -p oip-opcua --features open62541-backend -- --test-threads=1",
-      "status": "PASS",
-      "passed": 37,
-      "failed": 0
-    },
-    "cargo_test_opcua_open62541_only": {
-      "command": "cargo test --locked -p oip-opcua --no-default-features --features open62541-backend -- --test-threads=1",
-      "status": "PASS",
-      "passed": 2,
-      "failed": 0,
-      "note": "overlapping group with the default backend run"
-    },
-    "cargo_build_server_and_mcp_probe": {
-      "command": "cargo build --locked -p oip-server --bin oip-server --example mcp_probe",
-      "status": "PASS",
-      "exit_code": 0
-    },
-    "cargo_deny": {
-      "command": "cargo deny check advisories licenses bans sources",
-      "status": "PASS",
-      "tool_version": "cargo-deny 0.20.2",
-      "advisories": "ok",
-      "bans": "ok",
-      "licenses": "ok",
-      "sources": "ok"
-    },
-    "flutter_analyze": {
-      "command": "flutter analyze",
-      "status": "PASS",
-      "exit_code": 0
-    },
-    "flutter_test": {
-      "command": "flutter test",
-      "status": "PASS",
-      "passed": 84,
-      "failed": 0
-    },
-    "flutter_web_release_canvaskit": {
-      "command": "flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none",
-      "status": "PASS",
-      "exit_code": 0
-    },
-    "flutter_web_release_html": {
-      "command": "flutter build web --release --web-renderer html --no-web-resources-cdn --pwa-strategy=none --output build/web-html",
-      "status": "PASS",
-      "exit_code": 0
-    },
-    "real_device_acceptance": {
-      "command": "python3 tests/real_device/acceptance.py",
-      "status": "PASS",
-      "exit_code": 0,
-      "phases_passed": 8,
-      "phases": [
-        "browser_identity_online_writer",
-        "ssh_handshake_confirmation_monitoring",
-        "restart_sigkill_identity",
-        "actual_flutter_ssh_onboarding",
-        "no_clients_ingestion_progress",
-        "host_key_change_blocks_collection",
-        "weak_host_key_is_rejected_by_the_server",
-        "eight_official_mcp_clients"
-      ],
-      "own_processes_stopped": true,
-      "ssh_target": "owned loopback OpenSSH fixture with test generated keys",
-      "physical_raspberry_pi_tested": false
-    },
-    "browser_session_rust_tests": {
-      "command": "cargo test --locked -p oip-server --test browser_session",
-      "status": "PASS",
-      "passed": 5,
-      "failed": 0
+    "core_sample": {
+     "rss_kib": 30752,
+     "cpu_percent": 15.2
     }
+   }
+  },
+  {
+   "iteration": 5,
+   "scope": "the OIP-009 browser session, SSE and global context seam contract, plus the missing seam tests",
+   "canonical_source_commit": "d32c9d19de13a519b5e7c2dcd84aeb976df72186",
+   "canonical_source_tree": "a8b0eaafa501ad49449ce0faaf1fab3d26d127fa",
+   "tracked_files": 443,
+   "source_manifest_sha256": "d74c70dbd1890866dc0b167484e2c5df7c3785a433be38d3a60ede0565857502",
+   "development_isolation": "branch feature/oip-009-context-contract in an isolated worktree, integrated afterwards with git merge --ff-only",
+   "runtime_code_changed": false,
+   "rust_source_changed": false,
+   "rust_source_unchanged_against": "5a48b0c",
+   "flutter_test_changed": true,
+   "new_contract_document": "docs/architecture/oip-009-browser-session-sse.md",
+   "new_tests": 2,
+   "gates": {
+    "cargo_fmt_check": "PASS",
+    "cargo_clippy_denied_warnings": "PASS",
+    "cargo_test_workspace": "180 passed, 0 failed",
+    "flutter_analyze": "PASS, no issues",
+    "flutter_test": "86 passed, 0 failed",
+    "real_device_acceptance": "8 phases PASS"
+   },
+   "acceptance_phases": [
+    "browser_identity_online_writer",
+    "ssh_handshake_confirmation_monitoring",
+    "restart_sigkill_identity",
+    "actual_flutter_ssh_onboarding",
+    "no_clients_ingestion_progress",
+    "host_key_change_blocks_collection",
+    "weak_host_key_is_rejected_by_the_server",
+    "eight_official_mcp_clients"
+   ],
+   "browser_receipt": {
+    "status": "PASS",
+    "page_errors": [],
+    "external_requests": [],
+    "loaded_build_sha256": "98b7296ea226853571fbdb8b6e165aeebe63753d8e018110dbe2c252e4a2ed43"
+   },
+   "measurements": {
+    "official_mcp_connection_read_ms": {
+     "samples": 20,
+     "p50": 4.295167047530413,
+     "p95": 4.722792073152959
+    },
+    "core_sample": {
+     "rss_kib": 28064,
+     "cpu_percent": 2.2
+    }
+   },
+   "still_open": [
+    "the global Organization / Infrastructure / Site selection payload (OIP-009, owned by the independent UI workstreams, three way reconciliation required)",
+    "F5 (authorization rule), paused because it loosens a permission"
+   ]
+  },
+  {
+   "iteration": 6,
+   "scope": "a reproducible canonical regression run over the milestone acceptance harnesses, and the repair of two stale gates",
+   "canonical_source_commit": "111dff13017089f30055a498fe6c92f6decbaf6b",
+   "canonical_source_tree": "7090367b0a30815db9b29ddeef41c3acc2c68719",
+   "tracked_files": 444,
+   "source_manifest_sha256": "03097acab2dcadd9a7dc5c0c83af6bde32614a1c5784a91bbb1877cb005c59e3",
+   "development_isolation": "branch feature/oip-canonical-regression in an isolated worktree, integrated afterwards with git merge --ff-only",
+   "runtime_code_changed": false,
+   "product_source_changed": false,
+   "harness_changed": [
+    "tests/canonical_regression.py (new reproducible runner)",
+    "tests/oip008/acceptance.py (MCP read tool catalog 17 -> 18)",
+    "tests/oip0082/schema3_migration.py (upgraded schema 6 -> 7)",
+    "tests/oip008/legacy_migration.py (protected OIP-007 baseline through OIP007_BASELINE_BINARY)",
+    "tests/oip008/ui_regression.py (clear failure when the HTML renderer build is missing)"
+   ],
+   "stale_gates_found": [
+    {
+     "gate": "tests/oip0082/schema3_migration.py",
+     "was": 6,
+     "now": 7,
+     "reason": "the canonical schema is 7 since the connection tables were added"
+    },
+    {
+     "gate": "tests/oip008/acceptance.py",
+     "was": 17,
+     "now": 18,
+     "reason": "oip_device_connection_read is visible to the reader role, the policy filtered catalog has 18 tools"
+    }
+   ],
+   "canonical_regression": {
+    "status": "PASS",
+    "failed": [],
+    "blocked": [
+     "oip008_legacy_migration"
+    ],
+    "cases": [
+     {
+      "name": "oip008_acceptance",
+      "status": "PASS",
+      "seconds": 53.8
+     },
+     {
+      "name": "oip0082_acceptance",
+      "status": "PASS",
+      "seconds": 32.9
+     },
+     {
+      "name": "oip0082_schema3_migration",
+      "status": "PASS",
+      "seconds": 25.3
+     },
+     {
+      "name": "oip0084_acceptance",
+      "status": "PASS",
+      "seconds": 25.6
+     },
+     {
+      "name": "oip0085_acceptance",
+      "status": "PASS",
+      "seconds": 5.0
+     },
+     {
+      "name": "oip0085_migration",
+      "status": "PASS",
+      "seconds": 7.2
+     },
+     {
+      "name": "oip008_ui_regression",
+      "status": "PASS",
+      "seconds": 264.4,
+      "steps": {
+       "browser": 75.4,
+       "interactions": 47.8,
+       "visual": 61.1,
+       "native_build": 32.2,
+       "native_macos": 30.6
+      }
+     },
+     {
+      "name": "oip008_legacy_migration",
+      "status": "BLOCKED",
+      "reason": "the harness has to create a genuine schema2 database, which only a protected OIP-007 binary can do; the canonical binary creates schema3 or later"
+     }
+    ],
+    "protected_baselines_used": {
+     "oip008": {
+      "sha256": "889a36b2cf0d761796662e0437a18c2ed43dc8c1b1da82d70fecdd5a055865c6"
+     },
+     "oip0083": {
+      "sha256": "3b682dfaff8479f13804d28e6fe1288bedcfea8af0b409c8f8dc22d422b9ac39"
+     },
+     "oip0084": {
+      "sha256": "73d70d8105914db20210c95268b5733ca2ec19c959c4c29fa57cb93c1935fe58"
+     }
+    },
+    "legacy_schema2_adoption": "not re-verified; verified historically in the OIP-008 receipt with the then protected binary"
+   }
+  },
+  {
+   "iteration": 7,
+   "scope": "restore the schema2 adoption case with a rebuilt OIP-007 writer, and remove the sampling race from the REST/MCP parity gate",
+   "canonical_source_commit": "f4b89ed20fccc1d060b2ef55bdb0828c698dd4ee",
+   "canonical_source_tree": "ab3c6fd923932476ea5b71ba45513dfd85390e20",
+   "tracked_files": 445,
+   "source_manifest_sha256": "9d32797172c8f83f9a336798373c00314246a0dc328df669cbc1650ec81255ab",
+   "development_isolation": "branches feature/oip-007-baseline-adoption (6df189f) and feature/oip-parity-gate-convergence (f4b89ed) in isolated worktrees, both integrated with git merge --ff-only",
+   "runtime_code_changed": false,
+   "product_source_changed": false,
+   "harness_changed": [
+    "tests/oip007_baseline.py (new: rebuilds the OIP-007 schema2 writer from the verified baseline commit with git archive)",
+    "tests/canonical_regression.py (uses the prepared schema2 writer and records its hash and origin)",
+    "tests/oip008/acceptance.py (the REST/MCP parity gate waits for a bounded convergence)"
+   ],
+   "canonical_regression": {
+    "status": "PASS",
+    "failed": [],
+    "blocked": [],
+    "cases": [
+     {
+      "name": "oip008_acceptance",
+      "status": "PASS",
+      "seconds": 30.9
+     },
+     {
+      "name": "oip0082_acceptance",
+      "status": "PASS",
+      "seconds": 51.6
+     },
+     {
+      "name": "oip0082_schema3_migration",
+      "status": "PASS",
+      "seconds": 25.6
+     },
+     {
+      "name": "oip0084_acceptance",
+      "status": "PASS",
+      "seconds": 22.7
+     },
+     {
+      "name": "oip0085_acceptance",
+      "status": "PASS",
+      "seconds": 9.2
+     },
+     {
+      "name": "oip0085_migration",
+      "status": "PASS",
+      "seconds": 15.3
+     },
+     {
+      "name": "oip008_ui_regression",
+      "status": "PASS",
+      "seconds": 323.1
+     },
+     {
+      "name": "oip008_legacy_migration",
+      "status": "PASS",
+      "seconds": 8.4,
+      "baseline_binary_sha256": "314cf640c7b87856566e324ab98f000c71d71537a6ff79e2ed933d736651d57e",
+      "baseline_source_commit": "a27e7b1e01dc1cb6f4d97c34319b0aa6d7321871",
+      "byte_identical_to_historical_binary": false,
+      "before_counts": {
+       "observations": 46,
+       "events": 48,
+       "gaps": 2
+      },
+      "same_observation_keys": true,
+      "unattested_refused": true,
+      "changed_evidence_refused": true,
+      "legacy_migrated": true
+     }
+    ]
+   },
+   "advisory_exceptions_verified": {
+    "database": "local cargo-deny advisory database",
+    "RUSTSEC-2023-0071": {
+     "crate": "rsa 0.9.10",
+     "subject": "Marvin attack, timing side channel",
+     "in_tree_via": "async-opcua-client, async-opcua-crypto -> oip-opcua",
+     "patched": []
+    },
+    "RUSTSEC-2023-0089": {
+     "crate": "atomic-polyfill 1.0.3",
+     "subject": "unmaintained",
+     "in_tree_via": "heapless -> postcard -> async-opcua-server (embedded targets)",
+     "patched": []
+    },
+    "RUSTSEC-2024-0449": {
+     "crate": "unsafe-libyaml 0.2.11",
+     "subject": "unmaintained",
+     "in_tree_via": "serde_yaml -> async-opcua-core",
+     "patched": []
+    },
+    "conclusion": "the three documented local only exceptions are correct, necessary and cannot be cleared by a dependency upgrade; no exception was added or widened"
+   },
+   "corrected_claim": "the earlier note that the ignore reasons of RUSTSEC-2023-0089 and RUSTSEC-2024-0449 would not match the advisory subjects was wrong and is corrected"
+  },
+  {
+   "iteration": 8,
+   "scope": "make the monitoring measurements that the Core collects and publishes visible in the Flutter device connection panel, and prove them in the real browser end to end",
+   "canonical_source_commit": "e12c00963b865be9bb0c7f7c366d42ba4bf0c4b2",
+   "canonical_source_tree": "56307de71e612563e38cf2657d7bf1cd34a0ce35",
+   "tracked_files": 446,
+   "source_manifest_sha256": "23277ea50a08d9b9cc874dabc1482e59eece54706f86e0b87c55a3c28adf95de",
+   "development_isolation": "branch feature/oip-monitoring-observations (2ec4829 and e12c009) in an isolated worktree, integrated with git merge --ff-only",
+   "runtime_code_changed": true,
+   "product_source_changed": true,
+   "product_change_scope": "Flutter client only: apps/flutter/lib/features/device_connection_panel.dart renders the current authorized observations; no Rust source, no permission rule, no storage layout and no server behaviour changed",
+   "harness_changed": [
+    "apps/flutter/test/monitoring_observations_test.dart (new: three widget tests for the rendered measurements, an unknown value and the honest empty state)",
+    "apps/flutter/test/browser_onboarding.mjs (compares the rendered panel with the observations that the Core reports for the same device and writes them into the receipt)",
+    "tests/real_device/acceptance.py (the Playwright module is addressed with an absolute path; the documented relative value could never resolve)"
+   ],
+   "contract_updated": "docs/architecture/real-device-onboarding-flutter-contract.md names the rendering and its proof; the rule itself already existed and is enforced now",
+   "flutter": {
+    "analyze": "exit 0, no issues",
+    "test": "89 passed, 0 failed"
+   },
+   "real_device_acceptance": {
+    "status": "PASS",
+    "phases": 8,
+    "phase_names": [
+     "browser_identity_online_writer",
+     "ssh_handshake_confirmation_monitoring",
+     "restart_sigkill_identity",
+     "actual_flutter_ssh_onboarding",
+     "no_clients_ingestion_progress",
+     "host_key_change_blocks_collection",
+     "weak_host_key_is_rejected_by_the_server",
+     "eight_official_mcp_clients"
+    ],
+    "rendered_measurements": {
+     "observed_metrics": [
+      "host.architecture",
+      "host.cpu_info",
+      "host.disks",
+      "host.hostname",
+      "host.interfaces",
+      "host.memory_total_bytes",
+      "host.memory_used_bytes",
+      "host.model",
+      "host.os",
+      "host.uptime_seconds"
+     ],
+     "host_os": "Darwin",
+     "memory_total_bytes": 17179869184,
+     "all_fresh": true,
+     "evidence": "target/oip-real-device-e2e/browser/report.json",
+     "hardware": "owned loopback SSH fixture on this machine, actual host facts; not a physical Raspberry-Pi verdict"
+    }
+   },
+   "canonical_regression": {
+    "status": "PASS",
+    "failed": [],
+    "blocked": [],
+    "cases": [
+     {
+      "name": "oip008_acceptance",
+      "status": "PASS",
+      "seconds": 41.8
+     },
+     {
+      "name": "oip0082_acceptance",
+      "status": "PASS",
+      "seconds": 43.2
+     },
+     {
+      "name": "oip0082_schema3_migration",
+      "status": "PASS",
+      "seconds": 24.9
+     },
+     {
+      "name": "oip0084_acceptance",
+      "status": "PASS",
+      "seconds": 29.9
+     },
+     {
+      "name": "oip0085_acceptance",
+      "status": "PASS",
+      "seconds": 5.4
+     },
+     {
+      "name": "oip0085_migration",
+      "status": "PASS",
+      "seconds": 12.0
+     },
+     {
+      "name": "oip008_ui_regression",
+      "status": "PASS",
+      "seconds": 863.0
+     },
+     {
+      "name": "oip008_legacy_migration",
+      "status": "PASS",
+      "seconds": 5.0
+     }
+    ]
+   },
+   "rust_workspace_unchanged": "no Rust source changed in this iteration, so the Rust workspace results of iteration 5 (180 tests) remain valid for this tree"
+  },
+  {
+   "iteration": 9,
+   "scope": "connect the persisted observation history that the Core already stores and serves to the Flutter device view, and close the missing cookie path test of the history route",
+   "canonical_source_commit": "1287e23d0199c4d8e26988e558af34093ad29ef3",
+   "canonical_source_tree": "f1d3f1933a3f5ac38f516a993e04b5bfe3d82f97",
+   "tracked_files": 449,
+   "source_manifest_sha256": "3db92de41a3395c2d6577f64b86dd196f38e148d229539e7a7bd86dfe86018d4",
+   "development_isolation": "branch feature/oip-observation-history (1287e23) in an isolated worktree, integrated with git merge --ff-only",
+   "runtime_code_changed": true,
+   "product_source_changed": true,
+   "product_change_scope": "Flutter client only: apps/flutter/lib/models/history.dart, apps/flutter/lib/features/device_history.dart, apps/flutter/lib/features/devices.dart and apps/flutter/lib/services/api.dart; no Rust source, no permission rule, no storage layout and no server behaviour changed",
+   "harness_changed": [
+    "crates/oip-server/tests/browser_session.rs (new test: the cookie path of GET /api/v2/observations/history - bound device 200 with the persisted sample, foreign scope and unknown device 404 RESOURCE_NOT_ACCESSIBLE, principal without telemetry_read 403 PERMISSION_DENIED, no session 403, unbounded page 400 INVALID_DIAGNOSTIC_QUERY)",
+    "apps/flutter/test/observation_history_test.dart (new: eight tests - device scope without a global scope, continuation with the cursor, another category counted and not dropped, rendering as history, the continuation, the recovery from a device that is not accessible yet, the honest empty state and the refused history)",
+    "apps/flutter/test/browser_onboarding.mjs (compares the rendered history with the answer of the Core for the same device and writes the persisted samples into the receipt)",
+    "tests/real_device/acceptance.py (asserts that the samples of the connected device reach the Core database and that they are stale)"
+   ],
+   "contract_updated": "docs/architecture/oip-0082-diagnostics-flutter-contract.md names the device scoped surface and its proof; the rules it already carried are unchanged",
+   "flutter": {
+    "analyze": "exit 0, no issues",
+    "test": "97 passed, 0 failed"
+   },
+   "rust": {
+    "fmt": "exit 0",
+    "check": "exit 0",
+    "clippy": "exit 0, warnings denied",
+    "workspace_tests": "181 passed, 0 failed",
+    "opcua_default_backend": "37 passed",
+    "opcua_open62541_only": "2 passed"
+   },
+   "real_device_acceptance": {
+    "status": "PASS",
+    "phases": 8,
+    "phase_names": [
+     "browser_identity_online_writer",
+     "ssh_handshake_confirmation_monitoring",
+     "restart_sigkill_identity",
+     "actual_flutter_ssh_onboarding",
+     "no_clients_ingestion_progress",
+     "host_key_change_blocks_collection",
+     "weak_host_key_is_rejected_by_the_server",
+     "eight_official_mcp_clients"
+    ],
+    "persisted_history": {
+     "device": "browser-existing",
+     "persisted_samples": 10,
+     "rendered_samples": 6,
+     "all_stale": true,
+     "receive_times_shown": 1,
+     "first_receive_time": "2026-11-07 21:21:11.293 UTC",
+     "metrics": [
+      "host.architecture",
+      "host.interfaces",
+      "host.cpu_info",
+      "host.uptime_seconds",
+      "host.memory_used_bytes",
+      "host.memory_total_bytes"
+     ],
+     "evidence": "target/oip-real-device-e2e/browser/report.json",
+     "hardware": "owned loopback SSH fixture on this machine, actual host facts; not a physical Raspberry-Pi verdict"
+    }
+   },
+   "canonical_regression": {
+    "status": "PASS",
+    "failed": [],
+    "blocked": [],
+    "cases": [
+     {
+      "name": "oip008_acceptance",
+      "status": "PASS",
+      "seconds": 32.9
+     },
+     {
+      "name": "oip0082_acceptance",
+      "status": "PASS",
+      "seconds": 39.9
+     },
+     {
+      "name": "oip0082_schema3_migration",
+      "status": "PASS",
+      "seconds": 24.2
+     },
+     {
+      "name": "oip0084_acceptance",
+      "status": "PASS",
+      "seconds": 23.7
+     },
+     {
+      "name": "oip0085_acceptance",
+      "status": "PASS",
+      "seconds": 6.2
+     },
+     {
+      "name": "oip0085_migration",
+      "status": "PASS",
+      "seconds": 7.6
+     },
+     {
+      "name": "oip008_ui_regression",
+      "status": "PASS",
+      "seconds": 225.6
+     },
+     {
+      "name": "oip008_legacy_migration",
+      "status": "PASS",
+      "seconds": 7.7
+     }
+    ]
+   },
+   "defect_found_and_fixed": "The history was loaded once, when the device dialog was opened, and the dialog is opened before the connection is confirmed. The answer of a device without a source is RESOURCE_NOT_ACCESSIBLE, so the section kept that answer and never showed the samples the collector stored later. The section now follows the persisted state on a bounded cadence; the recovery is proven by a widget test.",
+   "not_claimed": "The event history and the diagnostics surfaces stay unconnected because events_read is not proven for every operator principal. No personal device was contacted, the real installation was not activated and the personal database is unchanged at schema 6."
+  },
+  {
+   "iteration": 10,
+   "scope": "make the managed overview draw the authorized scope of the session instead of the coordinates of the demo",
+   "canonical_source_commit": "1e6b74355b2559127865beabaa3c97f492560e58",
+   "canonical_source_tree": "826417d787ecf18d2e05f564a05f54c579f0b8b6",
+   "tracked_files": 450,
+   "source_manifest_sha256": "cdec06ca337c7c4b39388c589582a01dda9e3ac565b40c9261e0a36ff221565f",
+   "development_isolation": "branch feature/oip-managed-overview (1e6b743) in an isolated worktree, integrated with git merge --ff-only",
+   "runtime_code_changed": true,
+   "product_source_changed": true,
+   "product_change_scope": "Flutter client only: apps/flutter/lib/models/contracts.dart, apps/flutter/lib/app/controller.dart, apps/flutter/lib/widgets/trend.dart, apps/flutter/lib/features/overview.dart and apps/flutter/lib/design_system/theme.dart; no Rust source, no permission rule, no storage layout and no server behaviour changed",
+   "harness_changed": [
+    "apps/flutter/test/managed_overview_test.dart (new: three tests - the managed overview renders the authorized source, its real health, its placement and its real measurement without any demo coordinate; the controller measures one series per authorized source and extends it with a later measurement; the gap limit of a real cadence is not the demo limit while the legacy rule keeps its own)",
+    "apps/flutter/test/browser_onboarding.mjs (compares the rendered managed overview with the source registry and the measurement the Core received over SSH and writes them into the receipt)"
+   ],
+   "contract_updated": "docs/architecture/oip-0085-real-inventory-flutter-contract.md names the managed overview and its proof; the rule it already carried (counts from the authorized inventory, sources from the actual source registry, no fake host metrics) is enforced now",
+   "flutter": {
+    "analyze": "exit 0, no issues",
+    "test": "100 passed, 0 failed"
+   },
+   "rust": "no Rust source changed in this iteration, so the Rust workspace results of iteration 9 (181 tests) remain valid for this tree; cargo fmt --all -- --check exits 0",
+   "real_device_acceptance": {
+    "status": "PASS",
+    "phases": 8,
+    "phase_names": [
+     "browser_identity_online_writer",
+     "ssh_handshake_confirmation_monitoring",
+     "restart_sigkill_identity",
+     "actual_flutter_ssh_onboarding",
+     "no_clients_ingestion_progress",
+     "host_key_change_blocks_collection",
+     "weak_host_key_is_rejected_by_the_server",
+     "eight_official_mcp_clients"
+    ],
+    "rendered_overview": {
+     "authorized_source": "SSH host browser-existing",
+     "source_registry_section": true,
+     "measured_metric": "host.memory_total_bytes",
+     "measured_value": 17179869184,
+     "demo_coordinates_absent": true,
+     "evidence": "target/oip-real-device-e2e/browser/report.json",
+     "hardware": "owned loopback SSH fixture on this machine, actual host facts; not a physical Raspberry-Pi verdict"
+    }
+   },
+   "canonical_regression": {
+    "status": "PASS",
+    "failed": [],
+    "blocked": [],
+    "cases": [
+     {
+      "name": "oip008_acceptance",
+      "status": "PASS",
+      "seconds": 27.7
+     },
+     {
+      "name": "oip0082_acceptance",
+      "status": "PASS",
+      "seconds": 39.4
+     },
+     {
+      "name": "oip0082_schema3_migration",
+      "status": "PASS",
+      "seconds": 30.2
+     },
+     {
+      "name": "oip0084_acceptance",
+      "status": "PASS",
+      "seconds": 31.1
+     },
+     {
+      "name": "oip0085_acceptance",
+      "status": "PASS",
+      "seconds": 6.5
+     },
+     {
+      "name": "oip0085_migration",
+      "status": "PASS",
+      "seconds": 13.2
+     },
+     {
+      "name": "oip008_ui_regression",
+      "status": "PASS",
+      "seconds": 244.1
+     },
+     {
+      "name": "oip008_legacy_migration",
+      "status": "PASS",
+      "seconds": 4.3
+     }
+    ]
+   },
+   "not_claimed": "The network view still shows its loading message and is recorded as the next READY item. No personal device was contacted, the real installation was not activated and the personal database is unchanged at schema 6."
+  },
+  {
+   "iteration": 11,
+   "scope": "make the managed network view show the authorized placement of the session instead of a loading state for a topology the projection never carries",
+   "canonical_source_commit": "e9036efb69387b2789f80ff22d8b62bc7d4f783c",
+   "canonical_source_tree": "665a9a566779534c6646a4e53acf8955be1839fc",
+   "tracked_files": 451,
+   "source_manifest_sha256": "cfd9fc247352cbcd457a0fed3b59d7b2a60e1413ee41831f35db458df15f39eb",
+   "development_isolation": "branch feature/oip-network-placement (e9036ef) in an isolated worktree, integrated with git merge --ff-only",
+   "runtime_code_changed": true,
+   "product_source_changed": true,
+   "product_change_scope": "Flutter client only: apps/flutter/lib/features/network.dart; no Rust source, no permission rule, no storage layout and no server behaviour changed",
+   "harness_changed": [
+    "apps/flutter/test/managed_network_test.dart (new: the managed network view shows the authorized placement and the registered node, shows no loading state and shows no demo zone)",
+    "apps/flutter/test/support.dart (the scoped fixture of a managed session moved into the shared test support)",
+    "apps/flutter/test/browser_onboarding.mjs (compares the rendered network view with the placement that the Core delivered and writes it into the receipt)"
+   ],
+   "contract_updated": "docs/architecture/oip-0085-real-inventory-flutter-contract.md names the managed network view and its proof; the rule it already carried (registered nodes only, no guessed links or green reachability) is enforced now",
+   "flutter": {
+    "analyze": "exit 0, no issues",
+    "test": "101 passed, 0 failed"
+   },
+   "rust": "no Rust source changed in this iteration, so the Rust workspace results of iteration 9 (181 tests) remain valid for this tree; cargo fmt --all -- --check exits 0",
+   "real_device_acceptance": {
+    "status": "PASS",
+    "phases": 8,
+    "phase_names": [
+     "browser_identity_online_writer",
+     "ssh_handshake_confirmation_monitoring",
+     "restart_sigkill_identity",
+     "actual_flutter_ssh_onboarding",
+     "no_clients_ingestion_progress",
+     "host_key_change_blocks_collection",
+     "weak_host_key_is_rejected_by_the_server",
+     "eight_official_mcp_clients"
+    ],
+    "rendered_network": {
+     "authorized_placement": "org-a \u00b7 infra-a1 \u00b7 site-a1",
+     "source": "38fceec2-6e77-4afa-a59a-f395aef20f91",
+     "loading_state_absent": true,
+     "demo_zones_absent": true,
+     "evidence": "target/oip-real-device-e2e/browser/report.json",
+     "hardware": "owned loopback SSH fixture on this machine, actual host facts; not a physical Raspberry-Pi verdict"
+    }
+   },
+   "canonical_regression": {
+    "status": "PASS",
+    "failed": [],
+    "blocked": [],
+    "cases": [
+     {
+      "name": "oip008_acceptance",
+      "status": "PASS",
+      "seconds": 30.4
+     },
+     {
+      "name": "oip0082_acceptance",
+      "status": "PASS",
+      "seconds": 40.3
+     },
+     {
+      "name": "oip0082_schema3_migration",
+      "status": "PASS",
+      "seconds": 17.1
+     },
+     {
+      "name": "oip0084_acceptance",
+      "status": "PASS",
+      "seconds": 31.8
+     },
+     {
+      "name": "oip0085_acceptance",
+      "status": "PASS",
+      "seconds": 13.3
+     },
+     {
+      "name": "oip0085_migration",
+      "status": "PASS",
+      "seconds": 7.2
+     },
+     {
+      "name": "oip008_ui_regression",
+      "status": "PASS",
+      "seconds": 256.0
+     },
+     {
+      "name": "oip008_legacy_migration",
+      "status": "PASS",
+      "seconds": 4.2
+     }
+    ]
+   },
+   "not_claimed": "The managed diagnostics view still shows its placeholder and is recorded as the next READY item. No personal device was contacted, the real installation was not activated and the personal database is unchanged at schema 6."
   }
+ ],
+ "measured_on_canonical_main": {
+  "cargo_test_workspace": "181 passed, 0 failed",
+  "cargo_test_opcua_default_backend": "37 passed",
+  "cargo_test_opcua_open62541_only": "2 passed",
+  "flutter_test": "101 passed, 0 failed",
+  "real_device_acceptance_phases": 8,
+  "ui_regression": "browser 80.4 s, interactions 47.1 s, visual 63.4 s, native build 11.6 s, native test 39.1 s, all PASS",
+  "milestone_acceptance_harnesses": "8 PASS, no failed and no blocked case",
+  "monitoring_measurements_in_the_operator_panel": "10 host observations rendered and compared against the Core response of the same device",
+  "persisted_observation_history_in_the_device_view": "10 persisted samples of the connected device rendered as history and compared against the Core answer of the same device",
+  "managed_overview_shows_the_authorized_infrastructure": "the source registry, its real health, its placement and the measured series are rendered; the demo coordinates are gone",
+  "managed_network_view_shows_the_authorized_placement": "the placement the Core delivered is rendered; the loading state and the demo zones are gone"
+ },
+ "status": "INTEGRATED_AND_VERIFIED_ON_CANONICAL_MAIN; PHYSICAL_HARDWARE_ACCEPTANCE_AND_INSTALLATION_ACTIVATION_PENDING",
+ "gates_detail": {
+  "cargo_fmt_check": {
+   "command": "cargo fmt --all -- --check",
+   "status": "PASS",
+   "exit_code": 0
+  },
+  "cargo_check": {
+   "command": "cargo check --locked --workspace --all-targets",
+   "status": "PASS",
+   "exit_code": 0
+  },
+  "cargo_clippy": {
+   "command": "cargo clippy --locked --workspace --all-targets -- -D warnings",
+   "status": "PASS",
+   "exit_code": 0,
+   "warnings_denied": true
+  },
+  "cargo_test_workspace": {
+   "command": "cargo test --locked --workspace -- --test-threads=1",
+   "status": "PASS",
+   "passed": 175,
+   "failed": 0,
+   "storage_tests_contained": 44
+  },
+  "cargo_test_opcua_default_backend": {
+   "command": "cargo test --locked -p oip-opcua --features open62541-backend -- --test-threads=1",
+   "status": "PASS",
+   "passed": 37,
+   "failed": 0
+  },
+  "cargo_test_opcua_open62541_only": {
+   "command": "cargo test --locked -p oip-opcua --no-default-features --features open62541-backend -- --test-threads=1",
+   "status": "PASS",
+   "passed": 2,
+   "failed": 0,
+   "note": "overlapping group with the default backend run"
+  },
+  "cargo_build_server_and_mcp_probe": {
+   "command": "cargo build --locked -p oip-server --bin oip-server --example mcp_probe",
+   "status": "PASS",
+   "exit_code": 0
+  },
+  "cargo_deny": {
+   "command": "cargo deny check advisories licenses bans sources",
+   "status": "PASS",
+   "tool_version": "cargo-deny 0.20.2",
+   "advisories": "ok",
+   "bans": "ok",
+   "licenses": "ok",
+   "sources": "ok"
+  },
+  "flutter_analyze": {
+   "command": "flutter analyze",
+   "status": "PASS",
+   "exit_code": 0
+  },
+  "flutter_test": {
+   "command": "flutter test",
+   "status": "PASS",
+   "passed": 84,
+   "failed": 0
+  },
+  "flutter_web_release_canvaskit": {
+   "command": "flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none",
+   "status": "PASS",
+   "exit_code": 0
+  },
+  "flutter_web_release_html": {
+   "command": "flutter build web --release --web-renderer html --no-web-resources-cdn --pwa-strategy=none --output build/web-html",
+   "status": "PASS",
+   "exit_code": 0
+  },
+  "real_device_acceptance": {
+   "command": "python3 tests/real_device/acceptance.py",
+   "status": "PASS",
+   "exit_code": 0,
+   "phases_passed": 8,
+   "phases": [
+    "browser_identity_online_writer",
+    "ssh_handshake_confirmation_monitoring",
+    "restart_sigkill_identity",
+    "actual_flutter_ssh_onboarding",
+    "no_clients_ingestion_progress",
+    "host_key_change_blocks_collection",
+    "weak_host_key_is_rejected_by_the_server",
+    "eight_official_mcp_clients"
+   ],
+   "own_processes_stopped": true,
+   "ssh_target": "owned loopback OpenSSH fixture with test generated keys",
+   "physical_raspberry_pi_tested": false
+  },
+  "browser_session_rust_tests": {
+   "command": "cargo test --locked -p oip-server --test browser_session",
+   "status": "PASS",
+   "passed": 5,
+   "failed": 0
+  }
+ },
+ "canonical_ui_gate": {
+  "scope": "iteration 12: the Spectrum-2027 canonical UI baseline and its design regression gate",
+  "source_revision": "dc7bbb8dc94b18242b70080cfa0b08b3b6c72753",
+  "source_tree": "23ee1796a2ac888c787866f4723657695de8ddc8",
+  "bundle_sha256": "169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa",
+  "served_bundle_sha256": "169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa",
+  "bundle_matches_local_build": true,
+  "flutter_tests_passed": 335,
+  "flutter_tests_failed": 0,
+  "browser_findings": 175,
+  "browser_failures": 0,
+  "screenshots": 13,
+  "console_errors": 0,
+  "external_requests": 0,
+  "core_denials": 8,
+  "managed_acceptance_phases": "8/8 PASS",
+  "visual_comparison": "PASS with both negative-control classes",
+  "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
+  "receipts": {
+   "report": "target/oip-real-device-e2e/report.json",
+   "precheck": "target/oip-real-device-e2e/canonical-ui/canonical-ui-gate.json",
+   "browser": "target/oip-real-device-e2e/browser/browser-canonical-ui-gate.json",
+   "visual": "target/oip-real-device-e2e/canonical-ui/visual-comparison.json"
+  },
+  "receipt_sha256": {
+   "precheck": "a9dc70a45ba17a3ffa002850121ccc698c7c8d903da3c538e1ff97ed56929e95",
+   "browser": "9de3d0a54cdf2f17bf496d7f0ed5748a5ba7b0931b904047e50d5046166e713e",
+   "visual": "b7e083549962522460627a0e00b838fd4df294538dbeda693634ae874785ece8"
+  },
+  "rendered_overview": {
+   "approved_surface": "unified_infrastructure_view",
+   "dynamic_device_metric": "3",
+   "dynamic_source_metric": "2/2",
+   "authorized_source": "SSH host browser-existing"
+  },
+  "rendered_network": {
+   "approved_surface": "network_engineering_explorer",
+   "authorized_placement": "Infrastructure A1",
+   "rendered_device_id": "browser-existing"
+  },
+  "rendered_measurements": "host.os and host.memory_total_bytes of the owned loopback SSH fixture",
+  "rendered_history": "10 persisted samples, 6 rendered, all reported as stale",
+  "evidence_images": "docs/evidence/oip-canonical-ui/*.png (13 captures of the six workstations)"
+ }
 }
