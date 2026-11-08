@@ -108,6 +108,7 @@ secrets/
 !/docs/evidence/oip-workstation-data/rehearsal.json
 !/docs/evidence/oip-device-connection/device-connection.json
 !/docs/evidence/oip-device-connection/rehearsal.json
+!/docs/evidence/oip-security-review/security-review.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json

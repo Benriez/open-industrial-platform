@@ -1,0 +1,330 @@
+{
+  "schema": "oip-security-review-v1",
+  "findings": [
+    {
+      "finding": "the dependency advisories of the lockfile",
+      "status": "resolved",
+      "detail": "cargo deny: advisories, licenses, bans and sources ok; 3 documented exceptions with a reason and a review date",
+      "evidence": "deny.toml"
+    },
+    {
+      "finding": "the secret scan of the tree",
+      "status": "resolved",
+      "detail": "gitleaks 8.30.1 over the 598 files that ship: 27 candidates, all of them the SHA-256 of a source file inside a measurement receipt of docs/evidence \u2014 the known false positives, classified one by one in the receipt; no secret found",
+      "evidence": null
+    },
+    {
+      "finding": "the browser session cookie and the security headers",
+      "status": "resolved",
+      "detail": "HttpOnly, SameSite=Strict, Max-Age=1800, Cache-Control no-store, X-Frame-Options DENY, CSP frame-ancestors 'none'",
+      "evidence": null
+    },
+    {
+      "finding": "the single use of the pairing code",
+      "status": "resolved",
+      "detail": "the second use of the code is refused with 403",
+      "evidence": null
+    },
+    {
+      "finding": "the origin and the CSRF rule of the managed session",
+      "status": "resolved",
+      "detail": "a foreign origin is refused (403), a write without the CSRF token is refused (403), a write with a foreign origin is refused (403)",
+      "evidence": null
+    },
+    {
+      "finding": "the remote identity of the browser surface",
+      "status": "mitigated",
+      "detail": "the Core binds to 127.0.0.1 only: a browser on another machine cannot reach it. A productive remote identity is NOT implemented and is not claimed; the release is a local application",
+      "evidence": null
+    },
+    {
+      "finding": "the same-UID boundary of the local IPC",
+      "status": "mitigated",
+      "detail": "the configuration and the credential are 0600, the directory is 0700 and a client must have the same OS user as the daemon. The boundary does NOT isolate hostile processes of the same user: that user can read the credential and control the process. This limit is documented in the era contract and is not a tenant authentication",
+      "evidence": null
+    },
+    {
+      "finding": "the protection of the credentials",
+      "status": "resolved",
+      "detail": "the credential of the local IPC is a private 0600 file of 32 bytes and appears nowhere in the log of the instance",
+      "evidence": null
+    },
+    {
+      "finding": "the enforcement of the scope",
+      "status": "resolved",
+      "detail": "the reader of one organization sees ['source-a', 'source-b', 'source-c'] and no source of the other organization; the Core answers a foreign target with the generic refusal without a name",
+      "evidence": null
+    },
+    {
+      "finding": "the durability of the execution audit",
+      "status": "escalated",
+      "detail": "the audit of the Core is a structured local log and is NOT durable and NOT tamper-resistant. For a local instance with an authorized operator this is acceptable and is the contract of the era; for a remote or productive deployment a durable, tamper-resistant store is a prerequisite (the Core documents it as such). The operator decides whether the production scope accepts it",
+      "evidence": null
+    }
+  ],
+  "cargo_deny": {
+    "exit_code": 0,
+    "output": "advisories ok, bans ok, licenses ok, sources ok"
+  },
+  "documented_exceptions": [
+    {
+      "id": "RUSTSEC-2023-0071",
+      "reason": "async-opcua RSA dependency; only explicitly trusted loopback tests are permitted in OIP-002; no fixed upstream release; review by 2027-02-03"
+    },
+    {
+      "id": "RUSTSEC-2023-0089",
+      "reason": "transitive heapless/postcard atomic-polyfill; unmaintained, replacement requires upstream async-opcua migration; review by 2027-02-03"
+    },
+    {
+      "id": "RUSTSEC-2024-0449",
+      "reason": "transitive unsafe-libyaml parser via serde_yaml; unmaintained, replacement requires upstream async-opcua migration; review by 2027-02-03"
+    }
+  ],
+  "secret_scan": {
+    "tool": "gitleaks",
+    "report": "target/oip-security-review/gitleaks.json",
+    "candidates": [
+      {
+        "file": "docs/evidence/oip008/reviews.json",
+        "line": 43,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip008/test-summary.json",
+        "line": 272,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip008/test-summary.json",
+        "line": 289,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip004/final-integrity.json",
+        "line": 138,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip004/final-integrity.json",
+        "line": 148,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip007/e2e/report.json",
+        "line": 1232,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip007/e2e/report.json",
+        "line": 1241,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip007/e2e/report.json",
+        "line": 1250,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip007/e2e/report.json",
+        "line": 1259,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip007/mcp/report.json",
+        "line": 2850,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip007/mcp/report.json",
+        "line": 2859,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip007/mcp/report.json",
+        "line": 2868,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/final-source-hashes.json",
+        "line": 30,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/final-source-hashes.json",
+        "line": 118,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/final-source-hashes.json",
+        "line": 129,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/final-source-hashes.json",
+        "line": 141,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/final-source-hashes.json",
+        "line": 167,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/final-source-hashes.json",
+        "line": 178,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
+        "line": 30,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
+        "line": 121,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
+        "line": 132,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
+        "line": 144,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
+        "line": 172,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
+        "line": 183,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip008/mcp-legacy.json",
+        "line": 3073,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip008/mcp-legacy.json",
+        "line": 3082,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip008/mcp-legacy.json",
+        "line": 3091,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      }
+    ],
+    "exit_code": 1,
+    "files_scanned": 598,
+    "findings": 27,
+    "unclassified": 0
+  },
+  "browser_session": {
+    "set_cookie": "oip_session=e36323b409fe1b6f955499a7cdeecc8bba7c3b61550131c9a88af317e7b96e9b; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800",
+    "cache_control": "no-store",
+    "x_frame_options": "DENY",
+    "content_security_policy": "frame-ancestors 'none'",
+    "session_ttl_seconds": 1800,
+    "pairing_code_ttl_seconds": 120
+  },
+  "pairing_code_second_use": 403,
+  "foreign_origin_login": 403,
+  "write_without_the_csrf_token": 403,
+  "write_with_a_foreign_origin": 403,
+  "listening_sockets": [
+    "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME",
+    "oip-serve 2272 benny    9u  IPv4 0x98c3f6e9f7f13f4f      0t0  TCP 127.0.0.1:57450 (LISTEN)"
+  ],
+  "the_core_binds_to_the_loopback_only": true,
+  "local_ipc": {
+    "the_configuration": "0o600",
+    "the_credential": "0o600",
+    "the_directory": "0o700",
+    "the_socket_exists": true,
+    "the_uid_rule": "the client of the local IPC must have the same OS user as the daemon; the credential is a private 32-byte file"
+  },
+  "credential_in_the_log": false,
+  "scope_enforcement": {
+    "the_sources_of_the_principal": [
+      "source-a",
+      "source-b",
+      "source-c"
+    ],
+    "the_foreign_sources": [
+      "source-d",
+      "Organization B",
+      "Infrastructure B1"
+    ]
+  },
+  "execution_audit": {
+    "the_capability_execution_lines": 1,
+    "the_sink_is_the_local_log": true
+  },
+  "status": "PASS",
+  "finished_utc": "2026-11-08T23:07:12Z",
+  "summary": {
+    "resolved": 7,
+    "mitigated": 2,
+    "escalated": 1
+  }
+}

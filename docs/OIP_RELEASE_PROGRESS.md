@@ -1782,11 +1782,66 @@ workspace, selects the device and reads the connection panel of the approved sur
 No personal database change, no schema-7 activation of the personal installation, no private SSH
 to a foreign endpoint, no push, no deployment, no system service.
 
+### Iteration 29 — the security review of the current release
+
+**Status: PROVED on canonical `main`.**
+G10 asks for a review that resolves, mitigates or explicitly escalates every material finding. The
+acceptance of the production-security scope stays an operator decision; the review itself is the
+work of the loop. `tests/oip_security_review.py` measures the findings of the current tree against
+a running instance of the release binary (`docs/evidence/oip-security-review/security-review.json`):
+**10 findings — 7 resolved, 2 mitigated, 1 escalated.**
+
+**Resolved.**
+
+* The dependency advisories of the complete lockfile: `cargo deny check advisories licenses bans
+  sources` → advisories ok, licenses ok, bans ok, sources ok. The three exceptions
+  (`RUSTSEC-2023-0071`, `RUSTSEC-2023-0089`, `RUSTSEC-2024-0449`) are documented in `deny.toml`
+  with a reason and a review date — they are transitive dependencies of the OPC UA stack, not of
+  the release path.
+* The secret scan of the content that ships: gitleaks 8.30.1 over the 598 tracked and untracked
+  files — 27 candidates, every one of them the SHA-256 of a source file inside a measurement
+  receipt of `docs/evidence`. Each candidate is classified in the receipt; **no secret** was found.
+* The browser session contract: `HttpOnly`, `SameSite=Strict`, `Max-Age=1800`,
+  `Cache-Control: no-store`, `X-Frame-Options: DENY`, CSP `frame-ancestors 'none'`.
+* The single use of the pairing code: the second use is refused with 403.
+* The origin and the CSRF rule: a foreign origin is refused (403), a write without the CSRF token
+  is refused (403), a write with a foreign origin and a valid token is refused (403).
+* The protection of the credentials: a private 0600 file of 32 bytes that appears nowhere in the
+  log of the instance.
+* The enforcement of the scope: the reader of one organization sees `source-a`, `source-b`,
+  `source-c` and no source of the other organization.
+
+**Mitigated.**
+
+* The remote identity: the Core binds to **127.0.0.1 only** — a browser on another machine cannot
+  reach it. A productive remote identity is **not implemented and not claimed**: the release is a
+  local application.
+* The same-UID boundary: the configuration and the credential are 0600, the directory is 0700 and
+  a client must have the same OS user as the daemon. The boundary does **not** isolate hostile
+  processes of the same user — that user can read the credential and control the process. This
+  limit is part of the era contract and is not a tenant authentication.
+
+**Escalated.**
+
+* The durability of the execution audit: the audit of the Core is a **structured local log**; it
+  is neither durable nor tamper-resistant. For a local instance with an authorized operator this
+  is acceptable and is the contract of the era (`OIP-005 uses structured local logs … an explicit
+  prerequisite for future remote mutating capabilities`). For a remote or productive deployment a
+  durable, tamper-resistant store is a **prerequisite** — the operator decides whether the
+  production scope accepts the current one.
+
+The acceptance of the production-security scope remains **BLOCKED_OPERATOR**; the review gives the
+operator the measured material for that decision.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-security-review/security-review.json` | the measured security review of the current release: 10 findings — 7 resolved, 2 mitigated, 1 escalated (the durability of the execution audit) (iteration 29) |
 | `docs/evidence/oip-device-connection/device-connection.json` | the measured verified connection of a device in the approved surface against the real Core and an owned loopback SSH fixture (iteration 28) |
 | `docs/evidence/oip-workstation-data/workstation-data.json` | the measured functional depth of the six workstations against the real Core: the real hierarchy, device, placement, nodes, events and settings, and no identifier of the other organization (iteration 27) |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the measured parity of the OPC-UA address space between the official MCP tool and the REST routes against the real backend (iteration 25) |
