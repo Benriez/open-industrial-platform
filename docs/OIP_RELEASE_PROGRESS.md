@@ -1267,6 +1267,58 @@ from the Core and compared with the rendered surface. The delivered bundle is
 byte-identical. No personal database change, no schema-7 activation, no private SSH, no push, no
 deployment.
 
+### Iteration 14 — the release binary, the local operations and the accessibility receipt
+
+**Status: PROVED on canonical `main` (`6473617`, `bf36411`, `40f57cd`).**
+The release ledger named three open items of the release mission: a release binary that is proven
+by the canonical gate, a tested procedure for the local operations of an instance, and the
+accessibility receipt of the integrated UI. All three are now measured.
+
+**The release binary is proven by the same gate.** `cargo build --release -p oip-server --bin
+oip-server --example mcp_probe` produces the Core `76d18b6e14a329b365daca16fd970e431b5f05c3340320054453abaa82a26ccd`
+and the official MCP probe `029bf9f4505dd483d62196992d0443498a3e5a242f35a3192a4ef125227cfb08`. The
+canonical runner can be pointed at another verified binary of the same contract
+(`OIP_CANONICAL_SERVER_BIN`), the harness builds the profile of the binary that is executed and
+names the hashes in its receipt. `OIP_CANONICAL_SERVER_BIN=…/target/release/oip-server python3
+tests/canonical_regression.py --only oip_canonical_ui_gate` finished with **8/8 phases PASS**,
+175 browser findings with zero failures, 339/339 Flutter tests, the visual comparison PASS and the
+delivered bundle `a83a18def0ad4149dcba84452731a64083042e43bbafa1b260f3e3bad5873041` byte-identical
+local and served.
+
+**The local operations are a tested procedure.** `tools/oip_ops.py` operates one explicit instance:
+one configuration, one protected IPC configuration, one database and one state directory. It
+provisions the data store with the plan of the operator, starts the daemon, reports the state,
+takes a consistent backup of a running instance, restores it, restarts the instance and stops it
+cleanly. It installs no system service and it refuses every operation whose target resolves into
+the personal installation of the operator, also through a relative path or a symlink.
+`tests/oip_operations.py` proves the sequence against a disposable instance and records the
+receipt: provisioning, start, status, log, backup with its integrity check, the refused restore of
+a running instance, the clean shutdown without uncommitted observations, restore, start again,
+restart, stop and the three refusals of the personal installation with its unchanged hash
+`9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e` at schema 6.
+`docs/runbooks/operations.md` describes the procedure and the rules that the tool enforces.
+
+Four real defects were found and fixed while proving it: the daemon requires an owner-private IPC
+configuration, the Core refuses a database that anybody but the owner can read, the restore of a
+running instance must be refused, and the Core rejects a path with a symlink component — the
+temporary directory of macOS lives under `/var`, which links to `/private/var`.
+
+**The accessibility receipt measures the name and role coverage.** `apps/flutter/test/browser_accessibility.mjs`
+walks the six workstations of the live managed instance and asserts that every control a person can
+reach carries an accessible name and that every focusable element is nameable. Measured: **136
+controls, none without an accessible name**, no JavaScript error and no external request; the Core
+denials of the scoped projection are recorded separately. The receipt is not a full WCAG audit and
+does not claim one; the operator's own review of the application stays open.
+
+**Two timeouts of the browser harness were too short.** The delivered web release is several
+megabytes and the loopback of this machine delivers them slowly: the download of the bundle in the
+canonical gate and in the real-device journey failed with the default request timeout of 30
+seconds although the server answered it. Both downloads now get the time that the first paint of
+the application already gets.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |

@@ -19,28 +19,35 @@ application. The binding rules come from `AGENTS.md`,
 | G6 monitoring | READY (partial) | Measurements and history proven against the fixture. Long-run stability and reconnect on real hardware not evidenced. |
 | G7 Spectrum-2027 UX preserved | DONE | Integrated into canonical `main` with a real `git merge --ff-only` after the two parallel executions were reconciled into one candidate. The binding contract is `docs/design/OIP_CANONICAL_UI_BASELINE.md` with the prohibited regressions R1-R10; the permanent gate is `tests/canonical_ui_gate.py` (build provenance, widget gate, browser gate, stable-shell visual comparison with negative controls) and runs inside the canonical acceptance workflow. The OIP/005 dashboard, the gradient KPI cards, the `M-01` defaults, the "Normalbetrieb" context and the AGENT-FIRST sidebar footer are prohibited regressions and are proven absent. Operator visual acceptance stays `VISUAL_PENDING_OPERATOR_ACCEPTANCE`. |
 | G8 six functional views | READY (partial) | Overview, Devices & Services, Network & VPN, Diagnostics & Events, Settings and the OPC-UA Browser all render in the browser gate at 1440 px and 1920 px against the authorized backend, and the diagnostics view now shows the persisted evidence of the Core (documented gaps, health transitions, the named diagnosis-history state). Unsupported protocols stay labelled; the OPC-UA parity of the real backend is not yet re-inventoried. |
-| G9 macOS build, install, start/stop, logging, backup/restore | READY | Gaps found: no `target/release` Core binary exists (debug only); `docs/runbooks/` is empty; no start/stop/restart script, no log policy, no backup/restore tool in the tree (only `docs/evidence/oip008/backup.json`). `deployment/systemd` is Linux-only. Installing a launch agent needs operator authorization. |
+| G9 macOS build, install, start/stop, logging, backup/restore | READY (partial) | The release build exists and is proven: `target/release/oip-server` and the official MCP probe are executed by the canonical gate, which passes with the release binary (8/8 phases, 175 browser findings with zero failures, 339/339 Flutter tests). `docs/runbooks/operations.md` describes the local operations and `tools/oip_ops.py` performs them; `tests/oip_operations.py` proves the sequence against a disposable instance: provisioning, start, status, log, backup with an integrity check, the refused restore of a running instance, the clean shutdown without uncommitted observations, restore, start, restart and stop, plus the three refusals of the personal installation. Remaining: the local installation as a launch agent needs operator authorization, and the macOS application bundle is not built. |
 | G10 security release review | BLOCKED_OPERATOR | Three advisory exceptions documented (N5). Open: productive browser/remote identity, same-UID isolation, durable audit, credential protection, scope enforcement review. Production-security scope needs explicit operator acceptance. |
-| G11 acceptance, a11y, perf, resilience, upgrade/rollback | READY (partial) | Canonical regression (8 cases) passes on fixtures. Missing: release-binary run, accessibility audit, upgrade/rollback, extended stability. |
+| G11 acceptance, a11y, perf, resilience, upgrade/rollback | READY (partial) | The canonical regression passes with the **release** binary and the release web bundle (measured receipt in `target/oip-release-binary/`). The accessibility receipt of the six workstations measures the name and role coverage of the rendered surface: 136 controls, none without an accessible name, no JavaScript error, no external request (`docs/evidence/oip-accessibility/accessibility.json`); it is not a full WCAG audit. Missing: upgrade/rollback procedure, extended stability run, and the performance baseline of the release build. |
 | G12 operator acceptance | BLOCKED_OPERATOR | Requires the operator to launch, authenticate, configure and connect real devices. |
 
 ## Next READY tasks (independent of blockers)
 
-1. **N13 (G9, G11)**: build `oip-server` with `--release`, run the canonical regression against that
-   binary, record evidence.
-2. **N14 (G9)**: write `docs/runbooks/` for start, stop, restart, logging, backup and restore of a
-   copy of the SQLite database (never the personal database), with a tested script.
-3. **N15 (G11)**: accessibility and performance receipts for the integrated UI. Unblocked: the
-   integrated UI exists and the browser gate already proves the structure of all six workstations.
+1. **N17 (G9, G11)**: build the macOS application bundle of the Flutter client and prove that it
+   starts, shows the approved shell and shuts down cleanly. The Core side of the local operations
+   is DONE; the application bundle is the remaining half of G9.
+2. **N18 (G11)**: upgrade and rollback procedure for a local instance: a rehearsed upgrade of the
+   Core binary against a copy of the data store and the rollback into the previous binary with
+   the previous data store. Nothing of this exists in the tree yet.
+3. **N19 (G11)**: the performance baseline of the release build: first paint of the delivered
+   bundle, the time to the interactive shell and the measured resource use of the Core under the
+   managed acceptance load. The harness already measures the Core's RSS and CPU; the client side
+   has no baseline yet.
 4. **N16 (G6, G8)**: the persisted evidence of the diagnostics view now reaches the operator
-   surface. The remaining gap is the diagnostic continuation in the browser journey of the
-   real-device harness against a Core that actually stores documented gaps.
+   surface, proven against the Core that stores the documented gaps and the health transitions.
+   The remaining gap is the diagnostic continuation in the browser journey against a Core whose
+   page is truncated.
 
 ## Operator actions required (nothing here is executed by the loop)
 
 * Decide F5 permission rule (N1b) and protected schema-7 activation with a fresh schema-6 backup (N4).
 * Name an approved physical device and credentials path for G5/G12.
 * Accept or reject the production-security scope (G10).
+* Authorize the local installation of the application as a launch agent (G9/N17) and name the
+  release artifacts that may be signed and distributed.
 * The UI ownership question is settled: the Spectrum-2027 workstations are the canonical
   application of `main` and `feature/oip-managed-diagnostics` is reconciled into them. The
   recovery review command of that branch (`docs/recovery/oip-loop-20261108.md`) is no longer
