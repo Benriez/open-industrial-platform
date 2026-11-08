@@ -1373,6 +1373,39 @@ The receipts of that run: precheck `bff28843ca7b5d66…`, browser `eb40f9d723907
 schema-7 activation. The repository has no remote, so no push is possible. No deployment, no system
 service, no private SSH connection, and no process of another workstream was signalled.
 
+### Iteration 17 — the administration of a registered device in the approved workspace
+
+**Status: PROVED on canonical `main` (`8b06720`).**
+The Core owns the inventory and supports the register, the update and the archive of a device.
+The client could not write the update at all: the Flutter API knew the register only and the
+approved device workspace had no administration. The gap was found while the managed diagnostics
+capability was reconciled — the same class of loss, a capability of the canonical tree that the
+transplant of the design layer dropped.
+
+**What was built.** The administration surface of the device names the revision it works on, sends
+the **full replacement** the Core requires (an update is not a merge, so the metadata of the record
+travels with it) and shows the refusal of the Core verbatim instead of a friendly invention. The
+archive is an **offline operation of the Core**: the managed session refuses it with
+`OFFLINE_ARCHIVE_REQUIRED` ("Archive remains an explicit offline operation"), so the surface names
+the procedure and never offers a write that the Core would refuse.
+
+**A defect of the global context was found and fixed.** The Core has no whoami route, so every
+bootstrap was treated as an unverifiable principal transition: the global infrastructure scope was
+reset to Unified and the session generation was bumped on **every** refresh of the authorized
+projection — and an administration write needs such a refresh, so every write closed the inspector
+of the device. The identity of the authorized session is the evidence that was missing. The
+controller binds the principal of the session and the context keeps the scope of the operator
+across a refresh. A principal change still invalidates the selection.
+
+**Proof.** `apps/flutter/test/device_administration_test.dart` proves the surface, the payload of
+the update, the revision guard and the shown refusal. The real-device journey against the actual
+Core proves the update through the surface — the revision advances from 1 to 2 and the Core holds
+the new name — and the named refusal of the online archive. `infrastructure_context_test.dart`
+proves that the selected scope survives a refresh of the projection.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
