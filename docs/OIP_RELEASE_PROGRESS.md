@@ -1451,6 +1451,41 @@ served. The receipts of that run: precheck `f481979fbc76…`, browser `4566db42b
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 19 — the performance baseline of the release build
+
+**Status: PROVED on canonical `main`.**
+The Core side of the baseline was measured by the acceptance harness — the latency of the official
+MCP probe and the resource use of the Core. The client side had no baseline at all: nobody knew
+what the operator waits for in the browser.
+
+**What was measured.** `tests/oip_performance.py` starts a disposable managed instance of the
+**release** binary and runs `apps/flutter/test/browser_performance.mjs` three times against the
+delivered web bundle. Measured over three runs (p50 / min / max):
+
+| Phase | p50 | min | max |
+|---|---|---|---|
+| first paint of the delivered web release | 48 216 ms | 47 992 ms | 52 241 ms |
+| the operator login of the anonymous state | 48 508 ms | 48 357 ms | 52 495 ms |
+| the interactive shell with the six workstations | 245 ms | 233 ms | 277 ms |
+| the authorized projection of the infrastructure | 101 ms | 97 ms | 276 ms |
+
+The Core rests at 17 200 KiB of resident memory and 0.0 % CPU without clients. The delivered
+bundle is `b09bb5ff4a16825ddf350f9278aa94a378f42222bbb5e23af0f76ed7bef2b844` — the same asset the
+canonical gate proves.
+
+**What the baseline says.** The first paint is **not** bound to the application: it is bound to the
+transfer of the 3 MB web release over the loopback of this machine. Once the session exists, the
+shell with all six workstations is interactive in a quarter of a second and the authorized
+projection follows 101 ms later. A smaller delivery — or a local cache of the release — is a
+**product decision** and is named as such; it is not an agent decision, and this baseline is the
+measurement that a later decision needs.
+
+The receipt is `docs/evidence/oip-performance/performance.json`. It is a local measurement of this
+machine and explicitly not an SLA.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |

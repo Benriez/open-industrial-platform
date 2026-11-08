@@ -1,0 +1,61 @@
+{
+  "schema": "oip-performance-baseline-v1",
+  "runs": [
+    {
+      "schema": "oip-performance-receipt-v1",
+      "scope": "client side of the delivered web release on this machine; a local measurement, not an SLA",
+      "base": "http://127.0.0.1:56836",
+      "first_paint_ms": 47992,
+      "login_gate_ms": 48357,
+      "authenticated_shell_ms": 277,
+      "authorized_projection_ms": 97,
+      "requests": 38,
+      "transferred_bytes": 18243042,
+      "bundle_sha256": "b09bb5ff4a16825ddf350f9278aa94a378f42222bbb5e23af0f76ed7bef2b844",
+      "bundle_bytes": 3031151
+    },
+    {
+      "schema": "oip-performance-receipt-v1",
+      "scope": "client side of the delivered web release on this machine; a local measurement, not an SLA",
+      "base": "http://127.0.0.1:56836",
+      "first_paint_ms": 52241,
+      "login_gate_ms": 52495,
+      "authenticated_shell_ms": 233,
+      "authorized_projection_ms": 101,
+      "requests": 38,
+      "transferred_bytes": 18248697,
+      "bundle_sha256": "b09bb5ff4a16825ddf350f9278aa94a378f42222bbb5e23af0f76ed7bef2b844",
+      "bundle_bytes": 3031151
+    },
+    {
+      "schema": "oip-performance-receipt-v1",
+      "scope": "client side of the delivered web release on this machine; a local measurement, not an SLA",
+      "base": "http://127.0.0.1:56836",
+      "first_paint_ms": 48216,
+      "login_gate_ms": 48508,
+      "authenticated_shell_ms": 245,
+      "authorized_projection_ms": 276,
+      "requests": 38,
+      "transferred_bytes": 18253653,
+      "bundle_sha256": "b09bb5ff4a16825ddf350f9278aa94a378f42222bbb5e23af0f76ed7bef2b844",
+      "bundle_bytes": 3031151
+    }
+  ],
+  "core_rss_kib_cpu_percent": "17200   0.0",
+  "core_binary": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
+  "first_paint_ms_p50": 48216,
+  "first_paint_ms_min": 47992,
+  "first_paint_ms_max": 52241,
+  "login_gate_ms_p50": 48508,
+  "login_gate_ms_min": 48357,
+  "login_gate_ms_max": 52495,
+  "authenticated_shell_ms_p50": 245,
+  "authenticated_shell_ms_min": 233,
+  "authenticated_shell_ms_max": 277,
+  "authorized_projection_ms_p50": 101,
+  "authorized_projection_ms_min": 97,
+  "authorized_projection_ms_max": 276,
+  "bundle_sha256": "b09bb5ff4a16825ddf350f9278aa94a378f42222bbb5e23af0f76ed7bef2b844",
+  "status": "PASS",
+  "finished_utc": "2026-11-08T19:19:23Z"
+}
