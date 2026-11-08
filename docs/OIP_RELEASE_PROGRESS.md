@@ -1403,6 +1403,15 @@ Core proves the update through the surface — the revision advances from 1 to 2
 the new name — and the named refusal of the online archive. `infrastructure_context_test.dart`
 proves that the selected scope survives a refresh of the projection.
 
+**The final acceptance of the integrated candidate** ran on the clean canonical tree
+`8b8cd238636d89673cb8444ed3a6fc1b274752c8` (tree `59a73ff56067590deb75bc617ed14e17d600f1ef`,
+`source_dirty=false`): **344/344 Flutter tests**, **175 browser findings with zero failures**,
+13 captures, the stable-shell visual comparison PASS and **8/8 managed acceptance phases PASS**,
+including the actual Flutter SSH onboarding with the device administration in it. The delivered
+bundle `b09bb5ff4a16825ddf350f9278aa94a378f42222bbb5e23af0f76ed7bef2b844` is byte-identical local
+and served; no JavaScript error, no external request, every owned process stopped. The receipts of
+that run: precheck `a56d862e6d4b…`, browser `332572e68d5f…`, visual `7ee112bdbd68…`.
+
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
