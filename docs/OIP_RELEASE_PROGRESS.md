@@ -1349,6 +1349,30 @@ receipt says so.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 16 — the final acceptance of the integrated release candidate
+
+**Status: PROVED on canonical `main` (`cac97ac`, tree `fcab8a5f0c3a9d3523c2c7f94ea0ae5cfa3aa8ea`,
+working tree clean).**
+`OIP_CANONICAL_UI_GATE=1 python3 tests/real_device/acceptance.py` on the clean canonical tree:
+**339/339 Flutter tests**, **175 browser findings with zero failures**, 13 captures of the six
+workstations at 1440 px and 1920 px, the stable-shell visual comparison PASS with both
+negative-control classes and **8/8 managed acceptance phases PASS** — browser identity and the
+single writer, the SSH handshake with the confirmed host identity and the monitoring, the restart
+after SIGKILL, the actual Flutter SSH onboarding, the ingestion without clients, the host-key
+change that blocks the collection, the rejected weak host key and the eight official MCP clients.
+The delivered bundle `a83a18def0ad4149dcba84452731a64083042e43bbafa1b260f3e3bad5873041` is
+byte-identical local and served, no JavaScript error, no external request, every owned process
+stopped. The onboarding receipt carries the persisted evidence of the Core
+(`health_transitions: 50, documented_gaps: 2`, `diagnosis_history_status: not_implemented`).
+
+The receipts of that run: precheck `bff28843ca7b5d66…`, browser `eb40f9d723907098…`, visual
+`a641a67b9b814a87…`.
+
+**Safety.** The personal installation is untouched at SHA-256
+`9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e` with `user_version` 6 — no
+schema-7 activation. The repository has no remote, so no push is possible. No deployment, no system
+service, no private SSH connection, and no process of another workstream was signalled.
+
 ## 5. Evidence index
 
 | Artifact | Content |
