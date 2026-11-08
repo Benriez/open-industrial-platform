@@ -196,6 +196,16 @@ Measured on canonical `main` (`1e6b743`): `flutter analyze` exits 0 with no issu
 
 No Rust source changed in this iteration, so the Rust workspace results of iteration 9 remain valid for this tree. No physical Raspberry-Pi was contacted, the real installation was not activated and the personal database is unchanged at schema 6. The network view still shows its loading message; it is recorded as the next READY item.
 
+## Addendum — the managed network view shows the authorized placement
+
+The network view showed *"Topologie wird geladen — Der Live-Stream liefert das gemeinsame Rust-Modell"* whenever the projection carried no topology. The scoped projection of a managed session has no topology array at all, so that was a loading state without a loader: it promised data that never arrives. The view also drew the three zones of the legacy demo — `LAN`, `Tailnet`, `Remote Site` — next to the real site of the session.
+
+The managed network view now states the fact, draws no path and colours no reachability green. The zone of a node is the authorized site of the session, and the authorized placement is shown with the identifiers the Core delivered for it: organization, infrastructure, site and source, with the registered nodes of that site. Nothing is derived from a name, an address or a device identifier, and no link between two placements is invented.
+
+Measured on canonical `main` (`e9036ef`): `flutter analyze` exits 0 with no issue, `flutter test` passes 101 tests, the real device harness passes all eight phases and the canonical regression passes all eight cases with no failed and no blocked case. The browser receipt names the placement the Core delivered — `org-a · infra-a1 · site-a1` with the source of the connected device — and records that the loading state and the demo zones are gone.
+
+No Rust source changed in this iteration, so the Rust workspace results of iteration 9 remain valid for this tree. No physical Raspberry-Pi was contacted, the real installation was not activated and the personal database is unchanged at schema 6. The managed diagnostics view still shows its placeholder; it is recorded as the next READY item.
+
 ## Addendum — the schema2 adoption case and the parity gate
 
 The schema2 adoption of the OIP-008 milestone could not be re-verified because the historical protected binary of that milestone is not part of the workspace any more. `tests/oip007_baseline.py` rebuilds that writer from the verified OIP-007 baseline commit `a27e7b1`; it extracts the source with `git archive`, so no worktree registration and no canonical checkout state is touched. The result records the source commit, the hash of the rebuild and the hash of the historical binary, and it states that a rebuild is not byte identical, so the identity of the historical protected binary is not claimed.

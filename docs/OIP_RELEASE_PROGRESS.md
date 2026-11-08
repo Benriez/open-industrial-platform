@@ -13,17 +13,17 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `1e6b743` (`feat(flutter): show the real authorized infrastructure in the managed overview`) |
-| Canonical source tree | `826417d787ecf18d2e05f564a05f54c579f0b8b6` |
-| Previous canonical source revision | `1287e23` (iteration 9, persisted observation history in the device view) |
-| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in ten controlled steps |
-| Tracked files in the canonical source revision | 450, source manifest SHA-256 `cdec06ca337c7c4b39388c589582a01dda9e3ac565b40c9261e0a36ff221565f` |
+| Canonical source revision | `e9036ef` (`feat(flutter): show the authorized placement in the managed network view`) |
+| Canonical source tree | `665a9a566779534c6646a4e53acf8955be1839fc` |
+| Previous canonical source revision | `1e6b743` (iteration 10, managed overview of the authorized infrastructure) |
+| Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
+| Tracked files in the canonical source revision | 451, source manifest SHA-256 `cfd9fc247352cbcd457a0fed3b59d7b2a60e1413ee41831f35db458df15f39eb` |
 | Documentation commit on top | changes only `docs/OIP_RELEASE_PROGRESS.md`, `docs/evidence/oip-real-device/*.json` and `docs/real-device-onboarding-verification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
 
-The canonical tree carries ten controlled integrations: iteration 1 integrated the reviewed
+The canonical tree carries eleven controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
 integrated the isolated harness branch `feature/oip-native-macos-harness` (`b19092d`), iteration 4
@@ -35,7 +35,8 @@ iteration 5 integrated the isolated contract branch `feature/oip-009-context-con
 (`f4b89ed`), iteration 8 the isolated monitoring branch
 `feature/oip-monitoring-observations` (`2ec4829` and `e12c009`), iteration 9 the isolated
 history branch `feature/oip-observation-history` (`1287e23`), iteration 10 the isolated
-overview branch `feature/oip-managed-overview` (`1e6b743`). No iteration weakened a contract
+overview branch `feature/oip-managed-overview` (`1e6b743`), iteration 11 the isolated
+network branch `feature/oip-network-placement` (`e9036ef`). No iteration weakened a contract
 rule, and none activated the installation.
 
 ## 2. Acceptance gates and their measured status
@@ -43,7 +44,7 @@ rule, and none activated the installation.
 Legend: `PROVED` = measured in this run on canonical `main`; `WITHHELD` = deliberately not
 claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 
-| Gate | Status | Evidence (this run, canonical `main` = `1e6b743`) |
+| Gate | Status | Evidence (this run, canonical `main` = `e9036ef`) |
 |---|---|---|
 | Rust format check | PROVED | `cargo fmt --all -- --check` → exit 0 |
 | Rust workspace check | PROVED | `cargo check --locked --workspace --all-targets` → exit 0 |
@@ -54,7 +55,7 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Dependency policy | PROVED | `cargo deny check advisories licenses bans sources` → advisories ok, bans ok, licenses ok, sources ok |
 | Server binary + official MCP probe | PROVED | `cargo build --locked -p oip-server --bin oip-server --example mcp_probe` → exit 0 |
 | Flutter static analysis | PROVED | `flutter analyze` → exit 0, no issues |
-| Flutter widget/unit suite | PROVED | 100 passed, 0 failed |
+| Flutter widget/unit suite | PROVED | 101 passed, 0 failed |
 | Flutter web release, CanvasKit | PROVED | `flutter build web --release --web-renderer canvaskit …` → exit 0 |
 | Flutter web release, HTML | PROVED | `flutter build web --release --web-renderer html …` → exit 0 |
 | Browser identity + writer ownership | PROVED | `tests/real_device/acceptance.py` phase `browser_identity_online_writer` → PASS |
@@ -67,6 +68,7 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | 8 official MCP SDK clients | PROVED | phase `eight_official_mcp_clients` → PASS, REST/MCP parity |
 | Weak host key rejected by the server | PROVED | phase `weak_host_key_is_rejected_by_the_server` → PASS, `SSH_HOST_KEY_TOO_WEAK`, no binding created |
 | Browser session boundary in Rust | PROVED | `crates/oip-server/tests/browser_session.rs` → 6 tests: exact Origin, single-use code, CSRF on every write, revoked session, revoked projection stream and the cookie path of the persisted history |
+| Managed network view shows the authorized placement | PROVED | `apps/flutter/test/managed_network_test.dart` → 1 test; the authorized placement, the registered node and the honest absence of a topology are rendered, the loading state and the demo zones are gone; the browser receipt names the placement the Core delivered (`org-a · infra-a1 · site-a1`) |
 | Managed overview shows the authorized infrastructure | PROVED | `apps/flutter/test/managed_overview_test.dart` → 3 tests; the source registry, its real health, its placement and the measured series are rendered and the demo coordinates are gone; the browser receipt compares the rendered overview with the source registry and the measurement the Core received over SSH (`SSH host browser-existing`, `host.memory_total_bytes` = 17179869184) |
 | Persisted observation history in the device view | PROVED | `tests/real_device/acceptance.py` phase `actual_flutter_ssh_onboarding` → PASS; the Core persisted 10 samples of the connected device, the operator view rendered them as history and the browser receipt compares them against the Core answer; `apps/flutter/test/observation_history_test.dart` → 8 tests |
 | Native macOS build and test | PROVED | `tests/oip008/ui_regression.py` → native build 11.6 s with the build marker, native integration test 39.1 s with the `All tests passed!` marker, against an owned isolated demo core |
@@ -106,7 +108,8 @@ Each item names the next *delimited* step, its gate and its blocker and carries 
 | N6 persisted observation history | **DONE** | closed in iteration 9 |
 | N7 monitoring measurements in the panel | **DONE** | closed in iteration 8 |
 | N8 real multi-infrastructure overview | **DONE** | closed in iteration 10 |
-| N9 the network view of the authorized placement | **READY** | the next step of the loop |
+| N9 the network view of the authorized placement | **DONE** | closed in iteration 11 |
+| N10 the managed diagnostics view | **READY** | the next step of the loop |
 
 A blocked item never stops the loop while an independent READY item exists. Items that need an
 explicit operator decision (N1b, N4) or that would change a rule instead of enforcing one are
@@ -304,6 +307,37 @@ The next delimited step is purely client-side and changes no contract, permissio
    managed path.
 
 The gate is `flutter analyze`, `flutter test`, the real device harness and the canonical
+regression.
+
+**Result.** The managed network view states that the projection carries no topology, draws no path,
+colours no reachability green and shows the authorized placement of the session with the registered
+nodes of that site. The loading state and the zones of the legacy demo are gone. See the iteration
+log below.
+
+### N10 — The managed diagnostics view shows the authorized evidence — **READY**
+
+The scoped projection of a managed session carries the collection events of the authorized sources
+(`crates/oip-server/src/tenant_services.rs:576-583`), and the client drops them
+(`apps/flutter/lib/models/contracts.dart:249-280`). The diagnostics view therefore states *"Noch
+kein persistierter Diagnoselauf"* and *"Diagnosehistorie: demo_only"*, although the Core delivers
+the authorized events of the session and serves the persisted history of every event, gap, health
+transition and finding behind `GET /api/v2/events/history`,
+`/api/v2/diagnostics/gaps`, `/api/v2/diagnostics/health-history` and
+`/api/v2/diagnostics/findings` (`crates/oip-server/src/api.rs:207-213`).
+
+The next delimited step is client-side and changes no contract, permission or server rule:
+
+1. `apps/flutter/lib/models/contracts.dart`: keep the authorized `events` of the scoped projection
+   instead of dropping them, and map them with the existing `CollectionEvent.fromRecord`.
+2. `apps/flutter/lib/features/diagnostics.dart`: show the collection events that the session is
+   authorized to see, with their real time, their reason and their gap. The persisted history of
+   the events is the next step, and only for the capability the principal actually holds:
+   `events_read` is not proven for every operator principal, the observation history was proven
+   first for that reason.
+3. `apps/flutter/test/` a widget test with the scoped fixture that asserts that the diagnostics
+   view shows the authorized events and never a demo incident.
+
+The gate is `flutter analyze`, `flutter test`, the real device harness and the canonical
 regression. `GET /api/v2/sources` (`crates/oip-server/src/api.rs:202`) is a possible second step
 for the per-source health, but it is not required for this one: the scoped snapshot already carries
 the authorized sources.
@@ -313,7 +347,7 @@ Core measured, the placement of the source in the authorized hierarchy and one m
 authorized source. No source and no fallback primary is preferred, no global selection payload is
 invented and the demo coordinates are gone. See the iteration log below.
 
-### N9 — The network view shows the authorized placement — **READY**
+### N9 — The network view shows the authorized placement — **DONE, closed in iteration 11**
 
 The network view shows *"Topologie wird geladen"* when the projection carries no topology
 (`apps/flutter/lib/features/network.dart:246-248`). The scoped projection has no topology array at
@@ -680,6 +714,85 @@ real device acceptance results of iteration 5 remain valid for this tree. No phy
 Raspberry-Pi was contacted, the real installation was not activated, the personal database is
 unchanged at schema 6 and the productive identity, hostile same-UID, durable audit and OT
 boundaries stay open. F5 remains open and paused.
+
+### Iteration 11 — the managed network view shows the authorized placement
+
+**Step.** Make the managed network view show the authorized placement of the session instead of a
+loading state for data that never arrives. One isolated commit on the branch
+`feature/oip-network-placement` (`e9036ef`), integrated with a real `git merge --ff-only`.
+
+**The gap.** The network view showed *"Topologie wird geladen — Der Live-Stream liefert das
+gemeinsame Rust-Modell"* whenever the projection carried no topology
+(`apps/flutter/lib/features/network.dart:246-248`). The scoped projection of a managed session has
+no topology array at all (`crates/oip-core/src/hierarchy.rs:444-454`), so that was a loading state
+without a loader. The view also drew the three zones of the legacy demo — `LAN`, `Tailnet`,
+`Remote Site` — next to the real site of the session, and the zone status stayed `UNBEKANNT`
+because no link exists to classify. The contract had already named the rule: *"Network & VPN:
+registered nodes only, no automatically guessed links/topology or green reachability"*
+(`docs/architecture/oip-0085-real-inventory-flutter-contract.md:21`).
+
+**What changed.**
+
+* `apps/flutter/lib/features/network.dart`: the managed view states that the projection carries no
+  topology, draws no path and colours no reachability green. The zone of a node is the authorized
+  site of the session; the zones of the legacy demo are not shown in the managed mode. The
+  authorized placement is shown with the identifiers the Core delivered for it — organization,
+  infrastructure, site and source — with the registered nodes of that site. Nothing is derived from
+  a name, an address or a device identifier and no link between two placements is invented.
+* `apps/flutter/test/managed_network_test.dart` (new): the managed network view shows the
+  authorized placement and the registered node, shows no loading state and shows no demo zone.
+* `apps/flutter/test/support.dart`: the scoped fixture of a managed session moved into the shared
+  test support, so the next managed view reuses it.
+* `apps/flutter/test/browser_onboarding.mjs`: the rendered network view is compared with the
+  placement that the Core delivered, and the receipt names it.
+* `docs/architecture/oip-0085-real-inventory-flutter-contract.md`: names the surface and its proof.
+
+**Measured result on canonical `main` (`e9036ef`)** — actual Flutter web release → authenticated
+HTTP → shared Core → owned loopback OpenSSH → genuine macOS host facts:
+
+```
+cargo fmt --all -- --check                                       exit 0 (no Rust source changed)
+flutter analyze                                                    exit 0, no issues
+flutter test                                                       101 passed, 0 failed
+python3 tests/real_device/acceptance.py                           8 phases PASS, exit 0
+  PASS browser_identity_online_writer
+  PASS ssh_handshake_confirmation_monitoring
+  PASS restart_sigkill_identity
+  PASS actual_flutter_ssh_onboarding     <- the history, the overview and the network view
+  PASS no_clients_ingestion_progress
+  PASS host_key_change_blocks_collection
+  PASS weak_host_key_is_rejected_by_the_server
+  PASS eight_official_mcp_clients
+python3 tests/canonical_regression.py                             8 cases PASS, no failed, no blocked
+  oip008_acceptance           PASS  30.4 s
+  oip0082_acceptance          PASS  40.3 s
+  oip0082_schema3_migration   PASS  17.1 s
+  oip0084_acceptance          PASS  31.8 s
+  oip0085_acceptance          PASS  13.3 s
+  oip0085_migration           PASS   7.2 s
+  oip008_ui_regression        PASS 256.0 s   (browser 80.4 s, interactions 47.1 s, visual 63.4 s,
+                                                 native build 11.6 s, native macOS test 39.1 s,
+                                                 every step with its marker)
+  oip008_legacy_migration     PASS   4.2 s
+```
+
+The browser receipt (`target/oip-real-device-e2e/browser/report.json`) names what the operator now
+sees in the network view of the managed mode:
+
+```
+rendered_network  authorized_placement org-a · infra-a1 · site-a1
+                 source 38fceec2-6e77-4afa-a59a-f395aef20f91
+                 loading_state_absent true
+                 demo_zones_absent true
+```
+
+**Not claimed.** The measurement is the host report of the owned loopback fixture on this machine,
+not a physical Raspberry-Pi verdict. No personal device was contacted, the real installation was not
+activated and the personal database is unchanged at schema 6. The managed diagnostics view still
+shows its placeholder and is recorded as the next READY item; the persisted history of the events
+follows only when the capability of the principal is proven. The productive identity, hostile
+same-UID, durable audit and OT boundaries stay open. F5 remains open and paused. No Rust source
+changed in this iteration, so the Rust workspace results of iteration 9 remain valid for this tree.
 
 ### Iteration 10 — the managed overview shows the real authorized infrastructure
 

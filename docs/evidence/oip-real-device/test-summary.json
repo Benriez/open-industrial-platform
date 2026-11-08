@@ -1,13 +1,13 @@
 {
   "scope": "OIP canonical main: two controlled integrations (iteration 1 real device onboarding feature, iteration 2 its conformance fixes)",
-  "canonical_source_commit": "1e6b74355b2559127865beabaa3c97f492560e58",
-  "canonical_source_tree": "826417d787ecf18d2e05f564a05f54c579f0b8b6",
-  "previous_canonical_source_commit": "1287e23d0199c4d8e26988e558af34093ad29ef3",
-  "integration_method": "ten real git merge --ff-only integrations, no merge commit, no history rewrite",
+  "canonical_source_commit": "e9036efb69387b2789f80ff22d8b62bc7d4f783c",
+  "canonical_source_tree": "665a9a566779534c6646a4e53acf8955be1839fc",
+  "previous_canonical_source_commit": "1e6b74355b2559127865beabaa3c97f492560e58",
+  "integration_method": "eleven real git merge --ff-only integrations, no merge commit, no history rewrite",
   "merge_commit_created": false,
   "history_rewritten": false,
-  "tracked_files_in_source_revision": 450,
-  "source_manifest_sha256": "cdec06ca337c7c4b39388c589582a01dda9e3ac565b40c9261e0a36ff221565f",
+  "tracked_files_in_source_revision": 451,
+  "source_manifest_sha256": "cfd9fc247352cbcd457a0fed3b59d7b2a60e1413ee41831f35db458df15f39eb",
   "source_manifest_scope": "all tracked files of the canonical source revision",
   "reviewed_candidate_tree_unchanged": true,
   "runtime_code_changed_in_this_iteration": true,
@@ -870,19 +870,113 @@
         ]
       },
       "not_claimed": "The network view still shows its loading message and is recorded as the next READY item. No personal device was contacted, the real installation was not activated and the personal database is unchanged at schema 6."
+    },
+    {
+      "iteration": 11,
+      "scope": "make the managed network view show the authorized placement of the session instead of a loading state for a topology the projection never carries",
+      "canonical_source_commit": "e9036efb69387b2789f80ff22d8b62bc7d4f783c",
+      "canonical_source_tree": "665a9a566779534c6646a4e53acf8955be1839fc",
+      "tracked_files": 451,
+      "source_manifest_sha256": "cfd9fc247352cbcd457a0fed3b59d7b2a60e1413ee41831f35db458df15f39eb",
+      "development_isolation": "branch feature/oip-network-placement (e9036ef) in an isolated worktree, integrated with git merge --ff-only",
+      "runtime_code_changed": true,
+      "product_source_changed": true,
+      "product_change_scope": "Flutter client only: apps/flutter/lib/features/network.dart; no Rust source, no permission rule, no storage layout and no server behaviour changed",
+      "harness_changed": [
+        "apps/flutter/test/managed_network_test.dart (new: the managed network view shows the authorized placement and the registered node, shows no loading state and shows no demo zone)",
+        "apps/flutter/test/support.dart (the scoped fixture of a managed session moved into the shared test support)",
+        "apps/flutter/test/browser_onboarding.mjs (compares the rendered network view with the placement that the Core delivered and writes it into the receipt)"
+      ],
+      "contract_updated": "docs/architecture/oip-0085-real-inventory-flutter-contract.md names the managed network view and its proof; the rule it already carried (registered nodes only, no guessed links or green reachability) is enforced now",
+      "flutter": {
+        "analyze": "exit 0, no issues",
+        "test": "101 passed, 0 failed"
+      },
+      "rust": "no Rust source changed in this iteration, so the Rust workspace results of iteration 9 (181 tests) remain valid for this tree; cargo fmt --all -- --check exits 0",
+      "real_device_acceptance": {
+        "status": "PASS",
+        "phases": 8,
+        "phase_names": [
+          "browser_identity_online_writer",
+          "ssh_handshake_confirmation_monitoring",
+          "restart_sigkill_identity",
+          "actual_flutter_ssh_onboarding",
+          "no_clients_ingestion_progress",
+          "host_key_change_blocks_collection",
+          "weak_host_key_is_rejected_by_the_server",
+          "eight_official_mcp_clients"
+        ],
+        "rendered_network": {
+          "authorized_placement": "org-a · infra-a1 · site-a1",
+          "source": "38fceec2-6e77-4afa-a59a-f395aef20f91",
+          "loading_state_absent": true,
+          "demo_zones_absent": true,
+          "evidence": "target/oip-real-device-e2e/browser/report.json",
+          "hardware": "owned loopback SSH fixture on this machine, actual host facts; not a physical Raspberry-Pi verdict"
+        }
+      },
+      "canonical_regression": {
+        "status": "PASS",
+        "failed": [],
+        "blocked": [],
+        "cases": [
+          {
+            "name": "oip008_acceptance",
+            "status": "PASS",
+            "seconds": 30.4
+          },
+          {
+            "name": "oip0082_acceptance",
+            "status": "PASS",
+            "seconds": 40.3
+          },
+          {
+            "name": "oip0082_schema3_migration",
+            "status": "PASS",
+            "seconds": 17.1
+          },
+          {
+            "name": "oip0084_acceptance",
+            "status": "PASS",
+            "seconds": 31.8
+          },
+          {
+            "name": "oip0085_acceptance",
+            "status": "PASS",
+            "seconds": 13.3
+          },
+          {
+            "name": "oip0085_migration",
+            "status": "PASS",
+            "seconds": 7.2
+          },
+          {
+            "name": "oip008_ui_regression",
+            "status": "PASS",
+            "seconds": 256.0
+          },
+          {
+            "name": "oip008_legacy_migration",
+            "status": "PASS",
+            "seconds": 4.2
+          }
+        ]
+      },
+      "not_claimed": "The managed diagnostics view still shows its placeholder and is recorded as the next READY item. No personal device was contacted, the real installation was not activated and the personal database is unchanged at schema 6."
     }
   ],
   "measured_on_canonical_main": {
     "cargo_test_workspace": "181 passed, 0 failed",
     "cargo_test_opcua_default_backend": "37 passed",
     "cargo_test_opcua_open62541_only": "2 passed",
-    "flutter_test": "100 passed, 0 failed",
+    "flutter_test": "101 passed, 0 failed",
     "real_device_acceptance_phases": 8,
     "ui_regression": "browser 80.4 s, interactions 47.1 s, visual 63.4 s, native build 11.6 s, native test 39.1 s, all PASS",
     "milestone_acceptance_harnesses": "8 PASS, no failed and no blocked case",
     "monitoring_measurements_in_the_operator_panel": "10 host observations rendered and compared against the Core response of the same device",
     "persisted_observation_history_in_the_device_view": "10 persisted samples of the connected device rendered as history and compared against the Core answer of the same device",
-    "managed_overview_shows_the_authorized_infrastructure": "the source registry, its real health, its placement and the measured series are rendered; the demo coordinates are gone"
+    "managed_overview_shows_the_authorized_infrastructure": "the source registry, its real health, its placement and the measured series are rendered; the demo coordinates are gone",
+    "managed_network_view_shows_the_authorized_placement": "the placement the Core delivered is rendered; the loading state and the demo zones are gone"
   },
   "status": "INTEGRATED_AND_VERIFIED_ON_CANONICAL_MAIN; PHYSICAL_HARDWARE_ACCEPTANCE_AND_INSTALLATION_ACTIVATION_PENDING",
   "gates_detail": {
