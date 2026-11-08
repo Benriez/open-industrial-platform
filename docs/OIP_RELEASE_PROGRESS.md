@@ -1641,10 +1641,44 @@ delivered web bundle — not against a fixture.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 25 — the parity of the OPC-UA address space is re-inventoried
+
+**Status: PROVED on canonical `main`.**
+The last independent gap of the functional gate G8 was the parity of the OPC-UA address space:
+the milestone harnesses had proven it for the releases of their era, but the **current release
+binary** had never been re-inventoried against a real backend.
+
+`tests/oip_opcua_parity.py` runs the release binary against four real collectors and compares
+the official MCP tool `oip_opcua_nodes_read` with the REST routes
+(`/docs/evidence/oip-opcua-parity/opcua-parity.json`):
+
+| Measurement | Result |
+|---|---|
+| the MCP answer | 100 nodes of 1 006, offset 0, limit 100 |
+| `/api/v2/opcua/nodes` | the same page — the same nodes, the same total, the same offset, the same limit |
+| `/api/v1/opcua/nodes` | the same page |
+| the second page | disjoint, the boundary exact (`bulk.0098` → `bulk.0099`) |
+| the scope | the reader of the other organization is refused with `RESOURCE_NOT_ACCESSIBLE` — without a name of the foreign source |
+| across a reconnect of the collector | the address space is served again, the content and the order are unchanged |
+
+**A contract gap was found and is escalated.** The address space of a source is the **live
+catalog of its collector**: it is published while the collector connects and it is replaced when
+the collector connects again. The pagination is by offset, so a page that is read across such a
+change can repeat a node at the boundary — measured once, while the collector was connecting.
+Every other paginated surface of the Core (the diagnostic pages, the observation history) uses an
+opaque cursor and is therefore stable; the Core makes no such promise for the address space, so
+no claim is broken. Giving the address space the same cursor would change the query of the REST
+and MCP surface of the Core: that is a **contract decision of the operator** and is named as such
+in the ledger.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
+| `docs/evidence/oip-opcua-parity/opcua-parity.json` | the measured parity of the OPC-UA address space between the official MCP tool and the REST routes against the real backend (iteration 25) |
 | `docs/evidence/oip-stability/stability.json` | the measured extended stability run of the release binary: 30 minutes, 60 samples, the resource use, the collection rate, the death of a collector and the clean shutdown (iteration 23) |
 | `docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json` | the measured browser receipt of the continuation of a truncated diagnostic page against the real Core (iteration 24) |
 | `docs/evidence/oip-macos-app/macos-app.json` | the measured result of the macOS application bundle: the build, the start, the requests of the bundle, the refusal of the Core, the termination without an orphan and the start again (iteration 22) |

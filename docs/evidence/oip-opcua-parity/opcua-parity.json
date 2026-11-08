@@ -1,0 +1,69 @@
+{
+  "schema": "oip-opcua-parity-v1",
+  "steps": [
+    "the instance runs",
+    "the collector published its address space",
+    "the address space continues without a repetition",
+    "the operator session is authorized",
+    "the MCP and the REST answer are the same page",
+    "the scope of the principal holds on the address space",
+    "the address space across a reconnect of the collector"
+  ],
+  "address_space": {
+    "total": 1006,
+    "note": "the address space is the live catalog of the collector; it is replaced when the collector connects again"
+  },
+  "pages": {
+    "first": {
+      "items": 100,
+      "total": 1006,
+      "offset": 0,
+      "limit": 100
+    },
+    "second": {
+      "items": 100,
+      "total": 1006,
+      "offset": 100,
+      "limit": 100
+    },
+    "repeated_nodes": 0,
+    "last_of_the_first_page": "ns=2;s=bulk.0098",
+    "first_of_the_second_page": "ns=2;s=bulk.0099"
+  },
+  "the_pages_are_disjoint": true,
+  "parity": {
+    "mcp": {
+      "items": 100,
+      "total": 1006,
+      "offset": 0,
+      "limit": 100
+    },
+    "rest_v2": {
+      "items": 100,
+      "total": 1006,
+      "offset": 0,
+      "limit": 100
+    },
+    "rest_v1": {
+      "items": 100,
+      "total": 1006,
+      "offset": 0,
+      "limit": 100
+    }
+  },
+  "mcp_and_rest_are_the_same_page": true,
+  "v1_and_v2_are_the_same_page": true,
+  "foreign_scope": {
+    "denied": true,
+    "answer": "{'ok': True, 'result': {'content': [{'text': '{\"code\":\"RESOURCE_NOT_ACCESSIBLE\",\"kind\":\"resource_not_found\",\"message\":\"Resource is not accessible\"}', 'type': 'text'}], 'isError': True, 'resultType': '"
+  },
+  "across_a_reconnect": {
+    "total_before": 1006,
+    "total_after": 1006,
+    "the_content_changed": false,
+    "the_order_changed": false,
+    "nodes_repeated_at_the_boundary": 0
+  },
+  "status": "PASS",
+  "finished_utc": "2026-11-08T21:31:33Z"
+}

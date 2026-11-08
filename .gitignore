@@ -103,6 +103,7 @@ secrets/
 !/docs/evidence/oip-stability/stability.json
 !/docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json
 !/docs/evidence/oip-diagnostic-continuation/rehearsal.json
+!/docs/evidence/oip-opcua-parity/opcua-parity.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json
