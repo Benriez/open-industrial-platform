@@ -1415,6 +1415,32 @@ that run: precheck `a56d862e6d4b…`, browser `332572e68d5f…`, visual `7ee112b
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 18 — the browser receipt of the global infrastructure context
+
+**Status: PROVED on canonical `main` (`91808cc`).**
+The global infrastructure context is a mandatory gate. Its dependency was the reconciliation of the
+UI workstreams, which is done, and the defect that reset the scope of the operator on every
+refresh of the authorized projection is fixed. What was missing was the proof against the real
+Core, and it is now a receipt that runs inside the canonical acceptance.
+
+**What the receipt proves.** `apps/flutter/test/browser_global_context.mjs` measures, against the
+managed Core of the acceptance harness: the global selection offers the individual infrastructures
+of the authorized hierarchy (4 options), the selection of `Infrastructure A1` scopes the projection
+(the placement of A2 disappears from the view), **the shared scope follows the operator across all
+six workstations** — Übersicht, Geräte & Dienste, Netzwerk & VPN, OPC-UA-Browser, Diagnose &
+Ereignisse and Einstellungen all report `Infrastructure Context: Infrastructure A1` — and the
+unified view returns every authorized infrastructure. It also proves the rule of the contract: every
+option is a selection of already authorized data and grants no permission.
+
+The accessibility receipt of the six workstations now runs in the same place: 154 controls, none
+without an accessible name, no JavaScript error and no external request.
+
+Both receipts write their own receipt into the evidence of the run, so a later integration that
+breaks the shared scope or the naming of a control is detected by the canonical gate itself.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
