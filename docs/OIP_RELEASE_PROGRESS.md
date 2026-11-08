@@ -1711,11 +1711,46 @@ No personal database change (`9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a9
 `user_version` 6), no schema-7 activation of the personal installation, no private SSH, no push,
 no deployment, no system service, no foreign process touched.
 
+### Iteration 27 — the functional depth of the six workstations
+
+**Status: PROVED on canonical `main`.**
+The canonical gate proves that the six workstations of the approved shell render, that they carry no
+legacy marker and that the scope follows the operator. It does not prove that they show **real**
+data of the authorized Core — a workstation that renders an empty state passes such a gate.
+
+`tests/oip_workstation_data.py` starts the release binary with four real collectors and
+`apps/flutter/test/browser_workstation_data.mjs` drives the approved surface. The operator
+selects a source in the global Infrastructure Context (a real mouse event on the painted option —
+the web engine forwards no key events), and every workstation is then read while the page is
+scrolled. Measured (`docs/evidence/oip-workstation-data/workstation-data.json`): 17 checks, no
+JavaScript error.
+
+| Workstation | What the operator really sees |
+|---|---|
+| Übersicht | the authorized hierarchy (`Organization A`, `Infrastructure A1`) and its counts |
+| Geräte & Dienste | the device of the selected source (`device-a`) |
+| Netzwerk & VPN | the authorized placement (`Organization A / Infrastructure A1`, `site-a1`) |
+| OPC-UA-Browser | the real nodes of the source (`bulk.*`, `motor_running`, …) |
+| Diagnose & Ereignisse | the real events of the scope (`source-a`) |
+| Einstellungen | the real settings of the Core (`history_page_size` with its default and its validation) |
+
+In **all six** workstations no identifier of the other organization appears — `device-d`,
+`source-d`, `Organization B`, `Infrastructure B1` and `Site B1` are nowhere on the surface.
+
+Two findings of the rehearsal are part of the receipt: the settings of the instance are read in
+the scope of the selected source (the application section reads the platform scope, which this
+principal is **not** allowed to read — deny by default), and the operator reaches the scoped
+section through the category `Diagnostics` of the settings navigation.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-workstation-data/workstation-data.json` | the measured functional depth of the six workstations against the real Core: the real hierarchy, device, placement, nodes, events and settings, and no identifier of the other organization (iteration 27) |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the measured parity of the OPC-UA address space between the official MCP tool and the REST routes against the real backend (iteration 25) |
 | `docs/evidence/oip-stability/stability.json` | the measured extended stability run of the release binary: 30 minutes, 60 samples, the resource use, the collection rate, the death of a collector and the clean shutdown (iteration 23) |
 | `docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json` | the measured browser receipt of the continuation of a truncated diagnostic page against the real Core (iteration 24) |

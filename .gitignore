@@ -104,6 +104,8 @@ secrets/
 !/docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json
 !/docs/evidence/oip-diagnostic-continuation/rehearsal.json
 !/docs/evidence/oip-opcua-parity/opcua-parity.json
+!/docs/evidence/oip-workstation-data/workstation-data.json
+!/docs/evidence/oip-workstation-data/rehearsal.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json
