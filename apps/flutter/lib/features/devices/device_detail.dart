@@ -3,10 +3,12 @@ import '../../app/controller.dart';
 import '../../design_system/theme.dart';
 import '../../models/contracts.dart';
 import '../../models/infrastructure.dart';
+import '../../services/api.dart';
 import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
 import '../device_connection_panel.dart';
 import '../device_history.dart';
+import 'device_administration.dart';
 import 'device_inventory.dart';
 import 'devices_layout.dart';
 
@@ -404,6 +406,16 @@ class DeviceContextInspector extends StatelessWidget {
   final void Function(String label, String value) onCopy;
   final void Function(int) navigate;
   final InfrastructureContext? infrastructure;
+
+  /// The inventory record of the selected device.
+  ///
+  /// The administration of a device needs its revision: it is the guard of
+  /// every authorized write against the inventory.
+  final InventoryDevice? inventoryDevice;
+
+  /// The administration writes and the refresh of the authorized projection.
+  final DeviceManagementApi? management;
+  final VoidCallback? onInventoryChanged;
   const DeviceContextInspector({
     super.key,
     required this.device,
@@ -417,6 +429,9 @@ class DeviceContextInspector extends StatelessWidget {
     required this.onCopy,
     required this.navigate,
     this.infrastructure,
+    this.inventoryDevice,
+    this.management,
+    this.onInventoryChanged,
   });
 
   @override
@@ -438,8 +453,28 @@ class DeviceContextInspector extends StatelessWidget {
             )
           : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
               Expanded(
-                  child:
-                      SingleChildScrollView(child: _details(context, current))),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _details(context, current),
+                      // The administration scrolls with the details: it is a
+                      // part of the object, not a fixed footer.
+                      if (inventoryDevice != null && management != null) ...[
+                        const Hairline(vertical: 4),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: DeviceAdministration(
+                            device: inventoryDevice!,
+                            api: management,
+                            onChanged: onInventoryChanged ?? () {},
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
               const Hairline(vertical: 4),
               _actions(context, current),
             ]),

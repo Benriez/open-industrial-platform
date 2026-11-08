@@ -4,6 +4,7 @@ import '../../app/controller.dart';
 import '../device_onboarding.dart';
 import '../../design_system/theme.dart';
 import '../../models/contracts.dart';
+import '../../models/infrastructure.dart';
 import '../../widgets/adaptive_workspace.dart';
 import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
@@ -116,6 +117,28 @@ class _DevicesPageState extends State<DevicesPage> {
   Device? get selectedDevice => snapshot.devices
       .where((item) => item.id == session.selectedId)
       .firstOrNull;
+
+  /// The inventory record of the selected device.
+  ///
+  /// The administration of a device writes against the inventory of the Core,
+  /// so it needs the record with its revision, not only the device of the
+  /// session snapshot.
+  InventoryDevice? get _inventoryRecord {
+    final current = selectedDevice;
+    if (current == null) return null;
+    final inventory = widget.controller.infrastructure.inventory ?? const [];
+    for (final record in inventory) {
+      if (record.id == current.id) return record;
+    }
+    return null;
+  }
+
+  /// The administration writes change the inventory of the Core. The
+  /// authorized projection is read again, so the surface shows the state the
+  /// Core actually holds.
+  Future<void> _refreshInventory() async {
+    await widget.controller.resyncInfrastructure();
+  }
 
   List<Observation> get displayMetrics {
     // DeviceDetail defines the authorized metric set. SSE may only replace an
@@ -550,6 +573,9 @@ class _DevicesPageState extends State<DevicesPage> {
             onCopy: _copy,
             navigate: widget.navigate,
             infrastructure: widget.controller.infrastructure,
+            inventoryDevice: _inventoryRecord,
+            management: widget.controller.management,
+            onInventoryChanged: _refreshInventory,
           ),
         );
         final comparison = DeviceComparisonWorkspace(

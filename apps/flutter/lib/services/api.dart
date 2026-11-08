@@ -138,6 +138,19 @@ abstract class DeviceManagementApi {
       String level, Map<String, String> scope);
   Future<Json> inventory(String id);
   Future<void> register(Json device);
+
+  /// The update of a registered device.
+  ///
+  /// The revision of the device is the guard of the write: a stale revision
+  /// is refused by the Core, so two operators cannot overwrite each other
+  /// unnoticed.
+  Future<void> update(Json device, {required int expectedRevision});
+
+  /// The archive of a registered device.
+  ///
+  /// The archive keeps the record of the device and its history. It is not a
+  /// deletion and it is guarded by the revision of the device as well.
+  Future<void> archive(String id, {required int expectedRevision});
   Future<ConnectionResult> connection({String? deviceId, String? planId});
   Future<ConnectionResult> configure(Json action);
 
@@ -247,6 +260,32 @@ class RestApi implements OipApi, DeviceManagementApi {
     await _change('/api/v2/inventory/apply', {
       'changes': [
         {'operation': 'register', 'device': device}
+      ]
+    });
+  }
+
+  @override
+  Future<void> update(Json device, {required int expectedRevision}) async {
+    await _change('/api/v2/inventory/apply', {
+      'changes': [
+        {
+          'operation': 'update',
+          'device': device,
+          'expected_revision': expectedRevision,
+        }
+      ]
+    });
+  }
+
+  @override
+  Future<void> archive(String id, {required int expectedRevision}) async {
+    await _change('/api/v2/inventory/apply', {
+      'changes': [
+        {
+          'operation': 'archive',
+          'id': id,
+          'expected_revision': expectedRevision,
+        }
       ]
     });
   }

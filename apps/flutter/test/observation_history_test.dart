@@ -98,6 +98,12 @@ class HistoryApi extends FakeApi implements DeviceManagementApi {
   Future<void> register(Json device) async {}
 
   @override
+  Future<void> update(Json device, {required int expectedRevision}) async {}
+
+  @override
+  Future<void> archive(String id, {required int expectedRevision}) async {}
+
+  @override
   Future<ConnectionResult> connection(
           {String? deviceId, String? planId}) async =>
       ConnectionResult.fromJson({

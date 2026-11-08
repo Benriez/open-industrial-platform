@@ -122,7 +122,8 @@ class OipController extends ChangeNotifier {
           'Die lokale Anmeldung wird von diesem Client nicht unterstützt.',
           code: 'UNSUPPORTED');
     }
-    await boundary.login(code);
+    final session = await boundary.login(code);
+    _sessionPrincipal = session.authenticated ? session.principalId : null;
     contextRevision++;
     history.clear();
     telemetryKey = null;
@@ -141,6 +142,7 @@ class OipController extends ChangeNotifier {
     String? failure;
     try {
       if (boundary != null) await boundary.logout();
+    _sessionPrincipal = null;
     } catch (exception) {
       failure = apiErrorMessage(exception,
           'Lokale Ansicht abgemeldet. Die serverseitige Abmeldung ist nicht bestätigt; die Sitzung läuft spätestens nach 30 Minuten ab.');
@@ -215,6 +217,7 @@ class OipController extends ChangeNotifier {
   /// Useful for an explicit resync and for deterministic contract-fixture UI
   /// tests; production startup continues into [start] after the same read.
   Future<void> resyncInfrastructure() async {
+    await _bindSessionPrincipal();
     final bootstrap = await api.infrastructureBootstrap();
     if (_closed) return;
     _transport = _TransportMode.authorized;
@@ -236,6 +239,7 @@ class OipController extends ChangeNotifier {
             final bootstrap = await api.infrastructureBootstrap();
             if (_closed || epoch != _epoch) return;
             _transport = _TransportMode.authorized;
+            await _bindSessionPrincipal();
             _acceptBootstrap(bootstrap);
           } on ApiFailure catch (exception) {
             if (exception.code == 'UNSUPPORTED' ||
@@ -364,10 +368,29 @@ class OipController extends ChangeNotifier {
     }
   }
 
+  /// The principal of the authorized session.
+  ///
+  /// The Core has no whoami route. The session of the browser is the
+  /// evidence of the identity, and it is what keeps the selected scope of the
+  /// operator across a refresh of the authorized projection.
+  String? _sessionPrincipal;
+
+  Future<void> _bindSessionPrincipal() async {
+    final boundary = management;
+    if (boundary == null) return;
+    try {
+      final session = await boundary.session();
+      _sessionPrincipal = session.authenticated ? session.principalId : null;
+    } catch (_) {
+      // The identity stays unknown. The scope is then reset to Unified on the
+      // next bootstrap, which is the safe behaviour.
+    }
+  }
+
   void _acceptBootstrap(InfrastructureBootstrap bootstrap) {
     _authorizedSnapshot = bootstrap.snapshot.toSnapshot();
     _accept(_authorizedSnapshot!);
-    infrastructure.accept(bootstrap);
+    infrastructure.accept(bootstrap, sessionPrincipal: _sessionPrincipal);
   }
 
   void _acceptAuthorized(AuthorizedSnapshot value) {

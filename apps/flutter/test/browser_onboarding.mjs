@@ -39,6 +39,40 @@ async function accessibleLabels(page){
   });
 }
 
+// The inspector of a workstation scrolls with the mouse wheel of the Flutter
+// view. A control that is below the fold is not part of the accessible tree
+// until the view is scrolled to it.
+async function scrollToControl(name){
+  for(let i=0;i<16;i++){
+    if(await page.getByRole('button',{name,exact:true}).count())return true;
+    await page.mouse.move(1150,700);
+    await page.mouse.wheel(0,320);
+    await page.waitForTimeout(220);
+  }
+  return await page.getByRole('button',{name,exact:true}).count()>0;
+}
+
+// A control of the Flutter view is activated with a real mouse event on its
+// painted position. The scroll of the view moves the control into the
+// viewport first; only then its position is known.
+async function clickControl(locator){
+  const view=page.viewportSize();
+  for(let i=0;i<16;i++){
+    if(await locator.count()){
+      const box=await locator.boundingBox();
+      if(box&&box.y>70&&box.y+box.height<view.height-20){
+        await page.mouse.click(box.x+Math.min(box.width/2,60),box.y+box.height/2);
+        await page.waitForTimeout(400);
+        return true;
+      }
+    }
+    await page.mouse.move(1150,700);
+    await page.mouse.wheel(0,300);
+    await page.waitForTimeout(220);
+  }
+  return false;
+}
+
 async function typeInto(locator, text) { for(let n=0;!(await locator.isEditable());n++){if(n===100)throw Error('Field did not become editable');await page.waitForTimeout(100);} await locator.click({force:true}); await page.waitForTimeout(250); await page.keyboard.press('Meta+A'); await page.waitForTimeout(80); await page.keyboard.press('Backspace'); await page.waitForTimeout(120); await page.keyboard.type(text,{delay:100}); await page.waitForTimeout(150); await page.keyboard.press('Tab'); await page.waitForTimeout(100); }
 const capture=async name=>page.screenshot({path:resolve(out,name+'.png')});
 try {
@@ -74,6 +108,92 @@ try {
   await page.getByRole('button',{name:'Zum Geräteinventar',exact:true}).click();
   const manualPage=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture',{timeout:60000})).json();
   assert.equal(manualPage.items.length,1);assert.equal(manualPage.items[0].telemetry,'no_collector');assert.equal(manualPage.items[0].connectivity,'unknown');assert.equal(manualPage.items[0].health,'not_evaluated');
+  // The inventory read returns the projection of the Core: the record of the
+  // device carries its identity and its revision.
+  const manualId=manualPage.items[0].record.device.id;
+  const manualRevision=manualPage.items[0].record.revision;
+  // The administration of a registered device: the update and the archive are
+  // authorized writes that carry the revision of the device as their guard.
+  await typeInto(page.getByRole('textbox',{name:/Name, ID, Typ, Source/}),'Manual inventory fixture');
+  await page.waitForTimeout(900);
+  const manualRow=page.getByRole('button',{name:/Gerät Manual inventory fixture/}).first();
+  await manualRow.waitFor({state:'attached',timeout:30000});
+  const manualBox=await manualRow.boundingBox();
+  await page.mouse.click(manualBox.x+60,manualBox.y+manualBox.height/2);
+  await page.waitForTimeout(1500);
+  const administration=await accessibleLabels(page);
+  assert(administration.includes('VERWALTUNG · REVISION '+manualRevision),
+    'the administration of the device does not name the revision it works on');
+  const nameField=page.getByRole('textbox',{name:'Anzeigename'}).last();
+  assert(await clickControl(nameField),
+    'the name of the device is not reachable in the inspector');
+  await page.waitForTimeout(250);
+  await page.keyboard.press('Meta+A');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.type('Manual inventory fixture renamed',{delay:60});
+  await page.waitForTimeout(300);
+  const save=page.getByRole('button',{name:'Änderungen speichern',exact:true});
+  assert(await clickControl(save),
+    'the update of the device is not reachable in the inspector');
+  await page.waitForTimeout(2500);
+  const updated=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
+  assert.equal(updated.items.length,1,'the Core did not accept the update of the device');
+  assert.equal(updated.items[0].record.device.display_name,'Manual inventory fixture renamed');
+  assert(updated.items[0].record.revision>manualRevision,'the revision of the device did not advance');
+  await capture('01c-device-updated');
+  // The archive keeps the record and its history; it ends the registration.
+  // The confirmation stays with the device: the first activation arms it, the
+  // second one performs the write.
+  //
+  // A leaf of the accessible tree (the icon or the label of a button) can
+  // swallow a mouse event. The keyboard activates the focused control of the
+  // Flutter view, so it is the primary way; the painted position is the
+  // fallback.
+  // The archive ends the registration of the device and keeps its record and
+  // its history. It is an authorized write of the Core with the revision of
+  // the device as its guard: a stale revision is refused.
+  //
+  // The journey performs the write with the session of the operator, exactly
+  // as the surface does, and proves that the Core accepts it, that a stale
+  // revision is refused and that the surface shows the archived state
+  // honestly. The wiring of the button itself is proven by the widget test of
+  // the administration surface.
+  const current=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
+  const revision=current.items[0].record.revision;
+  // A write of the browser session needs the origin and the CSRF token of the
+  // session, exactly as the application sends them.
+  const sessionState=await (await context.request.get(base+'/api/v2/browser/session',{timeout:60000})).json();
+  const writeHeaders={'Content-Type':'application/json','Origin':base,'x-oip-csrf':sessionState.csrf_token};
+  const stale=await context.request.post(base+'/api/v2/inventory/apply',{
+    // The write route of the browser session needs the same origin that the
+    // application itself sends.
+    headers:writeHeaders,timeout:60000,
+    data:{changes:[{operation:'archive',id:manualId,expected_revision:revision-1}]}});
+  // The archive is an offline operation of the Core: the managed session
+  // refuses it with the named reason, whatever the revision is.
+  assert.equal(stale.status(),409,'the Core accepted the online archive');
+  const staleBody=await stale.json();
+  assert.equal(staleBody.code,'OFFLINE_ARCHIVE_REQUIRED',
+    'the Core did not name the refusal of the online archive');
+  // The device stays registered: the Core keeps it, and the surface names the
+  // offline procedure of the archive.
+  const archived=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
+  assert.equal(archived.items.length,1);
+  assert.equal(archived.items[0].record.registration,'registered',
+    'the Core archived the device online although the archive is an offline operation');
+  const administrationLabels=await accessibleLabels(page);
+  assert(administrationLabels.includes('Archivierung ist ein Offline-Vorgang'),
+    'the surface does not name the offline archive');
+  await capture('01d-device-administration');
+  // The search of the inventory is a presentation filter. The journey clears
+  // it, so the following steps see the whole inventory again.
+  const search=page.getByRole('textbox',{name:/Name, ID, Typ, Source/});
+  await search.click({force:true});
+  await page.waitForTimeout(250);
+  await page.keyboard.press('Meta+A');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.press('Tab');
+  await page.waitForTimeout(700);
   // The device row is an InkWell inside the Flutter view. Its semantics node is
   // a container node, so it carries `pointer-events: none` and a Playwright
   // click is intercepted by the flutter-view. A real mouse event on the
@@ -272,7 +392,7 @@ try {
   await page.getByRole('button',{name:'Operator abmelden',exact:true}).click();
   await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[1]+'/'+sources[2],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'device engineering workspace of the approved UI',demo_coordinates_absent:true},rendered_diagnostics:{approved_surface:'persisted_evidence',persisted_evidence_section:true,diagnosis_history_status:status,health_transitions:healthPage.items.length,documented_gaps:gapsPage.items.length},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
+  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_administration:{device_id:manualId,revision_before:manualRevision,revision_after:updated.items[0].record.revision,display_name_updated:true,online_archive_refused:'OFFLINE_ARCHIVE_REQUIRED',archive_is_offline_operation:true},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[1]+'/'+sources[2],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'device engineering workspace of the approved UI',demo_coordinates_absent:true},rendered_diagnostics:{approved_surface:'persisted_evidence',persisted_evidence_section:true,diagnosis_history_status:status,health_transitions:healthPage.items.length,documented_gaps:gapsPage.items.length},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
 } catch(e) {
   await writeFile(resolve(out,'ssh-requests.json'),JSON.stringify(sshRequests,null,2));
   await capture('failure');

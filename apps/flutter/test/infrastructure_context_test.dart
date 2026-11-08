@@ -4,7 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oip_dashboard/app/app.dart';
 import 'package:oip_dashboard/app/controller.dart';
 import 'package:oip_dashboard/models/contracts.dart';
+import 'package:oip_dashboard/models/history.dart';
 import 'package:oip_dashboard/models/infrastructure.dart';
+import 'package:oip_dashboard/models/onboarding.dart';
 import 'package:oip_dashboard/services/api.dart';
 
 import 'infrastructure_support.dart';
@@ -201,6 +203,29 @@ void main() {
       await running;
     });
 
+    test('The selected scope survives a refresh of the authorized projection',
+        () async {
+      // The session of the browser is the identity evidence of the principal.
+      // A refresh of the projection reads the inventory again — after an
+      // authorized write, for example — and it must not discard the scope of
+      // the operator.
+      final api = _SessionApi()..infrastructure = infrastructureFixture();
+      final controller = OipController(api,
+          retryDelay: const Duration(milliseconds: 1));
+      await controller.resyncInfrastructure();
+      controller.selectInfrastructure(
+          const InfrastructureSelection.infrastructure('org-a', 'infra-a1'));
+      final generation = controller.infrastructure.sessionGeneration;
+      expect(controller.infrastructure.selection.infrastructureId, 'infra-a1');
+
+      await controller.resyncInfrastructure();
+
+      expect(controller.infrastructure.selection.infrastructureId, 'infra-a1');
+      expect(controller.infrastructure.sessionGeneration, generation);
+      expect(controller.infrastructure.principalIdentity, 'fixture-operator');
+      controller.dispose();
+    });
+
     test('Reconnect loading never expands the selected scope', () async {
       final api = FakeApi()..infrastructure = infrastructureFixture();
       final controller = OipController(api,
@@ -369,4 +394,55 @@ void main() {
       }
     });
   });
+}
+
+/// A client that carries the identity of the authorized session.
+class _SessionApi extends FakeApi implements DeviceManagementApi {
+  @override
+  bool get managed => true;
+
+  @override
+  Future<BrowserSession> session() async => BrowserSession.fromJson({
+        'authenticated': true,
+        'principal_id': 'fixture-operator',
+        'csrf_token': null,
+        'mode': 'local_operator_session',
+      });
+
+  @override
+  Future<BrowserSession> login(String code) async => session();
+
+  @override
+  Future<void> logout() async {}
+
+  @override
+  Future<List<HierarchyItem>> hierarchy(
+          String level, Map<String, String> scope) async =>
+      const [];
+
+  @override
+  Future<Json> inventory(String id) async => const {};
+
+  @override
+  Future<void> register(Json device) async {}
+
+  @override
+  Future<void> update(Json device, {required int expectedRevision}) async {}
+
+  @override
+  Future<void> archive(String id, {required int expectedRevision}) async {}
+
+  @override
+  Future<ConnectionResult> connection(
+          {String? deviceId, String? planId}) async =>
+      ConnectionResult.fromJson({'profiles': [], 'observations': []});
+
+  @override
+  Future<ConnectionResult> configure(Json action) async =>
+      ConnectionResult.fromJson({'profiles': [], 'observations': []});
+
+  @override
+  Future<HistoryPage> observationHistory(
+          {required String deviceId, String? cursor, int limit = 20}) async =>
+      HistoryPage.fromJson({'items': [], 'truncated': false});
 }

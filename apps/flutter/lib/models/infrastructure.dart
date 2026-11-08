@@ -204,6 +204,12 @@ class InventoryDevice {
   final String? registeredBy, physicalLocation;
   final bool? monitoringSimulated;
 
+  /// The metadata of the device as the Core holds it.
+  ///
+  /// An update of a device is a full replacement: the Core does not merge a
+  /// partial device, so the client sends the metadata it read back.
+  final Json? metadata;
+
   const InventoryDevice({
     required this.id,
     required this.name,
@@ -223,6 +229,7 @@ class InventoryDevice {
     this.registeredBy,
     this.physicalLocation,
     this.monitoringSimulated,
+    this.metadata,
   });
 
   factory InventoryDevice.fromJson(Json json) {
@@ -248,6 +255,7 @@ class InventoryDevice {
       updatedMs: record['updated_ms'] as int?,
       registeredBy: record['registered_by'] as String?,
       physicalLocation: metadata['physical_location'] as String?,
+      metadata: metadata,
       monitoringSimulated: json['monitoring_simulated'] as bool?,
     );
   }
@@ -617,19 +625,25 @@ class InfrastructureContext extends ChangeNotifier {
     notifyListeners();
   }
 
-  void accept(InfrastructureBootstrap bootstrap) {
-    final identityChanged = origin != null &&
-        principalIdentity != bootstrap.principalIdentity;
+  /// Accepts a new authorized bootstrap.
+  ///
+  /// The identity of the session is the evidence of the principal. The Core
+  /// has no whoami route, so the authorized session of the browser carries it.
+  /// Without any identity evidence a new bootstrap is an unknown
+  /// authorization generation and the selection resets to Unified: that is
+  /// safer than carrying a selection across an unverifiable principal
+  /// transition.
+  void accept(InfrastructureBootstrap bootstrap, {String? sessionPrincipal}) {
+    final identity = bootstrap.principalIdentity ?? sessionPrincipal;
+    final identityChanged =
+        origin != null && principalIdentity != null && identity != principalIdentity;
     final previousSignature = scopeSignature;
-    // Without a Core whoami/session contract, a new authenticated bootstrap is
-    // a new unknown authorization generation. Resetting to Unified is safer
-    // than carrying a selection across an unverifiable principal transition.
     final unverifiableIdentity =
-        bootstrap.principalIdentity == null && principalIdentity == null && origin != null;
+        identity == null && principalIdentity == null && origin != null;
     var invalidate = identityChanged || unverifiableIdentity;
     if (identityChanged) selection = const InfrastructureSelection.unified();
     hierarchy = bootstrap.hierarchy;
-    principalIdentity = bootstrap.principalIdentity;
+    principalIdentity = identity;
     origin = bootstrap.origin;
     inventory = bootstrap.inventory;
     findings = bootstrap.findings;
