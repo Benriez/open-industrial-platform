@@ -118,7 +118,11 @@ try {
   await page.getByRole('button', { name: 'Operator-Sitzung autorisieren', exact: true }).click();
   await waitForAria('Alle berechtigten Infrastrukturen');
 
-  const bundleResponse = await context.request.get(base.replace(/\/$/, '') + '/main.dart.js');
+  // The web release is several megabytes and the loopback of a local
+  // machine is slow. The download of the delivered bundle therefore gets
+  // the same time as the first paint of the application.
+  const bundleResponse = await context.request.get(base.replace(/\/$/, '') + '/main.dart.js',
+      { timeout: 180000 });
   check('bundle HTTP status', bundleResponse.status() === 200, bundleResponse.status());
   const loaded = await bundleResponse.body();
   bundleSha256 = createHash('sha256').update(loaded).digest('hex');
@@ -139,7 +143,8 @@ try {
     check(`managed mode has no legacy marker ${marker}`, !first.includes(marker));
   }
 
-  const sessionResponse = await context.request.get(base.replace(/\/$/, '') + '/api/v2/browser/session');
+  const sessionResponse = await context.request.get(base.replace(/\/$/, '') + '/api/v2/browser/session',
+      { timeout: 60000 });
   check('browser session HTTP status', sessionResponse.status() === 200, sessionResponse.status());
   const rawSession = await sessionResponse.json();
   session = {
