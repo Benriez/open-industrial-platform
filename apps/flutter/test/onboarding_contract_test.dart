@@ -4,10 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:oip_dashboard/models/contracts.dart';
+import 'package:oip_dashboard/models/infrastructure.dart';
 import 'package:oip_dashboard/services/api.dart';
 import 'package:oip_dashboard/app/controller.dart';
 import 'package:oip_dashboard/models/onboarding.dart';
 import 'package:oip_dashboard/core/sse.dart';
+
+import 'infrastructure_support.dart';
+import 'support.dart';
 
 class SessionApi extends RestApi {
   final Stream<ServerEvent> events;
@@ -19,160 +23,99 @@ class SessionApi extends RestApi {
 
 void main() {
   test(
-      'Expired operator session clears snapshots and invalidates open inspector context',
+      'An expired operator session clears snapshots and never falls back to the demo dashboard',
       () async {
-    var sessions = 0;
-    final events = StreamController<ServerEvent>();
-    final empty = {
-      'sources': [],
-      'devices': [],
-      'observations': [],
-      'events': [],
-      'locations': []
-    };
-    final client = MockClient((r) async => http.Response(
-        jsonEncode(r.url.path.endsWith('/session')
-            ? {
-                'authenticated': ++sessions == 1,
-                'principal_id': sessions == 1 ? 'a' : null,
-                'csrf_token': null,
-                'mode':
-                    sessions == 1 ? 'local_operator_session' : 'login_required'
-              }
-            : empty),
-        200));
-    final controller = OipController(SessionApi(client, events.stream),
+    // The Core answers the authorized context with an identity failure and the
+    // legacy route is not an explicitly marked demo.
+    final data = fixture();
+    (data['system'] as Json)['simulated'] = false;
+    final api = FakeApi()
+      ..data = data
+      ..infrastructureFailure = const ApiFailure(
+          'Browser-Session oder zentrale Policy erlaubt diesen Management-Read nicht.',
+          code: 'PERMISSION_DENIED',
+          statusCode: 403);
+    final controller = OipController(api,
         retryDelay: const Duration(milliseconds: 1));
     final running = controller.start();
-    for (var i = 0; i < 50 && controller.snapshot == null; i++) {
+    for (var i = 0; i < 50 && !controller.loginRequired; i++) {
       await Future<void>.delayed(const Duration(milliseconds: 2));
     }
-    expect(controller.snapshot, isNotNull);
-    final before = controller.contextRevision;
-    await events.close();
-    await running;
+    // The identity failure is terminal until the operator authorizes a new
+    // session. The demo dashboard is never its substitute.
     expect(controller.loginRequired, isTrue);
     expect(controller.snapshot, isNull);
     expect(controller.history, isEmpty);
-    expect(controller.contextRevision, greaterThan(before));
+    expect(controller.infrastructure.ready, isFalse);
     controller.dispose();
-  });
-  test(
-      'An infrastructure context change advances the revision and clears the display cache',
-      () async {
-    var snapshots = 0;
-    final events = StreamController<ServerEvent>.broadcast();
-    final empty = {
-      'sources': [],
-      'devices': [],
-      'observations': [],
-      'events': [],
-      'locations': []
-    };
-    final client = MockClient((r) async {
-      if (r.url.path.endsWith('/session')) {
-        return http.Response(
-            jsonEncode({
-              'authenticated': true,
-              'principal_id': 'bound-by-server',
-              'csrf_token': null,
-              'mode': 'local_operator_session'
-            }),
-            200);
-      }
-      snapshots++;
-      if (snapshots > 1) {
-        // The resynchronisation after a context change must not restore the
-        // previous context before the operator asked for it.
-        await Future<void>.delayed(const Duration(milliseconds: 400));
-      }
-      return http.Response(jsonEncode(empty), 200);
-    });
-    final controller = OipController(SessionApi(client, events.stream),
-        retryDelay: const Duration(milliseconds: 1));
-    final running = controller.start();
-    for (var i = 0; i < 50 && controller.snapshot == null; i++) {
-      await Future<void>.delayed(const Duration(milliseconds: 2));
-    }
-    expect(controller.snapshot, isNotNull);
-    final before = controller.contextRevision;
-    controller.setInfrastructureContext(const OnboardingScope(
-        organization: 'org-a', infrastructure: 'infra-a1', site: 'site-a1'));
-    // The scope is stored, the revision advances and the display cache of the
-    // previous context is gone.
-    expect(controller.onboardingScope.organization, 'org-a');
-    expect(controller.onboardingScope.infrastructure, 'infra-a1');
-    expect(controller.onboardingScope.site, 'site-a1');
-    expect(controller.contextRevision, greaterThan(before));
-    expect(controller.snapshot, isNull);
-    expect(controller.history, isEmpty);
-    await events.close();
     await running;
-    controller.dispose();
   });
+
   test(
-      'A different operator principal invalidates the display cache',
+      'An infrastructure context change clears the display cache of the previous context',
       () async {
-    var sessions = 0;
-    var snapshots = 0;
-    final events = StreamController<ServerEvent>.broadcast();
-    final empty = {
-      'sources': [],
-      'devices': [],
-      'observations': [],
-      'events': [],
-      'locations': []
-    };
-    final client = MockClient((r) async {
-      if (r.url.path.endsWith('/session')) {
-        sessions++;
-        return http.Response(
-            jsonEncode({
-              'authenticated': true,
-              'principal_id': sessions == 1 ? 'principal-a' : 'principal-b',
-              'csrf_token': null,
-              'mode': 'local_operator_session'
-            }),
-            200);
-      }
-      snapshots++;
-      if (snapshots > 1) {
-        await Future<void>.delayed(const Duration(milliseconds: 400));
-      }
-      return http.Response(jsonEncode(empty), 200);
-    });
-    final controller = OipController(SessionApi(client, events.stream),
-        retryDelay: const Duration(milliseconds: 1));
-    final running = controller.start();
-    for (var i = 0; i < 50 && controller.snapshot == null; i++) {
-      await Future<void>.delayed(const Duration(milliseconds: 2));
-    }
+    final api = FakeApi()..infrastructure = infrastructureFixture();
+    final controller = OipController(api);
+    await controller.resyncInfrastructure();
     expect(controller.snapshot, isNotNull);
+    expect(controller.history, isNotEmpty);
+
+    // A narrower authorized context replaces the previous projection and its
+    // display cache.
+    controller.selectInfrastructure(
+        const InfrastructureSelection.infrastructure('org-a', 'infra-a2'));
+    expect(controller.snapshot!.devices.single.id, 'device-a2');
+    expect(controller.history.where((item) => item.sourceId != 'source-a2'),
+        isEmpty);
+
+    // The onboarding scope is a separate seam and advances the revision that
+    // open inspectors observe.
     final before = controller.contextRevision;
-    controller.reconnect();
-    for (var i = 0; i < 50 && controller.contextRevision == before; i++) {
-      await Future<void>.delayed(const Duration(milliseconds: 5));
-    }
-    // Another principal must not keep the display state of the first one.
+    controller.setInfrastructureContext(
+        const OnboardingScope(organization: 'org-a', infrastructure: 'infra-a2'));
     expect(controller.contextRevision, greaterThan(before));
-    expect(controller.snapshot, isNull);
-    expect(controller.history, isEmpty);
-    await events.close();
-    await running;
     controller.dispose();
   });
+
+  test('A different operator principal invalidates the display cache', () async {
+    final api = FakeApi()..infrastructure = infrastructureFixture();
+    final controller = OipController(api);
+    await controller.resyncInfrastructure();
+    expect(controller.snapshot, isNotNull);
+    expect(controller.history, isNotEmpty);
+
+    // Another principal is a different authorization. The objects of the first
+    // one are never carried over.
+    api.infrastructure = infrastructureFixture(principal: 'other-operator');
+    await controller.resyncInfrastructure();
+    expect(controller.infrastructure.principalIdentity, 'other-operator');
+    expect(controller.snapshot, isNotNull);
+    controller.dispose();
+  });
+
   test(
-      'Scoped snapshot cannot invent global counts, health, incidents or topology',
+      'An authorized snapshot cannot invent global counts, health, incidents or topology',
       () {
-    final snapshot = Snapshot.fromScopedJson({
+    // The OIP-009 context projection is the only managed source. It carries
+    // no platform-wide counters and no topology.
+    final snapshot = AuthorizedSnapshot.fromJson({
       'sources': <dynamic>[],
       'devices': <dynamic>[],
       'observations': <dynamic>[],
       'events': [
-        {'id': 'actual-event'}
+        {
+          'id': 'actual-event',
+          'sequence': 1,
+          'context': {'data_source_id': 'source-a'},
+          'event': {
+            'Reconnected': {'at': 1700000000000}
+          }
+        }
       ],
       'locations': <dynamic>[],
-    });
+      'resync_required': false,
+      'replay_supported': false,
+    }).toSnapshot();
     expect(snapshot.system.persisted, isNull);
     expect(snapshot.system.generatedMs, isNull);
     expect(snapshot.system.cpu, isNull);
@@ -181,6 +124,8 @@ void main() {
     expect(snapshot.incidents, isEmpty);
     expect(snapshot.topology, isEmpty);
     expect(snapshot.system.demoControls, isFalse);
+    expect(snapshot.incidentsDelivered, isFalse);
+    expect(snapshot.topologyDelivered, isFalse);
   });
   test(
       'Pairing uses fixed endpoint and CSRF header without identity claims or URL tokens',

@@ -2,12 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../design_system/theme.dart';
 import '../features/devices.dart';
-import '../features/operator_login.dart';
 import '../features/overview.dart';
 import '../features/network.dart';
 import '../features/opcua.dart';
 import '../features/diagnostics.dart';
+import '../features/operator_login.dart';
+import '../features/settings.dart';
 import '../widgets/components.dart';
+import '../widgets/adaptive_workspace.dart';
+import '../widgets/infrastructure_selector.dart';
 import 'controller.dart';
 
 class OipApp extends StatefulWidget {
@@ -48,6 +51,8 @@ class _OipAppState extends State<OipApp> {
         };
       });
 
+  void setTheme(OipThemeVariant value) => setState(() => themeVariant = value);
+
   @override
   Widget build(BuildContext context) => MaterialApp(
         title: 'Open Industrial Platform',
@@ -65,6 +70,7 @@ class _OipAppState extends State<OipApp> {
           dark: themeVariant != OipThemeVariant.daylight,
           themeVariant: themeVariant,
           toggleTheme: cycleTheme,
+          setTheme: setTheme,
         ),
       );
 }
@@ -74,14 +80,16 @@ const pageTitles = [
   'Geräte & Dienste',
   'Netzwerk & VPN',
   'OPC-UA-Browser',
-  'Diagnose & Ereignisse'
+  'Diagnose & Ereignisse',
+  'Einstellungen'
 ];
 const pageIcons = [
   Icons.space_dashboard_outlined,
   Icons.dns_outlined,
   Icons.hub_outlined,
   Icons.account_tree_outlined,
-  Icons.radar
+  Icons.radar,
+  Icons.settings_outlined
 ];
 
 Color pageAccent(BuildContext context, int index) {
@@ -90,7 +98,8 @@ Color pageAccent(BuildContext context, int index) {
     1 => OipTokens.blue,
     2 => OipTokens.pink,
     3 => OipTokens.violet,
-    _ => OipTokens.yellow,
+    4 => OipTokens.yellow,
+    _ => OipTokens.lime,
   };
   return OipTokens.readableAccent(context, color);
 }
@@ -109,12 +118,14 @@ Widget spectrumTitle(BuildContext context, String value) {
 class DashboardShell extends StatefulWidget {
   final OipController controller;
   final VoidCallback toggleTheme;
+  final ValueChanged<OipThemeVariant> setTheme;
   final bool dark;
   final OipThemeVariant themeVariant;
   const DashboardShell(
     this.controller, {
     super.key,
     required this.toggleTheme,
+    required this.setTheme,
     this.dark = true,
     this.themeVariant = OipThemeVariant.spectrum,
   });
@@ -126,6 +137,8 @@ class DashboardShell extends StatefulWidget {
 class _DashboardShellState extends State<DashboardShell> {
   int page = 0;
   final scroll = ScrollController();
+  final devicesSession = DevicesWorkspaceSession();
+  final settingsSession = SettingsWorkspaceSession();
 
   @override
   void dispose() {
@@ -185,6 +198,10 @@ class _DashboardShellState extends State<DashboardShell> {
                               controller: widget.controller,
                               page: page,
                               navigate: navigate,
+                              devicesSession: devicesSession,
+                              settingsSession: settingsSession,
+                              themeVariant: widget.themeVariant,
+                              setTheme: widget.setTheme,
                             ),
                           ),
                         ),
@@ -301,27 +318,9 @@ class _DashboardShellState extends State<DashboardShell> {
           _navGroupLabel('DATEN & ANALYSE'),
           navigationItem(3),
           navigationItem(4),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.all(OipTokens.s4),
-            child: Panel(
-              padding: const EdgeInsets.all(OipTokens.s3),
-              accent: OipTokens.lime,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const StatusPill('AGENT-FIRST',
-                      color: OipTokens.lime, icon: Icons.lock_outline),
-                  const SizedBox(height: OipTokens.s3),
-                  Text('Read-only · Rust-Capabilities.',
-                      style: Theme.of(context).textTheme.bodySmall),
-                  const SizedBox(height: OipTokens.s1),
-                  Text('MCP · REST/SSE · Flutter.',
-                      style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ),
-            ),
-          ),
+          const SizedBox(height: OipTokens.s5),
+          _navGroupLabel('SYSTEM'),
+          navigationItem(5),
         ],
       ),
     );
@@ -364,7 +363,6 @@ class _TopBar extends StatelessWidget {
           listenable: controller,
           builder: (context, _) {
             final snapshot = controller.snapshot;
-            final live = controller.connection == 'live';
             final scenario = snapshot?.system.scenario;
             final knownScenario = scenarios.containsKey(scenario);
             return Column(
@@ -425,18 +423,9 @@ class _TopBar extends StatelessWidget {
                   runSpacing: OipTokens.s2,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    StatusPill(
-                      live
-                          ? 'LIVE · API'
-                          : controller.loginRequired
-                              ? 'ANMELDUNG ERFORDERLICH'
-                              : controller.connection == 'connecting'
-                                  ? 'VERBINDE'
-                                  : 'RECONNECT',
-                      color: OipTokens.statusColor(
-                          context, live ? 'connected' : 'degraded'),
-                      showDot: true,
-                    ),
+                    InfrastructureSelector(
+                        controller: controller, narrow: narrow),
+                    apiConnectionStatus(context, controller),
                     if (snapshot != null && snapshot.system.demoControls)
                       SizedBox(
                         width: narrow ? 220 : 236,
@@ -472,10 +461,7 @@ class _TopBar extends StatelessWidget {
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2)),
                     if (!narrow)
-                      Text(
-                          controller.managed
-                              ? 'SSH read-only · lokaler Operator'
-                              : 'Read-only · Self-hosted',
+                      Text('Read-only · Self-hosted',
                           style: Theme.of(context).textTheme.bodySmall),
                   ],
                 ),
@@ -490,10 +476,18 @@ class _PageContent extends StatelessWidget {
   final OipController controller;
   final int page;
   final void Function(int) navigate;
+  final DevicesWorkspaceSession devicesSession;
+  final SettingsWorkspaceSession settingsSession;
+  final OipThemeVariant themeVariant;
+  final ValueChanged<OipThemeVariant> setTheme;
   const _PageContent({
     required this.controller,
     required this.page,
     required this.navigate,
+    required this.devicesSession,
+    required this.settingsSession,
+    required this.themeVariant,
+    required this.setTheme,
   });
 
   @override
@@ -522,7 +516,7 @@ class _PageContent extends StatelessWidget {
               color: OipTokens.statusColor(context, 'degraded'),
             ),
           ),
-        if (controller.error != null)
+        if (controller.error != null && !controller.loginRequired)
           Padding(
             padding: const EdgeInsets.only(bottom: OipTokens.s4),
             child: Align(
@@ -547,8 +541,10 @@ class _PageContent extends StatelessWidget {
             ),
           ),
         if (controller.loginRequired)
+          // A missing session is an identity problem. The old demo dashboard
+          // never appears as a substitute for an authorized read.
           OperatorLogin(controller)
-        else if (snapshot == null)
+        else if (snapshot == null && page != 5)
           StateMessage(
             controller.error == null
                 ? 'Verbindung zum lokalen OIP-Server'
@@ -570,10 +566,21 @@ class _PageContent extends StatelessWidget {
         else
           switch (page) {
             0 => OverviewPage(controller, navigate),
-            1 => DevicesPage(controller),
+            1 => DevicesPage(controller, navigate, session: devicesSession),
             2 => NetworkPage(controller),
             3 => OpcuaPage(controller),
-            _ => DiagnosticsPage(controller),
+            4 => DiagnosticsPage(controller),
+            5 => SettingsPage(
+                controller: controller,
+                session: settingsSession,
+                themeVariant: themeVariant,
+                onTheme: setTheme,
+              ),
+            _ => const StateMessage(
+                'Unbekanntes Modul',
+                'Die angeforderte Hauptnavigation ist nicht registriert.',
+                icon: Icons.error_outline,
+              ),
           },
         const SizedBox(height: OipTokens.s7),
         const Divider(),
@@ -582,19 +589,14 @@ class _PageContent extends StatelessWidget {
           spacing: OipTokens.s3,
           runSpacing: OipTokens.s1,
           children: [
-            if (controller.managed &&
-                controller.browserSession?.authenticated == true)
-              TextButton.icon(
-                  onPressed: controller.logout,
-                  icon: const Icon(Icons.logout, size: 16),
-                  label: const Text('Operator abmelden')),
-            Text('OIP / 005 UI · SPECTRUM',
+            Text('OIP · SPECTRUM 2027',
                 style: Theme.of(context).textTheme.labelSmall),
             Text(
-                controller.managed
-                    ? 'Reale Infrastruktur · lokale Operator-Sitzung'
-                    : 'Lokale Entwicklung und Simulation',
-                style: Theme.of(context).textTheme.bodySmall),
+              controller.hasAuthorizedContext
+                  ? 'Reale Infrastruktur · lokale Operator-Sitzung'
+                  : 'Lokale Entwicklung und Simulation',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
             Text(
               snapshot == null
                   ? 'Security-Blocker werden vom Server geladen'
@@ -603,6 +605,12 @@ class _PageContent extends StatelessWidget {
                       : '${snapshot.system.blocker} offen',
               style: Theme.of(context).textTheme.bodySmall,
             ),
+            if (controller.hasAuthorizedContext)
+              TextButton(
+                key: const Key('operator-logout'),
+                onPressed: () => controller.logout(),
+                child: const Text('Operator abmelden'),
+              ),
           ],
         ),
       ],

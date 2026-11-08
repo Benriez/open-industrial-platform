@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
 import 'package:oip_dashboard/core/sse.dart';
+import 'package:oip_dashboard/features/settings/settings_models.dart';
 import 'package:oip_dashboard/models/contracts.dart';
+import 'package:oip_dashboard/models/infrastructure.dart';
 import 'package:oip_dashboard/services/api.dart';
 
 Json observation({Object? value = 61.2}) => {
@@ -75,7 +75,7 @@ Json fixture() => {
       ],
     };
 
-class FakeApi implements OipApi {
+class FakeApi extends OipApi {
   StreamController<ServerEvent> events = StreamController<ServerEvent>();
   int attempts = 0;
   bool fail = false;
@@ -86,9 +86,69 @@ class FakeApi implements OipApi {
   int metricRequests = 0;
   int closeCalls = 0;
   int nodeLimit = 40;
+  bool failSources = false;
+  List<SourceInfo>? availableSources;
+  final nodeRequests =
+      <({String? source, String search, String folder, int offset})>[];
+
+  /// When set, node pages are generated with this many bulk items per page
+  /// (plus the six M-01 process variables on the first page) so list density,
+  /// grouping and keyboard navigation can be exercised with real pagination.
+  int? generatedBulkNodes;
   Object? scenarioFailure;
   String? chosen;
   Json data = fixture();
+  InfrastructureBootstrap? infrastructure;
+  Object? infrastructureFailure;
+
+  @override
+  Future<InfrastructureBootstrap> infrastructureBootstrap() async {
+    final failure = infrastructureFailure;
+    if (failure != null) throw failure;
+    final value = infrastructure;
+    if (value == null) {
+      throw const ApiFailure('No authorized fixture configured',
+          code: 'UNSUPPORTED');
+    }
+    return value;
+  }
+
+  @override
+  Stream<ServerEvent> infrastructureStream() {
+    attempts++;
+    events = StreamController<ServerEvent>();
+    if (emitAutomatically) scheduleMicrotask(() => emit());
+    return events.stream;
+  }
+
+  @override
+  Future<List<SourceInfo>> contextSources(
+      InfrastructureContext context) async {
+    final value = infrastructure;
+    if (value == null) return sources();
+    return context.project(value.snapshot.toSnapshot()).sources;
+  }
+
+  @override
+  Future<List<CollectionEvent>> contextCollectionEvents(
+      InfrastructureContext context) async {
+    final value = infrastructure;
+    if (value == null) return collectionEvents();
+    return context.project(value.snapshot.toSnapshot()).recentEvents;
+  }
+
+  @override
+  Future<List<Observation>> contextDeviceMetrics(
+      String id, InfrastructureContext context) async {
+    final value = infrastructure;
+    if (value == null) return deviceMetrics(id);
+    return context
+        .project(value.snapshot.toSnapshot())
+        .metrics
+        .where((item) => item.entityId == id)
+        .toList();
+  }
+
   @override
   Future<Snapshot> initial() async {
     if (fail) throw Exception('offline');
@@ -104,7 +164,9 @@ class FakeApi implements OipApi {
   }
 
   void emit() {
-    if (!events.isClosed) events.add(ServerEvent('snapshot', jsonEncode(data)));
+    if (events.isClosed) return;
+    final payload = infrastructure?.snapshot.raw ?? data;
+    events.add(ServerEvent('snapshot', jsonEncode(payload)));
   }
 
   @override
@@ -114,8 +176,85 @@ class FakeApi implements OipApi {
   }
 
   @override
-  Future<NodePage> nodes(String search, String folder, int offset) async {
+  Future<List<SourceInfo>> sources() async {
+    if (failSources) throw Exception('sources unavailable');
+    return availableSources ??
+        [
+          SourceInfo.fromJson({
+            'id': 'oip-local-simulation-v1',
+            'name': 'Local OPC-UA Simulation',
+            'entity_id': 'M-01',
+            'simulated': (data['system'] as Json)['simulated'] as bool,
+            'reachability': 'reachable',
+            'connection': 'connected',
+            'service': 'healthy',
+            'freshness': 'fresh',
+            'validity': 'valid',
+            'last_received_ms': 1800000000000,
+            'last_error': null,
+          })
+        ];
+  }
+
+  @override
+  Future<NodePage> nodes(String search, String folder, int offset,
+      {String? source}) async {
     if (failNodes) throw Exception('nodes unavailable');
+    nodeRequests
+        .add((source: source, search: search, folder: folder, offset: offset));
+    final generated = generatedBulkNodes;
+    if (generated != null) {
+      final process = [
+        ('alarm_active', 'Boolean', {'boolean': false}),
+        ('motor_running', 'Boolean', {'boolean': true}),
+        ('operating_mode', 'String', {'text': 'automatic'}),
+        ('pressure', 'Double', {'float': 320.5}),
+        ('temperature', 'Double', {'float': 61.2}),
+        ('units_produced', 'UInt64', {'integer': 3}),
+      ];
+      final all = <Json>[
+        if (folder != 'Bulk')
+          for (final (name, type, value) in process)
+            {
+              'node_id': 'ns=2;s=$name',
+              'name': name,
+              'folder': 'M-01',
+              'data_type': type,
+              'access': 'Read',
+              'namespace': 2,
+              'observation': {
+                ...observation(),
+                'metric_id': name,
+                'data_source_id': source ?? 'oip-local-simulation-v1',
+                'value': value,
+                'unit': name == 'temperature' ? 'celsius' : 'none'
+              }
+            },
+        if (folder != 'M-01')
+          for (var i = 0; i < generated; i++)
+            {
+              'node_id': 'ns=2;s=bulk.${i.toString().padLeft(4, '0')}',
+              'name': 'bulk.${i.toString().padLeft(4, '0')}',
+              'folder': 'Bulk',
+              'data_type': 'Double',
+              'access': 'Read',
+              'namespace': 2,
+              'observation': {
+                ...observation(),
+                'metric_id': 'bulk.$i',
+                'data_source_id': source ?? 'oip-local-simulation-v1',
+                'value': {'float': 1000000.0 + i},
+                'unit': 'none'
+              }
+            },
+      ].where((node) => (node['name'] as String).contains(search)).toList();
+      return NodePage.fromJson({
+        'items': all.skip(offset).take(nodeLimit).toList(),
+        'total': all.length,
+        'offset': offset,
+        'limit': nodeLimit
+      });
+    }
     return NodePage.fromJson({
       'items': [
         {
@@ -125,7 +264,10 @@ class FakeApi implements OipApi {
           'data_type': 'Double',
           'access': 'Read',
           'namespace': 2,
-          'observation': observation()
+          'observation': {
+            ...observation(),
+            'data_source_id': source ?? 'oip-local-simulation-v1',
+          }
         }
       ],
       'total': 1006,
@@ -140,6 +282,29 @@ class FakeApi implements OipApi {
     if (failMetrics) throw Exception('metrics unavailable');
     return id == 'M-01' ? [Observation.fromJson(observation())] : [];
   }
+
+  @override
+  void cancelDeviceRequests() {}
+
+  @override
+  Future<SettingsSnapshot> settings({
+    String scope = 'platform',
+    String? scopeId,
+    String? key,
+    bool catalog = false,
+  }) async {
+    throw const ApiFailure('Settings-Read nicht konfiguriert.',
+        code: 'UNSUPPORTED');
+  }
+
+  @override
+  Future<ManagementReport> management(String section) async {
+    throw const ApiFailure('Management-Read nicht konfiguriert.',
+        code: 'UNSUPPORTED');
+  }
+
+  @override
+  void cancelSettingsRequests() {}
 
   @override
   Future<List<CollectionEvent>> collectionEvents() async {
@@ -174,142 +339,4 @@ class FakeApi implements OipApi {
     closeCalls++;
     disconnect();
   }
-}
-
-/// One measured value of the authorized projection, exactly as the Core
-/// serializes it.
-Json scopedObservation({
-  required String metricId,
-  required Object? value,
-  Object unit = 'none',
-  int sourceMs = 1700000000000,
-  int receivedMs = 1700000000100,
-  String freshness = 'fresh',
-  String quality = 'good',
-  String entityId = 'device-a',
-  String sourceId = 'source-ssh',
-}) =>
-    {
-      'entity_id': entityId,
-      'data_source_id': sourceId,
-      'metric_id': metricId,
-      'value': value,
-      'unit': unit,
-      'quality': quality,
-      'freshness': freshness,
-      'timestamps': {
-        'source': sourceMs,
-        'server': null,
-        'received': receivedMs,
-      },
-      'status_code': 0,
-      'collection_error': null,
-      'simulation_origin': null,
-    };
-
-/// The scoped projection of a session that may see exactly one SSH source.
-///
-/// The shape is the payload of `GET /api/v2/snapshot`: the source registry
-/// with the health the Core measured, the device of the source, the
-/// observations that were received and the placement of the source.
-Json scopedSnapshot({int sourceMs = 1700000000000, int memory = 17179869184}) => {
-      'sources': [
-        {
-          'id': 'source-ssh',
-          'name': 'SSH host device-a',
-          'entity_id': 'device-a',
-          'simulated': false,
-          'reachability': 'reachable',
-          'connection': 'connected',
-          'service': 'healthy',
-          'freshness': 'fresh',
-          'validity': 'valid',
-          'last_received_ms': sourceMs + 100,
-          'accepted': 12,
-          'duplicates': 0,
-          'out_of_order': 0,
-          'rejected': 0,
-          'reconnect_attempts': 0,
-          'dropped': 0,
-          'last_error': null,
-        }
-      ],
-      'devices': [
-        {
-          'id': 'device-a',
-          'is_faulted': false,
-          'data_source_id': 'source-ssh',
-          'name': 'SSH device',
-          'kind': 'server',
-          'location': 'site-a1',
-          'connection': 'SSH',
-          'simulated': false,
-          'health': {
-            'reachability': 'reachable',
-            'vpn_transport': 'not_applicable',
-            'agent_availability': 'not_applicable',
-            'service_health': 'not_evaluated',
-            'telemetry_freshness': 'fresh'
-          }
-        }
-      ],
-      'observations': [
-        scopedObservation(
-            metricId: 'host.os', value: {'text': 'Darwin'}, sourceMs: sourceMs),
-        scopedObservation(
-            metricId: 'host.memory_total_bytes',
-            value: {'unsigned_integer': memory},
-            unit: {'custom': 'bytes'},
-            sourceMs: sourceMs),
-        scopedObservation(
-            metricId: 'host.uptime_seconds',
-            value: {'float': 12345.5},
-            unit: {'custom': 'seconds'},
-            sourceMs: sourceMs),
-      ],
-      'events': <dynamic>[],
-      'locations': [
-        {
-          'organization_id': 'org-a',
-          'infrastructure_id': 'infra-a1',
-          'site_id': 'site-a1',
-          'source_id': 'source-ssh'
-        }
-      ],
-    };
-
-/// An API client that serves the scoped projection of a managed session.
-class ManagedApi extends RestApi {
-  final StreamController<ServerEvent> events;
-  ManagedApi(http.Client client, this.events)
-      : super(Uri.parse('http://127.0.0.1:8080'), client: client);
-  @override
-  Stream<ServerEvent> stream() => events.stream;
-}
-
-/// A client whose session is valid exactly once, so the controller stops
-/// instead of reconnecting forever.
-http.Client managedClient(Json Function() snapshot) {
-  var sessions = 0;
-  return MockClient((request) async {
-    if (request.url.path.endsWith('/session')) {
-      sessions++;
-      return http.Response(
-          jsonEncode(sessions == 1
-              ? {
-                  'authenticated': true,
-                  'principal_id': 'bound-by-server',
-                  'csrf_token': null,
-                  'mode': 'local_operator_session'
-                }
-              : {
-                  'authenticated': false,
-                  'principal_id': null,
-                  'csrf_token': null,
-                  'mode': 'login_required'
-                }),
-          200);
-    }
-    return http.Response(jsonEncode(snapshot()), 200);
-  });
 }

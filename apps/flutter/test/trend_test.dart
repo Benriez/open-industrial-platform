@@ -25,6 +25,22 @@ void main() {
     expect(continuesTrend(first, at(2000, value: null)), isFalse);
   });
 
+  test('The measured series of a real cadence is not broken by the demo limit',
+      () {
+    // A real source publishes every 30 s. The legacy demo limit of 2.5 s
+    // would break the line at every point.
+    final samples = [
+      at(1700000000000, value: 1.0),
+      at(1700000030000, value: 31.0),
+    ];
+    expect(seriesGapLimit(samples), 45000);
+    expect(
+        continuesSeries(samples.first, samples.last, seriesGapLimit(samples)),
+        isTrue);
+    // The legacy rule keeps its own limit.
+    expect(continuesTrend(samples.first, samples.last), isFalse);
+  });
+
   test('Collection events preserve actual timestamp, reason and gap', () {
     final event = CollectionEvent.fromJson({
       'Reconnected': {

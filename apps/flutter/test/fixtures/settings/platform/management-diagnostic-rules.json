@@ -1,0 +1,32 @@
+{
+  "section": "diagnostic_rules",
+  "availability": "read_only",
+  "facts": [
+    {
+      "name": "rule_id",
+      "value": "oip.documented-collection-gap"
+    },
+    {
+      "name": "rule_version",
+      "value": "1"
+    },
+    {
+      "name": "rule_policy",
+      "value": "read_only deterministic; documented gap only, no cause inference or editable rules"
+    },
+    {
+      "name": "health_history",
+      "value": "actual observed transitions since schema4; earlier history unavailable"
+    },
+    {
+      "name": "gap_semantics",
+      "value": "documented markers; zero interval is not proof of continuity"
+    }
+  ],
+  "tools": [],
+  "client_configuration": null,
+  "limitations": [
+    "Local development identity; hostile same-UID processes are not isolated",
+    "No remote MCP or browser administrative session; no durable tamper-resistant audit"
+  ]
+}

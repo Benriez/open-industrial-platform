@@ -1,0 +1,15 @@
+{
+  "items": [
+    {
+      "id": "org-a",
+      "name": "Organization A"
+    },
+    {
+      "id": "org-b",
+      "name": "Organization B"
+    }
+  ],
+  "offset": 0,
+  "limit": 100,
+  "has_more": false
+}

@@ -1,0 +1,28 @@
+{
+  "section": "security",
+  "availability": "read_only",
+  "facts": [
+    {
+      "name": "principal",
+      "value": "management-observer"
+    },
+    {
+      "name": "identity_mode",
+      "value": "trusted local IPC credential / REST header binding"
+    },
+    {
+      "name": "audit",
+      "value": "local structured execution logs; settings changes atomically recorded, not tamper-proof"
+    },
+    {
+      "name": "production_blockers",
+      "value": "RUSTSEC-2023-0071; RUSTSEC-2023-0089; RUSTSEC-2024-0449; remote/browser identity; same-UID trust; durable audit; OT safety"
+    }
+  ],
+  "tools": [],
+  "client_configuration": null,
+  "limitations": [
+    "Local development identity; hostile same-UID processes are not isolated",
+    "No remote MCP or browser administrative session; no durable tamper-resistant audit"
+  ]
+}

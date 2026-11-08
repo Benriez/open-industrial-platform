@@ -1,0 +1,122 @@
+{
+  "contract": "OIP-008.4",
+  "core_commit": "f9969f0a21f2885a8b6c4695b3c105ad28708d33",
+  "created_utc": "2026-11-06T20:30:36.813474+00:00",
+  "fixture_only": true,
+  "live_api_status": false,
+  "credential_bytes_included": false,
+  "authorization_headers_included": false,
+  "private_socket_or_credential_paths_included": false,
+  "sanitization": "Only the executable command/path is replaced by the Core-defined absolute-path placeholder. Socket and credential args were already Core placeholders. Dynamic facts remain captured test-runtime observations and are never presented as live UI state.",
+  "contexts": {
+    "platform": "Explicit local test principal with SettingsRead/SettingsWrite/McpManagementRead plus baseline platform reads",
+    "management_observer": "Explicit local test principal with Platform McpManagementRead only"
+  },
+  "files": [
+    {
+      "context": "platform",
+      "file": "app/test/fixtures/settings/platform/management-client-configuration.json",
+      "source_capture_sha256": "1f8032f32f8ba0bd0c14d72d074e6d795b37694537103df1f910dfe3a9691d36",
+      "sanitized_fixture_sha256": "d9d4855b13f3e99f22820e9776e767f4ef83809d444ffa6b056fed05d93c8607",
+      "sanitized_executable_path": true
+    },
+    {
+      "context": "platform",
+      "file": "app/test/fixtures/settings/platform/management-diagnostic-rules.json",
+      "source_capture_sha256": "5e045f338337e0b1bf668c07565ab5fc8ea420813b3e8fda4e1bed6fa0d3eba0",
+      "sanitized_fixture_sha256": "5e045f338337e0b1bf668c07565ab5fc8ea420813b3e8fda4e1bed6fa0d3eba0",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "platform",
+      "file": "app/test/fixtures/settings/platform/management-diagnostics.json",
+      "source_capture_sha256": "faa615509a41415fe901e262c03a22f8ce0599da5b84b2acc3648c5e4609b9ed",
+      "sanitized_fixture_sha256": "faa615509a41415fe901e262c03a22f8ce0599da5b84b2acc3648c5e4609b9ed",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "platform",
+      "file": "app/test/fixtures/settings/platform/management-permissions.json",
+      "source_capture_sha256": "6dda19159472ca5ff16fc93666f475df463bd4c6dddb671d4036bcea2396045d",
+      "sanitized_fixture_sha256": "6dda19159472ca5ff16fc93666f475df463bd4c6dddb671d4036bcea2396045d",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "platform",
+      "file": "app/test/fixtures/settings/platform/management-security.json",
+      "source_capture_sha256": "4a36dbccad967f0efec6fc46805b13ea386861263a1e9235beea29329efe3adf",
+      "sanitized_fixture_sha256": "4a36dbccad967f0efec6fc46805b13ea386861263a1e9235beea29329efe3adf",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "platform",
+      "file": "app/test/fixtures/settings/platform/management-server.json",
+      "source_capture_sha256": "00a99d12210300e31da97f15c7ef2619cce9cbf93766f96b081f32d417a5e6fc",
+      "sanitized_fixture_sha256": "00a99d12210300e31da97f15c7ef2619cce9cbf93766f96b081f32d417a5e6fc",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "platform",
+      "file": "app/test/fixtures/settings/platform/management-sessions.json",
+      "source_capture_sha256": "720e25d77fcb16c93280f039ff10a0287bb04abaec94ef993c0499c922e8d6bb",
+      "sanitized_fixture_sha256": "720e25d77fcb16c93280f039ff10a0287bb04abaec94ef993c0499c922e8d6bb",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "platform",
+      "file": "app/test/fixtures/settings/platform/management-storage.json",
+      "source_capture_sha256": "25924b83f6b4133014c5f6721e7634dbc987050af3d10fbff2892963ab763ace",
+      "sanitized_fixture_sha256": "25924b83f6b4133014c5f6721e7634dbc987050af3d10fbff2892963ab763ace",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "platform",
+      "file": "app/test/fixtures/settings/platform/management-system.json",
+      "source_capture_sha256": "2cd462bce89ce2fb318e33982d8319d546e9ebd84f7b4f1db483d44ccf0bb3c8",
+      "sanitized_fixture_sha256": "2cd462bce89ce2fb318e33982d8319d546e9ebd84f7b4f1db483d44ccf0bb3c8",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "platform",
+      "file": "app/test/fixtures/settings/platform/management-tools.json",
+      "source_capture_sha256": "0f198bdbe689157e079b34b3978e9abf40e11e12a8189220b23aee4c54e0b241",
+      "sanitized_fixture_sha256": "0f198bdbe689157e079b34b3978e9abf40e11e12a8189220b23aee4c54e0b241",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "platform",
+      "file": "app/test/fixtures/settings/platform/settings-catalog.json",
+      "source_capture_sha256": "9442d0b67f2c3e056f693fac31982c54b69f4c29fb2a6a7abbbf4377d77abbd4",
+      "sanitized_fixture_sha256": "9442d0b67f2c3e056f693fac31982c54b69f4c29fb2a6a7abbbf4377d77abbd4",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "platform",
+      "file": "app/test/fixtures/settings/platform/settings-platform.json",
+      "source_capture_sha256": "c1393ac0e1cace900d01d3061f5d37ab10afbe6fcbb3103158ebdcb2d31b0493",
+      "sanitized_fixture_sha256": "c1393ac0e1cace900d01d3061f5d37ab10afbe6fcbb3103158ebdcb2d31b0493",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "management_observer",
+      "file": "app/test/fixtures/settings/management_observer/management-permissions.json",
+      "source_capture_sha256": "e1b2c3ab444b59da4c37f835dc8e3b80e97f2be9f31e3f76716daefc1fe4903f",
+      "sanitized_fixture_sha256": "e1b2c3ab444b59da4c37f835dc8e3b80e97f2be9f31e3f76716daefc1fe4903f",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "management_observer",
+      "file": "app/test/fixtures/settings/management_observer/management-security.json",
+      "source_capture_sha256": "c31d3e7810d47165551de77c80475acdcdf030dfb924413f9a344ee1abd58856",
+      "sanitized_fixture_sha256": "c31d3e7810d47165551de77c80475acdcdf030dfb924413f9a344ee1abd58856",
+      "sanitized_executable_path": false
+    },
+    {
+      "context": "management_observer",
+      "file": "app/test/fixtures/settings/management_observer/management-tools.json",
+      "source_capture_sha256": "5e0138beaf92ec678e8898eb51549946b659130a3ff66112fbce171954b8100b",
+      "sanitized_fixture_sha256": "5e0138beaf92ec678e8898eb51549946b659130a3ff66112fbce171954b8100b",
+      "sanitized_executable_path": false
+    }
+  ]
+}

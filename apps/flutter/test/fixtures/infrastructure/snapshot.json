@@ -1,0 +1,293 @@
+{
+  "sources": [
+    {
+      "id": "source-a1",
+      "name": "Collector SOURCE-A1",
+      "entity_id": "device-a1",
+      "simulated": false,
+      "reachability": "reachable",
+      "connection": "connected",
+      "service": "unknown",
+      "freshness": "fresh",
+      "validity": "valid",
+      "last_received_ms": 1800000000000,
+      "last_error": null
+    },
+    {
+      "id": "source-a1b",
+      "name": "Collector SOURCE-A1B",
+      "entity_id": "device-a1b",
+      "simulated": false,
+      "reachability": "reachable",
+      "connection": "connected",
+      "service": "unknown",
+      "freshness": "fresh",
+      "validity": "valid",
+      "last_received_ms": 1800000000000,
+      "last_error": null
+    },
+    {
+      "id": "source-a2",
+      "name": "Collector SOURCE-A2",
+      "entity_id": "device-a2",
+      "simulated": false,
+      "reachability": "unknown",
+      "connection": "disconnected",
+      "service": "unknown",
+      "freshness": "stale",
+      "validity": "valid",
+      "last_received_ms": 1800000000000,
+      "last_error": "fixture disconnected source"
+    },
+    {
+      "id": "source-b1",
+      "name": "Collector SOURCE-B1",
+      "entity_id": "device-b1",
+      "simulated": false,
+      "reachability": "reachable",
+      "connection": "connected",
+      "service": "unknown",
+      "freshness": "fresh",
+      "validity": "valid",
+      "last_received_ms": 1800000000000,
+      "last_error": null
+    }
+  ],
+  "devices": [
+    {
+      "id": "device-a1",
+      "name": "Pump A1",
+      "kind": "sensor",
+      "location": "site-a1-1 / test fixture",
+      "connection": "OPC UA",
+      "simulated": false,
+      "is_faulted": false,
+      "data_source_id": "source-a1",
+      "health": {
+        "reachability": "unknown",
+        "vpn_transport": "unknown",
+        "agent_availability": "unknown",
+        "service_health": "not_evaluated",
+        "telemetry_freshness": "receiving"
+      }
+    },
+    {
+      "id": "device-a1-manual",
+      "name": "Manual Valve A1",
+      "kind": "industrial_device",
+      "location": "site-a1-2 / test fixture",
+      "connection": "No collector",
+      "simulated": false,
+      "is_faulted": false,
+      "data_source_id": null,
+      "health": {
+        "reachability": "unknown",
+        "vpn_transport": "unknown",
+        "agent_availability": "unknown",
+        "service_health": "not_evaluated",
+        "telemetry_freshness": "no_collector"
+      }
+    },
+    {
+      "id": "device-a2",
+      "name": "Gateway A2",
+      "kind": "network_device",
+      "location": "site-a2-1 / test fixture",
+      "connection": "OPC UA",
+      "simulated": false,
+      "is_faulted": false,
+      "data_source_id": "source-a2",
+      "health": {
+        "reachability": "unknown",
+        "vpn_transport": "unknown",
+        "agent_availability": "unknown",
+        "service_health": "not_evaluated",
+        "telemetry_freshness": "stale"
+      }
+    },
+    {
+      "id": "device-b1",
+      "name": "Sensor B1",
+      "kind": "sensor",
+      "location": "site-b1-1 / test fixture",
+      "connection": "OPC UA",
+      "simulated": false,
+      "is_faulted": false,
+      "data_source_id": "source-b1",
+      "health": {
+        "reachability": "unknown",
+        "vpn_transport": "unknown",
+        "agent_availability": "unknown",
+        "service_health": "not_evaluated",
+        "telemetry_freshness": "receiving"
+      }
+    },
+    {
+      "id": "device-b1-manual",
+      "name": "Manual Drive B1",
+      "kind": "industrial_device",
+      "location": "site-b1-1 / test fixture",
+      "connection": "No collector",
+      "simulated": false,
+      "is_faulted": false,
+      "data_source_id": null,
+      "health": {
+        "reachability": "unknown",
+        "vpn_transport": "unknown",
+        "agent_availability": "unknown",
+        "service_health": "not_evaluated",
+        "telemetry_freshness": "no_collector"
+      }
+    }
+  ],
+  "observations": [
+    {
+      "entity_id": "device-a1",
+      "metric_id": "temperature",
+      "data_source_id": "source-a1",
+      "value": {
+        "float": 61.2
+      },
+      "unit": "celsius",
+      "quality": "good",
+      "freshness": "fresh",
+      "timestamps": {
+        "source": 1800000000000,
+        "server": 1800000000001,
+        "received": 1800000000002
+      },
+      "status_code": 0,
+      "collection_error": null,
+      "simulation_origin": null
+    },
+    {
+      "entity_id": "device-a2",
+      "metric_id": "temperature",
+      "data_source_id": "source-a2",
+      "value": {
+        "float": 61.2
+      },
+      "unit": "celsius",
+      "quality": "good",
+      "freshness": "stale",
+      "timestamps": {
+        "source": 1800000000000,
+        "server": 1800000000001,
+        "received": 1800000000002
+      },
+      "status_code": 0,
+      "collection_error": null,
+      "simulation_origin": null
+    },
+    {
+      "entity_id": "device-b1",
+      "metric_id": "temperature",
+      "data_source_id": "source-b1",
+      "value": {
+        "float": 61.2
+      },
+      "unit": "celsius",
+      "quality": "good",
+      "freshness": "fresh",
+      "timestamps": {
+        "source": 1800000000000,
+        "server": 1800000000001,
+        "received": 1800000000002
+      },
+      "status_code": 0,
+      "collection_error": null,
+      "simulation_origin": null
+    }
+  ],
+  "events": [
+    {
+      "id": "event-source-a1",
+      "sequence": 1,
+      "context": {
+        "origin_class": "external",
+        "data_source_id": "source-a1"
+      },
+      "event": {
+        "Reconnected": {
+          "at": 1800000000000,
+          "reason": "sanitized fixture event"
+        }
+      }
+    },
+    {
+      "id": "event-source-a1b",
+      "sequence": 2,
+      "context": {
+        "origin_class": "external",
+        "data_source_id": "source-a1b"
+      },
+      "event": {
+        "Reconnected": {
+          "at": 1800000001000,
+          "reason": "sanitized fixture event"
+        }
+      }
+    },
+    {
+      "id": "event-source-a2",
+      "sequence": 3,
+      "context": {
+        "origin_class": "external",
+        "data_source_id": "source-a2"
+      },
+      "event": {
+        "DataLoss": {
+          "at": 1800000002000,
+          "reason": "sanitized fixture event",
+          "gap": {
+            "started_at": 1800000000000,
+            "ended_at": 1800000001000,
+            "reason": "documented fixture gap"
+          }
+        }
+      }
+    },
+    {
+      "id": "event-source-b1",
+      "sequence": 4,
+      "context": {
+        "origin_class": "external",
+        "data_source_id": "source-b1"
+      },
+      "event": {
+        "Reconnected": {
+          "at": 1800000003000,
+          "reason": "sanitized fixture event"
+        }
+      }
+    }
+  ],
+  "locations": [
+    {
+      "organization_id": "org-a",
+      "infrastructure_id": "infra-a1",
+      "site_id": "site-a1-1",
+      "source_id": "source-a1"
+    },
+    {
+      "organization_id": "org-a",
+      "infrastructure_id": "infra-a1",
+      "site_id": "site-a1-2",
+      "source_id": "source-a1b"
+    },
+    {
+      "organization_id": "org-a",
+      "infrastructure_id": "infra-a2",
+      "site_id": "site-a2-1",
+      "source_id": "source-a2"
+    },
+    {
+      "organization_id": "org-b",
+      "infrastructure_id": "infra-b1",
+      "site_id": "site-b1-1",
+      "source_id": "source-b1"
+    }
+  ],
+  "resync_required": true,
+  "replay_supported": false
+}

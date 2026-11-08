@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "category": "finding",
+      "record": {
+        "id": "finding-a2-gap",
+        "rule_id": "collection-gap",
+        "rule_version": 1,
+        "statement": "Dokumentierte Collection-Lücke in Infrastructure A2",
+        "status": "documented",
+        "evaluated_start_ms": 1800000000000,
+        "evaluated_end_ms": 1800000001000,
+        "evidence": [
+          {
+            "category": "gap",
+            "id": "gap-a2",
+            "source": "source-a2"
+          }
+        ],
+        "missing_evidence": []
+      }
+    }
+  ],
+  "truncated": false,
+  "next_cursor": null,
+  "missing_evidence": [],
+  "time_semantics": "event_time"
+}

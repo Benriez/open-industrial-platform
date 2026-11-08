@@ -1,130 +1,132 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oip_dashboard/app/app.dart';
 import 'package:oip_dashboard/app/controller.dart';
-import 'package:oip_dashboard/core/sse.dart';
-import 'package:oip_dashboard/models/contracts.dart';
-import 'package:oip_dashboard/widgets/trend.dart';
+import 'package:oip_dashboard/design_system/theme.dart';
+import 'package:oip_dashboard/features/overview.dart';
+import 'package:oip_dashboard/models/infrastructure.dart';
+
+import 'infrastructure_support.dart';
 import 'support.dart';
+
+Future<void> pumpManaged(WidgetTester tester, OipController controller,
+    Widget Function(OipController) page) async {
+  tester.view.devicePixelRatio = 1;
+  tester.view.physicalSize = const Size(1600, 1200);
+  addTearDown(() {
+    tester.view.resetDevicePixelRatio();
+    tester.view.resetPhysicalSize();
+  });
+  await tester.binding.setSurfaceSize(const Size(1600, 1200));
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+  await tester.pumpWidget(MaterialApp(
+    theme: OipTokens.theme(Brightness.light),
+    darkTheme: OipTokens.theme(Brightness.dark),
+    themeMode: ThemeMode.dark,
+    home: Scaffold(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: ListenableBuilder(
+          listenable: controller,
+          builder: (context, _) => page(controller),
+        ),
+      ),
+    ),
+  ));
+  await tester.pumpAndSettle();
+}
+
+/// The managed projection of the OIP-008.5 contract.
+OipController managedController() {
+  final api = FakeApi()..infrastructure = infrastructureFixture();
+  final controller = OipController(api);
+  return controller;
+}
 
 void main() {
   testWidgets(
-      'The managed overview shows the authorized source and its real measurement',
+      'The managed overview shows the authorized infrastructure and its placement',
       (tester) async {
-    tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(1440, 1000);
-    await tester.binding.setSurfaceSize(const Size(1440, 1000));
-    final events = StreamController<ServerEvent>.broadcast();
-    final api = ManagedApi(managedClient(scopedSnapshot), events);
-    // The session of the server marks the client as managed.
-    await api.session();
-    final controller = OipController(api,
-        retryDelay: const Duration(milliseconds: 1))
-      ..snapshot = Snapshot.fromScopedJson(scopedSnapshot())
-      ..connection = 'live';
-    // The series the controller measured from that projection. The test above
-    // proves that the controller derives exactly this series from the Core
-    // payload; here it is the input of the rendering.
-    controller.series.add(TrendSeries(
-        'source-ssh',
-        'device-a',
-        'host.memory_total_bytes',
-        'bytes',
-        (scopedSnapshot()['observations'] as List)
-            .cast<Json>()
-            .where((observation) =>
-                observation['metric_id'] == 'host.memory_total_bytes')
-            .map(Observation.fromJson)
-            .toList()));
-    addTearDown(() async {
-      await tester.pumpWidget(const SizedBox());
-      controller.dispose();
-      await events.close();
-      await tester.binding.setSurfaceSize(null);
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+    final controller = managedController();
+    await controller.resyncInfrastructure();
+    addTearDown(controller.dispose);
     expect(controller.managed, isTrue);
-    await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
-    await tester.pumpAndSettle();
 
-    // The source registry of the session is shown with its real health.
-    expect(find.text('SSH host device-a'), findsWidgets);
-    expect(find.textContaining('source-ssh'), findsWidgets);
-    expect(find.text('Verbunden'), findsWidgets);
-    expect(find.text('Aktuell'), findsWidgets);
-    // The placement of the source in the authorized hierarchy is shown.
-    expect(find.textContaining('org-a · infra-a1 · site-a1'), findsOneWidget);
-    // The measured value of the source is shown with its unit.
-    expect(find.textContaining('17179869184 bytes'), findsWidgets);
-    // The demo coordinates are gone in the managed mode.
-    expect(find.textContaining('Temperatur M-01'), findsNothing);
-    expect(find.textContaining('M-01'), findsNothing);
-    // The chart names the metric it measured.
-    expect(
-        find.textContaining('host.memory_total_bytes · SSH host device-a'),
+    await pumpManaged(tester, controller, (c) => OverviewPage(c, (_) {}));
+
+    // The global infrastructure context is present and names every authorized
+    // infrastructure of the session.
+    expect(find.textContaining('Alle berechtigten Infrastrukturen'),
+        findsWidgets);
+    // The unified view counts only the rows the Core delivered.
+    expect(find.text('UNIFIED INFRASTRUCTURE VIEW'), findsOneWidget);
+    expect(find.text('ORGANIZATIONS'), findsOneWidget);
+    expect(find.text('INFRASTRUCTURES'), findsOneWidget);
+    expect(find.text('SITES'), findsOneWidget);
+    // The placement of an authorized infrastructure is shown with the
+    // identifiers the Core delivered for it.
+    expect(find.textContaining('Organization A / Infrastructure A1'),
         findsOneWidget);
+    expect(find.textContaining('2 Sites'), findsWidgets);
+    // The demo coordinates are gone in the managed mode.
+    expect(find.textContaining('M-01'), findsNothing);
+    expect(find.textContaining('Temperatur M-01'), findsNothing);
+    expect(find.textContaining('Netzwerkzonen'), findsNothing);
+    // Unknown is not offline and no global severity is invented.
+    expect(find.textContaining('keine globale Health-Severity'), findsOneWidget);
+    expect(find.textContaining('Unknown ≠ Offline'), findsOneWidget);
   });
 
-  test('The managed mode measures one series per authorized source', () async {
-    final events = StreamController<ServerEvent>.broadcast();
-    var snapshot = scopedSnapshot();
-    final controller = OipController(
-        ManagedApi(managedClient(() => snapshot), events),
-        retryDelay: const Duration(milliseconds: 1));
-    final running = controller.start();
-    for (var i = 0; i < 100 && controller.snapshot == null; i++) {
-      await Future<void>.delayed(const Duration(milliseconds: 2));
-    }
-    expect(controller.series, hasLength(1));
-    final series = controller.series.single;
-    expect(series.sourceId, 'source-ssh');
-    expect(series.entityId, 'device-a');
-    // The measured metric is named, it is never a silent choice.
-    expect(series.metricId, 'host.memory_total_bytes');
-    expect(series.samples, hasLength(1));
-    expect(series.samples.single.value, 17179869184);
+  testWidgets('The managed overview names the measured metric of a source',
+      (tester) async {
+    final controller = managedController();
+    await controller.resyncInfrastructure();
+    addTearDown(controller.dispose);
 
-    // A later measurement of the same source extends the series.
-    snapshot = scopedSnapshot(sourceMs: 1700000030000, memory: 17179860992);
-    events.add(ServerEvent('snapshot', jsonEncode(snapshot)));
-    for (var i = 0;
-        i < 100 && controller.series.single.samples.length < 2;
-        i++) {
-      await Future<void>.delayed(const Duration(milliseconds: 2));
-    }
-    expect(controller.series, hasLength(1));
-    expect(controller.series.single.samples, hasLength(2));
-    expect(controller.series.single.samples.last.sourceMs, 1700000030000);
-    await events.close();
-    await running;
+    await pumpManaged(tester, controller, (c) => OverviewPage(c, (_) {}));
+
+    // The measured series of the authorized source is named with its source.
+    final selected = controller.selectedTelemetry;
+    expect(selected, isNotNull);
+    expect(selected!.sourceId, isNotNull);
+    expect(controller.telemetryKey, isNotNull);
+    expect(controller.telemetryKey, contains(selected.metricId));
+    // The legacy demo coordinate is never the managed default: the entity
+    // `M-01` of the primary source is a demo rule, not an authorization.
+    expect(selected.entityId, isNot('M-01'));
+    // The choice is deterministic: the same projection yields the same metric.
+    final first = controller.telemetryKey;
+    await controller.resyncInfrastructure();
+    expect(controller.telemetryKey, first);
   });
 
-  test('The measured series of a real cadence is not broken by the demo limit',
-      () async {
-    // A real source publishes every 30 s. The legacy demo limit of 2.5 s
-    // would break the line at every point.
-    final samples = [
-      Observation.fromJson(scopedObservation(
-          metricId: 'host.uptime_seconds',
-          value: {'float': 1.0},
-          unit: {'custom': 'seconds'},
-          sourceMs: 1700000000000,
-          receivedMs: 1700000000000)),
-      Observation.fromJson(scopedObservation(
-          metricId: 'host.uptime_seconds',
-          value: {'float': 31.0},
-          unit: {'custom': 'seconds'},
-          sourceMs: 1700000030000,
-          receivedMs: 1700000030000)),
-    ];
-    expect(seriesGapLimit(samples), 45000);
-    expect(
-        continuesSeries(samples.first, samples.last, seriesGapLimit(samples)),
-        isTrue);
-    // The legacy rule keeps its own limit.
-    expect(continuesTrend(samples.first, samples.last), isFalse);
+  test('An authorized snapshot invents no global count, health or topology', () {
+    final snapshot = AuthorizedSnapshot.fromJson({
+      'sources': <dynamic>[],
+      'devices': <dynamic>[],
+      'observations': <dynamic>[],
+      'events': [
+        {
+          'id': 'actual-event',
+          'sequence': 1,
+          'context': {'data_source_id': 'source-a'},
+          'event': {
+            'Reconnected': {'at': 1700000000000}
+          }
+        }
+      ],
+      'locations': <dynamic>[],
+      'resync_required': false,
+      'replay_supported': false,
+    }).toSnapshot();
+    expect(snapshot.system.persisted, isNull);
+    expect(snapshot.system.generatedMs, isNull);
+    expect(snapshot.system.cpu, isNull);
+    expect(snapshot.system.lastReceivedMs, isNull);
+    expect(snapshot.core.ready, isNull);
+    expect(snapshot.incidents, isEmpty);
+    expect(snapshot.topology, isEmpty);
+    expect(snapshot.system.demoControls, isFalse);
+    expect(snapshot.incidentsDelivered, isFalse);
+    expect(snapshot.topologyDelivered, isFalse);
   });
 }

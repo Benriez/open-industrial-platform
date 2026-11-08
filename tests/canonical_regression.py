@@ -88,6 +88,18 @@ CASES = [
         "reports": ["@evidence/ui-regression.json", "target/oip008-ui/ui-regression.json"],
     },
     {
+        "name": "oip_canonical_ui_gate",
+        "script": "tests/real_device/acceptance.py",
+        "timeout": 2400,
+        "reports": ["@evidence/report.json", "@evidence/browser/browser-canonical-ui-gate.json"],
+        "env": {"OIP_CANONICAL_UI_GATE": "1"},
+        "env_paths": {
+            "OIP_SERVER_BIN": "target/debug/oip-server",
+            "OIP_WEB_DIR": "apps/flutter/build/web",
+            "OIP_BROWSER_SCRIPT": "apps/flutter/test/browser_canonical_ui_gate.mjs",
+        },
+    },
+    {
         "name": "oip008_legacy_migration",
         "script": "tests/oip008/legacy_migration.py",
         "timeout": 900,
@@ -118,6 +130,8 @@ def evaluate(report):
         return None, "unreadable report"
     if isinstance(payload.get("status"), str):
         return payload["status"], payload
+    if isinstance(payload.get("verdict"), str):
+        return payload["verdict"], payload
     results = payload.get("results")
     if isinstance(results, list):
         failed = [r.get("name") for r in results if r.get("status") != "PASS"]
@@ -131,6 +145,10 @@ def run_case(case, evidence):
     env = dict(os.environ)
     env["OIP_EVIDENCE_DIR"] = str(evidence / name)
     pathlib.Path(env["OIP_EVIDENCE_DIR"]).mkdir(parents=True, exist_ok=True)
+    for key, value in case.get("env", {}).items():
+        env[key] = value
+    for key, value in case.get("env_paths", {}).items():
+        env[key] = str(ROOT / value)
     if case.get("baseline"):
         state, reason = baseline_state(case["baseline"])
         if state is None:
@@ -160,7 +178,8 @@ def run_case(case, evidence):
                 }
     started = time.monotonic()
     process = subprocess.run(
-        [sys.executable, str(ROOT / case["script"]), *command_arguments],
+        [sys.executable, str(ROOT / case["script"]), *command_arguments,
+         *case.get("args", ())],
         cwd=ROOT,
         env=env,
         capture_output=True,
@@ -183,20 +202,23 @@ def run_case(case, evidence):
         if binary.is_file():
             result["baseline_binary_sha256"] = hashlib.sha256(binary.read_bytes()).hexdigest()
             result["baseline_source"] = "rebuilt from the verified OIP-007 baseline commit a27e7b1; the identity of the historical protected binary is not claimed"
+    harness_statuses = []
     for candidate in case["reports"]:
         report = (
-            (evidence / name / pathlib.Path(candidate).name)
+            (evidence / name / candidate.removeprefix("@evidence/"))
             if candidate.startswith("@evidence/")
             else (ROOT / candidate)
         )
         if report.is_file() and report.stat().st_mtime >= started - 5:
             status, payload = evaluate(report)
-            result["report"] = str(report)
+            result.setdefault("reports", []).append(str(report))
+            result.setdefault("report", str(report))
             if status is not None:
-                result["harness_status"] = status
+                harness_statuses.append(status)
                 if status != "PASS":
                     result["status"] = "FAIL"
-            break
+    if harness_statuses:
+        result["harness_status"] = "PASS" if all(status == "PASS" for status in harness_statuses) else "FAIL"
     return result
 
 

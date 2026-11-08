@@ -1,0 +1,56 @@
+{
+  "section": "server",
+  "availability": "read_only",
+  "facts": [
+    {
+      "name": "runtime_mode",
+      "value": "local_ipc"
+    },
+    {
+      "name": "core_lifecycle",
+      "value": "Degraded"
+    },
+    {
+      "name": "protocol",
+      "value": "2026-07-28; legacy 2025-11-25"
+    },
+    {
+      "name": "sdk",
+      "value": "rmcp 3.8.0"
+    },
+    {
+      "name": "transport",
+      "value": "local stdio; Unix IPC bridge only"
+    },
+    {
+      "name": "max_requests_per_session",
+      "value": "16"
+    },
+    {
+      "name": "max_input_bytes",
+      "value": "16384"
+    },
+    {
+      "name": "max_output_bytes",
+      "value": "4194304"
+    },
+    {
+      "name": "session_limit",
+      "value": "16"
+    },
+    {
+      "name": "policy",
+      "value": "no mutating MCP tools"
+    },
+    {
+      "name": "enable_disable",
+      "value": "unsupported; protected startup configuration only"
+    }
+  ],
+  "tools": [],
+  "client_configuration": null,
+  "limitations": [
+    "Local development identity; hostile same-UID processes are not isolated",
+    "No remote MCP or browser administrative session; no durable tamper-resistant audit"
+  ]
+}

@@ -18,9 +18,6 @@ const executablePath=process.env.CHROME_PATH ?? (existsSync(systemChrome) ? syst
 const browser = await chromium.launch({executablePath,headless:true});
 const context = await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});
 const page = await context.newPage();
-// HTML regression build exposes both AX proxy text and painted paragraphs.
-// Require painted/visible text, avoiding ambiguous duplicate matches.
-function text(...args){return page.getByText(...args).filter({visible:true}).first();}
 const errors=[]; const external=[]; const captures=[];
 page.on('pageerror',error=>errors.push(error.message));
 page.on('console',message=>{if(message.type()==='error') errors.push(message.text());});
@@ -34,10 +31,10 @@ await context.route('**/*',route=>{
 });
 
 const views = [
-  {label:'Übersicht',slug:'overview',marker:'Deine Infrastruktur. Ein Bild.'},
-  {label:'Geräte & Dienste',slug:'devices',marker:'Ein gemeinsames Inventar. Jede Quelle bleibt erkennbar.'},
+  {label:'Übersicht',slug:'overview',marker:'Operations Workstation'},
+  {label:'Geräte & Dienste',slug:'devices',marker:'DEVICES & SERVICES · ENGINEERING WORKSTATION'},
   {label:'Netzwerk & VPN',slug:'network',marker:'Logische Topologie'},
-  {label:'OPC-UA-Browser',slug:'opcua',marker:'urn:oip:local-simulation'},
+  {label:'OPC-UA-Browser',slug:'opcua',marker:'Namespace 2'},
   {label:'Diagnose & Ereignisse',slug:'diagnostics',marker:'Deterministische Regeln · keine KI und keine unbelegte Kausalität'}
 ];
 async function nav(label,marker) {
@@ -45,11 +42,12 @@ async function nav(label,marker) {
   const narrow=await menu.count()>0;
   if(narrow) {
     await menu.click();
-    await text('Dismiss',{exact:true}).waitFor({state:'visible'});
+    await page.getByText('Dismiss',{exact:true}).waitFor({state:'visible'});
   }
   await page.getByRole('button',{name:`Navigation ${label}`,exact:true}).click();
-  if(narrow) await text('Dismiss',{exact:true}).waitFor({state:'hidden'});
-  await text(marker,{exact:true}).first().waitFor();
+  if(narrow) await page.getByText('Dismiss',{exact:true}).waitFor({state:'hidden'});
+  await page.getByText(marker,{exact:true})
+    .or(page.locator(`flt-semantics[aria-label*="${marker}"]`)).first().waitFor();
   await page.waitForTimeout(250);
 }
 async function capture(slug,width,mode) {
@@ -64,8 +62,8 @@ try {
   const ready=await context.request.post(base+'/api/v1/demo/scenario',{data:{scenario:'normal'}});
   assert.equal(ready.status(),200);
   await page.goto(base,{waitUntil:'domcontentloaded'});
-  await text('Deine Infrastruktur. Ein Bild.',{exact:true}).waitFor({timeout:45000});
-  await text('LIVE · API',{exact:false}).waitFor({timeout:15000});
+  await page.getByText('Operations Workstation',{exact:true}).waitFor({timeout:45000});
+  await page.getByText('API CONNECTED',{exact:false}).waitFor({timeout:15000});
 
   for(const [width,height] of [[1920,1080],[1440,1000],[1024,900],[768,1024],[375,812]]) {
     await page.setViewportSize({width,height});
@@ -86,8 +84,8 @@ try {
   }
   await page.getByRole('button',{name:/Darstellung wechseln/}).click({force:true});
   await page.getByRole('button',{name:/Darstellung wechseln/}).click({force:true});
-  await text('SPECTRUM',{exact:true}).waitFor();
-  await nav('Übersicht','Deine Infrastruktur. Ein Bild.');
+  await page.getByText('SPECTRUM',{exact:true}).waitFor();
+  await nav('Übersicht','Operations Workstation');
 
   const performanceResult=await page.evaluate(async()=>{
     const longTasks=[];
@@ -127,7 +125,6 @@ try {
   const body=await page.locator('body').innerText();
   await writeFile(resolve(out,'browser-performance.json'),JSON.stringify({
     measuredAt:new Date().toISOString(),
-    renderer:await page.evaluate(()=>window._flutter?.buildConfig?.builds?.[0]?.renderer ?? 'unknown'),
     view:'overview',
     viewport:'1440x1000',
     mode:'dark',
@@ -135,7 +132,7 @@ try {
     ...performanceResult,
     historyLabel:body.match(/\d+\/60 Sitzungspunkte/)?.[0] ?? null,
     browserErrors:errors.length,
-    method:'Reproducible via npm run test:visual. Playwright page.evaluate requestAnimationFrame deltas plus PerformanceObserver longtask; Chrome release web build; renderer is read from the served Flutter build configuration. Browser frame pacing only, not Flutter DevTools UI/raster profiling or a leak benchmark.'
+    method:'Reproducible via npm run test:visual. Playwright page.evaluate requestAnimationFrame deltas plus PerformanceObserver longtask; Chrome, release CanvasKit. Browser frame pacing only, not Flutter DevTools UI/raster profiling or a leak benchmark.'
   },null,2));
 
   assert.deepEqual(external,[],'No external runtime requests');

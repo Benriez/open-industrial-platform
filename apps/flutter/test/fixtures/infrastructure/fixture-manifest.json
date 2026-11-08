@@ -1,0 +1,15 @@
+{
+  "schema": "oip009-contract-fixture-v1",
+  "fixture_only": true,
+  "real_ingestion": false,
+  "backend_scaling_proof": false,
+  "secured_browser_e2e": false,
+  "principal": "fixture-operator",
+  "organizations": 2,
+  "infrastructures": 3,
+  "sites": 4,
+  "sources": 4,
+  "devices": 5,
+  "source_less_devices": 2,
+  "notes": "Illustrative sanitized UI test records only. No real Core/database is populated."
+}

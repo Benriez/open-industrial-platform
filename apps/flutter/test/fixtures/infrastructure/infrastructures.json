@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "id": "infra-a1",
+      "organization_id": "org-a",
+      "name": "Infrastructure A1"
+    },
+    {
+      "id": "infra-a2",
+      "organization_id": "org-a",
+      "name": "Infrastructure A2"
+    },
+    {
+      "id": "infra-b1",
+      "organization_id": "org-b",
+      "name": "Infrastructure B1"
+    }
+  ],
+  "offset": 0,
+  "limit": 100,
+  "has_more": false
+}

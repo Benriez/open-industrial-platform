@@ -1,0 +1,145 @@
+{
+  "items": [
+    {
+      "record": {
+        "device": {
+          "id": "device-a1",
+          "display_name": "Pump A1",
+          "device_type": "sensor",
+          "site_id": "site-a1-1",
+          "metadata": {
+            "physical_location": "site-a1-1 / test fixture"
+          }
+        },
+        "registration": "registered",
+        "origin": "manual_operator",
+        "created_ms": 1800000000000,
+        "updated_ms": 1800000000000,
+        "registered_by": "fixture-operator",
+        "revision": 1
+      },
+      "organization_id": "org-a",
+      "infrastructure_id": "infra-a1",
+      "sources": [
+        "source-a1"
+      ],
+      "connectivity": "unknown",
+      "telemetry": "receiving",
+      "health": "not_evaluated",
+      "monitoring_simulated": null
+    },
+    {
+      "record": {
+        "device": {
+          "id": "device-a1-manual",
+          "display_name": "Manual Valve A1",
+          "device_type": "industrial_device",
+          "site_id": "site-a1-2",
+          "metadata": {
+            "physical_location": "site-a1-2 / test fixture"
+          }
+        },
+        "registration": "registered",
+        "origin": "manual_operator",
+        "created_ms": 1800000000000,
+        "updated_ms": 1800000000000,
+        "registered_by": "fixture-operator",
+        "revision": 1
+      },
+      "organization_id": "org-a",
+      "infrastructure_id": "infra-a1",
+      "sources": [],
+      "connectivity": "unknown",
+      "telemetry": "no_collector",
+      "health": "not_evaluated",
+      "monitoring_simulated": false
+    },
+    {
+      "record": {
+        "device": {
+          "id": "device-a2",
+          "display_name": "Gateway A2",
+          "device_type": "network_device",
+          "site_id": "site-a2-1",
+          "metadata": {
+            "physical_location": "site-a2-1 / test fixture"
+          }
+        },
+        "registration": "registered",
+        "origin": "manual_operator",
+        "created_ms": 1800000000000,
+        "updated_ms": 1800000000000,
+        "registered_by": "fixture-operator",
+        "revision": 1
+      },
+      "organization_id": "org-a",
+      "infrastructure_id": "infra-a2",
+      "sources": [
+        "source-a2"
+      ],
+      "connectivity": "unknown",
+      "telemetry": "stale",
+      "health": "not_evaluated",
+      "monitoring_simulated": null
+    },
+    {
+      "record": {
+        "device": {
+          "id": "device-b1",
+          "display_name": "Sensor B1",
+          "device_type": "sensor",
+          "site_id": "site-b1-1",
+          "metadata": {
+            "physical_location": "site-b1-1 / test fixture"
+          }
+        },
+        "registration": "registered",
+        "origin": "manual_operator",
+        "created_ms": 1800000000000,
+        "updated_ms": 1800000000000,
+        "registered_by": "fixture-operator",
+        "revision": 1
+      },
+      "organization_id": "org-b",
+      "infrastructure_id": "infra-b1",
+      "sources": [
+        "source-b1"
+      ],
+      "connectivity": "unknown",
+      "telemetry": "receiving",
+      "health": "not_evaluated",
+      "monitoring_simulated": null
+    },
+    {
+      "record": {
+        "device": {
+          "id": "device-b1-manual",
+          "display_name": "Manual Drive B1",
+          "device_type": "industrial_device",
+          "site_id": "site-b1-1",
+          "metadata": {
+            "physical_location": "site-b1-1 / test fixture"
+          }
+        },
+        "registration": "registered",
+        "origin": "manual_operator",
+        "created_ms": 1800000000000,
+        "updated_ms": 1800000000000,
+        "registered_by": "fixture-operator",
+        "revision": 1
+      },
+      "organization_id": "org-b",
+      "infrastructure_id": "infra-b1",
+      "sources": [],
+      "connectivity": "unknown",
+      "telemetry": "no_collector",
+      "health": "not_evaluated",
+      "monitoring_simulated": false
+    }
+  ],
+  "offset": 0,
+  "limit": 100,
+  "has_more": false,
+  "status": "Devices registered",
+  "management_channel": "offline_requires_restart"
+}

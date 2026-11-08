@@ -4,6 +4,9 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import {dirname,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+const execFileAsync=promisify(execFile);
 
 const base=process.env.OIP_URL ?? 'http://127.0.0.1:18736';
 const testDir=dirname(fileURLToPath(import.meta.url));
@@ -13,9 +16,6 @@ const systemChrome='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome
 const browser=await chromium.launch({executablePath:process.env.CHROME_PATH ?? (existsSync(systemChrome)?systemChrome:undefined),headless:true});
 const context=await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});
 const page=await context.newPage();
-// HTML regression build exposes both AX proxy text and painted paragraphs.
-// Require painted/visible text, avoiding ambiguous duplicate matches.
-function text(...args){return page.getByText(...args).filter({visible:true}).first();}
 const errors=[];const external=[];const checks=[];
 page.on('pageerror',e=>errors.push(e.message));
 page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
@@ -25,6 +25,12 @@ await context.route('**/*',route=>{
   return route.continue();
 });
 async function capture(name){await page.screenshot({path:resolve(out,name+'.png')});}
+async function ocrCapture(name){
+  const path=resolve(out,name+'.png');
+  await page.screenshot({path});
+  const {stdout}=await execFileAsync('tesseract',[path,'stdout'],{maxBuffer:4*1024*1024});
+  return stdout;
+}
 async function nav(label){
   const menu=page.getByRole('button',{name:/Navigation öffnen/});
   if(await menu.count())await menu.click();
@@ -34,9 +40,9 @@ try{
   const ready=await context.request.post(base+'/api/v1/demo/scenario',{data:{scenario:'normal'}});
   assert.equal(ready.status(),200);
   await page.goto(base,{waitUntil:'domcontentloaded'});
-  await text('Deine Infrastruktur. Ein Bild.',{exact:true}).waitFor({timeout:45000});
-  await text('LIVE · API',{exact:false}).waitFor();
-  await text('ERFASSTE GERÄTE',{exact:true}).hover();
+  await page.getByText('Operations Workstation',{exact:true}).waitFor({timeout:45000});
+  await page.getByText('API CONNECTED',{exact:false}).waitFor();
+  await page.getByText('OPERATIONAL FOCUS · SESSION TELEMETRY',{exact:true}).hover();
   await capture('spectrum-hover-overview');
   for(let i=0;i<7;i++)await page.keyboard.press('Tab');
   await capture('spectrum-keyboard-focus');
@@ -51,25 +57,33 @@ try{
   checks.push('Topology tooltip preserves separate freshness text');
 
   await nav('Diagnose & Ereignisse');
-  const clip=page.getByRole('button',{name:/Telemetry:/}).first();
-  await clip.waitFor();
-  await clip.click();
-  await text('COLLECTION EVENT · KEINE KAUSALBEHAUPTUNG',{exact:true}).waitFor();
-  await capture('spectrum-diagnostics-timeline-inspector');
-  await text('Spuren ausblenden',{exact:true}).click();
-  await text('Klassische Ereignisliste aktiv',{exact:true}).waitFor();
-  await text('Collection-Ereignisse',{exact:true}).waitFor();
-  await text('Spuren zeigen',{exact:true}).click();
-  checks.push('Real event timeline selection, inspector and list fallback');
+  for(let i=0;i<3;i++) await page.getByRole('button',{name:'Timeline vergrößern',exact:true}).click();
+  const event=page.getByRole('button',{name:/^Ereignis .*Record/}).first();
+  await event.waitFor();
+  await event.click({force:true});
+  let inspectorText='';
+  for(let attempt=0;attempt<20;attempt++) {
+    inspectorText=await ocrCapture('spectrum-diagnostics-timeline-inspector');
+    if(inspectorText.includes('COLLECTION EVENT') && inspectorText.includes('KAUSALBEHAUPTUNG')) break;
+    await page.waitForTimeout(250);
+  }
+  assert.ok(inspectorText.includes('COLLECTION EVENT') && inspectorText.includes('KAUSALBEHAUPTUNG'),
+    'Visible Evidence Inspector verified by OCR');
+  await page.getByText('Spuren ausblenden',{exact:true}).click();
+  const fallbackText=await ocrCapture('spectrum-diagnostics-list-fallback');
+  assert.ok(fallbackText.includes('Klassische Erei') && fallbackText.includes('Collection-Ereignisse'),
+    'Visible list fallback verified by OCR');
+  await page.getByText('Spuren zeigen',{exact:true}).click();
+  checks.push('Real shared Explorer/Inspector selection, timeline zoom and list fallback');
 
   await page.getByRole('button',{name:/Darstellung wechseln/}).click();
-  await text('DAYLIGHT',{exact:true}).waitFor();
+  await page.getByText('DAYLIGHT',{exact:true}).waitFor();
   await page.getByRole('button',{name:/Darstellung wechseln/}).click();
-  await text('GRAPHITE',{exact:true}).waitFor();
+  await page.getByText('GRAPHITE',{exact:true}).waitFor();
   await nav('Übersicht');
   await capture('spectrum-graphite-overview');
   await page.getByRole('button',{name:/Darstellung wechseln/}).click();
-  await text('SPECTRUM',{exact:true}).waitFor();
+  await page.getByText('SPECTRUM',{exact:true}).waitFor();
   checks.push('Spectrum, Daylight and Graphite browser switching');
 
   assert.deepEqual(external,[]);

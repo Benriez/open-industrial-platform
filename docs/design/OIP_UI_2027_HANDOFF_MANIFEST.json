@@ -1,0 +1,194 @@
+{
+ "schema": "oip-ui-2027-handoff-manifest-v1",
+ "createdFromReadOnlyAuditUtc": "2026-11-08T03:01:29Z",
+ "canonicalMain": {
+  "revision": "037afda92ac02ffc91dceb322d905a57dd2fc4ef",
+  "uiState": "legacy-oip-005-five-view-shell",
+  "spectrum2027Integrated": false
+ },
+ "intendedUiAuthority": {
+  "repository": "/Users/benny/Code/oip-ui-isolated/OIP-UI-ADAPTIVE-WORKSPACES-2027-20261107",
+  "branch": "feature/oip-ux-001-adaptive-workspaces",
+  "featureCommit": "6c2d2a280b66b69461d5ee8c821630b4deeed4fe",
+  "featureTree": "77e17e19e5b451a31dd1037cd284a66e4da70872",
+  "frozenBaselineCommit": "5d50a1d5da558cf1e78515b4c24bad4aded40a92",
+  "payloadCoreRevision": "49a86bb0aa9f737fe9392eb2b5421e1ffe2f8c68",
+  "operatorVisualApproval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+ },
+ "integrationCandidate": {
+  "sourceWorktree": "/Users/benny/Code/open-industrial-platform-worktrees/spectrum-2027-ui",
+  "sourceBaseHead": "037afda92ac02ffc91dceb322d905a57dd2fc4ef",
+  "sourceCommittedSpectrumRevision": null,
+  "sourceState": "the integration snapshot was committed on the candidate branch below; the gate hashes the real working tree through a temporary index",
+  "snapshotArchive": "/Users/benny/.local/share/oip-canonical-ui/20261108T030129Z/snapshot.tar.gz",
+  "snapshotArchiveSha256": "8c81ed6fb1ea624a3047a33db284d441d704b2ddd081268826c7922236f2acc3",
+  "snapshotRoundtrip": "PASS",
+  "integrationWorktree": "/Users/benny/Code/open-industrial-platform-worktrees/spectrum-2027-ui",
+  "integrationBranch": "feature/oip-spectrum-2027-ui",
+  "mainMerged": false,
+  "pushed": false,
+  "deployed": false,
+  "reconciliation": "Two executions prepared this integration in parallel from the same authority payload: this worktree and the concurrent release loop candidate feature/oip-canonical-ui-regression-gate. They were reconciled into one candidate instead of integrated twice. The gate, the visual comparison, the acceptance-workflow integration and this manifest come from the concurrent candidate; the cadence-aware continuity rule, the verified onboarding activation and the management-adapter guards come from this worktree. No file of the concurrent execution was modified."
+ },
+ "workstreams": [
+  {
+   "id": "overview-2027-phase2",
+   "handoff": "/Users/benny/Documents/OIP-Handoffs/ui-overview-phase2-2027/20261106T123854Z/handoff/manifest.json",
+   "independentVerification": "/Users/benny/Documents/OIP-Handoffs/ui-overview-phase2-2027/20261106T123854Z/independent-verification.json",
+   "archiveSha256": "4fca3b878f91db2625096750735582caea36aab4bde159a7e550c5c7f90a9884",
+   "changedFiles": 32,
+   "screenshotsVerified": 47,
+   "technicalVerdict": "OIP_UI_OVERVIEW_PHASE2_TECH_PASS",
+   "visualStatus": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+  },
+  {
+   "id": "devices-services-2027",
+   "handoff": "/Users/benny/Documents/OIP-Handoffs/ui-devices-services-2027/20261106T191424Z/handoff/manifest.json",
+   "independentVerification": "/Users/benny/Documents/OIP-Handoffs/ui-devices-services-2027/20261106T191424Z/independent-verification.json",
+   "archiveSha256": "505179226f3e242b4e18822e9221f03e30d565f0189ba6096bff6a364620951d",
+   "changedFiles": 33,
+   "screenshotsVerified": 40,
+   "technicalVerdict": "OIP_UI_DEVICES_SERVICES_2027_TECH_PASS",
+   "visualStatus": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+  },
+  {
+   "id": "network-vpn-2027-phase2",
+   "handoff": "/Users/benny/Documents/OIP-Handoffs/ui-network-vpn-phase2-2027/20261105T204844Z/handoff/manifest.json",
+   "independentVerification": "/Users/benny/Documents/OIP-Handoffs/ui-network-vpn-phase2-2027/20261105T204844Z/independent-verification.json",
+   "archiveSha256": "101920042e4e13b8206e9ad94fb3a326e7b5ba74bcb787f79107673f79f1846c",
+   "changedFiles": 10,
+   "screenshotsVerified": 120,
+   "technicalVerdict": "OIP_UI_NETWORK_VPN_PHASE2_TECH_PASS",
+   "visualStatus": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+  },
+  {
+   "id": "opcua-2027-phase2",
+   "handoff": "/Users/benny/Code/oip-ui-isolated/OIP-UI-OPCUA-2027-Phase2-20261105/OIP_OPCUA_2027_PHASE2_HANDOFF.md",
+   "independentVerification": "/Users/benny/Documents/OIP-Handoffs/ui-opcua-2027-phase2/20261105T124748Z/handoff/verification.json",
+   "archiveSha256": "cef2da3011245ea6344916cb104a864675edd7c317a5ec8655580a0d68567162",
+   "changedFiles": 11,
+   "technicalVerdict": "OIP_OPCUA_2027_PHASE2_PASS",
+   "visualStatus": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+  },
+  {
+   "id": "diagnostics-events-2027",
+   "standaloneFinalHandoff": false,
+   "sourceVerification": "/Users/benny/Code/oip-ui-isolated/OIP-UI-DIAGNOSTICS-2027-20261105/provenance/source-verification.json",
+   "compatibleVersion": "Inherited through the Settings/OIP-009/OIP-UX-001 integration line; covered by its 12-check Diagnostics regression. No standalone final Diagnostics handoff is claimed.",
+   "visualStatus": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+  },
+  {
+   "id": "settings-2027",
+   "handoff": "/Users/benny/Documents/OIP-Handoffs/ui-settings-2027/20261106T233053Z/handoff/manifest.json",
+   "independentVerification": "/Users/benny/Documents/OIP-Handoffs/ui-settings-2027/20261106T233053Z/independent-verification.json",
+   "archiveSha256": "441794d10e361e15bf237f0ed2d0cd9657f3d7526a76c0dfdbf6d31e96620d3d",
+   "changedFiles": 55,
+   "screenshotsVerified": 193,
+   "technicalVerdict": "OIP_UI_SETTINGS_2027_TECH_PASS",
+   "visualStatus": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+  },
+  {
+   "id": "oip-009-global-infrastructure-context",
+   "handoff": "/Users/benny/Documents/OIP-Handoffs/ui-infrastructure-context-2027/20261107T030705Z/handoff/manifest.json",
+   "independentVerification": "/Users/benny/Documents/OIP-Handoffs/ui-infrastructure-context-2027/20261107T030705Z/independent-verification.json",
+   "archiveSha256": "c9d894b6139a2752bb781e68417408db56c7531cb1ee07c7a0c03c3129f70190",
+   "changedFiles": 53,
+   "screenshotsVerified": 22,
+   "technicalVerdict": "OIP_UI_GLOBAL_INFRASTRUCTURE_CONTEXT_PASS",
+   "e2eVerdict": "OIP_GLOBAL_INFRASTRUCTURE_E2E_PENDING",
+   "visualStatus": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+  },
+  {
+   "id": "oip-ux-001-adaptive-workspaces",
+   "handoff": "/Users/benny/Documents/OIP-Handoffs/ui-adaptive-workspaces-2027/20261107T132751Z/handoff/manifest.json",
+   "independentVerification": "/Users/benny/Documents/OIP-Handoffs/ui-adaptive-workspaces-2027/20261107T132751Z/independent-verification.json",
+   "archiveSha256": "08c70ae9e88b46532cd1755c541b9cdf50e5289af2cfa75cfa3b637470501d53",
+   "changedFiles": 56,
+   "screenshotsVerified": 45,
+   "technicalVerdict": "OIP_UX_001_ADAPTIVE_WORKSPACES_PASS",
+   "visualStatus": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+  }
+ ],
+ "technicalVisualReferences": [
+  {
+   "width": 1440,
+   "height": 900,
+   "path": "docs/design/baselines/canonical-ui-1440.png",
+   "sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
+   "archive": "/Users/benny/Documents/OIP-Handoffs/ui-adaptive-workspaces-2027/20261107T132751Z/oip-ui-adaptive-workspaces-2027-handoff.tar.gz",
+   "archiveSha256": "08c70ae9e88b46532cd1755c541b9cdf50e5289af2cfa75cfa3b637470501d53",
+   "archiveMember": "handoff/screenshots/after/orientation-1440x900.png",
+   "archiveMemberSha256": "f03d13e09f4028e6b61e7daa1dd82a5569cd92cae3524d3cf7f5cb83e1881ee4",
+   "crop": [
+    0,
+    0,
+    224,
+    900
+   ],
+   "scope": "stable left application shell only; dynamic workspace and legacy footer excluded",
+   "operatorVisualApproval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+  },
+  {
+   "width": 1920,
+   "height": 1080,
+   "path": "docs/design/baselines/canonical-ui-1920.png",
+   "sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
+   "archive": "/Users/benny/Documents/OIP-Handoffs/ui-adaptive-workspaces-2027/20261107T132751Z/oip-ui-adaptive-workspaces-2027-handoff.tar.gz",
+   "archiveSha256": "08c70ae9e88b46532cd1755c541b9cdf50e5289af2cfa75cfa3b637470501d53",
+   "archiveMember": "handoff/screenshots/after/orientation-1920x1080.png",
+   "archiveMemberSha256": "0f39d9c9f3faf36b722a5d96836ee8700466ae49d035993bdb48f214d4868b54",
+   "crop": [
+    0,
+    0,
+    224,
+    1080
+   ],
+   "scope": "stable left application shell only; dynamic workspace and legacy footer excluded",
+   "operatorVisualApproval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+  }
+ ],
+ "candidateVerification": {
+  "runner": "OIP_CANONICAL_UI_GATE=1 python3 tests/real_device/acceptance.py with OIP_EVIDENCE_DIR=target/oip-real-device-e2e (case oip_canonical_ui_gate of tests/canonical_regression.py)",
+  "status": "PASS",
+  "sourceRevision": "037afda92ac02ffc91dceb322d905a57dd2fc4ef (base revision of the candidate branch)",
+  "sourceTree": "2b06903bbb83ea188bd0841500627b81582ed181 (working-tree hash of the tested candidate)",
+  "localBundleSha256": "169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa",
+  "servedBundleSha256": "169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa",
+  "flutterTests": "335/335 PASS",
+  "browserFindings": 175,
+  "browserFailures": 0,
+  "screenshots": 13,
+  "managedAcceptancePhases": "8/8 PASS plus actual Flutter SSH onboarding",
+  "visualComparison": "PASS with pixel-verified derivation, 0.01 limits and both negative-control classes",
+  "visual1440": {
+   "meanAbsoluteDifference": 0.0010913800705467372,
+   "changedPixelRatio": 0.0,
+   "actualCaptureSha256": "ca95e0fed9fc918a3296ef4321aa02e270e67933976d8abc99949dee35581c48"
+  },
+  "visual1920": {
+   "meanAbsoluteDifference": 0.0012634652626482693,
+   "changedPixelRatio": 0.0,
+   "actualCaptureSha256": "15f12c0341d5babc38c3e0024c96225243ea057ab444ed053359801ae47c43fd"
+  },
+  "negativeControlMargins": {
+   "1440SingleNavigationRow": 3.111111111111111,
+   "1440LargeGradientBand": 28.888888888888886,
+   "1920SingleNavigationRow": 2.5925925925925926,
+   "1920LargeGradientBand": 24.074074074074073
+  },
+  "operatorVisualApproval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
+  "receipt": "target/oip-real-device-e2e/report.json",
+  "mainMerged": false,
+  "pushed": false,
+  "deployed": false,
+  "measuredOn": "candidate branch feature/oip-spectrum-2027-ui",
+  "mergedGateReceipt": {
+   "precheck": "target/oip-real-device-e2e/canonical-ui/canonical-ui-gate.json",
+   "browser": "target/oip-real-device-e2e/browser/browser-canonical-ui-gate.json",
+   "visual": "target/oip-real-device-e2e/canonical-ui/visual-comparison.json",
+   "precheckReceiptSha256": "a9dc70a45ba17a3ffa002850121ccc698c7c8d903da3c538e1ff97ed56929e95",
+   "browserReceiptSha256": "9de3d0a54cdf2f17bf496d7f0ed5748a5ba7b0931b904047e50d5046166e713e",
+   "visualReceiptSha256": "b7e083549962522460627a0e00b838fd4df294538dbeda693634ae874785ece8"
+  }
+ }
+}

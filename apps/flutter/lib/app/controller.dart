@@ -2,8 +2,24 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../models/contracts.dart';
+import '../models/infrastructure.dart';
 import '../models/onboarding.dart';
 import '../services/api.dart';
+import 'workspaces.dart';
+
+export 'workspaces.dart' show WorkspaceId;
+
+String _primaryFreshness(Snapshot snapshot, String sourceId) {
+  final observations =
+      snapshot.metrics.where((item) => item.sourceId == sourceId).toList();
+  if (observations.isEmpty) return 'unknown';
+  if (observations.every((item) => item.freshness == 'fresh')) return 'fresh';
+  if (observations.any((item) => item.freshness == 'fresh')) return 'mixed';
+  if (observations.any((item) => item.freshness == 'stale')) return 'stale';
+  return 'unknown';
+}
+
+enum _TransportMode { unknown, legacyDemo, authorized }
 
 class OipController extends ChangeNotifier {
   final OipApi api;
@@ -11,81 +27,200 @@ class OipController extends ChangeNotifier {
   final Duration streamTimeout;
   Snapshot? snapshot;
   String connection = 'connecting';
-  BrowserSession? browserSession;
-  int contextRevision = 0;
-  OnboardingScope onboardingScope = const OnboardingScope();
-  DeviceManagementApi? get management =>
-      api is DeviceManagementApi ? api as DeviceManagementApi : null;
-  bool get managed => management?.managed == true;
-  bool get loginRequired => connection == 'login_required';
-  void setInfrastructureContext(OnboardingScope scope) {
-    onboardingScope = scope;
-    contextRevision++;
-    // Caller OIP-009 owns selection. Never retain a previous context's display cache.
-    series.clear();
-    snapshot = null;
-    reconnect();
-  }
-
-  Future<void> login(String code) async {
-    browserSession = await management!.login(code);
-    contextRevision++;
-    series.clear();
-    snapshot = null;
-    error = null;
-    reconnect();
-  }
-
-  Future<void> logout() async {
-    contextRevision++;
-    _epoch++;
-    api.disconnect();
-    String? failure;
-    try {
-      await management!.logout();
-    } catch (e) {
-      failure = apiErrorMessage(e,
-          'Lokale Ansicht abgemeldet. Serverseitige Abmeldung nicht bestätigt; die Sitzung läuft spätestens nach 30 Minuten ab.');
-    } finally {
-      series.clear();
-      snapshot = null;
-      browserSession = null;
-      connection = 'login_required';
-      error = failure;
-      if (!_closed) notifyListeners();
-    }
-  }
-
   String? error;
   String? scenarioError;
   bool scenarioBusy = false;
   bool _closed = false;
   int _epoch = 0;
   DateTime? lastMessage;
+  final List<Observation> history = [];
+  String? telemetryKey;
+  bool telemetrySelectionExplicit = false;
+  List<SourceInfo> operationalSources = const [];
+  List<CollectionEvent> operationalEvents = const [];
 
-  /// The measured series of the live projection.
-  ///
-  /// The legacy demo measures exactly one series. The managed mode measures
-  /// one series per authorized source, so no source is preferred and no
-  /// fallback primary is invented.
-  final List<TrendSeries> series = [];
+  /// The single application-wide infrastructure context. The authorization
+  /// snapshot is kept separately from the selected presentation projection.
+  final InfrastructureContext infrastructure = InfrastructureContext();
 
-  /// The first measured series. The legacy view and the regression tests use
-  /// it; it stays empty while no measurement was received.
-  List<Observation> get history =>
-      series.isEmpty ? const <Observation>[] : series.first.samples;
+  /// Memory-only layout preferences survive workstation navigation and context
+  /// changes, but never carry object data, credentials or authorization.
+  final AdaptiveWorkspaces workspaces = AdaptiveWorkspaces();
+  Snapshot? _authorizedSnapshot;
+  _TransportMode _transport = _TransportMode.unknown;
+  String? _contextScopeSignature;
 
-  /// The key the current series belong to. A change of the key starts a new
-  /// display window, exactly like a change of the primary source did.
-  String? _seriesKey;
+  Observation? get selectedTelemetry {
+    final metrics = snapshot?.metrics;
+    if (metrics == null || telemetryKey == null) return null;
+    for (final observation in metrics) {
+      if (observationKey(observation) == telemetryKey) return observation;
+    }
+    return null;
+  }
+
   OipController(
     this.api, {
     this.retryDelay = const Duration(seconds: 1),
     this.streamTimeout = const Duration(seconds: 6),
-  });
+  }) {
+    infrastructure.addListener(_infrastructureChanged);
+  }
+
   bool get stale =>
       connection != 'live' ||
-      (!managed && snapshot?.system.opcua != 'connected');
+      (!infrastructure.ready && snapshot?.system.opcua != 'connected');
+
+  bool get hasAuthorizedContext => infrastructure.ready;
+
+  /// The authorized transport is the only managed mode. A client that never
+  /// reached an authorized v2 context stays in the explicit legacy demo.
+  bool get managed => _transport == _TransportMode.authorized;
+
+  /// The authenticated management boundary, if this client has one.
+  ///
+  /// A client without a session boundary never offers a management action.
+  DeviceManagementApi? get management =>
+      api is DeviceManagementApi ? api as DeviceManagementApi : null;
+
+  /// An authorized read needs a session. The state is terminal until the
+  /// operator authorizes a new one; it is never a transport outage and never
+  /// a reason to show demo data.
+  bool get loginRequired =>
+      connection == 'identity-required' || connection == 'login_required';
+
+  /// The placement of a device that the operator registers.
+  ///
+  /// This is not a second global switcher: the global context is
+  /// [infrastructure]. The onboarding scope only names where a newly
+  /// registered device belongs and is invalidated with [contextRevision].
+  OnboardingScope onboardingScope = const OnboardingScope();
+
+  /// Advances with every change of the onboarding scope. Open inspectors
+  /// observe it and close themselves.
+  int contextRevision = 0;
+
+  void setInfrastructureContext(OnboardingScope scope) {
+    onboardingScope = scope;
+    contextRevision++;
+    // The caller owns the selection. A previous context's display cache is
+    // never retained.
+    history.clear();
+    telemetryKey = null;
+    telemetrySelectionExplicit = false;
+    operationalSources = const [];
+    operationalEvents = const [];
+    snapshot = null;
+    reconnect();
+  }
+
+  /// Authorizes the local operator session with a single-use code.
+  Future<void> login(String code) async {
+    final boundary = management;
+    if (boundary == null) {
+      throw const ApiFailure(
+          'Die lokale Anmeldung wird von diesem Client nicht unterstützt.',
+          code: 'UNSUPPORTED');
+    }
+    await boundary.login(code);
+    contextRevision++;
+    history.clear();
+    telemetryKey = null;
+    telemetrySelectionExplicit = false;
+    operationalSources = const [];
+    operationalEvents = const [];
+    snapshot = null;
+    error = null;
+    await resyncInfrastructure();
+    unawaited(start());
+  }
+
+  /// Revokes the local operator session and drops every authorized object.
+  Future<void> logout() async {
+    final boundary = management;
+    String? failure;
+    try {
+      if (boundary != null) await boundary.logout();
+    } catch (exception) {
+      failure = apiErrorMessage(exception,
+          'Lokale Ansicht abgemeldet. Die serverseitige Abmeldung ist nicht bestätigt; die Sitzung läuft spätestens nach 30 Minuten ab.');
+    }
+    contextRevision++;
+    snapshot = null;
+    _authorizedSnapshot = null;
+    history.clear();
+    telemetryKey = null;
+    telemetrySelectionExplicit = false;
+    operationalSources = const [];
+    operationalEvents = const [];
+    connection = 'identity-required';
+    error = failure ?? 'Die lokale Operator-Sitzung wurde beendet.';
+    notifyListeners();
+  }
+
+  /// Composite invalidation key for every context-bound workstation. The old
+  /// primarySourceId-only key could not detect a parent-only scope change.
+  String get contextScopeSignature => infrastructure.ready
+      ? infrastructure.scopeSignature
+      : 'legacy/${snapshot?.primarySourceId ?? 'unscoped-snapshot'}';
+
+  void selectInfrastructure(InfrastructureSelection selection) {
+    infrastructure.select(selection);
+  }
+
+  bool inspectorVisible(WorkspaceId id, bool hasSelection) =>
+      workspaces.inspectorVisible(id, hasSelection);
+
+  void revealInspector(WorkspaceId id) {
+    workspaces.revealInspector(id);
+    notifyListeners();
+  }
+
+  void setInspectorOpen(WorkspaceId id, bool open) {
+    workspaces.setInspectorOpen(id, open);
+    notifyListeners();
+  }
+
+  void toggleInspectorPin(WorkspaceId id) {
+    workspaces.toggleInspectorPin(id);
+    notifyListeners();
+  }
+
+  void setExpertWorkspace(WorkspaceId id, bool open) {
+    workspaces.setExpertWorkspace(id, open);
+    notifyListeners();
+  }
+
+  void setAdvancedFilters(WorkspaceId id, bool open) {
+    workspaces.setAdvancedFilters(id, open);
+    notifyListeners();
+  }
+
+  void setWorkspaceView(WorkspaceId id, String? view) {
+    workspaces.setView(id, view);
+    notifyListeners();
+  }
+
+  void setWorkspaceDensity(WorkspaceId id, bool dense) {
+    workspaces.setDensity(id, dense);
+    notifyListeners();
+  }
+
+  void setWorkspaceOption(WorkspaceId id, String key, String? value) {
+    workspaces.setOption(id, key, value);
+    notifyListeners();
+  }
+
+  /// Performs one authorized bootstrap without claiming an active SSE channel.
+  /// Useful for an explicit resync and for deterministic contract-fixture UI
+  /// tests; production startup continues into [start] after the same read.
+  Future<void> resyncInfrastructure() async {
+    final bootstrap = await api.infrastructureBootstrap();
+    if (_closed) return;
+    _transport = _TransportMode.authorized;
+    _acceptBootstrap(bootstrap);
+    notifyListeners();
+  }
 
   Future<void> start() async {
     final epoch = ++_epoch;
@@ -94,54 +229,90 @@ class OipController extends ChangeNotifier {
       try {
         connection = snapshot == null ? 'connecting' : 'reconnecting';
         notifyListeners();
-        if (management != null) {
-          final previousPrincipal = browserSession?.principalId;
-          browserSession = await management!.session();
-          if (_closed || epoch != _epoch) return;
-          if (previousPrincipal != null &&
-              previousPrincipal != browserSession?.principalId) {
-            contextRevision++;
-            snapshot = null;
-            series.clear();
+
+        if (_transport != _TransportMode.legacyDemo) {
+          try {
+            infrastructure.markLoading();
+            final bootstrap = await api.infrastructureBootstrap();
+            if (_closed || epoch != _epoch) return;
+            _transport = _TransportMode.authorized;
+            _acceptBootstrap(bootstrap);
+          } on ApiFailure catch (exception) {
+            if (exception.code == 'UNSUPPORTED' ||
+                exception.statusCode == 404 ||
+                exception.statusCode == 405) {
+              await _acceptLegacyDemo();
+            } else if (_isIdentityFailure(exception)) {
+              // Only an explicitly marked demo may use the legacy transport.
+              // A real tenant denial never falls back to anonymous v1 data.
+              final demoAccepted = await _tryExplicitDemo();
+              if (!demoAccepted) {
+                snapshot = null;
+                _authorizedSnapshot = null;
+                history.clear();
+                telemetryKey = null;
+                operationalSources = const [];
+                operationalEvents = const [];
+                infrastructure.markIdentityFailure(exception);
+                rethrow;
+              }
+            } else {
+              rethrow;
+            }
           }
-          if (managed && !browserSession!.authenticated) {
-            contextRevision++;
-            snapshot = null;
-            series.clear();
-            connection = 'login_required';
-            error = null;
-            notifyListeners();
-            return;
-          }
+        } else {
+          await _acceptLegacyDemo();
         }
-        final initial = await api.initial();
         if (_closed || epoch != _epoch) return;
-        // A REST resync starts a new display window; SSE has no full replay.
-        series.clear();
-        _accept(initial);
+        // A REST/bootstrap resync starts a new display window; SSE has no full
+        // replay and Last-Event-ID is never an authorization selector.
+        history.clear();
         notifyListeners();
-        await for (final event in api.stream().timeout(streamTimeout)) {
+        final events = _transport == _TransportMode.authorized
+            ? api.infrastructureStream()
+            : api.stream();
+        await for (final event in events.timeout(streamTimeout)) {
           if (_closed || epoch != _epoch) return;
           if (event.type == 'error') {
-            throw const ApiFailure(
+            throw ApiFailure(
               'Live-Daten vorübergehend nicht verfügbar.',
               code: 'SSE_ERROR',
-              path: '/api/v1/stream',
+              path: _transport == _TransportMode.authorized
+                  ? '/api/v2/stream'
+                  : '/api/v1/stream',
             );
           }
           if (event.type == 'snapshot') {
-            _accept(_decodeSnapshot(event.data));
+            if (_transport == _TransportMode.authorized) {
+              _acceptAuthorized(_decodeAuthorizedSnapshot(event.data));
+            } else {
+              _accept(_decodeSnapshot(event.data));
+            }
             connection = 'live';
             error = null;
             lastMessage = DateTime.now();
             attempt = 0;
-            // One notification per accepted snapshot; _accept only mutates state.
+            // One notification per accepted snapshot; context listeners only
+            // mutate the projection and never emit a second notification.
             notifyListeners();
           }
         }
         throw const ApiFailure('Live-Verbindung geschlossen.');
       } catch (exception) {
         if (_closed || epoch != _epoch) return;
+        if (exception is ApiFailure &&
+            (_isIdentityFailure(exception) ||
+                exception.code == 'UNSUPPORTED_CONTEXT')) {
+          // Identity/policy failures are terminal until an explicit retry. They
+          // are neither a transport outage nor a reason for an endless poll.
+          api.disconnect();
+          connection = exception.code == 'UNSUPPORTED_CONTEXT'
+              ? 'context-unsupported'
+              : 'identity-required';
+          error = _connectionError(exception);
+          notifyListeners();
+          return;
+        }
         api.disconnect();
         connection = 'reconnecting';
         error = _connectionError(exception);
@@ -152,16 +323,106 @@ class OipController extends ChangeNotifier {
     }
   }
 
+  bool _isIdentityFailure(ApiFailure error) =>
+      error.statusCode == 401 ||
+      error.statusCode == 403 ||
+      error.code == 'UNAUTHENTICATED' ||
+      error.code == 'PERMISSION_DENIED' ||
+      error.code == 'PRINCIPAL_REQUIRED';
+
+  Future<void> _acceptLegacyDemo() async {
+    final initial = await api.initial();
+    if (!initial.system.simulated) {
+      throw const ApiFailure(
+          'Dieser Core bietet keinen autorisierten v2-Kontext; reale v1-Daten werden nicht anonym übernommen.',
+          code: 'UNSUPPORTED_CONTEXT',
+          statusCode: 409);
+    }
+    _transport = _TransportMode.legacyDemo;
+    if (infrastructure.status != InfrastructureContextStatus.unavailable) {
+      infrastructure.markUnavailable();
+    }
+    _authorizedSnapshot = null;
+    _accept(initial);
+  }
+
+  Future<bool> _tryExplicitDemo() async {
+    try {
+      final initial = await api.initial();
+      if (!initial.system.simulated) {
+        return false;
+      }
+      _transport = _TransportMode.legacyDemo;
+      if (infrastructure.status != InfrastructureContextStatus.unavailable) {
+        infrastructure.markUnavailable();
+      }
+      _authorizedSnapshot = null;
+      _accept(initial);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _acceptBootstrap(InfrastructureBootstrap bootstrap) {
+    _authorizedSnapshot = bootstrap.snapshot.toSnapshot();
+    _accept(_authorizedSnapshot!);
+    infrastructure.accept(bootstrap);
+  }
+
+  void _acceptAuthorized(AuthorizedSnapshot value) {
+    _authorizedSnapshot = value.toSnapshot();
+    infrastructure.acceptData();
+  }
+
+  void _infrastructureChanged() {
+    if (_transport != _TransportMode.authorized ||
+        _authorizedSnapshot == null) {
+      return;
+    }
+    final nextSignature = infrastructure.scopeSignature;
+    final scopeChanged = _contextScopeSignature != nextSignature;
+    if (scopeChanged) {
+      _contextScopeSignature = nextSignature;
+      workspaces.invalidateObjects();
+      api.cancelContextRequests();
+      api.cancelDeviceRequests();
+      api.cancelSettingsRequests();
+      history.clear();
+      telemetryKey = null;
+      telemetrySelectionExplicit = false;
+      operationalSources = const [];
+      operationalEvents = const [];
+    }
+    final projected = infrastructure.project(_authorizedSnapshot!);
+    _accept(projected);
+    // Unlike legacy SSE, an authorized projection is authoritative even when
+    // its selected source/event list is empty.
+    operationalSources = projected.sources;
+    operationalEvents = projected.recentEvents;
+    if (scopeChanged) notifyListeners();
+  }
+
   Snapshot _decodeSnapshot(String data) {
     try {
-      return managed
-          ? Snapshot.fromScopedJson(jsonDecode(data) as Json)
-          : Snapshot.fromJson(jsonDecode(data) as Json);
+      return Snapshot.fromJson(jsonDecode(data) as Json);
     } catch (_) {
       throw const ApiFailure(
         'Der Live-Snapshot verletzt den erwarteten Datenvertrag.',
         code: 'CONTRACT_ERROR',
         path: '/api/v1/stream',
+      );
+    }
+  }
+
+  AuthorizedSnapshot _decodeAuthorizedSnapshot(String data) {
+    try {
+      return AuthorizedSnapshot.fromJson(jsonDecode(data) as Json);
+    } catch (_) {
+      throw const ApiFailure(
+        'Der autorisierte Live-Snapshot verletzt den v2-Datenvertrag.',
+        code: 'CONTRACT_ERROR',
+        path: '/api/v2/stream',
       );
     }
   }
@@ -173,122 +434,130 @@ class OipController extends ChangeNotifier {
             'Automatischer Reconnect läuft. Letzte Daten sind veraltet.';
       }
       final endpoint = exception.path == null ? '' : '${exception.path}: ';
+      final retention = snapshot == null
+          ? 'Keine vorherigen Kontextdaten werden angezeigt.'
+          : 'Letzte Daten sind veraltet.';
+      final reconnect = _isIdentityFailure(exception) ||
+              exception.code == 'UNSUPPORTED_CONTEXT'
+          ? 'Kein automatischer Retry; eine neue Session oder ein unterstützter Vertrag ist erforderlich.'
+          : 'Automatischer Reconnect läuft.';
       return 'API-Endpunkt $endpoint'
           '${apiErrorMessage(exception, 'Daten konnten nicht geladen werden.')} '
-          'Automatischer Reconnect läuft. Letzte Daten sind veraltet.';
+          '$reconnect $retention';
     }
     return 'OIP-Server nicht erreichbar. Automatischer Reconnect läuft. '
         'Letzte Daten sind veraltet.';
   }
 
   void _accept(Snapshot value) {
-    final key = _seriesKeyOf(value);
-    if (_seriesKey != key) {
-      _seriesKey = key;
-      series.clear();
+    final scopeChanged = snapshot?.primarySourceId != value.primarySourceId;
+    if (scopeChanged) {
+      history.clear();
+      telemetryKey = null;
+      telemetrySelectionExplicit = false;
+      operationalSources = const [];
+      operationalEvents = const [];
+    }
+    if (value.sources.isNotEmpty) operationalSources = value.sources;
+    if (value.recentEvents.isNotEmpty) operationalEvents = value.recentEvents;
+    final primarySource = value.primarySourceId;
+    if (primarySource != null && operationalSources.isNotEmpty) {
+      final observedFreshness = _primaryFreshness(value, primarySource);
+      operationalSources = operationalSources
+          .map((source) => source.id == primarySource
+              ? source.withPrimarySnapshotStatus(value.system.opcua,
+                  observedFreshness, value.system.lastReceivedMs)
+              : source)
+          .toList();
     }
     snapshot = value;
-    _accumulate(value);
-  }
 
-  /// The key the measured series belong to.
-  ///
-  /// The legacy demo measures the temperature of its primary source; the
-  /// managed mode measures every authorized source of the session.
-  String _seriesKeyOf(Snapshot value) {
-    if (!managed) return value.primarySourceId ?? '';
-    final ids = value.sources.map((s) => s.id).toList()..sort();
-    return ids.join('|');
-  }
-
-  /// The measurements of the projection that may extend a series.
-  ///
-  /// The legacy rule stays exactly as it was: the temperature of the entity
-  /// `M-01` of the primary source. The managed rule takes the numeric
-  /// measurements of the authorized sources; a stale or unknown measurement
-  /// never extends a series.
-  List<Observation> _measurements(Snapshot value) => managed
-      ? value.metrics
-          .where((o) =>
-              o.sourceId != null &&
-              o.freshness == 'fresh' &&
-              o.sourceMs != null &&
-              o.number != null)
-          .toList()
-      : value.metrics
-          .where((o) =>
-              o.sourceId == value.primarySourceId &&
-              value.primarySourceId != null &&
-              o.entityId == 'M-01' &&
-              o.metricId == 'temperature' &&
-              o.freshness == 'fresh' &&
-              o.sourceMs != null)
-          .toList();
-
-  void _accumulate(Snapshot value) {
-    final groups = <String, List<Observation>>{};
-    for (final o in _measurements(value)) {
-      groups
-          .putIfAbsent('${o.sourceId}|${o.entityId}|${o.metricId}', () => [])
-          .add(o);
+    final selected = selectedTelemetry;
+    if (telemetryKey != null && selected == null) {
+      history.clear();
     }
-    final chosen = _chosen(groups);
-    final bySource = <String, String>{};
-    for (final group in chosen) {
-      bySource[group.sourceId] = group.key;
-      final existing = series.where((s) => s.key == group.key).firstOrNull;
-      final target = existing ??
-          TrendSeries(group.sourceId, group.entityId, group.metricId,
-              group.unit, <Observation>[]);
-      if (existing == null) series.add(target);
-      for (final o in group.samples) {
-        // A source time that moves backwards starts a new display window.
-        if (target.samples.isNotEmpty &&
-            o.sourceMs! < target.samples.last.sourceMs!) {
-          target.samples.clear();
-        }
-        if (target.samples.isEmpty ||
-            target.samples.last.sourceMs != o.sourceMs ||
-            target.samples.last.value != o.value) {
-          target.samples.add(o);
-          if (target.samples.length > 60) target.samples.removeAt(0);
-        }
+    if (!telemetrySelectionExplicit &&
+        (selected == null || !value.metrics.contains(selected))) {
+      final preferred = _defaultTelemetry(value);
+      telemetryKey = preferred == null ? null : observationKey(preferred);
+    }
+    _recordSelectedTelemetry(value);
+  }
+
+  /// The measurement the chart shows when nothing was selected explicitly.
+  ///
+  /// The legacy demo keeps its rule: the temperature of the entity `M-01` of
+  /// the primary source. The managed mode never prefers a demo entity and
+  /// never a fallback source: the metric with the most received samples wins
+  /// and a tie is broken by the metric identifier.
+  Observation? _defaultTelemetry(Snapshot value) {
+    if (!managed) {
+      return value.primaryTemperature ??
+          value.metrics
+              .where((item) => item.number != null && item.sourceMs != null)
+              .firstOrNull ??
+          value.metrics.firstOrNull;
+    }
+    final groups = <String, List<Observation>>{};
+    for (final item in value.metrics) {
+      if (item.sourceId == null || item.number == null || item.sourceMs == null) {
+        continue;
+      }
+      groups
+          .putIfAbsent('${item.sourceId}|${item.entityId}|${item.metricId}', () => [])
+          .add(item);
+    }
+    if (groups.isEmpty) return value.metrics.firstOrNull;
+    final ranked = groups.values.toList()
+      ..sort((a, b) {
+        final byCount = b.length.compareTo(a.length);
+        return byCount != 0
+            ? byCount
+            : a.first.metricId.compareTo(b.first.metricId);
+      });
+    return ranked.first.firstOrNull;
+  }
+
+  void _recordSelectedTelemetry(Snapshot value) {
+    for (final observation in value.metrics) {
+      if (observationKey(observation) != telemetryKey ||
+          observation.freshness != 'fresh' ||
+          observation.sourceMs == null) {
+        continue;
+      }
+      if (history.isNotEmpty &&
+          observation.sourceMs! < history.last.sourceMs!) {
+        history.clear();
+      }
+      if (history.isEmpty ||
+          history.last.sourceMs != observation.sourceMs ||
+          history.last.value != observation.value) {
+        history.add(observation);
+        if (history.length > 60) history.removeAt(0);
       }
     }
-    // A source shows exactly one series. A series of a source that is not
-    // measured in this projection keeps its received points.
-    final keep = bySource.values.toSet();
-    series.removeWhere(
-        (s) => bySource.containsKey(s.sourceId) && !keep.contains(s.key));
   }
 
-  /// The series that are drawn.
-  ///
-  /// The legacy demo measures one series. The managed mode draws one series
-  /// per authorized source: the metric with the most received samples, a tie
-  /// is broken by the metric identifier. No source and no metric of another
-  /// scope is preferred.
-  List<_SeriesGroup> _chosen(Map<String, List<Observation>> groups) {
-    final result = <_SeriesGroup>[];
-    final bySource = <String, List<_SeriesGroup>>{};
-    for (final entry in groups.entries) {
-      final parts = entry.key.split('|');
-      final group = _SeriesGroup(parts[0], parts[1], parts[2],
-          entry.value.firstOrNull?.symbol ?? '', entry.value);
-      bySource.putIfAbsent(group.sourceId, () => []).add(group);
-    }
-    for (final candidates in bySource.values) {
-      candidates.sort((a, b) {
-        final byCount = b.samples.length.compareTo(a.samples.length);
-        return byCount != 0 ? byCount : a.metricId.compareTo(b.metricId);
-      });
-      result.add(candidates.first);
-    }
-    return result;
+  void selectTelemetry(String key) {
+    telemetrySelectionExplicit = true;
+    if (telemetryKey == key) return;
+    telemetryKey = key;
+    history.clear();
+    final current = snapshot;
+    if (current != null) _recordSelectedTelemetry(current);
+    notifyListeners();
+  }
+
+  /// An explicit entity without observations must not retain another entity's chart.
+  void clearTelemetry() {
+    telemetrySelectionExplicit = true;
+    telemetryKey = null;
+    history.clear();
+    notifyListeners();
   }
 
   Future<void> setScenario(String value) async {
-    if (scenarioBusy) return;
+    if (scenarioBusy || _transport == _TransportMode.authorized) return;
     scenarioBusy = true;
     scenarioError = null;
     notifyListeners();
@@ -316,17 +585,9 @@ class OipController extends ChangeNotifier {
   void dispose() {
     _closed = true;
     _epoch++;
+    infrastructure.removeListener(_infrastructureChanged);
+    infrastructure.dispose();
     api.close();
     super.dispose();
   }
-}
-
-/// One measured group of the projection: the measurements of one source, one
-/// entity and one metric.
-class _SeriesGroup {
-  final String sourceId, entityId, metricId, unit;
-  final List<Observation> samples;
-  _SeriesGroup(this.sourceId, this.entityId, this.metricId, this.unit,
-      this.samples);
-  String get key => '$sourceId|$entityId|$metricId';
 }

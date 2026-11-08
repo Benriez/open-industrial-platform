@@ -1,556 +1,744 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../app/controller.dart';
 import '../design_system/theme.dart';
 import '../models/contracts.dart';
+import '../widgets/adaptive_workspace.dart';
 import '../widgets/components.dart';
-import '../widgets/trend.dart';
+import '../widgets/workstation.dart';
 import 'devices.dart';
+import 'overview/activity_workspace.dart';
+import 'overview/context_inspector.dart';
+import 'overview/infrastructure_explorer.dart';
+import 'overview/overview_selection.dart';
+import 'overview/telemetry_chart.dart';
+import 'overview/unified_infrastructure_summary.dart';
 
-class OverviewPage extends StatelessWidget {
+class OverviewPage extends StatefulWidget {
   final OipController controller;
   final void Function(int) navigate;
   const OverviewPage(this.controller, this.navigate, {super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final snapshot = controller.snapshot!;
-    final temperature = snapshot.primaryTemperature;
-    // The legacy demo has exactly one entity; the managed mode knows no
-    // preferred entity and asks for the alarm of any authorized device.
-    final alarm = controller.managed
-        ? snapshot.hasAlarm()
-        : snapshot.hasAlarm(deviceId: 'M-01');
-    final zoneCount = snapshot.devices.map((device) => device.location).toSet();
-    final reachable = snapshot.devices
-        .where((device) => device.health.reachability == 'reachable')
-        .length;
-    final focus = _focusDevices(snapshot.devices);
-    final simulated = snapshot.system.simulated;
+  State<OverviewPage> createState() => _OverviewPageState();
+}
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Wrap(
-          spacing: OipTokens.s4,
-          runSpacing: OipTokens.s3,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('COMMAND CENTER',
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelSmall
-                        ?.copyWith(color: OipTokens.cyan)),
-                const SizedBox(height: OipTokens.s1),
-                Text('Deine Infrastruktur. Ein Bild.',
-                    style: Theme.of(context).textTheme.headlineLarge),
-                const SizedBox(height: OipTokens.s2),
-                Text('Lokal beobachten. Zusammenhänge verstehen.',
-                    style: TextStyle(color: OipTokens.muted(context))),
-              ],
-            ),
-            StatusPill(
-              simulated ? 'LOKALE SIMULATION' : 'BACKEND-DATEN',
-              color: OipTokens.statusColor(context, 'info'),
-              icon: simulated
-                  ? Icons.science_outlined
-                  : Icons.cloud_done_outlined,
-            ),
-          ],
-        ),
-        const SizedBox(height: OipTokens.s4),
-        GradientCard(
-          accent: OipTokens.violet,
-          padding: const EdgeInsets.symmetric(
-              horizontal: OipTokens.s4, vertical: OipTokens.s3),
-          child: Wrap(
-            spacing: OipTokens.s5,
-            runSpacing: OipTokens.s2,
-            crossAxisAlignment: WrapCrossAlignment.center,
+enum _OverviewMobilePane { explorer, focus, inspector }
+
+class _OverviewPageState extends State<OverviewPage> {
+  late OverviewSelection selection;
+  final GlobalKey<OverviewTrendChartState> chartKey = GlobalKey();
+  _OverviewMobilePane mobilePane = _OverviewMobilePane.focus;
+  String? scopeSignature;
+
+  OipController get controller => widget.controller;
+
+  void _contextChanged() {
+    final next = controller.contextScopeSignature;
+    if (!mounted || scopeSignature == next) return;
+    scopeSignature = next;
+    setState(() {
+      selection = const OverviewSelection.none();
+      mobilePane = _OverviewMobilePane.focus;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    scopeSignature = controller.contextScopeSignature;
+    controller.addListener(_contextChanged);
+    // Orientation starts without a synthetic object. In the explicitly retained
+    // expert workspace, the authorized primary source restores the established
+    // full-panel workflow after module navigation.
+    final primary = controller.snapshot?.primarySourceId;
+    final expert =
+        controller.workspaces.layout(WorkspaceId.overview).expertWorkspace;
+    selection = expert && primary != null
+        ? OverviewSelection.source(primary)
+        : const OverviewSelection.none();
+  }
+
+  Snapshot get snapshot => controller.snapshot!;
+  List<SourceInfo> get sources => controller.operationalSources.isNotEmpty
+      ? controller.operationalSources
+      : snapshot.sources;
+  List<CollectionEvent> get events => controller.operationalEvents.isNotEmpty
+      ? controller.operationalEvents
+      : snapshot.recentEvents;
+  List<CollectionEvent> get scopedEvents => selection.sourceId == null
+      ? selection.kind == OverviewSelectionKind.device
+          ? const []
+          : events
+      : events.where((event) => event.sourceId == selection.sourceId).toList();
+
+  @override
+  void dispose() {
+    controller.removeListener(_contextChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final expert =
+        controller.workspaces.layout(WorkspaceId.overview).expertWorkspace;
+    final selected = selection.kind == OverviewSelectionKind.none && !expert
+        ? null
+        : controller.selectedTelemetry ??
+            (controller.telemetrySelectionExplicit
+                ? null
+                : snapshot.primaryTemperature);
+    final attention = _attentionEntries();
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.f6): () {
+          chartKey.currentState?.focusNextSampleAction();
+        },
+      },
+      child: Focus(
+        autofocus: true,
+        child: Semantics(
+          container: true,
+          explicitChildNodes: true,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Tooltip(
-                message: 'Liveness: ${_flag(snapshot.core.live)} · '
-                    'Readiness: ${_flag(snapshot.core.ready)} · '
-                    'Persistenz: ${_flag(snapshot.core.persistenceHealthy)}',
-                child: Semantics(
-                  label:
-                      'Core-Zustand: ${controller.connection == 'live' ? _coreLabel(snapshot.core.lifecycle) : 'Status veraltet'}',
-                  child: _ribbonValue(
-                      context,
-                      'CORE',
-                      controller.connection == 'live'
-                          ? _coreLabel(snapshot.core.lifecycle)
-                          : 'Status veraltet',
-                      controller.connection == 'live'
-                          ? _coreTone(snapshot.core.lifecycle)
-                          : 'stale'),
-                ),
-              ),
-              // The managed projection carries no OPC-UA, subscription or
-              // network dimension. Those rows belong to the legacy demo; in
-              // the managed mode the source registry of the session is shown
-              // instead of dimensions the projection does not deliver.
-              if (!controller.managed) ...[
-                _ribbonValue(context, 'OPC UA SOURCE',
-                    known(snapshot.system.opcua), snapshot.system.opcua),
-                _ribbonValue(
-                    context,
-                    'SUBSCRIPTION',
-                    known(snapshot.system.subscription),
-                    snapshot.system.subscription),
-                _ribbonValue(context, 'NETWORK',
-                    known(snapshot.system.network), snapshot.system.network),
+              _header(),
+              const SizedBox(height: OipTokens.s2),
+              _contextBar(),
+              const SizedBox(height: OipTokens.s2),
+              _statusStrip(),
+              if (controller.infrastructure.ready &&
+                  controller.infrastructure.selection.isUnified) ...[
+                const SizedBox(height: OipTokens.s2),
+                UnifiedInfrastructureSummary(controller: controller),
               ],
-              if (controller.managed)
-                _ribbonValue(
-                    context,
-                    'QUELLEN',
-                    '${snapshot.sources.length}',
-                    snapshot.sources.isEmpty ? 'unknown' : 'fresh'),
-              _ribbonValue(
-                  context,
-                  'DATENFRISCHE',
-                  controller.stale ? 'Veraltet / unbekannt' : 'Live-Snapshot',
-                  controller.stale ? 'stale' : 'fresh'),
-              Text('Empfangen: ${timestamp(snapshot.system.lastReceivedMs)}',
-                  style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: OipTokens.s3),
+              if (!controller.workspaces
+                      .layout(WorkspaceId.overview)
+                      .expertWorkspace &&
+                  selection.kind == OverviewSelectionKind.none)
+                SizedBox(
+                  height: MediaQuery.sizeOf(context).width < OipTokens.tablet
+                      ? 220
+                      : 176,
+                  child: ActivityCoverageWorkspace(
+                    snapshot: snapshot,
+                    sources: sources,
+                    events: scopedEvents,
+                    allEvents: events,
+                    selection: selection,
+                    onEvent: _selectEvent,
+                    onSource: _selectSource,
+                    navigate: widget.navigate,
+                  ),
+                )
+              else ...[
+                LayoutBuilder(builder: (context, box) {
+                  final explorer = InfrastructureExplorer(
+                    snapshot: snapshot,
+                    sources: sources,
+                    selection: selection,
+                    onSource: _selectSource,
+                    onDevice: _selectDevice,
+                  );
+                  final focus = _operationalFocus(selected);
+                  final inspector = AdaptiveInspector(
+                    controller: controller,
+                    workspace: WorkspaceId.overview,
+                    label: 'Kontext & Provenienz',
+                    hasSelection: selection.kind != OverviewSelectionKind.none,
+                    child: OverviewContextInspector(
+                      snapshot: snapshot,
+                      sources: sources,
+                      events: events,
+                      selection: selection,
+                      attention: attention,
+                      onClear: () {
+                        setState(
+                            () => selection = const OverviewSelection.none());
+                        controller.setInspectorOpen(
+                            WorkspaceId.overview, false);
+                      },
+                      onEvent: _selectEvent,
+                      onDeviceDetails: (device) =>
+                          showDevice(context, controller, device),
+                      navigate: widget.navigate,
+                    ),
+                  );
+                  final showInspector = controller.inspectorVisible(
+                      WorkspaceId.overview,
+                      selection.kind != OverviewSelectionKind.none);
+                  if (box.maxWidth >= OipTokens.workstation) {
+                    final viewport = MediaQuery.sizeOf(context).height;
+                    final mainHeight = viewport >= 1000
+                        ? (viewport - 540).clamp(370.0, 620.0)
+                        : 370.0;
+                    return SizedBox(
+                      height: mainHeight,
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SizedBox(
+                                width: box.maxWidth >= 1500 ? 252 : 232,
+                                child: explorer),
+                            const SizedBox(width: OipTokens.s2),
+                            Expanded(child: focus),
+                            if (showInspector) ...[
+                              const SizedBox(width: OipTokens.s2),
+                              SizedBox(
+                                  width: box.maxWidth >= 1500 ? 310 : 288,
+                                  child: inspector),
+                            ],
+                          ]),
+                    );
+                  }
+                  if (box.maxWidth >= OipTokens.tablet) {
+                    return Column(children: [
+                      SizedBox(
+                        height: 430,
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              SizedBox(width: 238, child: explorer),
+                              const SizedBox(width: OipTokens.s2),
+                              Expanded(child: focus),
+                            ]),
+                      ),
+                      if (showInspector) ...[
+                        const SizedBox(height: OipTokens.s2),
+                        SizedBox(height: 360, child: inspector),
+                      ],
+                    ]);
+                  }
+                  return Column(children: [
+                    _mobilePaneSelector(),
+                    const SizedBox(height: OipTokens.s2),
+                    switch (mobilePane) {
+                      _OverviewMobilePane.explorer =>
+                        SizedBox(height: 480, child: explorer),
+                      _OverviewMobilePane.focus => focus,
+                      _OverviewMobilePane.inspector =>
+                        SizedBox(height: 460, child: inspector),
+                    },
+                  ]);
+                }),
+                const SizedBox(height: OipTokens.s2),
+                SizedBox(
+                  height: MediaQuery.sizeOf(context).width < OipTokens.tablet
+                      ? 220
+                      : 176,
+                  child: ActivityCoverageWorkspace(
+                    snapshot: snapshot,
+                    sources: sources,
+                    events: scopedEvents,
+                    allEvents: events,
+                    selection: selection,
+                    onEvent: _selectEvent,
+                    onSource: _selectSource,
+                    navigate: widget.navigate,
+                  ),
+                ),
+              ],
             ],
           ),
         ),
-        const SizedBox(height: OipTokens.s4),
-        ResponsiveGrid(
-          minWidth: 205,
-          children: [
-            MetricCard(
-                'Erfasste Geräte',
-                '${snapshot.devices.length}',
-                'Rust-Inventar · ${zoneCount.length} ${controller.managed ? 'Standortangaben' : 'Netzwerkzonen'}',
-                Icons.dns_outlined,
-                color: OipTokens.blue),
-            MetricCard(
-                'Erreichbare Geräte',
-                '$reachable',
-                '${snapshot.devices.where((d) => d.isFaulted).length} gestört · ${simulated ? 'simulierte Zustände' : 'Backend-Zustände'}',
-                Icons.hub_outlined,
-                color: OipTokens.cyan),
-            MetricCard(
-                'Aktive Hinweise',
-                controller.managed
-                    ? 'Nicht ausgewertet'
-                    : '${snapshot.incidents.length}',
-                controller.managed
-                    ? 'Keine Incident-Auswertung in dieser Projektion'
-                    : simulated
-                        ? 'Deterministische Demoszenarien'
-                        : 'Vom Backend gelieferte Hinweise',
-                Icons.radar,
-                color: controller.managed
-                    ? OipTokens.muted(context)
-                    : snapshot.incidents.isEmpty
-                        ? OipTokens.lime
-                        : OipTokens.statusColor(context, 'degraded')),
-            if (controller.managed)
-              MetricCard(
-                'Autorisierte Quellen',
-                '${snapshot.sources.length}',
-                snapshot.sources.isEmpty
-                    ? 'Die Sitzung sieht keine Quelle der Registry.'
-                    : snapshot.sources
-                        .map((source) => source.name)
-                        .take(2)
-                        .join(' · '),
-                Icons.hub_outlined,
-                color: OipTokens.cyan,
-              )
-            else
-              MetricCard(
-                'Temperatur M-01',
-                temperature == null
-                    ? '—'
-                    : '${temperature.display} ${temperature.symbol}',
-                controller.stale
-                    ? 'Veraltet · letzter bekannter Wert'
-                    : alarm
-                        ? 'Alarm vom OPC-UA-Datenmodell gemeldet'
-                        : 'OPC UA → SQLite → SSE',
-                Icons.thermostat_outlined,
-                color: alarm
-                    ? OipTokens.statusColor(context, 'alarm')
-                    : temperature == null
-                        ? OipTokens.muted(context)
-                        : OipTokens.violet,
-              ),
-          ],
-        ),
-        const SizedBox(height: OipTokens.s4),
-        LayoutBuilder(builder: (context, box) {
-          final charts = controller.managed
-              ? _managedCharts(context, snapshot)
-              : [
-                  ChartContainer(
-                    title: 'Live-Telemetrie / Maschinensignal',
-                    subtitle:
-                        'Empfangene OPC-UA-Werte · keine interpolierten Lücken',
-                    accent: OipTokens.cyan,
-                    action: StatusPill(
-                      simulated ? 'SIM' : 'API',
-                      color: OipTokens.statusColor(context, 'info'),
-                      icon: simulated
-                          ? Icons.science_outlined
-                          : Icons.cloud_done_outlined,
-                    ),
-                    child: RepaintBoundary(
-                        child: TrendChart(controller.history)),
-                  ),
-                ];
-          final events = SectionContainer(
-            title: 'Aktive Incidents',
-            subtitle: 'Evidenz vor Annahmen · Auswahl öffnet Diagnose',
-            accent: OipTokens.pink,
-            icon: Icons.radar,
-            action: IconButton(
-              tooltip: 'Diagnose öffnen',
-              onPressed: () => navigate(4),
-              icon: const Icon(Icons.arrow_outward, size: 18),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (snapshot.incidents.isEmpty)
-                  InlineNotice(
-                    controller.managed
-                        ? 'Incidents hier nicht ausgewertet'
-                        : 'Keine aktiven Incidents',
-                    controller.managed
-                        ? 'Die autorisierte Live-Projektion enthält keine Incident-Auswertung. Das ist kein Nachweis eines gesunden Geräts.'
-                        : 'Messwerte prüfen; fehlende Befunde werden nicht ergänzt.',
-                    icon: controller.managed
-                        ? Icons.help_outline
-                        : Icons.verified_outlined,
-                  ),
-                ...snapshot.incidents.take(3).map((incident) => Padding(
-                      padding: const EdgeInsets.only(bottom: OipTokens.s3),
-                      child: _IncidentSummary(
-                        incident: incident,
-                        critical:
-                            snapshot.hasAlarm(deviceId: incident.deviceId),
-                      ),
-                    )),
-                const Divider(),
-                Fact('OPC-UA-Subscription',
-                    OipTokens.statusLabel(snapshot.system.subscription)),
-                Fact(
-                  'Letzte Diagnose',
-                  snapshot.incidents.isEmpty
-                      ? 'Keine Diagnose erzeugt'
-                      : '${snapshot.incidents.first.title} · ${snapshot.incidents.first.simulated ? 'Simulation' : 'Backend'}',
-                ),
-              ],
-            ),
-          );
-          return box.maxWidth >= OipTokens.desktop
-              ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Expanded(
-                      flex: 3,
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            for (final chart in charts) ...[
-                              chart,
-                              const SizedBox(height: OipTokens.s4),
-                            ],
-                          ])),
-                  const SizedBox(width: OipTokens.s4),
-                  Expanded(flex: 2, child: events),
-                ])
-              : Column(children: [
-                  for (final chart in charts) ...[
-                    chart,
-                    const SizedBox(height: OipTokens.s4),
-                  ],
-                  events,
-                ]);
-        }),
-        const SizedBox(height: OipTokens.s6),
-        if (controller.managed) ...[
-          const SectionTitle('Autorisierte Infrastruktur',
-              'Quellen der Sitzung aus dem Quellregister des Core · jede Quelle bleibt erkennbar',
-              accent: OipTokens.cyan),
-          if (snapshot.sources.isEmpty)
-            const InlineNotice(
-              'Keine autorisierte Quelle',
-              'Die Sitzung sieht keine Quelle der Registry. Das ist kein Nachweis einer gesunden Anlage.',
-              icon: Icons.hub_outlined,
-            )
-          else
-            ResponsiveGrid(
-              minWidth: 300,
-              maxColumns: 2,
-              children: snapshot.sources
-                  .map((source) => _SourceCard(
-                        source: source,
-                        location: snapshot.locationOf(source.id),
-                        values: snapshot.metrics
-                            .where((observation) =>
-                                observation.sourceId == source.id)
-                            .toList(),
-                      ))
-                  .toList(),
-            ),
-          const SizedBox(height: OipTokens.s6),
-        ],
-        SectionTitle(
-          'System & Datenpfad',
-          'Fehlende Telemetrie bleibt ausdrücklich unbekannt.',
-          accent: OipTokens.yellow,
-          action: TextButton(
-              onPressed: () => navigate(3),
-              child: const Text('OPC UA öffnen →')),
-        ),
-        ResponsiveGrid(
-          minWidth: 205,
-          children: [
-            MetricCard(
-                'CPU-Auslastung',
-                snapshot.system.cpu == null ? '—' : '${snapshot.system.cpu} %',
-                snapshot.system.cpu == null
-                    ? 'Unbekannt · kein Host-Collector'
-                    : 'Wert aus dem Systemstatus geliefert',
-                Icons.memory,
-                color: OipTokens.blue),
-            MetricCard(
-                'GPU-Auslastung',
-                snapshot.system.gpu == null ? '—' : '${snapshot.system.gpu} %',
-                snapshot.system.gpu == null
-                    ? 'Unbekannt · kein GPU-Exporter'
-                    : 'Wert aus dem Systemstatus geliefert',
-                Icons.developer_board_outlined,
-                color: OipTokens.violet),
-            MetricCard(
-                'RAM-Verbrauch',
-                snapshot.system.ram == null ? '—' : '${snapshot.system.ram} %',
-                snapshot.system.ram == null
-                    ? 'Unbekannt · keine Messquelle'
-                    : 'Wert aus dem Systemstatus geliefert',
-                Icons.storage_outlined,
-                color: OipTokens.pink),
-            MetricCard(
-                'Persistierte Werte',
-                snapshot.system.persisted?.toString() ?? 'Nicht freigegeben',
-                'SQLite · Netzwerkstatus: ${known(snapshot.system.network)}',
-                Icons.data_object,
-                color: OipTokens.lime),
-          ],
-        ),
-        const SizedBox(height: OipTokens.s6),
-        SectionTitle(
-          'Geräte im Fokus',
-          'Identität, Verbindung und Datenqualität',
-          accent: OipTokens.blue,
-          action: TextButton(
-              onPressed: () => navigate(1), child: const Text('Alle Geräte →')),
-        ),
-        ResponsiveGrid(
-          minWidth: 270,
-          maxColumns: 3,
-          children: focus
-              .map((device) => DeviceCard(device,
-                  onTap: () => showDevice(context, controller, device)))
-              .toList(),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _ribbonValue(
-          BuildContext context, String label, String value, String status) =>
-      Row(mainAxisSize: MainAxisSize.min, children: [
-        StatusDot(status),
-        const SizedBox(width: OipTokens.s2),
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: Theme.of(context).textTheme.labelSmall),
-          Text(value, style: Theme.of(context).textTheme.bodySmall),
-        ]),
+  Widget _header() => AdaptiveWorkspaceHeader(
+        eyebrow: 'INFRASTRUCTURE COMMAND CENTER · READ-ONLY',
+        title: 'Operations Workstation',
+        subtitle:
+            'Zustand erkennen · Auffälligkeiten auswählen · technisch vertiefen',
+        accent: OipTokens.cyan,
+        primaryAction: WorkspacePrimaryAction(
+          buttonKey: const Key('overview-primary-diagnostics'),
+          label: 'Diagnose öffnen',
+          tooltip:
+              'Findings, aktuelle Ereignisse und Collection-Probleme untersuchen',
+          icon: Icons.fact_check_outlined,
+          onPressed: () => widget.navigate(4),
+        ),
+        actions: [
+          InspectorOpenAction(
+            controller: controller,
+            workspace: WorkspaceId.overview,
+            hasSelection: selection.kind != OverviewSelectionKind.none,
+            onOpen: () {
+              controller.setExpertWorkspace(WorkspaceId.overview, true);
+              if (MediaQuery.sizeOf(context).width < OipTokens.tablet) {
+                setState(() => mobilePane = _OverviewMobilePane.inspector);
+              }
+            },
+          ),
+          WorkspaceLayoutAction(
+              controller: controller, workspace: WorkspaceId.overview),
+        ],
+        status: [
+          StatusPill(
+            snapshot.system.simulated ? 'DEMO / SIMULATION' : 'BACKEND-DATEN',
+            color: OipTokens.statusColor(context, 'info'),
+            icon: snapshot.system.simulated
+                ? Icons.science_outlined
+                : Icons.cloud_done_outlined,
+          ),
+          const StatusPill('READ-ONLY', icon: Icons.lock_outline),
+        ],
+      );
+
+  Widget _contextBar() => WorkstationPanel(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        child: LayoutBuilder(builder: (context, box) {
+          final infrastructure = controller.infrastructure;
+          final facts = [
+            (
+              'KONTEXT',
+              infrastructure.ready
+                  ? infrastructure.selectedBreadcrumb
+                  : 'Lokal · autorisierter v1-Umfang'
+            ),
+            (
+              'SOURCE',
+              infrastructure.selection.sourceId ??
+                  (selection.kind == OverviewSelectionKind.device &&
+                          selection.sourceId == null
+                      ? 'Nicht zugeordnet'
+                      : selection.sourceId ??
+                          snapshot.primarySourceId ??
+                          'Nicht eindeutig geliefert')
+            ),
+            (
+              'ORG / SITE',
+              infrastructure.ready
+                  ? '${infrastructure.hierarchy.organizationName(infrastructure.selection.organizationId)} / ${infrastructure.hierarchy.siteName(infrastructure.selection.siteId)}'
+                  : 'Nicht im v1-Vertrag geliefert'
+            ),
+            (
+              'TATSÄCHLICHER EMPFANG',
+              timestamp(snapshot.system.lastReceivedMs)
+            ),
+            ('TRANSPORT', controller.connection.toUpperCase()),
+          ];
+          final columns = box.maxWidth < 520 ? 2 : 5;
+          final width = (box.maxWidth - (columns - 1) * 10) / columns;
+          return Wrap(
+            spacing: 10,
+            runSpacing: 5,
+            children: facts
+                .map((fact) => SizedBox(
+                    width: width, child: _contextFact(fact.$1, fact.$2)))
+                .toList(),
+          );
+        }),
+      );
+
+  Widget _contextFact(String label, String value) => Row(children: [
+        Flexible(
+          flex: 2,
+          child: Text('$label  ',
+              overflow: TextOverflow.ellipsis,
+              style: WorkstationTokens.eyebrow(context)),
+        ),
+        Expanded(
+          flex: 3,
+          child: Text(value,
+              overflow: TextOverflow.ellipsis,
+              style: WorkstationTokens.mono(context, size: 10.5)),
+        ),
       ]);
 
-  List<Widget> _managedCharts(BuildContext context, Snapshot snapshot) {
-    if (controller.series.isEmpty) {
-      return [
-        ChartContainer(
-          title: 'Live-Telemetrie der autorisierten Quellen',
-          subtitle: 'Aus der autorisierten Projektion · keine Ersatzwerte',
-          accent: OipTokens.cyan,
-          action: StatusPill(
-            'API',
-            color: OipTokens.statusColor(context, 'info'),
-            icon: Icons.cloud_done_outlined,
-          ),
-          child: const InlineNotice(
-            'Noch keine Messwerte',
-            'Die autorisierte Projektion hat noch keinen Messpunkt geliefert. Es wird kein Wert ersetzt.',
-            icon: Icons.timeline,
-          ),
-        ),
-      ];
-    }
-    return controller.series.map((series) {
-      final source = snapshot.sources
-          .where((candidate) => candidate.id == series.sourceId)
-          .firstOrNull;
-      final name = source?.name ?? series.sourceId;
-      return ChartContainer(
-        title: '${series.metricId} · $name',
-        subtitle:
-            'Empfangene Werte der autorisierten Quelle · keine interpolierten Lücken',
-        accent: OipTokens.cyan,
-        action: StatusPill(
-          source?.simulated == true ? 'SIM' : 'API',
-          color: OipTokens.statusColor(context, 'info'),
-          icon: source?.simulated == true
-              ? Icons.science_outlined
-              : Icons.cloud_done_outlined,
-        ),
-        child: RepaintBoundary(
-          child: TrendChart(
-            series.samples,
-            title: '${series.metricId} · Verlauf',
-            unit: series.unit,
-            semanticUnit: series.unit.isEmpty ? 'Einheit unbekannt' : series.unit,
-            caption: '${series.metricId} · ${series.entityId}',
-            adaptiveGap: true,
-          ),
-        ),
-      );
-    }).toList();
+  Widget _statusStrip() {
+    final connected =
+        sources.where((source) => source.connection == 'connected').length;
+    final freshness = _freshness(snapshot.metrics);
+    final contextFindings = controller.infrastructure.findings;
+    final findings = controller.infrastructure.ready
+        ? contextFindings
+            ?.where((finding) => finding.evidenceSourceIds.any((sourceId) {
+                  final placement =
+                      controller.infrastructure.sourcePlacement(sourceId);
+                  return placement != null &&
+                      controller.infrastructure.selection.matches(
+                        organizationId: placement.organizationId,
+                        infrastructureId: placement.infrastructureId,
+                        siteId: placement.siteId,
+                        sourceId:
+                            controller.infrastructure.selection.sourceId == null
+                                ? null
+                                : sourceId,
+                      );
+                }))
+            .length
+        : snapshot.incidents.length;
+    final items = [
+      (
+        'CORE',
+        controller.connection == 'live'
+            ? _coreLabel(snapshot.core.lifecycle).toUpperCase()
+            : 'STALE / RECONNECT',
+        controller.connection == 'live'
+            ? _coreTone(snapshot.core.lifecycle)
+            : 'stale'
+      ),
+      (
+        'SOURCES',
+        sources.isEmpty
+            ? known(snapshot.system.opcua).toUpperCase()
+            : '$connected / ${sources.length} CONNECTED',
+        sources.isEmpty
+            ? snapshot.system.opcua
+            : connected == sources.length
+                ? 'connected'
+                : 'degraded'
+      ),
+      ('DEVICES', '${snapshot.devices.length} REGISTERED', 'info'),
+      (
+        'FINDINGS',
+        findings == null
+            ? 'NICHT IM KONTEXT GELIEFERT'
+            : findings == 0
+                ? 'NONE IN CURRENT DATA'
+                : '$findings DELIVERED',
+        findings == null || findings == 0 ? 'unknown' : 'degraded'
+      ),
+      ('DATA TRUST', freshness.toUpperCase(), freshness),
+    ];
+    return WorkstationPanel(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: LayoutBuilder(builder: (context, box) {
+        final columns = box.maxWidth >= 900
+            ? 5
+            : box.maxWidth >= 520
+                ? 3
+                : 2;
+        final width = (box.maxWidth - (columns - 1) * 10) / columns;
+        return Wrap(
+          spacing: 10,
+          runSpacing: 5,
+          children: items
+              .map((item) => SizedBox(
+                  width: width, child: _statusValue(item.$1, item.$2, item.$3)))
+              .toList(),
+        );
+      }),
+    );
   }
 
-  List<Device> _focusDevices(List<Device> devices) {
-    final result = <Device>[];
-    void add(Iterable<Device> candidates) {
-      for (final device in candidates) {
-        if (result.length >= 3) break;
-        if (!result.any((existing) => existing.id == device.id)) {
-          result.add(device);
-        }
-      }
-    }
+  Widget _statusValue(String label, String value, String status) => Semantics(
+        excludeSemantics: true,
+        label: label == 'CORE'
+            ? 'Core-Zustand: ${value == 'STALE / RECONNECT' ? 'Status veraltet' : value[0] + value.substring(1).toLowerCase()}'
+            : '$label: $value',
+        child: Row(children: [
+          StatusDot(status),
+          const SizedBox(width: 7),
+          Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(label, style: WorkstationTokens.eyebrow(context)),
+              Text(value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: WorkstationTokens.mono(context,
+                      size: 10.5, weight: FontWeight.w700)),
+            ]),
+          ),
+        ]),
+      );
 
-    add(devices.where((device) => device.isFaulted));
-    if (!controller.managed) add(devices.where((device) => device.id == 'M-01'));
-    add(devices);
+  Widget _operationalFocus(Observation? selected) {
+    final selectedSource = selection.kind == OverviewSelectionKind.device &&
+            selection.sourceId == null
+        ? ''
+        : selection.sourceId ?? selected?.sourceId;
+    final selectedDevice = selection.kind == OverviewSelectionKind.device
+        ? selection.deviceId
+        : null;
+    final options = overviewSignalsFor(snapshot,
+        sourceId: selectedSource, deviceId: selectedDevice);
+    final selectedKey = selected == null ? null : observationKey(selected);
+    final gaps = events
+        .where((event) =>
+            event.gapStartedMs != null &&
+            (selected == null || event.sourceId == selected.sourceId))
+        .toList();
+    return WorkstationPanel(
+      key: const Key('overview-operational-focus'),
+      accent: OipTokens.cyan,
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
+      child: SingleChildScrollView(
+        child:
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          PanelLabel('Operational Focus · Session Telemetry',
+              trailing: Wrap(children: [
+                if (MediaQuery.sizeOf(context).width < OipTokens.tablet)
+                  ToolButton(
+                    key: const Key('overview-mobile-open-inspector'),
+                    icon: Icons.info_outline,
+                    tooltip: 'Inspector anzeigen',
+                    onPressed: () => setState(
+                        () => mobilePane = _OverviewMobilePane.inspector),
+                  ),
+                ToolButton(
+                  key: const Key('overview-open-opcua'),
+                  icon: Icons.arrow_outward,
+                  tooltip: 'OPC-UA untersuchen',
+                  onPressed: () => widget.navigate(3),
+                ),
+              ])),
+          Row(children: [
+            Expanded(
+              child: Text(
+                selectedSource == null
+                    ? 'Alle im Snapshot verfügbaren Signale'
+                    : '$selectedSource${selectedDevice == null ? '' : ' · $selectedDevice'}',
+                overflow: TextOverflow.ellipsis,
+                style: WorkstationTokens.mono(context, size: 10.5),
+              ),
+            ),
+            Text('${controller.history.length}/60 SESSION',
+                style: WorkstationTokens.mono(context, size: 10)),
+          ]),
+          const SizedBox(height: 7),
+          DropdownButtonFormField<String>(
+            key: const Key('overview-signal-select'),
+            isExpanded: true,
+            value: options.any((item) => observationKey(item) == selectedKey)
+                ? selectedKey
+                : null,
+            decoration: const InputDecoration(
+                labelText: 'SIGNAL / NODE',
+                isDense: true,
+                border: OutlineInputBorder()),
+            items: options
+                .map((item) => DropdownMenuItem(
+                    value: observationKey(item),
+                    child: Text('${item.entityId} · ${item.metricId}',
+                        overflow: TextOverflow.ellipsis)))
+                .toList(),
+            onChanged: options.isEmpty
+                ? null
+                : (key) {
+                    if (key != null) _selectSignal(key);
+                  },
+          ),
+          const SizedBox(height: 7),
+          if (selected == null)
+            WorkstationNote(
+              'Kein Live-Signal verfügbar',
+              'Für diesen Kontext enthält der Snapshot keine auswählbare Observation. Keine Ersatzwerte, kein Chart und kein Wert 0.',
+              icon: Icons.sensors_off_outlined,
+              color: OipTokens.muted(context),
+            )
+          else ...[
+            Wrap(
+              spacing: 10,
+              runSpacing: 5,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text('${selected.display} ${selected.symbol}',
+                    style: Theme.of(context).textTheme.headlineMedium),
+                StatusPill(known(selected.freshness).toUpperCase(),
+                    color: OipTokens.statusColor(context, selected.freshness),
+                    showDot: true),
+                StatusPill('QUALITÄT ${known(selected.quality).toUpperCase()}',
+                    color: OipTokens.statusColor(context, selected.quality)),
+                if (selected.simulated)
+                  const StatusPill('SIMULATED', icon: Icons.science_outlined),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Wrap(spacing: 14, runSpacing: 3, children: [
+              Text('TATSÄCHLICHER EMPFANG ${timestamp(selected.receivedMs)}',
+                  style: WorkstationTokens.mono(context, size: 9.5)),
+              Text(
+                  '${selected.simulated ? 'SIMULATOR-QUELLZEIT' : 'QUELLZEIT'} ${timestamp(selected.sourceMs)}',
+                  style: WorkstationTokens.mono(context,
+                      size: 9.5,
+                      color: selected.simulated ? OipTokens.violet : null)),
+              if (selected.virtualTimeMs != null)
+                Text('VIRTUAL +${selected.virtualTimeMs} ms',
+                    style: WorkstationTokens.mono(context, size: 9.5)),
+            ]),
+            OverviewTrendChart(
+              key: chartKey,
+              samples: controller.history,
+              gaps: gaps,
+              unit: selected.symbol,
+              simulated: selected.simulated,
+              height: MediaQuery.sizeOf(context).height >= 1000 ? 230 : 156,
+            ),
+            Text(
+              'Session-lokal · keine persistierte History · Linien nur zwischen gültigen, zeitnahen Samples ohne belegte Gap. Freshness folgt dem Core, nicht der virtuellen Wanduhr.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ]),
+      ),
+    );
+  }
+
+  Widget _mobilePaneSelector() => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(children: [
+          for (final entry in [
+            (
+              _OverviewMobilePane.explorer,
+              'Explorer',
+              Icons.account_tree_outlined
+            ),
+            (_OverviewMobilePane.focus, 'Focus', Icons.sensors),
+            (_OverviewMobilePane.inspector, 'Inspector', Icons.info_outline),
+          ])
+            Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: ChoiceChip(
+                key: Key('overview-mobile-pane-${entry.$1.name}'),
+                avatar: Icon(entry.$3, size: 15),
+                label: Text(entry.$2),
+                selected: mobilePane == entry.$1,
+                showCheckmark: false,
+                materialTapTargetSize: MaterialTapTargetSize.padded,
+                onSelected: (_) => setState(() => mobilePane = entry.$1),
+              ),
+            ),
+        ]),
+      );
+
+  void _selectSource(SourceInfo source) {
+    setState(() {
+      selection = OverviewSelection.source(source.id);
+      if (MediaQuery.sizeOf(context).width < OipTokens.tablet) {
+        mobilePane = _OverviewMobilePane.focus;
+      }
+    });
+    controller.revealInspector(WorkspaceId.overview);
+    _selectPreferred(sourceId: source.id);
+  }
+
+  void _selectDevice(Device device) {
+    setState(() {
+      selection = OverviewSelection.device(device.sourceId, device.id);
+      if (MediaQuery.sizeOf(context).width < OipTokens.tablet) {
+        mobilePane = _OverviewMobilePane.focus;
+      }
+    });
+    controller.revealInspector(WorkspaceId.overview);
+    _selectPreferred(sourceId: device.sourceId, deviceId: device.id);
+  }
+
+  void _selectEvent(CollectionEvent event) {
+    setState(() {
+      selection =
+          OverviewSelection.event(event.sourceId, overviewEventKey(event));
+      if (MediaQuery.sizeOf(context).width < OipTokens.tablet) {
+        mobilePane = _OverviewMobilePane.inspector;
+      }
+    });
+    controller.revealInspector(WorkspaceId.overview);
+    _selectPreferred(sourceId: event.sourceId);
+  }
+
+  void _selectPreferred({String? sourceId, String? deviceId}) {
+    final signal = preferredOverviewSignal(snapshot,
+        sourceId: sourceId == '' ? null : sourceId, deviceId: deviceId);
+    if (signal == null) {
+      controller.clearTelemetry();
+    } else {
+      controller.selectTelemetry(observationKey(signal));
+    }
+  }
+
+  void _selectSignal(String key) {
+    final signal = snapshot.metrics
+        .where((item) => observationKey(item) == key)
+        .firstOrNull;
+    if (signal == null) return;
+    final device = snapshot.devices
+        .where((item) => item.id == signal.entityId)
+        .firstOrNull;
+    setState(() {
+      selection = device == null
+          ? OverviewSelection.source(signal.sourceId ?? '')
+          : OverviewSelection.device(signal.sourceId ?? '', device.id);
+    });
+    controller.selectTelemetry(key);
+  }
+
+  List<OverviewAttentionEntry> _attentionEntries() {
+    final result = <OverviewAttentionEntry>[
+      ...snapshot.incidents.map((incident) => OverviewAttentionEntry(
+            title:
+                '${incident.title} · ${incident.simulated ? 'Simulation' : 'Backend'}',
+            detail:
+                'FINDING · ${incident.simulated ? 'SIMULATED' : 'REPORTED'} · ${incident.deviceId} · keine Severity/Ursache geliefert',
+            tone: 'degraded',
+            icon: Icons.radar,
+            diagnostics: true,
+          )),
+      ...sources
+          .where((source) => source.connection != 'connected')
+          .map((source) => OverviewAttentionEntry(
+                title: '${source.name}: ${known(source.connection)}',
+                detail: source.lastError ??
+                    'SourceHealth disconnected · aktueller Core-Status',
+                tone: 'stale',
+                icon: Icons.link_off_outlined,
+                diagnostics: true,
+              )),
+    ];
+    final stale =
+        snapshot.metrics.where((signal) => signal.freshness == 'stale').length;
+    if (stale > 0) {
+      result.add(OverviewAttentionEntry(
+          title: '$stale Signal(e) stale',
+          detail: 'Letzte bekannte Observationen · kein aktuelles Live-Signal',
+          tone: 'stale',
+          icon: Icons.schedule_outlined));
+    }
+    final gap = events
+        .where((event) => event.gapMs != null && event.gapMs! > 0)
+        .lastOrNull;
+    if (gap != null) {
+      result.add(OverviewAttentionEntry(
+          title: 'Documented Data Gap · ${gap.gapMs} ms',
+          detail:
+              '${gap.kind} · ${gap.sourceId ?? 'Source nicht projiziert'} · ${timestamp(gap.atMs ?? gap.gapEndedMs)}',
+          tone: 'degraded',
+          icon: Icons.space_bar_outlined,
+          event: gap));
+    }
+    if (snapshot.system.network == 'unknown' || snapshot.topology.isEmpty) {
+      result.add(const OverviewAttentionEntry(
+          title: 'Network Reachability unverified',
+          detail:
+              'Kein aktiver Probe · Registry/Reported getrennt von gemessener Erreichbarkeit',
+          tone: 'unknown',
+          icon: Icons.network_check_outlined));
+    }
+    if (snapshot.system.cpu == null &&
+        snapshot.system.gpu == null &&
+        snapshot.system.ram == null) {
+      result.add(const OverviewAttentionEntry(
+          title: 'Host-Telemetrie nicht integriert',
+          detail: 'CPU/GPU/RAM Collector unavailable · kein gemessener Ausfall',
+          tone: 'unknown',
+          icon: Icons.memory_outlined));
+    }
     return result;
   }
 }
 
-/// One source of the authorized source registry.
-///
-/// The card shows the health the Core measured for this source, its placement
-/// in the authorized hierarchy and the values that were actually received.
-class _SourceCard extends StatelessWidget {
-  final ScopedSource source;
-  final ScopedLocation? location;
-  final List<Observation> values;
-  const _SourceCard(
-      {required this.source, required this.location, required this.values});
-
-  @override
-  Widget build(BuildContext context) => GradientCard(
-        accent: OipTokens.cyan,
-        padding: const EdgeInsets.all(OipTokens.s4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(source.name,
-                style: Theme.of(context).textTheme.titleMedium),
-            Text('${source.id} · Entity ${source.entityId}',
-                style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: OipTokens.s3),
-            FactGrid(
-              minWidth: 180,
-              children: [
-                Fact('Verbindung', known(source.connection)),
-                Fact('Erreichbarkeit', known(source.reachability)),
-                Fact('Dienst', known(source.service)),
-                Fact('Frische', known(source.freshness)),
-                Fact('Gültigkeit', known(source.validity)),
-                Fact('Letzter Empfang', timestamp(source.lastReceivedMs)),
-                if (location != null)
-                  Fact('Platzierung',
-                      '${location!.organizationId} · ${location!.infrastructureId} · ${location!.siteId}'),
-                Fact('Zähler',
-                    '${source.accepted} angenommen · ${source.rejected} verworfen · ${source.dropped} verloren'),
-                if (source.lastError != null)
-                  Fact('Letzter Fehler', source.lastError!,
-                      valueColor: OipTokens.statusColor(context, 'critical')),
-              ],
-            ),
-            const SizedBox(height: OipTokens.s3),
-            if (values.isEmpty)
-              Text('Keine Messwerte dieser Quelle empfangen.',
-                  style: Theme.of(context).textTheme.bodySmall)
-            else
-              for (final value in values)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: OipTokens.s1),
-                  child: Text(
-                    '${value.metricId} · ${value.display} ${value.symbol} · '
-                    '${known(value.quality)} · ${known(value.freshness)}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ),
-          ],
-        ),
-      );
+String _freshness(List<Observation> metrics) {
+  if (metrics.isEmpty) return 'unknown';
+  if (metrics.every((item) => item.freshness == 'fresh')) return 'fresh';
+  if (metrics.any((item) => item.freshness == 'fresh')) return 'mixed';
+  if (metrics.any((item) => item.freshness == 'stale')) return 'stale';
+  return 'unknown';
 }
 
-class _IncidentSummary extends StatelessWidget {
-  final Incident incident;
-  final bool critical;
-  const _IncidentSummary({required this.incident, required this.critical});
-
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(OipTokens.s3),
-        decoration: BoxDecoration(
-          color: OipTokens.pink.withOpacity(.07),
-          borderRadius: BorderRadius.circular(OipTokens.radiusSm),
-          border: Border.all(color: OipTokens.pink.withOpacity(.18)),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 5),
-              child: StatusDot(critical ? 'alarm' : 'degraded'),
-            ),
-            const SizedBox(width: OipTokens.s3),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(incident.title,
-                      style: Theme.of(context).textTheme.titleSmall),
-                  const SizedBox(height: OipTokens.s1),
-                  Text('${incident.category} · ${incident.deviceId}',
-                      style: Theme.of(context).textTheme.bodySmall),
-                  Text(
-                      'Zeitpunkt nicht vom API-Vertrag geliefert · ${incident.simulated ? 'Simulation' : 'Backend'}',
-                      style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-}
-
-String _flag(bool? value) => value == null
-    ? 'Unbekannt'
-    : value
-        ? 'Ja'
-        : 'Nein';
 String _coreLabel(CoreLifecycle state) => switch (state) {
       CoreLifecycle.initializing => 'Initialisierung',
       CoreLifecycle.ready => 'Bereit',
@@ -560,6 +748,7 @@ String _coreLabel(CoreLifecycle state) => switch (state) {
       CoreLifecycle.failed => 'Fehlgeschlagen',
       CoreLifecycle.unknown => 'Unbekannt',
     };
+
 String _coreTone(CoreLifecycle state) => switch (state) {
       CoreLifecycle.ready => 'connected',
       CoreLifecycle.degraded => 'degraded',

@@ -1,0 +1,27 @@
+{
+  "items": [
+    {
+      "id": "site-a1-1",
+      "infrastructure_id": "infra-a1",
+      "name": "Site 1"
+    },
+    {
+      "id": "site-a1-2",
+      "infrastructure_id": "infra-a1",
+      "name": "Site 2"
+    },
+    {
+      "id": "site-a2-1",
+      "infrastructure_id": "infra-a2",
+      "name": "Site 3"
+    },
+    {
+      "id": "site-b1-1",
+      "infrastructure_id": "infra-b1",
+      "name": "Site 4"
+    }
+  ],
+  "offset": 0,
+  "limit": 100,
+  "has_more": false
+}

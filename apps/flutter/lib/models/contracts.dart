@@ -30,6 +30,9 @@ class Device {
   bool get isFaulted => faulted == true;
 }
 
+String observationKey(Observation observation) =>
+    '${observation.sourceId ?? ''}\u001f${observation.entityId}\u001f${observation.metricId}';
+
 class Observation {
   final String entityId, metricId, quality, freshness, unit;
   final String? sourceId;
@@ -37,6 +40,7 @@ class Observation {
   final bool valueValid;
   final int? sourceMs;
   final int? serverMs, receivedMs, statusCode;
+  final int? virtualTimeMs;
   final String? collectionError;
   final bool simulated;
   Observation.fromJson(Json j)
@@ -53,6 +57,9 @@ class Observation {
         serverMs = _timestamp(j, 'server'),
         receivedMs = _timestamp(j, 'received'),
         statusCode = j['status_code'] as int?,
+        virtualTimeMs = j['simulation_origin'] is Json
+            ? (j['simulation_origin'] as Json)['virtual_time_ms'] as int?
+            : null,
         collectionError = j['collection_error'] as String?,
         simulated = j['simulation_origin'] != null;
 
@@ -134,6 +141,10 @@ class SystemStatus {
   final String? primarySourceId;
   final bool demoControls, simulated;
   final int? lastReceivedMs;
+
+  /// Platform lifecycle facts are absent from a tenant ScopedSnapshot. Null is
+  /// intentional: a context projection must never synthesize a timestamp or a
+  /// tenant-wide persisted-observation count.
   final int? generatedMs, persisted;
   final double? cpu, gpu, ram;
   SystemStatus.fromJson(Json j)
@@ -151,16 +162,37 @@ class SystemStatus {
         cpu = (j['cpu_percent'] as num?)?.toDouble(),
         gpu = (j['gpu_percent'] as num?)?.toDouble(),
         ram = (j['ram_percent'] as num?)?.toDouble();
+
+  SystemStatus projected({required String? primarySourceId}) =>
+      SystemStatus.fromJson({
+        'primary_source_id': primarySourceId,
+        'scenario': scenario,
+        'opcua_status': primarySourceId == null ? 'unknown' : opcua,
+        'subscription_status': subscription,
+        'network_status': network,
+        'security_blocker': blocker,
+        'demo_controls': demoControls,
+        'simulated': simulated,
+        'last_received_ms': lastReceivedMs,
+        'generated_at_ms': generatedMs,
+        'persisted_observations': persisted,
+        'cpu_percent': cpu,
+        'gpu_percent': gpu,
+        'ram_percent': ram,
+      });
 }
 
 class CollectionEvent {
   final String kind;
+  final String? id, originClass;
   final int? atMs, gapStartedMs, gapEndedMs;
   final String? reason, sourceId;
   final int? sequence, dropped;
 
   CollectionEvent.fromJson(Json j)
-      : sourceId = null,
+      : id = null,
+        originClass = null,
+        sourceId = null,
         sequence = null,
         dropped = _eventBody(j)?['dropped'] as int?,
         kind = j.keys.firstOrNull ?? 'unknown',
@@ -176,7 +208,9 @@ class CollectionEvent {
   }
 
   CollectionEvent.fromRecord(Json record)
-      : sourceId = (record['context'] as Json)['data_source_id'] as String,
+      : id = record['id'] as String?,
+        originClass = (record['context'] as Json)['origin_class'] as String?,
+        sourceId = (record['context'] as Json)['data_source_id'] as String,
         sequence = record['sequence'] as int,
         kind = (record['event'] as Json).keys.firstOrNull ?? 'unknown',
         atMs = _eventBody(record['event'] as Json)?['at'] as int?,
@@ -184,6 +218,32 @@ class CollectionEvent {
         dropped = _eventBody(record['event'] as Json)?['dropped'] as int?,
         gapStartedMs = _gapField(record['event'] as Json, 'started_at'),
         gapEndedMs = _gapField(record['event'] as Json, 'ended_at');
+
+  /// OIP-008.2 DiagnosticItem(category=event) projection. Diagnostic events
+  /// have a stable evidence ID but no source-local sequence field.
+  factory CollectionEvent.fromDiagnostic(Json item) =>
+      CollectionEvent.fromDiagnosticRecord(item['record'] as Json);
+
+  CollectionEvent.fromDiagnosticRecord(Json record)
+      : id = record['id'] as String,
+        originClass = record['origin'] as String,
+        sourceId = record['source'] as String,
+        sequence = null,
+        kind = _diagnosticKind(record['kind'] as String),
+        atMs = record['at_ms'] as int?,
+        reason = _eventBody(record['event'] as Json)?['reason'] as String?,
+        dropped = _eventBody(record['event'] as Json)?['dropped'] as int?,
+        gapStartedMs = _gapField(record['event'] as Json, 'started_at'),
+        gapEndedMs = _gapField(record['event'] as Json, 'ended_at');
+
+  static String _diagnosticKind(String value) => switch (value) {
+        'connection_lost' => 'ConnectionLost',
+        'reconnected' => 'Reconnected',
+        'subscription_error' => 'SubscriptionError',
+        'data_loss' => 'DataLoss',
+        'observation' => 'Observation',
+        _ => value,
+      };
 
   static Json? _eventBody(Json json) {
     final key = json.keys.firstOrNull;
@@ -224,64 +284,6 @@ class CoreHealthView {
             : null;
 }
 
-/// One source of the authorized source registry.
-///
-/// The Core delivers the health of every source the session may see. The
-/// overview shows exactly these; no source is preferred and none is invented.
-class ScopedSource {
-  final String id, name, entityId;
-  final bool simulated;
-  final String reachability, connection, service, freshness, validity;
-  final int? lastReceivedMs;
-  final int accepted, duplicates, outOfOrder, rejected, reconnectAttempts, dropped;
-  final String? lastError;
-  ScopedSource.fromJson(Json j)
-      : id = j['id'] as String,
-        name = j['name'] as String,
-        entityId = j['entity_id'] as String,
-        simulated = j['simulated'] as bool,
-        reachability = j['reachability'] as String,
-        connection = j['connection'] as String,
-        service = j['service'] as String,
-        freshness = j['freshness'] as String,
-        validity = j['validity'] as String,
-        lastReceivedMs = j['last_received_ms'] as int?,
-        accepted = j['accepted'] as int,
-        duplicates = j['duplicates'] as int,
-        outOfOrder = j['out_of_order'] as int,
-        rejected = j['rejected'] as int,
-        reconnectAttempts = j['reconnect_attempts'] as int,
-        dropped = j['dropped'] as int,
-        lastError = j['last_error'] as String?;
-}
-
-/// The placement of a source in the authorized hierarchy.
-///
-/// The projection carries the identifiers of the placement, never a name of
-/// a scope that the session may not see.
-class ScopedLocation {
-  final String organizationId, infrastructureId, siteId, sourceId;
-  ScopedLocation.fromJson(Json j)
-      : organizationId = j['organization_id'] as String,
-        infrastructureId = j['infrastructure_id'] as String,
-        siteId = j['site_id'] as String,
-        sourceId = j['source_id'] as String;
-}
-
-/// One measured series of the live projection.
-///
-/// A series is identified by the source, the entity and the metric it
-/// measures. The legacy demo has exactly one; the managed mode has one per
-/// authorized source, so no source is preferred and no fallback primary is
-/// invented.
-class TrendSeries {
-  final String sourceId, entityId, metricId, unit;
-  final List<Observation> samples;
-  TrendSeries(this.sourceId, this.entityId, this.metricId, this.unit,
-      this.samples);
-  String get key => '$sourceId|$entityId|$metricId';
-}
-
 class Snapshot {
   final CoreHealthView core;
   final SystemStatus system;
@@ -289,8 +291,12 @@ class Snapshot {
   final List<Observation> metrics;
   final List<Incident> incidents;
   final List<NetworkLink> topology;
-  final List<ScopedSource> sources;
-  final List<ScopedLocation> locations;
+  final List<SourceInfo> sources;
+  final List<CollectionEvent> recentEvents;
+
+  /// ScopedSnapshot does not carry findings or topology. Absence of a wire
+  /// collection must not be presented as a measured zero.
+  final bool incidentsDelivered, topologyDelivered;
   String? get primarySourceId =>
       system.primarySourceId ??
       (metrics.map((o) => o.sourceId).toSet().length == 1
@@ -303,53 +309,12 @@ class Snapshot {
           o.entityId == 'M-01' &&
           o.metricId == 'temperature')
       .firstOrNull;
-
-  /// The placement of a source in the authorized hierarchy.
-  ScopedLocation? locationOf(String sourceId) {
-    for (final location in locations) {
-      if (location.sourceId == sourceId) return location;
-    }
-    return null;
-  }
-
-  /// Authorized v2 projection: absent global health/counts stay unknown.
-  /// Collection events are not UI incidents; no synthetic topology is constructed.
-  factory Snapshot.fromScopedJson(Json j) {
-    final sources = (j['sources'] as List).cast<Json>();
-    final received = sources
-        .map((s) => s['last_received_ms'])
-        .whereType<int>()
-        .toList()
-      ..sort();
-    return Snapshot.fromJson({
-      'core': <String, dynamic>{},
-      'system': {
-        'primary_source_id': null,
-        'scenario': 'not_applicable',
-        'opcua_status': 'unknown',
-        'subscription_status': 'unknown',
-        'network_status': 'unknown',
-        'security_blocker':
-            'RUSTSEC-2023-0071 / RUSTSEC-2023-0089 / RUSTSEC-2024-0449',
-        'demo_controls': false,
-        'simulated': sources.any((s) => s['simulated'] == true),
-        'last_received_ms': received.lastOrNull,
-        'generated_at_ms': null,
-        'persisted_observations': null,
-        'cpu_percent': null,
-        'gpu_percent': null,
-        'ram_percent': null,
-      },
-      'devices': j['devices'],
-      'metrics': j['observations'],
-      'incidents': <dynamic>[],
-      'topology': <dynamic>[],
-      'sources': j['sources'],
-      'locations': j['locations'] ?? <dynamic>[],
-    });
-  }
   Snapshot.fromJson(Json j)
-      : core = CoreHealthView.fromJson(
+      : incidentsDelivered = j['_incidents_delivered'] as bool? ??
+            j['incidents'] is List,
+        topologyDelivered =
+            j['_topology_delivered'] as bool? ?? j['topology'] is List,
+        core = CoreHealthView.fromJson(
             j['core'] is Json ? j['core'] as Json : const {}),
         system = SystemStatus.fromJson(j['system'] as Json),
         devices = (j['devices'] as List)
@@ -361,15 +326,61 @@ class Snapshot {
         incidents = (j['incidents'] as List)
             .map((v) => Incident.fromJson(v as Json))
             .toList(),
-        topology = (j['topology'] as List)
+        topology = (j['topology'] as List? ?? const [])
             .map((v) => NetworkLink.fromJson(v as Json))
             .toList(),
-        sources = ((j['sources'] as List?) ?? const [])
-            .map((v) => ScopedSource.fromJson(v as Json))
+        sources = (j['sources'] as List? ?? const [])
+            .map((v) => SourceInfo.fromJson(v as Json))
             .toList(),
-        locations = ((j['locations'] as List?) ?? const [])
-            .map((v) => ScopedLocation.fromJson(v as Json))
-            .toList();
+        recentEvents = j['records'] is List
+            ? (j['records'] as List)
+                .map((v) => CollectionEvent.fromRecord(v as Json))
+                .toList()
+            : (j['collection_events'] as List? ?? const [])
+                .map((v) => CollectionEvent.fromJson(v as Json))
+                .toList();
+
+  Snapshot._({
+    required this.core,
+    required this.system,
+    required this.devices,
+    required this.metrics,
+    required this.incidents,
+    required this.topology,
+    required this.sources,
+    required this.recentEvents,
+    required this.incidentsDelivered,
+    required this.topologyDelivered,
+  });
+
+  /// Restricts the existing presentation DTO to a selected, already authorized
+  /// UI context. This is not an authorization boundary.
+  Snapshot project({
+    List<Device>? devices,
+    List<Observation>? metrics,
+    List<Incident>? incidents,
+    List<NetworkLink>? topology,
+    List<SourceInfo>? sources,
+    List<CollectionEvent>? recentEvents,
+  }) {
+    final projectedSources = sources ?? this.sources;
+    return Snapshot._(
+      core: core,
+      system: system.projected(
+        primarySourceId: projectedSources.length == 1
+            ? projectedSources.single.id
+            : null,
+      ),
+      devices: devices ?? this.devices,
+      metrics: metrics ?? this.metrics,
+      incidents: incidents ?? this.incidents,
+      topology: topology ?? this.topology,
+      sources: projectedSources,
+      recentEvents: recentEvents ?? this.recentEvents,
+      incidentsDelivered: incidentsDelivered,
+      topologyDelivered: topologyDelivered,
+    );
+  }
 }
 
 extension SnapshotAlarm on Snapshot {
@@ -378,6 +389,57 @@ extension SnapshotAlarm on Snapshot {
   bool hasAlarm({String? deviceId}) => devices.any((device) =>
       (deviceId == null || device.id == deviceId) &&
       device.health.service == 'alarm');
+}
+
+class SourceInfo {
+  final String id, name, entityId;
+  final bool simulated;
+  final String reachability, connection, service, freshness, validity;
+  final int? lastReceivedMs;
+  final String? lastError;
+
+  SourceInfo._({
+    required this.id,
+    required this.name,
+    required this.entityId,
+    required this.simulated,
+    required this.reachability,
+    required this.connection,
+    required this.service,
+    required this.freshness,
+    required this.validity,
+    required this.lastReceivedMs,
+    required this.lastError,
+  });
+
+  SourceInfo withPrimarySnapshotStatus(
+          String liveConnection, String liveFreshness, int? receivedMs) =>
+      SourceInfo._(
+        id: id,
+        name: name,
+        entityId: entityId,
+        simulated: simulated,
+        reachability: reachability,
+        connection: liveConnection,
+        service: service,
+        freshness: liveFreshness,
+        validity: validity,
+        lastReceivedMs: receivedMs,
+        lastError: lastError,
+      );
+
+  SourceInfo.fromJson(Json j)
+      : id = j['id'] as String,
+        name = j['name'] as String,
+        entityId = j['entity_id'] as String,
+        simulated = j['simulated'] as bool,
+        reachability = j['reachability'] as String,
+        connection = j['connection'] as String,
+        service = j['service'] as String,
+        freshness = j['freshness'] as String,
+        validity = j['validity'] as String,
+        lastReceivedMs = j['last_received_ms'] as int?,
+        lastError = j['last_error'] as String?;
 }
 
 class OpcNode {

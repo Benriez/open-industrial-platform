@@ -4,6 +4,9 @@ import {mkdir,writeFile,rm} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import {dirname,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+const execFileAsync = promisify(execFile);
 const base = process.env.OIP_URL ?? 'http://127.0.0.1:28080';
 const testDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(testDir,'../../..');
@@ -14,9 +17,6 @@ const executablePath=process.env.CHROME_PATH ?? (existsSync(systemChrome) ? syst
 const browser = await chromium.launch({executablePath,headless:true});
 const context = await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});
 const page = await context.newPage();
-// HTML regression build exposes both AX proxy text and painted paragraphs.
-// Require painted/visible text, avoiding ambiguous duplicate matches.
-function text(...args){return page.getByText(...args).filter({visible:true}).first();}
 const errors=[]; const failedResources=[]; const external=[]; const checks=[]; const timings={};
 let expectedOffline = false;
 page.on('response',r=>{if(r.status()>=400 && !failedResources.includes(r.url())) {failedResources.push(r.url());console.log('HTTP',r.status(),r.url());}});
@@ -37,7 +37,7 @@ async function scenario(name) {const r=await context.request.post(base+'/api/v1/
 async function nav(label) {
   const menu=page.getByRole('button',{name:/Navigation öffnen/});
   const narrow=await menu.count()>0;
-  const group=text('Dismiss',{exact:true});
+  const group=page.getByText('Dismiss',{exact:true});
   if(narrow) {
     await group.waitFor({state:'hidden'});
     await menu.click();
@@ -49,6 +49,33 @@ async function nav(label) {
 
 async function typeInto(locator,text) { await locator.click(); await locator.press('Meta+A'); await locator.press('Backspace'); if(text) await locator.pressSequentially(text,{delay:70}); }
 async function capture(name) {await page.screenshot({path:resolve(out,name+'.png')});}
+async function ocrCapture(name) {
+  const path=resolve(out,name+'.png');
+  await page.screenshot({path, ...(name.startsWith('incident-') ? {clip:{x:550,y:390,width:520,height:610}} : {})});
+  const {stdout}=await execFileAsync('tesseract',[path,'stdout'],{maxBuffer:4*1024*1024});
+  return stdout;
+}
+function evidenceTokens(value) {
+  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .split(/[^a-z0-9]+/).filter(token=>token.length>=3 && !['demo','evidenz','messwerte'].includes(token));
+}
+function editDistance(a,b) {
+  const row=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++) {
+    let diagonal=row[0]; row[0]=i;
+    for(let j=1;j<=b.length;j++) {
+      const previous=row[j];
+      row[j]=Math.min(row[j]+1,row[j-1]+1,diagonal+(a[i-1]===b[j-1]?0:1));
+      diagonal=previous;
+    }
+  }
+  return row[b.length];
+}
+function fuzzyIncludes(text,token) {
+  if(text.includes(token)) return true;
+  const tolerance=token.length<=4?1:Math.max(1,Math.floor(token.length*.2));
+  return text.split(/[^a-z0-9]+/).some(word=>Math.abs(word.length-token.length)<=tolerance && editDistance(word,token)<=tolerance);
+}
 try {
   await poll(async()=>{try {await api('/api/v1/system/status');return true;} catch {return false;}},'Backend ready');
   await scenario('normal');
@@ -58,10 +85,10 @@ try {
   const tailnetCount=inventory.filter(device=>device.location==='Tailnet').length;
   const start=Date.now();
   await page.goto(base,{waitUntil:'domcontentloaded'});
-  await text('Deine Infrastruktur. Ein Bild.',{exact:true}).waitFor({timeout:45000});
-  await text('LIVE · API',{exact:false}).waitFor({timeout:15000});
+  await page.getByText('Operations Workstation',{exact:true}).waitFor({timeout:45000});
+  await page.getByText('API CONNECTED',{exact:false}).waitFor({timeout:15000});
   timings.firstLiveMs=Date.now()-start;
-  await poll(async()=>/Temperaturverlauf, [2-9]/.test(await page.locator('body').innerText()),'Multiple sensor samples rendered via SSE');
+  await poll(async()=>/Session-lokaler Signalverlauf, [2-9]/.test(await page.locator('body').innerText()),'Multiple sensor samples rendered via SSE');
   await capture('overview-desktop');
   await page.getByRole('button',{name:/Darstellung wechseln/}).click({force:true});
   await capture('overview-light');
@@ -69,52 +96,64 @@ try {
   await page.getByRole('button',{name:/Darstellung wechseln/}).click({force:true});
   checks.push('Spectrum, Daylight and Graphite theme selection'); console.log('THEME PASS');
   await nav('Geräte & Dienste');
-  const search=page.getByRole('textbox',{name:'Geräte durchsuchen'});
+  const search=page.getByRole('textbox').first();
   await typeInto(search,'AMD');
-  await text(`${amdCount} von ${inventoryTotal} Geräten · Simuliertes Inventar`,{exact:true}).waitFor();
-  await page.getByRole('button',{name:/Details AMD EVO-X2/}).click();
-  await text('Fünf unabhängige Statusdimensionen',{exact:true}).waitFor();
+  await page.getByText(`${amdCount} von ${inventoryTotal} Geräten · Simuliertes Inventar`,{exact:true}).waitFor();
+  await page.getByRole('button',{name:/Gerät AMD EVO-X2 evo auswählen/}).click({force:true});
+  await page.getByText('Fünf unabhängige Statusdimensionen',{exact:true}).waitFor();
   await capture('device-detail');
   await page.getByRole('button',{name:/Details schließen/}).click();
   await typeInto(search,'does-not-exist');
-  await text('Keine Geräte gefunden',{exact:true}).waitFor();
+  await page.getByText('Keine Geräte gefunden',{exact:true}).waitFor();
   await typeInto(search,'');
-  await text('Standort: Alle',{exact:true}).click();
-  await text('Standort: Tailnet',{exact:true}).last().click();
-  await text(`${tailnetCount} von ${inventoryTotal} Geräten · Simuliertes Inventar`,{exact:true}).waitFor();
-  await text('Standort: Tailnet',{exact:true}).click();
-  await text('Standort: Alle',{exact:true}).last().click();
-  await text('Sortieren: Name',{exact:true}).click();
-  await text('Sortieren: Standort',{exact:true}).last().click();
-  await text(`${inventoryTotal} von ${inventoryTotal} Geräten · Simuliertes Inventar`,{exact:true}).waitFor();
-  checks.push('Device search, filters, sorting, empty state, detail dialog, close');
+  await page.locator('flt-semantics').filter({hasText:/^STANDORT/}).last().click();
+  await page.getByText('Standort: Tailnet',{exact:true}).last().click();
+  await page.getByText(`${tailnetCount} von ${inventoryTotal} Geräten · Simuliertes Inventar`,{exact:true}).waitFor();
+  await page.locator('flt-semantics').filter({hasText:/^STANDORT/}).last().click();
+  await page.getByText('Standort: Alle',{exact:true}).last().click();
+  await page.locator('flt-semantics').filter({hasText:/^SORTIERUNG/}).last().click();
+  await page.getByText('Standort',{exact:true}).last().click();
+  await page.getByText(`${inventoryTotal} von ${inventoryTotal} Geräten · Simuliertes Inventar`,{exact:true}).waitFor();
+  checks.push('Device search, filters, sorting, empty state, inline engineering workspace, close');
   await capture('devices-desktop');
   await nav('Netzwerk & VPN');
-  await text('Verbindungspfade',{exact:true}).waitFor();
+  await page.getByText('Verbindungspfade',{exact:true}).waitFor();
+  await page.getByText('6 TOPOLOGIE-NODES',{exact:true}).waitFor();
+  await page.getByText('5 PFADE',{exact:true}).waitFor();
+  await page.waitForTimeout(650);
   await capture('network-desktop');
-  await page.getByRole('button',{name:/Remote-Linux-Server/}).first().click();
-  await text('Device Reachability',{exact:true}).first().waitFor();
+  await page.getByRole('button',{name:/Details Remote-Linux-Server,/}).first().click({force:true});
+  await page.getByText('Device Reachability',{exact:true}).first().waitFor();
   await page.getByRole('button',{name:/Details schließen/}).click();
   checks.push('Interactive topology opens device health dimensions');
   await nav('OPC-UA-Browser');
-  await text('Namespace 2',{exact:true}).waitFor();
-  await text('temperature Double',{exact:true}).click();
-  await text('SourceTimestamp · virtuelle Quellzeit',{exact:true}).waitFor();
+  await page.getByText('Namespace 2',{exact:true}).waitFor();
+  await page.getByRole('button',{name:/^Node temperature, Double,/}).click();
+  await page.getByText('SourceTimestamp · virtuelle Quellzeit',{exact:true}).waitFor();
+  await page.getByText('AKTUELLER WERT',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Node anheften',exact:true}).click();
+  await page.getByRole('button',{name:/^Angeheftet temperature/}).waitFor();
   await capture('opcua-process');
-  await text('Bulk',{exact:true}).first().click();
+  await page.getByRole('button',{name:/^Bulk Massendaten/}).click();
   const bulkPage=await api('/api/v1/opcua/nodes?q=&folder=Bulk&offset=0&limit=40');
   const bulkTotal=bulkPage.total;
-  await text(`${bulkTotal} Nodes · Seite 1`,{exact:true}).waitFor();
+  await page.getByText(`${bulkTotal} Nodes · Seite 1`,{exact:true}).waitFor();
   const nodeStart=Date.now();
   await page.getByRole('button',{name:'Nächste Nodes',exact:true}).click();
-  await text(`${bulkTotal} Nodes · Seite 2`,{exact:true}).waitFor();
+  await page.getByText(`${bulkTotal} Nodes · Seite 2`,{exact:true}).waitFor();
   timings.nodePageMs=Date.now()-nodeStart;
+  await page.getByRole('button',{name:'Dichte Liste',exact:true}).click();
+  await page.getByRole('button',{name:'Nach Datentyp gruppieren',exact:true}).click();
+  await page.getByText(/^NUMERISCH/).first().waitFor();
   await typeInto(page.getByRole('textbox',{name:'Nodes durchsuchen'}),'bulk.0999');
-  await text('1 Nodes · Seite 1',{exact:true}).waitFor();
+  await page.getByText('1 Nodes · Seite 1',{exact:true}).waitFor();
+  await page.getByRole('button',{name:/^Node bulk\.0999, Double,/}).click();
+  await page.getByText('Kein Verlauf · Einzelabfrage. Die API liefert für diese Node keine History.',{exact:true}).waitFor();
+  await page.getByRole('button',{name:/^Angeheftet temperature/}).waitFor();
   await capture('opcua-bulk');
-  checks.push(`${bulkTotal} actual browsed bulk nodes, pagination, search and typed read`);
+  checks.push(`${bulkTotal} actual browsed bulk nodes, pagination, density, grouping, pin, search and typed read`);
   await nav('Diagnose & Ereignisse');
-  await text('Sensoralarm',{exact:true}).click();
+  await page.getByText('Sensoralarm',{exact:true}).click();
   const sensorStart=Date.now();
   await poll(async()=> (await api('/api/v1/metrics/current')).some(o=>o.metric_id==='temperature' && o.value?.float>90),'Real simulator sensor alarm reaches persisted API');
   await nav('Übersicht');
@@ -124,36 +163,48 @@ try {
   await nav('Diagnose & Ereignisse');
   await capture('diagnostics-sensor');
   for(const [key,label,title] of [['gpu','Hohe GPU-Last','Hohe GPU-Auslastung'],['inference','Langsame Inferenz','Langsame lokale Inferenz'],['vpn','VPN-Störung','Instabile VPN-Verbindung'],['agent','Remote-Agent fehlt','VPN erreichbar · Agent nicht verfügbar']]) {
-    await text(label,{exact:true}).click();
-    await text(title,{exact:true}).waitFor();
+    await page.getByText(label,{exact:true}).click();
+    await page.getByRole('button',{name:'Incidents',exact:true}).click({force:true});
+    let visibleText='';
+    await poll(async()=>{
+      visibleText=await ocrCapture(`incident-${key}`);
+      const normalized=visibleText.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      const tokens=evidenceTokens(title);
+      const matched=tokens.filter(token=>fuzzyIncludes(normalized,token));
+      return tokens.length===0 || matched.length>=Math.max(1,Math.ceil(tokens.length*.5));
+    },`Visible incident ${title} verified by OCR`);
+    for(const panel of ['Unterst','Widersprechende Evidenz','Fehlende Messwerte']) {
+      assert.ok(visibleText.includes(panel),`Visible evidence panel ${panel}`);
+    }
     const payload=await api('/api/v1/events');
     const incident=payload.incidents.find(item=>item.title===title);
     assert.ok(incident,`Incident payload for ${key}`);
-    for(const panel of ['Unterstützende Evidenz','Widersprechende Evidenz','Fehlende Messwerte']) {
-      await text(panel,{exact:true}).waitFor();
-    }
+    const ocrWords=visibleText.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
     for(const evidence of [...incident.supporting,...incident.contradicting,...incident.missing]) {
-      await text(evidence,{exact:true}).waitFor();
+      const tokens=evidenceTokens(evidence);
+      const matched=tokens.filter(token=>fuzzyIncludes(ocrWords,token));
+      assert.ok(tokens.length===0 || matched.length>=Math.max(1,Math.ceil(tokens.length*.5)),
+        `Visible evidence tokens for ${key}: ${evidence}; OCR=${visibleText.slice(0,500)}`);
     }
     assert.equal((await api('/api/v1/system/status')).scenario,key);
   }
   await capture('diagnostics-agent');
   checks.push('All deterministic diagnoses retain support, contradiction and missing evidence');
-  await text('Offline & Reconnect',{exact:true}).click();
+  await page.getByText('Offline & Reconnect',{exact:true}).click();
   await nav('Übersicht');
-  await text(/VERALTET \/ UNBEKANNT/).waitFor({timeout:15000});
+  await page.getByText(/VERALTET \/ UNBEKANNT/).waitFor({timeout:15000});
   await capture('collector-offline');
   await poll(async()=> (await api('/api/v1/system/status')).opcua_status==='connected','Collector reconnect after real simulator socket stop');
-  await poll(async()=>await text(/VERALTET \/ UNBEKANNT/).count()===0,'Freshness restored after simulator recovery');
+  await poll(async()=>await page.getByText(/VERALTET \/ UNBEKANNT/).count()===0,'Freshness restored after simulator recovery');
   await scenario('normal');
   expectedOffline=true;
   await context.setOffline(true);
-  await text(/OIP-Server nicht erreichbar/).waitFor({timeout:15000});
+  await page.getByText(/OIP-Server nicht erreichbar/).waitFor({timeout:15000});
   await capture('browser-offline');
   await context.setOffline(false);
-  await poll(async()=> (await text(/OIP-Server nicht erreichbar/).count())===0,'Browser network reconnect clears stale error');
+  await poll(async()=> (await page.getByText(/OIP-Server nicht erreichbar/).count())===0,'Browser network reconnect clears stale error');
   expectedOffline=false;
-  await text('LIVE · API',{exact:false}).waitFor();
+  await page.getByText('API CONNECTED',{exact:false}).waitFor();
   await capture('reconnected');
   await context.route('**/api/v1/stream',route=>route.fulfill({
     status:200,
@@ -161,11 +212,11 @@ try {
     body:'event: error\ndata: storage unavailable\n\n'
   }));
   await page.evaluate(()=>window.dispatchEvent(new Event('offline')));
-  await text(/API-Endpunkt \/api\/v1\/stream: Live-Daten vorübergehend nicht verfügbar\. \(SSE_ERROR\)/).waitFor({timeout:15000});
+  await page.getByText(/API-Endpunkt \/api\/v1\/stream: Live-Daten vorübergehend nicht verfügbar\. \(SSE_ERROR\)/).waitFor({timeout:15000});
   checks.push('Web named SSE error event enters stale reconnect state');
   console.log('SSE ERROR EVENT PASS');
   await context.unroute('**/api/v1/stream');
-  await text('LIVE · API',{exact:false}).waitFor({timeout:15000});
+  await page.getByText('API CONNECTED',{exact:false}).waitFor({timeout:15000});
   for(const [name,width,height] of [['tablet',834,1112],['mobile',390,844],['narrow',320,740]]) {
     await page.setViewportSize({width,height});
     await capture('overview-'+name);

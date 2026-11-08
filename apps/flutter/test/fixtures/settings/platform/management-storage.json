@@ -1,0 +1,32 @@
+{
+  "section": "storage",
+  "availability": "read_only",
+  "facts": [
+    {
+      "name": "sqlite_schema",
+      "value": "5"
+    },
+    {
+      "name": "database_path",
+      "value": "not exported"
+    },
+    {
+      "name": "integrity_check",
+      "value": "not run by read endpoint; offline operator inspection required"
+    },
+    {
+      "name": "retention_cleanup",
+      "value": "unsupported; no data deletion"
+    },
+    {
+      "name": "backup",
+      "value": "offline operator source/SQLite backup; no management export endpoint"
+    }
+  ],
+  "tools": [],
+  "client_configuration": null,
+  "limitations": [
+    "Local development identity; hostile same-UID processes are not isolated",
+    "No remote MCP or browser administrative session; no durable tamper-resistant audit"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "section": "client_configuration",
+  "availability": "read_only",
+  "facts": [],
+  "tools": [],
+  "client_configuration": {
+    "executable": "<ABSOLUTE_OIP_SERVER_EXECUTABLE>",
+    "args": [
+      "--mcp-bridge",
+      "--ipc-socket",
+      "<AUTHORIZED_PRIVATE_SOCKET>",
+      "--ipc-credential",
+      "<AUTHORIZED_PRIVATE_CREDENTIAL_FILE>"
+    ],
+    "usable_without_replacement": false,
+    "credential_provisioned": false,
+    "configuration_json": "{\n  \"mcpServers\": {\n    \"oip-local\": {\n      \"args\": [\n        \"--mcp-bridge\",\n        \"--ipc-socket\",\n        \"<AUTHORIZED_PRIVATE_SOCKET>\",\n        \"--ipc-credential\",\n        \"<AUTHORIZED_PRIVATE_CREDENTIAL_FILE>\"\n      ],\n      \"command\": \"<ABSOLUTE_OIP_SERVER_EXECUTABLE>\"\n    }\n  }\n}"
+  },
+  "limitations": [
+    "Local development identity; hostile same-UID processes are not isolated",
+    "No remote MCP or browser administrative session; no durable tamper-resistant audit",
+    "Replace placeholders using an existing authorized local profile. Preview grants nothing and performs no connection. Private paths and credential bytes are never enumerated."
+  ]
+}

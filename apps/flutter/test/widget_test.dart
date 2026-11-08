@@ -32,7 +32,7 @@ void main() {
         ..connection = 'live';
       await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
       await tester.pumpAndSettle();
-      expect(find.text('Deine Infrastruktur. Ein Bild.'), findsOneWidget);
+      expect(find.text('Operations Workstation'), findsOneWidget);
       Future<void> navigate(int page) async {
         if (size.width < 1080) {
           await tester.tap(find.byKey(const Key('open-navigation')));
@@ -48,9 +48,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('device-evo')), findsOneWidget);
       expect(find.byKey(const Key('device-M-01')), findsNothing);
+      await tester.ensureVisible(find.byKey(const Key('device-evo')));
       await tester.tap(find.byKey(const Key('device-evo')));
       await tester.pumpAndSettle();
       expect(find.text('Fünf unabhängige Statusdimensionen'), findsOneWidget);
+      await tester.ensureVisible(find.byTooltip('Details schließen'));
       await tester.tap(find.byTooltip('Details schließen'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byKey(const Key('device-search')), 'missing');
@@ -68,6 +70,7 @@ void main() {
         expect(tester.getSize(find.byKey(const Key('scenario-agent'))).height,
             greaterThanOrEqualTo(44));
       }
+      await tester.ensureVisible(find.byKey(const Key('scenario-agent')));
       await tester.tap(find.byKey(const Key('scenario-agent')));
       await tester.pumpAndSettle();
       expect(api.chosen, 'agent');

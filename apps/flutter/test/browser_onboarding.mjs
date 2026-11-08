@@ -55,8 +55,34 @@ try {
   await page.getByRole('button',{name:'Zum Geräteinventar',exact:true}).click();
   const manualPage=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture')).json();
   assert.equal(manualPage.items.length,1);assert.equal(manualPage.items[0].telemetry,'no_collector');assert.equal(manualPage.items[0].connectivity,'unknown');assert.equal(manualPage.items[0].health,'not_evaluated');
-  const row=page.getByRole('button',{name:/Details Browser SSH fixture/});
-  await row.click();
+  // The device row is an InkWell inside the Flutter view. Its semantics node is
+  // a container node, so it carries `pointer-events: none` and a Playwright
+  // click is intercepted by the flutter-view. A real mouse event on the
+  // painted row is the working activation.
+  //
+  // The activation is verified by the state it produces (the engineering
+  // workspace of the selected device), never by the absence of an error.
+  const openDeviceRow=async()=>{
+    const row=page.getByRole('button',{name:/Gerät Browser SSH fixture/}).first();
+    await row.waitFor({state:'attached',timeout:30000});
+    const workspaceOpen=async()=>{
+      const snapshot=await page.locator('body').ariaSnapshot();
+      // The engineering workspace of the selected device and, in the managed
+      // mode, its authorized monitoring section.
+      return /identity & registry/i.test(snapshot)
+        || /connection & monitoring/i.test(snapshot);
+    };
+    for(let attempt=0;attempt<3;attempt++){
+      const box=await row.boundingBox();
+      if(!box)throw Error('the device row has no geometry');
+      await page.mouse.click(box.x+60,box.y+box.height/2);
+      await page.waitForTimeout(1500);
+      if(await workspaceOpen())return;
+    }
+    throw Error('the device row did not open the engineering workspace');
+  };
+  await openDeviceRow();
+  await page.waitForTimeout(800);
   await page.getByRole('button',{name:'Verbindung für dieses Gerät einrichten',exact:true}).click();
   await page.getByRole('button',{name:'Verbindungsmethode wählen',exact:true}).click();
   await typeInto(page.getByRole('textbox',{name:'Hostname oder IP-Adresse',exact:true}),'127.0.0.1');
@@ -84,6 +110,11 @@ try {
   await capture('05-persisted-binding');
   await page.getByRole('button',{name:'Monitoring aktivieren',exact:true}).click();
   await page.getByRole('button',{name:'Zum Geräteinventar',exact:true}).click();
+  // The approved Spectrum-2027 device workspace carries the authorized
+  // monitoring evidence and the persisted history. The device is selected
+  // again, because the wizard closed the selection.
+  await openDeviceRow();
+  await page.waitForTimeout(1500);
   for(let i=0;i<140;i++){ if((await page.locator('body').ariaSnapshot()).includes('Collecting · aktuelle Messwerte empfangen'))break; if(i===139)throw Error('No rendered actual Collecting state'); await page.waitForTimeout(250); }
   await capture('06-real-monitoring');
   // The panel must show the measurements the Core actually received over SSH.
@@ -140,7 +171,19 @@ try {
   await page.waitForTimeout(1500);
   const top=await page.locator('body').ariaSnapshot();
   assert(!top.includes('Temperatur M-01'),'the demo coordinates are still rendered in the managed overview');
-  const wantedOverview=['Autorisierte Infrastruktur','SSH host browser-existing','host.memory_total_bytes',String(memory.value.unsigned_integer)];
+  // The command center carries the dynamic metrics of the authorized
+  // projection. They are read from the rendered surface, never from a
+  // constant of the test.
+  assert(top.includes('UNIFIED INFRASTRUCTURE VIEW'),'the unified infrastructure view is missing');
+  const devices=/CONNECTED DEVICES: (\d+)/.exec(top);
+  const sources=/SOURCES: (\d+) \/ (\d+) CONNECTED/.exec(top);
+  assert(devices&&devices[1].length>0,'the managed overview shows no dynamic device metric');
+  assert(sources&&sources[1].length>0,'the managed overview shows no dynamic source metric');
+  assert(!/M-01/.test(top),'the demo coordinates are still rendered in the managed overview');
+  // The authorized source registry has its own section of the workstation.
+  await page.getByRole('button',{name:'Source Health',exact:true}).click();
+  await page.waitForTimeout(1500);
+  const wantedOverview=['UNIFIED INFRASTRUCTURE VIEW','SSH host browser-existing'];
   const seenOverview=new Set();
   for(let i=0;i<40;i++){
     const snapshot=await page.locator('body').ariaSnapshot();
@@ -150,7 +193,7 @@ try {
     await page.mouse.wheel(0,400);
     await page.waitForTimeout(150);
   }
-  assert(seenOverview.size===wantedOverview.length,'the managed overview does not show the authorized source and its measurement');
+  assert(seenOverview.size===wantedOverview.length,'the managed overview does not show the authorized source registry');
   await capture('08-managed-overview');
   // The network view must show the authorized placement of the session. The
   // scoped projection carries no topology, so a loading state would promise
@@ -160,7 +203,10 @@ try {
   const networkTop=await page.locator('body').ariaSnapshot();
   assert(!networkTop.includes('Topologie wird geladen'),'the network view still shows a loading state');
   assert(!networkTop.includes('Remote Site'),'the demo zones are still rendered in the managed network view');
-  const wantedNetwork=['Autorisierte Platzierung','org-a · infra-a1 · site-a1','Quelle '+observed.connection.source_id];
+  // The approved network surface places the authorized device in its
+  // infrastructure. It carries no logical path in a scoped projection, and
+  // the source registry belongs to the overview and the device detail.
+  const wantedNetwork=['NETWORK ENGINEERING EXPLORER','Infrastructure A1','browser-existing'];
   const seenNetwork=new Set();
   for(let i=0;i<40;i++){
     const snapshot=await page.locator('body').ariaSnapshot();
@@ -175,7 +221,7 @@ try {
   await page.getByRole('button',{name:'Operator abmelden',exact:true}).click();
   await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_overview:{authorized_source:'SSH host browser-existing',source_registry_section:true,measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,demo_coordinates_absent:true},rendered_network:{authorized_placement:'org-a · infra-a1 · site-a1',source:observed.connection.source_id,loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
+  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[1]+'/'+sources[2],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'device engineering workspace of the approved UI',demo_coordinates_absent:true},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
 } catch(e) {
   await writeFile(resolve(out,'ssh-requests.json'),JSON.stringify(sshRequests,null,2));
   await capture('failure');

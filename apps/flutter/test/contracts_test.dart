@@ -170,6 +170,25 @@ void main() {
               }),
               200,
             );
+          case '/api/v1/sources':
+            return http.Response(
+              jsonEncode([
+                {
+                  'id': 'oip-local-simulation-v1',
+                  'name': 'Local OPC-UA Simulation',
+                  'entity_id': 'M-01',
+                  'simulated': true,
+                  'reachability': 'unknown',
+                  'connection': 'connected',
+                  'service': 'healthy',
+                  'freshness': 'fresh',
+                  'validity': 'valid',
+                  'last_received_ms': 1800000000000,
+                  'last_error': null,
+                }
+              ]),
+              200,
+            );
           case '/api/v1/opcua/nodes':
             return http.Response(
               jsonEncode({
@@ -188,6 +207,8 @@ void main() {
     final initial = await api.initial();
     expect(initial.devices, hasLength(2));
     expect(initial.topology, isEmpty);
+    expect(initial.sources.single.id, 'oip-local-simulation-v1');
+    expect(initial.recentEvents.single.kind, 'SubscriptionError');
     final nodes = await api.nodes('bulk', 'Bulk', 80);
     expect(nodes.offset, 80);
     expect(nodes.limit, 40);

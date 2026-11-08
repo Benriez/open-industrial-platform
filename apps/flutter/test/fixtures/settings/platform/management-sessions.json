@@ -1,0 +1,16 @@
+{
+  "section": "sessions",
+  "availability": "unsupported",
+  "facts": [
+    {
+      "name": "reason",
+      "value": "No queryable initialized-session registry. IPC JoinSet/log counters are not a reliable client inventory."
+    }
+  ],
+  "tools": [],
+  "client_configuration": null,
+  "limitations": [
+    "Local development identity; hostile same-UID processes are not isolated",
+    "No remote MCP or browser administrative session; no durable tamper-resistant audit"
+  ]
+}

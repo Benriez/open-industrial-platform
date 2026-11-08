@@ -19,6 +19,23 @@ _browser_module=pathlib.Path(_browser_module)
 if not _browser_module.is_absolute(): _browser_module=ROOT/_browser_module
 os.environ['PLAYWRIGHT_MODULE']=str(_browser_module)
 config.update(sources=[],web_dir=os.environ.get('OIP_WEB_DIR'))
+if os.environ.get('OIP_CANONICAL_UI_GATE'):
+    # The managed evidence must use binaries built from this exact worktree.
+    built=subprocess.run(['cargo','build','-p','oip-server','--example','mcp_probe'],
+                         cwd=ROOT,capture_output=True,text=True,timeout=1800)
+    (OUT/'canonical-core-build.log').write_text(built.stdout+built.stderr)
+    assert built.returncode==0,'Canonical oip-server/mcp_probe build failed'
+    REPORT['server_binary_sha256']=hashlib.sha256(BIN.read_bytes()).hexdigest()
+    REPORT['mcp_probe_binary_sha256']=hashlib.sha256(SDK.read_bytes()).hexdigest()
+    # Build/provenance/widget coverage runs before the managed acceptance core.
+    # The partial receipt is completed by the authenticated browser gate below.
+    gate_out=OUT/'canonical-ui'
+    pre=subprocess.run([os.environ.get('PYTHON','python3'),str(ROOT/'tests/canonical_ui_gate.py'),
+                        '--skip-browser','--allow-partial','--out',str(gate_out)],
+                       cwd=ROOT,capture_output=True,text=True,timeout=1800)
+    (OUT/'canonical-ui-precheck.log').write_text(pre.stdout+pre.stderr)
+    assert pre.returncode==0,'Canonical UI build/provenance/widget gate failed'
+    REPORT['canonical_ui_precheck']=json.loads((gate_out/'canonical-ui-gate.json').read_text())
 plan=json.loads((ROOT/'examples/multi-infrastructure-plan.json').read_text())
 plan['sources']=[];plan['bindings']=[b for b in plan['bindings'] if b['scope']['kind']!='source']
 plan['roles'].append({'id':'inventory-admin','name':'Explicit scoped operator','permissions':['inventory_manage','devices_read','telemetry_read']})
@@ -157,10 +174,53 @@ try:
             raise SystemExit('Playwright module not found: '+os.environ['PLAYWRIGHT_MODULE'])
         body={'changes':[{'operation':'register','device':{'id':'browser-existing','display_name':'Browser SSH fixture','device_type':'server','site_id':'site-a1','metadata':{}}}]}
         assert request('/api/v2/inventory/apply',body)[0]==200
-        env=dict(os.environ,OIP_URL=URL,OIP_IPC_SOCKET=str(SOCK),OIP_BROWSER_CREDENTIAL=str(RUN/'reader-org-a.credential'),OIP_BROWSER_EVIDENCE=str(OUT/'browser'))
+        browser_evidence=OUT/'browser'
+        if browser_evidence.exists():
+            # Preserve earlier attempts, but never mix their captures/failure
+            # dumps with this run's authoritative evidence set.
+            browser_evidence.rename(OUT/f'browser-previous-{time.time_ns()}')
+        env=dict(os.environ,OIP_URL=URL,OIP_IPC_SOCKET=str(SOCK),OIP_BROWSER_CREDENTIAL=str(RUN/'reader-org-a.credential'),OIP_BROWSER_EVIDENCE=str(browser_evidence))
         with (OUT/'browser.log').open('w') as log:
-            p=subprocess.run(['node',os.environ['OIP_BROWSER_SCRIPT']],env=env,cwd=ROOT,stdout=log,stderr=log,timeout=180)
-        assert p.returncode==0,'Actual Flutter onboarding failed; inspect browser receipt'
+            p=subprocess.run(['node',os.environ['OIP_BROWSER_SCRIPT']],env=env,cwd=ROOT,stdout=log,stderr=log,timeout=600)
+        assert p.returncode==0,'Canonical UI design browser gate failed; inspect browser receipt'
+        if os.environ.get('OIP_CANONICAL_UI_GATE'):
+            browser_receipt=OUT/'browser'/'browser-canonical-ui-gate.json'
+            assert browser_receipt.is_file(),'Canonical browser receipt missing'
+            REPORT['canonical_ui_browser']=json.loads(browser_receipt.read_text())
+            assert REPORT['canonical_ui_browser']['verdict']=='PASS'
+            # The stable-shell captures intentionally precede onboarding;
+            # dynamic device changes cannot affect the cropped visual baseline.
+            visual_out=OUT/'canonical-ui'/'visual-comparison.json'
+            visual=subprocess.run([os.environ.get('PYTHON','python3'),str(ROOT/'tests/canonical_ui_visual.py'),
+                                   '--actual-root',str(OUT/'browser'),'--out',str(visual_out)],
+                                  cwd=ROOT,capture_output=True,text=True,timeout=120)
+            (OUT/'canonical-ui-visual.log').write_text(visual.stdout+visual.stderr)
+            assert visual.returncode==0,'Canonical visual shell comparison failed'
+            REPORT['canonical_ui_visual']=json.loads(visual_out.read_text())
+            # The design gate proves reachability and auth. The established
+            # onboarding journey separately proves its real side effect.
+            onboarding_env=dict(env,OIP_BROWSER_EVIDENCE=str(OUT/'onboarding'))
+            with (OUT/'onboarding.log').open('w') as onboarding_log:
+                onboarding=subprocess.run(['node',str(ROOT/'apps/flutter/test/browser_onboarding.mjs')],
+                                          env=onboarding_env,cwd=ROOT,stdout=onboarding_log,
+                                          stderr=onboarding_log,timeout=600)
+            assert onboarding.returncode==0,'Actual Flutter SSH onboarding failed after the design gate'
+            REPORT['canonical_ui_onboarding']=json.loads((OUT/'onboarding'/'report.json').read_text())
+            REPORT['canonical_ui_gate_receipt']={
+                'verdict':'PASS',
+                'precheck_path':str(gate_out/'canonical-ui-gate.json'),
+                'browser_path':str(browser_receipt),
+                'visual_path':str(visual_out),
+                'precheck_receipt_sha256':hashlib.sha256((gate_out/'canonical-ui-gate.json').read_bytes()).hexdigest(),
+                'browser_receipt_sha256':hashlib.sha256(browser_receipt.read_bytes()).hexdigest(),
+                'visual_receipt_sha256':hashlib.sha256(visual_out.read_bytes()).hexdigest(),
+                'flutter_tests_passed':REPORT['canonical_ui_precheck'].get('flutter_tests_passed'),
+                'flutter_tests_failed':REPORT['canonical_ui_precheck'].get('flutter_tests_failed'),
+                'browser_findings':len(REPORT['canonical_ui_browser']['findings']),
+                'browser_failures':sum(1 for finding in REPORT['canonical_ui_browser']['findings'] if not finding['ok']),
+                'screenshots':len(REPORT['canonical_ui_browser']['screenshots']),
+                'operator_visual_approval':'VISUAL_PENDING_OPERATOR_ACCEPTANCE',
+            }
         assert get('/api/v2/device-connections?device_id=browser-existing')['connection']['status']=='collecting'
         # The Core persists the samples of the connected device and serves them
         # for the authorized device scope. A stored sample is history.

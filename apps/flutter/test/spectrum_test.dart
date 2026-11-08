@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oip_dashboard/app/app.dart';
 import 'package:oip_dashboard/app/controller.dart';
 import 'package:oip_dashboard/design_system/theme.dart';
+import 'package:oip_dashboard/features/diagnostics/evidence_timeline.dart';
 import 'package:oip_dashboard/models/contracts.dart';
 import 'package:oip_dashboard/widgets/components.dart';
 import 'support.dart';
@@ -70,9 +71,17 @@ void main() {
     ];
     final controller = OipController(FakeApi())
       ..snapshot = Snapshot.fromJson(data)
-      ..connection = 'live';
+      ..connection = 'live'
+      ..workspaces.setExpertWorkspace(WorkspaceId.overview, true)
+      ..workspaces.setInspectorOpen(WorkspaceId.overview, true);
     await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
     await tester.pumpAndSettle();
+    final inspectorTab =
+        find.byKey(const Key('overview-mobile-pane-inspector'));
+    if (inspectorTab.evaluate().isNotEmpty) {
+      await tester.tap(inspectorTab);
+      await tester.pumpAndSettle();
+    }
     expect(find.textContaining('simulierte Zustände'), findsNothing);
     expect(find.textContaining('Backend-Befund · Backend'), findsOneWidget);
     expect(find.textContaining('Backend-Befund · Simulation'), findsNothing);
@@ -92,12 +101,15 @@ void main() {
     });
     final controller = OipController(FakeApi())
       ..snapshot = Snapshot.fromJson(fixture())
-      ..connection = 'live';
+      ..connection = 'live'
+      ..workspaces.setExpertWorkspace(WorkspaceId.diagnostics, true)
+      ..workspaces.setInspectorOpen(WorkspaceId.diagnostics, true)
+      ..workspaces.setView(WorkspaceId.diagnostics, 'timeline');
     await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('nav-4')));
     await tester.pumpAndSettle();
-    expect(find.byType(DataTimeline), findsOneWidget);
+    expect(find.byType(DiagnosticsEventTimeline), findsOneWidget);
     final clip = find.byWidgetPredicate((widget) =>
         widget.key is ValueKey<String> &&
         (widget.key as ValueKey<String>).value.startsWith('timeline-'));
@@ -109,7 +121,7 @@ void main() {
     expect(find.text('Verbindung verloren'), findsWidgets);
     await tester.tap(find.text('Spuren ausblenden'));
     await tester.pumpAndSettle();
-    expect(find.byType(DataTimeline), findsNothing);
+    expect(find.byType(DiagnosticsEventTimeline), findsNothing);
     expect(find.text('Verbindung verloren'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());

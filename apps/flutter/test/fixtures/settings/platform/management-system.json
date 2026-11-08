@@ -1,0 +1,48 @@
+{
+  "section": "system",
+  "availability": "read_only",
+  "facts": [
+    {
+      "name": "version",
+      "value": "0.0.0"
+    },
+    {
+      "name": "build_revision",
+      "value": "f9969f0a21f2885a8b6c4695b3c105ad28708d33"
+    },
+    {
+      "name": "uptime_ms",
+      "value": "14887"
+    },
+    {
+      "name": "observed_at_ms",
+      "value": "1793996935696"
+    },
+    {
+      "name": "sqlite_schema",
+      "value": "5"
+    },
+    {
+      "name": "rest_versions",
+      "value": "v1 legacy; v2 authenticated"
+    },
+    {
+      "name": "registered_core_capabilities",
+      "value": "27"
+    },
+    {
+      "name": "operating_environment",
+      "value": "macos-aarch64"
+    },
+    {
+      "name": "runtime_sources",
+      "value": "4"
+    }
+  ],
+  "tools": [],
+  "client_configuration": null,
+  "limitations": [
+    "Local development identity; hostile same-UID processes are not isolated",
+    "No remote MCP or browser administrative session; no durable tamper-resistant audit"
+  ]
+}

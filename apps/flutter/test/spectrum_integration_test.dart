@@ -18,7 +18,7 @@ void main() {
   ];
   for (final size in sizes) {
     for (final theme in ['Spectrum', 'Daylight', 'Graphite']) {
-      testWidgets('Integrated $theme renders five views at ${size.width}',
+      testWidgets('Integrated $theme renders six views at ${size.width}',
           (tester) async {
         tester.view.devicePixelRatio = 1;
         tester.view.physicalSize = size;
@@ -39,7 +39,7 @@ void main() {
           await tester.tap(find.byKey(const Key('theme-toggle')));
           await tester.pumpAndSettle();
         }
-        for (var page = 0; page < 5; page++) {
+        for (var page = 0; page < 6; page++) {
           if (size.width < 1080) {
             await tester.tap(find.byKey(const Key('open-navigation')));
             await tester.pumpAndSettle();

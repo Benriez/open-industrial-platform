@@ -1,0 +1,85 @@
+{
+  "items": [
+    {
+      "category": "event",
+      "record": {
+        "id": "evidence-event-source-a1",
+        "source": "source-a1",
+        "origin": "external",
+        "at_ms": 1800000000000,
+        "kind": "reconnected",
+        "event": {
+          "Reconnected": {
+            "at": 1800000000000,
+            "reason": "sanitized fixture event"
+          }
+        },
+        "observation_id": null,
+        "gap_id": null
+      }
+    },
+    {
+      "category": "event",
+      "record": {
+        "id": "evidence-event-source-a1b",
+        "source": "source-a1b",
+        "origin": "external",
+        "at_ms": 1800000001000,
+        "kind": "reconnected",
+        "event": {
+          "Reconnected": {
+            "at": 1800000001000,
+            "reason": "sanitized fixture event"
+          }
+        },
+        "observation_id": null,
+        "gap_id": null
+      }
+    },
+    {
+      "category": "event",
+      "record": {
+        "id": "evidence-event-source-a2",
+        "source": "source-a2",
+        "origin": "external",
+        "at_ms": 1800000002000,
+        "kind": "data_loss",
+        "event": {
+          "DataLoss": {
+            "at": 1800000002000,
+            "reason": "sanitized fixture event",
+            "gap": {
+              "started_at": 1800000000000,
+              "ended_at": 1800000001000,
+              "reason": "documented fixture gap"
+            }
+          }
+        },
+        "observation_id": null,
+        "gap_id": "gap-a2"
+      }
+    },
+    {
+      "category": "event",
+      "record": {
+        "id": "evidence-event-source-b1",
+        "source": "source-b1",
+        "origin": "external",
+        "at_ms": 1800000003000,
+        "kind": "reconnected",
+        "event": {
+          "Reconnected": {
+            "at": 1800000003000,
+            "reason": "sanitized fixture event"
+          }
+        },
+        "observation_id": null,
+        "gap_id": null
+      }
+    }
+  ],
+  "truncated": false,
+  "next_cursor": null,
+  "missing_evidence": [],
+  "time_semantics": "event_time"
+}

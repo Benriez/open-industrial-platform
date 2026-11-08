@@ -1,0 +1,172 @@
+{
+  "definitions": [
+    {
+      "key": "instance_name",
+      "category": "general",
+      "description": "Non-sensitive local instance display name",
+      "default": {
+        "type": "text",
+        "value": "Open Industrial Platform"
+      },
+      "data_type": "text",
+      "validation": "1..80 UTF-8 bytes; no control characters",
+      "scopes": [
+        "platform"
+      ],
+      "inherited": false,
+      "read_permission": "settings_read",
+      "write_permission": "settings_write",
+      "sensitivity": "non_sensitive; never enter secrets",
+      "persistence": "sqlite",
+      "apply_mode": "requires_restart",
+      "change_channel": "exclusive_local_operator_cli"
+    },
+    {
+      "key": "instance_description",
+      "category": "general",
+      "description": "Non-sensitive local instance description",
+      "default": {
+        "type": "text",
+        "value": ""
+      },
+      "data_type": "text",
+      "validation": "0..256 UTF-8 bytes; no control characters",
+      "scopes": [
+        "platform"
+      ],
+      "inherited": false,
+      "read_permission": "settings_read",
+      "write_permission": "settings_write",
+      "sensitivity": "non_sensitive; never enter secrets",
+      "persistence": "sqlite",
+      "apply_mode": "requires_restart",
+      "change_channel": "exclusive_local_operator_cli"
+    },
+    {
+      "key": "history_page_size",
+      "category": "diagnostics",
+      "description": "Default historical diagnostics page size when the request omits limit",
+      "default": {
+        "type": "integer",
+        "value": 50
+      },
+      "data_type": "integer",
+      "validation": "4..100 inclusive",
+      "scopes": [
+        "platform",
+        "organization",
+        "infrastructure",
+        "site",
+        "source"
+      ],
+      "inherited": true,
+      "read_permission": "settings_read",
+      "write_permission": "settings_write",
+      "sensitivity": "non_sensitive; never enter secrets",
+      "persistence": "sqlite",
+      "apply_mode": "requires_restart",
+      "change_channel": "exclusive_local_operator_cli"
+    }
+  ],
+  "categories": [
+    {
+      "category": "general",
+      "status": "offline_administration_required",
+      "capabilities": [
+        "settings_read"
+      ]
+    },
+    {
+      "category": "mcp_agents",
+      "status": "read_only",
+      "capabilities": [
+        "mcp_management_read"
+      ]
+    },
+    {
+      "category": "infrastructure",
+      "status": "read_only",
+      "capabilities": [
+        "organizations_read",
+        "infrastructures_read",
+        "sites_read",
+        "sources_read"
+      ]
+    },
+    {
+      "category": "data_storage",
+      "status": "read_only",
+      "capabilities": [
+        "mcp_management_read"
+      ]
+    },
+    {
+      "category": "diagnostics",
+      "status": "offline_administration_required",
+      "capabilities": [
+        "settings_read",
+        "diagnostic_findings_read"
+      ]
+    },
+    {
+      "category": "security_access",
+      "status": "read_only",
+      "capabilities": [
+        "mcp_management_read"
+      ]
+    },
+    {
+      "category": "system",
+      "status": "read_only",
+      "capabilities": [
+        "mcp_management_read"
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "key": "instance_name",
+      "requested_scope": {
+        "kind": "platform"
+      },
+      "persisted": null,
+      "effective": {
+        "type": "text",
+        "value": "Open Industrial Platform"
+      },
+      "origin": null,
+      "effective_revision": 0,
+      "apply_status": "active_startup_snapshot"
+    },
+    {
+      "key": "instance_description",
+      "requested_scope": {
+        "kind": "platform"
+      },
+      "persisted": null,
+      "effective": {
+        "type": "text",
+        "value": ""
+      },
+      "origin": null,
+      "effective_revision": 0,
+      "apply_status": "active_startup_snapshot"
+    },
+    {
+      "key": "history_page_size",
+      "requested_scope": {
+        "kind": "platform"
+      },
+      "persisted": null,
+      "effective": {
+        "type": "integer",
+        "value": 50
+      },
+      "origin": null,
+      "effective_revision": 0,
+      "apply_status": "active_startup_snapshot"
+    }
+  ],
+  "loaded_at_ms": 1793996920808,
+  "inheritance": "only history_page_size: source > site > infrastructure > organization > platform > default; metadata platform only"
+}

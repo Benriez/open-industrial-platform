@@ -147,16 +147,21 @@ void main() {
         tester.widget<InteractiveViewer>(find.byType(InteractiveViewer));
     final transformation = viewer.transformationController!;
     transformation.value = Matrix4.identity()..translate(40.0, 30.0);
+    final viewport = tester.getSize(find.byKey(const Key('network-viewer')));
+    final focus = Offset(viewport.width / 2, viewport.height / 2);
+    final contentFocus = (focus - const Offset(40, 30));
     await tester.tap(find.byTooltip('Vergrößern'));
     await tester.pump();
-    expect(transformation.value.getTranslation().x, 40);
-    expect(transformation.value.getTranslation().y, 30);
+    final expected = focus - contentFocus * 1.25;
+    expect(transformation.value.getMaxScaleOnAxis(), 1.25);
+    expect(transformation.value.getTranslation().x, closeTo(expected.dx, 1e-8));
+    expect(transformation.value.getTranslation().y, closeTo(expected.dy, 1e-8));
     await tester.tap(find.byKey(const Key('topology-evo')));
     await tester.pumpAndSettle();
     expect(find.text('Fünf unabhängige Statusdimensionen'), findsOneWidget);
     await tester.tap(find.byTooltip('Details schließen'));
     await tester.pumpAndSettle();
-    expect(find.text('Gerätedetails öffnen'), findsOneWidget);
+    expect(find.text('Registry-Gerätedetails öffnen'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -257,7 +262,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Topology sizes the canvas for every device row', (tester) async {
+  testWidgets('Topology keeps every relation-unknown device accessible',
+      (tester) async {
     final app = await _bootstrap(tester);
     final data = fixture();
     final template = (data['devices'] as List).first as Json;
@@ -273,10 +279,18 @@ void main() {
     app.controller.notifyListeners();
     await _navigate(tester, 2, 1440);
     for (var index = 0; index < 14; index++) {
-      expect(find.byKey(Key('topology-bulk-$index')), findsOneWidget);
+      await tester.enterText(
+          find.byKey(const Key('network-search')), 'bulk-$index');
+      await tester.pumpAndSettle();
+      expect(find.byKey(Key('explorer-device-bulk-$index')), findsOneWidget);
+      expect(find.byKey(Key('topology-bulk-$index')), findsNothing);
     }
-    expect(
-        tester.getSize(find.byKey(const Key('topology-canvas'))).height, 1092);
+    expect(find.byKey(const Key('network-device-explorer')), findsOneWidget);
+    expect(find.byKey(const Key('network-unlinked-inventory')), findsNothing);
+    expect(find.text('RELATION UNBEKANNT 14'), findsOneWidget);
+    expect(find.byKey(const Key('topology-canvas')), findsNothing);
+    expect(find.textContaining('Keine bekannten Topologie-Endpunkte'),
+        findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -348,7 +362,19 @@ Future<_TestApp> _bootstrap(
   configure?.call(api);
   final controller = OipController(api)
     ..snapshot = Snapshot.fromJson(api.data)
-    ..connection = 'live';
+    ..connection = 'live'
+    ..workspaces.setExpertWorkspace(WorkspaceId.overview, true)
+    ..workspaces.setExpertWorkspace(WorkspaceId.devices, true)
+    ..workspaces.setExpertWorkspace(WorkspaceId.diagnostics, true)
+    ..workspaces.setInspectorOpen(WorkspaceId.overview, true)
+    ..workspaces.setInspectorOpen(WorkspaceId.devices, true)
+    ..workspaces.setInspectorOpen(WorkspaceId.network, true)
+    ..workspaces.setInspectorOpen(WorkspaceId.opcua, true)
+    ..workspaces.setInspectorOpen(WorkspaceId.diagnostics, true)
+    ..workspaces.setView(WorkspaceId.network, 'topology')
+    ..workspaces.setAdvancedFilters(WorkspaceId.network, true)
+    ..workspaces.setView(WorkspaceId.diagnostics, 'timeline')
+    ..workspaces.setAdvancedFilters(WorkspaceId.diagnostics, true);
   await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
   await tester.pumpAndSettle();
   addTearDown(() async {
