@@ -1,0 +1,162 @@
+{
+  "schema": "oip-accessibility-receipt-v1",
+  "scope": "name and role coverage of the rendered surface of the six workstations; not a full WCAG audit",
+  "base": "http://127.0.0.1:8096",
+  "stations": [
+    {
+      "workstation": "overview",
+      "controls": 19,
+      "focusable": 13,
+      "unnamed": 0,
+      "unnamedFocusable": 0,
+      "roles": [
+        "button"
+      ]
+    },
+    {
+      "workstation": "devices",
+      "controls": 31,
+      "focusable": 23,
+      "unnamed": 0,
+      "unnamedFocusable": 0,
+      "roles": [
+        "button"
+      ]
+    },
+    {
+      "workstation": "network",
+      "controls": 20,
+      "focusable": 14,
+      "unnamed": 0,
+      "unnamedFocusable": 0,
+      "roles": [
+        "button"
+      ]
+    },
+    {
+      "workstation": "opcua",
+      "controls": 26,
+      "focusable": 12,
+      "unnamed": 0,
+      "unnamedFocusable": 0,
+      "roles": [
+        "button"
+      ]
+    },
+    {
+      "workstation": "diagnostics",
+      "controls": 19,
+      "focusable": 13,
+      "unnamed": 0,
+      "unnamedFocusable": 0,
+      "roles": [
+        "button"
+      ]
+    },
+    {
+      "workstation": "settings",
+      "controls": 21,
+      "focusable": 15,
+      "unnamed": 0,
+      "unnamedFocusable": 0,
+      "roles": [
+        "button"
+      ]
+    }
+  ],
+  "controls_total": 136,
+  "unnamed_total": 0,
+  "findings": [
+    {
+      "check": "the application demands an operator session",
+      "ok": true,
+      "detail": "the anonymous state does not ask for the operator"
+    },
+    {
+      "check": "browser-login accepted",
+      "ok": true,
+      "detail": "{\"status\":200}"
+    },
+    {
+      "check": "overview: every reachable control has an accessible name",
+      "ok": true,
+      "detail": "0 unnamed controls"
+    },
+    {
+      "check": "overview: every focusable element is nameable",
+      "ok": true,
+      "detail": "0 unnamed focusable elements"
+    },
+    {
+      "check": "devices: every reachable control has an accessible name",
+      "ok": true,
+      "detail": "0 unnamed controls"
+    },
+    {
+      "check": "devices: every focusable element is nameable",
+      "ok": true,
+      "detail": "0 unnamed focusable elements"
+    },
+    {
+      "check": "network: every reachable control has an accessible name",
+      "ok": true,
+      "detail": "0 unnamed controls"
+    },
+    {
+      "check": "network: every focusable element is nameable",
+      "ok": true,
+      "detail": "0 unnamed focusable elements"
+    },
+    {
+      "check": "opcua: every reachable control has an accessible name",
+      "ok": true,
+      "detail": "0 unnamed controls"
+    },
+    {
+      "check": "opcua: every focusable element is nameable",
+      "ok": true,
+      "detail": "0 unnamed focusable elements"
+    },
+    {
+      "check": "diagnostics: every reachable control has an accessible name",
+      "ok": true,
+      "detail": "0 unnamed controls"
+    },
+    {
+      "check": "diagnostics: every focusable element is nameable",
+      "ok": true,
+      "detail": "0 unnamed focusable elements"
+    },
+    {
+      "check": "settings: every reachable control has an accessible name",
+      "ok": true,
+      "detail": "0 unnamed controls"
+    },
+    {
+      "check": "settings: every focusable element is nameable",
+      "ok": true,
+      "detail": "0 unnamed focusable elements"
+    },
+    {
+      "check": "no browser JavaScript errors",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "no external browser requests",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "console_errors": [],
+  "core_denials": [
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  ],
+  "external_requests": []
+}
