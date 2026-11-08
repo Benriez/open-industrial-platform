@@ -1341,10 +1341,13 @@ instance is not portable between releases: a historical binary refuses the field
 configuration and the other way round, so the upgrade keeps the configuration of the era of the
 instance until the instance has been migrated.
 
-**Not rehearsed.** The daemon handover with the historical binary: it binds its local clients to
-the actor policy of its era and refuses a start without a provisioned principal of that era. The
-data store and its handover are proven; the daemon of the historical release is not, and the
-receipt says so.
+**Not rehearsed (at that time).** The daemon handover with the historical binary: the daemon of
+the historical release was not started, only the offline provisioning and the backup of its data
+store. The reason named in the receipt — that the daemon binds its local clients to the actor
+policy of its era and refuses a start without a provisioned principal — was an **assumption, not a
+measurement**, and it was wrong in two respects: the OIP-008 era binds the local clients to a
+*principal* (`docs/architecture/oip-008-identity-authorization.md`), and the actor/permissions
+shape is the shape of OIP-007. Iteration 21 measures the truth and rehearses the daemon.
 
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
@@ -1513,10 +1516,85 @@ restart, and the operator needs the scoped inventory permission of the plan.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 21 — the daemon handover with the historical binary is measured and rehearsed
+
+**Status: PROVED on canonical `main`.**
+The ledger claimed that the daemon of the historical release could not be rehearsed. That claim
+was never measured — the historical binary was only used for the offline provisioning and the
+backup of its data store — and a read-only investigation of the era contracts and of the existing
+harnesses showed that the protected OIP-008.4 binary **is** started as a daemon by two milestone
+harnesses (`tests/oip0085/migration.py`, `tests/oip0084/acceptance.py`), with a principal-bound
+protected IPC configuration.
+
+**The measurement.** `tests/oip_historical_daemon.py` rehearses the handover of a *running*
+instance against a disposable instance and records what actually happens:
+
+| Step | Result |
+|---|---|
+| the OIP-007 shape (actor, permissions, sources) | **refused**: `invalid protected local IPC configuration/path` |
+| the OIP-008 shape (a credential bound to a provisioned, enabled principal) | the daemon starts and serves |
+| the authorized read of `reader-org-a` | 200 with exactly the three sources of its organization |
+| the authorized read of `reader-org-b` | 200 with exactly the fourth source |
+| the read without a credential | 403 |
+| the collection of the daemon | the sources of the scope become fresh, 131 observations are persisted |
+| the schema of the store | 3 after the provisioning, 5 with the historical runtime |
+| the release binary takes over | 200, the schema becomes 7, the observations are intact |
+| the backup and the restore | the schema is 5 again, the observations are identical |
+| the historical binary serves the restored store | 200, the observations are intact |
+
+The receipt is `docs/evidence/oip-historical-daemon/historical-daemon.json`. The refusal that the
+old receipt asserted without evidence is now a measurement, and the correct statement — the era
+binds a *principal*, the actor shape is OIP-007 — replaces it in the ledger and in the progress
+file.
+
+The protected binary is used only when its hash is the recorded hash; the rehearsal never touches
+the personal installation of the operator and nothing leaves the machine.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
+### Iteration 22 — the macOS application bundle of the Flutter client
+
+**Status: PROVED on canonical `main` (`205d08e`).**
+The macOS half of G9 was open: the Core side of the local operations was done, but the application
+bundle of the Flutter client had never been built. It exists now and is proven against a
+disposable managed instance of the **release** binary (`tests/oip_macos_app.py`,
+`docs/evidence/oip-macos-app/macos-app.json`):
+
+* `flutter build macos --release` produces `oip_dashboard.app` (bundle id
+  `org.openindustrial.oipDashboard`, version 0.3.0) in 59 s; the receipt names the sha256 of the
+  executable.
+* The bundle starts and asks the Core for the authorized projection of the principal within
+  **0.8 s**.
+* The Core answers **403** and the bundle obtains **no** unauthorized data (`api_successes: 0`).
+  It shows the approved Spectrum-2027 shell with the six workstations, the honest
+  `PERMISSION_DENIED` notice and the operator login — no OIP/005 demo, no gradient KPI row, no
+  `M-01` defaults, no AGENT-FIRST footer.
+* The bundle terminates on `SIGTERM` in 0.0 s without leaving an orphan behind, and it starts
+  again and reaches the Core again (0.5 s) — the restart of the application bundle.
+
+**A defect of the desktop shell was found and fixed.** The frame of the storyboard belongs to the
+screen the bundle was generated for (2560×1577). On a smaller display the window opens above the
+visible area and the operator sees nothing at all. The runner now checks the frame against the
+visible frames of the machine and places the window in the centre of the main screen when it
+touches no visible screen; the placement is reported in the log of the bundle. On this machine
+(the main display 1512×982 and a second display 2560×1440 above it) the system places the window
+itself and the check confirms that the window is on a visible screen.
+
+The evidence policy keeps the capture of the window local; the receipt names the window, its
+bounds, the displays of the machine and the placement of the bundle.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
+| `docs/evidence/oip-macos-app/macos-app.json` | the measured result of the macOS application bundle: the build, the start, the requests of the bundle, the refusal of the Core, the termination without an orphan and the start again (iteration 22) |
+| `docs/evidence/oip-historical-daemon/historical-daemon.json` | the measured result of the daemon handover with the protected historical binary: the refused shape of OIP-007, the started daemon of the era, the scoped reads, the collection, the takeover and the restored store (iteration 21) |
+| `docs/evidence/oip-offline-archive/offline-archive.json` | the measured result of the offline archive of a device (iteration 20) |
+| `docs/evidence/oip-performance/performance.json` | the measured client-side performance baseline of the release build (iteration 19) |
 | `docs/evidence/oip-real-device/test-summary.json` | machine-readable gate results of iteration 1 and iteration 2 |
 | `docs/evidence/oip-real-device/review.json` | findings of the delegated read-only source review (F1-F7, R1) with their current state |
 | `target/oip-canonical-e2e/report.json` | full acceptance report of the SSH/browser/MCP harness on canonical `main` (local, not tracked) |

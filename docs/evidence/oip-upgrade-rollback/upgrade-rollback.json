@@ -7,7 +7,7 @@
       "stdout": {
         "status": "provisioned",
         "plan": "/Users/benny/Code/open-industrial-platform/examples/multi-infrastructure-plan.json",
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-3jkt8rrj/core.sqlite",
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/core.sqlite",
         "result": "{\"schema_version\":3,\"organizations\":2,\"sources\":4,\"idempotent\":false,\"legacy_migrated\":false}"
       },
       "stderr": ""
@@ -17,8 +17,8 @@
       "exit_code": 0,
       "stdout": {
         "status": "backed up",
-        "source": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-3jkt8rrj/core.sqlite",
-        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-3jkt8rrj/state-historical/backups/20261108T150636Z.sqlite",
+        "source": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/core.sqlite",
+        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/state-historical/backups/20261108T204528Z.sqlite",
         "bytes": 278528,
         "integrity": "ok"
       },
@@ -29,10 +29,10 @@
       "exit_code": 0,
       "stdout": {
         "status": "started",
-        "pid": 94987,
-        "http_port": 65486,
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-3jkt8rrj/core.sqlite",
-        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-3jkt8rrj/state-release/oip.log",
+        "pid": 22407,
+        "http_port": 53927,
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/core.sqlite",
+        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/state-release/oip.log",
         "ipc_credentials_provisioned": 1
       },
       "stderr": ""
@@ -42,7 +42,7 @@
       "exit_code": 0,
       "stdout": {
         "status": "stopped",
-        "pid": 94987
+        "pid": 22407
       },
       "stderr": ""
     },
@@ -51,8 +51,8 @@
       "exit_code": 0,
       "stdout": {
         "status": "restored",
-        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-3jkt8rrj/state-historical/backups/20261108T150636Z.sqlite",
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-3jkt8rrj/core.sqlite",
+        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/state-historical/backups/20261108T204528Z.sqlite",
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/core.sqlite",
         "schema_version": "3",
         "integrity": "ok"
       },
@@ -64,7 +64,7 @@
       "stdout": {
         "status": "provisioned",
         "plan": "/Users/benny/Code/open-industrial-platform/examples/multi-infrastructure-plan.json",
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-3jkt8rrj/core.sqlite",
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/core.sqlite",
         "result": "{\"schema_version\":3,\"organizations\":2,\"sources\":4,\"idempotent\":true,\"legacy_migrated\":false}"
       },
       "stderr": ""
@@ -83,9 +83,9 @@
   "organizations_historical": "2",
   "historical_daemon": {
     "rehearsed": false,
-    "reason": "the historical binary binds its local clients to the actor policy of its time and refuses a start without a provisioned principal of its own era; the data store and its handover are rehearsed instead"
+    "reason": "the daemon of the historical release is not started in this rehearsal; the rehearsal of the daemon handover is tests/oip_historical_daemon.py. The era binds the local clients to a provisioned, enabled principal; the actor/permissions shape of OIP-007 is refused by it."
   },
-  "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-3jkt8rrj/state-historical/backups/20261108T150636Z.sqlite",
+  "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/state-historical/backups/20261108T204528Z.sqlite",
   "http_release": 200,
   "schema_release": "7",
   "organizations_release": "2",
@@ -93,5 +93,5 @@
   "schema_after_rollback": "3",
   "historical_adopts_the_restored_store": true,
   "status": "PASS",
-  "finished_utc": "2026-11-08T15:06:37Z"
+  "finished_utc": "2026-11-08T20:45:28Z"
 }

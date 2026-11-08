@@ -222,14 +222,69 @@ The activation of the real installation is an operator decision with its own
 backup procedure (see `docs/OIP_RELEASE_PROGRESS.md`, N4). This runbook does
 not perform it.
 
-## 9. Installation on macOS
+## 9. The macOS application bundle
 
-Installing the application as a launch agent is **not** part of this runbook:
-installing a system service needs an explicit operator authorization. The
-procedure above keeps the instance under the control of the operator, without
-OpenCode, with a reproducible start, stop, restart, backup and restore.
+The desktop client is a Flutter application bundle. It is built reproducibly
+from the same Dart code as the web release:
 
-## 10. What the receipts prove
+```sh
+cd apps/flutter
+flutter build macos --release \
+    --dart-define=OIP_API_URL=http://127.0.0.1:<port-of-the-instance>
+# -> apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app
+```
+
+The bundle needs the address of the instance as a compile-time definition
+(`OIP_API_URL`). Without it the bundle starts and asks the Core for the
+authorized projection of the principal, the Core refuses it with 403, and the
+bundle shows the operator login of the approved shell. That is the designed
+behaviour of the real mode: the bundle never shows data of a session it does
+not have.
+
+**What the operator does with the bundle.**
+
+```sh
+BUNDLE="apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app"
+
+# 1. the one-time code of the operator session
+target/release/oip-server --browser-login \
+    --ipc-socket "$STATE/s" --ipc-credential "$STATE/platform.credential"
+
+# 2. the bundle
+open "$BUNDLE"
+# the code of the session is entered in the window of the bundle
+
+# 3. the bundle is stopped with the signal of the operator
+pkill -TERM -f oip_dashboard.app
+```
+
+The window of the bundle is placed by the system; the bundle reports the
+placement in its log (`OIP-WINDOW …`). When the frame of the storyboard
+touches no visible screen — it belongs to the screen the bundle was generated
+for — the runner places the window in the centre of the main screen.
+
+**The launch agent is not part of this runbook.** Installing the application
+as a launch agent is a system service and needs an explicit operator
+authorization. The procedure above keeps the instance under the control of the
+operator, without OpenCode, with a reproducible start, stop, restart, backup
+and restore.
+
+## 10. The daemon of a historical release
+
+A local instance of an older release is a daemon of its own era. Its protected
+local IPC binds the clients to a **provisioned, enabled principal** of the era
+(`docs/architecture/oip-008-identity-authorization.md`); the actor with
+permissions and a source scope is the shape of OIP-007 and the era refuses it
+with `invalid protected local IPC configuration/path`. A daemon that is bound
+to a principal that does not exist in its store refuses the start with
+`IPC binding requires a provisioned enabled principal or explicit legacy mode`.
+
+The handover of a *running* historical instance is rehearsed by
+`tests/oip_historical_daemon.py`: the era starts, collects, answers the
+authorized reads of its principals, the release binary takes over the same
+store, and the historical binary serves the restored store again.
+
+## 11. What the receipts prove
 
 `docs/evidence/oip-operations/operations.json` records the measured result of
 the sequence above against a disposable instance, and
@@ -239,3 +294,12 @@ the status, the backup with its integrity check, the refused restore of a
 running instance, the stop, the restore, the start again, the restart, the
 stop and the three refusals of the personal installation together with the
 unchanged hash of the personal database.
+
+`docs/evidence/oip-macos-app/macos-app.json` records the measured result of the
+application bundle: the build, the start, the requests of the bundle, the
+refusal of the Core, the termination without an orphan and the start again.
+`docs/evidence/oip-historical-daemon/historical-daemon.json` records the
+measured result of the daemon handover: the refused shape of OIP-007, the
+started daemon of the era, the scoped reads of its principals, the collection,
+the takeover of the release binary and the restored store served by the era
+again.

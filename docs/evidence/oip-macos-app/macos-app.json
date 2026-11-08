@@ -1,0 +1,115 @@
+{
+  "schema": "oip-macos-app-v1",
+  "steps": [
+    "the Core serves the instance",
+    "the macOS bundle is built",
+    "the bundle asks the Core for the session",
+    "the window of the bundle is visible on a screen",
+    "the bundle terminates on SIGTERM",
+    "the bundle starts again and reaches the Core"
+  ],
+  "build_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:50326",
+  "build_seconds": 58.8,
+  "bundle": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
+  "bundle_bytes": 96963461,
+  "bundle_executable_sha256": "f8c59b1c28f78bc4a715724cf78b5fc46153ae9b60f24de9469351399a0c38a2",
+  "cfbundleidentifier": "org.openindustrial.oipDashboard",
+  "cfbundleshortversionstring": "0.3.0",
+  "cfbundleversion": "3",
+  "start": {
+    "log": "target/oip-macos-app/oip-macos-app.log",
+    "window_placement": [
+      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
+      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
+      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true"
+    ],
+    "label": "start",
+    "first_request_seconds": 0.8,
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/v2/organizations?offset=0&limit=100",
+        "status": 403
+      }
+    ],
+    "request_count": 1,
+    "api_successes": 0,
+    "answer_statuses": [
+      403
+    ]
+  },
+  "screenshot": "target/oip-macos-app/oip-macos-app.png",
+  "screenshot_captured": true,
+  "window": {
+    "window_id": 26874,
+    "owner": "oip_dashboard",
+    "title": "oip_dashboard",
+    "bounds": {
+      "x": 245.0,
+      "y": -1145.0,
+      "width": 1276.0,
+      "height": 854.0
+    },
+    "displays": [
+      {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1512.0,
+        "height": 982.0
+      },
+      {
+        "x": -494.0,
+        "y": -1440.0,
+        "width": 2560.0,
+        "height": 1440.0
+      }
+    ],
+    "on_screen": true,
+    "bytes": 212928
+  },
+  "window_placement_of_the_bundle": [
+    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
+    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
+    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true"
+  ],
+  "shutdown": {
+    "signal": "SIGTERM",
+    "terminated": true,
+    "seconds": 0.0,
+    "exit_code": -15,
+    "log_tail": "[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
+  },
+  "orphaned_processes": [],
+  "restart": {
+    "log": "target/oip-macos-app/oip-macos-app.log",
+    "window_placement": [
+      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
+      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
+      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
+      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true"
+    ],
+    "label": "restart",
+    "first_request_seconds": 0.5,
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/v2/organizations?offset=0&limit=100",
+        "status": 403
+      }
+    ],
+    "request_count": 1,
+    "api_successes": 0,
+    "answer_statuses": [
+      403
+    ]
+  },
+  "shutdown_after_restart": {
+    "signal": "SIGTERM",
+    "terminated": true,
+    "seconds": 0.0,
+    "exit_code": -15,
+    "log_tail": "[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
+  },
+  "status": "PASS",
+  "finished_utc": "2026-11-08T20:41:54Z"
+}

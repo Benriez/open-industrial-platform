@@ -1,0 +1,149 @@
+{
+  "schema": "oip-historical-daemon-v1",
+  "steps": [
+    {
+      "step": "provisioning",
+      "exit_code": 0
+    },
+    {
+      "step": "the OIP-007 shape",
+      "exit_code": 2
+    },
+    {
+      "step": "the era daemon",
+      "command": "--state-dir",
+      "exit_code": 0,
+      "stdout": {
+        "status": "started",
+        "pid": 4804,
+        "http_port": 64013,
+        "database": "/private/tmp/oip-historical-daemon-7oe3d7ia/core.sqlite",
+        "log": "/private/tmp/oip-historical-daemon-7oe3d7ia/state-historical/oip.log",
+        "ipc_credentials_provisioned": 0
+      },
+      "stderr": ""
+    },
+    {
+      "step": "the stop of the era daemon",
+      "command": "--state-dir",
+      "exit_code": 0,
+      "stdout": {
+        "status": "stopped",
+        "pid": 4804
+      },
+      "stderr": ""
+    },
+    {
+      "step": "the backup of the era",
+      "command": "--state-dir",
+      "exit_code": 0,
+      "stdout": {
+        "status": "backed up",
+        "source": "/private/tmp/oip-historical-daemon-7oe3d7ia/core.sqlite",
+        "backup": "/private/tmp/oip-historical-daemon-7oe3d7ia/state-historical/backups/20261108T201516Z.sqlite",
+        "bytes": 630784,
+        "integrity": "ok"
+      },
+      "stderr": ""
+    },
+    {
+      "step": "the release takeover",
+      "command": "--state-dir",
+      "exit_code": 0,
+      "stdout": {
+        "status": "started",
+        "pid": 4927,
+        "http_port": 64013,
+        "database": "/private/tmp/oip-historical-daemon-7oe3d7ia/core.sqlite",
+        "log": "/private/tmp/oip-historical-daemon-7oe3d7ia/state-release/oip.log",
+        "ipc_credentials_provisioned": 0
+      },
+      "stderr": ""
+    },
+    {
+      "step": "the restore",
+      "command": "--state-dir",
+      "exit_code": 0,
+      "stdout": {
+        "status": "restored",
+        "backup": "/private/tmp/oip-historical-daemon-7oe3d7ia/state-historical/backups/20261108T201516Z.sqlite",
+        "database": "/private/tmp/oip-historical-daemon-7oe3d7ia/core.sqlite",
+        "schema_version": "5",
+        "integrity": "ok"
+      },
+      "stderr": ""
+    },
+    {
+      "step": "the era daemon serves the restored store",
+      "command": "--state-dir",
+      "exit_code": 0,
+      "stdout": {
+        "status": "started",
+        "pid": 4944,
+        "http_port": 64013,
+        "database": "/private/tmp/oip-historical-daemon-7oe3d7ia/core.sqlite",
+        "log": "/private/tmp/oip-historical-daemon-7oe3d7ia/state-historical/oip.log",
+        "ipc_credentials_provisioned": 0
+      },
+      "stderr": ""
+    },
+    {
+      "step": "the stop of the restored era daemon",
+      "command": "--state-dir",
+      "exit_code": 0,
+      "stdout": {
+        "status": "stopped",
+        "pid": 4944
+      },
+      "stderr": ""
+    }
+  ],
+  "historical_binary": {
+    "path": "/Users/benny/Documents/OIP-Handoffs/core-0085-real-inventory-20261106T200219Z/oip0084-baseline-server",
+    "sha256": "73d70d8105914db20210c95268b5733ca2ec19c959c4c29fa57cb93c1935fe58"
+  },
+  "release_binary": {
+    "path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
+    "sha256": "76d18b6e14a329b365daca16fd970e431b5f05c3340320054453abaa82a26ccd"
+  },
+  "schema_after_provisioning": "3",
+  "oip007_shape_refused": {
+    "exit_code": 2,
+    "stderr": "error: the Core did not answer on its port within 30 seconds",
+    "log_excerpt": "Error: Custom { kind: InvalidInput, error: \"invalid protected local IPC configuration/path\" }",
+    "started": false
+  },
+  "simulators": 4,
+  "historical_daemon_pid": 4804,
+  "era_authorized_read": {
+    "principal": "reader-org-a",
+    "status": 200,
+    "sources": [
+      "source-a",
+      "source-b",
+      "source-c"
+    ]
+  },
+  "era_authorized_read_of_the_other_organization": {
+    "principal": "reader-org-b",
+    "status": 200,
+    "sources": [
+      "source-d"
+    ]
+  },
+  "era_read_without_credential": 403,
+  "historical_daemon_collects": true,
+  "observations_collected_by_the_historical_daemon": "131",
+  "schema_with_the_historical_daemon": "5",
+  "backup": "/private/tmp/oip-historical-daemon-7oe3d7ia/state-historical/backups/20261108T201516Z.sqlite",
+  "schema_of_the_backup": "5",
+  "observations_in_the_backup": "135",
+  "release_serves_the_handover": 200,
+  "schema_after_the_handover": "7",
+  "observations_after_the_handover": "135",
+  "schema_after_the_restore": "5",
+  "observations_after_the_restore": "135",
+  "observations_after_the_restored_daemon": "135",
+  "status": "PASS",
+  "finished_utc": "2026-11-08T20:15:17Z"
+}

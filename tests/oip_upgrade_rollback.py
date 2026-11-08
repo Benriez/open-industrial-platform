@@ -146,21 +146,18 @@ def main():
             ],
             "legacy_single_infrastructure": False,
         }, indent=2))
-        # The IPC configuration of the historical era knows the actor and the
-        # permissions of its time.
+        # The IPC configuration of the historical era binds the local clients
+        # to a provisioned, enabled principal (OIP-008). The actor with
+        # permissions and a source scope is the shape of OIP-007; the era
+        # refuses it, which is measured in tests/oip_historical_daemon.py.
         (work / "ipc-historical.json").write_text(json.dumps({
             "socket": str(work / "s-historical"),
             "max_sessions": 16,
             "clients": [{
                 "uid": os.getuid(),
                 "credential_file": str(work / "historical.credential"),
-                "policy": {"actor": "local-historical-reader",
-                           "permissions": ["inventory_read", "telemetry_read"],
-                           "sources": {"kind": "all"}},
+                "policy": {"principal": "reader-org-a"},
             }],
-            "rest_policy": {"actor": "local-rest-operator",
-                            "permissions": ["inventory_read", "telemetry_read"],
-                            "sources": {"kind": "all"}},
         }, indent=2))
         # The current era binds the local client to a provisioned principal.
         (work / "ipc-release.json").write_text(json.dumps({
@@ -193,14 +190,18 @@ def main():
         report["schema_historical"] = sqlite_value(database, "pragma user_version;")
         report["organizations_historical"] = sqlite_value(
             database, "select count(*) from organizations;")
-        # The daemon of the historical binary binds its local clients to the
-        # actor policy of its time. That binding is not rehearsed here: the
-        # subject of the rehearsal is the data store and its handover.
+        # The daemon of the historical binary is not started here: the
+        # subject of this rehearsal is the data store and its handover. The
+        # daemon itself is rehearsed in tests/oip_historical_daemon.py, which
+        # measures that the era refuses the actor shape of OIP-007 and starts
+        # with a credential bound to a provisioned, enabled principal.
         report["historical_daemon"] = {
             "rehearsed": False,
-            "reason": "the historical binary binds its local clients to the actor policy "
-                      "of its time and refuses a start without a provisioned principal of "
-                      "its own era; the data store and its handover are rehearsed instead",
+            "reason": "the daemon of the historical release is not started in this "
+                      "rehearsal; the rehearsal of the daemon handover is "
+                      "tests/oip_historical_daemon.py. The era binds the local clients to a "
+                      "provisioned, enabled principal; the actor/permissions shape of OIP-007 "
+                      "is refused by it.",
         }
 
         # 3. the state before the upgrade is backed up
