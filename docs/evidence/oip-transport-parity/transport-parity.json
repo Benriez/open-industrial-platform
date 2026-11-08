@@ -1,0 +1,69 @@
+{
+  "schema": "oip-transport-parity-v1",
+  "steps": [
+    "the instance runs with its collectors",
+    "the operator session is authorized",
+    "the three transports deliver the same projection",
+    "the projection carries nothing of the other organization",
+    "the transports refuse an unauthorized session"
+  ],
+  "projections": {
+    "rest": {
+      "revision": null,
+      "run_id": null,
+      "sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "devices": [
+        "device-a",
+        "device-b",
+        "device-c"
+      ],
+      "organizations": []
+    },
+    "sse": {
+      "revision": null,
+      "run_id": null,
+      "sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "devices": [
+        "device-a",
+        "device-b",
+        "device-c"
+      ],
+      "organizations": []
+    },
+    "mcp": {
+      "revision": null,
+      "run_id": null,
+      "sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "devices": [
+        "device-a",
+        "device-b",
+        "device-c"
+      ],
+      "organizations": []
+    }
+  },
+  "the_sse_event": "snapshot",
+  "the_three_transports_agree": true,
+  "the_projection_is_scoped": true,
+  "rest_without_a_session": 403,
+  "sse_without_a_session": {
+    "event": null,
+    "status": 403,
+    "payload": null
+  },
+  "the_transports_refuse_an_unauthorized_session": true,
+  "status": "PASS",
+  "finished_utc": "2026-11-08T23:13:03Z"
+}

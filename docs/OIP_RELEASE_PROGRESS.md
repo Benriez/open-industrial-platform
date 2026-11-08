@@ -1836,11 +1836,36 @@ operator the measured material for that decision.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 30 — the parity of the three transports of the current release
+
+**Status: PROVED on canonical `main`.**
+The gate G2 names the parity of REST, SSE and MCP. The milestone harnesses had proven it for the
+releases of their era; the current release binary had not been re-inventoried.
+
+`tests/oip_transport_parity.py` runs the release binary with four real collectors and compares
+the three transports for **the same principal**
+(`docs/evidence/oip-transport-parity/transport-parity.json`):
+
+| Transport | Route | Projection |
+|---|---|---|
+| REST | `/api/v2/snapshot` | `source-a`, `source-b`, `source-c` · `device-a`, `device-b`, `device-c` |
+| SSE | `/api/v2/stream` (the event `snapshot`) | the same |
+| MCP | the resource `oip://v2/snapshot/current` | the same |
+
+The three projections are **equal**, the projection contains nothing of the other organization
+(`source-d` appears in none of them), and the transports refuse what they must refuse: the REST
+route answers **403** without a session and the SSE stream answers **403** without a session — no
+payload at all.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-transport-parity/transport-parity.json` | the measured parity of REST, SSE and MCP of the current release for the same principal, and the refusal of the unauthorized session (iteration 30) |
 | `docs/evidence/oip-security-review/security-review.json` | the measured security review of the current release: 10 findings — 7 resolved, 2 mitigated, 1 escalated (the durability of the execution audit) (iteration 29) |
 | `docs/evidence/oip-device-connection/device-connection.json` | the measured verified connection of a device in the approved surface against the real Core and an owned loopback SSH fixture (iteration 28) |
 | `docs/evidence/oip-workstation-data/workstation-data.json` | the measured functional depth of the six workstations against the real Core: the real hierarchy, device, placement, nodes, events and settings, and no identifier of the other organization (iteration 27) |
