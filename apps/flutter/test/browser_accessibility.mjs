@@ -10,13 +10,22 @@
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE);
 import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 
-const base = process.argv[2];
-const outDir = process.argv[3];
-const code = process.argv[4];
+const base = process.argv[2] || process.env.OIP_URL;
+const outDir = process.argv[3] || process.env.OIP_BROWSER_EVIDENCE;
+let code = process.argv[4] || process.env.OIP_BROWSER_LOGIN_CODE;
 if (!base || !outDir) {
   console.error('usage: browser_accessibility.mjs <baseUrl> <outDir> [loginCode]');
   process.exit(2);
+}
+// The one-use code of the session is minted right before the run.
+if (!code && process.env.OIP_IPC_SOCKET && process.env.OIP_BROWSER_CREDENTIAL) {
+  const minted = JSON.parse(execFileSync(process.env.OIP_SERVER_BIN || 'target/release/oip-server', [
+    '--browser-login', '--ipc-socket', process.env.OIP_IPC_SOCKET,
+    '--ipc-credential', process.env.OIP_BROWSER_CREDENTIAL,
+  ], { encoding: 'utf8' }));
+  code = minted.login_code;
 }
 fs.mkdirSync(outDir, { recursive: true });
 

@@ -1,0 +1,128 @@
+{
+  "schema": "oip-global-context-receipt-v1",
+  "base": "http://127.0.0.1:54349",
+  "options_offered": 4,
+  "scope_per_workstation": [
+    {
+      "workstation": "overview",
+      "label": "Infrastructure A1"
+    },
+    {
+      "workstation": "devices",
+      "label": "Infrastructure A1"
+    },
+    {
+      "workstation": "network",
+      "label": "Infrastructure A1"
+    },
+    {
+      "workstation": "opcua",
+      "label": "Infrastructure A1"
+    },
+    {
+      "workstation": "diagnostics",
+      "label": "Infrastructure A1"
+    },
+    {
+      "workstation": "settings",
+      "label": "Infrastructure A1"
+    }
+  ],
+  "findings": [
+    {
+      "check": "browser-login accepted",
+      "ok": true,
+      "detail": "{\"status\":200}"
+    },
+    {
+      "check": "the selector starts in the unified view",
+      "ok": true,
+      "detail": "Alle berechtigten Infrastrukturen"
+    },
+    {
+      "check": "the global selection offers the individual infrastructures",
+      "ok": true,
+      "detail": "4 options"
+    },
+    {
+      "check": "the individual infrastructures are offered",
+      "ok": true,
+      "detail": "Infrastructure Organization A Infrastructure A1 global auswä | Infrastructure Organization A Infrastructure A1 global auswä | Infrastructure Organization A Infrastructure A1 global auswä | Infrastructure Organization A Infrastructure A2 global auswä"
+    },
+    {
+      "check": "the selection grants no permission",
+      "ok": true,
+      "detail": "an option offers another meaning"
+    },
+    {
+      "check": "the selector names the selected infrastructure",
+      "ok": true,
+      "detail": "Infrastructure A1"
+    },
+    {
+      "check": "the scoped projection shows the selected infrastructure",
+      "ok": true,
+      "detail": "the placement of the selection is missing"
+    },
+    {
+      "check": "the scoped projection hides the other infrastructure",
+      "ok": true,
+      "detail": "another infrastructure is still in the projection"
+    },
+    {
+      "check": "overview: the shared scope follows the selection",
+      "ok": true,
+      "detail": "Infrastructure A1"
+    },
+    {
+      "check": "devices: the shared scope follows the selection",
+      "ok": true,
+      "detail": "Infrastructure A1"
+    },
+    {
+      "check": "network: the shared scope follows the selection",
+      "ok": true,
+      "detail": "Infrastructure A1"
+    },
+    {
+      "check": "opcua: the shared scope follows the selection",
+      "ok": true,
+      "detail": "Infrastructure A1"
+    },
+    {
+      "check": "diagnostics: the shared scope follows the selection",
+      "ok": true,
+      "detail": "Infrastructure A1"
+    },
+    {
+      "check": "settings: the shared scope follows the selection",
+      "ok": true,
+      "detail": "Infrastructure A1"
+    },
+    {
+      "check": "the selector returns to the unified view",
+      "ok": true,
+      "detail": "Alle berechtigten Infrastrukturen"
+    },
+    {
+      "check": "the unified view shows every authorized infrastructure",
+      "ok": true,
+      "detail": "an authorized infrastructure is missing"
+    },
+    {
+      "check": "no browser JavaScript errors",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "console_errors": [],
+  "core_denials": [
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  ]
+}

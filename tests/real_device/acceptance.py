@@ -201,6 +201,25 @@ try:
             (OUT/'canonical-ui-visual.log').write_text(visual.stdout+visual.stderr)
             assert visual.returncode==0,'Canonical visual shell comparison failed'
             REPORT['canonical_ui_visual']=json.loads(visual_out.read_text())
+            # The global infrastructure context and the accessibility of the
+            # integrated workstations are proven against the same managed Core.
+            for name, script in (
+                    ('global-context', 'browser_global_context.mjs'),
+                    ('accessibility', 'browser_accessibility.mjs')):
+                evidence_dir = OUT / name
+                receipt = evidence_dir / (
+                    'global-context.json' if name == 'global-context'
+                    else 'accessibility.json')
+                result = subprocess.run(
+                    ['node', str(ROOT / 'apps/flutter/test' / script)],
+                    env=dict(env, OIP_BROWSER_EVIDENCE=str(evidence_dir)),
+                    cwd=ROOT, capture_output=True, text=True, timeout=600)
+                (OUT / f'{name}.log').write_text(result.stdout + result.stderr)
+                assert result.returncode == 0, \
+                    f'the {name} receipt failed: {result.stderr.strip()[-300:]}'
+                assert receipt.is_file(), f'the {name} receipt is missing'
+                REPORT[f'canonical_ui_{name.replace("-", "_")}'] = \
+                    json.loads(receipt.read_text())
             # The design gate proves reachability and auth. The established
             # onboarding journey separately proves its real side effect.
             onboarding_env=dict(env,OIP_BROWSER_EVIDENCE=str(OUT/'onboarding'))
