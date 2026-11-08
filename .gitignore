@@ -94,6 +94,7 @@ secrets/
 !/docs/evidence/oip0061/preview-process.json
 !/docs/evidence/oip-operations/operations.json
 !/docs/evidence/oip-accessibility/accessibility.json
+!/docs/evidence/oip-upgrade-rollback/upgrade-rollback.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json

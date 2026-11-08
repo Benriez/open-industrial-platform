@@ -125,7 +125,41 @@ database and renamed over it.
 
 After a restore, start the instance again and check the log.
 
-## 6. The personal installation is never touched
+## 6. Upgrade and rollback
+
+An upgrade of a local instance is a handover of the data store to the new
+binary. It is rehearsed by `tests/oip_upgrade_rollback.py` against a protected
+historical binary and the current release binary:
+
+```sh
+python3 tests/oip_upgrade_rollback.py --evidence target/oip-upgrade-rollback
+```
+
+The rehearsal proves that the release binary takes over the data store of the
+previous release, that the schema is migrated and that the data of the store
+survives, and that the backup taken before the upgrade restores the previous
+state, which the previous release adopts again.
+
+The measured result: the historical binary provisions the store at schema 3
+with two organizations; the release binary serves the same store, migrates it
+to schema 7 and keeps the organizations; the restore brings the schema back to
+3 and the historical binary adopts the restored store.
+
+Three rules of the handover were found while proving it and are part of the
+procedure:
+
+* **The runtime sources must exactly match the provisioned registry.** A
+  configuration whose sources differ from the provisioned ones is refused with
+  `runtime sources must exactly match provisioned registry`.
+* **The data store must be owner-private.** A store that anybody but the owner
+  can read is refused with `database/sidecar must be owned by operator with
+  private permissions`.
+* **The configuration of an instance is not portable between releases.** A
+  historical binary refuses the fields of a newer configuration and vice
+  versa. The upgrade therefore keeps the configuration of the era of the
+  instance until the instance has been migrated.
+
+## 7. The personal installation is never touched
 
 The personal installation of the operator lives in
 `~/Library/Application Support/OIP/real/core.sqlite`. The tool refuses every
@@ -143,17 +177,19 @@ The activation of the real installation is an operator decision with its own
 backup procedure (see `docs/OIP_RELEASE_PROGRESS.md`, N4). This runbook does
 not perform it.
 
-## 7. Installation on macOS
+## 8. Installation on macOS
 
 Installing the application as a launch agent is **not** part of this runbook:
 installing a system service needs an explicit operator authorization. The
 procedure above keeps the instance under the control of the operator, without
 OpenCode, with a reproducible start, stop, restart, backup and restore.
 
-## 8. What the receipts prove
+## 9. What the receipts prove
 
 `docs/evidence/oip-operations/operations.json` records the measured result of
-the sequence above against a disposable instance: the provisioning, the start,
+the sequence above against a disposable instance, and
+`docs/evidence/oip-upgrade-rollback/upgrade-rollback.json` the result of the
+upgrade and the rollback: the provisioning, the start,
 the status, the backup with its integrity check, the refused restore of a
 running instance, the stop, the restore, the start again, the restart, the
 stop and the three refusals of the personal installation together with the
