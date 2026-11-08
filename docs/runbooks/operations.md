@@ -159,7 +159,52 @@ procedure:
   versa. The upgrade therefore keeps the configuration of the era of the
   instance until the instance has been migrated.
 
-## 7. The personal installation is never touched
+## 7. The archive of a device
+
+The archive of a device is an **offline operation** of the Core. The managed session refuses it
+with `OFFLINE_ARCHIVE_REQUIRED` ("Archive remains an explicit offline operation"), because an
+archive changes the registry while the Core is serving. The supported path applies the archive
+with the Core stopped:
+
+```sh
+# 1. the device is registered and known to the operator
+# 2. the Core is stopped
+tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" stop
+
+# 3. the archive is written as the offline plan of the Core
+cat > "$STATE/archive.json" <<'JSON'
+{
+  "principal": "reader-org-a",
+  "changes": [
+    { "operation": "archive", "id": "<device-id>", "expected_revision": 1 }
+  ]
+}
+JSON
+
+# 4. the plan is applied with the explicit flag of the Core
+oip-server --config "$CORE_CONFIG" --inventory-plan "$STATE/archive.json" --inventory-apply
+
+# 5. the Core starts again
+tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" \
+    --ipc-config "$IPC_CONFIG" --binary target/release/oip-server start
+```
+
+The Core answers with the plan it applied: `{"applied": true, "apply_mode":
+"offline_requires_restart"}` and the action `{"outcome": "archive"}`. The revision of the device
+is the guard of the write, exactly as in the online update.
+
+**What the archive means.** The record of the device, its identity and its metadata stay intact —
+the archive is not a deletion — and the device collects no measurements anymore. An archived device
+is not part of the active inventory: the read only shows it when the archived ones are asked for
+(`include_archived=true`). The measurements of the device that were collected before the archive
+remain in the history.
+
+The rehearsal is `tests/oip_offline_archive.py`; its receipt is
+`docs/evidence/oip-offline-archive/offline-archive.json`. It proves the refusal of the managed
+session, the application of the offline plan, the hiding of the archived device from the active
+inventory and the survival of its identity and its metadata.
+
+## 8. The personal installation is never touched
 
 The personal installation of the operator lives in
 `~/Library/Application Support/OIP/real/core.sqlite`. The tool refuses every
@@ -177,14 +222,14 @@ The activation of the real installation is an operator decision with its own
 backup procedure (see `docs/OIP_RELEASE_PROGRESS.md`, N4). This runbook does
 not perform it.
 
-## 8. Installation on macOS
+## 9. Installation on macOS
 
 Installing the application as a launch agent is **not** part of this runbook:
 installing a system service needs an explicit operator authorization. The
 procedure above keeps the instance under the control of the operator, without
 OpenCode, with a reproducible start, stop, restart, backup and restore.
 
-## 9. What the receipts prove
+## 10. What the receipts prove
 
 `docs/evidence/oip-operations/operations.json` records the measured result of
 the sequence above against a disposable instance, and

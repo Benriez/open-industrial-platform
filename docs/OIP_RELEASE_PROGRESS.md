@@ -1486,6 +1486,33 @@ machine and explicitly not an SLA.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 20 — the offline archive of a device is rehearsed
+
+**Status: PROVED on canonical `main`.**
+The archive of a device is an offline operation of the Core: the managed session refuses it with
+`OFFLINE_ARCHIVE_REQUIRED` ("Archive remains an explicit offline operation"), because an archive
+changes the registry while the Core is serving. The surface therefore names the procedure instead
+of offering a write that the Core would refuse — and the procedure itself was not proven yet.
+
+**The rehearsal.** `tests/oip_offline_archive.py` runs against a disposable instance of the release
+binary: the device is registered through the authorized managed session, the managed session
+refuses the online archive with its named reason, the Core is stopped, the archive is applied with
+the offline plan of the Core (`--inventory-plan … --inventory-apply`), and the Core starts again.
+Measured: the offline plan is applied (`applied: true`, the action `{"outcome": "archive"}`), the
+archived device advances its revision from 1 to 2, keeps its identity and its metadata, and is
+**no longer part of the active inventory** — it only appears when the archived ones are asked for.
+
+The procedure is documented in `docs/runbooks/operations.md` §7, next to the update of a device,
+and the receipt is `docs/evidence/oip-offline-archive/offline-archive.json`.
+
+Three defects of the rehearsal were found while proving it and are part of the procedure: the
+offline plan needs the explicit `--inventory-apply` flag (without it the Core only proves that the
+archive is admissible), the browser session lives in the memory of the Core and ends with its
+restart, and the operator needs the scoped inventory permission of the plan.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |

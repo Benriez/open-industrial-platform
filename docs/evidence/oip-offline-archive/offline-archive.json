@@ -1,0 +1,33 @@
+{
+  "schema": "oip-offline-archive-v1",
+  "steps": [
+    "the instance runs",
+    "the device is registered through the managed session",
+    "the Core is stopped",
+    "the archive is applied with the offline plan",
+    "the Core serves the archived device again"
+  ],
+  "online_archive_refused": "OFFLINE_ARCHIVE_REQUIRED",
+  "offline_apply": {
+    "actions": [
+      {
+        "id": "offline-archive-device",
+        "outcome": "archive",
+        "expected_revision": 1
+      }
+    ],
+    "applied": true,
+    "apply_mode": "offline_requires_restart",
+    "audit": "local OS operator authority separate from selected policy principal; no values logged"
+  },
+  "archived_device_hidden_from_the_active_inventory": true,
+  "archived_device": {
+    "id": "offline-archive-device",
+    "registration": "archived",
+    "revision": 2,
+    "identity_preserved": true,
+    "metadata_preserved": true
+  },
+  "status": "PASS",
+  "finished_utc": "2026-11-08T19:23:00Z"
+}
