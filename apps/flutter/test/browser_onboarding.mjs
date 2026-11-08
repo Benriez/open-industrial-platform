@@ -72,7 +72,7 @@ try {
   await page.getByRole('checkbox',{name:'Ich bestätige die reine Inventarregistrierung ohne Verbindung.',exact:true}).click();
   await page.getByRole('button',{name:'Nur im Inventar registrieren',exact:true}).click();
   await page.getByRole('button',{name:'Zum Geräteinventar',exact:true}).click();
-  const manualPage=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture')).json();
+  const manualPage=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture',{timeout:60000})).json();
   assert.equal(manualPage.items.length,1);assert.equal(manualPage.items[0].telemetry,'no_collector');assert.equal(manualPage.items[0].connectivity,'unknown');assert.equal(manualPage.items[0].health,'not_evaluated');
   // The device row is an InkWell inside the Flutter view. Its semantics node is
   // a container node, so it carries `pointer-events: none` and a Playwright
@@ -139,7 +139,7 @@ try {
   // The panel must show the measurements the Core actually received over SSH.
   // The expected values are read back from the Core, never invented here, and
   // they must be the same values that the operator sees in the browser.
-  const observed=(await (await context.request.get(base+'/api/v2/device-connections?device_id=browser-existing')).json());
+  const observed=(await (await context.request.get(base+'/api/v2/device-connections?device_id=browser-existing',{timeout:60000})).json());
   const observations=observed.connection.observations;
   assert(Array.isArray(observations)&&observations.length>0,'Core reports no authorized observations');
   const os=observations.find(o=>o.metric_id==='host.os');
@@ -154,7 +154,7 @@ try {
   // The persisted history of the device must be reachable in the device view.
   // The samples are read back from the Core, never invented here, and the
   // receive times on the screen must be the receive times the Core stored.
-  const history=(await (await context.request.get(base+'/api/v2/observations/history?device=browser-existing&limit=20')).json());
+  const history=(await (await context.request.get(base+'/api/v2/observations/history?device=browser-existing&limit=20',{timeout:60000})).json());
   const stored=history.items.filter(i=>i.category==='observation').map(i=>i.record.observation);
   assert(stored.length>0,'the Core persisted no observation for the device');
   assert(stored.every(o=>o.freshness==='stale'),'a stored sample must never be reported as live');
@@ -180,7 +180,9 @@ try {
   const cookies=await context.cookies();assert(cookies.some(c=>c.name==='oip_session'&&c.httpOnly&&c.sameSite==='Strict'));
   assert.equal(await page.evaluate(()=>localStorage.length),0);
   assert.equal(await page.evaluate(()=>sessionStorage.length),0);
-  const loaded=Buffer.from(await (await context.request.get(base+'/main.dart.js')).body());
+  // The web release is several megabytes; the loopback of a local machine
+  // delivers them slowly. The download gets the time of the first paint.
+  const loaded=Buffer.from(await (await context.request.get(base+'/main.dart.js',{timeout:180000})).body());
   const local=await readFile(resolve(process.env.OIP_WEB_DIR,'main.dart.js'));
   assert.equal(createHash('sha256').update(loaded).digest('hex'),createHash('sha256').update(local).digest('hex'));
   await page.getByRole('button',{name:'Details schließen',exact:true}).click();
@@ -222,9 +224,9 @@ try {
   // labels of the rendered surface, not the source of the client.
   await page.getByRole('button',{name:'Navigation Diagnose & Ereignisse',exact:true}).click();
   await page.waitForTimeout(1500);
-  const healthPage=(await (await context.request.get(base+'/api/v2/diagnostics/health-history?limit=50')).json());
-  const gapsPage=(await (await context.request.get(base+'/api/v2/diagnostics/gaps?limit=50')).json());
-  const eventsPage=(await (await context.request.get(base+'/api/v2/events')).json());
+  const healthPage=(await (await context.request.get(base+'/api/v2/diagnostics/health-history?limit=50',{timeout:60000})).json());
+  const gapsPage=(await (await context.request.get(base+'/api/v2/diagnostics/gaps?limit=50',{timeout:60000})).json());
+  const eventsPage=(await (await context.request.get(base+'/api/v2/events',{timeout:60000})).json());
   assert(Array.isArray(healthPage.items)&&Array.isArray(gapsPage.items),'the Core answered no diagnostic evidence page');
   const status=eventsPage.diagnosis_history_status;
   const statusLabel=({not_implemented:'Diagnosehistorie: nicht implementiert',demo_only:'Diagnosehistorie: nur Demo'})[status]||('Diagnosehistorie: '+status);
