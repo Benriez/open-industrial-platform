@@ -21,7 +21,11 @@ os.environ['PLAYWRIGHT_MODULE']=str(_browser_module)
 config.update(sources=[],web_dir=os.environ.get('OIP_WEB_DIR'))
 if os.environ.get('OIP_CANONICAL_UI_GATE'):
     # The managed evidence must use binaries built from this exact worktree.
-    built=subprocess.run(['cargo','build','-p','oip-server','--example','mcp_probe'],
+    # The binary that is executed and the probe next to it are built from the
+    # current source, in the profile of the binary that is tested.
+    profile=['--release'] if BIN.parent.name=='release' else []
+    built=subprocess.run(['cargo','build','-p','oip-server',*profile,
+                          '--bin','oip-server','--example','mcp_probe'],
                          cwd=ROOT,capture_output=True,text=True,timeout=1800)
     (OUT/'canonical-core-build.log').write_text(built.stdout+built.stderr)
     assert built.returncode==0,'Canonical oip-server/mcp_probe build failed'
