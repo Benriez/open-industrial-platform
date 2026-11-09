@@ -2,23 +2,46 @@
   "schema": "oip-record-integrity-v1",
   "steps": [
     "every cited receipt exists",
+    "every path that the record names exists",
     "every receipt of the release is cited"
   ],
-  "the_cited_paths": 41,
+  "the_cited_paths": 42,
   "the_citations": {
-    "the_cited": 41,
+    "the_cited": 42,
     "the_missing_on_disk": [],
     "the_present_but_untracked": []
   },
+  "the_paths": {
+    "the_dangling": [],
+    "the_paths_of_the_build_tree": [
+      "target/conformance",
+      "target/oip-canonical-e2e/browser/report.json",
+      "target/oip-canonical-e2e/report.json",
+      "target/oip-canonical-regression-final/",
+      "target/oip-canonical-regression-final2/",
+      "target/oip-canonical-ui-acceptance/",
+      "target/oip-canonical-ui-gate-precheck/",
+      "target/oip-canonical-ui-regression-final/",
+      "target/oip-canonical-ui-regression-run/",
+      "target/oip-canonical-ui-skip-control/",
+      "target/oip-conformance-e2e/report.json",
+      "target/oip-real-device-e2e/browser/report.json",
+      "target/oip-ui-missing-archive-receipt.json",
+      "target/oip008-ui-canonical/ui-regression.json",
+      "target/release/oip-server"
+    ],
+    "the_paths_of_the_build_tree_in_the_ledger": [],
+    "the_note": "a path of the build tree is not a receipt: the ledger must not present a directory of a build as the evidence of a claim. The artefacts of the release live in the build tree by nature and are named by the manifest."
+  },
   "the_receipts_of_the_release": {
-    "the_present": 37,
-    "the_cited": 37,
+    "the_present": 38,
+    "the_cited": 38,
     "the_orphaned": []
   },
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "78dcad2814d4c7af7c98edd486ab0658626039a2",
-  "the_tree": "b761c4b6487d12de025d360691a678f2f69d86dd",
+  "the_revision": "4841f2f7918ca755a6da3b44c235ffc118848490",
+  "the_tree": "c5a091f3ff9662368b85c3f8cf1e248b671bc476",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-09T18:31:53Z"
+  "finished_utc": "2026-11-09T19:57:32Z"
 }
