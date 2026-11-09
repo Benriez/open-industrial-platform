@@ -1,0 +1,39 @@
+{
+  "schema": "oip-session-lifetime-v1",
+  "steps": [
+    "the instance runs",
+    "the expired one-time code is refused",
+    "the session of the operator is authorized",
+    "the expired session is refused"
+  ],
+  "the_code_issued_at": 1794189905.405205,
+  "the_expired_code": {
+    "status": 403,
+    "code": "PERMISSION_DENIED",
+    "waited_seconds": 130
+  },
+  "the_session_authorized_at": 1794190035.6444988,
+  "the_session_before": {
+    "status": 200,
+    "authenticated": true
+  },
+  "the_session_after": {
+    "status": 200,
+    "authenticated": false,
+    "code": null
+  },
+  "the_management_read_after": {
+    "status": 403,
+    "code": "PERMISSION_DENIED"
+  },
+  "the_session_lifetime": {
+    "measured": true,
+    "the_promised_seconds": 1800,
+    "the_checked_after_seconds": 1830,
+    "the_session_is_authenticated": false,
+    "the_management_read": 403,
+    "the_refusal": "PERMISSION_DENIED"
+  },
+  "status": "PASS",
+  "finished_utc": "2026-11-09T02:37:45Z"
+}

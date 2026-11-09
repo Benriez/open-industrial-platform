@@ -2125,11 +2125,36 @@ principal needs the permission in the scope, the metadata belongs to the platfor
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 39 — the lifetimes of the session and of the one-time code
+
+**Status: PROVED on canonical `main`.**
+The operator login promises the operator two things: the one-time code is valid for **120 seconds**
+and may be used once, and the session ends after **30 minutes**. The Core keeps both as
+constants; nothing proved that the promise of the surface holds.
+
+`tests/oip_session_lifetime.py` measures both against the **real Core** with the **real**
+lifetimes — nothing is shortened, because a shortened lifetime would prove nothing
+(`docs/evidence/oip-session-lifetime/session-lifetime.json`):
+
+| Promise | Measurement |
+|---|---|
+| the code is valid for 120 s | a code that was issued 130 s ago is **refused**: 403 `PERMISSION_DENIED` |
+| the session ends after 30 minutes | the session is checked 1 830 s after its authorization: the session route answers `authenticated: false` and the **management read is refused with 403 `PERMISSION_DENIED`** |
+
+The second measurement is the one that matters: the session route reports the state of the
+session (an expired session is "not authenticated"), while the management read is the proof that
+the identity is gone. The Core prunes the expired sessions on every check, so the identity of the
+operator cannot outlive its lifetime.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-session-lifetime/session-lifetime.json` | the measured lifetimes of the one-time code (120 s) and of the session (30 min) against the real Core: both promises of the operator login hold (iteration 39) |
 | `docs/evidence/oip-settings-offline/settings-offline.json` | the measured offline change of a setting of the instance: the change, the guard of the revision, the permission, the validation and the effect at the next start (iteration 38) |
 | `docs/evidence/oip-documented-plan/documented-plan.json` | the measured example of the plan in the runbook: it provisions an instance, the instance answers and the operator of the example authorizes the session (iteration 36) |
 | `docs/evidence/oip-activation-dry-run/activation-dry-run.json` | the measured dry run of the activation of the release on a copy of the store of the operator: the migration is accepted, nothing is lost, the personal installation is unchanged (iteration 35) |
