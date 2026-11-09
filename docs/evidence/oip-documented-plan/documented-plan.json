@@ -25,5 +25,8 @@
   "the_login": 200,
   "the_principal_of_the_session": true,
   "status": "PASS",
-  "finished_utc": "2026-11-09T01:28:02Z"
+  "the_revision": "c5951c3480fc47a8779196141c36b975de4a89e8",
+  "the_tree": "1fc951502feac914d8fea6c32b4c51290704e924",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-09T03:34:54Z"
 }
