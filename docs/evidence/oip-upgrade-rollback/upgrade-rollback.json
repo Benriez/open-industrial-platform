@@ -7,7 +7,7 @@
       "stdout": {
         "status": "provisioned",
         "plan": "/Users/benny/Code/open-industrial-platform/examples/multi-infrastructure-plan.json",
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/core.sqlite",
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-5qcj3a86/core.sqlite",
         "result": "{\"schema_version\":3,\"organizations\":2,\"sources\":4,\"idempotent\":false,\"legacy_migrated\":false}"
       },
       "stderr": ""
@@ -16,23 +16,11 @@
       "command": "--state-dir",
       "exit_code": 0,
       "stdout": {
-        "status": "backed up",
-        "source": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/core.sqlite",
-        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/state-historical/backups/20261108T204528Z.sqlite",
-        "bytes": 278528,
-        "integrity": "ok"
-      },
-      "stderr": ""
-    },
-    {
-      "command": "--state-dir",
-      "exit_code": 0,
-      "stdout": {
         "status": "started",
-        "pid": 22407,
-        "http_port": 53927,
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/core.sqlite",
-        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/state-release/oip.log",
+        "pid": 75768,
+        "http_port": 49189,
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-5qcj3a86/core.sqlite",
+        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-5qcj3a86/state-historical/oip.log",
         "ipc_credentials_provisioned": 1
       },
       "stderr": ""
@@ -42,7 +30,41 @@
       "exit_code": 0,
       "stdout": {
         "status": "stopped",
-        "pid": 22407
+        "pid": 75768
+      },
+      "stderr": ""
+    },
+    {
+      "command": "--state-dir",
+      "exit_code": 0,
+      "stdout": {
+        "status": "backed up",
+        "source": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-5qcj3a86/core.sqlite",
+        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-5qcj3a86/state-historical/backups/20261109T011940Z.sqlite",
+        "bytes": 368640,
+        "integrity": "ok"
+      },
+      "stderr": ""
+    },
+    {
+      "command": "--state-dir",
+      "exit_code": 0,
+      "stdout": {
+        "status": "started",
+        "pid": 75809,
+        "http_port": 49189,
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-5qcj3a86/core.sqlite",
+        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-5qcj3a86/state-release/oip.log",
+        "ipc_credentials_provisioned": 1
+      },
+      "stderr": ""
+    },
+    {
+      "command": "--state-dir",
+      "exit_code": 0,
+      "stdout": {
+        "status": "stopped",
+        "pid": 75809
       },
       "stderr": ""
     },
@@ -51,9 +73,9 @@
       "exit_code": 0,
       "stdout": {
         "status": "restored",
-        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/state-historical/backups/20261108T204528Z.sqlite",
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/core.sqlite",
-        "schema_version": "3",
+        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-5qcj3a86/state-historical/backups/20261109T011940Z.sqlite",
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-5qcj3a86/core.sqlite",
+        "schema_version": "5",
         "integrity": "ok"
       },
       "stderr": ""
@@ -64,8 +86,8 @@
       "stdout": {
         "status": "provisioned",
         "plan": "/Users/benny/Code/open-industrial-platform/examples/multi-infrastructure-plan.json",
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/core.sqlite",
-        "result": "{\"schema_version\":3,\"organizations\":2,\"sources\":4,\"idempotent\":true,\"legacy_migrated\":false}"
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-5qcj3a86/core.sqlite",
+        "result": "{\"schema_version\":5,\"organizations\":2,\"sources\":4,\"idempotent\":true,\"legacy_migrated\":false}"
       },
       "stderr": ""
     }
@@ -76,22 +98,74 @@
   },
   "release_binary": {
     "path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
-    "sha256": "76d18b6e14a329b365daca16fd970e431b5f05c3340320054453abaa82a26ccd"
+    "sha256": "7576e94b782c40e3d3522f69fe7f2efd4c37e5e0ed30e3ba8599bbb6f5526846"
   },
   "schema_after_provisioning": "3",
-  "schema_historical": "3",
+  "the_historical_daemon_collected": true,
+  "schema_historical": "5",
   "organizations_historical": "2",
+  "the_inventory_before_the_handover": {
+    "organizations": "2",
+    "infrastructures": "3",
+    "sites": "4",
+    "source_placements": "4",
+    "principals": "7",
+    "read_roles": "1",
+    "role_bindings": "6",
+    "inventory_devices": null,
+    "observations": "14",
+    "collection_events": "16",
+    "data_gaps": "2",
+    "source_health_history": "14",
+    "settings": "0",
+    "device_connections": null
+  },
+  "the_observation_keys_before": 14,
   "historical_daemon": {
     "rehearsed": false,
     "reason": "the daemon of the historical release is not started in this rehearsal; the rehearsal of the daemon handover is tests/oip_historical_daemon.py. The era binds the local clients to a provisioned, enabled principal; the actor/permissions shape of OIP-007 is refused by it."
   },
-  "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-ggf5wcyu/state-historical/backups/20261108T204528Z.sqlite",
+  "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-5qcj3a86/state-historical/backups/20261109T011940Z.sqlite",
   "http_release": 200,
   "schema_release": "7",
   "organizations_release": "2",
   "upgrade_changed_the_schema": true,
-  "schema_after_rollback": "3",
+  "the_inventory_after_the_handover": {
+    "organizations": "2",
+    "infrastructures": "3",
+    "sites": "4",
+    "source_placements": "4",
+    "principals": "7",
+    "read_roles": "1",
+    "role_bindings": "6",
+    "inventory_devices": "4",
+    "observations": "14",
+    "collection_events": "16",
+    "data_gaps": "2",
+    "source_health_history": "18",
+    "settings": "0",
+    "device_connections": "0"
+  },
+  "the_observation_keys_after": 14,
+  "the_observation_keys_preserved": true,
+  "schema_after_rollback": "5",
+  "the_inventory_after_the_rollback": {
+    "organizations": "2",
+    "infrastructures": "3",
+    "sites": "4",
+    "source_placements": "4",
+    "principals": "7",
+    "read_roles": "1",
+    "role_bindings": "6",
+    "inventory_devices": null,
+    "observations": "14",
+    "collection_events": "16",
+    "data_gaps": "2",
+    "source_health_history": "14",
+    "settings": "0",
+    "device_connections": null
+  },
   "historical_adopts_the_restored_store": true,
   "status": "PASS",
-  "finished_utc": "2026-11-08T20:45:28Z"
+  "finished_utc": "2026-11-09T01:19:41Z"
 }

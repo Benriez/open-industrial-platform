@@ -35,6 +35,7 @@ import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TOOL = ROOT / "tools" / "oip_ops.py"
+SIMULATOR = ROOT / "target/debug/oip-simulated-server"
 # The protected historical binary of the canonical regression. It is used only
 # when the hash of the file is the recorded hash.
 BASELINE = pathlib.Path(
@@ -67,6 +68,33 @@ def sqlite_value(database, statement):
     result = subprocess.run(["/usr/bin/sqlite3", "-batch", "-noheader", str(database), statement],
                             capture_output=True, text=True, timeout=60)
     return result.stdout.strip()
+
+
+def inventory(database):
+    """The whole inventory of the store.
+
+    The upgrade of an instance must not lose anything the operator owns: the
+    hierarchy, the devices, the measurements, the events and the documented
+    gaps.
+    """
+    tables = ["organizations", "infrastructures", "sites", "source_placements",
+              "principals", "read_roles", "role_bindings", "inventory_devices",
+              "observations", "collection_events", "data_gaps", "source_health_history",
+              "settings", "device_connections"]
+    counts = {}
+    for table in tables:
+        value = sqlite_value(database, f"select count(*) from {table};")
+        # A table that the era of the store does not know yet is absent, not
+        # empty: the migration creates it.
+        counts[table] = value if value != "" else None
+    return counts
+
+
+def distinct_keys(database, table, column):
+    result = subprocess.run(["/usr/bin/sqlite3", "-batch", "-noheader", str(database),
+                             f"select distinct {column} from {table} order by {column};"],
+                            capture_output=True, text=True, timeout=120)
+    return set(line for line in result.stdout.splitlines() if line)
 
 
 def free_port():
@@ -117,8 +145,10 @@ def main():
 
     work = pathlib.Path(tempfile.mkdtemp(prefix="oip-upgrade-")).resolve()
     work.chmod(0o700)
+    simulators = []
     try:
         port = free_port()
+        source_ports = [free_port() for _ in range(4)]
         database = work / "core.sqlite"
         # The configuration of the historical era: four sources with their own
         # namespace and distinct endpoints, no field the historical binary does
@@ -128,7 +158,7 @@ def main():
             "http_port": port,
             "sources": [
                 {"id": f"source-{letter}", "name": f"Local simulation {letter}",
-                 "endpoint": f"opc.tcp://127.0.0.1:{15860 + index}", "namespace": 2}
+                 "endpoint": f"opc.tcp://127.0.0.1:{source_ports[index]}", "namespace": 2}
                 for index, letter in enumerate("abcd")
             ],
             "legacy_single_infrastructure": False,
@@ -141,7 +171,7 @@ def main():
             "http_port": port,
             "sources": [
                 {"id": f"source-{letter}", "name": f"Local simulation {letter}",
-                 "endpoint": f"opc.tcp://127.0.0.1:{15860 + index}", "namespace": 2}
+                 "endpoint": f"opc.tcp://127.0.0.1:{source_ports[index]}", "namespace": 2}
                 for index, letter in enumerate("abcd")
             ],
             "legacy_single_infrastructure": False,
@@ -179,6 +209,16 @@ def main():
                              "--binary", binary, *arguments],
                             expect_success=expect_success)
 
+        # The collectors of the four sources: the instance of the operator is
+        # not empty. The upgrade must preserve the data of a live instance.
+        simulators = []
+        for index, simulator_port in enumerate(source_ports):
+            simulators.append(subprocess.Popen(
+                [str(SIMULATOR), "--port", str(simulator_port), "--seed", str(42 + index * 7),
+                 "--tick-ms", "250"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+        time.sleep(2)
+
         # 1. the historical binary provisions the data store
         step = tool(str(BASELINE), "core-historical.json", "ipc-historical.json",
                     state_h, "provision-plan", "--plan",
@@ -186,10 +226,31 @@ def main():
         report["steps"].append(step)
         report["schema_after_provisioning"] = sqlite_value(database, "pragma user_version;")
 
+        # 1b. the daemon of the era collects, so the store of the handover is
+        # a live instance and not an empty shell.
+        step = tool(str(BASELINE), "core-historical.json", "ipc-historical.json",
+                    state_h, "start")
+        report["steps"].append(step)
+        deadline = time.monotonic() + 120
+        while time.monotonic() < deadline:
+            if sqlite_value(database, "select count(*) from observations;") not in ("", "0"):
+                break
+            time.sleep(1)
+        step = tool(str(BASELINE), "core-historical.json", "ipc-historical.json",
+                    state_h, "stop")
+        report["steps"].append(step)
+        report["the_historical_daemon_collected"] = \
+            int(sqlite_value(database, "select count(*) from observations;")) > 0
+        assert report["the_historical_daemon_collected"], \
+            "the daemon of the era collected nothing: the handover would be an empty shell"
+
         # 2. the state of the historical store before the handover
         report["schema_historical"] = sqlite_value(database, "pragma user_version;")
         report["organizations_historical"] = sqlite_value(
             database, "select count(*) from organizations;")
+        report["the_inventory_before_the_handover"] = inventory(database)
+        keys_before = distinct_keys(database, "observations", "observation_key")
+        report["the_observation_keys_before"] = len(keys_before)
         # The daemon of the historical binary is not started here: the
         # subject of this rehearsal is the data store and its handover. The
         # daemon itself is rehearsed in tests/oip_historical_daemon.py, which
@@ -224,6 +285,28 @@ def main():
             report["schema_release"] != report["schema_historical"])
         assert report["organizations_release"] == report["organizations_historical"], \
             "the upgrade lost the data of the store"
+        # The whole inventory of the operator must survive the upgrade.
+        after = inventory(database)
+        report["the_inventory_after_the_handover"] = after
+        for table, count in report["the_inventory_before_the_handover"].items():
+            if count is None:
+                # The table did not exist in the era of the store: the
+                # migration creates it.
+                assert after[table] is not None, \
+                    f"the upgrade did not create {table}"
+                continue
+            if table in ("observations", "collection_events", "data_gaps",
+                         "source_health_history"):
+                assert int(after[table]) >= int(count), \
+                    f"the upgrade lost {table}: {count} -> {after[table]}"
+                continue
+            assert after[table] == count, \
+                f"the upgrade changed {table}: {count} -> {after[table]}"
+        keys_after = distinct_keys(database, "observations", "observation_key")
+        report["the_observation_keys_after"] = len(keys_after)
+        report["the_observation_keys_preserved"] = keys_before.issubset(keys_after)
+        assert report["the_observation_keys_preserved"], \
+            "the upgrade lost observations of the historical instance"
 
         # 5. the rollback restores the previous state and the previous binary
         step = tool(args.release_binary, "core-release.json", "ipc-release.json",
@@ -235,6 +318,17 @@ def main():
         report["schema_after_rollback"] = sqlite_value(database, "pragma user_version;")
         assert report["schema_after_rollback"] == report["schema_historical"], \
             "the rollback did not restore the previous schema"
+        # The restore is exact: the inventory of the backup and the inventory
+        # of the restored store are the same.
+        restored = inventory(database)
+        report["the_inventory_after_the_rollback"] = restored
+        for table, count in report["the_inventory_before_the_handover"].items():
+            if count is None:
+                assert restored[table] is None, \
+                    f"the rollback kept the table {table} that the era did not know"
+                continue
+            assert restored[table] == count, \
+                f"the rollback changed {table}: {count} -> {restored[table]}"
         # The historical binary adopts the restored store again: the rollback
         # leaves an instance the previous release can serve.
         step = tool(str(BASELINE), "core-historical.json", "ipc-historical.json",
@@ -250,6 +344,13 @@ def main():
         report["status"] = "FAIL"
         report["error"] = str(error)
     finally:
+        for simulator in simulators:
+            if simulator.poll() is None:
+                simulator.terminate()
+                try:
+                    simulator.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    simulator.kill()
         if report.get("status") == "PASS":
             shutil.rmtree(work, ignore_errors=True)
         else:
