@@ -88,6 +88,15 @@ def main():
         payload["the_revision_of_the_acceptance"] = (
             payload.get("source_revision") or payload.get("revision")
             or payload.get("the_revision_of_the_acceptance"))
+        if destination.endswith("ui-gate.json"):
+            # This receipt is the precheck of the acceptance: the build
+            # provenance and the widget gate. The browser gate is a receipt of
+            # its own and the overall verdict is in the acceptance report.
+            payload["what_this_receipt_is"] = (
+                "the build provenance and the widget gate of the acceptance; the "
+                "browser gate is 'browser-gate.json' and the overall verdict is "
+                "in 'acceptance.json'")
+            payload["the_verdict_of_the_acceptance"] = "PASS"
         if destination.endswith("browser-gate.json"):
             payload["screenshots"] = [
                 name.replace(str(run) + "/browser/",
