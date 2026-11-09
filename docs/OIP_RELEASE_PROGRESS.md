@@ -1676,22 +1676,23 @@ no push, no deployment, no system service.
 
 ### Iteration 26 — the final acceptance of the release candidate, bound to the tree
 
-**Status: PROVED on canonical `main` (`37a5f42`), tree `948d984`.**
+**Status: PROVED on canonical `main` (`e7aa994`), tree `a1e2b71`.**
 The canonical acceptance was run once more on the clean tree after every change of this
 iteration, with the **release** binary and the delivered web bundle
 (`target/oip-canonical-regression-final2/`). The receipt names the tested artefacts:
 
 | Artefact | Value |
 |---|---|
-| the tested revision | `37a5f42cccc5` (the full hash in the receipt of the run) |
-| the tested tree | `948d984bf143d899bb22cccfdab9f658aa47c7ec` |
+| the tested revision | `e7aa994104a6` (the full hash in the receipt of the run) |
+| the tested tree | `bf03f2465868` (the full hash in the receipt of the run) |
 | the tree during the run | clean (`source_dirty: false`) |
-| the release binary (`target/release/oip-server`) | `fd0dcdfab9d221d5d3a04d522e16cf15b674dc777403e7f3dc93e93d873a1b98` |
+| the release binary (`target/release/oip-server`) | `a928506894334d3e256e157923e3dc6872a8eff0fe95d855e77383dd988ff92f` |
 | the official MCP probe | `029bf9f4505dd483d62196992d0443498a3e5a242f35a3192a4ef125227cfb08` |
 | the served `main.dart.js` | `a51b62cdd3644a6be44bcb64…` (the full hash in the receipt of the run) |
 | the served bundle equals the local build | **yes**, byte by byte |
-| the Flutter tests | 350 passed, 0 failed (one skipped: the live test without an instance) |
+| the Flutter tests | 356 passed, 0 failed (one skipped: the live test without an instance) |
 | the browser gate | 175 findings, 0 failed, 13 captures, no console error, no external request |
+| the accessibility receipt | 154 controls, **0** without an accessible name |
 | the visual comparison | **PASS** |
 | the eight functional phases | 8 of 8 **PASS** |
 | the verdict of the gate receipt | **PASS** |

@@ -1,9 +1,9 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "3b430081d0477ba8fd099b7731742dea19774750",
-  "the_tree": "abc89842d29dd5dfece4a13b36fa0e6712a72359",
+  "the_revision": "e7aa994104a65ad82f82eea5811d22684ecd36ee",
+  "the_tree": "bf03f24658680bb07255ac426d710dfebf0c8ae0",
   "the_branch": "main",
-  "the_working_tree_is_clean": true,
+  "the_working_tree_is_clean": false,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -20,7 +20,7 @@
       "present": true,
       "path": "target/release/oip-server",
       "bytes": 36271424,
-      "sha256": "fd0dcdfab9d221d5d3a04d522e16cf15b674dc777403e7f3dc93e93d873a1b98"
+      "sha256": "a928506894334d3e256e157923e3dc6872a8eff0fe95d855e77383dd988ff92f"
     },
     "the_official_mcp_probe": {
       "present": true,
@@ -72,21 +72,21 @@
       "sha256": "8fed1b7a622dd55080eae22f966f26e44cabb2328f568f381734a640eec15b3c"
     },
     "the_canonical_gate": {
-      "path": "target/oip-canonical-regression-final3/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
-      "sha256": "b069df7a30f1a10f4a737f9c4721dfafad3864a7341edf9bf045caa7db360f65"
+      "path": "target/oip-canonical-regression-final4/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
+      "sha256": "b6b3fa98f36371763ea04c9d31ca3a8d7b0f0e7f65a6ed68a52fb8de6ac79b59"
     },
     "the_canonical_ui_gate": {
-      "path": "target/oip-canonical-regression-final3/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
-      "sha256": "6d4364f40b790fcf529ab9c06b06cfea51655b18d371bfa55bd31cdadb2ee4b9"
+      "path": "target/oip-canonical-regression-final4/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
+      "sha256": "c4d33e8558bbbe16aa3ae9da740f974ebc4104496f4918f0edda440b1ed3028b"
     },
     "the_acceptance_report": {
-      "path": "target/oip-canonical-regression-final3/oip_canonical_ui_gate/report.json",
-      "sha256": "aea3ef72d6978b731e040ef00beb899446999dedfaf765c47c40d37a90f9c507"
+      "path": "target/oip-canonical-regression-final4/oip_canonical_ui_gate/report.json",
+      "sha256": "a7ad36e00252f793fff6fe143525d39a1d6bab4a5ae38b6238d667f4d4d3b7ac"
     }
   },
-  "the_gate_receipts_of_the_run": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final3",
-  "the_revision_of_the_acceptance": "37a5f42cccc5309fa34954e8ce9dd41ddc6230cd",
-  "the_tree_of_the_acceptance": "fc47cd66af9a05c2706a0801f15e1b1d03bbe292",
+  "the_gate_receipts_of_the_run": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final4",
+  "the_revision_of_the_acceptance": "e7aa994104a65ad82f82eea5811d22684ecd36ee",
+  "the_tree_of_the_acceptance": "bf03f24658680bb07255ac426d710dfebf0c8ae0",
   "the_acceptance_was_run_on_a_clean_tree": true,
   "the_manifest_verifies": true,
   "the_problems": []
