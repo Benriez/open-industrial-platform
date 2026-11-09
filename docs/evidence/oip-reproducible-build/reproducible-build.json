@@ -7,11 +7,11 @@
   ],
   "the_web_release": {
     "the_command": "flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none",
-    "the_first_build_seconds": 2.4,
+    "the_first_build_seconds": 1.5,
     "the_main_bundle_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
     "the_tree_sha256": "db506a2f0764afb23e5c2718a3273fd10435a5ab9c1c76b238837a2c9eb24f53",
     "the_files": 35,
-    "the_second_build_seconds": 7.4,
+    "the_second_build_seconds": 2.9,
     "the_main_bundle_of_the_second_build": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
     "the_tree_of_the_second_build": "db506a2f0764afb23e5c2718a3273fd10435a5ab9c1c76b238837a2c9eb24f53",
     "the_main_bundle_is_identical": true,
@@ -20,10 +20,10 @@
   },
   "the_macos_bundle": {
     "the_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18808",
-    "the_first_build_seconds": 27.9,
+    "the_first_build_seconds": 22.6,
     "the_tree_sha256": "e5cb529201e18bfc71802535297b0b3575ca4371033e347b48ad62778988b884",
     "the_files": 43,
-    "the_second_build_seconds": 17.3,
+    "the_second_build_seconds": 18.6,
     "the_tree_of_the_second_build": "e5cb529201e18bfc71802535297b0b3575ca4371033e347b48ad62778988b884",
     "the_tree_is_identical": true,
     "the_files_that_differ": []
@@ -36,23 +36,21 @@
   },
   "the_core": {
     "the_command": "cargo build --locked --release --workspace --bin oip-server --example mcp_probe",
-    "the_revision_the_binary_names": "b5cd7eee1c2f177d875a064e2d817c5944503128",
-    "the_revision_of_the_run": "b5cd7eee1c2f177d875a064e2d817c5944503128",
+    "the_revision_the_binary_names": "ee67106aa000aee522514acbc669f46b6a0d2c5f",
+    "the_revision_of_the_run": "ee67106aa000aee522514acbc669f46b6a0d2c5f",
     "the_note": "the binary names the revision it was built from; the reproducibility is the property that the same revision yields the same bytes",
-    "the_first_build_seconds": 61.1,
-    "the_second_build_seconds": 41.1,
-    "the_core_of_the_first_build": "e3dd071b925ee395e784f4c1787c5c2910fc19a9f7f45d7c5ba96709b75ff138",
-    "the_core_of_the_second_build": "e3dd071b925ee395e784f4c1787c5c2910fc19a9f7f45d7c5ba96709b75ff138",
+    "the_first_build_seconds": 49.1,
+    "the_second_build_seconds": 38.2,
+    "the_core_of_the_first_build": "306c2ae94341f5b98efe380d67067287da731a9379836573db9e13a9faa5e65b",
+    "the_core_of_the_second_build": "306c2ae94341f5b98efe380d67067287da731a9379836573db9e13a9faa5e65b",
     "the_probe_of_the_first_build": "f79e908bbb237e812c891f0344ab3a45dec4d6a7bc9621f322acb0aadb02bf9a",
     "the_probe_of_the_second_build": "f79e908bbb237e812c891f0344ab3a45dec4d6a7bc9621f322acb0aadb02bf9a",
     "the_core_is_identical": true,
-    "the_probe_is_identical": true,
-    "the_digest_of_the_release_manifest": "4f49cc1512fa8e10083bdf01e5cb618077e3337ed4ce8fc948fd08b37adef30f",
-    "the_release_names_this_binary": false
+    "the_probe_is_identical": true
   },
   "status": "PASS",
-  "the_revision": "b5cd7eee1c2f177d875a064e2d817c5944503128",
-  "the_tree": "2bcc80c7600a434ff55ec8dd1bf82e770474fc58",
+  "the_revision": "ee67106aa000aee522514acbc669f46b6a0d2c5f",
+  "the_tree": "4e3238df289de4893bc0c39a12bccdd5007d0deb",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-09T12:37:23Z"
+  "finished_utc": "2026-11-09T13:05:38Z"
 }
