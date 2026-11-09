@@ -135,6 +135,31 @@ Future<void> section(WidgetTester tester, SettingsSection value) async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  testWidgets('The navigation names the status of the category of the Core',
+      (tester) async {
+    await bootstrapSettings(tester);
+
+    // The Core states that the General category is administered offline and
+    // that the other categories are only read. The navigation shows the answer
+    // of the Core, not a guess of the client.
+    expect(find.text('CORE · Nur offline administrierbar'), findsOneWidget);
+    expect(find.textContaining('CORE · '), findsOneWidget);
+
+    await category(tester, SettingsCategory.mcpAgents);
+    // The category change reloads the settings of the Core; the navigation
+    // shows its answer when the answer is there.
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 120));
+    }
+    expect(find.text('CORE · Nur lesend'), findsOneWidget);
+
+    await category(tester, SettingsCategory.dataStorage);
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 120));
+    }
+    expect(find.text('CORE · Nur lesend'), findsOneWidget);
+  });
+
   testWidgets('A all seven categories open with functional default sections',
       (tester) async {
     await bootstrapSettings(tester);

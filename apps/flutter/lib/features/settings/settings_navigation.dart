@@ -6,6 +6,21 @@ import '../../widgets/workstation.dart';
 import 'settings_models.dart';
 import 'settings_session.dart';
 
+/// The name of the category as the Core names it on the wire.
+///
+/// The Core serializes its categories in snake_case; the enum of the client
+/// is camelCase. The mapping is explicit so that the status of a category of
+/// the Core is found and not guessed.
+String settingsCategoryWireName(SettingsCategory category) => switch (category) {
+      SettingsCategory.general => 'general',
+      SettingsCategory.mcpAgents => 'mcp_agents',
+      SettingsCategory.infrastructure => 'infrastructure',
+      SettingsCategory.dataStorage => 'data_storage',
+      SettingsCategory.diagnostics => 'diagnostics',
+      SettingsCategory.securityAccess => 'security_access',
+      SettingsCategory.system => 'system',
+    };
+
 String settingsCategoryLabel(SettingsCategory category) => switch (category) {
       SettingsCategory.general => 'General',
       SettingsCategory.mcpAgents => 'MCP & Agents',
@@ -99,11 +114,15 @@ class SettingsNavigation extends StatelessWidget {
   final SettingsWorkspaceSession session;
   final ValueChanged<SettingsCategory> onCategory;
   final ValueChanged<SettingsSection> onSection;
+  /// The categories of the Core. The administration of a category is stated
+  /// by the Core itself; the client does not guess it.
+  final List<SettingsCategoryDefinition> categories;
   const SettingsNavigation({
     super.key,
     required this.session,
     required this.onCategory,
     required this.onSection,
+    this.categories = const [],
   });
 
   @override
@@ -116,12 +135,39 @@ class SettingsNavigation extends StatelessWidget {
           const PanelLabel('Settings navigation'),
           for (final category in SettingsCategory.values) ...[
             _category(context, category),
-            if (session.category == category)
+            if (session.category == category) ...[
+              _categoryStatus(context, category),
               for (final section in settingsSections(category))
                 _section(context, section),
+            ],
           ],
         ],
       ),
+    );
+  }
+
+  /// The status of the category as the Core reports it.
+  ///
+  /// The Core knows whether a category is administered offline or only read.
+  /// The navigation shows its answer instead of a guess of the client.
+  Widget _categoryStatus(BuildContext context, SettingsCategory category) {
+    final definition = categories
+        .where((item) => item.category == settingsCategoryWireName(category))
+        .firstOrNull;
+    if (definition == null) return const SizedBox.shrink();
+    final status = switch (definition.status) {
+      'offline_administration_required' => 'Nur offline administrierbar',
+      'read_only' => 'Nur lesend',
+      final value => value,
+    };
+    return Padding(
+      padding: const EdgeInsets.only(left: 34, right: 9, bottom: 4),
+      child: Text('CORE · $status',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              fontSize: 9.5,
+              color: definition.status == 'offline_administration_required'
+                  ? OipTokens.yellow
+                  : OipTokens.muted(context))),
     );
   }
 

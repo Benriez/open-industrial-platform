@@ -35,6 +35,10 @@ class _SettingsPageState extends State<SettingsPage> {
   final FocusNode searchFocus = FocusNode(debugLabel: 'settings-tool-search');
   final FocusNode pageFocus = FocusNode(debugLabel: 'settings-workstation');
   SettingsSnapshot? settings;
+  /// The categories of the Core with their administration status. They
+  /// describe the instance and not a section, so they are kept when a section
+  /// is loaded that does not read the settings.
+  List<SettingsCategoryDefinition> coreCategories = const [];
   ManagementReport? report;
   ManagementReport? secondary;
   ManagementReport? extra;
@@ -203,6 +207,9 @@ class _SettingsPageState extends State<SettingsPage> {
       }
       setState(() {
         settings = loadedSettings;
+        if (loadedSettings != null && loadedSettings.categories.isNotEmpty) {
+          coreCategories = loadedSettings.categories;
+        }
         report = loadedReport;
         secondary = loadedSecondary;
         extra = loadedExtra;
@@ -310,6 +317,7 @@ class _SettingsPageState extends State<SettingsPage> {
               session: widget.session,
               onCategory: _selectCategory,
               onSection: _selectSection,
+              categories: coreCategories,
             );
             final workspace = WorkstationPanel(
               key: const Key('settings-workspace'),
