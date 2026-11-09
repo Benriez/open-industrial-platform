@@ -175,7 +175,10 @@ const readSurface = async () => {
   }
   await page.mouse.wheel(0, -20000);
   await page.waitForTimeout(600);
-  return [...lines].join('\n');
+  // The painted surface is kept as the evidence of what the operator sees.
+  const surface = [...lines].join('\n');
+  fs.writeFileSync(`${outDir}/device-connection-surface.txt`, surface + '\n');
+  return surface;
 };
 
 await page.goto(base, { waitUntil: 'domcontentloaded' });
