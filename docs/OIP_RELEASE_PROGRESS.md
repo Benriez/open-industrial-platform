@@ -2545,6 +2545,42 @@ attribute of a received copy and the identifier that proves the copy is this rel
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 54 — the release is verifiable with one command
+
+**Status: PROVED on canonical `main`.**
+A third party that receives this repository must be able to check the whole handoff without
+trusting the prose of the record. The new tool (`tools/oip_verify_release.py`) is that command,
+and it proves in one run:
+
+1. the **manifest** of the release verifies — every digest of every artefact and of every receipt
+   is recomputed and compared with the written manifest;
+2. **every receipt is fresh** — no receipt of the release names a revision that predates the last
+   change of the product it covers (`crates/`, `apps/flutter/lib/`). A receipt that predates the
+   product does not measure the product;
+3. the **record is intact** — every receipt that the ledger and this file cite exists and is
+   tracked by git, and every receipt of the release is cited by one of them;
+4. the **acceptance passed** — the receipt of the canonical gate says PASS with its phases, its
+   browser findings, its Flutter tests, its captures and its accessibility numbers;
+5. the **safety boundaries held** — no receipt claims that the schema 7 was activated on the
+   personal store of the operator.
+
+The verdict of the command is **`OIP_PRODUCTION_NOT_READY`** while the gates that need the
+operator are open (G5, G10, G12). The verification is **not** a production acceptance: the
+acceptance of the operator and the scope of the production security are the operator's. The
+command never claims the visual acceptance of the operator — a visual acceptance that is **not**
+pending is a problem of the verification.
+
+**The verifier can fail.** A verifier that cannot fail proves nothing, so the negative control
+(`tests/oip_verify_release_test.py`) feeds the checks with receipts that are wrong and proves
+that each defect is reported: a receipt that predates the product, a receipt without a revision,
+a broken citation, an orphaned receipt, an artefact with a wrong digest, a failed acceptance and
+a **claimed** visual acceptance.
+
+The procedure is in the runbook (§13).
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -2552,6 +2588,7 @@ no push, no deployment, no system service.
 | `docs/evidence/oip-canonical-acceptance/acceptance.json` | the canonical acceptance of the release: the eight functional phases, the widget gate, the browser gate, the visual comparison, the global infrastructure context, the accessibility and the device administration, with the revision and the tree of the run (tracked) |
 | `docs/evidence/oip-macos-install/macos-install.json` | the local installation of the macOS application bundle: the copy is byte-identical to the bundle of the release, the installed copy starts, is refused without a session, terminates without an orphan and starts again from the installation directory (tracked) |
 | `docs/evidence/oip-record-integrity/record-integrity.json` | the integrity of the record itself: every cited receipt exists and is tracked by git, and every receipt of the current release is cited by the ledger or by this file (tracked) |
+| `docs/evidence/oip-release-verification/release-verification.json` | the verification of the release with **one command**: the manifest verifies, every receipt is fresh, the record is intact, the acceptance passed and the safety boundaries held (tracked) |
 | `docs/evidence/oip-canonical-acceptance/browser-gate.json` | the browser gate of the acceptance: the findings, the captures and the state of the visual acceptance of the operator (tracked) |
 | `docs/evidence/oip-canonical-acceptance/ui-gate.json` | the build provenance and the served bundle of the gate (tracked) |
 | `docs/evidence/oip-canonical-acceptance/captures/*.png` | the 13 actual captures of the six workstations at 1440 px and 1920 px of the acceptance of the release (tracked) |
