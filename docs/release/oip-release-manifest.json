@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "b5cd7eee1c2f177d875a064e2d817c5944503128",
-  "the_tree": "2bcc80c7600a434ff55ec8dd1bf82e770474fc58",
+  "the_revision": "8abbf40c15e9444c8fe6ce5e2144562df817f1d2",
+  "the_tree": "a04206c3ba74be368393ee7b04e1bd2fa620f34c",
   "the_branch": "main",
   "the_working_tree_is_clean": false,
   "the_toolchain": {
@@ -17,8 +17,8 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 632,
-    "the_sha256": "db5672b7fcc3e54c293f4d6b5b67fc86083ed72dfb3458a3b67cb2b52c193b51"
+    "the_files": 650,
+    "the_sha256": "395b81d7a2e090cd355e964e946193460fd7fee07868ac434880d1a1621f0c40"
   },
   "the_artifacts": {
     "the_core": {
@@ -167,24 +167,17 @@
     "the_workstation_data": {
       "path": "docs/evidence/oip-workstation-data/workstation-data.json",
       "sha256": "4c995ab94c694c9e7ca8579f8aa0d33d29c3225f835930bafd3bcba13bfc20df"
-    },
-    "the_canonical_gate": {
-      "path": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
-      "sha256": "76ac08cfaf9707d1f1189aec5efcb353b8da4eca3bbbc932ecef348ab41205c9"
-    },
-    "the_canonical_ui_gate": {
-      "path": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
-      "sha256": "f05f6d74cd9589ee0d7f487f95516bbdfa4795108710b91c8780d4360d73eccf"
-    },
-    "the_acceptance_report": {
-      "path": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/report.json",
-      "sha256": "8b210f0adca757b62d72df00963404fbe3d8be0b27f1f585052c074e20a3dd3e"
     }
   },
-  "the_gate_receipts_of_the_run": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final7",
-  "the_revision_of_the_acceptance": "3c663f90c3f62ad77b7f2a79a6e1a145eff04e44",
-  "the_tree_of_the_acceptance": "c263b5620f702619633d5c4662ad1874134bba4e",
-  "the_acceptance_was_run_on_a_clean_tree": true,
+  "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final7",
+  "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
+  "the_working_tree_without_the_manifest": [
+    "M docs/OIP_RELEASE_LEDGER.md",
+    " M docs/OIP_RELEASE_PROGRESS.md",
+    " M tests/canonical_ui_gate.py",
+    " M tests/oip_reproducible_build.py",
+    " M tools/oip_release_manifest.py"
+  ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
     "the_digest_of_the_reproducible_build": "e3dd071b925ee395e784f4c1787c5c2910fc19a9f7f45d7c5ba96709b75ff138",

@@ -137,6 +137,19 @@ def git(*arguments):
     return result.stdout.strip()
 
 
+def tree_is_clean(exclude=("docs/release/",)):
+    """The cleanliness of the working tree without the files of the manifest.
+
+    The manifest writes itself into the tree, so the tree can never be clean
+    while the manifest is written. The state that matters is the state of
+    everything else.
+    """
+    status = git("status", "--porcelain")
+    lines = [line for line in status.splitlines()
+             if line and not any(line[3:].startswith(prefix) for prefix in exclude)]
+    return not lines, lines
+
+
 def source_manifest():
     """The digest over the tracked sources of the revision.
 
@@ -158,7 +171,7 @@ def build_manifest():
         "the_revision": git("rev-parse", "HEAD"),
         "the_tree": git("rev-parse", "HEAD^{tree}"),
         "the_branch": git("rev-parse", "--abbrev-ref", "HEAD"),
-        "the_working_tree_is_clean": not git("status", "--porcelain"),
+        "the_working_tree_is_clean": tree_is_clean()[0],
         "the_toolchain": {
             "rustc": tool_version(["rustc", "--version"]),
             "cargo": tool_version(["cargo", "--version"]),
@@ -176,8 +189,14 @@ def build_manifest():
         "the_source_manifest": source_manifest(),
         "the_artifacts": {},
         "the_receipts": {},
-        "the_gate_receipts_of_the_run": str(
+        "the_gate_run_of_the_acceptance": str(
             newest_gate_receipts()["the_acceptance_report"].parent.parent),
+        "the_digests_are_verifiable_in": (
+            "the build environment of the release: the artefacts live in the "
+            "build tree (target/ and apps/flutter/build/), the receipts live in "
+            "the checkout (docs/evidence/). In a checkout without the build "
+            "tree the artefacts are absent and `--verify` reports that."),
+        "the_working_tree_without_the_manifest": tree_is_clean()[1],
     }
     for name, path in ARTIFACTS.items():
         if not path.exists():
@@ -214,8 +233,10 @@ def build_manifest():
                 if candidate and candidate.encode() in payload:
                     manifest["the_artifacts"][name]["the_revision_the_binary_names"] = candidate
                     break
+    # The receipts of the acceptance are **tracked** files; the receipts of a
+    # run in the build tree are named by the run, not by the manifest, because
+    # a manifest must be verifiable against the files of the checkout.
     receipts = dict(RECEIPTS)
-    receipts.update(newest_gate_receipts())
     for name, path in receipts.items():
         if path.is_file():
             manifest["the_receipts"][name] = {

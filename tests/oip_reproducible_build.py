@@ -226,14 +226,9 @@ def main():
             assert first_probe == second_probe, "the probe of the release is not reproducible"
             report["steps"].append("the Core of the release is reproducible")
 
-            # The binary that the release manifest names must be this binary.
-            manifest = ROOT / "docs/release/oip-release-manifest.json"
-            if manifest.is_file():
-                payload = json.loads(manifest.read_text())
-                named = (payload.get("the_artifacts", {})
-                         .get("the_core", {}).get("sha256"))
-                report["the_core"]["the_digest_of_the_release_manifest"] = named
-                report["the_core"]["the_release_names_this_binary"] = named == first_core
+            # The comparison of the manifest with this binary is made by the
+            # manifest itself: it is written after this receipt, so the
+            # comparison there is never stale.
 
         report["status"] = "PASS"
     except AssertionError as error:

@@ -1591,10 +1591,10 @@ disposable managed instance of the **release** binary (`tests/oip_macos_app.py`,
 `docs/evidence/oip-macos-app/macos-app.json`):
 
 * `flutter build macos --release` produces `oip_dashboard.app` (bundle id
-  `org.openindustrial.oipDashboard`, version 0.3.0) in 9 s; the receipt names the sha256 of the
+  `org.openindustrial.oipDashboard`, version 0.3.0) in 14 s; the receipt names the sha256 of the
   executable and the digest over the tree of the bundle.
 * The bundle starts and asks the Core for the authorized projection of the principal within
-  **0.8 s**.
+  **0.7 s**.
 * The Core answers **403** and the bundle obtains **no** unauthorized data (`api_successes: 0`).
   It shows the approved Spectrum-2027 shell with the six workstations, the honest
   `PERMISSION_DENIED` notice and the operator login — no OIP/005 demo, no gradient KPI row, no
@@ -1649,16 +1649,16 @@ stable Core IDs — that was proven by a widget test against a fixture. What was
 
 `tests/oip_diagnostic_continuation.py` creates that Core: the collector of one source is cycled
 until the Core has documented more gaps than a page holds — every gap is a real interruption of a
-real collection, 39 cycles in this run — and the browser journey
+real collection, 42 cycles in this run — and the browser journey
 (`apps/flutter/test/browser_diagnostic_continuation.mjs`) then follows the evidence in the
 approved shell. Measured (`docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json`):
 
 * the Core answers the first page with 50 entries, `truncated: true` and a cursor;
 * the surface offers the continuation for the gaps and for the health history;
 * the continuation asks the same authorized route with the opaque cursor of the Core
-  (`9db30aff…`, `43e256b3…`, `40b57f37…`);
-* the pages are disjoint: 52 rows of gaps, 52 distinct — no row is repeated and no row is lost;
-* the health history needed three continuations (50 + 50 + 50 + 7 transitions) and ends
+  (`7847e388…`, `130d9974…`, `60a06d73…`);
+* the pages are disjoint: 51 rows of gaps, 51 distinct — no row is repeated and no row is lost;
+* the health history needed three continuations (50 + 50 + 50 + 10 transitions) and ends
   truncated: `false`;
 * the offer of a kind disappears exactly when its last page is reached;
 * the evidence stays painted and its disclosed limits stay visible; no failure of the evidence is
@@ -1693,7 +1693,10 @@ the official MCP tool `oip_opcua_nodes_read` with the REST routes
 **A contract gap was found and is escalated.** The address space of a source is the **live
 catalog of its collector**: it is published while the collector connects and it is replaced when
 the collector connects again. The pagination is by offset, so a page that is read across such a
-change can repeat a node at the boundary — measured once, while the collector was connecting.
+change **can** repeat a node at the boundary. The measured reconnect shows the opposite of a
+repetition — the content and the order of the page did not change and **no** node was repeated at
+the boundary (`docs/evidence/oip-opcua-parity/opcua-parity.json`) — so the repetition is a
+possibility of the design of the collector and **not** a measured effect.
 Every other paginated surface of the Core (the diagnostic pages, the observation history) uses an
 opaque cursor and is therefore stable; the Core makes no such promise for the address space, so
 no claim is broken. Giving the address space the same cursor would change the query of the REST
@@ -2015,7 +2018,7 @@ control server of the rehearsal (`apps/flutter/test/browser_reconnect_recovery.m
 | the instance is restarted | — |
 | the surface after the restart | `Kontext nicht autorisiert` with the badge `IDENTITÄT ERFORDERLICH`, the honest notice `Browser-Session oder zentrale Policy erlaubt diesen Management-Read nicht (PERMISSION_DENIED) … Keine vorherigen Kontextdaten werden angezeigt` and the operator login — **no stale content is shown as current** |
 | the operator login | names the restart of the instance as the third cause of the end of the session (the panel of iteration 31) |
-| a new one-time code | the authorized projection again, with a fresh moment (`03:56:56.776 UTC` → `03:57:02.997 UTC`) |
+| a new one-time code | the authorized projection again, with a fresh moment (`12:06:26.631 UTC` → `12:06:33.431 UTC`) |
 
 The session of the browser ends with the restart because the Core holds it in its memory — that is
 the contract of the era, and the surface now says so instead of leaving the operator without an
@@ -2038,12 +2041,12 @@ Measured (`docs/evidence/oip-upgrade-rollback/upgrade-rollback.json`, `tests/oip
 |---|---|---|---|
 | organizations / infrastructures / sites / source_placements | 2 / 3 / 4 / 4 | 2 / 3 / 4 / 4 | 2 / 3 / 4 / 4 |
 | principals / read_roles / role_bindings | 7 / 1 / 6 | 7 / 1 / 6 | 7 / 1 / 6 |
-| observations / collection_events / data_gaps / source_health_history | 6 / 7 / 1 / 8 | 6 / 7 / 1 / 12 | 6 / 7 / 1 / 8 |
+| observations / collection_events / data_gaps / source_health_history | 10 / 11 / 1 / 9 | 10 / 11 / 1 / 13 | 10 / 11 / 1 / 9 |
 | inventory_devices | *absent in the era* | 4 (created by the migration) | *absent again* |
 | device_connections | *absent in the era* | 0 (created by the migration) | *absent again* |
 
 The observations of the historical instance are **preserved by their stable Core IDs** — every
-distinct observation key of the era (6 of them) is still there after the takeover — and the data
+distinct observation key of the era (10 of them) is still there after the takeover — and the data
 only grows: the health transitions of the release binary join the history of the era. The rollback
 restores the store **exactly**: the inventory of the backup and the inventory of the restored store
 are the same, and the tables that the era did not know are absent again.
@@ -2253,7 +2256,7 @@ release **twice** and compared the artefacts.
 |---|---|---|---|
 | the web release — `main.dart.js` | `a51b62cdd3644a6be44bcb64…` | the same | **yes** |
 | the web release — the whole asset tree (35 files) | `db506a2f0764afb23e5c2718…` | the same | **yes** |
-| the macOS application bundle (43 files, built from an emptied build directory) | `9872190c47b8f0378761728c…` | the same | **yes** |
+| the macOS application bundle (43 files, built from an emptied build directory) | `e5cb529201e18bfc7180253529…` | the same | **yes** |
 
 The digests are taken over the sorted list of the paths and their contents, so they do not depend
 on the order of the file system. The two builds of the bundle were independent: the build
@@ -2356,7 +2359,7 @@ Measured (`docs/evidence/oip-macos-app/macos-app.json`):
 |---|---|
 | the build | `flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18808` |
 | the bundle | `oip_dashboard.app`, bundle id `org.openindustrial.oipDashboard`, version 0.3.0 |
-| the first request | after 0.8 s: `GET /api/v2/organizations?offset=0&limit=100` → **403** |
+| the first request | after 0.7 s: `GET /api/v2/organizations?offset=0&limit=100` → **403** |
 | the further requests | six in total, **all** 403 — the bundle obtains **no** unauthorized data |
 | the tree of the bundle | `e5cb5292…` — the same tree that the reproducibility of the release proves |
 | the window | the approved shell with the operator login (captured) |
@@ -2398,18 +2401,19 @@ writes of an open store.
 
 A **disk image of a fixed size** is exactly that volume — and it needs no privilege at all. The
 rehearsal attaches a 64 MiB image, puts the store of a disposable instance on it and lets the
-collectors fill it up completely (0 bytes free).
+collectors fill it up until the write of the store is refused (20 KiB are still free when the
+refusal comes).
 
 Measured (`docs/evidence/oip-storage-failure/storage-failure.json`):
 
 | | |
 |---|---|
-| the volume | 64 MiB, filled to **0 bytes free**; the write of the rehearsal is refused with `No space left on device` |
+| the volume | 64 MiB, filled until the write is refused with `No space left on device` (20 480 bytes are still free) |
 | the instance | **survives**: it keeps answering its routes with 200 while its store cannot be written |
-| the health | **degrades honestly**: the lifecycle becomes `degraded`, the instance is no longer `ready`, `persistence_healthy` is false, the counter of the persistence errors grows, the last error is named `commit_failed_retry_pending` |
+| the health | **degrades honestly**: the instance is no longer `ready`, `persistence_healthy` is false, the counter of the persistence errors grows from 0 to 18, the last error is named `commit_failed_retry_pending` |
 | the log | **names** the failure (`persistence_retry`) |
 | the store | is **not corrupted**: `pragma integrity_check` answers `ok` |
-| the recovery | after the space is freed the lifecycle is `ready` again, the persistence is healthy and the collection continues (187 to 234 observations) |
+| the recovery | after the space is freed `ready` is true again, the persistence is healthy, the last error is gone and the collection continues (70 to 72 observations; the persisted count grows from 48 to 63) |
 | the shutdown | clean |
 
 The rehearsal reports that it is **blocked** — with the reason — on a machine without `hdiutil`;

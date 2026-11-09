@@ -137,9 +137,15 @@ def main():
             text=True, timeout=1800)
         widget_log = result.stdout + result.stderr
         (out / 'widget-gate.log').write_text(widget_log)
-        passed = re.search(r'\+(\d+): All tests passed!', widget_log)
+        # The runner writes "+356 ~1: All tests passed!" — the count of the
+        # skipped tests stands between the count and the colon, so the pattern
+        # must not require the colon directly after the number.
+        passed = re.search(r'\+(\d+)[^:\n]*: All tests passed!', widget_log)
+        failed = re.search(r'\+(\d+)[^:\n]*: Some tests failed', widget_log)
         receipt['flutter_tests_passed'] = int(passed.group(1)) if passed else None
-        receipt['flutter_tests_failed'] = 0 if passed else None
+        receipt['flutter_tests_failed'] = 0 if passed else (int(failed.group(1)) if failed else None)
+        skipped = re.search(r'\+(\d+)\s+~(\d+): All tests passed!', widget_log)
+        receipt['flutter_tests_skipped'] = int(skipped.group(2)) if skipped else None
         record('full Flutter widget/unit and design gate', result.returncode == 0,
                'flutter test (includes canonical_ui_gate_test.dart and all preserved expert workflows)')
 
