@@ -2180,11 +2180,36 @@ fixture of the suite now carries the real shape.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 41 — the extension of the registry of an instance
+
+**Status: PROVED on canonical `main`.**
+The operator adds infrastructure by extending the plan of the instance and provisioning it again.
+Nothing measured that path, and nothing told the operator what the Core does with a plan that
+**drops** a source.
+
+`tests/oip_extend_registry.py` proves it against the **release** binary with four real collectors
+(`docs/evidence/oip-extend-registry/extend-registry.json`):
+
+| Step | Result |
+|---|---|
+| the instance with four sources | provisioned and serving |
+| the plan extended by a fifth source | the four sources **survive**, the fifth is registered (5 sources) |
+| the extended instance | the fifth source **collects**: 44 observations |
+| a plan that **drops** the fifth source | **refused**: `hierarchy/provisioning validation failed` |
+| the registry after the refusal | unchanged — the five sources are still there |
+
+The registry of an instance is therefore stable: the operator adds, and a principal may be
+disabled by the plan, but nothing is removed. The procedure is in the runbook (§1.2).
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-extend-registry/extend-registry.json` | the measured extension of the registry of an instance: the sources survive, the new source collects and a plan that drops a source is refused (iteration 41) |
 | `docs/evidence/oip-session-lifetime/session-lifetime.json` | the measured lifetimes of the one-time code (120 s) and of the session (30 min) against the real Core: both promises of the operator login hold (iteration 39) |
 | `docs/evidence/oip-settings-offline/settings-offline.json` | the measured offline change of a setting of the instance: the change, the guard of the revision, the permission, the validation and the effect at the next start (iteration 38) |
 | `docs/evidence/oip-documented-plan/documented-plan.json` | the measured example of the plan in the runbook: it provisions an instance, the instance answers and the operator of the example authorizes the session (iteration 36) |

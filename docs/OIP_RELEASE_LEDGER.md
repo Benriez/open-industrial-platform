@@ -48,6 +48,10 @@ production-security scope of G10 and the operator acceptance of G12.
   backup remain the operator's.
 * Name an approved physical device and credentials path for G5/G12.
 * Accept or reject the production-security scope (G10).
+* The operator adds infrastructure by **extending** the plan of the instance and provisioning it
+  again (`docs/runbooks/operations.md` §1.2, measured in
+  `docs/evidence/oip-extend-registry/extend-registry.json`): the sources survive, the new source
+  collects, and a plan that drops a source is refused — the registry of an instance is stable.
 * The operator can give their instance a name with the **offline** change of a setting — the
   only path the Core offers (`docs/runbooks/operations.md` §12, measured in
   `docs/evidence/oip-settings-offline/settings-offline.json`). Nothing has to be authorized for

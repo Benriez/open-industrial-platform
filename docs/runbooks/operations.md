@@ -140,6 +140,43 @@ organizations; the smallest useful plan for an operator looks like this:
   inventory of the instance. The registration of a device with a connection of
   its own is a separate, later step (§7 and the onboarding of the surface).
 
+### 1.2 The extension of the registry of an instance
+
+The operator adds infrastructure by **extending** the plan and provisioning it
+again. The registry of an instance is stable: a plan that drops an organization,
+an infrastructure, a site, a source or a principal is **refused** with
+`hierarchy/provisioning validation failed`, and the registry of the instance
+stays as it was.
+
+```sh
+# 1. the instance is stopped: the provisioning is an offline operation
+tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" stop
+
+# 2. the plan is extended (here by a source) and the configuration with it:
+#    the sources of the plan and the sources of the configuration must be the
+#    same identifiers.
+#    ... edit "$PLAN" and "$CORE_CONFIG" ...
+
+# 3. the instance is provisioned again with the extended plan
+tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" \
+    provision-plan --plan "$PLAN"
+
+# 4. the instance serves the extended registry
+tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" \
+    --ipc-config "$IPC_CONFIG" --binary target/release/oip-server start
+```
+
+The answer of the Core names the schema, the number of organizations and the
+number of sources of the registry. The identities of the instance stay stable
+across the extension: a principal may be **disabled** by the plan, never
+removed.
+
+Measured with the release binary (`tests/oip_extend_registry.py`,
+`docs/evidence/oip-extend-registry/extend-registry.json`): an instance with four
+sources is extended by a fifth, the four sources survive, the fifth is
+registered and collects (44 observations), and the plan that drops the fifth
+source is refused while the registry keeps its five sources.
+
 ## 2. Start, status, stop, restart
 
 ```sh

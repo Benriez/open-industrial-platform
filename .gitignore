@@ -117,6 +117,7 @@ secrets/
 !/docs/evidence/oip-documented-plan/documented-plan.json
 !/docs/evidence/oip-settings-offline/settings-offline.json
 !/docs/evidence/oip-session-lifetime/session-lifetime.json
+!/docs/evidence/oip-extend-registry/extend-registry.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json

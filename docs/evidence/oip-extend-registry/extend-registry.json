@@ -1,0 +1,40 @@
+{
+  "schema": "oip-extend-registry-v1",
+  "steps": [
+    "the instance serves four sources",
+    "the registry is extended and the sources survive",
+    "the new source collects",
+    "a plan that drops a source is refused"
+  ],
+  "the_first_provisioning": "{\"schema_version\":3,\"organizations\":2,\"sources\":4,\"idempotent\":false,\"legacy_migrated\":false}",
+  "the_sources_at_the_start": [
+    "source-a",
+    "source-b",
+    "source-c",
+    "source-d"
+  ],
+  "the_second_provisioning": "{\"schema_version\":7,\"organizations\":2,\"sources\":5,\"idempotent\":false,\"legacy_migrated\":false}",
+  "the_sources_after_the_extension": [
+    "source-a",
+    "source-b",
+    "source-c",
+    "source-d",
+    "source-e"
+  ],
+  "the_four_sources_survived": true,
+  "the_observations_of_the_new_source": "44",
+  "the_new_source_collects": true,
+  "the_reduced_plan": {
+    "exit_code": 2,
+    "output": "error: the provisioning step failed: Error: Hierarchy(\"hierarchy/provisioning validation failed\")"
+  },
+  "the_sources_after_the_refusal": [
+    "source-a",
+    "source-b",
+    "source-c",
+    "source-d",
+    "source-e"
+  ],
+  "status": "PASS",
+  "finished_utc": "2026-11-09T02:54:04Z"
+}
