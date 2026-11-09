@@ -2803,6 +2803,38 @@ the record). The one-command verifier carries the same rule.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 61 — the two advisories of the lockfile are closed, and the secret scan covers every shipping file
+
+**Status: PROVED on canonical `main`.**
+The audit of the record found that the secret scan of the tree covered 631 files while **671**
+ship, and the security review of the current tree then failed on the **dependency advisories of
+the lockfile**: the ecosystem had reported two advisories after the last review.
+
+* **RUSTSEC-2026-0459** — `libsqlite3-sys` bundles SQLite before 3.54.0, which can return
+  uninitialized page-cache memory when a process opens a database file together with a sibling
+  `-wal` file whose page size differs. A crafted pair of files can make ordinary queries return
+  stale bytes from the memory of the process. The vector is local and needs the victim to open the
+  files.
+* **RUSTSEC-2026-0462** — the Streamable HTTP clients of the MCP SDK read a response body into
+  memory without a limit; a malicious server can answer with a body that never ends, before any
+  authentication, and exhaust the memory of the host.
+
+Both are closed by the upgrade: `rusqlite` moves to **0.41** (with `libsqlite3-sys` 0.39.1 and
+SQLite **3.54.1**) and `rmcp` to **3.9.0**. The only source change the newer `rusqlite` requires is
+that the progress handler of the history reader registers on a mutable connection. `cargo deny
+check advisories` answers **ok** again, and the whole Rust suite passes with the new lockfile:
+**181 tests in 29 suites, 0 failed**.
+
+The **classification of the secret scan is now a proof and not a shape**: a digest-shaped value
+inside a measurement receipt is a false positive only when the receipt itself pairs it with the
+path of a file of the repository or with the name of an opaque key of the Core (the gap key, the
+event key, the observation key, the cursor — all content hashes of the Core). The scan covers the
+**671** files that ship, finds 28 candidates and classifies every one of them: **none**
+unclassified. The review of the current tree stands at **9 resolved, 2 mitigated, 1 escalated**.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
