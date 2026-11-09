@@ -398,6 +398,26 @@ runbook does not perform it.
 
 ## 9. The macOS application bundle
 
+### 9.0 The build of the release
+
+The Core of the release is built with **one** command. The command matters:
+the feature resolution of the workspace is part of the binary, so a build of
+a single package produces a **different** binary than a build of the
+workspace. The release is the workspace:
+
+```sh
+cargo build --locked --release --workspace \
+    --bin oip-server --example mcp_probe
+# -> target/release/oip-server
+# -> target/release/examples/mcp_probe
+```
+
+The same command is used by the acceptance gate, by the manifest of the
+release and by the rehearsal of the reproducible builds, so the binary that
+the gate proves is the binary that the manifest names. The rehearsal
+(`tests/oip_reproducible_build.py`) builds the Core twice and compares the
+digests: the same command on the same source produces the **same bytes**.
+
 The desktop client is a Flutter application bundle. It is built reproducibly
 from the same Dart code as the web release:
 

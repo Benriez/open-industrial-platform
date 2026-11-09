@@ -24,7 +24,10 @@ if os.environ.get('OIP_CANONICAL_UI_GATE'):
     # The binary that is executed and the probe next to it are built from the
     # current source, in the profile of the binary that is tested.
     profile=['--release'] if BIN.parent.name=='release' else []
-    built=subprocess.run(['cargo','build','-p','oip-server',*profile,
+    # The canonical command of the release: the whole workspace, so the
+    # feature resolution is the one of the workspace and the binary is the
+    # binary that the manifest names.
+    built=subprocess.run(['cargo','build','--locked','--workspace',*profile,
                           '--bin','oip-server','--example','mcp_probe'],
                          cwd=ROOT,capture_output=True,text=True,timeout=1800)
     (OUT/'canonical-core-build.log').write_text(built.stdout+built.stderr)

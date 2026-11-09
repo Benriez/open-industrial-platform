@@ -176,12 +176,12 @@ def main():
             for artefact in (core, probe):
                 if artefact.exists():
                     artefact.unlink()
-            seconds = build(["cargo", "build", "--locked", "--release",
+            seconds = build(["cargo", "build", "--locked", "--release", "--workspace",
                              "--bin", "oip-server", "--example", "mcp_probe"],
                             cwd=ROOT)
             after = (sha256_of(core), sha256_of(probe))
             report["the_core"] = {
-                "the_command": "cargo build --locked --release --bin oip-server "
+                "the_command": "cargo build --locked --release --workspace --bin oip-server "
                                "--example mcp_probe",
                 "the_rebuild_seconds": seconds,
                 "the_core_before": before[0],

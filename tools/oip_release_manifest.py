@@ -166,7 +166,8 @@ def build_manifest():
             "dart": tool_version(["dart", "--version"]),
         },
         "the_build_commands": {
-            "the_core": "cargo build --release --bin oip-server --example mcp_probe",
+            "the_core": "cargo build --locked --release --workspace --bin oip-server "
+                       "--example mcp_probe",
             "the_web_release": ("flutter build web --release --web-renderer canvaskit "
                                 "--no-web-resources-cdn --pwa-strategy=none"),
             "the_macos_application_bundle": ("flutter build macos --release "
