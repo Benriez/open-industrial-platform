@@ -131,17 +131,20 @@ def port_is_free(port):
             return False
 
 
-def launch(label, deadline_seconds=300, settle_seconds=8.0):
+def launch(label, deadline_seconds=300, settle_seconds=8.0, executable=None):
     """Start the bundle and wait until it asks the Core for something.
 
     The witness is polled until the first request of the bundle arrives; then
     the session is left to settle, so the receipt lists **all** the requests
     of the session instead of the ones that happened to arrive between two
     polls. The list is therefore the same from run to run.
+
+    The executable is a parameter, so the rehearsal of the installation can
+    start the bundle from the directory it was installed into.
     """
     _LoggingProxy.routes = []
     started = time.monotonic()
-    process = subprocess.Popen([str(EXECUTABLE)], stdout=subprocess.PIPE,
+    process = subprocess.Popen([str(executable or EXECUTABLE)], stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, text=True)
     first_request = None
     deadline = time.monotonic() + deadline_seconds
