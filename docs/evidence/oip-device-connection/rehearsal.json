@@ -7,11 +7,11 @@
     "the device collects"
   ],
   "ssh_fixture": {
-    "port": 52205,
+    "port": 56241,
     "user": "benny",
     "loopback_only": true
   },
-  "host_key_fingerprint": "SHA256:rMkDumpLZa/YSSmsJ9sMb9wSK5SdK0WajN7GFuS/EYg",
+  "host_key_fingerprint": "SHA256:Rc9ZfmpMzM5BIAcMRwWppGENGhtZURAVuFEZYCmG6MU",
   "verified_identity": {
     "hostname": "MacBookPro.fritz.box",
     "operating_system": "Darwin",
@@ -19,15 +19,15 @@
   },
   "connection": {
     "device_id": "existing-pi",
-    "source_id": "5ea36089-8d6d-48cf-a3bb-be27e3aa8059",
+    "source_id": "0e31629c-88e3-4de9-bc06-02f0e7097629",
     "endpoint": {
       "host": "127.0.0.1",
-      "port": 52205,
+      "port": 56241,
       "user": "benny",
       "identity_profile": "fixture",
       "alias": null
     },
-    "fingerprint": "SHA256:rMkDumpLZa/YSSmsJ9sMb9wSK5SdK0WajN7GFuS/EYg",
+    "fingerprint": "SHA256:Rc9ZfmpMzM5BIAcMRwWppGENGhtZURAVuFEZYCmG6MU",
     "verified_identity": {
       "hostname": "MacBookPro.fritz.box",
       "operating_system": "Darwin",
@@ -36,36 +36,36 @@
       "model": "MacBookPro18,3",
       "stable_host_id_sha256": null,
       "memory_total_bytes": 17179869184,
-      "memory_used_bytes": 13428523008,
-      "uptime_seconds": 850511.0,
+      "memory_used_bytes": 13671350272,
+      "uptime_seconds": 854784.0,
       "disks": [
         {
           "filesystem": "/dev/disk3s1s1",
           "mount": "/",
           "total_bytes": 994662584320,
           "used_bytes": 12577067008,
-          "available_bytes": 8561115136
+          "available_bytes": 6883729408
         },
         {
           "filesystem": "/dev/disk3s6",
           "mount": "/System/Volumes/VM",
           "total_bytes": 994662584320,
-          "used_bytes": 15035260928,
-          "available_bytes": 8561115136
+          "used_bytes": 16110006272,
+          "available_bytes": 6883729408
         },
         {
           "filesystem": "/dev/disk3s2",
           "mount": "/System/Volumes/Preboot",
           "total_bytes": 994662584320,
           "used_bytes": 10806652928,
-          "available_bytes": 8561115136
+          "available_bytes": 6883729408
         },
         {
           "filesystem": "/dev/disk3s4",
           "mount": "/System/Volumes/Update",
           "total_bytes": 994662584320,
-          "used_bytes": 5931008,
-          "available_bytes": 8561115136
+          "used_bytes": 5935104,
+          "available_bytes": 6883729408
         },
         {
           "filesystem": "/dev/disk1s2",
@@ -92,8 +92,8 @@
           "filesystem": "/dev/disk3s5",
           "mount": "/System/Volumes/Data",
           "total_bytes": 994662584320,
-          "used_bytes": 944865206272,
-          "available_bytes": 8561115136
+          "used_bytes": 945467842560,
+          "available_bytes": 6883729408
         },
         {
           "filesystem": "/dev/disk5s1",
@@ -217,7 +217,7 @@
           ]
         }
       ],
-      "captured_at_ms": 1794225603555,
+      "captured_at_ms": 1794229876684,
       "unavailable": [
         "gpu",
         "temperature",
@@ -225,12 +225,12 @@
       ],
       "provenance": "authenticated SSH host report; fixed read-only query; capture time is Core time, remote measurement clocks unknown; no hardware attestation or inferred sensors"
     },
-    "verified_at_ms": 1794225603555,
+    "verified_at_ms": 1794229876684,
     "monitoring_enabled": true,
     "poll_seconds": 10,
     "revision": 1,
-    "last_attempt_ms": 1794225603555,
-    "last_success_ms": 1794225603555,
+    "last_attempt_ms": 1794229876684,
+    "last_success_ms": 1794229876684,
     "error": null,
     "status": "collector_configured",
     "observations": []
@@ -238,58 +238,58 @@
   "connection_status": "collecting",
   "browser_receipt": {
     "schema": "oip-device-connection-v1",
-    "revision": "96a2f1c8995668906ddd5ffb851a2d452cc28abc",
+    "revision": "964c3d1bc8a16cafdebd7160c0f25030d16b7334",
     "scope": "the verified connection of a device in the approved surface against the real Core",
-    "base": "http://127.0.0.1:52208",
-    "expected_fingerprint": "SHA256:rMkDumpLZa/YSSmsJ9sMb9wSK5SdK0WajN7GFuS/EYg",
+    "base": "http://127.0.0.1:56245",
+    "expected_fingerprint": "SHA256:Rc9ZfmpMzM5BIAcMRwWppGENGhtZURAVuFEZYCmG6MU",
     "findings": [
       {
         "check": "browser-login accepted",
         "ok": true,
-        "detail": "{\"status\":200}"
+        "the_failure_message": "{\"status\":200}"
       },
       {
         "check": "the inventory of the scope lists the device",
         "ok": true,
-        "detail": "Existing inventory identity \u00b7 existing-pi\nGer\u00e4t Existing inventory identity existing-pi ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 5ea36089-8d6d-48cf-a3bb-be27e3aa8059 \u00b7 10 Observations \u00b7 Reachability Erreichb"
+        "the_failure_message": "Existing inventory identity \u00b7 existing-pi\nGer\u00e4t Existing inventory identity existing-pi ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 0e31629c-88e3-4de9-bc06-02f0e7097629 \u00b7 10 Observations \u00b7 Reachability Erreichb"
       },
       {
         "check": "the connection panel of the device is shown",
         "ok": true,
-        "detail": "the panel is missing"
+        "the_failure_message": "the panel is missing"
       },
       {
         "check": "the state of the connection is shown",
         "ok": true,
-        "detail": "the state collecting is not shown as \"Collecting\""
+        "the_failure_message": "the state collecting is not shown as \"Collecting\""
       },
       {
         "check": "the host key of the confirmed connection is shown",
         "ok": true,
-        "detail": "the fingerprint of the fixture is missing"
+        "the_failure_message": "the fingerprint of the fixture is missing"
       },
       {
         "check": "the endpoint of the verified connection is shown",
         "ok": true,
-        "detail": "the endpoint is missing"
+        "the_failure_message": "the endpoint is missing"
       },
       {
         "check": "the monitoring of the device is shown",
         "ok": true,
-        "detail": "the read-only monitoring is missing"
+        "the_failure_message": "the read-only monitoring is missing"
       },
       {
         "check": "the verified identity of the host is shown",
         "ok": true,
-        "detail": "the identity of the host is missing"
+        "the_failure_message": "the identity of the host is missing"
       }
     ],
     "errors": []
   },
   "checks": 8,
   "status": "PASS",
-  "the_revision": "96a2f1c8995668906ddd5ffb851a2d452cc28abc",
-  "the_tree": "f894d717dface237cb12359030ec898983bef283",
+  "the_revision": "964c3d1bc8a16cafdebd7160c0f25030d16b7334",
+  "the_tree": "bb7804058e30906846202652c04e9c418971df28",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-09T12:01:18Z"
+  "finished_utc": "2026-11-09T13:12:41Z"
 }

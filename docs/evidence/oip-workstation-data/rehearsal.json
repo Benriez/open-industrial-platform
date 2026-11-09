@@ -5,9 +5,9 @@
   ],
   "browser_receipt": {
     "schema": "oip-workstation-data-v1",
-    "revision": "96a2f1c8995668906ddd5ffb851a2d452cc28abc",
+    "revision": "964c3d1bc8a16cafdebd7160c0f25030d16b7334",
     "scope": "the functional depth of the six workstations against the real Core",
-    "base": "http://127.0.0.1:63725",
+    "base": "http://127.0.0.1:52496",
     "selected_source": "Kontext Organization A / Infrastructure A1 / site-a1 / source-a ausw\u00e4hlen\nsource-a\nOrganization A / Infrastructure A1 / site-a1 / source-a",
     "surfaces": {
       "overview": {
@@ -20,10 +20,10 @@
         "lines": 58
       },
       "opcua": {
-        "lines": 91
+        "lines": 94
       },
       "diagnostics": {
-        "lines": 115
+        "lines": 109
       },
       "settings": {
         "lines": 77
@@ -33,95 +33,95 @@
       {
         "check": "browser-login accepted",
         "ok": true,
-        "detail": "{\"status\":200}"
+        "the_failure_message": "{\"status\":200}"
       },
       {
         "check": "the context offers the source of the scope",
         "ok": true,
-        "detail": "Kontext Organization A / Infrastructure A1 / site-a1 / source-a ausw\u00e4hlen\nsource-a\nOrganization A / Infrastructure A1 / site-a1 / source-a"
+        "the_failure_message": "Kontext Organization A / Infrastructure A1 / site-a1 / source-a ausw\u00e4hlen\nsource-a\nOrganization A / Infrastructure A1 / site-a1 / source-a"
       },
       {
         "check": "the scope of the operator is the selected source",
         "ok": true,
-        "detail": "the selected source is not the scope"
+        "the_failure_message": "the selected source is not the scope"
       },
       {
         "check": "overview: no identifier of the other organization",
         "ok": true,
-        "detail": ""
+        "the_failure_message": ""
       },
       {
         "check": "devices: no identifier of the other organization",
         "ok": true,
-        "detail": ""
+        "the_failure_message": ""
       },
       {
         "check": "network: no identifier of the other organization",
         "ok": true,
-        "detail": ""
+        "the_failure_message": ""
       },
       {
         "check": "opcua: no identifier of the other organization",
         "ok": true,
-        "detail": ""
+        "the_failure_message": ""
       },
       {
         "check": "diagnostics: no identifier of the other organization",
         "ok": true,
-        "detail": ""
+        "the_failure_message": ""
       },
       {
         "check": "settings: no identifier of the other organization",
         "ok": true,
-        "detail": ""
+        "the_failure_message": ""
       },
       {
         "check": "overview: the authorized hierarchy is shown",
         "ok": true,
-        "detail": "the hierarchy of the scope is missing"
+        "the_failure_message": "the hierarchy of the scope is missing"
       },
       {
         "check": "overview: the counts of the scope are shown",
         "ok": true,
-        "detail": "the counts are missing"
+        "the_failure_message": "the counts are missing"
       },
       {
         "check": "devices: the device of the source is shown",
         "ok": true,
-        "detail": "the device of the source is missing"
+        "the_failure_message": "the device of the source is missing"
       },
       {
         "check": "network: the authorized placement is shown",
         "ok": true,
-        "detail": "the placement of the scope is missing"
+        "the_failure_message": "the placement of the scope is missing"
       },
       {
         "check": "opcua: the real nodes of the source are shown",
         "ok": true,
-        "detail": "no node of the source is shown"
+        "the_failure_message": "no node of the source is shown"
       },
       {
         "check": "diagnostics: the real events of the scope are shown",
         "ok": true,
-        "detail": "no event of the scope is shown"
+        "the_failure_message": "no event of the scope is shown"
       },
       {
         "check": "settings: the real settings of the Core are shown",
         "ok": true,
-        "detail": "no setting of the Core is shown"
+        "the_failure_message": "no setting of the Core is shown"
       },
       {
         "check": "no browser JavaScript errors",
         "ok": true,
-        "detail": ""
+        "the_failure_message": ""
       }
     ],
     "errors": []
   },
   "checks": 17,
   "status": "PASS",
-  "the_revision": "96a2f1c8995668906ddd5ffb851a2d452cc28abc",
-  "the_tree": "f894d717dface237cb12359030ec898983bef283",
+  "the_revision": "964c3d1bc8a16cafdebd7160c0f25030d16b7334",
+  "the_tree": "bb7804058e30906846202652c04e9c418971df28",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-09T12:08:45Z"
+  "finished_utc": "2026-11-09T13:20:26Z"
 }
