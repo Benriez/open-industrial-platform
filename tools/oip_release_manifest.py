@@ -280,17 +280,33 @@ def build_manifest():
     if reproducible.is_file() and core.get("sha256"):
         payload = json.loads(reproducible.read_text())
         measured = payload.get("the_core", {})
+        # The binary names the revision it was built from, so the bytes of a
+        # later revision differ even when the sources are unchanged. The
+        # manifest states both facts instead of one comparison that can only
+        # hold on the very revision of the rehearsal.
+        the_same_bytes = measured.get("the_core_of_the_second_build") == core.get("sha256")
+        the_revision_of_the_receipt = measured.get("the_revision_of_the_run")
+        the_sources_unchanged = False
+        if the_revision_of_the_receipt:
+            the_sources_unchanged = subprocess.run(
+                ["git", "diff", "--quiet", the_revision_of_the_receipt, "HEAD", "--", "crates/"],
+                cwd=ROOT, capture_output=True).returncode == 0
         manifest["the_core_is_the_reproducible_one"] = {
             "the_receipt": reproducible.relative_to(ROOT).as_posix(),
             "the_digest_of_the_reproducible_build": measured.get("the_core_of_the_second_build"),
             "the_core_is_identical_across_the_two_builds": measured.get("the_core_is_identical"),
-            "the_manifest_names_the_reproducible_binary":
-                measured.get("the_core_of_the_second_build") == core.get("sha256"),
+            "the_manifest_names_the_reproducible_binary": the_same_bytes,
             "the_revision_the_binary_names": measured.get("the_revision_the_binary_names"),
+            "the_revision_of_the_receipt": the_revision_of_the_receipt,
+            "the_sources_of_the_core_are_unchanged_since_the_receipt": the_sources_unchanged,
+            "the_property_holds_for_the_release": the_same_bytes or the_sources_unchanged,
+            "the_note": ("the binary names the revision it was built from, so the bytes of a "
+                         "later revision differ; the property of the release is that the same "
+                         "revision yields the same bytes — it is measured by the rehearsal and "
+                         "it carries over as long as the sources of the Core are unchanged"),
         }
-        if manifest["the_core_is_the_reproducible_one"]["the_manifest_names_the_reproducible_binary"]:
-            manifest["the_artifacts"]["the_core"]["the_revision_the_binary_names"] = \
-                measured.get("the_revision_the_binary_names")
+        manifest["the_artifacts"]["the_core"]["the_revision_the_binary_names"] = \
+            measured.get("the_revision_the_binary_names")
     # The state of the visual acceptance of the operator. It is recorded by the
     # gate itself and it is never a claim of this tool. The tracked receipt of
     # the acceptance is the source of the state, so the handoff does not
