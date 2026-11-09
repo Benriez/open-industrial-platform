@@ -1,13 +1,13 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "dd77a5117bda9b9d7482b8749eb8dfd0ff85f79f",
-  "the_tree": "025f4b1b6c65300cca5f4947216fd6527778231a",
+  "the_revision": "c85556dc7b6a7f98c27b3e7b7fee2d392d88b9d4",
+  "the_tree": "afd62b411ed3bb1f67bbb5c9f65972bc23f478f1",
   "the_branch": "main",
   "the_revision_of_the_source": {
-    "the_revision": "a9ba646b826e9ad14a0f317397385c5babf7da95",
-    "the_subject": "fix(g11): every browser receipt states what its detail carries"
+    "the_revision": "81701391dc36a18abc0d8cabbb989e43adc04397",
+    "the_subject": "feat(g4): the journey reads the painted surface after the tile is open"
   },
-  "the_working_tree_is_clean": true,
+  "the_working_tree_is_clean": false,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -21,8 +21,8 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 665,
-    "the_sha256": "8b7d7059339efbd175cae2c4436551019cff53871f975ce7818332c29402cef0"
+    "the_files": 669,
+    "the_sha256": "79dba70c2f5d71fa174822eac6fe37f611378698733b0cc0caed3fdada4dbcf7"
   },
   "the_artifacts": {
     "the_core": {
@@ -166,7 +166,7 @@
     },
     "the_device_connection": {
       "path": "docs/evidence/oip-device-connection/device-connection.json",
-      "sha256": "abf655cf4187b290babda5e6c70170fd02b42abb8b1d481c9f49d76df943292d"
+      "sha256": "0e808f25c81899c88db505e0f8386a4308447a12303c2f3d6d0c58a36a1eb776"
     },
     "the_workstation_data": {
       "path": "docs/evidence/oip-workstation-data/workstation-data.json",
@@ -175,7 +175,10 @@
   },
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
-  "the_working_tree_without_the_manifest": [],
+  "the_working_tree_without_the_manifest": [
+    "M docs/OIP_RELEASE_LEDGER.md",
+    " M docs/OIP_RELEASE_PROGRESS.md"
+  ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
     "the_digest_of_the_reproducible_build": "306c2ae94341f5b98efe380d67067287da731a9379836573db9e13a9faa5e65b",

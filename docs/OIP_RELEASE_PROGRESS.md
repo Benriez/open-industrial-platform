@@ -2704,6 +2704,7 @@ no push, no deployment, no system service.
 | `docs/evidence/oip-loopback-rate/loopback-rate.json` | the rate of the path of the measurement: the loopback of this machine, the rate of the machine itself and what the first paint of the baseline means (tracked) |
 | `docs/evidence/oip-worktree-reconciliation/worktree-reconciliation.json` | the reconciliation of the worktrees: every branch, the commits that the canonical branch does not contain, the capability that it delivers in their place and the receipt that proves it (tracked) |
 | `docs/evidence/oip-measurement-coverage/measurement-coverage.json` | the coverage of the kinds of the measurement of the real device: every supported kind is delivered, every kind that is not available is named and never delivered as a number, the painted surface names them (tracked) |
+| `docs/evidence/oip-measurement-coverage/measurement-coverage-browser.json` | the browser receipt of the coverage: the findings of the journey against the real Core and the state of the tile of the verified identity (tracked) |
 | `docs/evidence/oip-canonical-acceptance/browser-gate.json` | the browser gate of the acceptance: the findings, the captures and the state of the visual acceptance of the operator (tracked) |
 | `docs/evidence/oip-canonical-acceptance/ui-gate.json` | the build provenance and the served bundle of the gate (tracked) |
 | `docs/evidence/oip-canonical-acceptance/captures/*.png` | the 13 actual captures of the six workstations at 1440 px and 1920 px of the acceptance of the release (tracked) |
