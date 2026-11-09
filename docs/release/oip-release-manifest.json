@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "8abbf40c15e9444c8fe6ce5e2144562df817f1d2",
-  "the_tree": "a04206c3ba74be368393ee7b04e1bd2fa620f34c",
+  "the_revision": "67e85a3f8e4c10b84115d250ffdd50a1e95e6759",
+  "the_tree": "77cde4c074790bc359e5da0a35a0dafd3b38e357",
   "the_branch": "main",
   "the_working_tree_is_clean": false,
   "the_toolchain": {
@@ -17,15 +17,16 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 650,
-    "the_sha256": "395b81d7a2e090cd355e964e946193460fd7fee07868ac434880d1a1621f0c40"
+    "the_files": 651,
+    "the_sha256": "bf32be70f0884ca995436b7bdd3e40821fa2393d020ab522c72aeb3cff9b1f1b"
   },
   "the_artifacts": {
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
       "bytes": 36271328,
-      "sha256": "e3dd071b925ee395e784f4c1787c5c2910fc19a9f7f45d7c5ba96709b75ff138"
+      "sha256": "306c2ae94341f5b98efe380d67067287da731a9379836573db9e13a9faa5e65b",
+      "the_revision_the_binary_names": "ee67106aa000aee522514acbc669f46b6a0d2c5f"
     },
     "the_official_mcp_probe": {
       "present": true,
@@ -54,11 +55,11 @@
   "the_receipts": {
     "the_global_context": {
       "path": "docs/evidence/oip-global-context/global-context.json",
-      "sha256": "f4acf071d4de9deebc28b835173852a399cd3fbc8cb1fc1e557761b287bcb8c6"
+      "sha256": "23be897cc0bbb375f0a29697c7e879521b3f7e6ed6bb21a4453f81e411c48a9e"
     },
     "the_accessibility": {
       "path": "docs/evidence/oip-accessibility/accessibility.json",
-      "sha256": "10cd3a6c97d3d491da45597c00d1e1207cf30c91fa14ecb2fe4cadd9b33c3f73"
+      "sha256": "c52441838c6f3868243854e3d86af3037b2ab0f508666152113fc0f3f5bd2c61"
     },
     "the_performance": {
       "path": "docs/evidence/oip-performance/performance.json",
@@ -78,19 +79,19 @@
     },
     "the_acceptance": {
       "path": "docs/evidence/oip-canonical-acceptance/acceptance.json",
-      "sha256": "824479274656e4c7a16e71e87bdc8d104a731250d2fc51dc3cf2ca9861382658"
+      "sha256": "01492e791f6463a3a7984395d9617f7222dbd7d9e4295cc0342b8f6e890822b2"
     },
     "the_acceptance_browser_gate": {
       "path": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
-      "sha256": "58216fca2551a94f04770b663b9889467a946af9768e30317b0fa6e08d49a4c8"
+      "sha256": "fe07e489e27cf41750bd4137cd4feae33a0f5200e7a009b19ce69a9ec9e2530e"
     },
     "the_acceptance_ui_gate": {
       "path": "docs/evidence/oip-canonical-acceptance/ui-gate.json",
-      "sha256": "2e307b2d72e72e8e387895c451a043b36a5488bc9cb489888bec5de358dbb08d"
+      "sha256": "c5c71b8ba6c39c593a5f37de75e8d93011b6993842e3ff89e6a0a1f0733d7472"
     },
     "the_device_administration": {
       "path": "docs/evidence/oip-device-administration/device-administration.json",
-      "sha256": "73117b9086f6d8f7431c3a6250c10a09362335d488e1286beabb59ca7ee8d9c3"
+      "sha256": "26e6e3088773c0240e6de9b07baf287fc56d64938dacfe4a037d39c30f3d66e4"
     },
     "the_session_lifetime": {
       "path": "docs/evidence/oip-session-lifetime/session-lifetime.json",
@@ -102,7 +103,7 @@
     },
     "the_reproducible_build": {
       "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-      "sha256": "47d3c42358afc653be15b33fd812aad91d33b84984f52b72dc54dc9baa0b0e99"
+      "sha256": "cc37509cb2d8c8bd8fad5bcf9017a934a0bf533a6d2c1387d6cea6fadd07deab"
     },
     "the_upgrade_rollback": {
       "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
@@ -169,25 +170,23 @@
       "sha256": "4c995ab94c694c9e7ca8579f8aa0d33d29c3225f835930bafd3bcba13bfc20df"
     }
   },
-  "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final7",
+  "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final8",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/OIP_RELEASE_LEDGER.md",
-    " M docs/OIP_RELEASE_PROGRESS.md",
-    " M tests/canonical_ui_gate.py",
-    " M tests/oip_reproducible_build.py",
+    "M docs/release/SHA256SUMS",
     " M tools/oip_release_manifest.py"
   ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-    "the_digest_of_the_reproducible_build": "e3dd071b925ee395e784f4c1787c5c2910fc19a9f7f45d7c5ba96709b75ff138",
+    "the_digest_of_the_reproducible_build": "306c2ae94341f5b98efe380d67067287da731a9379836573db9e13a9faa5e65b",
     "the_core_is_identical_across_the_two_builds": true,
-    "the_manifest_names_the_reproducible_binary": true
+    "the_manifest_names_the_reproducible_binary": true,
+    "the_revision_the_binary_names": "ee67106aa000aee522514acbc669f46b6a0d2c5f"
   },
   "the_visual_acceptance": {
     "the_state": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
     "the_source": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
-    "the_revision_of_the_acceptance": "3c663f90c3f62ad77b7f2a79a6e1a145eff04e44",
+    "the_revision_of_the_acceptance": "678c73a215f57aeae6d582144df5aa198b2a9f0a",
     "the_note": "the operator alone accepts the visible result; the gate records the state, it never grants it"
   },
   "the_manifest_verifies": true,

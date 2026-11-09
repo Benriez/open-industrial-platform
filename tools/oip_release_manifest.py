@@ -225,8 +225,9 @@ def build_manifest():
                  if item["path"] == "Contents/MacOS/oip_dashboard"), None)
         if name == "the_core":
             # The Core names the revision it was built from in its own binary.
-            # The manifest therefore states which revision the binary that it
-            # digests belongs to.
+            # The rehearsal of the reproducible builds reads that revision out
+            # of the binary; the manifest states the revision of the binary
+            # that it digests.
             payload = path.read_bytes()
             revision = git("rev-parse", "HEAD")
             for candidate in (revision, revision + "-dirty"):
@@ -266,7 +267,11 @@ def build_manifest():
             "the_core_is_identical_across_the_two_builds": measured.get("the_core_is_identical"),
             "the_manifest_names_the_reproducible_binary":
                 measured.get("the_core_of_the_second_build") == core.get("sha256"),
+            "the_revision_the_binary_names": measured.get("the_revision_the_binary_names"),
         }
+        if manifest["the_core_is_the_reproducible_one"]["the_manifest_names_the_reproducible_binary"]:
+            manifest["the_artifacts"]["the_core"]["the_revision_the_binary_names"] = \
+                measured.get("the_revision_the_binary_names")
     # The state of the visual acceptance of the operator. It is recorded by the
     # gate itself and it is never a claim of this tool. The tracked receipt of
     # the acceptance is the source of the state, so the handoff does not
