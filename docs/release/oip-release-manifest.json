@@ -1,0 +1,89 @@
+{
+  "schema": "oip-release-manifest-v1",
+  "the_revision": "d1ab37c57473dc916b416dc2d95ba72042a2ec5f",
+  "the_tree": "78ff316be806e4f568947b576ff32f925d93b977",
+  "the_branch": "main",
+  "the_working_tree_is_clean": false,
+  "the_toolchain": {
+    "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
+    "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
+    "flutter": "Flutter 3.22.0 \u2022 channel stable \u2022 https://github.com/flutter/flutter.git",
+    "dart": "Dart SDK version: 3.4.0 (stable) (Mon May 6 07:59:58 2024 -0700) on \"macos_arm64\""
+  },
+  "the_build_commands": {
+    "the_core": "cargo build --release --bin oip-server --example mcp_probe",
+    "the_web_release": "flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none",
+    "the_macos_application_bundle": "flutter build macos --release --dart-define=OIP_API_URL=<url of the instance>"
+  },
+  "the_artifacts": {
+    "the_core": {
+      "present": true,
+      "path": "target/release/oip-server",
+      "bytes": 36271424,
+      "sha256": "6390caf0c25c785fd85fcecf33d6552dcc55e8fe13b9fdafebce581463eb8575"
+    },
+    "the_official_mcp_probe": {
+      "present": true,
+      "path": "target/release/examples/mcp_probe",
+      "bytes": 4118384,
+      "sha256": "029bf9f4505dd483d62196992d0443498a3e5a242f35a3192a4ef125227cfb08"
+    },
+    "the_macos_application_bundle": {
+      "present": true,
+      "path": "apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
+      "files": 43,
+      "bytes": 96963461,
+      "sha256": "3c54cf8b4b4a42bd8f831119c7cf5d62137610464224a4d6581e963503c4a422",
+      "the_executable_sha256": "831b69cb57829a62c2ea3af2f539501c789bb1d91f2bdce06237af99c973ee58"
+    },
+    "the_web_release": {
+      "present": true,
+      "path": "apps/flutter/build/web",
+      "files": 35,
+      "bytes": 25108155,
+      "sha256": "4d2107a9b6989c25e0a20606beab7ce0b26d55043604d7091e9e9765319f638e",
+      "the_main_bundle_sha256": "e721eb6788390eec5a0c10c39f73d74a66f0493d61d343333f8591c4dfc66093",
+      "the_main_bundle_bytes": 3031349
+    }
+  },
+  "the_receipts": {
+    "the_canonical_gate": {
+      "path": "target/oip-canonical-regression-honesty/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
+      "sha256": "8ec0995ae2ba0669f36c357d6a17488670c59ee11ebd791338ab94ae0014124e"
+    },
+    "the_canonical_ui_gate": {
+      "path": "target/oip-canonical-regression-honesty/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
+      "sha256": "c03eeb3b22ba418304adf943c782893981c98f650c3591374b52ca597d81f07c"
+    },
+    "the_acceptance_report": {
+      "path": "target/oip-canonical-regression-honesty/oip_canonical_ui_gate/report.json",
+      "sha256": "ead9ed1a3f187d44c1f5881d570d74d96b7a2205186ed9917ecb5d87579671ba"
+    },
+    "the_global_context": {
+      "path": "docs/evidence/oip-global-context/global-context.json",
+      "sha256": "8771ffc9b8993e41ad7b84295de11ad1e1cc72ff8f995740214ed380a2547547"
+    },
+    "the_accessibility": {
+      "path": "docs/evidence/oip-accessibility/accessibility.json",
+      "sha256": "797e4e1765662056fbb8557869b6c772652bc88cb7aaee886d653e2c7ad8bc67"
+    },
+    "the_performance": {
+      "path": "docs/evidence/oip-performance/performance.json",
+      "sha256": "de8763f36701d771b4a15b637ee05eed75ba542d5b32d0695b956ec96506be1c"
+    },
+    "the_security_review": {
+      "path": "docs/evidence/oip-security-review/security-review.json",
+      "sha256": "2fc525d70d37bd76856890d78565160969ca2189c3ec5db8b1a9dfdff867a431"
+    },
+    "the_macos_application": {
+      "path": "docs/evidence/oip-macos-app/macos-app.json",
+      "sha256": "1bdf3e64f5491d2dae29b1be3afa7d3c85a49f0acc96e4d536e79207ea6ae77a"
+    },
+    "the_transport_parity": {
+      "path": "docs/evidence/oip-transport-parity/transport-parity.json",
+      "sha256": "8fed1b7a622dd55080eae22f966f26e44cabb2328f568f381734a640eec15b3c"
+    }
+  },
+  "the_manifest_verifies": true,
+  "the_problems": []
+}

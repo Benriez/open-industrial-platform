@@ -1864,11 +1864,55 @@ payload at all.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 31 — the honest states of the surface and the release manifest
+
+**Status: PROVED on canonical `main` (`d1ab37c`).**
+With every independent task closed, the remaining work was to look for the defects an operator
+would actually hit. A systematic sweep of the approved surface for values that are presented as
+facts found **three**:
+
+1. **The footer rendered the security blocker as "unknown offen".** The scoped snapshot of a
+   tenant carries no platform fact, so the client synthesised the placeholder `unknown` — and the
+   footer presented it as an *open* blocker. The footer now names that the blocker of the platform
+   is **not delivered to this session**. A blocker that the Core reported (`RUSTSEC-2023-0071
+   offen`) and the case "no blocker reported" stay exactly as they were.
+2. **The OPC-UA browser showed the scenario as "authorized_context"** — an internal wire value
+   presented as a fact. The scenario is a concept of the demo; the authorized scope carries none,
+   so the line of the source panel names that instead.
+3. **The operator login named two causes of the end of a session** (30 minutes, the sign-out) but
+   not the third: a **restart of the instance**. The browser session lives in the memory of the
+   Core (`crates/oip-server/src/browser_session.rs`), so a restart ends it — and the operator
+   restarts the instance routinely.
+
+Four new widget tests pin the three states (`apps/flutter/test/security_blocker_footer_test.dart`,
+the OPC-UA workstation test, the managed core integration test). The **design regression gate**
+passes on the changed shell: 348 of 348 Flutter tests, 175 browser findings with zero failures,
+13 captures, the visual comparison **PASS**, the eight functional phases 8 of 8 **PASS**, the served
+bundle (`e721eb67…`, 3 031 349 bytes) byte-identical to the local build, the operator visual
+approval still `VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
+
+**The release manifest.** The operator decides which artefacts may be signed and distributed; that
+decision needs a list. `tools/oip_release_manifest.py` writes `docs/release/oip-release-manifest.json`
+and `docs/release/SHA256SUMS`: every artefact of the release with its digest (the Core, the official
+MCP probe, the macOS application bundle as a digest over every file of the bundle, the delivered
+web release with the digest of `main.dart.js`), the revision and the tree it was built from, the
+build commands, the toolchain versions, the digests of nine acceptance receipts and the state of
+the operator's visual acceptance. `--verify` recomputes every digest and compares it with the
+written manifest: the manifest is a receipt, not a promise.
+
+The macOS application bundle was rebuilt from the committed source for the manifest
+(`831b69cb…`), and the bundle of the web release that the manifest names is the byte-identical
+asset that the gate proved.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/release/oip-release-manifest.json`, `docs/release/SHA256SUMS` | the release manifest: every artefact of the release with its digest, the provenance of its build, the digests of the acceptance receipts and the state of the operator's visual acceptance (iteration 31) |
 | `docs/evidence/oip-transport-parity/transport-parity.json` | the measured parity of REST, SSE and MCP of the current release for the same principal, and the refusal of the unauthorized session (iteration 30) |
 | `docs/evidence/oip-security-review/security-review.json` | the measured security review of the current release: 10 findings — 7 resolved, 2 mitigated, 1 escalated (the durability of the execution audit) (iteration 29) |
 | `docs/evidence/oip-device-connection/device-connection.json` | the measured verified connection of a device in the approved surface against the real Core and an owned loopback SSH fixture (iteration 28) |
