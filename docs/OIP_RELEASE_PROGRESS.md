@@ -2721,6 +2721,39 @@ acceptance of the operator stays `VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 59 — the history of the measurements of a real device is measured
+
+**Status: PROVED on canonical `main`.**
+The gate G6 asks for **historical observations, freshness, diagnostics, reconnect and failure
+recovery**. The record claimed "measurements and history proven against the fixture" while the
+history of a **real device** had no receipt of its own: the canonical acceptance checks that the
+persisted history of the connected device exists and that every stored sample is stale — and
+nothing more.
+
+The rehearsal `tests/oip_observation_history.py` measures the history of the measurements of a
+real device against the real Core and an owned loopback SSH fixture:
+
+* the history **grows** with the polling — the samples are persisted, not computed for the request;
+* every stored sample is reported as **stale**, while the current route of the same metric reports
+  the live one as `fresh`: a stored sample is never drawn as a live value;
+* the order is **ascending by the receive time**, and the receive time is present;
+* the cursor walks the history forward: the pages are **disjoint** and **complete**, no sample is
+  lost and none is repeated; the stable id of a sample deduplicates the history;
+* the history is **scoped**: a device of another organization and a device that does not exist are
+  refused identically with `404 RESOURCE_NOT_ACCESSIBLE`, so the answer does not disclose whether
+  the target exists;
+* the history **survives the restart** of the instance — the samples stayed — and the collection
+  **resumes** afterwards.
+
+The contract of the Core answered every question of the rehearsal: the history is an object with
+`items`, `truncated`, `next_cursor`, `missing_evidence` and `time_semantics` — never a bare array
+and never a total — the page is walked with an opaque cursor that is bound to the query and to the
+principal, the stored samples are rewritten as `stale` on read, and the history is served from the
+oldest stored entry forward.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -2731,6 +2764,7 @@ no push, no deployment, no system service.
 | `docs/evidence/oip-release-verification/release-verification.json` | the verification of the release with **one command**: the manifest verifies, every receipt is fresh, the record is intact, the acceptance passed and the safety boundaries held (tracked) |
 | `docs/evidence/oip-loopback-rate/loopback-rate.json` | the rate of the path of the measurement: the loopback of this machine, the rate of the machine itself and what the first paint of the baseline means (tracked) |
 | `docs/evidence/oip-worktree-reconciliation/worktree-reconciliation.json` | the reconciliation of the worktrees: every branch, the commits that the canonical branch does not contain, the capability that it delivers in their place and the receipt that proves it (tracked) |
+| `docs/evidence/oip-observation-history/observation-history.json` | the persisted observation history of a real device: it grows with the polling, every stored sample is stale, the order is ascending by the receive time, the cursor walks it forward without loss, the scope is enforced and it survives the restart (tracked) |
 | `docs/evidence/oip-measurement-coverage/measurement-coverage.json` | the coverage of the kinds of the measurement of the real device: every supported kind is delivered, every kind that is not available is named and never delivered as a number, the painted surface names them (tracked) |
 | `docs/evidence/oip-measurement-coverage/measurement-coverage-browser.json` | the browser receipt of the coverage: the findings of the journey against the real Core and the state of the tile of the verified identity (tracked) |
 | `docs/evidence/oip-canonical-acceptance/browser-gate.json` | the browser gate of the acceptance: the findings, the captures and the state of the visual acceptance of the operator (tracked) |

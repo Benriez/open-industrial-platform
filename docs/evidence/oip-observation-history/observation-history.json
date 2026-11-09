@@ -1,0 +1,64 @@
+{
+  "schema": "oip-observation-history-v1",
+  "steps": [
+    "the instance runs",
+    "the device is connected, verified and confirmed",
+    "the history of the device grows with the polling",
+    "the history survives the restart of the instance",
+    "the collection resumes after the restart"
+  ],
+  "ssh_fixture": {
+    "port": 52510,
+    "user": "benny",
+    "loopback_only": true
+  },
+  "the_history_grows": {
+    "the_samples": 20,
+    "the_moments": 2,
+    "the_metrics": [
+      "host.architecture",
+      "host.cpu_info",
+      "host.disks",
+      "host.hostname",
+      "host.interfaces",
+      "host.memory_total_bytes",
+      "host.memory_used_bytes",
+      "host.model",
+      "host.os",
+      "host.uptime_seconds"
+    ]
+  },
+  "the_samples_that_are_not_stale": 0,
+  "the_order_is_ascending_by_the_receive_time": true,
+  "the_ids_are_unique": true,
+  "the_ids_are_stable_keys": true,
+  "the_pages_of_the_continuation": 20,
+  "the_walk_is_disjoint": true,
+  "the_continuation_is_complete": true,
+  "the_current_observations": 10,
+  "the_current_ones_are_not_stale": true,
+  "the_distinction_of_the_freshness": {
+    "the_history": "stale",
+    "the_current": "fresh"
+  },
+  "the_foreign_device": {
+    "the_status": 404,
+    "the_code": "RESOURCE_NOT_ACCESSIBLE"
+  },
+  "the_missing_device": {
+    "the_status": 404,
+    "the_code": "RESOURCE_NOT_ACCESSIBLE"
+  },
+  "the_answers_are_identical": true,
+  "the_history_survives_the_restart": {
+    "the_samples_before": 20,
+    "the_samples_after": 30,
+    "the_samples_that_stayed": 20
+  },
+  "the_collection_resumes_after_the_restart": true,
+  "status": "PASS",
+  "the_revision": "5b9482b51d0588bfcf597bb428a2fe7658523053",
+  "the_tree": "1f423319477c183de379c2123800e97188c9c51b",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-09T21:43:50Z"
+}
