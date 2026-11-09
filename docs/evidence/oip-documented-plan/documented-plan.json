@@ -1,0 +1,29 @@
+{
+  "schema": "oip-documented-plan-v1",
+  "steps": [
+    "the example of the runbook is read",
+    "the instance is provisioned with the example",
+    "the instance of the example starts and answers"
+  ],
+  "the_plan": {
+    "the_parts": [
+      "bindings",
+      "infrastructures",
+      "legacy_single_infrastructure",
+      "organizations",
+      "principals",
+      "roles",
+      "sites",
+      "sources"
+    ],
+    "the_organizations": 1,
+    "the_sources": 1,
+    "the_principals": 1
+  },
+  "the_provisioning": "{\"schema_version\":3,\"organizations\":1,\"sources\":1,\"idempotent\":false,\"legacy_migrated\":false}",
+  "the_session_route": 200,
+  "the_login": 200,
+  "the_principal_of_the_session": true,
+  "status": "PASS",
+  "finished_utc": "2026-11-09T01:28:02Z"
+}

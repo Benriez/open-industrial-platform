@@ -2056,11 +2056,31 @@ No personal database change (`9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a9
 `user_version` 6 — measured before and after the rehearsal), no schema-7 activation of the
 personal installation, no private SSH, no push, no deployment, no system service.
 
+### Iteration 36 — the example of the runbook is executable documentation
+
+**Status: PROVED on canonical `main`.**
+The operator writes the plan of the own instance from the example of the runbook (§1.1). A
+documentation that does not work is worse than none.
+
+`tests/oip_documented_plan.py` takes the example **out of the runbook**, provisions a disposable
+instance with it and proves the whole path
+(`docs/evidence/oip-documented-plan/documented-plan.json`): the plan provisions (one
+organization, one source), the instance starts and answers the session route with 200, and the
+operator of the example authorizes a session with the one-time code of the principal **of the
+plan** — the session carries exactly that principal.
+
+If the plan of the Core changes, this rehearsal fails: the runbook is executable documentation
+and cannot rot unnoticed.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-documented-plan/documented-plan.json` | the measured example of the plan in the runbook: it provisions an instance, the instance answers and the operator of the example authorizes the session (iteration 36) |
 | `docs/evidence/oip-activation-dry-run/activation-dry-run.json` | the measured dry run of the activation of the release on a copy of the store of the operator: the migration is accepted, nothing is lost, the personal installation is unchanged (iteration 35) |
 | `docs/evidence/oip-reconnect-recovery/reconnect-recovery.json` | the measured reconnect and recovery of the application: the restart of the instance, the honest state of the surface, the named cause and the restored projection (iteration 33) |
 | `docs/evidence/oip-native-session/native-session.json` | the measured session of the native client against the real Core: the one-time code, the authorized hierarchy, the scoped projection and the sign-out (iteration 32) |
