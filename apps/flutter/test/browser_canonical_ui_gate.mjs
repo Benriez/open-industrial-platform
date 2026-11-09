@@ -206,6 +206,7 @@ try {
 } finally {
   const receipt = {
     verdict: fatal !== null || errors.length || external.length ? 'FAIL' : 'PASS',
+    revision: process.env.OIP_REVISION || null,
     base,
     browser_version: browser.version(),
     bundle_sha256: bundleSha256,

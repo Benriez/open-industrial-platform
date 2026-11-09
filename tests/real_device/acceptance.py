@@ -46,6 +46,12 @@ plan['roles'].append({'id':'inventory-admin','name':'Explicit scoped operator','
 plan['bindings'].append({'principal_id':'reader-org-a','role_id':'inventory-admin','scope':{'kind':'organization','id':'org-a'}})
 plan['bindings'].append({'principal_id':'platform-reader','role_id':'inventory-admin','scope':{'kind':'platform'}})
 from ssh_fixture import SshFixture
+
+# The revision the acceptance is measured on. Every receipt of the acceptance
+# names it, so a reader of the evidence can tell whether it is current.
+REVISION = subprocess.check_output(
+    ['git', 'rev-parse', 'HEAD'], cwd=pathlib.Path(__file__).resolve().parents[2],
+    text=True).strip()
 owned_fixture = None
 if os.environ.get('OIP_SSH_FIXTURE'):
     fixture=json.loads(pathlib.Path(os.environ['OIP_SSH_FIXTURE']).read_text())
@@ -183,7 +189,7 @@ try:
             # Preserve earlier attempts, but never mix their captures/failure
             # dumps with this run's authoritative evidence set.
             browser_evidence.rename(OUT/f'browser-previous-{time.time_ns()}')
-        env=dict(os.environ,OIP_URL=URL,OIP_IPC_SOCKET=str(SOCK),OIP_BROWSER_CREDENTIAL=str(RUN/'reader-org-a.credential'),OIP_BROWSER_EVIDENCE=str(browser_evidence))
+        env=dict(os.environ,OIP_URL=URL,OIP_IPC_SOCKET=str(SOCK),OIP_BROWSER_CREDENTIAL=str(RUN/'reader-org-a.credential'),OIP_BROWSER_EVIDENCE=str(browser_evidence),OIP_REVISION=REVISION)
         with (OUT/'browser.log').open('w') as log:
             p=subprocess.run(['node',os.environ['OIP_BROWSER_SCRIPT']],env=env,cwd=ROOT,stdout=log,stderr=log,timeout=600)
         assert p.returncode==0,'Canonical UI design browser gate failed; inspect browser receipt'
@@ -212,7 +218,8 @@ try:
                     else 'accessibility.json')
                 result = subprocess.run(
                     ['node', str(ROOT / 'apps/flutter/test' / script)],
-                    env=dict(env, OIP_BROWSER_EVIDENCE=str(evidence_dir)),
+                    env=dict(env, OIP_BROWSER_EVIDENCE=str(evidence_dir),
+                              OIP_REVISION=REVISION),
                     cwd=ROOT, capture_output=True, text=True, timeout=600)
                 (OUT / f'{name}.log').write_text(result.stdout + result.stderr)
                 assert result.returncode == 0, \
@@ -222,7 +229,8 @@ try:
                     json.loads(receipt.read_text())
             # The design gate proves reachability and auth. The established
             # onboarding journey separately proves its real side effect.
-            onboarding_env=dict(env,OIP_BROWSER_EVIDENCE=str(OUT/'onboarding'))
+            onboarding_env=dict(env,OIP_BROWSER_EVIDENCE=str(OUT/'onboarding'),
+                                 OIP_REVISION=REVISION)
             with (OUT/'onboarding.log').open('w') as onboarding_log:
                 onboarding=subprocess.run(['node',str(ROOT/'apps/flutter/test/browser_onboarding.mjs')],
                                           env=onboarding_env,cwd=ROOT,stdout=onboarding_log,
