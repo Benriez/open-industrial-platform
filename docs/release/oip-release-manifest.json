@@ -1,9 +1,9 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "28163476354f3dbd11526ed6b9dd69cee957ab5b",
-  "the_tree": "01cad5e185cf530ff0fd6f2ce152aef302798844",
+  "the_revision": "b5cd7eee1c2f177d875a064e2d817c5944503128",
+  "the_tree": "2bcc80c7600a434ff55ec8dd1bf82e770474fc58",
   "the_branch": "main",
-  "the_working_tree_is_clean": true,
+  "the_working_tree_is_clean": false,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -11,16 +11,21 @@
     "dart": "Dart SDK version: 3.4.0 (stable) (Mon May 6 07:59:58 2024 -0700) on \"macos_arm64\""
   },
   "the_build_commands": {
-    "the_core": "cargo build --release --bin oip-server --example mcp_probe",
+    "the_core": "cargo build --locked --release --workspace --bin oip-server --example mcp_probe",
     "the_web_release": "flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none",
     "the_macos_application_bundle": "flutter build macos --release --dart-define=OIP_API_URL=<url of the instance>"
+  },
+  "the_source_manifest": {
+    "the_command": "git ls-files -s",
+    "the_files": 632,
+    "the_sha256": "db5672b7fcc3e54c293f4d6b5b67fc86083ed72dfb3458a3b67cb2b52c193b51"
   },
   "the_artifacts": {
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
       "bytes": 36271328,
-      "sha256": "4f49cc1512fa8e10083bdf01e5cb618077e3337ed4ce8fc948fd08b37adef30f"
+      "sha256": "e3dd071b925ee395e784f4c1787c5c2910fc19a9f7f45d7c5ba96709b75ff138"
     },
     "the_official_mcp_probe": {
       "present": true,
@@ -49,45 +54,149 @@
   "the_receipts": {
     "the_global_context": {
       "path": "docs/evidence/oip-global-context/global-context.json",
-      "sha256": "8771ffc9b8993e41ad7b84295de11ad1e1cc72ff8f995740214ed380a2547547"
+      "sha256": "f4acf071d4de9deebc28b835173852a399cd3fbc8cb1fc1e557761b287bcb8c6"
     },
     "the_accessibility": {
       "path": "docs/evidence/oip-accessibility/accessibility.json",
-      "sha256": "797e4e1765662056fbb8557869b6c772652bc88cb7aaee886d653e2c7ad8bc67"
+      "sha256": "10cd3a6c97d3d491da45597c00d1e1207cf30c91fa14ecb2fe4cadd9b33c3f73"
     },
     "the_performance": {
       "path": "docs/evidence/oip-performance/performance.json",
-      "sha256": "de8763f36701d771b4a15b637ee05eed75ba542d5b32d0695b956ec96506be1c"
+      "sha256": "81b0029d23a59319402b7a995cc045654959ea57c27bf8f4faf7c0e009e5daca"
     },
     "the_security_review": {
       "path": "docs/evidence/oip-security-review/security-review.json",
-      "sha256": "43cdd3ddbf2725ab38f1d1856576298d9658211addb16a22f05fd8e00f6bc252"
+      "sha256": "1903d0452e814e4032c3b31218b1dd438e73cb57a45b06189ba523821ac6296d"
     },
     "the_macos_application": {
       "path": "docs/evidence/oip-macos-app/macos-app.json",
-      "sha256": "65e0856cf0528b152a6ed4b3eb53e1d49767b3604c14fb775a02b1171c38de1f"
+      "sha256": "a4f0ccafc32b0eec3bea31230cb85db2eeb378f07337b397251ccac27628f477"
     },
     "the_transport_parity": {
       "path": "docs/evidence/oip-transport-parity/transport-parity.json",
-      "sha256": "8fed1b7a622dd55080eae22f966f26e44cabb2328f568f381734a640eec15b3c"
+      "sha256": "94f1ae51e60c6736e3813d005c97689e0c964a80d83e37f8b5286ac979dbae98"
+    },
+    "the_acceptance": {
+      "path": "docs/evidence/oip-canonical-acceptance/acceptance.json",
+      "sha256": "824479274656e4c7a16e71e87bdc8d104a731250d2fc51dc3cf2ca9861382658"
+    },
+    "the_acceptance_browser_gate": {
+      "path": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
+      "sha256": "58216fca2551a94f04770b663b9889467a946af9768e30317b0fa6e08d49a4c8"
+    },
+    "the_acceptance_ui_gate": {
+      "path": "docs/evidence/oip-canonical-acceptance/ui-gate.json",
+      "sha256": "2e307b2d72e72e8e387895c451a043b36a5488bc9cb489888bec5de358dbb08d"
+    },
+    "the_device_administration": {
+      "path": "docs/evidence/oip-device-administration/device-administration.json",
+      "sha256": "73117b9086f6d8f7431c3a6250c10a09362335d488e1286beabb59ca7ee8d9c3"
+    },
+    "the_session_lifetime": {
+      "path": "docs/evidence/oip-session-lifetime/session-lifetime.json",
+      "sha256": "21b69f6b7a1341f6b8c362a2badc8d784ba25b080c9fe908ef3408bc743d17a6"
+    },
+    "the_stability": {
+      "path": "docs/evidence/oip-stability/stability.json",
+      "sha256": "df5b15e5a425b1245604fe6a3c964d58c2959a5bc8cc2b023e088c03f699616b"
+    },
+    "the_reproducible_build": {
+      "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
+      "sha256": "47d3c42358afc653be15b33fd812aad91d33b84984f52b72dc54dc9baa0b0e99"
+    },
+    "the_upgrade_rollback": {
+      "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
+      "sha256": "8313ad6025c85f7510e7fa46942d57a57c0cf52ccbf52c57776be8013cd90f0e"
+    },
+    "the_activation_dry_run": {
+      "path": "docs/evidence/oip-activation-dry-run/activation-dry-run.json",
+      "sha256": "1acdc26a66c820afa241c0ecfa7b6119379d7318d99d92f172a299be18bffd6d"
+    },
+    "the_rust_regression": {
+      "path": "docs/evidence/oip-rust-regression/rust-regression.json",
+      "sha256": "1557e3579f525df93fc97a18c3250234a4862cfa3726aa38288497ce0cf29321"
+    },
+    "the_reconnect_recovery": {
+      "path": "docs/evidence/oip-reconnect-recovery/reconnect-recovery.json",
+      "sha256": "1f28c3139fa6a33475ef599e30fe771a615dcf42e6f919ec181158b11a56581a"
+    },
+    "the_operations": {
+      "path": "docs/evidence/oip-operations/operations.json",
+      "sha256": "18d116d54b73028428896c4fc8e860430da4fd2a91a88d9c037592faf646e19c"
+    },
+    "the_documented_plan": {
+      "path": "docs/evidence/oip-documented-plan/documented-plan.json",
+      "sha256": "2c9bf6e891531465d74b1f8856d670d6213dc75bcb36fd441c7e7e4a05518f18"
+    },
+    "the_storage_failure": {
+      "path": "docs/evidence/oip-storage-failure/storage-failure.json",
+      "sha256": "c2ae7fa79dbd27c79ae981a7c67180d8d516688b08e150633768f9b7fd96f6a7"
+    },
+    "the_operations_rehearsal": {
+      "path": "docs/evidence/oip-operations/operations.json",
+      "sha256": "18d116d54b73028428896c4fc8e860430da4fd2a91a88d9c037592faf646e19c"
+    },
+    "the_settings_offline": {
+      "path": "docs/evidence/oip-settings-offline/settings-offline.json",
+      "sha256": "1a8735f793692f9b1a3a563e5882d3241c4f73f3c6299315a2650fc758f4bb85"
+    },
+    "the_offline_archive": {
+      "path": "docs/evidence/oip-offline-archive/offline-archive.json",
+      "sha256": "d142df89faedd03610c57e4190e485db8a122e8b1cd883a8de9cdc66876ef800"
+    },
+    "the_opcua_parity": {
+      "path": "docs/evidence/oip-opcua-parity/opcua-parity.json",
+      "sha256": "cff67a6b20960255efc7c8ee90a43846364057d67c1d89be68d68a253adfcf59"
+    },
+    "the_extend_registry": {
+      "path": "docs/evidence/oip-extend-registry/extend-registry.json",
+      "sha256": "7fcdf55ef74b26128773b348012c7f017c36cb25e6e82376d466a4c729296776"
+    },
+    "the_historical_daemon": {
+      "path": "docs/evidence/oip-historical-daemon/historical-daemon.json",
+      "sha256": "3f5a81e411a917e73efc8b0836d98062a279e825d80eea13e8801743b2fbfb96"
+    },
+    "the_diagnostic_continuation": {
+      "path": "docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json",
+      "sha256": "993f355c69fd1bc6c1ae7abd9fc3542c0a5d996a06a1dcc52e8d65cc326bc667"
+    },
+    "the_device_connection": {
+      "path": "docs/evidence/oip-device-connection/device-connection.json",
+      "sha256": "148784afee1b8529484032fbc3c1c6cf3e592af5585c8f225da8b544635c72e7"
+    },
+    "the_workstation_data": {
+      "path": "docs/evidence/oip-workstation-data/workstation-data.json",
+      "sha256": "4c995ab94c694c9e7ca8579f8aa0d33d29c3225f835930bafd3bcba13bfc20df"
     },
     "the_canonical_gate": {
-      "path": "target/oip-canonical-regression-final4/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
-      "sha256": "b6b3fa98f36371763ea04c9d31ca3a8d7b0f0e7f65a6ed68a52fb8de6ac79b59"
+      "path": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
+      "sha256": "76ac08cfaf9707d1f1189aec5efcb353b8da4eca3bbbc932ecef348ab41205c9"
     },
     "the_canonical_ui_gate": {
-      "path": "target/oip-canonical-regression-final4/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
-      "sha256": "c4d33e8558bbbe16aa3ae9da740f974ebc4104496f4918f0edda440b1ed3028b"
+      "path": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
+      "sha256": "f05f6d74cd9589ee0d7f487f95516bbdfa4795108710b91c8780d4360d73eccf"
     },
     "the_acceptance_report": {
-      "path": "target/oip-canonical-regression-final4/oip_canonical_ui_gate/report.json",
-      "sha256": "a7ad36e00252f793fff6fe143525d39a1d6bab4a5ae38b6238d667f4d4d3b7ac"
+      "path": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/report.json",
+      "sha256": "8b210f0adca757b62d72df00963404fbe3d8be0b27f1f585052c074e20a3dd3e"
     }
   },
-  "the_gate_receipts_of_the_run": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final4",
-  "the_revision_of_the_acceptance": "e7aa994104a65ad82f82eea5811d22684ecd36ee",
-  "the_tree_of_the_acceptance": "bf03f24658680bb07255ac426d710dfebf0c8ae0",
+  "the_gate_receipts_of_the_run": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final7",
+  "the_revision_of_the_acceptance": "3c663f90c3f62ad77b7f2a79a6e1a145eff04e44",
+  "the_tree_of_the_acceptance": "c263b5620f702619633d5c4662ad1874134bba4e",
   "the_acceptance_was_run_on_a_clean_tree": true,
+  "the_core_is_the_reproducible_one": {
+    "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
+    "the_digest_of_the_reproducible_build": "e3dd071b925ee395e784f4c1787c5c2910fc19a9f7f45d7c5ba96709b75ff138",
+    "the_core_is_identical_across_the_two_builds": true,
+    "the_manifest_names_the_reproducible_binary": true
+  },
+  "the_visual_acceptance": {
+    "the_state": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
+    "the_source": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
+    "the_revision_of_the_acceptance": "3c663f90c3f62ad77b7f2a79a6e1a145eff04e44",
+    "the_note": "the operator alone accepts the visible result; the gate records the state, it never grants it"
+  },
   "the_manifest_verifies": true,
   "the_problems": []
 }

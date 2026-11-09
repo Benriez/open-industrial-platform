@@ -13,12 +13,13 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `f53e9ec` (`docs: every receipt names the revision it was measured on`) |
-| Canonical source tree | `381838f750c1c26512b3f365608c4cf6252d72ca` |
-| The revision of the final acceptance | `e7aa994` (tree `bf03f2465868`) — the clean tree the canonical gate passed on |
+| Canonical source revision | `b5cd7ee` (`feat(g9): the Core names the revision it was built from`) |
+| Canonical source tree | `2bcc80c7600a434ff55ec8dd1bf82e770474fc58` |
+| The revision of the final acceptance | `3c663f9` (tree `c263b5620f70`) — the clean tree the canonical gate passed on |
+| The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` — the same revision yields the same bytes, and the binary names its own revision |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 631, source manifest SHA-256 `5d1c40803eec8910a0fb4a7d5b39bd9a743cfd2889816b96875a9b59bea9af23` |
+| Tracked files in the canonical source revision | 632, source manifest SHA-256 `db5672b7fcc3e54c293f4d6b5b67fc86083ed72dfb3458a3b67cb2b52c193b51` (the digest of `git ls-files -s`) |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
@@ -2415,6 +2416,51 @@ The rehearsal reports that it is **blocked** — with the reason — on a machin
 it never claims a measurement it did not take. Nothing of the rehearsal touches the personal
 installation of the operator: the store is a file on a volume in the temporary directory of the
 machine, and the volume is detached and deleted at the end.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
+### Iteration 51 — the record is checked against the evidence, and the Core of the release is reproducible
+
+**Status: PROVED on canonical `main`.**
+An independent read-only audit of the ledger and of this state file against every receipt under
+`docs/evidence/` found stale figures, claims that no receipt backs, and two literal defects. All
+of them are corrected:
+
+* the confirmed host key of the device connection — the SSH fixture generates a fresh key for
+  every run, so the record names the **property** (the surface shows exactly the fingerprint that
+  the host really presents) and not a value of one run;
+* the performance and the stability figures, in the unit of the receipt (KiB, not MB);
+* the tables of the diagnostics, of the upgrade/rollback, of the artefacts of the acceptance and
+  of the daemon of the era;
+* the claim of the OPC-UA pagination: the measured reconnect shows **no** repeated node, so the
+  record no longer exceeds the receipt;
+* the claim of the device update: it now cites the tracked receipt of the administration of a
+  device;
+* the two literal defects: an unfilled placeholder (`{REV}`) and a garbled cell.
+
+Two gaps of the **handoff** are closed as well:
+
+* the whole acceptance of the release is now a **tracked** receipt (the eight phases, the browser
+  gate, the UI gate, the device administration and the 13 captures), so the handoff does not
+  depend on a directory of a build that is not part of the checkout;
+* the release has **one** build command for the Core. The gate built it with
+  `cargo build -p oip-server` and the manifest named `cargo build --release`; the feature
+  resolution of the workspace is part of the binary, so the two commands produced two different
+  binaries and the operator could build a binary that the gate had never proved.
+
+**The Core of the release is byte-reproducible.** The build script of the Core embeds the revision
+into the binary, so the binary changes with every commit — the honest property is that **the same
+revision yields the same bytes**, and the binary says which revision it is. Measured
+(`docs/evidence/oip-reproducible-build/reproducible-build.json`): the Core and its official MCP
+probe are built twice from scratch and both builds are byte-identical; the web release and the
+macOS bundle are byte-identical as well, and the reproduction of the bundle **is** the bundle of
+the release. The manifest of the release names the reproducible binary and the state of the visual
+acceptance of the operator.
+
+**The tool of the operations can show the log of the instance** (`tools/oip_ops.py log`), which
+the gate G9 asks for; the rehearsal reads the log with the tool and the record of the operations
+names the operation that was performed.
 
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.

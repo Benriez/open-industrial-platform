@@ -247,16 +247,22 @@ def build_manifest():
                 measured.get("the_core_of_the_second_build") == core.get("sha256"),
         }
     # The state of the visual acceptance of the operator. It is recorded by the
-    # gate itself and it is never a claim of this tool.
-    browser = receipts.get("the_canonical_gate")
-    if browser is not None and browser.is_file():
-        payload = json.loads(browser.read_text())
-        manifest["the_visual_acceptance"] = {
-            "the_state": payload.get("operator_visual_approval"),
-            "the_source": str(browser.relative_to(ROOT)),
-            "the_note": ("the operator alone accepts the visible result; "
-                         "the gate records the state, it never grants it"),
-        }
+    # gate itself and it is never a claim of this tool. The tracked receipt of
+    # the acceptance is the source of the state, so the handoff does not
+    # depend on a directory of a build that is not part of the checkout.
+    for browser in (RECEIPTS["the_acceptance_browser_gate"],
+                    receipts.get("the_canonical_gate")):
+        if browser is not None and browser.is_file():
+            payload = json.loads(browser.read_text())
+            manifest["the_visual_acceptance"] = {
+                "the_state": payload.get("operator_visual_approval"),
+                "the_source": str(browser.relative_to(ROOT)),
+                "the_revision_of_the_acceptance": payload.get("revision")
+                or payload.get("the_revision_of_the_acceptance"),
+                "the_note": ("the operator alone accepts the visible result; "
+                             "the gate records the state, it never grants it"),
+            }
+            break
     return manifest
 
 
