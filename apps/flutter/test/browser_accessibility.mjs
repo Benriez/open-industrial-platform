@@ -133,6 +133,7 @@ check('no external browser requests', external.length === 0, external.join(', ')
 
 const receipt = {
   schema: 'oip-accessibility-receipt-v1',
+  revision: process.env.OIP_REVISION || null,
   scope: 'name and role coverage of the rendered surface of the six workstations; not a full WCAG audit',
   base,
   stations: perStation,

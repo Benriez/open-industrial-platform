@@ -224,6 +224,7 @@ check('no browser JavaScript errors', errors.length === 0, errors.join(' | '));
 
 const receipt = {
   schema: 'oip-global-context-receipt-v1',
+  revision: process.env.OIP_REVISION || null,
   base,
   options_offered: options.length,
   scope_per_workstation: scopePerStation,

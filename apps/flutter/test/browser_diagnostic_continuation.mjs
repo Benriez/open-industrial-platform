@@ -268,6 +268,7 @@ await page.screenshot({ path: `${outDir}/diagnostic-continuation-after.png` });
 
 const receipt = {
   schema: 'oip-diagnostic-continuation-v1',
+  revision: process.env.OIP_REVISION || null,
   scope: 'the diagnostic continuation of the approved surface against the real Core',
   base,
   gaps: {

@@ -221,6 +221,7 @@ check('no browser JavaScript errors', errors.length === 0, errors.join(' | '));
 
 const receipt = {
   schema: 'oip-workstation-data-v1',
+  revision: process.env.OIP_REVISION || null,
   scope: 'the functional depth of the six workstations against the real Core',
   base,
   selected_source: sourceOption[0] ?? null,

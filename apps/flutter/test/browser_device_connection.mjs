@@ -234,6 +234,7 @@ await page.screenshot({ path: `${outDir}/device-connection.png` });
 
 const receipt = {
   schema: 'oip-device-connection-v1',
+  revision: process.env.OIP_REVISION || null,
   scope: 'the verified connection of a device in the approved surface against the real Core',
   base,
   expected_fingerprint: expectedFingerprint,

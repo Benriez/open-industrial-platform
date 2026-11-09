@@ -161,6 +161,7 @@ check('no browser JavaScript errors', errors.length === 0, errors.join(' | '));
 
 const receipt = {
   schema: 'oip-reconnect-recovery-v1',
+  revision: process.env.OIP_REVISION || null,
   scope: 'the reconnect and the recovery of the application against the real Core',
   base,
   the_moment_before_the_restart: before,

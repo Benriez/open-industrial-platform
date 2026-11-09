@@ -187,6 +187,8 @@ def main():
              base, str(evidence)],
             cwd=ROOT, capture_output=True, text=True, timeout=1800,
             env=dict(os.environ,
+                     OIP_REVISION=subprocess.check_output(
+                         ['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
                      OIP_IPC_SOCKET=str(work / "s"),
                      OIP_BROWSER_CREDENTIAL=str(credential),
                      OIP_SERVER_BIN=args.binary,
