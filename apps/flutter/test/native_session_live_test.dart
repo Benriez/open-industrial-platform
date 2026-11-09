@@ -39,6 +39,13 @@ void main() {
     expect(bootstrap.snapshot.sources.map((item) => item.id),
         isNot(contains('source-d')));
 
+    // The live transport of the native client carries the session as well:
+    // the stream of the Core delivers the authorized snapshot.
+    final event = await api.infrastructureStream().first
+        .timeout(const Duration(seconds: 30));
+    expect(event.type, 'snapshot');
+    expect(event.data, contains('source-a'));
+
     // The session ends with the sign-out of the Core.
     await api.logout();
   }, timeout: const Timeout(Duration(seconds: 120)));
