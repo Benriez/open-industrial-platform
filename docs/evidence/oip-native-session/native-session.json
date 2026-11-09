@@ -1,0 +1,16 @@
+{
+  "schema": "oip-native-session-v1",
+  "steps": [
+    "the instance runs",
+    "the one-time code is issued",
+    "the native client holds the session of the Core"
+  ],
+  "the_output": [
+    "00:00 +0: loading /Users/benny/Code/open-industrial-platform/apps/flutter/test/native_session_live_test.dart",
+    "00:00 +0: The native client holds a session of the real Core",
+    "00:00 +1: All tests passed!"
+  ],
+  "the_core_served_the_session": true,
+  "status": "PASS",
+  "finished_utc": "2026-11-09T00:24:12Z"
+}

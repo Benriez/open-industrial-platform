@@ -1910,11 +1910,63 @@ asset that the gate proved.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 32 — the native application could not hold a session
+
+**Status: PROVED on canonical `main` (`2e2bef1`).**
+The sweep of the release for the defects an operator would hit found a **fatal** one: the macOS
+bundle could never authenticate.
+
+**The finding.** The browser of the web release keeps the cookie of the session on its own and
+sends the origin of the page with every request. The native application has no browser, and the
+client did neither:
+
+* the Core refuses the login of a session route without an origin
+  (`crates/oip-server/src/browser_session.rs`, `require_origin`) — the native client sent no
+  origin, so the one-time code could not even be redeemed;
+* the Core refuses every management read without the cookie of the session — the native client
+  kept no cookie, so even a successful login would have left the bundle without an authorized
+  projection.
+
+The bundle therefore showed the operator login and nothing else. **G9's local installation and
+G12's operator acceptance were impossible with the desktop application** — and the defect was
+invisible in the web release, which is why the browser gate never saw it.
+
+**The proof before the fix.** `apps/flutter/test/native_session_cookie_test.dart` runs the real
+client on the VM — the Dart semantics of the bundle, without a browser — against a server that
+behaves like the Core: the login answers with the `Set-Cookie` of the session and every other
+route refuses a request without that cookie. Before the fix the read after a successful login
+was refused with `PERMISSION_DENIED`.
+
+**The fix.** A platform-specific session transport (`apps/flutter/lib/services/session_cookie.dart`
+with its native and its web implementation): on a platform without a browser the client keeps the
+cookie of the session in the memory of the process and declares the origin it addresses; on the
+web the browser keeps both and the client adds nothing. The cookie is never written to a file,
+never logged and never leaves the process.
+
+**The proof after the fix.** `tests/oip_native_session.py` starts the **release** binary, issues
+the one-time code of the operator and runs the native client against the real Core
+(`docs/evidence/oip-native-session/native-session.json`): the login with the code, the hierarchy
+of the authorized scope, the scoped projection with the sources of the scope and without the
+source of the other organization, and the sign-out at the end. The Core served the session — its
+audit names the capability executions.
+
+**The gate.** The design regression gate passes on the changed client: **349 of 349** Flutter tests
+(one skipped: the live test without an instance), 175 browser findings with zero failures, the
+visual comparison **PASS**, the eight functional phases 8 of 8 **PASS**, the served bundle
+(`8861cf74…`) byte-identical to the local build, the operator visual approval still
+`VISUAL_PENDING_OPERATOR_ACCEPTANCE`. The macOS bundle was rebuilt from the committed source and
+proves again: it starts, reaches the Core, refuses without a session, shows the approved shell,
+terminates without an orphan and starts again.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-native-session/native-session.json` | the measured session of the native client against the real Core: the one-time code, the authorized hierarchy, the scoped projection and the sign-out (iteration 32) |
 | `docs/release/oip-release-manifest.json`, `docs/release/SHA256SUMS` | the release manifest: every artefact of the release with its digest, the provenance of its build, the digests of the acceptance receipts and the state of the operator's visual acceptance (iteration 31) |
 | `docs/evidence/oip-transport-parity/transport-parity.json` | the measured parity of REST, SSE and MCP of the current release for the same principal, and the refusal of the unauthorized session (iteration 30) |
 | `docs/evidence/oip-security-review/security-review.json` | the measured security review of the current release: 10 findings — 7 resolved, 2 mitigated, 1 escalated (the durability of the execution audit) (iteration 29) |
