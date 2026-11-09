@@ -5,11 +5,11 @@
   ],
   "browser_receipt": {
     "schema": "oip-reconnect-recovery-v1",
-    "revision": "3936fab817687e0eecce04524b4361e61cac7b20",
+    "revision": "96a2f1c8995668906ddd5ffb851a2d452cc28abc",
     "scope": "the reconnect and the recovery of the application against the real Core",
-    "base": "http://127.0.0.1:51729",
-    "the_moment_before_the_restart": "2026-11-09 03:56:56.776 UTC",
-    "the_moment_after_the_restart": "2026-11-09 03:57:02.997 UTC",
+    "base": "http://127.0.0.1:61636",
+    "the_moment_before_the_restart": "2026-11-09 12:06:26.631 UTC",
+    "the_moment_after_the_restart": "2026-11-09 12:06:33.431 UTC",
     "findings": [
       {
         "check": "the first code is issued",
@@ -59,7 +59,7 @@
       {
         "check": "the projection carries a fresh moment",
         "ok": true,
-        "detail": "2026-11-09 03:56:56.776 UTC -> 2026-11-09 03:57:02.997 UTC"
+        "detail": "2026-11-09 12:06:26.631 UTC -> 2026-11-09 12:06:33.431 UTC"
       },
       {
         "check": "no browser JavaScript errors",
@@ -72,8 +72,8 @@
   "checks": 11,
   "the_restarts": 1,
   "status": "PASS",
-  "the_revision": "3936fab817687e0eecce04524b4361e61cac7b20",
-  "the_tree": "9446fddaa86a1cba4498a3cfc0054417d3ab98b3",
-  "the_working_tree_is_clean": false,
-  "finished_utc": "2026-11-09T03:57:13Z"
+  "the_revision": "96a2f1c8995668906ddd5ffb851a2d452cc28abc",
+  "the_tree": "f894d717dface237cb12359030ec898983bef283",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-09T12:06:36Z"
 }

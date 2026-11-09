@@ -1,9 +1,9 @@
 {
   "schema": "oip-device-connection-v1",
-  "revision": "3936fab817687e0eecce04524b4361e61cac7b20",
+  "revision": "96a2f1c8995668906ddd5ffb851a2d452cc28abc",
   "scope": "the verified connection of a device in the approved surface against the real Core",
-  "base": "http://127.0.0.1:63432",
-  "expected_fingerprint": "SHA256:zgSWGiwMr96gJyFQ4Pv4JIh8HaJEdxlb1h6ZKYlip0k",
+  "base": "http://127.0.0.1:52208",
+  "expected_fingerprint": "SHA256:rMkDumpLZa/YSSmsJ9sMb9wSK5SdK0WajN7GFuS/EYg",
   "findings": [
     {
       "check": "browser-login accepted",
@@ -13,7 +13,7 @@
     {
       "check": "the inventory of the scope lists the device",
       "ok": true,
-      "detail": "Existing inventory identity · existing-pi\nGerät Existing inventory identity existing-pi auswählen · SingleBoardComputer · c5069d3f-353c-4e04-ae7c-a1a5df3054ce · 10 Observations · Reachability Erreichb"
+      "detail": "Existing inventory identity · existing-pi\nGerät Existing inventory identity existing-pi auswählen · SingleBoardComputer · 5ea36089-8d6d-48cf-a3bb-be27e3aa8059 · 10 Observations · Reachability Erreichb"
     },
     {
       "check": "the connection panel of the device is shown",

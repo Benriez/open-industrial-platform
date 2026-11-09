@@ -1,8 +1,8 @@
 {
   "schema": "oip-workstation-data-v1",
-  "revision": "3936fab817687e0eecce04524b4361e61cac7b20",
+  "revision": "96a2f1c8995668906ddd5ffb851a2d452cc28abc",
   "scope": "the functional depth of the six workstations against the real Core",
-  "base": "http://127.0.0.1:52591",
+  "base": "http://127.0.0.1:63725",
   "selected_source": "Kontext Organization A / Infrastructure A1 / site-a1 / source-a auswählen\nsource-a\nOrganization A / Infrastructure A1 / site-a1 / source-a",
   "surfaces": {
     "overview": {
@@ -15,10 +15,10 @@
       "lines": 58
     },
     "opcua": {
-      "lines": 93
+      "lines": 91
     },
     "diagnostics": {
-      "lines": 105
+      "lines": 115
     },
     "settings": {
       "lines": 77

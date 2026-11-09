@@ -5,9 +5,9 @@
   ],
   "browser_receipt": {
     "schema": "oip-workstation-data-v1",
-    "revision": "3936fab817687e0eecce04524b4361e61cac7b20",
+    "revision": "96a2f1c8995668906ddd5ffb851a2d452cc28abc",
     "scope": "the functional depth of the six workstations against the real Core",
-    "base": "http://127.0.0.1:52591",
+    "base": "http://127.0.0.1:63725",
     "selected_source": "Kontext Organization A / Infrastructure A1 / site-a1 / source-a ausw\u00e4hlen\nsource-a\nOrganization A / Infrastructure A1 / site-a1 / source-a",
     "surfaces": {
       "overview": {
@@ -20,10 +20,10 @@
         "lines": 58
       },
       "opcua": {
-        "lines": 93
+        "lines": 91
       },
       "diagnostics": {
-        "lines": 105
+        "lines": 115
       },
       "settings": {
         "lines": 77
@@ -120,8 +120,8 @@
   },
   "checks": 17,
   "status": "PASS",
-  "the_revision": "3936fab817687e0eecce04524b4361e61cac7b20",
-  "the_tree": "9446fddaa86a1cba4498a3cfc0054417d3ab98b3",
-  "the_working_tree_is_clean": false,
-  "finished_utc": "2026-11-09T03:59:20Z"
+  "the_revision": "96a2f1c8995668906ddd5ffb851a2d452cc28abc",
+  "the_tree": "f894d717dface237cb12359030ec898983bef283",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-09T12:08:45Z"
 }
