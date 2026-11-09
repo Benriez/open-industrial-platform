@@ -42,8 +42,14 @@ def run_tool(arguments, expect_success=True):
     if expect_success and result.returncode != 0:
         raise AssertionError(
             f"{arguments[0]} failed: {result.stderr.strip() or result.stdout.strip()}")
+    # The name of the operation: the first argument that is one of the
+    # commands of the tool. The receipt must name what was done, not the
+    # option that happened to come first.
+    commands = {"start", "provision", "provision-plan", "stop", "restart",
+                "status", "log", "backup", "restore"}
+    name = next((item for item in arguments if item in commands), "unknown")
     return {
-        "command": arguments[0],
+        "command": name,
         "arguments": [a for a in arguments[1:] if not a.startswith("/private/tmp")],
         "exit_code": result.returncode,
         "stdout": payload,
@@ -129,9 +135,11 @@ def main():
         # an editor and without OpenCode.
         step = tool("log", "--lines", "5")
         assert step["exit_code"] == 0, step
-        assert step["stdout"].strip(), "the log command printed nothing"
+        # The log lines are JSON; the tool parses the last one it printed.
+        printed = step["stdout"]
+        assert printed, "the log command printed nothing"
         report["steps"].append(step)
-        report["the_log_the_operator_reads"] = step["stdout"].strip().splitlines()[-1][:200]
+        report["the_log_the_operator_reads"] = json.dumps(printed)[:200]
 
         # 5. the backup of the running instance is consistent
         step = tool("backup")
