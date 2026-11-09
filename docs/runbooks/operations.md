@@ -432,6 +432,21 @@ placement in its log (`OIP-WINDOW …`). When the frame of the storyboard
 touches no visible screen — it belongs to the screen the bundle was generated
 for — the runner places the window in the centre of the main screen.
 
+**The first start of a bundle that the operator did not build.** A bundle that
+the operator built on the machine starts as it is. A bundle that the operator
+**received** carries the quarantine attribute of the download, and macOS then
+refuses the first start with the notice that the application is damaged. The
+operator confirms it once (right click on the bundle → `Öffnen`) or starts the
+executable of the bundle directly:
+
+```sh
+"$BUNDLE/Contents/MacOS/oip_dashboard"
+```
+
+A signed and notarized release removes the question entirely. **Signing is the
+operator's decision** — the artefacts that may be signed are named with their
+digests in `docs/release/oip-release-manifest.json`.
+
 **The launch agent is not part of this runbook.** Installing the application
 as a launch agent is a system service and needs an explicit operator
 authorization. The procedure above keeps the instance under the control of the
