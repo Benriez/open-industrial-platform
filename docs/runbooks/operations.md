@@ -261,6 +261,38 @@ The rehearsal is `tests/oip_offline_archive.py`; its receipt is
 session, the application of the offline plan, the hiding of the archived device from the active
 inventory and the survival of its identity and its metadata.
 
+### 7.1 The offline registration of a device
+
+The **registration** of a device is possible in two ways: through the surface of the application
+(the administration of the device, with the managed session) and **offline** with the same plan
+that carries the archive. The offline registration is the path for a device that the operator
+wants in the registry before the instance serves:
+
+```sh
+tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" stop
+
+cat > "$STATE/register.json" <<'JSON'
+{
+  "principal": "reader-org-a",
+  "changes": [
+    { "operation": "register",
+      "device": { "id": "<device-id>", "display_name": "<name>",
+                   "device_type": "server", "site_id": "<site-id>", "metadata": {} } }
+  ]
+}
+JSON
+
+oip-server --config "$CORE_CONFIG" --inventory-plan "$STATE/register.json" --inventory-apply
+```
+
+The answer names the plan it applied (`"applied": true`,
+`"apply_mode": "offline_requires_restart"`) and the action (`{"outcome": "register"}`). The
+registered device belongs to the site of the plan and inherits the scope of the principal that
+performed the change: a device of a site of another organization is refused.
+
+The rehearsal of the archive proves the plan, the flag and the guard of the revision on the same
+path; the registration is the same plan with the operation `register`.
+
 ## 8. The personal installation is never touched
 
 The personal installation of the operator lives in
