@@ -257,24 +257,60 @@ def check_the_acceptance():
     }, problems
 
 
+def the_schema_of_the_store(path):
+    """The schema of the store of the operator, read without writing."""
+    try:
+        import sqlite3
+        connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        try:
+            return connection.execute("pragma user_version").fetchone()[0]
+        finally:
+            connection.close()
+    except Exception:  # noqa: BLE001 - a store that cannot be read is reported
+        return None
+
+
 def check_the_boundaries(receipts):
-    """The personal store of the operator is untouched and was never activated."""
+    """The personal store of the operator is untouched and was never activated.
+
+    The boundary is **measured**, not asserted: the digest and the schema of
+    the store of the operator are read now — read only — and compared with
+    the digest that the record and the rehearsal of the activation name. A
+    check that cannot measure the store says so; it never passes silently.
+    """
     problems = []
     activation = EVIDENCE / "oip-activation-dry-run/activation-dry-run.json"
-    personal = None
+    recorded = None
+    recorded_after = None
     if activation.is_file():
         payload = json.loads(activation.read_text())
-        personal = payload.get("the_personal_installation")
-    if personal is not None:
-        digest = personal.get("the_sha256") if isinstance(personal, dict) else None
-        if digest and digest != PERSONAL_STORE:
-            problems.append(f"the digest of the personal store changed: {digest}")
+        store = payload.get("the_store")
+        if isinstance(store, dict):
+            recorded = store.get("the_sha256_before") or store.get("the_sha256")
+        recorded_after = payload.get("the_sha256_after")
+    store_path = pathlib.Path.home() / "Library/Application Support/OIP/real/core.sqlite"
+    current = sha256_file(store_path) if store_path.is_file() else None
+    schema = the_schema_of_the_store(store_path) if store_path.is_file() else None
+    if current is None:
+        problems.append("the personal store of the operator is not readable")
+    elif current != PERSONAL_STORE:
+        problems.append(f"the digest of the personal store of the operator changed: {current}")
+    if recorded is not None and recorded != PERSONAL_STORE:
+        problems.append(f"the rehearsal recorded another digest of the personal store: {recorded}")
+    if schema is not None and schema != 6:
+        problems.append(f"the schema of the personal store of the operator is {schema}, not 6")
     for relative, payload in receipts.items():
         text = json.dumps(payload)
         if "schema 7" in text and "the_personal" in text and "unchanged" not in text:
             problems.append(f"the receipt {relative} speaks of the schema 7 of the personal store")
     return {
-        "the_personal_store_is_untouched": personal is not None,
+        "the_digest_of_the_personal_store": current,
+        "the_expected_digest_of_the_personal_store": PERSONAL_STORE,
+        "the_personal_store_is_untouched": current == PERSONAL_STORE,
+        "the_schema_of_the_personal_store": schema,
+        "the_rehearsal_recorded_the_same_digest": recorded == PERSONAL_STORE,
+        "the_rehearsal_left_the_store_unchanged":
+            recorded is not None and recorded == recorded_after,
         "the_activation_was_rehearsed_on_a_copy": activation.is_file(),
     }, problems
 

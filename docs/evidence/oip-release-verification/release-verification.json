@@ -52,7 +52,12 @@
       "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
     },
     "the_boundaries": {
-      "the_personal_store_is_untouched": false,
+      "the_digest_of_the_personal_store": "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e",
+      "the_expected_digest_of_the_personal_store": "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e",
+      "the_personal_store_is_untouched": true,
+      "the_schema_of_the_personal_store": 6,
+      "the_rehearsal_recorded_the_same_digest": true,
+      "the_rehearsal_left_the_store_unchanged": true,
       "the_activation_was_rehearsed_on_a_copy": true
     }
   },
@@ -124,8 +129,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "c85556dc7b6a7f98c27b3e7b7fee2d392d88b9d4",
-  "the_tree": "afd62b411ed3bb1f67bbb5c9f65972bc23f478f1",
+  "the_revision": "fa0b039e4aa80b0b2d7c133dbaf55932450dedee",
+  "the_tree": "bb4e78bb954c4c02a512d5799ef519550edbe100",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }
