@@ -1,9 +1,9 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "e7aa994104a65ad82f82eea5811d22684ecd36ee",
-  "the_tree": "bf03f24658680bb07255ac426d710dfebf0c8ae0",
+  "the_revision": "488e32f9e4a6bcf9f968f2481ae6c80ad9432e7e",
+  "the_tree": "165513a0ab210a8d7215a8948af5d62d1bb3e68c",
   "the_branch": "main",
-  "the_working_tree_is_clean": false,
+  "the_working_tree_is_clean": true,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -33,8 +33,8 @@
       "path": "apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
       "files": 43,
       "bytes": 96996325,
-      "sha256": "72a650d4443eb22a65bd015cde6f364889787b48e13c704180d7819b21c03ffc",
-      "the_executable_sha256": "7841e541c17d75492155cb4ef34b40f5bb9adca7bb99eb995fb085302a42d4b4"
+      "sha256": "9872190c47b8f0378761728ccc8e218fb9e619e0b888dd322d4d07ff7feff347",
+      "the_executable_sha256": "a4881e08ad3b653c3e8ebc9a273b8b8d4461c72539038d941eb1e7c0b065beaa"
     },
     "the_web_release": {
       "present": true,
