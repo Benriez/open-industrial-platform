@@ -8,11 +8,11 @@
     "the bundle terminates on SIGTERM",
     "the bundle starts again and reaches the Core"
   ],
-  "build_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:51473",
-  "build_seconds": 62.5,
+  "build_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:61599",
+  "build_seconds": 38.5,
   "bundle": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
-  "bundle_bytes": 96963493,
-  "bundle_executable_sha256": "ff6937edf0ea843244b87c227e77b3946957a611cfe8442e237e8a7f5ccf5367",
+  "bundle_bytes": 96996325,
+  "bundle_executable_sha256": "7841e541c17d75492155cb4ef34b40f5bb9adca7bb99eb995fb085302a42d4b4",
   "cfbundleidentifier": "org.openindustrial.oipDashboard",
   "cfbundleshortversionstring": "0.3.0",
   "cfbundleversion": "3",
@@ -25,7 +25,9 @@
       "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
       "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
       "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true"
+      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
+      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
+      "frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true"
     ],
     "label": "start",
     "first_request_seconds": 0.8,
@@ -45,14 +47,14 @@
   "screenshot": "target/oip-macos-app/oip-macos-app.png",
   "screenshot_captured": true,
   "window": {
-    "window_id": 27557,
+    "window_id": 27689,
     "owner": "oip_dashboard",
     "title": "oip_dashboard",
     "bounds": {
-      "x": -478.0,
-      "y": -768.0,
-      "width": 78.0,
-      "height": 97.0
+      "x": 16.0,
+      "y": 599.0,
+      "width": 88.0,
+      "height": 113.0
     },
     "displays": [
       {
@@ -60,16 +62,10 @@
         "y": 0.0,
         "width": 1512.0,
         "height": 982.0
-      },
-      {
-        "x": -494.0,
-        "y": -1440.0,
-        "width": 2560.0,
-        "height": 1440.0
       }
     ],
     "on_screen": true,
-    "bytes": 9944
+    "bytes": 34151
   },
   "window_placement_of_the_bundle": [
     "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
@@ -78,14 +74,16 @@
     "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
     "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
     "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true"
+    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
+    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
+    "frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true"
   ],
   "shutdown": {
     "signal": "SIGTERM",
     "terminated": true,
     "seconds": 0.0,
     "exit_code": -15,
-    "log_tail": "ng the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n"
+    "log_tail": "rwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
   },
   "orphaned_processes": [],
   "restart": {
@@ -98,10 +96,12 @@
       "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
       "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
       "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true"
+      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
+      "frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
+      "frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true"
     ],
     "label": "restart",
-    "first_request_seconds": 0.5,
+    "first_request_seconds": 0.3,
     "requests": [
       {
         "method": "GET",
@@ -120,8 +120,8 @@
     "terminated": true,
     "seconds": 0.0,
     "exit_code": -15,
-    "log_tail": "g the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n"
+    "log_tail": "latform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
   },
   "status": "PASS",
-  "finished_utc": "2026-11-09T00:42:07Z"
+  "finished_utc": "2026-11-09T02:06:21Z"
 }
