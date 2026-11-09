@@ -2252,6 +2252,34 @@ The 29 suites include the **integration tests** of the Core — `api`, `browser_
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 44 — the storage-failure path of the Core is escalated, not claimed
+
+**Status: ESCALATED on canonical `main`.**
+The resilience of the Core under a **storage failure** — a full disk, a read-only mount, a changed
+permission — is the one failure mode of the instance that no acceptance covers. The Core's design is
+visible in the code (`crates/oip-server/src/writer.rs`): a failed commit marks the persistence as
+failed, the health of the Core degrades, the log names the failure with its operation
+(`persistence_retry`), the ingestion is backpressured in a bounded loop, and the shutdown reports
+the uncommitted observations instead of claiming a clean stop.
+
+**Why it is not measured here.** A rehearsal needs a store that cannot be written. Neither the
+mode of the file nor the mode of its directory achieves that on macOS: the Core holds the store open
+for writing, so the permission check happens at the open and not at the write — the rehearsal
+measured that the observations kept growing (796 → 1 760) with the store at `0400` and its
+directory at `0500`. The remaining ways to fail the storage are a **full disk** (forbidden: it would
+destroy the work of the machine) or a **read-only mount** (privileged: outside the scope of the
+loop). The integration suite of the Core has no case for it either: the repository is injected into
+the writer as the concrete `SqliteStore`, so a failing repository would need a production change
+that is not justified by a test.
+
+**The escalation.** The behaviour is designed and readable, but it is **not measured**. The
+operator decides whether the production scope accepts an unmeasured storage-failure path, or
+whether the operator provides a machine or a volume with a quota for the rehearsal. The loop does
+not claim the property and does not simulate it.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
