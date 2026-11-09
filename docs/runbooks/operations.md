@@ -494,6 +494,41 @@ authorization. The procedure above keeps the instance under the control of the
 operator, without OpenCode, with a reproducible start, stop, restart, backup
 and restore.
 
+### 9.1 The local installation
+
+The operator installs the application as a **copy of the bundle of the release**
+in the directory of the installation. The copy is the artefact that must work —
+not the bundle in the directory of the build.
+
+```sh
+# 1. the bundle of the release (the artefact with the digest of the manifest)
+BUNDLE="apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app"
+
+# 2. the copy into the directory of the installation
+cp -R "$BUNDLE" /Applications/
+
+# 3. the first start of the installed copy
+/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard
+```
+
+The copy is byte-identical to the bundle of the release: the digest over the
+tree of the bundle is `e5cb5292…` (`docs/release/oip-release-manifest.json`).
+The rehearsal of the installation (`tests/oip_macos_install.py`,
+`docs/evidence/oip-macos-install/macos-install.json`) copies the bundle into an
+installation directory and proves that the **installed copy** starts, reaches
+the Core, is refused without a session, obtains **no** data, shows the approved
+shell with the operator login, terminates on the operator's signal without
+leaving an orphan behind and starts again from the installation directory. The
+rehearsal installs into a directory of the temporary tree — **never** into
+`/Applications`: the installation of the release there is the step of the
+operator.
+
+The identifier of the installed application is `org.openindustrial.oipDashboard`
+and its version is `0.3.0`; a copy with another identifier is not this
+release. A copy that the operator **received** carries the quarantine
+attribute of the download; macOS then refuses the first start until the
+operator confirms it once (right click → `Öffnen`).
+
 ## 10. The daemon of a historical release
 
 A local instance of an older release is a daemon of its own era. Its protected
