@@ -1,7 +1,7 @@
 {
   "schema": "oip-global-context-receipt-v1",
-  "revision": "699c0a2abc768b2715a732ec1ff9c97c19ac5242",
-  "base": "http://127.0.0.1:62892",
+  "revision": "3c663f90c3f62ad77b7f2a79a6e1a145eff04e44",
+  "base": "http://127.0.0.1:64434",
   "options_offered": 4,
   "scope_per_workstation": [
     {
@@ -48,7 +48,7 @@
     {
       "check": "the individual infrastructures are offered",
       "ok": true,
-      "detail": "Infrastructure Organization A Infrastructure A1 global auswä | Infrastructure Organization A Infrastructure A1 global auswä | Infrastructure Organization A Infrastructure A1 global auswä | Infrastructure Organization A Infrastructure A2 global auswä"
+      "detail": "Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A2 global ausw\u00e4"
     },
     {
       "check": "the selection grants no permission",
@@ -125,5 +125,6 @@
     "Failed to load resource: the server responded with a status of 403 (Forbidden)",
     "Failed to load resource: the server responded with a status of 403 (Forbidden)",
     "Failed to load resource: the server responded with a status of 403 (Forbidden)"
-  ]
+  ],
+  "the_revision_of_the_acceptance": "3c663f90c3f6"
 }
