@@ -349,7 +349,9 @@ const observeIdentity = async (rounds) => {
     identityStates.push(state);
     if (state === 'expanded') {
       const painted = await labels();
-      if (painted.includes('Nicht verfügbar')) {
+      // The line of the verified identity names the kinds that are not
+      // available; the registry of the device says "nicht verfügbar" too.
+      if (painted.includes('Nicht verfügbar: ')) {
         identitySeen = painted;
         return true;
       }
@@ -363,7 +365,9 @@ let expansion = { 'the_attempts': [], 'the_state': 'not-tried' };
 if (!identitySeen) {
   expansion = await expandIdentity();
   receiptStates.identityExpansion = expansion;
-  await observeIdentity(6);
+  // The panel refreshes itself every few seconds: the tile must stay open
+  // while the operator reads the verified identity.
+  await observeIdentity(24);
 }
 fs.writeFileSync(`${outDir}/device-connection-identity-states.txt`,
   identityStates.join('\n') + '\n');
