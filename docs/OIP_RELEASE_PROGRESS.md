@@ -1961,11 +1961,39 @@ terminates without an orphan and starts again.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 33 — the reconnect and the recovery of the application
+
+**Status: PROVED on canonical `main`.**
+The operator restarts the instance routinely. Nothing proved that the *application* survives that
+honestly: the Core side of a restart is proven (the phase `restart_sigkill_identity`), the client
+side was not.
+
+`tests/oip_reconnect_recovery.py` runs the real Core with its collectors and the delivered web
+release in a browser, and restarts the instance in the middle of the session through a small
+control server of the rehearsal (`apps/flutter/test/browser_reconnect_recovery.mjs`,
+`docs/evidence/oip-reconnect-recovery/reconnect-recovery.json`): 11 checks, no JavaScript error.
+
+| Step | What the operator sees |
+|---|---|
+| the operator authorizes the session | the authorized projection of the unified view |
+| the instance is restarted | — |
+| the surface after the restart | `Kontext nicht autorisiert` with the badge `IDENTITÄT ERFORDERLICH`, the honest notice `Browser-Session oder zentrale Policy erlaubt diesen Management-Read nicht (PERMISSION_DENIED) … Keine vorherigen Kontextdaten werden angezeigt` and the operator login — **no stale content is shown as current** |
+| the operator login | names the restart of the instance as the third cause of the end of the session (the panel of iteration 31) |
+| a new one-time code | the authorized projection again, with a fresh moment (`00:58:39.757 UTC` → `00:58:40.196 UTC`) |
+
+The session of the browser ends with the restart because the Core holds it in its memory — that is
+the contract of the era, and the surface now says so instead of leaving the operator without an
+explanation.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-reconnect-recovery/reconnect-recovery.json` | the measured reconnect and recovery of the application: the restart of the instance, the honest state of the surface, the named cause and the restored projection (iteration 33) |
 | `docs/evidence/oip-native-session/native-session.json` | the measured session of the native client against the real Core: the one-time code, the authorized hierarchy, the scoped projection and the sign-out (iteration 32) |
 | `docs/release/oip-release-manifest.json`, `docs/release/SHA256SUMS` | the release manifest: every artefact of the release with its digest, the provenance of its build, the digests of the acceptance receipts and the state of the operator's visual acceptance (iteration 31) |
 | `docs/evidence/oip-transport-parity/transport-parity.json` | the measured parity of REST, SSE and MCP of the current release for the same principal, and the refusal of the unauthorized session (iteration 30) |

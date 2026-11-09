@@ -111,6 +111,8 @@ secrets/
 !/docs/evidence/oip-security-review/security-review.json
 !/docs/evidence/oip-transport-parity/transport-parity.json
 !/docs/evidence/oip-native-session/native-session.json
+!/docs/evidence/oip-reconnect-recovery/reconnect-recovery.json
+!/docs/evidence/oip-reconnect-recovery/rehearsal.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json
