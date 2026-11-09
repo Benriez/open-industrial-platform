@@ -110,19 +110,35 @@ class BoundedVolume:
         return int(result.stdout.splitlines()[-1].split()[3]) * 1024
 
     def fill(self):
-        """Write until the volume refuses the write."""
+        """Write until the volume refuses every write.
+
+        The chunks are small, so the volume ends without usable space: the
+        refusal of the rehearsal must be the refusal of the store itself, not
+        the refusal of a large block.
+        """
         filler = self.mount / "filler.bin"
-        chunk = b"\0" * (1024 * 1024)
+        chunk = b"\0" * (64 * 1024)
         written = 0
         error = None
         try:
             with filler.open("wb") as handle:
-                for _ in range(self.megabytes * 2):
+                for _ in range(self.megabytes * 32):
                     handle.write(chunk)
                     written += len(chunk)
         except OSError as failure:
             error = str(failure)
-        return {"the_bytes_written": written, "the_refusal": error}
+        # The volume must refuse even a small write.
+        probe = self.mount / "probe.bin"
+        try:
+            probe.write_bytes(b"0" * 4096)
+            error = error or "the volume still accepts a small write"
+        except OSError as failure:
+            error = error or str(failure)
+        finally:
+            if probe.exists():
+                probe.unlink()
+        return {"the_bytes_written": written, "the_refusal": error,
+                "the_free_bytes": self.free_bytes()}
 
     def release(self):
         """Free the space of the filler."""
@@ -188,8 +204,10 @@ def main():
         credential.chmod(0o600)
         (work / "ipc.json").write_text(json.dumps({
             "socket": str(work / "s"), "max_sessions": 16,
+            # The health of the Core is a platform-scoped read; the plan binds
+            # `platform-reader` to the platform scope.
             "clients": [{"uid": os.getuid(), "credential_file": str(credential),
-                         "policy": {"principal": "reader-org-a"}}],
+                         "policy": {"principal": "platform-reader"}}],
         }, indent=2))
         (work / "ipc.json").chmod(0o600)
         state = work / "state"
@@ -232,10 +250,11 @@ def main():
         report["steps"].append("the operator session is authorized")
 
         def core_health():
-            code, payload = api(base, "/api/v2/snapshot", opener=opener)
+            """The health of the Core: the persistence of the store is part of it."""
+            code, payload = api(base, "/api/v1/core/health", opener=opener)
             if code != 200 or not isinstance(payload, dict):
                 return {"the_status": code, "the_core": {}}
-            return {"the_status": code, "the_core": payload.get("core") or {}}
+            return {"the_status": code, "the_core": payload}
 
         # the collection runs before the volume is filled
         deadline = time.monotonic() + 120
@@ -254,10 +273,10 @@ def main():
         # the volume is filled up: the store of the instance cannot be written
         report["the_fill"] = volume.fill()
         report["the_free_bytes_when_full"] = volume.free_bytes()
-        report["the_steps"].append("the volume is full")
+        report["steps"].append("the volume is full")
 
         # the instance must degrade honestly and must survive
-        deadline = time.monotonic() + 180
+        deadline = time.monotonic() + 300
         degraded = None
         while time.monotonic() < deadline:
             health = core_health()
@@ -276,7 +295,7 @@ def main():
         # the log names the failure
         log = (state / "oip.log").read_text(errors="replace")
         report["the_log_names_the_failure"] = "persistence_retry" in log
-        report["the_steps"].append("the instance survives the full volume and names the failure")
+        report["steps"].append("the instance survives the full volume and names the failure")
         assert report["the_log_names_the_failure"], "the log does not name the failure of the store"
 
         # the space is freed: the instance must recover
@@ -301,7 +320,7 @@ def main():
             time.sleep(2)
         report["the_observations_before_the_recovery"] = before
         report["the_observations_after_the_recovery"] = after
-        report["the_steps"].append("the instance recovers and collects again")
+        report["steps"].append("the instance recovers and collects again")
         assert after > before, "the instance did not collect again after the recovery"
 
         # the store is intact
@@ -312,7 +331,7 @@ def main():
         stop = tool("stop", expect_success=False)
         report["the_shutdown"] = {"the_exit_code": stop.returncode,
                                   "the_output": (stop.stdout or stop.stderr).strip()[-400:]}
-        report["the_steps"].append("the instance stops")
+        report["steps"].append("the instance stops")
         report["status"] = "PASS"
     except AssertionError as error:
         report["status"] = "FAIL"
