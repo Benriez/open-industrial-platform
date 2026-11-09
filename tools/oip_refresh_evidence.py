@@ -1,0 +1,189 @@
+#!/usr/bin/env python3
+"""Re-measure the evidence of the release and publish it.
+
+The receipts of the release live under `docs/evidence/`. Each of them is
+measured by a **rehearsal** — a script that drives the real Core against a
+disposable instance and writes a receipt into a directory of its own. The
+handoff must not depend on a directory of a build, so every rehearsal has a
+published place in the checkout.
+
+This tool runs the rehearsals in the order of the release and copies every
+receipt into its published place. It is the way to re-measure the evidence
+after a change of the product: the freshness rule of the record demands that
+no receipt predates the last change of the code it covers.
+
+Nothing of the tool touches the personal installation of the operator, no
+private endpoint is contacted and nothing leaves the machine. The tree must be
+clean: a receipt that is measured on a dirty tree says so.
+
+Usage:
+  python3 tools/oip_refresh_evidence.py [--list] [--only NAME] [--skip NAME]
+"""
+import argparse
+import json
+import pathlib
+import shutil
+import subprocess
+import sys
+import time
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+EVIDENCE = ROOT / "docs" / "evidence"
+
+# The rehearsals of the release, in the order they are run, with the receipt
+# that each one writes and the place where it is published. The order puts
+# the quick ones first and the sustained runs last.
+REHEARSALS = [
+    ("oip_record_integrity", "tests/oip_record_integrity.py",
+     "record-integrity.json", "oip-record-integrity/record-integrity.json"),
+    ("oip_documented_plan", "tests/oip_documented_plan.py",
+     "documented-plan.json", "oip-documented-plan/documented-plan.json"),
+    ("oip_session_lifetime", "tests/oip_session_lifetime.py",
+     "session-lifetime.json", "oip-session-lifetime/session-lifetime.json"),
+    ("oip_native_session", "tests/oip_native_session.py",
+     "native-session.json", "oip-native-session/native-session.json"),
+    ("oip_settings_offline", "tests/oip_settings_offline.py",
+     "settings-offline.json", "oip-settings-offline/settings-offline.json"),
+    ("oip_offline_archive", "tests/oip_offline_archive.py",
+     "offline-archive.json", "oip-offline-archive/offline-archive.json"),
+    ("oip_extend_registry", "tests/oip_extend_registry.py",
+     "extend-registry.json", "oip-extend-registry/extend-registry.json"),
+    ("oip_activation_dry_run", "tests/oip_activation_dry_run.py",
+     "activation-dry-run.json", "oip-activation-dry-run/activation-dry-run.json"),
+    ("oip_transport_parity", "tests/oip_transport_parity.py",
+     "transport-parity.json", "oip-transport-parity/transport-parity.json"),
+    ("oip_opcua_parity", "tests/oip_opcua_parity.py",
+     "opcua-parity.json", "oip-opcua-parity/opcua-parity.json"),
+    ("oip_device_connection", "tests/oip_device_connection.py",
+     "device-connection-rehearsal.json", "oip-device-connection/rehearsal.json"),
+    ("oip_device_connection_browser", "tests/oip_device_connection.py",
+     "device-connection.json", "oip-device-connection/device-connection.json"),
+    ("oip_measurement_coverage", "tests/oip_measurement_coverage.py",
+     "measurement-coverage.json", "oip-measurement-coverage/measurement-coverage.json"),
+    ("oip_measurement_coverage_browser", "tests/oip_measurement_coverage.py",
+     "measurement-coverage-browser.json",
+     "oip-measurement-coverage/measurement-coverage-browser.json"),
+    ("oip_observation_history", "tests/oip_observation_history.py",
+     "observation-history.json", "oip-observation-history/observation-history.json"),
+    ("oip_diagnostic_continuation", "tests/oip_diagnostic_continuation.py",
+     "diagnostic-continuation-rehearsal.json",
+     "oip-diagnostic-continuation/rehearsal.json"),
+    ("oip_diagnostic_continuation_browser", "tests/oip_diagnostic_continuation.py",
+     "diagnostic-continuation.json",
+     "oip-diagnostic-continuation/diagnostic-continuation.json"),
+    ("oip_workstation_data", "tests/oip_workstation_data.py",
+     "workstation-data-rehearsal.json", "oip-workstation-data/rehearsal.json"),
+    ("oip_workstation_data_browser", "tests/oip_workstation_data.py",
+     "workstation-data.json", "oip-workstation-data/workstation-data.json"),
+    ("oip_reconnect_recovery", "tests/oip_reconnect_recovery.py",
+     "reconnect-recovery-rehearsal.json", "oip-reconnect-recovery/rehearsal.json"),
+    ("oip_reconnect_recovery_browser", "tests/oip_reconnect_recovery.py",
+     "reconnect-recovery.json", "oip-reconnect-recovery/reconnect-recovery.json"),
+    ("oip_operations", "tests/oip_operations.py",
+     "operations.json", "oip-operations/operations.json"),
+    ("oip_storage_failure", "tests/oip_storage_failure.py",
+     "storage-failure.json", "oip-storage-failure/storage-failure.json"),
+    ("oip_upgrade_rollback", "tests/oip_upgrade_rollback.py",
+     "upgrade-rollback.json", "oip-upgrade-rollback/upgrade-rollback.json"),
+    ("oip_historical_daemon", "tests/oip_historical_daemon.py",
+     "historical-daemon.json", "oip-historical-daemon/historical-daemon.json"),
+    ("oip_macos_app", "tests/oip_macos_app.py",
+     "macos-app.json", "oip-macos-app/macos-app.json"),
+    ("oip_macos_install", "tests/oip_macos_install.py",
+     "macos-install.json", "oip-macos-install/macos-install.json"),
+    ("oip_performance", "tests/oip_performance.py",
+     "performance.json", "oip-performance/performance.json"),
+    ("oip_loopback_rate", "tests/oip_loopback_rate.py",
+     "loopback-rate.json", "oip-loopback-rate/loopback-rate.json"),
+    ("oip_stability", "tests/oip_stability.py",
+     "stability.json", "oip-stability/stability.json"),
+    ("oip_worktree_reconciliation", "tests/oip_worktree_reconciliation.py",
+     "worktree-reconciliation.json",
+     "oip-worktree-reconciliation/worktree-reconciliation.json"),
+]
+
+
+def the_area(area):
+    """The directory of the build that a rehearsal writes into."""
+    return ROOT / "target" / area
+
+
+def run(name, script, produced, published):
+    """One rehearsal, its receipt and the place it is published in."""
+    area = the_area(published.split("/")[0])
+    area.mkdir(parents=True, exist_ok=True)
+    started = time.monotonic()
+    result = subprocess.run([sys.executable, str(ROOT / script), "--evidence", str(area)],
+                            cwd=ROOT, capture_output=True, text=True, timeout=7200)
+    seconds = round(time.monotonic() - started, 1)
+    source = area / produced
+    if result.returncode != 0 or not source.is_file():
+        detail = (result.stderr.strip() or result.stdout.strip())[-400:]
+        return {"the_rehearsal": name, "the_status": "FAIL", "the_seconds": seconds,
+                "the_detail": detail}
+    target = EVIDENCE / published
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, target)
+    payload = json.loads(target.read_text())
+    return {
+        "the_rehearsal": name,
+        "the_status": "PASS" if payload.get("status") == "PASS" else "FAIL",
+        "the_seconds": seconds,
+        "the_published": published,
+        "the_revision": payload.get("the_revision"),
+        "the_working_tree_is_clean": payload.get("the_working_tree_is_clean"),
+        "the_detail": None if payload.get("status") == "PASS"
+        else json.dumps(payload)[:400],
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--list", action="store_true",
+                        help="the rehearsals and the receipts they publish")
+    parser.add_argument("--only", action="append", default=[],
+                        help="run only this rehearsal (repeatable)")
+    parser.add_argument("--skip", action="append", default=[],
+                        help="do not run this rehearsal (repeatable)")
+    parser.add_argument("--report", default=str(ROOT / "target" / "oip-refresh-evidence.json"))
+    args = parser.parse_args()
+
+    if args.list:
+        for name, script, produced, published in REHEARSALS:
+            print(f"{name:38s} {script:42s} -> {published}")
+        return 0
+
+    # A receipt that is measured on a dirty tree says so; the tool refuses to
+    # publish a measurement of a tree that carries an uncommitted change.
+    dirty = subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT,
+                                    text=True).strip()
+    if dirty:
+        print("the tree is not clean — the receipts would name a dirty tree:")
+        print(dirty[:800])
+        return 2
+
+    report = {"schema": "oip-refresh-evidence-v1", "the_rehearsals": []}
+    for name, script, produced, published in REHEARSALS:
+        if args.only and name not in args.only:
+            continue
+        if name in args.skip:
+            continue
+        print(f"RUN {name}", flush=True)
+        outcome = run(name, script, produced, published)
+        report["the_rehearsals"].append(outcome)
+        print(f"  {outcome['the_status']} {outcome['the_seconds']}s {name}", flush=True)
+    failed = [item for item in report["the_rehearsals"] if item["the_status"] != "PASS"]
+    report["the_failed"] = failed
+    report["the_status"] = "PASS" if not failed else "FAIL"
+    report["the_revision"] = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    report["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    pathlib.Path(args.report).write_text(json.dumps(report, indent=2) + "\n")
+    print(json.dumps({"the_status": report["the_status"],
+                      "the_rehearsals": len(report["the_rehearsals"]),
+                      "the_failed": [item["the_rehearsal"] for item in failed]}, indent=2))
+    return 0 if report["the_status"] == "PASS" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

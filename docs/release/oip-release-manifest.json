@@ -1,13 +1,13 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "338976574e1adf7a848b4e8eb584dd47571fb703",
-  "the_tree": "bbe34497fcddb2246905637a3de8304e3d289490",
+  "the_revision": "8d0493f064f220742172b15011e7dda96649c165",
+  "the_tree": "ef29d4cca26ac0099e736c2e68b4bf36265cc22b",
   "the_branch": "main",
   "the_revision_of_the_source": {
-    "the_revision": "81701391dc36a18abc0d8cabbb989e43adc04397",
-    "the_subject": "feat(g4): the journey reads the painted surface after the tile is open"
+    "the_revision": "ac0bc10911f1e8e15912fbdf7268c77638fb80aa",
+    "the_subject": "fix(g10): the two dependency advisories of the lockfile are closed"
   },
-  "the_working_tree_is_clean": false,
+  "the_working_tree_is_clean": true,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -22,21 +22,21 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 671,
-    "the_sha256": "266dda25b7a2b3372a4953e452b44725a96818e03d96734eb621c419c8e6743d"
+    "the_sha256": "b824a25308e6164109ec07f453f11d23bbc941f1ef9953134ca0eb879c2d04a2"
   },
   "the_artifacts": {
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
-      "bytes": 36271328,
-      "sha256": "24727dd7f909af5ac2728890e7e3d7db22752b49df263aa507a8a65e66ab1663",
-      "the_revision_the_binary_names": "0afc07647381e0649c5b88bc127f6a1d4664fefd"
+      "bytes": 36393552,
+      "sha256": "1cb8958eff5e5480a72047b4dfff7b2f2bf6167f521654e444719db1754a7ae3",
+      "the_revision_the_binary_names": "be75e125c960b11844a4cdda4fdd924b6e297b0e"
     },
     "the_official_mcp_probe": {
       "present": true,
       "path": "target/release/examples/mcp_probe",
-      "bytes": 4118336,
-      "sha256": "f79e908bbb237e812c891f0344ab3a45dec4d6a7bc9621f322acb0aadb02bf9a"
+      "bytes": 4223520,
+      "sha256": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1"
     },
     "the_macos_application_bundle": {
       "present": true,
@@ -59,11 +59,11 @@
   "the_receipts": {
     "the_global_context": {
       "path": "docs/evidence/oip-global-context/global-context.json",
-      "sha256": "afcc85af54377b8171a7a8337dbdd64b53e290191550930eb8cc9836aa1a50a6"
+      "sha256": "87b2a8da76bf9f96786e464869f6b44988208d6f083409a72ec2fa6d30136fa4"
     },
     "the_accessibility": {
       "path": "docs/evidence/oip-accessibility/accessibility.json",
-      "sha256": "3fd4dd4fd667da4c45e5d0c7b0b579dcebb1eb43c1b18d6ef0f7ca96901eff3c"
+      "sha256": "0c0094a53fd07f811e31c074ddfed43b56bcafde3d0e1a44ada3c55b72fd686f"
     },
     "the_performance": {
       "path": "docs/evidence/oip-performance/performance.json",
@@ -71,7 +71,7 @@
     },
     "the_security_review": {
       "path": "docs/evidence/oip-security-review/security-review.json",
-      "sha256": "1903d0452e814e4032c3b31218b1dd438e73cb57a45b06189ba523821ac6296d"
+      "sha256": "4afca6b998d340c96511517d894cf375e9994adf7d30298bcbe2f96b829b019f"
     },
     "the_macos_application": {
       "path": "docs/evidence/oip-macos-app/macos-app.json",
@@ -83,19 +83,19 @@
     },
     "the_acceptance": {
       "path": "docs/evidence/oip-canonical-acceptance/acceptance.json",
-      "sha256": "fcd561a44d590ef36c4b2618a5b1a0bed07ea30fe97bf0069f6febba4f2bb261"
+      "sha256": "a0d54cb94c5bb2e0f27161e44da70109210b7b90596b9439f3b5123966d7ff3c"
     },
     "the_acceptance_browser_gate": {
       "path": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
-      "sha256": "ce41f228dabc4defb5519f59ceaf440839778e071f79c29774190c8bbbbe76cd"
+      "sha256": "6e8c19b7d190cd088e0c7d4e847d6df460f6ba9261654254f25c1662450605ef"
     },
     "the_acceptance_ui_gate": {
       "path": "docs/evidence/oip-canonical-acceptance/ui-gate.json",
-      "sha256": "91f58af07ff785f57246acbaa8873c8128024644f5c5d4e386a09eb57497ba59"
+      "sha256": "b5e68c2ea19106161da4b1d605d6cab8257d5dfe95ce22d6e670f05097c7f79c"
     },
     "the_device_administration": {
       "path": "docs/evidence/oip-device-administration/device-administration.json",
-      "sha256": "5c32e66f7e02dcee9228289a59ce5b33cf5873bfa0a59f760b8f3939ee39bfd7"
+      "sha256": "9927fdb03f5b99cc9b804e8aafecc9510c3572781a39e7c7fb2a36129943ee3d"
     },
     "the_session_lifetime": {
       "path": "docs/evidence/oip-session-lifetime/session-lifetime.json",
@@ -107,7 +107,7 @@
     },
     "the_reproducible_build": {
       "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-      "sha256": "db780da7d9055437dce7e28e98c2c81c4f66fc09a902e55ffc5fed6897f86e96"
+      "sha256": "aabc840a8d28a2e94baac492a54b02efd312fdf17681a03b613e62eca785aa4f"
     },
     "the_upgrade_rollback": {
       "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
@@ -119,7 +119,7 @@
     },
     "the_rust_regression": {
       "path": "docs/evidence/oip-rust-regression/rust-regression.json",
-      "sha256": "1557e3579f525df93fc97a18c3250234a4862cfa3726aa38288497ce0cf29321"
+      "sha256": "9d307b33ae3e1d4084819c862e5802d332c8c01fa7ceb9e84ea91eee8e90914d"
     },
     "the_reconnect_recovery": {
       "path": "docs/evidence/oip-reconnect-recovery/reconnect-recovery.json",
@@ -176,16 +176,14 @@
   },
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
-  "the_working_tree_without_the_manifest": [
-    "M docs/evidence/oip-record-integrity/record-integrity.json"
-  ],
+  "the_working_tree_without_the_manifest": [],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-    "the_digest_of_the_reproducible_build": "24727dd7f909af5ac2728890e7e3d7db22752b49df263aa507a8a65e66ab1663",
+    "the_digest_of_the_reproducible_build": "146b8bc5387359879abffe622b9cbe32bcb86d5630c8ab98eaa451c294b8fe65",
     "the_core_is_identical_across_the_two_builds": true,
-    "the_manifest_names_the_reproducible_binary": true,
-    "the_revision_the_binary_names": "0afc07647381e0649c5b88bc127f6a1d4664fefd",
-    "the_revision_of_the_receipt": "0afc07647381e0649c5b88bc127f6a1d4664fefd",
+    "the_manifest_names_the_reproducible_binary": false,
+    "the_revision_the_binary_names": "be75e125c960b11844a4cdda4fdd924b6e297b0e",
+    "the_revision_of_the_receipt": "be75e125c960b11844a4cdda4fdd924b6e297b0e",
     "the_sources_of_the_core_are_unchanged_since_the_receipt": true,
     "the_property_holds_for_the_release": true,
     "the_note": "the binary names the revision it was built from, so the bytes of a later revision differ; the property of the release is that the same revision yields the same bytes \u2014 it is measured by the rehearsal and it carries over as long as the sources of the Core are unchanged"
@@ -193,7 +191,7 @@
   "the_visual_acceptance": {
     "the_state": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
     "the_source": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
-    "the_revision_of_the_acceptance": "eaf9c5c2b8bd7545f1121e7b2c2fb1a8f00fd767",
+    "the_revision_of_the_acceptance": "0613b8d081fc49d515475c0035bafa34fd6b01c1",
     "the_note": "the operator alone accepts the visible result; the gate records the state, it never grants it"
   },
   "the_manifest_verifies": true,

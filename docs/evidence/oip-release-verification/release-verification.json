@@ -4,35 +4,35 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "338976574e1adf7a848b4e8eb584dd47571fb703",
+      "the_revision": "8d0493f064f220742172b15011e7dda96649c165",
       "the_revision_of_the_source": {
-        "the_revision": "81701391dc36a18abc0d8cabbb989e43adc04397",
-        "the_subject": "feat(g4): the journey reads the painted surface after the tile is open"
+        "the_revision": "ac0bc10911f1e8e15912fbdf7268c77638fb80aa",
+        "the_subject": "fix(g10): the two dependency advisories of the lockfile are closed"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 671,
-        "the_sha256": "266dda25b7a2b3372a4953e452b44725a96818e03d96734eb621c419c8e6743d"
+        "the_sha256": "b824a25308e6164109ec07f453f11d23bbc941f1ef9953134ca0eb879c2d04a2"
       },
       "the_artifacts": {
-        "the_core": "24727dd7f909af5ac2728890e7e3d7db22752b49df263aa507a8a65e66ab1663",
-        "the_official_mcp_probe": "f79e908bbb237e812c891f0344ab3a45dec4d6a7bc9621f322acb0aadb02bf9a",
+        "the_core": "1cb8958eff5e5480a72047b4dfff7b2f2bf6167f521654e444719db1754a7ae3",
+        "the_official_mcp_probe": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
         "the_macos_application_bundle": "e5cb529201e18bfc71802535297b0b3575ca4371033e347b48ad62778988b884",
         "the_web_release": "db506a2f0764afb23e5c2718a3273fd10435a5ab9c1c76b238837a2c9eb24f53"
       },
       "the_receipts": 29,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-      "the_core_is_the_reproducible_one": true
+      "the_core_is_the_reproducible_one": false
     },
     "the_freshness": {
       "the_last_change_of_the_product": {
-        "crates": "1287e23d0199",
+        "crates": "ac0bc10911f1",
         "apps/flutter/lib": "fa7d66a718c9"
       },
       "the_receipts": 41
     },
     "the_record": {
-      "the_citations": 45,
+      "the_citations": 58,
       "the_receipts_of_the_release": 41,
       "the_missing": [],
       "the_untracked": [],
@@ -48,7 +48,7 @@
       "the_flutter_tests_passed": 356,
       "the_flutter_tests_failed": 0,
       "the_screenshots": 13,
-      "the_revision_of_the_acceptance": "eaf9c5c2b8bd7545f1121e7b2c2fb1a8f00fd767",
+      "the_revision_of_the_acceptance": "0613b8d081fc49d515475c0035bafa34fd6b01c1",
       "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
     },
     "the_boundaries": {
@@ -128,9 +128,41 @@
     "G10",
     "G12"
   ],
-  "the_problems": [],
-  "the_revision": "338976574e1adf7a848b4e8eb584dd47571fb703",
-  "the_tree": "bbe34497fcddb2246905637a3de8304e3d289490",
+  "the_problems": [
+    "the receipt docs/evidence/oip-activation-dry-run/activation-dry-run.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-device-connection/device-connection.json names the revision 93aaab4c9b02, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-device-connection/rehearsal.json names the revision 93aaab4c9b02, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json names the revision a9ba646b826e, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-diagnostic-continuation/rehearsal.json names the revision a9ba646b826e, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-documented-plan/documented-plan.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-extend-registry/extend-registry.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-historical-daemon/historical-daemon.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-loopback-rate/loopback-rate.json names the revision e159fbf6071e, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-macos-app/macos-app.json names the revision 96a2f1c89956, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-macos-install/macos-install.json names the revision 6d6100504a4a, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-measurement-coverage/measurement-coverage-browser.json names the revision 93aaab4c9b02, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-measurement-coverage/measurement-coverage.json names the revision 93aaab4c9b02, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-native-session/native-session.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-observation-history/observation-history.json names the revision 5b9482b51d05, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-offline-archive/offline-archive.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-opcua-parity/opcua-parity.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-operations/operations.json names the revision 96a2f1c89956, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-performance/performance.json names the revision f53e9ec938a3, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-reconnect-recovery/reconnect-recovery.json names the revision a9ba646b826e, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-reconnect-recovery/rehearsal.json names the revision a9ba646b826e, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-release-verification/release-verification.json names the revision 338976574e1a, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-session-lifetime/session-lifetime.json names the revision e017178591b6, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-settings-offline/settings-offline.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-stability/stability.json names the revision 87bab07cad0b, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-storage-failure/storage-failure.json names the revision 96a2f1c89956, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-transport-parity/transport-parity.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-upgrade-rollback/upgrade-rollback.json names the revision 96a2f1c89956, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-workstation-data/rehearsal.json names the revision a9ba646b826e, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-workstation-data/workstation-data.json names the revision a9ba646b826e, which predates the last change of crates (ac0bc10911f1)",
+    "the receipt docs/evidence/oip-worktree-reconciliation/worktree-reconciliation.json names the revision 4841f2f7918c, which predates the last change of crates (ac0bc10911f1)"
+  ],
+  "the_revision": "8d0493f064f220742172b15011e7dda96649c165",
+  "the_tree": "ef29d4cca26ac0099e736c2e68b4bf36265cc22b",
   "the_working_tree_is_clean": false,
-  "status": "PASS"
+  "status": "FAIL"
 }
