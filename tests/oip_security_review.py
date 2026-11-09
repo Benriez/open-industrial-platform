@@ -342,6 +342,36 @@ def main():
             finding("the enforcement of the scope", "escalated",
                     f"the scope is not enforced: {visible}")
 
+        # 7b. the non-disclosure of a foreign resource: a foreign target and a
+        #     target that does not exist must be refused identically.
+        foreign_status, foreign_answer, _ = api(
+            base, "/api/v2/devices/device-d", opener=opener)
+        absent_status, absent_answer, _ = api(
+            base, "/api/v2/devices/device-that-does-not-exist", opener=opener)
+        report["non_disclosure"] = {
+            "the_foreign_target": {"status": foreign_status,
+                                   "code": foreign_answer.get("code"),
+                                   "kind": foreign_answer.get("kind"),
+                                   "message": foreign_answer.get("message")},
+            "the_absent_target": {"status": absent_status,
+                                   "code": absent_answer.get("code"),
+                                   "kind": absent_answer.get("kind"),
+                                   "message": absent_answer.get("message")},
+        }
+        identical = (foreign_status == absent_status
+                     and foreign_answer.get("code") == absent_answer.get("code")
+                     and foreign_answer.get("kind") == absent_answer.get("kind")
+                     and foreign_answer.get("message") == absent_answer.get("message"))
+        report["the_refusal_is_identical"] = identical
+        if identical and foreign_status in (403, 404):
+            finding("the non-disclosure of a foreign resource", "resolved",
+                    f"a foreign device and a device that does not exist are refused "
+                    f"identically ({foreign_status} {foreign_answer.get('code')}): the answer "
+                    f"does not name the target and does not distinguish the two cases")
+        else:
+            finding("the non-disclosure of a foreign resource", "escalated",
+                    json.dumps(report["non_disclosure"]))
+
         # 8. the durability of the execution audit. The log is read again:
         #    the audit of the last authorized read is written after the read
         #    of the log of the credential check.
