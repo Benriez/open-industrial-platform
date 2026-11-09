@@ -115,7 +115,7 @@ def main():
         fixture = SshFixture()
         report["ssh_fixture"] = {"port": fixture.port, "user": fixture.user,
                                  "loopback_only": True}
-        source_ports = [free_port() for _ in range(3)]
+        source_ports = [free_port() for _ in range(4)]
         port = free_port()
         plan = json.loads((ROOT / "examples/multi-infrastructure-plan.json").read_text())
         (work / "plan.json").write_text(json.dumps(plan, indent=2))
@@ -124,7 +124,7 @@ def main():
             "sources": [{"id": f"source-{letter}", "name": f"Local simulation {letter}",
                          "endpoint": f"opc.tcp://127.0.0.1:{source_ports[index]}",
                          "namespace": 2}
-                        for index, letter in enumerate("abc")],
+                        for index, letter in enumerate("abcd")],
             "legacy_single_infrastructure": False,
             "web_dir": str(ROOT / "apps/flutter/build/web"),
         }, indent=2))
