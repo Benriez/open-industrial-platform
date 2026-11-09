@@ -44,8 +44,6 @@ production-security scope of G10 and the operator acceptance of G12.
 
 ## Operator actions required (nothing here is executed by the loop)
 
-* Every receipt of the release names the revision and the tree it was measured on, so the
-  operator can tell whether the evidence of a claim is current (`docs/evidence/`).
 * Decide F5 permission rule (N1b) and protected schema-7 activation with a fresh schema-6 backup (N4).
   The activation itself is **rehearsed on a copy** of the store of the operator: the migration is
   accepted (schema 6 to 7), the inventory of the instance survives it unchanged, the integrity
@@ -91,9 +89,9 @@ production-security scope of G10 and the operator acceptance of G12.
 
 ## The evidence of the release (every receipt, with what it proves)
 
-Every receipt names the revision and the tree it was measured on. A reader can therefore tell
-whether a receipt is current; the receipts of the earlier eras name their own older revision and
-are kept as the history of that era.
+Every receipt names the revision and the tree it was measured on, and whether the working tree was
+clean. A reader can therefore tell whether a receipt is current; the receipts of the earlier eras
+name their own older revision and are kept as the history of that era.
 
 | Receipt | What it proves |
 |---|---|

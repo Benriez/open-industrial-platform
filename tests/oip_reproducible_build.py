@@ -58,13 +58,24 @@ def digest_tree(root):
     return digest.hexdigest(), entries
 
 
-def build(command, timeout=3600):
+def build(command, timeout=3600, cwd=None):
     began = time.monotonic()
-    result = subprocess.run(command, cwd=APPS, capture_output=True, text=True,
+    result = subprocess.run(command, cwd=cwd or APPS, capture_output=True, text=True,
                             timeout=timeout)
     if result.returncode != 0:
         raise AssertionError(f"the build failed: {result.stderr[-400:] or result.stdout[-400:]}")
     return round(time.monotonic() - began, 1)
+
+
+def sha256_of(path):
+    """The digest of a file, or None when it is absent."""
+    if not path.is_file():
+        return None
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def empty(path):
@@ -82,6 +93,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence", default=str(ROOT / "target" / "oip-reproducible-build"))
     parser.add_argument("--skip-macos", action="store_true")
+    parser.add_argument("--skip-core", action="store_true")
     args = parser.parse_args()
     evidence = pathlib.Path(args.evidence)
     evidence.mkdir(parents=True, exist_ok=True)
@@ -152,6 +164,36 @@ def main():
                 if expected:
                     assert first_macos == expected, (
                         "the reproducible bundle is not the bundle of the release")
+
+        # 4. the Core of the release, built twice. The operator signs the
+        # binaries of the release; a binary that changes from build to build
+        # cannot be signed by its digest. The build is forced by removing the
+        # artefacts, not by touching the sources.
+        if not args.skip_core:
+            core = ROOT / "target/release/oip-server"
+            probe = ROOT / "target/release/examples/mcp_probe"
+            before = (sha256_of(core), sha256_of(probe))
+            for artefact in (core, probe):
+                if artefact.exists():
+                    artefact.unlink()
+            seconds = build(["cargo", "build", "--locked", "--release",
+                             "--bin", "oip-server", "--example", "mcp_probe"],
+                            cwd=ROOT)
+            after = (sha256_of(core), sha256_of(probe))
+            report["the_core"] = {
+                "the_command": "cargo build --locked --release --bin oip-server "
+                               "--example mcp_probe",
+                "the_rebuild_seconds": seconds,
+                "the_core_before": before[0],
+                "the_core_after": after[0],
+                "the_probe_before": before[1],
+                "the_probe_after": after[1],
+                "the_core_is_identical": before[0] == after[0],
+                "the_probe_is_identical": before[1] == after[1],
+            }
+            assert before[0] == after[0], "the Core of the release is not reproducible"
+            assert before[1] == after[1], "the probe of the release is not reproducible"
+            report["steps"].append("the Core of the release is reproducible")
 
         report["status"] = "PASS"
     except AssertionError as error:
