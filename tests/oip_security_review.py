@@ -463,6 +463,15 @@ def main():
         status: sum(1 for item in report["findings"] if item["status"] == status)
         for status in ("resolved", "mitigated", "escalated")
     }
+
+    # The revision the receipt was measured on: a reader of the evidence must
+    # be able to tell whether it is current.
+    report["the_revision"] = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    report["the_tree"] = subprocess.check_output(
+        ["git", "rev-parse", "HEAD^{tree}"], cwd=ROOT, text=True).strip()
+    report["the_working_tree_is_clean"] = not subprocess.check_output(
+        ["git", "status", "--porcelain"], cwd=ROOT, text=True).strip()
     (evidence / "security-review.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps({"status": report["status"], "summary": report["summary"]}, indent=2))
     return 0 if report.get("status") == "PASS" else 1

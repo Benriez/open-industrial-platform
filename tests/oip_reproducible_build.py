@@ -137,6 +137,14 @@ def main():
         report["status"] = "FAIL"
         report["error"] = str(error)
     finally:
+    # The revision the receipt was measured on: a reader of the evidence must
+        # be able to tell whether it is current.
+        report["the_revision"] = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        report["the_tree"] = subprocess.check_output(
+            ["git", "rev-parse", "HEAD^{tree}"], cwd=ROOT, text=True).strip()
+        report["the_working_tree_is_clean"] = not subprocess.check_output(
+            ["git", "status", "--porcelain"], cwd=ROOT, text=True).strip()
         report["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         (evidence / "reproducible-build.json").write_text(json.dumps(report, indent=2) + "\n")
         print(json.dumps({k: v for k, v in report.items() if k != "steps"}, indent=2))
