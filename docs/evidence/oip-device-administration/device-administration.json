@@ -29,18 +29,18 @@
     "rendered_samples": 6,
     "all_stale": true,
     "receive_times_shown": 1,
-    "first_receive_time": "2026-11-09 12:25:30.043 UTC",
+    "first_receive_time": "2026-11-09 12:57:14.986 UTC",
     "metrics": [
-      "host.disks",
-      "host.os",
+      "host.memory_used_bytes",
       "host.model",
-      "host.architecture",
-      "host.cpu_info",
-      "host.memory_total_bytes"
+      "host.os",
+      "host.memory_total_bytes",
+      "host.hostname",
+      "host.cpu_info"
     ]
   },
   "rendered_administration": {
-    "device_id": "95565935-f1ef-41dd-af0f-951623c1f3af",
+    "device_id": "dbc297d2-3a8d-4c60-8eab-f42b9496765e",
     "revision_before": 1,
     "revision_after": 2,
     "display_name_updated": true,
@@ -76,5 +76,8 @@
   "loaded_build_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
   "errors": [],
   "external": [],
-  "the_revision_of_the_acceptance": "3c663f90c3f6"
+  "the_revision": "ba0781830cc7fb39e3f955658f7bffd7e94b8b4e",
+  "the_tree": "3ba6620b74c041bbfc7241d01431d99ff55cd4d5",
+  "the_working_tree_is_clean": false,
+  "the_revision_of_the_acceptance": null
 }

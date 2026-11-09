@@ -1,8 +1,8 @@
 {
   "schema": "oip-accessibility-receipt-v1",
-  "revision": "3c663f90c3f62ad77b7f2a79a6e1a145eff04e44",
+  "revision": "678c73a215f57aeae6d582144df5aa198b2a9f0a",
   "scope": "name and role coverage of the rendered surface of the six workstations; not a full WCAG audit",
-  "base": "http://127.0.0.1:64434",
+  "base": "http://127.0.0.1:50750",
   "stations": [
     {
       "workstation": "overview",
@@ -160,5 +160,8 @@
     "Failed to load resource: the server responded with a status of 403 (Forbidden)"
   ],
   "external_requests": [],
-  "the_revision_of_the_acceptance": "3c663f90c3f6"
+  "the_revision": "ba0781830cc7fb39e3f955658f7bffd7e94b8b4e",
+  "the_tree": "3ba6620b74c041bbfc7241d01431d99ff55cd4d5",
+  "the_working_tree_is_clean": false,
+  "the_revision_of_the_acceptance": "678c73a215f57aeae6d582144df5aa198b2a9f0a"
 }

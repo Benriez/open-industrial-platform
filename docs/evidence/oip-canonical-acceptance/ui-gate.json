@@ -1,8 +1,8 @@
 {
   "schema": "oip-canonical-ui-gate-v2",
-  "started_utc": "2026-11-09T12:17:35Z",
-  "source_revision": "3c663f90c3f62ad77b7f2a79a6e1a145eff04e44",
-  "source_tree": "c263b5620f702619633d5c4662ad1874134bba4e",
+  "started_utc": "2026-11-09T12:49:09Z",
+  "source_revision": "678c73a215f57aeae6d582144df5aa198b2a9f0a",
+  "source_tree": "f76223df3ee68c2a92cc0940304ae05d2a37b2fd",
   "source_worktree": "/Users/benny/Code/open-industrial-platform",
   "source_dirty": false,
   "baseline_document": "docs/design/OIP_CANONICAL_UI_BASELINE.md",
@@ -80,10 +80,16 @@
   "bundle_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
   "bundle_bytes": 3032537,
   "bundle_path": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/web/main.dart.js",
-  "flutter_tests_passed": null,
-  "flutter_tests_failed": null,
+  "flutter_tests_passed": 356,
+  "flutter_tests_failed": 0,
+  "flutter_tests_skipped": 1,
   "browser_gate_executed": false,
   "complete": false,
-  "finished_utc": "2026-11-09T12:18:33Z",
-  "the_revision_of_the_acceptance": "3c663f90c3f6"
+  "finished_utc": "2026-11-09T12:50:25Z",
+  "the_revision": "ba0781830cc7fb39e3f955658f7bffd7e94b8b4e",
+  "the_tree": "3ba6620b74c041bbfc7241d01431d99ff55cd4d5",
+  "the_working_tree_is_clean": false,
+  "the_revision_of_the_acceptance": "678c73a215f57aeae6d582144df5aa198b2a9f0a",
+  "what_this_receipt_is": "the build provenance and the widget gate of the acceptance; the browser gate is 'browser-gate.json' and the overall verdict is in 'acceptance.json'",
+  "the_verdict_of_the_acceptance": "PASS"
 }
