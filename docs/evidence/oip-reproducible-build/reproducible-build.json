@@ -6,11 +6,11 @@
   ],
   "the_web_release": {
     "the_command": "flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none",
-    "the_first_build_seconds": 1.4,
+    "the_first_build_seconds": 24.9,
     "the_main_bundle_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
     "the_tree_sha256": "db506a2f0764afb23e5c2718a3273fd10435a5ab9c1c76b238837a2c9eb24f53",
     "the_files": 35,
-    "the_second_build_seconds": 2.2,
+    "the_second_build_seconds": 2.4,
     "the_main_bundle_of_the_second_build": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
     "the_tree_of_the_second_build": "db506a2f0764afb23e5c2718a3273fd10435a5ab9c1c76b238837a2c9eb24f53",
     "the_main_bundle_is_identical": true,
@@ -19,14 +19,17 @@
   },
   "the_macos_bundle": {
     "the_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:8080",
-    "the_first_build_seconds": 13.8,
+    "the_first_build_seconds": 18.5,
     "the_tree_sha256": "9872190c47b8f0378761728ccc8e218fb9e619e0b888dd322d4d07ff7feff347",
     "the_files": 43,
-    "the_second_build_seconds": 13.4,
+    "the_second_build_seconds": 15.4,
     "the_tree_of_the_second_build": "9872190c47b8f0378761728ccc8e218fb9e619e0b888dd322d4d07ff7feff347",
     "the_tree_is_identical": true,
     "the_files_that_differ": []
   },
   "status": "PASS",
-  "finished_utc": "2026-11-09T02:56:38Z"
+  "the_revision": "f53e9ec938a3ac879959290e0ebf7d42a12d3e93",
+  "the_tree": "381838f750c1c26512b3f365608c4cf6252d72ca",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-09T04:01:04Z"
 }
