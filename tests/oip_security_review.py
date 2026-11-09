@@ -84,11 +84,20 @@ def client_packages():
 
 
 def the_digests_named_by(path):
-    """The digests that a receipt names for the files of the repository.
+    """The digests that a receipt names, with the reason of every one of them.
 
-    A measurement receipt records the digest of a source file under the path
-    of that file. A 64-hex value is therefore a digest only when the receipt
-    pairs it with a path — the shape of the value alone proves nothing.
+    A measurement receipt holds two kinds of 64-hex value, and the receipt
+    itself says which is which:
+
+      * the digest of a file of the repository, named under the path of that
+        file;
+      * an **opaque key of the Core** — the gap key, the event key, the
+        observation key, the cursor — which the Core computes as a content
+        hash.
+
+    The shape of a value proves nothing: a digest is only a false positive
+    when the receipt pairs it with the path of a file or with the name of an
+    opaque key of the Core.
     """
     found = set()
 
@@ -100,8 +109,12 @@ def the_digests_named_by(path):
             for value in node:
                 walk(value, key)
         elif isinstance(node, str) and isinstance(key, str):
-            if re.fullmatch(r"[0-9a-f]{64}", node) and (
-                    "/" in key or re.search(r"\.[A-Za-z0-9]+$", key)):
+            if not re.fullmatch(r"[0-9a-f]{64}", node):
+                return
+            if "/" in key or re.search(r"\.[A-Za-z0-9]+$", key):
+                found.add(node)
+            elif key.endswith("_key") or key.endswith("_sha256") \
+                    or key.endswith("_digest") or key == "cursor":
                 found.add(node)
 
     try:
@@ -234,8 +247,8 @@ def main():
                 named = value in the_digests_named_by(ROOT / name)
                 candidates.append({
                     "file": name, "line": item.get("StartLine"), "rule": item.get("RuleID"),
-                    "classification": "the SHA-256 of a file of the repository that this "
-                    "receipt names" if (digest and named) else
+                    "classification": "the digest of a file of the repository or an opaque "
+                    "key of the Core that this receipt names" if (digest and named) else
                     ("a digest-shaped value that this receipt does not name as a file digest"
                      if (digest and in_receipt) else "unclassified"),
                     "false_positive": bool(digest and named and in_receipt),
