@@ -13,13 +13,14 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `b5cd7ee` (`feat(g9): the Core names the revision it was built from`) |
-| Canonical source tree | `2bcc80c7600a434ff55ec8dd1bf82e770474fc58` |
-| The revision of the final acceptance | `3c663f9` (tree `c263b5620f70`) — the clean tree the canonical gate passed on |
-| The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` — the same revision yields the same bytes, and the binary names its own revision |
+| Canonical source revision (the product: `apps/`, `crates/`) | `724d83b` (`chore(tests): the acceptance receipts name the revision they were measured on`) — unchanged since; the commits after it change the record and the harness only |
+| The revision of the branch (`main`) | `95ea28d` (tree `f3690b742865`) |
+| The revision of the final acceptance | `678c73a` — the clean tree the canonical gate passed on |
+| The revision of the Core binary of the release | `ee67106` — the binary names its own revision; the same revision yields the same bytes |
+| The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 632, source manifest SHA-256 `db5672b7fcc3e54c293f4d6b5b67fc86083ed72dfb3458a3b67cb2b52c193b51` (the digest of `git ls-files -s`) |
+| Tracked files in the canonical source revision | 651, source manifest SHA-256 `3fccc6043efa9577e9e2e5575bbc53cd8e71aa9a1b5ab5043adfc80f3143f744` (the digest of `git ls-files -s`) |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
