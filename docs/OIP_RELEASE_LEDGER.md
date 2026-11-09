@@ -90,9 +90,10 @@ production-security scope of G10 and the operator acceptance of G12.
   assets), which needs 126 s at the rate of one connection and about 50 s over the few
   connections the browser opens in parallel. On a machine with an ordinary loopback the same
   delivery is a fraction of a second. **The operator should therefore measure the first paint on
-  their own machine before deciding** — a smaller delivery, a compressed asset or a local cache
-  of the release is a product decision of the operator, and the decision must not be taken on the
-  number of a throttled path.
+  their own machine before deciding** — `python3 tools/oip_measure_delivery.py` reports the size of
+  the delivery, the rate of the path and the rate of the machine of the operator. A smaller
+  delivery, a compressed asset or a local cache of the release is a product decision of the
+  operator, and the decision must not be taken on the number of a throttled path.
 * The UI ownership question is settled: the Spectrum-2027 workstations are the canonical
   application of `main` and `feature/oip-managed-diagnostics` is reconciled into them. The
   recovery review command of that branch (`docs/recovery/oip-loop-20261108.md`) is no longer
