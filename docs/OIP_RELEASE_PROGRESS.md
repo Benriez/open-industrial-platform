@@ -2204,11 +2204,35 @@ disabled by the plan, but nothing is removed. The procedure is in the runbook (�
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 42 — the builds of the release are reproducible
+
+**Status: PROVED on canonical `main`.**
+The gate G9 asks for a **reproducible** macOS application build. The design regression gate
+compares the served bundle with the local build — but that is the *same* build. Nothing built the
+release **twice** and compared the artefacts.
+
+`tests/oip_reproducible_build.py` builds the release twice and compares the digests
+(`docs/evidence/oip-reproducible-build/reproducible-build.json`):
+
+| Artefact | First build | Second build | Identical |
+|---|---|---|---|
+| the web release — `main.dart.js` | `a51b62cdd3644a6be44bcb64…` | the same | **yes** |
+| the web release — the whole asset tree (35 files) | `db506a2f0764afb23e5c2718…` | the same | **yes** |
+| the macOS application bundle (43 files, built from an emptied build directory) | `9872190c47b8f0378761728c…` | the same | **yes** |
+
+The digests are taken over the sorted list of the paths and their contents, so they do not depend
+on the order of the file system. The two builds of the bundle were independent: the build
+directory was emptied between them, so the second build was not an incremental artefact.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-reproducible-build/reproducible-build.json` | the measured reproducibility of the builds of the release: the web release and the macOS application bundle are byte-identical when they are built twice (iteration 42) |
 | `docs/evidence/oip-extend-registry/extend-registry.json` | the measured extension of the registry of an instance: the sources survive, the new source collects and a plan that drops a source is refused (iteration 41) |
 | `docs/evidence/oip-session-lifetime/session-lifetime.json` | the measured lifetimes of the one-time code (120 s) and of the session (30 min) against the real Core: both promises of the operator login hold (iteration 39) |
 | `docs/evidence/oip-settings-offline/settings-offline.json` | the measured offline change of a setting of the instance: the change, the guard of the revision, the permission, the validation and the effect at the next start (iteration 38) |
