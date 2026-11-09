@@ -104,6 +104,9 @@ secrets/
 # storage-failure path of the Core.
 !/docs/evidence/oip-device-administration/device-administration.json
 !/docs/evidence/oip-storage-failure/storage-failure.json
+# The integrity of the record itself: every cited receipt exists and is
+# tracked, and every receipt of the release is cited.
+!/docs/evidence/oip-record-integrity/record-integrity.json
 !/docs/evidence/oip-global-context/global-context.json
 !/docs/evidence/oip-performance/performance.json
 !/docs/evidence/oip-offline-archive/offline-archive.json
