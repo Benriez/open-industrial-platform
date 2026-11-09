@@ -41,6 +41,11 @@ production-security scope of G10 and the operator acceptance of G12.
 ## Operator actions required (nothing here is executed by the loop)
 
 * Decide F5 permission rule (N1b) and protected schema-7 activation with a fresh schema-6 backup (N4).
+  The activation itself is **rehearsed on a copy** of the store of the operator: the migration is
+  accepted (schema 6 to 7), the inventory of the instance survives it unchanged, the integrity
+  check answers `ok` and the personal installation itself is untouched
+  (`docs/evidence/oip-activation-dry-run/activation-dry-run.json`). The decision and the fresh
+  backup remain the operator's.
 * Name an approved physical device and credentials path for G5/G12.
 * Accept or reject the production-security scope (G10).
 * Authorize the local installation of the application as a launch agent (G9/N17) and name the

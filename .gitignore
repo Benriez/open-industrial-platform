@@ -113,6 +113,7 @@ secrets/
 !/docs/evidence/oip-native-session/native-session.json
 !/docs/evidence/oip-reconnect-recovery/reconnect-recovery.json
 !/docs/evidence/oip-reconnect-recovery/rehearsal.json
+!/docs/evidence/oip-activation-dry-run/activation-dry-run.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json

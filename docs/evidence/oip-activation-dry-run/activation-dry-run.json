@@ -1,0 +1,75 @@
+{
+  "schema": "oip-activation-dry-run-v1",
+  "steps": [
+    "the release binary serves the copy of the operator"
+  ],
+  "the_store": {
+    "the_path_of_the_operator": "the personal installation",
+    "the_sha256_before": "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e",
+    "the_schema_before": "6"
+  },
+  "the_copy": {
+    "the_sha256": "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e",
+    "the_sha256_equals_the_original": true
+  },
+  "the_sources_of_the_instance": 0,
+  "the_principals_of_the_instance": 1,
+  "the_inventory_before": {
+    "organizations": "1",
+    "infrastructures": "1",
+    "sites": "1",
+    "source_placements": "0",
+    "principals": "1",
+    "read_roles": "1",
+    "role_bindings": "1",
+    "inventory_devices": "1",
+    "observations": "0",
+    "collection_events": "0",
+    "data_gaps": "0",
+    "source_health_history": "0",
+    "settings": "0"
+  },
+  "the_migrations_before": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6"
+  ],
+  "the_start_exit_code": 0,
+  "the_start_output": "{\"status\": \"started\", \"pid\": 78460, \"http_port\": 63601, \"database\": \"/private/tmp/oip-activation-t8uw44r5/core.sqlite\", \"log\": \"/private/tmp/oip-activation-t8uw44r5/state/oip.log\", \"ipc_credentials_provisioned\": 0}",
+  "the_schema_after": "7",
+  "the_inventory_after": {
+    "organizations": "1",
+    "infrastructures": "1",
+    "sites": "1",
+    "source_placements": "0",
+    "principals": "1",
+    "read_roles": "1",
+    "role_bindings": "1",
+    "inventory_devices": "1",
+    "observations": "0",
+    "collection_events": "0",
+    "data_gaps": "0",
+    "source_health_history": "0",
+    "settings": "0"
+  },
+  "the_integrity": "ok",
+  "the_migrations_after": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7"
+  ],
+  "the_activation_would_succeed": true,
+  "status": "PASS",
+  "the_log_of_the_instance": "the-instance.log",
+  "the_sha256_after": "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e",
+  "the_personal_installation_is_unchanged": true,
+  "the_schema_of_the_personal_installation_after": "6",
+  "finished_utc": "2026-11-09T01:26:11Z"
+}

@@ -2018,11 +2018,50 @@ This is the evidence the operator needs for the activation of the release on the
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 35 — the dry run of the activation of the operator's instance
+
+**Status: PROVED on canonical `main`.**
+The activation of the release on the personal installation is an **operator decision** (N4): the
+Core refuses to touch the personal installation and the loop never activates it. Before that
+decision the operator needs to know whether the activation would succeed at all — the migration of
+the Core verifies the **checksum of every migration the store already carries**, so a change in
+the SQL of an era after the store was written would refuse the activation.
+
+`tests/oip_activation_dry_run.py` answers that question **without touching the personal
+installation**: it copies the store of the operator into a disposable directory and lets the
+release binary migrate the **copy** (`docs/evidence/oip-activation-dry-run/activation-dry-run.json`).
+
+Measured:
+
+| | Result |
+|---|---|
+| the store of the operator | schema 6, sha256 `9f988c01…` |
+| the copy | byte-identical to the original (`the_sha256_equals_the_original: true`) |
+| the migration | **accepted**: the schema becomes 7, the seventh migration is recorded |
+| the inventory | identical before and after — 1 organization, 1 infrastructure, 1 site, 1 principal, 1 role, 1 binding, 1 device: nothing is lost |
+| the integrity of the migrated store | `ok` |
+| the daemon | the release binary serves the migrated copy |
+| **the personal installation afterwards** | **unchanged**: the same sha256, still schema 6 |
+
+Two properties of the rehearsal are worth naming: the runtime configuration of the copy declares
+the sources of the instance with **closed loopback ports** — the rehearsal never contacts a
+private endpoint of the operator — and the local IPC binds to the **enabled principal of the
+store**, because a principal that the store does not carry is refused by the Core.
+
+The operator action N4 is unchanged and now has measured material: the activation of the release
+on the personal instance would succeed, and it remains the operator's decision with its own fresh
+schema-6 backup.
+
+No personal database change (`9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e`,
+`user_version` 6 — measured before and after the rehearsal), no schema-7 activation of the
+personal installation, no private SSH, no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-activation-dry-run/activation-dry-run.json` | the measured dry run of the activation of the release on a copy of the store of the operator: the migration is accepted, nothing is lost, the personal installation is unchanged (iteration 35) |
 | `docs/evidence/oip-reconnect-recovery/reconnect-recovery.json` | the measured reconnect and recovery of the application: the restart of the instance, the honest state of the surface, the named cause and the restored projection (iteration 33) |
 | `docs/evidence/oip-native-session/native-session.json` | the measured session of the native client against the real Core: the one-time code, the authorized hierarchy, the scoped projection and the sign-out (iteration 32) |
 | `docs/release/oip-release-manifest.json`, `docs/release/SHA256SUMS` | the release manifest: every artefact of the release with its digest, the provenance of its build, the digests of the acceptance receipts and the state of the operator's visual acceptance (iteration 31) |
