@@ -219,8 +219,8 @@ error: refusing to start against the personal installation: ...
 ```
 
 The activation of the real installation is an operator decision with its own
-backup procedure (see `docs/OIP_RELEASE_PROGRESS.md`, N4). This runbook does
-not perform it.
+backup procedure (see §11 and `docs/OIP_RELEASE_PROGRESS.md`, N4). This
+runbook does not perform it.
 
 ## 9. The macOS application bundle
 
@@ -284,7 +284,65 @@ The handover of a *running* historical instance is rehearsed by
 authorized reads of its principals, the release binary takes over the same
 store, and the historical binary serves the restored store again.
 
-## 11. What the receipts prove
+## 11. The activation of the release on the personal installation
+
+This section is the procedure for the **operator**. The loop never performs
+it: the tool refuses every operation whose target is the personal
+installation, and the decision with its backup belongs to the operator.
+
+**What is measured.** The rehearsal `tests/oip_activation_dry_run.py` copies
+the store of the operator into a disposable directory and lets the release
+binary migrate the **copy**
+(`docs/evidence/oip-activation-dry-run/activation-dry-run.json`): the
+migration of the schema 6 to the schema 7 is **accepted**, the inventory of
+the instance survives it unchanged (the organizations, the infrastructures,
+the sites, the principals, the roles, the bindings and the devices), the
+integrity check answers `ok` and the daemon serves the migrated copy. The
+personal installation itself was not touched: the same sha256, still schema 6.
+
+**The procedure.**
+
+```sh
+# 1. the fresh backup of the personal store. The tool refuses the personal
+#    installation, so the operator copies the store with the backup of
+#    SQLite itself. The copy is owner-private.
+STORE="$HOME/Library/Application Support/OIP/real/core.sqlite"
+BACKUP="$HOME/Library/Application Support/OIP/real/backups/core-$(date -u +%Y%m%dT%H%M%SZ).sqlite"
+mkdir -p "$(dirname "$BACKUP")" && chmod 700 "$(dirname "$BACKUP")"
+/usr/bin/sqlite3 -readonly "$STORE" ".backup '$BACKUP'"
+chmod 600 "$BACKUP"
+shasum -a 256 "$STORE" "$BACKUP"
+
+# 2. the dry run: the release binary migrates a COPY of the store. The
+#    configuration of the instance names the sources of the registry and the
+#    local IPC binds to a principal that the store carries and that is
+#    enabled — the Core refuses the start otherwise.
+cp "$STORE" "$STORE.dry-run" && chmod 600 "$STORE.dry-run"
+#    ... run the release binary against the copy, then check:
+/usr/bin/sqlite3 -readonly "$STORE.dry-run" "pragma user_version; pragma integrity_check;"
+
+# 3. the activation itself, with the same configuration, now against the
+#    real store. The operator stops the instance first.
+/usr/bin/sqlite3 -readonly "$STORE" "pragma user_version;"
+target/release/oip-server --config "$HOME/Library/Application Support/OIP/real/core.json"
+
+# 4. the check after the activation
+/usr/bin/sqlite3 -readonly "$STORE" "pragma user_version; pragma integrity_check;"
+shasum -a 256 "$STORE"   # the store changed: the migration wrote to it
+```
+
+**The rollback.** The backup of the first step restores the previous state:
+stop the instance, copy the backup over the store, and start the previous
+release again. The rehearsal `tests/oip_upgrade_rollback.py` proves exactly
+that path with a protected historical binary
+(`docs/evidence/oip-upgrade-rollback/upgrade-rollback.json`).
+
+**Two properties of the rehearsal that the procedure keeps.** The copy declares
+the sources of the instance with closed loopback ports, so no private endpoint
+is contacted; and the local IPC binds to the enabled principal of the store,
+because a principal that the store does not carry is refused by the Core.
+
+## 12. What the receipts prove
 
 `docs/evidence/oip-operations/operations.json` records the measured result of
 the sequence above against a disposable instance, and
