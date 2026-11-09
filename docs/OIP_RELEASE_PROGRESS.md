@@ -2693,6 +2693,27 @@ refresh (24 observations over twelve seconds), and that is measured, not assumed
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 58 — the boundary of the personal store is measured, and the release's own binary is the reproducible one
+
+**Status: PROVED on canonical `main`.**
+The one-command verification of the release reported the boundary of the personal store of the
+operator as `false` inside a receipt that said `PASS` — and it had never measured it: it looked
+for a key that the receipt of the rehearsal of the activation does not have, so the check passed
+silently. The boundary is measured now: the digest and the schema of the store are read
+read-only and compared with the digest of the record and with the digest that the rehearsal
+recorded. The store of the operator is unchanged and still at schema 6.
+
+The **manifest of the release** compared the Core that the release delivers with the binary of
+the rehearsal of the reproducible builds — a comparison that can only hold when the rehearsal ran
+on the very revision of the release, because the binary names its own revision. It did not, and
+the manifest said so. The rehearsal runs on the revision of the release now: the two builds of the
+Core are byte-identical, the manifest names that binary, and the web release and the macOS bundle
+of this run are byte-identical to the artefacts of the acceptance — so the acceptance still
+describes what the release delivers.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |

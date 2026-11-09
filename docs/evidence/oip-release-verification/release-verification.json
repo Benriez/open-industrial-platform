@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "c85556dc7b6a7f98c27b3e7b7fee2d392d88b9d4",
+      "the_revision": "68917ba1f17ced735a05d2ced1957adf0b68111f",
       "the_revision_of_the_source": {
         "the_revision": "81701391dc36a18abc0d8cabbb989e43adc04397",
         "the_subject": "feat(g4): the journey reads the painted surface after the tile is open"
@@ -12,17 +12,17 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 669,
-        "the_sha256": "79dba70c2f5d71fa174822eac6fe37f611378698733b0cc0caed3fdada4dbcf7"
+        "the_sha256": "1c2cf22bc9a557d03c4e675b8a0bc357931f5467d426959963853ea82d176b9d"
       },
       "the_artifacts": {
-        "the_core": "3e22ddbc6ff45da7da754566be5698b4b714e710c5c110259de6ffc80e8615b0",
+        "the_core": "3b4d42d3862ec83dddb0a46847fc6b4da143437599a994c6ff8205c91a57e3a0",
         "the_official_mcp_probe": "f79e908bbb237e812c891f0344ab3a45dec4d6a7bc9621f322acb0aadb02bf9a",
         "the_macos_application_bundle": "e5cb529201e18bfc71802535297b0b3575ca4371033e347b48ad62778988b884",
         "the_web_release": "db506a2f0764afb23e5c2718a3273fd10435a5ab9c1c76b238837a2c9eb24f53"
       },
       "the_receipts": 29,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-      "the_core_is_the_reproducible_one": false
+      "the_core_is_the_reproducible_one": true
     },
     "the_freshness": {
       "the_last_change_of_the_product": {
@@ -129,8 +129,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "fa0b039e4aa80b0b2d7c133dbaf55932450dedee",
-  "the_tree": "bb4e78bb954c4c02a512d5799ef519550edbe100",
+  "the_revision": "68917ba1f17ced735a05d2ced1957adf0b68111f",
+  "the_tree": "4d08f0b13d6de02f167972c5e4e18038fff7a7c0",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }

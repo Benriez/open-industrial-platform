@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "c85556dc7b6a7f98c27b3e7b7fee2d392d88b9d4",
-  "the_tree": "afd62b411ed3bb1f67bbb5c9f65972bc23f478f1",
+  "the_revision": "68917ba1f17ced735a05d2ced1957adf0b68111f",
+  "the_tree": "4d08f0b13d6de02f167972c5e4e18038fff7a7c0",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "81701391dc36a18abc0d8cabbb989e43adc04397",
@@ -22,14 +22,15 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 669,
-    "the_sha256": "79dba70c2f5d71fa174822eac6fe37f611378698733b0cc0caed3fdada4dbcf7"
+    "the_sha256": "1c2cf22bc9a557d03c4e675b8a0bc357931f5467d426959963853ea82d176b9d"
   },
   "the_artifacts": {
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
       "bytes": 36271328,
-      "sha256": "3e22ddbc6ff45da7da754566be5698b4b714e710c5c110259de6ffc80e8615b0"
+      "sha256": "3b4d42d3862ec83dddb0a46847fc6b4da143437599a994c6ff8205c91a57e3a0",
+      "the_revision_the_binary_names": "68917ba1f17ced735a05d2ced1957adf0b68111f"
     },
     "the_official_mcp_probe": {
       "present": true,
@@ -106,7 +107,7 @@
     },
     "the_reproducible_build": {
       "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-      "sha256": "cc37509cb2d8c8bd8fad5bcf9017a934a0bf533a6d2c1387d6cea6fadd07deab"
+      "sha256": "d4fc12e15a4562f6b6bc628d351ae2561a23cf33d393e252016513843b12a62d"
     },
     "the_upgrade_rollback": {
       "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
@@ -176,15 +177,14 @@
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/OIP_RELEASE_LEDGER.md",
-    " M docs/OIP_RELEASE_PROGRESS.md"
+    "M docs/evidence/oip-reproducible-build/reproducible-build.json"
   ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-    "the_digest_of_the_reproducible_build": "306c2ae94341f5b98efe380d67067287da731a9379836573db9e13a9faa5e65b",
+    "the_digest_of_the_reproducible_build": "3b4d42d3862ec83dddb0a46847fc6b4da143437599a994c6ff8205c91a57e3a0",
     "the_core_is_identical_across_the_two_builds": true,
-    "the_manifest_names_the_reproducible_binary": false,
-    "the_revision_the_binary_names": "ee67106aa000aee522514acbc669f46b6a0d2c5f"
+    "the_manifest_names_the_reproducible_binary": true,
+    "the_revision_the_binary_names": "68917ba1f17ced735a05d2ced1957adf0b68111f"
   },
   "the_visual_acceptance": {
     "the_state": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
