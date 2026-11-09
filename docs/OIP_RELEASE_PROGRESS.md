@@ -1676,21 +1676,21 @@ no push, no deployment, no system service.
 
 ### Iteration 26 — the final acceptance of the release candidate, bound to the tree
 
-**Status: PROVED on canonical `main` (`4300123`), tree `7dd49ef`.**
+**Status: PROVED on canonical `main` (`37a5f42`), tree `948d984`.**
 The canonical acceptance was run once more on the clean tree after every change of this
 iteration, with the **release** binary and the delivered web bundle
 (`target/oip-canonical-regression-final2/`). The receipt names the tested artefacts:
 
 | Artefact | Value |
 |---|---|
-| the tested revision | `4300123fd301b63609706be692d893fff94b8eb5` |
-| the tested tree | `7dd49ef28c5aa38da9647bd231598b434dfafb70` |
+| the tested revision | `37a5f42cccc5` (the full hash in the receipt of the run) |
+| the tested tree | `948d984bf143d899bb22cccfdab9f658aa47c7ec` |
 | the tree during the run | clean (`source_dirty: false`) |
-| the release binary (`target/release/oip-server`) | `5d33d4972875adf5a12216fb1402c488921e7d98e599ff85e3030ba4802fe43f` |
+| the release binary (`target/release/oip-server`) | `fd0dcdfab9d221d5d3a04d522e16cf15b674dc777403e7f3dc93e93d873a1b98` |
 | the official MCP probe | `029bf9f4505dd483d62196992d0443498a3e5a242f35a3192a4ef125227cfb08` |
-| the served `main.dart.js` | `b09bb5ff4a16825ddf350f9278aa94a378f42222bbb5e23af0f76ed7bef2b844`, 3 031 151 bytes |
+| the served `main.dart.js` | `a51b62cdd3644a6be44bcb64…` (the full hash in the receipt of the run) |
 | the served bundle equals the local build | **yes**, byte by byte |
-| the Flutter tests | 344 passed, 0 failed |
+| the Flutter tests | 350 passed, 0 failed (one skipped: the live test without an instance) |
 | the browser gate | 175 findings, 0 failed, 13 captures, no console error, no external request |
 | the visual comparison | **PASS** |
 | the eight functional phases | 8 of 8 **PASS** |
@@ -2071,6 +2071,30 @@ plan** — the session carries exactly that principal.
 
 If the plan of the Core changes, this rehearsal fails: the runbook is executable documentation
 and cannot rot unnoticed.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
+### Iteration 37 — the settings navigation names the status of the Core
+
+**Status: PROVED on canonical `main` (`fa7d66a`).**
+The Core answers for every category of the settings whether the category is administered **offline**
+or only **read** (`offline_administration_required` / `read_only`). The client parsed the answer and
+dropped it: the navigation of the settings workstation showed the categories of the client without
+the status of the Core, and the Application section stated the offline administration as a
+hardcoded string of the client instead of the answer of the Core.
+
+The navigation now shows the answer of the Core for the selected category —
+`CORE · Nur offline administrierbar` or `CORE · Nur lesend` — and the categories are kept when a
+section is loaded that does not read the settings, because they describe the **instance** and not a
+section. The wire names of the Core are snake_case while the enum of the client is camelCase: the
+mapping is explicit, so the status of a category is **found and not guessed**.
+
+The design regression gate passes on the changed shell: **350 of 350** Flutter tests (one skipped:
+the live test without an instance), 175 browser findings with zero failures, 13 captures, the
+visual comparison **PASS**, the eight functional phases 8 of 8 **PASS**, the served bundle
+byte-identical to the local build, the operator visual approval still
+`VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
 
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
