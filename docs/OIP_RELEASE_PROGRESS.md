@@ -1797,7 +1797,8 @@ authorized managed session:
 
 1. the device is registered through the inventory of the authorized scope;
 2. the connection is started, the Core presents the host key of the fixture and waits for the
-   consent of the operator (`SHA256:PVA1Yx1uOkaKGQyK39dmqfCRdLnWxdNgOARfm1G1IHA`);
+   consent of the operator (the fixture generates a fresh key for every run, so the receipt of
+   the run names the fingerprint that was consented);
 3. the host key is confirmed, the identity of the host is verified and the identity confirmation
    enables the read-only monitoring with a polling of 10 s;
 4. the device collects — the state of the connection is `collecting`.
