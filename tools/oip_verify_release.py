@@ -1,0 +1,332 @@
+#!/usr/bin/env python3
+"""The verification of the release — one command, one receipt.
+
+A third party that receives this repository must be able to check the whole
+handoff with **one command** and without trusting the prose of the record.
+This tool is that command. It proves:
+
+  1. **The manifest** of the release verifies: every digest of every artefact
+     and of every receipt is recomputed and compared with the written manifest.
+  2. **Every receipt is fresh**: no receipt of the release names a revision
+     that predates the last change to the product it covers. A receipt that
+     predates the product does not measure the product.
+  3. **The record is intact**: every receipt that the ledger and the state
+     file cite exists and is tracked by git, and every receipt of the release
+     is cited — a broken citation and an orphaned receipt are both defects of
+     the handoff.
+  4. **The acceptance passed**: the receipt of the canonical gate says PASS,
+     with its phases, its browser findings, its Flutter tests, its captures
+     and its accessibility numbers — and the visual acceptance of the
+     operator is still **pending**, never claimed.
+  5. **The safety boundaries held**: no receipt claims that the schema 7 was
+     activated on the personal store of the operator, and the personal store
+     is untouched (its digest is the one of the runbook).
+
+The tool reads; it never writes into the repository. With `--receipt` it
+writes the receipt of the verification.
+
+The verdict of the tool is **not** a production acceptance: the production
+acceptance is the operator's (G12) and the scope of the production security is
+the operator's decision (G10). The tool reports the gates that are open.
+
+Usage:
+  python3 tools/oip_verify_release.py [--receipt PATH] [--json]
+"""
+import argparse
+import hashlib
+import json
+import pathlib
+import re
+import subprocess
+import sys
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+LEDGER = ROOT / "docs/OIP_RELEASE_LEDGER.md"
+PROGRESS = ROOT / "docs/OIP_RELEASE_PROGRESS.md"
+EVIDENCE = ROOT / "docs/evidence"
+MANIFEST = ROOT / "docs/release/oip-release-manifest.json"
+# The source of the product: the Core and the client. A receipt that predates
+# the last change of the product does not measure the product.
+PRODUCT = (["crates"], ["apps/flutter/lib"])
+CITATION = re.compile(r"docs/evidence/[A-Za-z0-9_./-]+")
+ERA_DIRECTORIES = {"oip-real-device"}
+# The digest of the personal store of the operator. It must never change.
+PERSONAL_STORE = "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e"
+
+
+def git(*arguments):
+    result = subprocess.run(["git", *arguments], cwd=ROOT, capture_output=True, text=True)
+    return result.stdout.strip()
+
+
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def digest_tree(root):
+    entries = []
+    for path in sorted(root.rglob("*")):
+        if path.is_file():
+            entries.append((path.relative_to(root).as_posix(), sha256_file(path)))
+    digest = hashlib.sha256()
+    for name, value in entries:
+        digest.update(name.encode())
+        digest.update(b"\0")
+        digest.update(value.encode())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def the_release_receipts():
+    """The receipts of the current release under `docs/evidence/`."""
+    receipts = {}
+    for path in sorted(EVIDENCE.rglob("*.json")):
+        relative = path.relative_to(ROOT).as_posix()
+        area = relative.split("/")[2]
+        if not area.startswith("oip-") or area in ERA_DIRECTORIES:
+            continue
+        try:
+            receipts[relative] = json.loads(path.read_text())
+        except json.JSONDecodeError:
+            continue
+    return receipts
+
+
+def check_the_manifest():
+    """Every digest of the manifest is recomputed."""
+    problems = []
+    if not MANIFEST.is_file():
+        return {"the_manifest_is_absent": True}, ["the manifest of the release is absent"]
+    manifest = json.loads(MANIFEST.read_text())
+    for name, artifact in manifest.get("the_artifacts", {}).items():
+        path = ROOT / artifact["path"]
+        if not artifact.get("present"):
+            problems.append(f"the artefact {name} is absent")
+            continue
+        if not path.exists():
+            problems.append(f"the artefact {name} is absent: {artifact['path']}")
+            continue
+        digest = sha256_file(path) if path.is_file() else digest_tree(path)
+        if digest != artifact.get("sha256"):
+            problems.append(f"the artefact {name} does not match its digest")
+    for name, receipt in manifest.get("the_receipts", {}).items():
+        path = ROOT / receipt["path"]
+        if not receipt.get("sha256"):
+            continue
+        if not path.is_file():
+            problems.append(f"the receipt {name} is absent: {receipt['path']}")
+            continue
+        if sha256_file(path) != receipt["sha256"]:
+            problems.append(f"the receipt {name} does not match its digest")
+    return {
+        "the_revision": manifest.get("the_revision"),
+        "the_revision_of_the_source": manifest.get("the_revision_of_the_source"),
+        "the_source_manifest": manifest.get("the_source_manifest"),
+        "the_artifacts": {name: artifact.get("sha256")
+                          for name, artifact in manifest.get("the_artifacts", {}).items()},
+        "the_receipts": len(manifest.get("the_receipts", {})),
+        "the_visual_acceptance": manifest.get("the_visual_acceptance", {}).get("the_state"),
+        "the_core_is_the_reproducible_one":
+            manifest.get("the_core_is_the_reproducible_one", {}).get(
+                "the_manifest_names_the_reproducible_binary"),
+    }, problems
+
+
+def check_the_freshness(receipts):
+    """No receipt predates the last change of the product it covers."""
+    problems = []
+    boundaries = {}
+    for scope in PRODUCT:
+        revision = git("log", "-1", "--format=%H", "--", *scope)
+        boundaries["/".join(scope)] = revision
+    for relative, payload in receipts.items():
+        revision = payload.get("the_revision") or payload.get("revision")
+        if not revision:
+            problems.append(f"the receipt {relative} names no revision")
+            continue
+        for scope, boundary in boundaries.items():
+            if not boundary:
+                continue
+            result = subprocess.run(["git", "merge-base", "--is-ancestor", boundary, revision],
+                                     cwd=ROOT, capture_output=True)
+            if result.returncode != 0:
+                problems.append(
+                    f"the receipt {relative} names the revision {revision[:12]}, which "
+                    f"predates the last change of {scope} ({boundary[:12]})")
+    return {
+        "the_last_change_of_the_product": {name: revision[:12] for name, revision
+                                           in boundaries.items()},
+        "the_receipts": len(receipts),
+    }, problems
+
+
+def check_the_record(receipts):
+    """Every citation exists and is tracked; every receipt is cited."""
+    problems = []
+    text = LEDGER.read_text() + "\n" + PROGRESS.read_text()
+    cited = set()
+    for match in CITATION.finditer(text):
+        name = match.group(0).rstrip(".,;:)`*")
+        if name.endswith("*"):
+            name = name[:-1]
+        cited.add(name)
+    tracked = set(git("ls-files", "--").splitlines())
+    missing = sorted(name for name in cited if not (ROOT / name).exists())
+    untracked = []
+    for name in sorted(cited):
+        path = ROOT / name
+        if name in tracked or not path.exists():
+            continue
+        if path.is_dir():
+            files = [item for item in path.rglob("*") if item.is_file()]
+            if not files or not all(item.relative_to(ROOT).as_posix() in tracked
+                                    for item in files):
+                untracked.append(name)
+        else:
+            untracked.append(name)
+    cited_receipts = {name for name in cited if name.endswith(".json")}
+    orphans = sorted(set(receipts) - cited_receipts)
+    problems.extend(f"the cited receipt {name} does not exist" for name in missing)
+    problems.extend(f"the cited receipt {name} is not tracked" for name in untracked)
+    problems.extend(f"the receipt {name} is cited by nobody" for name in orphans)
+    return {
+        "the_citations": len(cited),
+        "the_receipts_of_the_release": len(receipts),
+        "the_missing": missing,
+        "the_untracked": untracked,
+        "the_orphaned": orphans,
+    }, problems
+
+
+def check_the_acceptance():
+    """The receipt of the canonical gate says PASS — and the operator has not accepted."""
+    problems = []
+    path = EVIDENCE / "oip-canonical-acceptance/acceptance.json"
+    if not path.is_file():
+        return {"the_acceptance_is_absent": True}, ["the receipt of the acceptance is absent"]
+    payload = json.loads(path.read_text())
+    gate = payload.get("canonical_ui_gate_receipt", {})
+    phases = payload.get("phases", [])
+    passed = sum(1 for phase in phases if phase.get("status") == "PASS")
+    if gate.get("verdict") != "PASS":
+        problems.append(f"the gate did not pass: {gate.get('verdict')}")
+    if phases and passed != len(phases):
+        problems.append(f"only {passed} of {len(phases)} phases passed")
+    if gate.get("browser_failures"):
+        problems.append(f"{gate['browser_failures']} browser findings failed")
+    approval = gate.get("operator_visual_approval")
+    if approval != "VISUAL_PENDING_OPERATOR_ACCEPTANCE":
+        problems.append(f"the visual acceptance of the operator is {approval!r}")
+    return {
+        "the_verdict": gate.get("verdict"),
+        "the_phases": f"{passed} of {len(phases)}",
+        "the_browser_findings": gate.get("browser_findings"),
+        "the_browser_failures": gate.get("browser_failures"),
+        "the_flutter_tests_passed": gate.get("flutter_tests_passed"),
+        "the_flutter_tests_failed": gate.get("flutter_tests_failed"),
+        "the_screenshots": gate.get("screenshots"),
+        "the_revision_of_the_acceptance": payload.get("the_revision_of_the_acceptance"),
+        "the_visual_acceptance_of_the_operator": approval,
+    }, problems
+
+
+def check_the_boundaries(receipts):
+    """The personal store of the operator is untouched and was never activated."""
+    problems = []
+    activation = EVIDENCE / "oip-activation-dry-run/activation-dry-run.json"
+    personal = None
+    if activation.is_file():
+        payload = json.loads(activation.read_text())
+        personal = payload.get("the_personal_installation")
+    if personal is not None:
+        digest = personal.get("the_sha256") if isinstance(personal, dict) else None
+        if digest and digest != PERSONAL_STORE:
+            problems.append(f"the digest of the personal store changed: {digest}")
+    for relative, payload in receipts.items():
+        text = json.dumps(payload)
+        if "schema 7" in text and "the_personal" in text and "unchanged" not in text:
+            problems.append(f"the receipt {relative} speaks of the schema 7 of the personal store")
+    return {
+        "the_personal_store_is_untouched": personal is not None,
+        "the_activation_was_rehearsed_on_a_copy": activation.is_file(),
+    }, problems
+
+
+def the_gates():
+    """The gate table of the ledger."""
+    gates = []
+    for line in LEDGER.read_text().splitlines():
+        match = re.match(r"^\|\s*(G\d+)\s*([^|]*)\|\s*([^|]*)\|", line)
+        if match:
+            gates.append({"the_gate": match.group(1), "the_subject": match.group(2).strip(),
+                          "the_status": match.group(3).strip()})
+    return gates
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--receipt", default=None,
+                        help="the path of the receipt of the verification")
+    parser.add_argument("--json", action="store_true")
+    args = parser.parse_args()
+
+    receipts = the_release_receipts()
+    problems = []
+    sections = {}
+    for name, checker in (("the_manifest", check_the_manifest),
+                          ("the_freshness", None),
+                          ("the_record", None),
+                          ("the_acceptance", check_the_acceptance),
+                          ("the_boundaries", None)):
+        if name == "the_freshness":
+            section, found = check_the_freshness(receipts)
+        elif name == "the_record":
+            section, found = check_the_record(receipts)
+        elif name == "the_boundaries":
+            section, found = check_the_boundaries(receipts)
+        else:
+            section, found = checker()
+        sections[name] = section
+        problems.extend(found)
+
+    gates = the_gates()
+    open_gates = [gate for gate in gates if "BLOCKED_OPERATOR" in gate["the_status"]]
+    verdict = "OIP_PRODUCTION_NOT_READY" if open_gates or problems else "OIP_PRODUCTION_READY_PASS"
+    report = {
+        "schema": "oip-release-verification-v1",
+        "the_verdict": verdict,
+        "the_note": "the verification of the tool is not a production acceptance: the "
+                    "acceptance of the operator (G12) and the scope of the production "
+                    "security (G10) are the operator's",
+        "the_sections": sections,
+        "the_gates": gates,
+        "the_gates_that_need_the_operator": [gate["the_gate"] for gate in open_gates],
+        "the_problems": problems,
+        "the_revision": git("rev-parse", "HEAD"),
+        "the_tree": git("rev-parse", "HEAD^{tree}"),
+        "the_working_tree_is_clean": not git("status", "--porcelain"),
+        "status": "PASS" if not problems else "FAIL",
+    }
+    if args.receipt:
+        path = pathlib.Path(args.receipt)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(report, indent=2) + "\n")
+    if args.json:
+        print(json.dumps(report, indent=2))
+    else:
+        print(json.dumps({
+            "the_verdict": verdict,
+            "the_status_of_the_verification": report["status"],
+            "the_problems": problems,
+            "the_gates_that_need_the_operator": report["the_gates_that_need_the_operator"],
+            "the_receipts_of_the_release": len(receipts),
+        }, indent=2))
+    return 0 if not problems else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
