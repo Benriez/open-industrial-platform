@@ -1,6 +1,7 @@
 {
   "schema": "oip-global-context-receipt-v1",
-  "base": "http://127.0.0.1:62606",
+  "revision": "699c0a2abc768b2715a732ec1ff9c97c19ac5242",
+  "base": "http://127.0.0.1:62892",
   "options_offered": 4,
   "scope_per_workstation": [
     {

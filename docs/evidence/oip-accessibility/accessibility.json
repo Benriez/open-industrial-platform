@@ -1,7 +1,8 @@
 {
   "schema": "oip-accessibility-receipt-v1",
+  "revision": "699c0a2abc768b2715a732ec1ff9c97c19ac5242",
   "scope": "name and role coverage of the rendered surface of the six workstations; not a full WCAG audit",
-  "base": "http://127.0.0.1:62606",
+  "base": "http://127.0.0.1:62892",
   "stations": [
     {
       "workstation": "overview",
