@@ -2302,6 +2302,37 @@ The review of the current release now has **12 findings: 9 resolved, 2 mitigated
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 48 — the proved bundle is the bundle of the release
+
+**Status: PROVED on canonical `main`.**
+The rehearsal of the macOS bundle built the bundle against the port of a **logging proxy**, so the
+proved artefact carried the URL of the proxy — not the URL that the operator uses. The bundle of
+the release was therefore never the bundle that was proved.
+
+The rehearsal now builds the bundle **exactly as the release names it** — for the documented port
+of an instance (18808, the port of the example configuration) — and puts the witness on that same
+port, so the bundle carries the operator's URL while the Core of the rehearsal listens on a port of
+its own. The evidence is the HTTP level, because the Core leaves no trace of a request without a
+session.
+
+Measured (`docs/evidence/oip-macos-app/macos-app.json`):
+
+| | |
+|---|---|
+| the build | `flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18808` |
+| the bundle | `oip_dashboard.app`, bundle id `org.openindustrial.oipDashboard`, version 0.3.0 |
+| the first request | after 0.3 s: `GET /api/v2/organizations?offset=0&limit=100` → **403** |
+| the further requests | six in total, **all** 403 — the bundle obtains **no** unauthorized data |
+| the window | the approved shell with the operator login (captured) |
+| the shutdown | `SIGTERM`, no orphan left behind |
+| the restart | the bundle asks the Core again and is refused again |
+
+The runbook names the pairing of the ports: the release bundle is built for 18808, the operator
+either keeps that port for the instance or asks for a bundle that is built for their own.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |

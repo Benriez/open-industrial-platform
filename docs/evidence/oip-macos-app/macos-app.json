@@ -1,127 +1,123 @@
 {
-  "schema": "oip-macos-app-v1",
+  "schema": "oip-macos-app-v2",
   "steps": [
-    "the Core serves the instance",
-    "the macOS bundle is built",
-    "the bundle asks the Core for the session",
-    "the window of the bundle is visible on a screen",
+    "the instance runs",
+    "the bundle is built for the documented port",
+    "the Core serves the bundle",
     "the bundle terminates on SIGTERM",
     "the bundle starts again and reaches the Core"
   ],
-  "build_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:61599",
-  "build_seconds": 38.5,
+  "the_witness": {
+    "the_port": 18808,
+    "the_core_of_the_rehearsal": 49678,
+    "the_note": "the witness stands on the documented port of the instance; the bundle therefore carries the URL that the operator uses"
+  },
+  "build_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18808",
+  "build_seconds": 9.3,
   "bundle": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
   "bundle_bytes": 96996325,
-  "bundle_executable_sha256": "7841e541c17d75492155cb4ef34b40f5bb9adca7bb99eb995fb085302a42d4b4",
+  "bundle_executable_sha256": "6123cdc51b08b7cac10a0048f21e0e9407c9a2cfad3349d26d0a2949d05facd3",
   "cfbundleidentifier": "org.openindustrial.oipDashboard",
   "cfbundleshortversionstring": "0.3.0",
   "cfbundleversion": "3",
   "start": {
-    "log": "target/oip-macos-app/oip-macos-app.log",
-    "window_placement": [
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true"
-    ],
     "label": "start",
-    "first_request_seconds": 0.8,
-    "requests": [
+    "the_seconds_until_the_first_request": 0.5,
+    "the_requests": [
       {
-        "method": "GET",
-        "path": "/api/v2/organizations?offset=0&limit=100",
-        "status": 403
+        "the_method": "GET",
+        "the_path": "/api/v2/organizations?offset=0&limit=100",
+        "the_status": 403
+      },
+      {
+        "the_method": "GET",
+        "the_path": "/api/v1/system/status",
+        "the_status": 403
+      },
+      {
+        "the_method": "GET",
+        "the_path": "/api/v1/metrics/current",
+        "the_status": 403
+      },
+      {
+        "the_method": "GET",
+        "the_path": "/api/v1/events",
+        "the_status": 403
+      },
+      {
+        "the_method": "GET",
+        "the_path": "/api/v1/devices",
+        "the_status": 403
+      },
+      {
+        "the_method": "GET",
+        "the_path": "/api/v1/sources",
+        "the_status": 403
       }
-    ],
-    "request_count": 1,
-    "api_successes": 0,
-    "answer_statuses": [
-      403
     ]
   },
+  "the_core_served_the_bundle": true,
+  "the_refusals_of_the_core": [
+    {
+      "the_method": "GET",
+      "the_path": "/api/v2/organizations?offset=0&limit=100",
+      "the_status": 403
+    },
+    {
+      "the_method": "GET",
+      "the_path": "/api/v1/system/status",
+      "the_status": 403
+    },
+    {
+      "the_method": "GET",
+      "the_path": "/api/v1/metrics/current",
+      "the_status": 403
+    },
+    {
+      "the_method": "GET",
+      "the_path": "/api/v1/events",
+      "the_status": 403
+    },
+    {
+      "the_method": "GET",
+      "the_path": "/api/v1/devices",
+      "the_status": 403
+    },
+    {
+      "the_method": "GET",
+      "the_path": "/api/v1/sources",
+      "the_status": 403
+    }
+  ],
   "screenshot": "target/oip-macos-app/oip-macos-app.png",
   "screenshot_captured": true,
-  "window": {
-    "window_id": 27689,
-    "owner": "oip_dashboard",
-    "title": "oip_dashboard",
-    "bounds": {
-      "x": 16.0,
-      "y": 599.0,
-      "width": 88.0,
-      "height": 113.0
-    },
-    "displays": [
-      {
-        "x": 0.0,
-        "y": 0.0,
-        "width": 1512.0,
-        "height": 982.0
-      }
-    ],
-    "on_screen": true,
-    "bytes": 34151
-  },
-  "window_placement_of_the_bundle": [
-    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
-    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
-    "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
-    "frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true"
-  ],
   "shutdown": {
     "signal": "SIGTERM",
     "terminated": true,
     "seconds": 0.0,
     "exit_code": -15,
-    "log_tail": "rwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
+    "the_output": "[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
   },
   "orphaned_processes": [],
   "restart": {
-    "log": "target/oip-macos-app/oip-macos-app.log",
-    "window_placement": [
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true",
-      "frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true"
-    ],
     "label": "restart",
-    "first_request_seconds": 0.3,
-    "requests": [
+    "the_seconds_until_the_first_request": 0.3,
+    "the_requests": [
       {
-        "method": "GET",
-        "path": "/api/v2/organizations?offset=0&limit=100",
-        "status": 403
+        "the_method": "GET",
+        "the_path": "/api/v2/organizations?offset=0&limit=100",
+        "the_status": 403
       }
-    ],
-    "request_count": 1,
-    "api_successes": 0,
-    "answer_statuses": [
-      403
     ]
   },
+  "the_core_served_the_bundle_again": true,
   "shutdown_after_restart": {
     "signal": "SIGTERM",
     "terminated": true,
     "seconds": 0.0,
     "exit_code": -15,
-    "log_tail": "latform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
+    "the_output": "[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
   },
   "status": "PASS",
-  "finished_utc": "2026-11-09T02:06:21Z"
+  "finished_utc": "2026-11-09T03:30:09Z"
 }
