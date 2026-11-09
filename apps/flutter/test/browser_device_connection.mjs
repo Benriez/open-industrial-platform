@@ -135,36 +135,52 @@ const clickAccessible = async (needle) => {
 
 // The state of the verified identity: the panel refreshes itself, so the
 // state of the tile is observed over the time.
-const identityState = async () => {
+// The nodes of the semantics that carry the title of the tile. The node of
+// the title is the smallest one that carries it.
+const identityNodes = async () => {
+  const found = [];
   for (const element of await page.$$('flt-semantics')) {
     const label = (await element.getAttribute('aria-label')) || '';
     const own = (await element.evaluate((node) => (node.textContent || '').trim()));
-    if (label.includes('Tatsächlich verifizierte Identität') ||
-        own.includes('Tatsächlich verifizierte Identität')) {
-      const text = label + ' ' + own;
-      if (text.includes('Expanded')) return 'expanded';
-      if (text.includes('Collapsed')) return 'collapsed';
-      return 'present';
-    }
+    if (!label.includes('Tatsächlich verifizierte Identität') &&
+        !own.includes('Tatsächlich verifizierte Identität')) continue;
+    const box = await element.boundingBox();
+    found.push({
+      element,
+      label,
+      own,
+      box,
+      area: box ? box.width * box.height : Infinity,
+      role: await element.getAttribute('role'),
+      expanded: await element.getAttribute('aria-expanded'),
+      tag: await element.evaluate((node) => node.tagName),
+    });
   }
-  return 'absent';
+  found.sort((a, b) => a.area - b.area);
+  return found;
+};
+
+const identityState = async () => {
+  const found = await identityNodes();
+  if (!found.length) return 'absent';
+  const text = found[0].label + ' ' + found[0].own;
+  if (text.includes('Expanded')) return 'expanded';
+  if (text.includes('Collapsed')) return 'collapsed';
+  return 'present';
 };
 
 // The markup of the control, so a reader can see what is activated.
 const identityMarkup = async () => {
-  const out = [];
-  for (const element of await page.$$('flt-semantics')) {
-    const label = (await element.getAttribute('aria-label')) || '';
-    const own = (await element.evaluate((node) => (node.textContent || '').trim()));
-    if (label.includes('Tatsächlich verifizierte Identität') ||
-        own.includes('Tatsächlich verifizierte Identität')) {
-      const box = await element.boundingBox();
-      out.push({ 'the_label': label, 'the_text': own.slice(0, 120),
-                 'the_box': box,
-                 'the_markup': (await element.evaluate((node) => node.outerHTML)).slice(0, 600) });
-    }
-  }
-  return out;
+  const found = await identityNodes();
+  return found.slice(0, 6).map((item) => ({
+    'the_label': item.label,
+    'the_text': item.own.slice(0, 120),
+    'the_box': item.box,
+    'the_area': item.area,
+    'the_role': item.role,
+    'the_aria_expanded': item.expanded,
+    'the_tag': item.tag,
+  }));
 };
 
 const clickText = async (text) => {
