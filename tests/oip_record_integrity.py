@@ -36,6 +36,15 @@ EVIDENCE = ROOT / "docs/evidence"
 # milestone era.
 ERA_DIRECTORIES = {"oip-real-device"}
 CITATION = re.compile(r"docs/evidence/[A-Za-z0-9_./-]+")
+# Every path that the record names in a backtick. A path of the checkout must
+# exist; a path of the build tree must not be used as the receipt of a claim.
+PATH_CITATION = re.compile(
+    r"`((?:docs|apps|crates|tests|tools|target)/[A-Za-z0-9_./-]*)`")
+# The paths of the build tree that the record may name as the place of a run.
+BUILD_TREE = ("target/oip-canonical-regression", "target/oip-canonical-ui",
+              "target/oip-canonical-e2e", "target/oip-release-binary",
+              "target/oip-conformance-e2e", "target/oip008-ui-canonical",
+              "target/oip-ui-missing-archive-receipt.json")
 
 
 def tracked(paths):
@@ -86,6 +95,41 @@ def main():
         "the_present_but_untracked": untracked,
     }
     report["steps"].append("every cited receipt exists")
+    problems = []
+
+    # every path that the record names must exist in the checkout
+    dangling = []
+    build_tree = []
+    for name in sorted(set(PATH_CITATION.findall(text))):
+        name = name.rstrip(".,;:)*")
+        if name.endswith("*"):
+            continue
+        if name.startswith("target/"):
+            build_tree.append(name)
+            continue
+        if not (ROOT / name).exists():
+            dangling.append(name)
+    # The authoritative ledger must not present a path of the build tree as the
+    # evidence of a claim; the state file may name the paths of the earlier
+    # eras, which are the history of those eras.
+    ledger_text = LEDGER.read_text()
+    ledger_build_tree = sorted(set(
+        name.rstrip(".,;:)*") for name in PATH_CITATION.findall(ledger_text)
+        if name.rstrip(".,;:)*").startswith("target/")
+        and not name.rstrip(".,;:)*").startswith("target/release/")))
+    report["the_paths"] = {
+        "the_dangling": dangling,
+        "the_paths_of_the_build_tree": build_tree,
+        "the_paths_of_the_build_tree_in_the_ledger": ledger_build_tree,
+        "the_note": "a path of the build tree is not a receipt: the ledger must not "
+                    "present a directory of a build as the evidence of a claim. The "
+                    "artefacts of the release live in the build tree by nature and "
+                    "are named by the manifest.",
+    }
+    report["steps"].append("every path that the record names exists")
+    problems.extend(f"the cited path {name} does not exist" for name in dangling)
+    problems.extend(f"the ledger presents the path of a build tree as evidence: {name}"
+                    for name in ledger_build_tree)
 
     # the receipts of the current release that nobody cites
     present = set()
@@ -104,7 +148,6 @@ def main():
     }
     report["steps"].append("every receipt of the release is cited")
 
-    problems = []
     problems.extend(f"the cited receipt {name} does not exist" for name in missing)
     problems.extend(f"the cited receipt {name} is not tracked by git" for name in untracked)
     problems.extend(f"the receipt {name} of the release is cited by nobody" for name in orphans)

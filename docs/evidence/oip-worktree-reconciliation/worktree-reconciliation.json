@@ -1,0 +1,170 @@
+{
+  "schema": "oip-worktree-reconciliation-v1",
+  "steps": [],
+  "the_canonical_branch": "main",
+  "the_canonical_revision": "ca03c5d5aeaa77e7f6e06e4b24064f46fa91c2ce",
+  "the_branches": [
+    "feature/oip-007-baseline-adoption",
+    "feature/oip-008-multi-infrastructure",
+    "feature/oip-0082-diagnostics-evidence",
+    "feature/oip-0084-application-settings",
+    "feature/oip-0085-real-infrastructure",
+    "feature/oip-009-context-contract",
+    "feature/oip-canonical-regression",
+    "feature/oip-canonical-ui-regression-gate",
+    "feature/oip-connection-payload-bound",
+    "feature/oip-managed-diagnostics",
+    "feature/oip-managed-overview",
+    "feature/oip-monitoring-observations",
+    "feature/oip-native-macos-harness",
+    "feature/oip-network-placement",
+    "feature/oip-observation-history",
+    "feature/oip-parity-gate-convergence",
+    "feature/oip-real-device-conformance",
+    "feature/oip-spectrum-2027-ui",
+    "feature/real-device-connection-core",
+    "feature/real-device-connection-ui",
+    "feature/real-device-onboarding-integration",
+    "main"
+  ],
+  "the_steps_of_the_reconciliation": [],
+  "the_branches_that_main_does_not_contain": {
+    "feature/oip-managed-diagnostics": [
+      {
+        "the_revision": "55d4f50c45c40c34664c960cc7035b22b46b726c",
+        "the_subject": "feat(diagnostics): recover managed evidence view",
+        "the_files": [
+          "apps/flutter/lib/features/diagnostics.dart",
+          "apps/flutter/lib/models/diagnostics.dart",
+          "apps/flutter/lib/services/api.dart",
+          "apps/flutter/test/browser_onboarding.mjs",
+          "apps/flutter/test/contracts_test.dart",
+          "apps/flutter/test/core_integration_test.dart",
+          "apps/flutter/test/managed_diagnostics_test.dart",
+          "apps/flutter/test/observation_history_test.dart",
+          "apps/flutter/test/onboarding_dialog_test.dart",
+          "apps/flutter/test/support.dart",
+          "docs/architecture/oip-0082-diagnostics-flutter-contract.md",
+          "docs/recovery/oip-loop-20261108-evidence.json",
+          "docs/recovery/oip-loop-20261108.md"
+        ],
+        "the_files_that_main_carries": [
+          "apps/flutter/lib/features/diagnostics.dart",
+          "apps/flutter/lib/models/diagnostics.dart",
+          "apps/flutter/lib/services/api.dart",
+          "apps/flutter/test/browser_onboarding.mjs",
+          "apps/flutter/test/contracts_test.dart",
+          "apps/flutter/test/core_integration_test.dart",
+          "apps/flutter/test/managed_diagnostics_test.dart",
+          "apps/flutter/test/observation_history_test.dart",
+          "apps/flutter/test/onboarding_dialog_test.dart",
+          "apps/flutter/test/support.dart",
+          "docs/architecture/oip-0082-diagnostics-flutter-contract.md",
+          "docs/recovery/oip-loop-20261108-evidence.json",
+          "docs/recovery/oip-loop-20261108.md"
+        ],
+        "the_files_that_main_does_not_carry": []
+      }
+    ]
+  },
+  "the_capability_in_the_canonical_branch": {
+    "the_documented_gaps": {
+      "the_source": "apps/flutter/lib/features/diagnostics.dart",
+      "the_pattern": "documentedGaps",
+      "the_canonical_branch_carries_it": true
+    },
+    "the_health_transitions": {
+      "the_source": "apps/flutter/lib/features/diagnostics.dart",
+      "the_pattern": "healthTransitions",
+      "the_canonical_branch_carries_it": true
+    },
+    "the_opaque_cursor_of_the_continuation": {
+      "the_source": "apps/flutter/lib/features/diagnostics.dart",
+      "the_pattern": "diagnosticGaps\\(cursor:",
+      "the_canonical_branch_carries_it": true
+    },
+    "the_status_of_the_diagnosis_history": {
+      "the_source": "apps/flutter/lib/features/diagnostics.dart",
+      "the_pattern": "Diagnosehistorie",
+      "the_canonical_branch_carries_it": true
+    },
+    "the_adapter_of_the_gaps": {
+      "the_source": "apps/flutter/lib/services/api.dart",
+      "the_pattern": "diagnosticGaps",
+      "the_canonical_branch_carries_it": true
+    },
+    "the_adapter_of_the_health_history": {
+      "the_source": "apps/flutter/lib/services/api.dart",
+      "the_pattern": "healthHistory",
+      "the_canonical_branch_carries_it": true
+    },
+    "the_model_of_the_diagnostic_page": {
+      "the_source": "apps/flutter/lib/models/diagnostics.dart",
+      "the_pattern": "DiagnosticPage",
+      "the_canonical_branch_carries_it": true
+    }
+  },
+  "the_canonical_branch_carries_the_capability": true,
+  "the_proof_of_the_capability": {
+    "the_receipt": "docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json",
+    "the_revision": null,
+    "the_documented_gaps": 51,
+    "the_distinct_rows": 51,
+    "the_first_page_items": 50,
+    "the_continuation_items": 1,
+    "the_note": "the browser journey of the canonical branch walks the documented gaps and the health history over the opaque cursor of the Core"
+  },
+  "the_implementations": {
+    "apps/flutter/lib/features/diagnostics.dart": {
+      "the_lines_of_the_branch": 737,
+      "the_lines_of_the_canonical_branch": 1055,
+      "the_canonical_branch_is_the_newer_implementation": true
+    },
+    "apps/flutter/lib/models/diagnostics.dart": {
+      "the_lines_of_the_branch": 125,
+      "the_lines_of_the_canonical_branch": 124,
+      "the_canonical_branch_is_the_newer_implementation": true
+    },
+    "apps/flutter/lib/services/api.dart": {
+      "the_lines_of_the_branch": 365,
+      "the_lines_of_the_canonical_branch": 1057,
+      "the_canonical_branch_is_the_newer_implementation": true
+    },
+    "apps/flutter/test/contracts_test.dart": {
+      "the_lines_of_the_branch": 304,
+      "the_lines_of_the_canonical_branch": 325,
+      "the_canonical_branch_is_the_newer_implementation": true
+    },
+    "apps/flutter/test/core_integration_test.dart": {
+      "the_lines_of_the_branch": 156,
+      "the_lines_of_the_canonical_branch": 156,
+      "the_canonical_branch_is_the_newer_implementation": false
+    },
+    "apps/flutter/test/managed_diagnostics_test.dart": {
+      "the_lines_of_the_branch": 289,
+      "the_lines_of_the_canonical_branch": 293,
+      "the_canonical_branch_is_the_newer_implementation": true
+    },
+    "apps/flutter/test/observation_history_test.dart": {
+      "the_lines_of_the_branch": 348,
+      "the_lines_of_the_canonical_branch": 321,
+      "the_canonical_branch_is_the_newer_implementation": true
+    },
+    "apps/flutter/test/onboarding_dialog_test.dart": {
+      "the_lines_of_the_branch": 119,
+      "the_lines_of_the_canonical_branch": 104,
+      "the_canonical_branch_is_the_newer_implementation": true
+    },
+    "apps/flutter/test/support.dart": {
+      "the_lines_of_the_branch": 317,
+      "the_lines_of_the_canonical_branch": 342,
+      "the_canonical_branch_is_the_newer_implementation": true
+    }
+  },
+  "the_reconciliation_is_complete": true,
+  "status": "PASS",
+  "the_revision": "ca03c5d5aeaa77e7f6e06e4b24064f46fa91c2ce",
+  "the_tree": "52cd55ee34a5feeebf28e8331bb098d1519c0a25",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-09T19:56:24Z"
+}
