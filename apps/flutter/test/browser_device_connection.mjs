@@ -160,6 +160,47 @@ const identityNodes = async () => {
   return found;
 };
 
+// The tile is opened in every way a control of the surface can be activated.
+// The attempt that works is recorded, so the evidence names the way.
+const expandIdentity = async () => {
+  const attempts = [];
+  for (const variant of ['center', 'focus-enter', 'dispatch-click']) {
+    const found = await identityNodes();
+    if (!found.length) {
+      attempts.push({ 'the_variant': variant, 'the_state': 'absent' });
+      continue;
+    }
+    const node = found[0];
+    const box = node.box;
+    if (!box) {
+      attempts.push({ 'the_variant': variant, 'the_state': 'no-geometry' });
+      continue;
+    }
+    const x = box.x + Math.min(box.width / 2, 80);
+    const y = box.y + box.height / 2;
+    try {
+      if (variant === 'center') {
+        await page.mouse.click(x, y);
+      } else if (variant === 'focus-enter') {
+        await node.element.focus();
+        await page.keyboard.press('Enter');
+      } else {
+        await node.element.dispatchEvent('click');
+      }
+    } catch (error) {
+      attempts.push({ 'the_variant': variant, 'the_state': 'failed',
+                      'the_detail': String(error).slice(0, 160) });
+      continue;
+    }
+    await page.waitForTimeout(1200);
+    const state = await identityState();
+    attempts.push({ 'the_variant': variant, 'the_state': state, 'the_x': x, 'the_y': y,
+                    'the_role': node.role, 'the_area': node.area });
+    if (state === 'expanded') return { 'the_attempts': attempts, 'the_state': state };
+  }
+  return { 'the_attempts': attempts, 'the_state': await identityState() };
+};
+
 const identityState = async () => {
   const found = await identityNodes();
   if (!found.length) return 'absent';
@@ -317,17 +358,12 @@ const observeIdentity = async (rounds) => {
   }
   return false;
 };
-await observeIdentity(6);
-// The semantic control of the header of the tile is a button; if the
-// geometry of the click did not open the tile, the button is activated by
-// its role.
+await observeIdentity(4);
+let expansion = { 'the_attempts': [], 'the_state': 'not-tried' };
 if (!identitySeen) {
-  const button = page.getByRole('button', { name: /Tatsächlich verifizierte Identität/ }).first();
-  if (await button.count()) {
-    await button.click({ force: true });
-    await page.waitForTimeout(800);
-    await observeIdentity(6);
-  }
+  expansion = await expandIdentity();
+  receiptStates.identityExpansion = expansion;
+  await observeIdentity(6);
 }
 fs.writeFileSync(`${outDir}/device-connection-identity-states.txt`,
   identityStates.join('\n') + '\n');
@@ -353,6 +389,7 @@ await page.screenshot({ path: `${outDir}/device-connection.png` });
 const receipt = {
   schema: 'oip-device-connection-v1',
   the_states_of_the_verified_identity: receiptStates.identityStates,
+  the_opening_of_the_verified_identity: receiptStates.identityExpansion || null,
   revision: process.env.OIP_REVISION || null,
   the_detail_is: 'the message that describes the failure of the check',
   scope: 'the verified connection of a device in the approved surface against the real Core',
