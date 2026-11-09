@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "5bafa13c7208b410e555fde78ff34a1469d4e45a",
-  "the_tree": "079dbfc64f931e7174b2c6a7ddb7f497de077973",
+  "the_revision": "28163476354f3dbd11526ed6b9dd69cee957ab5b",
+  "the_tree": "01cad5e185cf530ff0fd6f2ce152aef302798844",
   "the_branch": "main",
   "the_working_tree_is_clean": true,
   "the_toolchain": {
@@ -33,8 +33,8 @@
       "path": "apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
       "files": 43,
       "bytes": 96996325,
-      "sha256": "9872190c47b8f0378761728ccc8e218fb9e619e0b888dd322d4d07ff7feff347",
-      "the_executable_sha256": "a4881e08ad3b653c3e8ebc9a273b8b8d4461c72539038d941eb1e7c0b065beaa"
+      "sha256": "e5cb529201e18bfc71802535297b0b3575ca4371033e347b48ad62778988b884",
+      "the_executable_sha256": "6123cdc51b08b7cac10a0048f21e0e9407c9a2cfad3349d26d0a2949d05facd3"
     },
     "the_web_release": {
       "present": true,
@@ -65,7 +65,7 @@
     },
     "the_macos_application": {
       "path": "docs/evidence/oip-macos-app/macos-app.json",
-      "sha256": "146c20eaa76126fadd5353303a4163e15c631c671c92d40ebec29c2d6511f8df"
+      "sha256": "65e0856cf0528b152a6ed4b3eb53e1d49767b3604c14fb775a02b1171c38de1f"
     },
     "the_transport_parity": {
       "path": "docs/evidence/oip-transport-parity/transport-parity.json",
