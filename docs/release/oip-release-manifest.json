@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "488e32f9e4a6bcf9f968f2481ae6c80ad9432e7e",
-  "the_tree": "165513a0ab210a8d7215a8948af5d62d1bb3e68c",
+  "the_revision": "d8dcb06cc050ba518e1a559b2d0ecf6b81e2fd39",
+  "the_tree": "f50ff77cde5b872d94bf9cb9e773fb5e344afeff",
   "the_branch": "main",
   "the_working_tree_is_clean": true,
   "the_toolchain": {
@@ -19,14 +19,14 @@
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
-      "bytes": 36271424,
-      "sha256": "a928506894334d3e256e157923e3dc6872a8eff0fe95d855e77383dd988ff92f"
+      "bytes": 36271328,
+      "sha256": "4f49cc1512fa8e10083bdf01e5cb618077e3337ed4ce8fc948fd08b37adef30f"
     },
     "the_official_mcp_probe": {
       "present": true,
       "path": "target/release/examples/mcp_probe",
-      "bytes": 4118384,
-      "sha256": "029bf9f4505dd483d62196992d0443498a3e5a242f35a3192a4ef125227cfb08"
+      "bytes": 4118336,
+      "sha256": "f79e908bbb237e812c891f0344ab3a45dec4d6a7bc9621f322acb0aadb02bf9a"
     },
     "the_macos_application_bundle": {
       "present": true,
