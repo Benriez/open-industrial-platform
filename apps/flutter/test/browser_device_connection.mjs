@@ -138,11 +138,33 @@ const clickAccessible = async (needle) => {
 const identityState = async () => {
   for (const element of await page.$$('flt-semantics')) {
     const label = (await element.getAttribute('aria-label')) || '';
-    if (label.includes('Tatsächlich verifizierte Identität')) {
-      return label.includes('Expanded') ? 'expanded' : 'collapsed';
+    const own = (await element.evaluate((node) => (node.textContent || '').trim()));
+    if (label.includes('Tatsächlich verifizierte Identität') ||
+        own.includes('Tatsächlich verifizierte Identität')) {
+      const text = label + ' ' + own;
+      if (text.includes('Expanded')) return 'expanded';
+      if (text.includes('Collapsed')) return 'collapsed';
+      return 'present';
     }
   }
   return 'absent';
+};
+
+// The markup of the control, so a reader can see what is activated.
+const identityMarkup = async () => {
+  const out = [];
+  for (const element of await page.$$('flt-semantics')) {
+    const label = (await element.getAttribute('aria-label')) || '';
+    const own = (await element.evaluate((node) => (node.textContent || '').trim()));
+    if (label.includes('Tatsächlich verifizierte Identität') ||
+        own.includes('Tatsächlich verifizierte Identität')) {
+      const box = await element.boundingBox();
+      out.push({ 'the_label': label, 'the_text': own.slice(0, 120),
+                 'the_box': box,
+                 'the_markup': (await element.evaluate((node) => node.outerHTML)).slice(0, 600) });
+    }
+  }
+  return out;
 };
 
 const clickText = async (text) => {
@@ -293,6 +315,8 @@ if (!identitySeen) {
 }
 fs.writeFileSync(`${outDir}/device-connection-identity-states.txt`,
   identityStates.join('\n') + '\n');
+fs.writeFileSync(`${outDir}/device-connection-identity-markup.json`,
+  JSON.stringify(await identityMarkup(), null, 2) + '\n');
 receiptStates.identityStates = identityStates;
 surface = identitySeen || await readSurface();
 check('the verified identity of the host is shown',
