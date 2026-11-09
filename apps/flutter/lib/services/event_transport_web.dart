@@ -7,7 +7,9 @@ import 'dart:html' as html;
 import '../core/event_connection.dart';
 import '../core/sse.dart';
 
-EventConnection openEvents(Uri uri) {
+/// The cookie of the session is sent by the browser itself; the parameter
+/// exists only so that both transports share one signature.
+EventConnection openEvents(Uri uri, {String? cookieHeader}) {
   final source = html.EventSource(uri.toString());
   final controller = StreamController<ServerEvent>();
   var closed = false;

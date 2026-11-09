@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../core/sse.dart';
 import '../core/event_connection.dart';
 import 'event_transport.dart';
+import 'session_cookie.dart';
 import '../models/contracts.dart';
 import '../models/diagnostics.dart';
 import '../models/history.dart';
@@ -193,12 +194,18 @@ class RestApi implements OipApi, DeviceManagementApi {
   @override
   bool get managed => _managed;
 
+  /// The headers of every request: the CSRF token of the session and, on a
+  /// platform without a browser, the cookie of the session.
+  Map<String, String> _sessionHeaders([Map<String, String>? extra]) => {
+        ...?extra,
+        if (_csrf != null) 'x-oip-csrf': _csrf!,
+        if (sessionCookieHeader() != null) 'cookie': sessionCookieHeader()!,
+        if (sessionOriginHeader(base) != null) 'origin': sessionOriginHeader(base)!,
+      };
+
   Future<dynamic> _change(String path, Json body, {String method = 'POST'}) =>
       _request(path, () {
-        final headers = {
-          'Content-Type': 'application/json',
-          if (_csrf != null) 'x-oip-csrf': _csrf!
-        };
+        final headers = _sessionHeaders({'Content-Type': 'application/json'});
         return method == 'DELETE'
             ? _rest.delete(uri(path), headers: headers)
             : _rest.post(uri(path), headers: headers, body: jsonEncode(body));
@@ -395,6 +402,9 @@ class RestApi implements OipApi, DeviceManagementApi {
       String path, Future<http.Response> Function() send) async {
     try {
       final response = await send().timeout(const Duration(seconds: 8));
+      // The answer of the login carries the cookie of the session. A platform
+      // without a browser keeps it for the following requests.
+      rememberSessionCookie(response.headers['set-cookie']);
       if (response.statusCode != 200) {
         try {
           final body = jsonDecode(response.body) as Json;
@@ -431,8 +441,8 @@ class RestApi implements OipApi, DeviceManagementApi {
     }
   }
 
-  Future<dynamic> _get(String path, [Map<String, String>? query]) =>
-      _request(path, () => _rest.get(uri(path, query)));
+  Future<dynamic> _get(String path, [Map<String, String>? query]) => _request(
+      path, () => _rest.get(uri(path, query), headers: _sessionHeaders()));
 
   @override
   Future<Snapshot> initial() async {
@@ -461,7 +471,8 @@ class RestApi implements OipApi, DeviceManagementApi {
   @override
   Stream<ServerEvent> stream() async* {
     _events?.close();
-    final connection = openEvents(uri('/api/v1/stream'));
+    final connection =
+        openEvents(uri('/api/v1/stream'), cookieHeader: sessionCookieHeader());
     _events = connection;
     try {
       yield* connection.events;
@@ -507,13 +518,15 @@ class RestApi implements OipApi, DeviceManagementApi {
       return await _parseContract('/api/v1/opcua/nodes', () async {
         final value = await _request(
             '/api/v1/opcua/nodes',
-            () => client.get(uri('/api/v1/opcua/nodes', {
+            () => client.get(
+                uri('/api/v1/opcua/nodes', {
                   'q': search,
                   'folder': folder,
                   'offset': '$offset',
                   'limit': '40',
                   if (source != null) 'source': source,
-                })));
+                }),
+                headers: _sessionHeaders()));
         return NodePage.fromJson(value as Json);
       });
     } finally {
@@ -575,7 +588,7 @@ class RestApi implements OipApi, DeviceManagementApi {
       // legacy-access fallback. OIP-009 must provide the secure browser identity.
       final response = await client.get(
         uri(path, query),
-        headers: const {'Accept': 'application/json'},
+        headers: _sessionHeaders(const {'Accept': 'application/json'}),
       ).timeout(const Duration(seconds: 8));
       if (response.statusCode != 200) {
         String? serverCode;
@@ -895,7 +908,8 @@ class RestApi implements OipApi, DeviceManagementApi {
   @override
   Stream<ServerEvent> infrastructureStream() async* {
     _events?.close();
-    final connection = openEvents(uri('/api/v2/stream'));
+    final connection =
+        openEvents(uri('/api/v2/stream'), cookieHeader: sessionCookieHeader());
     _events = connection;
     try {
       yield* connection.events;

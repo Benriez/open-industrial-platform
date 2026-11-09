@@ -3,12 +3,16 @@ import 'package:http/http.dart' as http;
 import '../core/event_connection.dart';
 import '../core/sse.dart';
 
-EventConnection openEvents(Uri uri) {
+EventConnection openEvents(Uri uri, {String? cookieHeader}) {
   final client = http.Client();
   Stream<ServerEvent> read() async* {
     try {
+      final request = http.Request('GET', uri);
+      // The stream carries the identity of the session. The browser sends the
+      // cookie on its own; the native client sends the cookie it holds.
+      if (cookieHeader != null) request.headers['cookie'] = cookieHeader;
       final response = await client
-          .send(http.Request('GET', uri))
+          .send(request)
           .timeout(const Duration(seconds: 8));
       if (response.statusCode != 200) throw StateError('SSE rejected');
       yield* decodeEvents(response.stream
