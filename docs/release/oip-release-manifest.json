@@ -1,13 +1,13 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "76331ef5d64080937e8b567f047c7dc64024257f",
-  "the_tree": "5b3740be83531ede8df10cc2c5dca3ecc674fcba",
+  "the_revision": "dd77a5117bda9b9d7482b8749eb8dfd0ff85f79f",
+  "the_tree": "025f4b1b6c65300cca5f4947216fd6527778231a",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "a9ba646b826e9ad14a0f317397385c5babf7da95",
     "the_subject": "fix(g11): every browser receipt states what its detail carries"
   },
-  "the_working_tree_is_clean": false,
+  "the_working_tree_is_clean": true,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -21,8 +21,8 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 661,
-    "the_sha256": "8c450b9f78df13e0c9172622e89af7f6903e4c129c56b144251ecb22bd520e26"
+    "the_files": 665,
+    "the_sha256": "8b7d7059339efbd175cae2c4436551019cff53871f975ce7818332c29402cef0"
   },
   "the_artifacts": {
     "the_core": {
@@ -175,9 +175,7 @@
   },
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
-  "the_working_tree_without_the_manifest": [
-    "M docs/release/oip-release-manifest.json"
-  ],
+  "the_working_tree_without_the_manifest": [],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
     "the_digest_of_the_reproducible_build": "306c2ae94341f5b98efe380d67067287da731a9379836573db9e13a9faa5e65b",
