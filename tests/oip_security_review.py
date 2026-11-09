@@ -67,6 +67,21 @@ def api(base, path, method="GET", body=None, headers=None, opener=None):
                 {key.lower(): value for key, value in error.headers.items()})
 
 
+def client_packages():
+    """The third-party packages of the client with their versions.
+
+    The client depends on the Flutter SDK, on `http` and on the lints of the
+    development; everything else is part of the SDK.
+    """
+    packages = []
+    for name, version in re.findall(r"^  ([a-z_]+): ([0-9][^\n]*)$",
+                                     (ROOT / "apps/flutter/pubspec.yaml").read_text(), re.M):
+        if version.startswith(("^", "any")):
+            continue
+        packages.append((name, version.strip()))
+    return packages
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence", default=str(ROOT / "target" / "oip-security-review"))
@@ -103,6 +118,45 @@ def main():
         else:
             finding("the dependency advisories of the lockfile", "escalated",
                     f"cargo deny failed: {deny.stdout.strip()[-300:]}")
+
+        # 1b. the advisories of the client. The Dart SDK of this machine has
+        #     no `pub audit`, so the advisory service of the ecosystem is
+        #     asked directly for every third-party package of the client.
+        advisories = []
+        for package, version in client_packages():
+            query = json.dumps({"package": {"name": package, "ecosystem": "Pub"},
+                                "version": version}).encode()
+            request = urllib.request.Request(
+                "https://api.osv.dev/v1/query", data=query,
+                headers={"Content-Type": "application/json"}, method="POST")
+            try:
+                with urllib.request.urlopen(request, timeout=30) as answer:
+                    payload = json.loads(answer.read().decode() or "{}")
+            except Exception as error:
+                advisories.append({"package": package, "version": version,
+                                   "error": str(error)[:160]})
+                continue
+            advisories.append({"package": package, "version": version,
+                               "the_advisories": [
+                                   {"id": item.get("id"),
+                                    "the_summary": (item.get("summary") or "")[:200]}
+                                   for item in payload.get("vulns", [])]})
+        report["the_advisories_of_the_client"] = advisories
+        report["the_client_packages"] = [list(item) for item in client_packages()]
+        unknown = [item for item in advisories if item.get("error")]
+        with_advisories = [item for item in advisories if item.get("the_advisories")]
+        if unknown:
+            finding("the advisories of the client", "escalated",
+                    f"the advisory service could not be asked: {unknown}")
+        elif with_advisories:
+            finding("the advisories of the client", "escalated",
+                    f"known advisories: {json.dumps(with_advisories)[:400]}")
+        else:
+            finding("the advisories of the client", "resolved",
+                    "the advisory service of the ecosystem reports **no** known advisory "
+                    "for the third-party packages of the client ("
+                    + ", ".join(f"{item['package']} {item['version']}"
+                                for item in advisories) + ")")
 
         # 2. the secret scan of the whole tree. The scan covers the content
         #    that ships — every tracked and every untracked file of the

@@ -2280,6 +2280,28 @@ not claim the property and does not simulate it.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 45 — the advisories of the client are measured too
+
+**Status: PROVED on canonical `main`.**
+The security review measured the advisories of the **Rust** lockfile (`cargo deny`) — the Dart side of
+the release was not looked at. The Dart SDK of this machine has no `pub audit`, so the review asks the
+advisory service of the ecosystem directly.
+
+The dependency surface of the client is small and fully enumerated by `dart pub deps`: the Flutter
+SDK, **`http` 1.2.2** (runtime) and **`flutter_lints` 3.0.2** (development) — every other package
+belongs to the SDK. The advisory service reports **no known advisory** for either of them.
+
+The review of the current release now has **12 findings: 9 resolved, 2 mitigated, 1 escalated**:
+
+| | |
+|---|---|
+| resolved | the dependency advisories of the lockfile, the advisories of the client, the secret scan of the tree, the browser session cookie and the security headers, the single use of the pairing code, the origin and the CSRF rule, the protection of the credentials, the enforcement of the scope, the non-disclosure of a foreign resource |
+| mitigated | the remote identity (the Core binds to 127.0.0.1 only), the same-UID boundary |
+| escalated | the durability of the execution audit |
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
