@@ -1,0 +1,24 @@
+{
+  "schema": "oip-record-integrity-v1",
+  "steps": [
+    "every cited receipt exists",
+    "every receipt of the release is cited"
+  ],
+  "the_cited_paths": 37,
+  "the_citations": {
+    "the_cited": 37,
+    "the_missing_on_disk": [],
+    "the_present_but_untracked": []
+  },
+  "the_receipts_of_the_release": {
+    "the_present": 33,
+    "the_cited": 33,
+    "the_orphaned": []
+  },
+  "the_problems": [],
+  "status": "PASS",
+  "the_revision": "7688cd858790d2f663cd791e17f2702aec0a5686",
+  "the_tree": "498cac35e7d46bf3e0ffd0fb469b8b45cd289099",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-09T13:10:08Z"
+}
