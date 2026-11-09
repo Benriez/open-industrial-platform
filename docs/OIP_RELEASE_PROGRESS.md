@@ -2002,15 +2002,15 @@ Measured (`docs/evidence/oip-upgrade-rollback/upgrade-rollback.json`, `tests/oip
 |---|---|---|---|
 | organizations / infrastructures / sites / source_placements | 2 / 3 / 4 / 4 | 2 / 3 / 4 / 4 | 2 / 3 / 4 / 4 |
 | principals / read_roles / role_bindings | 7 / 1 / 6 | 7 / 1 / 6 | 7 / 1 / 6 |
-| observations / collection_events / data_gaps / source_health_history | 14 / 16 / 2 / 14 | 19 / 21 / 2 / 18 | 14 / 16 / 2 / 14 |
+| observations / collection_events / data_gaps / source_health_history | 14 / 16 / 2 / 14 | 14 / 16 / 2 / 18 | 14 / 16 / 2 / 14 |
 | inventory_devices | *absent in the era* | 4 (created by the migration) | *absent again* |
 | device_connections | *absent in the era* | 0 (created by the migration) | *absent again* |
 
 The observations of the historical instance are **preserved by their stable Core IDs** — every
-distinct observation key of the era is still there after the takeover — and the data only grows:
-the release binary collects on its own. The rollback restores the store **exactly**: the inventory
-of the backup and the inventory of the restored store are the same, and the tables that the era did
-not know are absent again.
+distinct observation key of the era (14 of them) is still there after the takeover — and the data
+only grows: the health transitions of the release binary join the history of the era. The rollback
+restores the store **exactly**: the inventory of the backup and the inventory of the restored store
+are the same, and the tables that the era did not know are absent again.
 
 This is the evidence the operator needs for the activation of the release on the personal instance
 (schema 6 to 7): the migration is additive and the inventory of the instance survives it.
