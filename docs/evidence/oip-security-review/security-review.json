@@ -10,7 +10,7 @@
     {
       "finding": "the secret scan of the tree",
       "status": "resolved",
-      "detail": "gitleaks 8.30.1 over the 598 files that ship: 27 candidates, all of them the SHA-256 of a source file inside a measurement receipt of docs/evidence \u2014 the known false positives, classified one by one in the receipt; no secret found",
+      "detail": "gitleaks 8.30.1 over the 605 files that ship: 27 candidates, all of them the SHA-256 of a source file inside a measurement receipt of docs/evidence \u2014 the known false positives, classified one by one in the receipt; no secret found",
       "evidence": null
     },
     {
@@ -56,6 +56,12 @@
       "evidence": null
     },
     {
+      "finding": "the non-disclosure of a foreign resource",
+      "status": "resolved",
+      "detail": "a foreign device and a device that does not exist are refused identically (404 RESOURCE_NOT_ACCESSIBLE): the answer does not name the target and does not distinguish the two cases",
+      "evidence": null
+    },
+    {
       "finding": "the durability of the execution audit",
       "status": "escalated",
       "detail": "the audit of the Core is a structured local log and is NOT durable and NOT tamper-resistant. For a local instance with an authorized operator this is acceptable and is the contract of the era; for a remote or productive deployment a durable, tamper-resistant store is a prerequisite (the Core documents it as such). The operator decides whether the production scope accepts it",
@@ -85,6 +91,20 @@
     "report": "target/oip-security-review/gitleaks.json",
     "candidates": [
       {
+        "file": "docs/evidence/oip004/final-integrity.json",
+        "line": 138,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip004/final-integrity.json",
+        "line": 148,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
         "file": "docs/evidence/oip008/reviews.json",
         "line": 43,
         "rule": "generic-api-key",
@@ -106,15 +126,106 @@
         "false_positive": true
       },
       {
-        "file": "docs/evidence/oip004/final-integrity.json",
-        "line": 138,
+        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
+        "line": 30,
         "rule": "generic-api-key",
         "classification": "the SHA-256 of a source file in a measurement receipt",
         "false_positive": true
       },
       {
-        "file": "docs/evidence/oip004/final-integrity.json",
-        "line": 148,
+        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
+        "line": 121,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
+        "line": 132,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
+        "line": 144,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
+        "line": 172,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
+        "line": 183,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/final-source-hashes.json",
+        "line": 30,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/final-source-hashes.json",
+        "line": 118,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/final-source-hashes.json",
+        "line": 129,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/final-source-hashes.json",
+        "line": 141,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/final-source-hashes.json",
+        "line": 167,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip005/final-source-hashes.json",
+        "line": 178,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip008/mcp-legacy.json",
+        "line": 3073,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip008/mcp-legacy.json",
+        "line": 3082,
+        "rule": "generic-api-key",
+        "classification": "the SHA-256 of a source file in a measurement receipt",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip008/mcp-legacy.json",
+        "line": 3091,
         "rule": "generic-api-key",
         "classification": "the SHA-256 of a source file in a measurement receipt",
         "false_positive": true
@@ -167,120 +278,15 @@
         "rule": "generic-api-key",
         "classification": "the SHA-256 of a source file in a measurement receipt",
         "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip005/final-source-hashes.json",
-        "line": 30,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip005/final-source-hashes.json",
-        "line": 118,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip005/final-source-hashes.json",
-        "line": 129,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip005/final-source-hashes.json",
-        "line": 141,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip005/final-source-hashes.json",
-        "line": 167,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip005/final-source-hashes.json",
-        "line": 178,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
-        "line": 30,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
-        "line": 121,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
-        "line": 132,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
-        "line": 144,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
-        "line": 172,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip005/reconciliation-005-1/final-source-hashes.json",
-        "line": 183,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip008/mcp-legacy.json",
-        "line": 3073,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip008/mcp-legacy.json",
-        "line": 3082,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip008/mcp-legacy.json",
-        "line": 3091,
-        "rule": "generic-api-key",
-        "classification": "the SHA-256 of a source file in a measurement receipt",
-        "false_positive": true
       }
     ],
     "exit_code": 1,
-    "files_scanned": 598,
+    "files_scanned": 605,
     "findings": 27,
     "unclassified": 0
   },
   "browser_session": {
-    "set_cookie": "oip_session=e36323b409fe1b6f955499a7cdeecc8bba7c3b61550131c9a88af317e7b96e9b; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800",
+    "set_cookie": "oip_session=2e05a8176c49b1b53e818d9a4feecf672d5634890f0ae54de97a8cf6564b503a; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800",
     "cache_control": "no-store",
     "x_frame_options": "DENY",
     "content_security_policy": "frame-ancestors 'none'",
@@ -292,8 +298,8 @@
   "write_without_the_csrf_token": 403,
   "write_with_a_foreign_origin": 403,
   "listening_sockets": [
-    "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME",
-    "oip-serve 2272 benny    9u  IPv4 0x98c3f6e9f7f13f4f      0t0  TCP 127.0.0.1:57450 (LISTEN)"
+    "COMMAND     PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME",
+    "oip-serve 30396 benny    9u  IPv4 0xcc11e2c68ddaeb22      0t0  TCP 127.0.0.1:57287 (LISTEN)"
   ],
   "the_core_binds_to_the_loopback_only": true,
   "local_ipc": {
@@ -316,14 +322,29 @@
       "Infrastructure B1"
     ]
   },
+  "non_disclosure": {
+    "the_foreign_target": {
+      "status": 404,
+      "code": "RESOURCE_NOT_ACCESSIBLE",
+      "kind": "resource_not_found",
+      "message": "Resource is not accessible"
+    },
+    "the_absent_target": {
+      "status": 404,
+      "code": "RESOURCE_NOT_ACCESSIBLE",
+      "kind": "resource_not_found",
+      "message": "Resource is not accessible"
+    }
+  },
+  "the_refusal_is_identical": true,
   "execution_audit": {
-    "the_capability_execution_lines": 1,
+    "the_capability_execution_lines": 3,
     "the_sink_is_the_local_log": true
   },
   "status": "PASS",
-  "finished_utc": "2026-11-08T23:07:12Z",
+  "finished_utc": "2026-11-09T00:03:41Z",
   "summary": {
-    "resolved": 7,
+    "resolved": 8,
     "mitigated": 2,
     "escalated": 1
   }

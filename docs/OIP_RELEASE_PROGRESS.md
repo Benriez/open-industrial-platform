@@ -1793,7 +1793,7 @@ G10 asks for a review that resolves, mitigates or explicitly escalates every mat
 acceptance of the production-security scope stays an operator decision; the review itself is the
 work of the loop. `tests/oip_security_review.py` measures the findings of the current tree against
 a running instance of the release binary (`docs/evidence/oip-security-review/security-review.json`):
-**10 findings — 7 resolved, 2 mitigated, 1 escalated.**
+**11 findings — 8 resolved, 2 mitigated, 1 escalated.**
 
 **Resolved.**
 
@@ -1814,6 +1814,9 @@ a running instance of the release binary (`docs/evidence/oip-security-review/sec
   log of the instance.
 * The enforcement of the scope: the reader of one organization sees `source-a`, `source-b`,
   `source-c` and no source of the other organization.
+* The non-disclosure of a foreign resource: a foreign device and a device that **does not exist**
+  are refused **identically** (`404 RESOURCE_NOT_ACCESSIBLE`) — the answer names neither the
+  target nor the reason, so the refusal does not tell a foreign principal what exists.
 
 **Mitigated.**
 
