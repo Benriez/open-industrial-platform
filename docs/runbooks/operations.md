@@ -186,6 +186,7 @@ tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" status
 tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" \
     --ipc-config "$IPC_CONFIG" --binary target/release/oip-server restart
 tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" stop
+tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" log --lines 50
 ```
 
 * `start` launches the daemon in its own session, writes the pid file and
@@ -197,6 +198,9 @@ tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" stop
 * `restart` is `stop` followed by `start`.
 * `status` reports the pid, the port, the port state, the database, its
   schema version and the log file.
+* `log` prints the last lines of the log of the instance — the last 50 by
+  default, `--lines 0` prints all of them. The operator reads the log of his
+  instance without an editor and without OpenCode.
 
 The daemon always runs with its protected IPC configuration; the tool refuses
 a `start` without it.
@@ -208,6 +212,7 @@ The Core writes JSON lines to stderr. The tool redirects them into
 so a more specific `RUST_LOG` cannot lift the redaction of the SDK traces.
 
 ```sh
+tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" log --lines 50
 tail -f "$STATE/oip.log" | python3 -m json.tool --json-lines
 ```
 

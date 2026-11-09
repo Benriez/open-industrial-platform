@@ -399,6 +399,22 @@ def command_provision(args, config_path, paths, config) -> int:
     return 0
 
 
+def command_log(args, config_path, paths, config) -> int:
+    """The log of the instance, as the operator reads it.
+
+    The Core writes JSON lines into the log of the state directory. The
+    command prints the last lines of it; the operator can therefore see what
+    the instance did without an editor and without OpenCode.
+    """
+    log = paths["log"]
+    if not log.is_file():
+        fail(f"the instance wrote no log: {log}")
+    lines = log.read_text(errors="replace").splitlines()
+    tail = args.lines if args.lines and args.lines > 0 else len(lines)
+    print("\n".join(lines[-tail:]))
+    return 0
+
+
 COMMANDS = {
     "start": command_start,
     "provision": command_provision,
@@ -406,6 +422,7 @@ COMMANDS = {
     "stop": command_stop,
     "restart": None,
     "status": command_status,
+    "log": command_log,
     "backup": command_backup,
     "restore": command_restore,
 }
@@ -421,6 +438,8 @@ def main() -> int:
     parser.add_argument("--output", default=None)
     parser.add_argument("--source", default=None)
     parser.add_argument("--plan", default=None)
+    parser.add_argument("--lines", type=int, default=50,
+                        help="the number of the last lines of the log (0: all)")
     args = parser.parse_args()
 
     config_path = pathlib.Path(args.config).resolve()

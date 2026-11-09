@@ -121,10 +121,17 @@ def main():
         assert step["stdout"].get("port_open") is True, step
         report["steps"].append(step)
 
-        # 4. the log of the instance is written
+        # 4. the log of the instance is written and the operator can read it
         log = pathlib.Path(state) / "oip.log"
         assert log.is_file() and log.stat().st_size > 0, "the instance wrote no log"
         report["log_bytes"] = log.stat().st_size
+        # The operator reads the log with the tool of the operations, without
+        # an editor and without OpenCode.
+        step = tool("log", "--lines", "5")
+        assert step["exit_code"] == 0, step
+        assert step["stdout"].strip(), "the log command printed nothing"
+        report["steps"].append(step)
+        report["the_log_the_operator_reads"] = step["stdout"].strip().splitlines()[-1][:200]
 
         # 5. the backup of the running instance is consistent
         step = tool("backup")

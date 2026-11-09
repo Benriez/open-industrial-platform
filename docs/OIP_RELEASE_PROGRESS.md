@@ -19,7 +19,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
 | Tracked files in the canonical source revision | 631, source manifest SHA-256 `5d1c40803eec8910a0fb4a7d5b39bd9a743cfd2889816b96875a9b59bea9af23` |
-| Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them |erification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
+| Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
@@ -77,7 +77,7 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Rust format check | PROVED | `cargo fmt --all -- --check` → exit 0 |
 | Rust workspace check | PROVED | `cargo check --locked --workspace --all-targets` → exit 0 |
 | Rust clippy, warnings denied | PROVED | `cargo clippy --locked --workspace --all-targets -- -D warnings` → exit 0 |
-| Rust workspace tests | PROVED | 181 passed, 0 failed (45 of them Storage); no Rust source changed in iteration 10, so the result of iteration 9 stays valid for this tree |
+| Rust workspace tests | PROVED | 181 passed, 0 failed, in 29 suites (`docs/evidence/oip-rust-regression/rust-regression.json`); no Rust source changed in iteration 10, so the result of iteration 9 stays valid for this tree |
 | OPC-UA default backend | PROVED | 37 passed, 0 failed |
 | OPC-UA open62541-only backend | PROVED | 2 passed, 0 failed (overlapping group) |
 | Dependency policy | PROVED | `cargo deny check advisories licenses bans sources` → advisories ok, bans ok, licenses ok, sources ok |
@@ -139,7 +139,7 @@ Each item names the next *delimited* step, its gate and its blocker and carries 
 | N8 real multi-infrastructure overview | **DONE** | closed in iteration 10 |
 | N9 the network view of the authorized placement | **DONE** | closed in iteration 11 |
 | N10 the managed diagnostics view | **READY** | the next step of the loop |
-| N11 canonical Spectrum-2027 UI baseline and design regression gate | **DONE, closed in iteration 12** | the two parallel executions of the same integration were reconciled into one candidate, the full gate is PASS on `{REV}` and the candidate is integrated into canonical `main` with `git merge --ff-only`; operator visual approval remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE` |
+| N11 canonical Spectrum-2027 UI baseline and design regression gate | **DONE, closed in iteration 12** | the two parallel executions of the same integration were reconciled into one candidate, the full gate is PASS on `e7aa994` and the candidate is integrated into canonical `main` with `git merge --ff-only`; operator visual approval remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE` |
 
 A blocked item never stops the loop while an independent READY item exists. Items that need an
 explicit operator decision (N1b, N4) or that would change a rule instead of enforcing one are
@@ -1495,19 +1495,19 @@ delivered web bundle. Measured over three runs (p50 / min / max):
 
 | Phase | p50 | min | max |
 |---|---|---|---|
-| first paint of the delivered web release | 48 216 ms | 47 992 ms | 52 241 ms |
-| the operator login of the anonymous state | 48 508 ms | 48 357 ms | 52 495 ms |
-| the interactive shell with the six workstations | 245 ms | 233 ms | 277 ms |
-| the authorized projection of the infrastructure | 101 ms | 97 ms | 276 ms |
+| first paint of the delivered web release | 50 886 ms | 41 508 ms | 51 914 ms |
+| the operator login of the anonymous state | 51 167 ms | 41 802 ms | 52 282 ms |
+| the interactive shell with the six workstations | 284 ms | 239 ms | 359 ms |
+| the authorized projection of the infrastructure | 102 ms | 11 ms | 266 ms |
 
-The Core rests at 17 200 KiB of resident memory and 0.0 % CPU without clients. The delivered
-bundle is `b09bb5ff4a16825ddf350f9278aa94a378f42222bbb5e23af0f76ed7bef2b844` — the same asset the
+The Core rests at 17 136 KiB of resident memory and 0.0 % CPU without clients. The delivered
+bundle is `a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2` — the same asset the
 canonical gate proves.
 
 **What the baseline says.** The first paint is **not** bound to the application: it is bound to the
 transfer of the 3 MB web release over the loopback of this machine. Once the session exists, the
 shell with all six workstations is interactive in a quarter of a second and the authorized
-projection follows 101 ms later. A smaller delivery — or a local cache of the release — is a
+projection follows 102 ms later. A smaller delivery — or a local cache of the release — is a
 **product decision** and is named as such; it is not an agent decision, and this baseline is the
 measurement that a later decision needs.
 
@@ -1564,7 +1564,7 @@ instance against a disposable instance and records what actually happens:
 | the authorized read of `reader-org-a` | 200 with exactly the three sources of its organization |
 | the authorized read of `reader-org-b` | 200 with exactly the fourth source |
 | the read without a credential | 403 |
-| the collection of the daemon | the sources of the scope become fresh, 131 observations are persisted |
+| the collection of the daemon | the sources of the scope become fresh, 41 observations are persisted |
 | the schema of the store | 3 after the provisioning, 5 with the historical runtime |
 | the release binary takes over | 200, the schema becomes 7, the observations are intact |
 | the backup and the restore | the schema is 5 again, the observations are identical |
@@ -1627,12 +1627,12 @@ and takes 60 samples (`docs/evidence/oip-stability/stability.json`):
 | Measurement | Result |
 |---|---|
 | the liveness of the Core | 60 of 60 probes answered with 200 |
-| the resident memory | between 17 280 and 19 728 KiB, **−1 184 KiB** from the first to the last sample |
-| the CPU | 2.12 % on average, 4.8 % at most |
-| the collection | 41 549 observations, 1 396 per minute, constant over the run |
+| the resident memory | between 17 920 and 23 552 KiB, **−5 264 KiB** from the first to the last sample |
+| the CPU | 1.73 % on average, 4.1 % at most |
+| the collection | 41 463 observations, 1 398 per minute, constant over the run |
 | the growth of the store | 536 KiB to 78 MiB under the load of the collectors |
-| the log | 16 KiB to 137 KiB — no runaway |
-| the death of a collector | noticed and recorded as a documented gap, the collection resumed 3 s later |
+| the log | 18 KiB to 116 KiB — no runaway |
+| the death of a collector | noticed and recorded as a documented gap, the collection resumed 1 s later |
 | the end | clean shutdown, `pragma integrity_check` answers `ok` |
 
 The resident memory does not grow over the run: the Core holds its working set and the writer
@@ -1648,16 +1648,16 @@ stable Core IDs — that was proven by a widget test against a fixture. What was
 
 `tests/oip_diagnostic_continuation.py` creates that Core: the collector of one source is cycled
 until the Core has documented more gaps than a page holds — every gap is a real interruption of a
-real collection, 45 cycles in this run — and the browser journey
+real collection, 39 cycles in this run — and the browser journey
 (`apps/flutter/test/browser_diagnostic_continuation.mjs`) then follows the evidence in the
 approved shell. Measured (`docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json`):
 
 * the Core answers the first page with 50 entries, `truncated: true` and a cursor;
 * the surface offers the continuation for the gaps and for the health history;
 * the continuation asks the same authorized route with the opaque cursor of the Core
-  (`4240ab50…`, `4a564390…`, `7c8d8702…`);
-* the pages are disjoint: 51 rows of gaps, 51 distinct — no row is repeated and no row is lost;
-* the health history needed three continuations (50 + 50 + 50 + 9 transitions) and ends
+  (`9db30aff…`, `43e256b3…`, `40b57f37…`);
+* the pages are disjoint: 52 rows of gaps, 52 distinct — no row is repeated and no row is lost;
+* the health history needed three continuations (50 + 50 + 50 + 7 transitions) and ends
   truncated: `false`;
 * the offer of a kind disappears exactly when its last page is reached;
 * the evidence stays painted and its disclosed limits stay visible; no failure of the evidence is
@@ -1714,7 +1714,7 @@ iteration, with the **release** binary and the delivered web bundle
 | the tested revision | `e7aa994104a6` (the full hash in the receipt of the run) |
 | the tested tree | `bf03f2465868` (the full hash in the receipt of the run) |
 | the tree during the run | clean (`source_dirty: false`) |
-| the release binary (`target/release/oip-server`) | `a928506894334d3e256e157923e3dc6872a8eff0fe95d855e77383dd988ff92f` |
+| the release binary (`target/release/oip-server`) | `4f49cc1512fa8e10083bdf01e5cb618077e3337ed4ce8fc948fd08b37adef30f` |
 | the official MCP probe | `029bf9f4505dd483d62196992d0443498a3e5a242f35a3192a4ef125227cfb08` |
 | the served `main.dart.js` | `a51b62cdd3644a6be44bcb64…` (the full hash in the receipt of the run) |
 | the served bundle equals the local build | **yes**, byte by byte |
@@ -1732,13 +1732,13 @@ surface is the approved Spectrum-2027 shell and that it matches the committed te
 references, but only the operator can accept it.
 
 **One honest remark about the binaries and about this binding.** The web bundle is
-byte-identical between the builds (`b09bb5ff…`), the Rust release binary is not: the gate rebuilds
+byte-identical between the builds (`a51b62cd…`), the Rust release binary is not: the gate rebuilds
 it and its sha256 differs from the build of the earlier rehearsals (`76d18b6e…`, `6afee854…`,
 `835ed0a1…`). Every receipt names the binary it actually executed, and no receipt claims a hash
 of a binary it did not run. The commit after the tested revision (`d4a0a9d`, the rehearsal of the
 transport parity) and the binding commit itself add **only** a test script and documentation — no
 line of the Core or of the Flutter application — and the served bundle of the tested tree is the
-byte-identical asset (`b09bb5ff…`) that the gate proved.
+byte-identical asset (`a51b62cd…`) that the gate proved.
 
 No personal database change (`9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e`,
 `user_version` 6), no schema-7 activation of the personal installation, no private SSH, no push,
@@ -1770,10 +1770,14 @@ JavaScript error.
 In **all six** workstations no identifier of the other organization appears — `device-d`,
 `source-d`, `Organization B`, `Infrastructure B1` and `Site B1` are nowhere on the surface.
 
-Two findings of the rehearsal are part of the receipt: the settings of the instance are read in
-the scope of the selected source (the application section reads the platform scope, which this
-principal is **not** allowed to read — deny by default), and the operator reaches the scoped
-section through the category `Diagnostics` of the settings navigation.
+The receipt records that the settings shown are the real settings of the Core
+(`docs/evidence/oip-workstation-data/workstation-data.json`); it does **not** record the two
+details that an earlier reading of the surface named — that the application section reads the
+platform scope, which this principal is **not** allowed to read, and that the operator reaches
+the scoped section through the category `Diagnostics`. Those two are observations of the surface,
+not measurements, and they are therefore not claimed here. The measurement that the deny-by-default
+of the platform scope holds is the refusal of a foreign scope in the receipts of the transport
+parity and of the OPC-UA parity.
 
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
@@ -1928,13 +1932,14 @@ decision needs a list. `tools/oip_release_manifest.py` writes `docs/release/oip-
 and `docs/release/SHA256SUMS`: every artefact of the release with its digest (the Core, the official
 MCP probe, the macOS application bundle as a digest over every file of the bundle, the delivered
 web release with the digest of `main.dart.js`), the revision and the tree it was built from, the
-build commands, the toolchain versions, the digests of nine acceptance receipts and the state of
-the operator's visual acceptance. `--verify` recomputes every digest and compares it with the
-written manifest: the manifest is a receipt, not a promise.
+build commands, the toolchain versions, the digest over the tracked sources of the revision, the
+digests of the tracked acceptance receipts and the state of the operator's visual acceptance.
+`--verify` recomputes every digest and compares it with the written manifest: the manifest is a
+receipt, not a promise.
 
 The macOS application bundle was rebuilt from the committed source for the manifest
-(`831b69cb…`), and the bundle of the web release that the manifest names is the byte-identical
-asset that the gate proved.
+(`e5cb5292…` over the tree of the bundle, `6123cdc5…` over its executable), and the bundle of the
+web release that the manifest names is the byte-identical asset that the gate proved.
 
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
@@ -2008,7 +2013,7 @@ control server of the rehearsal (`apps/flutter/test/browser_reconnect_recovery.m
 | the instance is restarted | — |
 | the surface after the restart | `Kontext nicht autorisiert` with the badge `IDENTITÄT ERFORDERLICH`, the honest notice `Browser-Session oder zentrale Policy erlaubt diesen Management-Read nicht (PERMISSION_DENIED) … Keine vorherigen Kontextdaten werden angezeigt` and the operator login — **no stale content is shown as current** |
 | the operator login | names the restart of the instance as the third cause of the end of the session (the panel of iteration 31) |
-| a new one-time code | the authorized projection again, with a fresh moment (`00:58:39.757 UTC` → `00:58:40.196 UTC`) |
+| a new one-time code | the authorized projection again, with a fresh moment (`03:56:56.776 UTC` → `03:57:02.997 UTC`) |
 
 The session of the browser ends with the restart because the Core holds it in its memory — that is
 the contract of the era, and the surface now says so instead of leaving the operator without an
@@ -2031,12 +2036,12 @@ Measured (`docs/evidence/oip-upgrade-rollback/upgrade-rollback.json`, `tests/oip
 |---|---|---|---|
 | organizations / infrastructures / sites / source_placements | 2 / 3 / 4 / 4 | 2 / 3 / 4 / 4 | 2 / 3 / 4 / 4 |
 | principals / read_roles / role_bindings | 7 / 1 / 6 | 7 / 1 / 6 | 7 / 1 / 6 |
-| observations / collection_events / data_gaps / source_health_history | 14 / 16 / 2 / 14 | 14 / 16 / 2 / 18 | 14 / 16 / 2 / 14 |
+| observations / collection_events / data_gaps / source_health_history | 6 / 7 / 1 / 8 | 6 / 7 / 1 / 12 | 6 / 7 / 1 / 8 |
 | inventory_devices | *absent in the era* | 4 (created by the migration) | *absent again* |
 | device_connections | *absent in the era* | 0 (created by the migration) | *absent again* |
 
 The observations of the historical instance are **preserved by their stable Core IDs** — every
-distinct observation key of the era (14 of them) is still there after the takeover — and the data
+distinct observation key of the era (6 of them) is still there after the takeover — and the data
 only grows: the health transitions of the release binary join the history of the era. The rollback
 restores the store **exactly**: the inventory of the backup and the inventory of the restored store
 are the same, and the tables that the era did not know are absent again.
@@ -2222,7 +2227,7 @@ Nothing measured that path, and nothing told the operator what the Core does wit
 |---|---|
 | the instance with four sources | provisioned and serving |
 | the plan extended by a fifth source | the four sources **survive**, the fifth is registered (5 sources) |
-| the extended instance | the fifth source **collects**: 44 observations |
+| the extended instance | the fifth source **collects**: 41 observations |
 | a plan that **drops** the fifth source | **refused**: `hierarchy/provisioning validation failed` |
 | the registry after the refusal | unchanged — the five sources are still there |
 
@@ -2271,7 +2276,7 @@ regression belong to the eras of the milestones.
 | the command | `cargo test --workspace --release --no-fail-fast` |
 | the revision | the clean tree of this iteration |
 | the toolchain | rustc 1.93.0, cargo 1.93.0 |
-| the result | **181 tests, 0 failed, 0 ignored**, 29 suites, 197 s |
+| the result | **181 tests, 0 failed, 0 ignored**, 29 suites, 125 s |
 
 The 29 suites include the **integration tests** of the Core — `api`, `browser_session`,
 `capabilities`, `diagnostics`, `hierarchy`, `inventory`, `ipc`, `mcp`, `provision_cli`,
@@ -2384,7 +2389,11 @@ no push, no deployment, no system service.
 
 | Artifact | Content |
 |---|---|
-| `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-canonical-acceptance/acceptance.json` | the canonical acceptance of the release: the eight functional phases, the widget gate, the browser gate, the visual comparison, the global infrastructure context, the accessibility and the device administration, with the revision and the tree of the run (tracked) |
+| `docs/evidence/oip-canonical-acceptance/browser-gate.json` | the browser gate of the acceptance: the findings, the captures and the state of the visual acceptance of the operator (tracked) |
+| `docs/evidence/oip-canonical-acceptance/ui-gate.json` | the build provenance and the served bundle of the gate (tracked) |
+| `docs/evidence/oip-canonical-acceptance/captures/*.png` | the 13 actual captures of the six workstations at 1440 px and 1920 px of the acceptance of the release (tracked) |
+| `docs/evidence/oip-device-administration/device-administration.json` | the administration of a device through the approved surface: the revision of the device advances from 1 to 2, the archive of an online device is refused with `OFFLINE_ARCHIVE_REQUIRED` (tracked) |
 | `docs/evidence/oip-diagnostic-continuation/rehearsal.json`, `docs/evidence/oip-workstation-data/rehearsal.json`, `docs/evidence/oip-device-connection/rehearsal.json`, `docs/evidence/oip-reconnect-recovery/rehearsal.json` | the rehearsals that produced the four browser receipts above: the instances they own, their steps and their results (the browser receipt of each journey is the primary evidence) |
 | `docs/evidence/oip-rust-regression/rust-regression.json` | the measured Rust regression of the Core of the current release: 181 tests in 29 suites, 0 failed, with the unit, the integration and the doc tests (iteration 43) |
 | `docs/evidence/oip-reproducible-build/reproducible-build.json` | the measured reproducibility of the builds of the release: the web release and the macOS application bundle are byte-identical when they are built twice (iteration 42) |
@@ -2400,7 +2409,7 @@ no push, no deployment, no system service.
 | `docs/evidence/oip-accessibility/accessibility.json` | the measured accessibility receipt of the six workstations: the controls, their roles, their focusability and the count of the controls without an accessible name (0) |
 | `docs/evidence/oip-global-context/global-context.json` | the measured global infrastructure context: the options of the selector, the scoped projection, the shared scope across the six workstations and the unified view |
 | `docs/evidence/oip-transport-parity/transport-parity.json` | the measured parity of REST, SSE and MCP of the current release for the same principal, and the refusal of the unauthorized session (iteration 30) |
-| `docs/evidence/oip-security-review/security-review.json` | the measured security review of the current release: 10 findings — 7 resolved, 2 mitigated, 1 escalated (the durability of the execution audit) (iteration 29) |
+| `docs/evidence/oip-security-review/security-review.json` | the measured security review of the current release: 12 findings — 9 resolved, 2 mitigated, 1 escalated (the durability of the execution audit) (iteration 29) |
 | `docs/evidence/oip-device-connection/device-connection.json` | the measured verified connection of a device in the approved surface against the real Core and an owned loopback SSH fixture (iteration 28) |
 | `docs/evidence/oip-workstation-data/workstation-data.json` | the measured functional depth of the six workstations against the real Core: the real hierarchy, device, placement, nodes, events and settings, and no identifier of the other organization (iteration 27) |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the measured parity of the OPC-UA address space between the official MCP tool and the REST routes against the real backend (iteration 25) |
@@ -2418,7 +2427,7 @@ no push, no deployment, no system service.
 | `docs/design/OIP_CANONICAL_UI_BASELINE.md` | the binding canonical UI contract: source of authority, the approved shell, the prohibited regressions R1-R10 and the gate table |
 | `docs/design/OIP_UI_2027_HANDOFF_MANIFEST.json` | the verified 2027 handoff manifest: eight upstream workstreams with their archive hashes and technical verdicts, the hash-pinned visual references and the candidate verification |
 | `docs/design/baselines/canonical-ui-1440.png`, `docs/design/baselines/canonical-ui-1920.png` | the committed technical visual references of the stable shell (tracked) |
-| `docs/evidence/oip-canonical-ui/*.png` | the 13 actual captures of the six workstations at 1440 px and 1920 px of iteration 12 (local, per the evidence policy) |
+| `docs/evidence/oip-canonical-acceptance/captures/*.png` | the 13 actual captures of the six workstations at 1440 px and 1920 px of the acceptance of the release (tracked) |
 | `docs/evidence/oip-real-device/test-summary.json` | the machine-readable result of the canonical UI gate of iteration 12 |
 | `target/oip-conformance-e2e/report.json` | the same acceptance report from the isolated branch build before the integration (local, not tracked) |
 | `target/oip008-ui-canonical/ui-regression.json` | UI regression result of iteration 3 with the per step durations and markers (local, not tracked) |
