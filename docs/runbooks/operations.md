@@ -645,6 +645,26 @@ application. The value becomes effective at the **next validated start** of
 the Core (`apply_status: active_startup_snapshot`) — the change itself is
 never applied to a running instance.
 
+## 12.1 The measurement of the delivery on the machine of the operator
+
+The first paint of the web release is bound by the **transfer** of the delivery. The baseline of
+the release was measured on the machine of the development loop, and the loopback of that machine
+is throttled — one connection delivers about 150 KiB/s while the same machine delivers 860 MiB/s
+over a Unix socket. **The operator measures the delivery on their own machine:**
+
+```sh
+python3 tools/oip_measure_delivery.py
+```
+
+The command reports the size of the delivery (the web release that the Core serves), the rate of
+the path of this machine, the rate of the machine itself and the time the delivery needs at both
+rates. The delivery of the release is 23.9 MB over 35 files; the browser fetches 18.2 MB of it
+before the first paint — three variants of the renderer are shipped and the browser uses one.
+
+The decision about a smaller delivery, a compressed asset or a local cache of the release is the
+operator's and is named in `docs/OIP_RELEASE_LEDGER.md`; the measurement above is what that
+decision needs.
+
 ## 13. How a third party verifies the release
 
 The whole handoff is checked with **one command**. It needs the checkout of
