@@ -73,7 +73,11 @@ def main():
 
     revision = git("rev-parse", "HEAD")
     tree = git("rev-parse", "HEAD^{tree}")
-    clean = not git("status", "--porcelain")
+    # The cleanliness of the tree is measured without the files that this
+    # tool writes: the receipts it publishes and the manifest of the release.
+    status = [line for line in git("status", "--porcelain").splitlines()
+              if line and not line[3:].startswith(("docs/evidence/", "docs/release/"))]
+    clean = not status
     published = []
 
     for source, destination in PUBLISHED.items():
