@@ -23,6 +23,10 @@ const outDir = process.argv[3] || process.env.OIP_BROWSER_EVIDENCE;
 let code = process.argv[4] || process.env.OIP_BROWSER_LOGIN_CODE;
 const expectedFingerprint = process.env.OIP_EXPECTED_FINGERPRINT || '';
 const expectedStatus = process.env.OIP_EXPECTED_CONNECTION_STATUS || '';
+// The identity of the device of the authorized inventory. The default is the
+// device of the rehearsal of the device connection; another rehearsal may
+// name its own device.
+const deviceId = process.env.OIP_DEVICE_ID || 'existing-pi';
 // The label of the state of the connection in the approved surface.
 const STATE_LABELS = {
   collecting: 'Collecting',
@@ -204,12 +208,12 @@ await page.waitForTimeout(5000);
 
 // The inventory of the devices is below the fold of the workstation: the
 // surface is scrolled until the device is painted.
-const deviceOption = await scrollUntil(/existing-pi.*auswählen/);
+const deviceOption = await scrollUntil(new RegExp(`${deviceId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*auswählen`));
 check('the inventory of the scope lists the device', deviceOption.length > 0,
   deviceOption.join(' | ').slice(0, 200));
 // The control is activated by its own name, not by the whole block of the
 // semantics node.
-await clickAccessible('existing-pi auswählen');
+await clickAccessible(`${deviceId} auswählen`);
 await page.waitForTimeout(3000);
 
 // The connection of the device is shown with its state.
@@ -258,7 +262,8 @@ const receipt = {
   findings,
   errors,
 };
-fs.writeFileSync(`${outDir}/device-connection.json`, JSON.stringify(receipt, null, 2));
+const receiptName = process.env.OIP_BROWSER_RECEIPT_NAME || 'device-connection.json';
+fs.writeFileSync(`${outDir}/${receiptName}`, JSON.stringify(receipt, null, 2));
 console.log(JSON.stringify({ findings: findings.length, errors: errors.length }, null, 2));
 await browser.close();
 process.exit(errors.length === 0 ? 0 : 1);

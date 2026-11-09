@@ -103,10 +103,14 @@ def scalar(value):
 
 
 def playwright_module():
-    candidate = ROOT / "apps/flutter/.dart_tool" / "package_config.json"
-    if candidate.is_file():
-        return candidate
-    return ROOT / "apps/flutter"
+    """The Playwright module of the browser scripts."""
+    module = os.environ.get("PLAYWRIGHT_MODULE")
+    if module:
+        return module
+    candidate = ROOT / "apps/flutter/test/node_modules/playwright/index.mjs"
+    if not candidate.is_file():
+        raise AssertionError(f"the Playwright module is missing: {candidate}")
+    return str(candidate)
 
 
 def main():
@@ -354,11 +358,13 @@ def main():
                      OIP_SERVER_BIN=args.binary,
                      OIP_EXPECTED_FINGERPRINT=fingerprint,
                      OIP_EXPECTED_CONNECTION_STATUS=report["connection_status"],
+                     OIP_DEVICE_ID="coverage-device",
+                     OIP_BROWSER_RECEIPT_NAME="measurement-coverage-browser.json",
                      PLAYWRIGHT_MODULE=playwright_module()))
         if result.returncode != 0:
             raise AssertionError(f"the browser journey failed: "
                                  f"{result.stderr.strip()[-600:] or result.stdout.strip()[-600:]}")
-        receipt = json.loads((evidence / "device-connection.json").read_text())
+        receipt = json.loads((evidence / "measurement-coverage-browser.json").read_text())
         report["browser_receipt"] = receipt
         assert receipt["errors"] == [], receipt["errors"]
         assert all(item["ok"] for item in receipt["findings"]), receipt["findings"]
