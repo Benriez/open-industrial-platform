@@ -81,6 +81,16 @@ RECEIPTS = {
     "the_reconnect_recovery": ROOT / "docs/evidence/oip-reconnect-recovery/reconnect-recovery.json",
     "the_operations": ROOT / "docs/evidence/oip-operations/operations.json",
     "the_documented_plan": ROOT / "docs/evidence/oip-documented-plan/documented-plan.json",
+    "the_storage_failure": ROOT / "docs/evidence/oip-storage-failure/storage-failure.json",
+    "the_operations_rehearsal": ROOT / "docs/evidence/oip-operations/operations.json",
+    "the_settings_offline": ROOT / "docs/evidence/oip-settings-offline/settings-offline.json",
+    "the_offline_archive": ROOT / "docs/evidence/oip-offline-archive/offline-archive.json",
+    "the_opcua_parity": ROOT / "docs/evidence/oip-opcua-parity/opcua-parity.json",
+    "the_extend_registry": ROOT / "docs/evidence/oip-extend-registry/extend-registry.json",
+    "the_historical_daemon": ROOT / "docs/evidence/oip-historical-daemon/historical-daemon.json",
+    "the_diagnostic_continuation": ROOT / "docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json",
+    "the_device_connection": ROOT / "docs/evidence/oip-device-connection/device-connection.json",
+    "the_workstation_data": ROOT / "docs/evidence/oip-workstation-data/workstation-data.json",
 }
 
 

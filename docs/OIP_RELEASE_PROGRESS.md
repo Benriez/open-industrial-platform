@@ -58,7 +58,7 @@ The authoritative table of the gates, their status and their measured evidence i
 | G8 the six functional views | READY (the software part) |
 | G9 the macOS build and the local operations | READY (the software part) |
 | G10 the security release review | READY (the review is done) · BLOCKED_OPERATOR (the acceptance) |
-| G11 the acceptance | DONE (one resilience gap escalated) |
+| G11 the acceptance | DONE (the storage-failure path is measured) |
 | G12 the operator acceptance | BLOCKED_OPERATOR |
 
 The operator actions that the loop cannot perform are listed in the ledger. The release is
@@ -1590,8 +1590,8 @@ disposable managed instance of the **release** binary (`tests/oip_macos_app.py`,
 `docs/evidence/oip-macos-app/macos-app.json`):
 
 * `flutter build macos --release` produces `oip_dashboard.app` (bundle id
-  `org.openindustrial.oipDashboard`, version 0.3.0) in 59 s; the receipt names the sha256 of the
-  executable.
+  `org.openindustrial.oipDashboard`, version 0.3.0) in 9 s; the receipt names the sha256 of the
+  executable and the digest over the tree of the bundle.
 * The bundle starts and asks the Core for the authorized projection of the principal within
   **0.8 s**.
 * The Core answers **403** and the bundle obtains **no** unauthorized data (`api_successes: 0`).
@@ -2355,8 +2355,9 @@ Measured (`docs/evidence/oip-macos-app/macos-app.json`):
 |---|---|
 | the build | `flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18808` |
 | the bundle | `oip_dashboard.app`, bundle id `org.openindustrial.oipDashboard`, version 0.3.0 |
-| the first request | after 0.3 s: `GET /api/v2/organizations?offset=0&limit=100` → **403** |
+| the first request | after 0.8 s: `GET /api/v2/organizations?offset=0&limit=100` → **403** |
 | the further requests | six in total, **all** 403 — the bundle obtains **no** unauthorized data |
+| the tree of the bundle | `e5cb5292…` — the same tree that the reproducibility of the release proves |
 | the window | the approved shell with the operator login (captured) |
 | the shutdown | `SIGTERM`, no orphan left behind |
 | the restart | the bundle asks the Core again and is refused again |
@@ -2382,6 +2383,38 @@ The receipts of this release that were measured before the change were re-measur
 tree — the seventeen rehearsals and their browser journeys — and the long ones (the performance
 baseline, the extended stability run, the lifetime of the session, the reproducibility of the
 builds) were re-measured in the background.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
+### Iteration 50 — the storage-failure path of the Core is measured
+
+**Status: PROVED on canonical `main`.**
+The last escalated gap of the acceptance is closed. A store that cannot be written was not
+rehearsed, because a rehearsal needs a volume with a quota: a full disk is forbidden here, a
+read-only mount is privileged and the mode of the file or of its directory does not fail the
+writes of an open store.
+
+A **disk image of a fixed size** is exactly that volume — and it needs no privilege at all. The
+rehearsal attaches a 64 MiB image, puts the store of a disposable instance on it and lets the
+collectors fill it up completely (0 bytes free).
+
+Measured (`docs/evidence/oip-storage-failure/storage-failure.json`):
+
+| | |
+|---|---|
+| the volume | 64 MiB, filled to **0 bytes free**; the write of the rehearsal is refused with `No space left on device` |
+| the instance | **survives**: it keeps answering its routes with 200 while its store cannot be written |
+| the health | **degrades honestly**: the lifecycle becomes `degraded`, the instance is no longer `ready`, `persistence_healthy` is false, the counter of the persistence errors grows, the last error is named `commit_failed_retry_pending` |
+| the log | **names** the failure (`persistence_retry`) |
+| the store | is **not corrupted**: `pragma integrity_check` answers `ok` |
+| the recovery | after the space is freed the lifecycle is `ready` again, the persistence is healthy and the collection continues (187 to 234 observations) |
+| the shutdown | clean |
+
+The rehearsal reports that it is **blocked** — with the reason — on a machine without `hdiutil`;
+it never claims a measurement it did not take. Nothing of the rehearsal touches the personal
+installation of the operator: the store is a file on a volume in the temporary directory of the
+machine, and the volume is detached and deleted at the end.
 
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
