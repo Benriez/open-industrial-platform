@@ -1,0 +1,56 @@
+{
+  "schema": "oip-loopback-rate-v1",
+  "steps": [
+    "the rate of one connection of the loopback is measured",
+    "the limit of the path is measured",
+    "the rate of the machine itself is measured"
+  ],
+  "the_one_connection": {
+    "the_bytes": 3145728,
+    "the_seconds": 21.77,
+    "the_kib_per_second": 141.1
+  },
+  "the_one_http_request": {
+    "the_bytes": 3145728,
+    "the_seconds": 22.26,
+    "the_kib_per_second": 138.0
+  },
+  "the_two_connections": {
+    "the_bytes": 6291456,
+    "the_seconds": 22.46,
+    "the_kib_per_second": 273.5
+  },
+  "the_limit_grows_with_the_connections": true,
+  "the_unix_socket": {
+    "the_bytes": 3145728,
+    "the_seconds": 0.003,
+    "the_mib_per_second": 859.8
+  },
+  "the_baseline": {
+    "the_runs": 3,
+    "the_requests": 38,
+    "the_transferred_bytes": [
+      18245814,
+      18251469,
+      18255717
+    ],
+    "the_first_paint_ms": [
+      51914,
+      50886,
+      41508
+    ],
+    "the_bundle_bytes": 3032537
+  },
+  "the_interpretation": {
+    "the_transferred_bytes": 18255717,
+    "the_measured_first_paint_ms": 51914,
+    "the_seconds_the_transfer_needs_at_the_measured_rate": 126.3,
+    "the_rate_of_the_machine_without_the_network_path": 859.8,
+    "the_note": "the first paint of the baseline is the transfer of the delivery at the rate of the loopback of this machine. The rate is a property of the path, not of the release: the machine itself is far faster without the TCP path."
+  },
+  "status": "PASS",
+  "the_revision": "e159fbf6071e072bbd69064ae436e681f8579f2f",
+  "the_tree": "1a23c18cc244c2a3571b396a20fd6b037fcae9fe",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-09T16:28:38Z"
+}

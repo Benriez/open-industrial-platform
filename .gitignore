@@ -112,6 +112,9 @@ secrets/
 # The verification of the release: the receipt of the single command that a
 # third party runs.
 !/docs/evidence/oip-release-verification/release-verification.json
+# The rate of the path of the measurement: what the first paint of the
+# baseline means.
+!/docs/evidence/oip-loopback-rate/loopback-rate.json
 !/docs/evidence/oip-global-context/global-context.json
 !/docs/evidence/oip-performance/performance.json
 !/docs/evidence/oip-offline-archive/offline-archive.json

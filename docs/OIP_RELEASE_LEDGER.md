@@ -79,9 +79,20 @@ production-security scope of G10 and the operator acceptance of G12.
   MCP surface of the Core and is a contract decision of the operator, not of the loop.
 * Decide the delivery of the web release: the measured baseline
   (`docs/evidence/oip-performance/performance.json`) shows — **in this run** — that the first
-  paint of the 3 MB bundle is bound to the transfer over the loopback (p50 50 886 ms) and not to the application
-  (284 ms to the interactive shell). A smaller delivery — a split bundle, a compressed asset or
-  a local cache of the release — is a product decision of the operator, not of the loop.
+  paint is bound to the transfer over the loopback (p50 50 886 ms) and not to the application
+  (284 ms to the interactive shell). **The number is a property of the measurement path, not of
+  the release** (`tests/oip_loopback_rate.py`,
+  `docs/evidence/oip-loopback-rate/loopback-rate.json`): one connection of the loopback of this
+  machine delivers about **150 KiB/s**, the limit grows with the number of connections (two
+  connections deliver 274 KiB/s), and the **same machine** delivers **860 MiB/s** over a Unix
+  socket — the path, not the machine, is slow. The delivery of the browser is **18.2 MB** over 38
+  requests before the first paint (the 3 MB bundle plus the renderer, the fonts and the
+  assets), which needs 126 s at the rate of one connection and about 50 s over the few
+  connections the browser opens in parallel. On a machine with an ordinary loopback the same
+  delivery is a fraction of a second. **The operator should therefore measure the first paint on
+  their own machine before deciding** — a smaller delivery, a compressed asset or a local cache
+  of the release is a product decision of the operator, and the decision must not be taken on the
+  number of a throttled path.
 * The UI ownership question is settled: the Spectrum-2027 workstations are the canonical
   application of `main` and `feature/oip-managed-diagnostics` is reconciled into them. The
   recovery review command of that branch (`docs/recovery/oip-loop-20261108.md`) is no longer
@@ -113,6 +124,7 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-stability/stability.json` | the extended stability run: 30 minutes, 60 samples, the collectors under load |
 | `docs/evidence/oip-storage-failure/storage-failure.json` | the storage-failure path of the Core: a store that cannot be written, measured on a bounded volume |
 | `docs/evidence/oip-macos-install/macos-install.json` | the local installation of the bundle: the copy is byte-identical, the installed copy starts, is refused, terminates and starts again |
+| `docs/evidence/oip-loopback-rate/loopback-rate.json` | the rate of the path of the measurement: the loopback of this machine, the rate of the machine itself and what the first paint of the baseline means |
 | `docs/evidence/oip-record-integrity/record-integrity.json` | the integrity of the record itself: every cited receipt exists and is tracked, every receipt of the release is cited |
 | `docs/evidence/oip-release-verification/release-verification.json` | the verification of the release with one command: the manifest, the freshness of the receipts, the integrity of the record, the acceptance and the safety boundaries |
 | `docs/evidence/oip-session-lifetime/session-lifetime.json` | the promised lifetimes: the one-time code and the session |
