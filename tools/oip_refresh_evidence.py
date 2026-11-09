@@ -121,20 +121,37 @@ def run(name, script, produced, published):
         detail = (result.stderr.strip() or result.stdout.strip())[-400:]
         return {"the_rehearsal": name, "the_status": "FAIL", "the_seconds": seconds,
                 "the_detail": detail}
-    target = EVIDENCE / published
-    target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(source, target)
-    payload = json.loads(target.read_text())
+    payload = json.loads(source.read_text())
     return {
         "the_rehearsal": name,
         "the_status": "PASS" if payload.get("status") == "PASS" else "FAIL",
         "the_seconds": seconds,
         "the_published": published,
+        "the_source": str(source.relative_to(ROOT)),
         "the_revision": payload.get("the_revision"),
         "the_working_tree_is_clean": payload.get("the_working_tree_is_clean"),
         "the_detail": None if payload.get("status") == "PASS"
         else json.dumps(payload)[:400],
     }
+
+
+def publish(outcomes):
+    """The receipts are published after the last rehearsal.
+
+    A publication writes into the checkout — the tree would be dirty for every
+    rehearsal that follows. The receipts are therefore measured on a clean
+    tree and published together at the end.
+    """
+    published = []
+    for item in outcomes:
+        if item["the_status"] != "PASS" or "the_source" not in item:
+            continue
+        source = ROOT / item["the_source"]
+        target = EVIDENCE / item["the_published"]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+        published.append(item["the_published"])
+    return published
 
 
 def main():
@@ -172,6 +189,7 @@ def main():
         outcome = run(name, script, produced, published)
         report["the_rehearsals"].append(outcome)
         print(f"  {outcome['the_status']} {outcome['the_seconds']}s {name}", flush=True)
+    report["the_published"] = publish(report["the_rehearsals"])
     failed = [item for item in report["the_rehearsals"] if item["the_status"] != "PASS"]
     report["the_failed"] = failed
     report["the_status"] = "PASS" if not failed else "FAIL"
@@ -181,6 +199,7 @@ def main():
     pathlib.Path(args.report).write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps({"the_status": report["the_status"],
                       "the_rehearsals": len(report["the_rehearsals"]),
+                      "the_published": len(report["the_published"]),
                       "the_failed": [item["the_rehearsal"] for item in failed]}, indent=2))
     return 0 if report["the_status"] == "PASS" else 1
 
