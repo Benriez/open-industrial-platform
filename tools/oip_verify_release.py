@@ -49,6 +49,10 @@ MANIFEST = ROOT / "docs/release/oip-release-manifest.json"
 # the last change of the product does not measure the product.
 PRODUCT = (["crates"], ["apps/flutter/lib"])
 CITATION = re.compile(r"docs/evidence/[A-Za-z0-9_./-]+")
+# Every path that the record names. A path of the checkout must exist; the
+# ledger must not present a path of the build tree as the evidence of a claim.
+PATH_CITATION = re.compile(
+    r"`((?:docs|apps|crates|tests|tools|target)/[A-Za-z0-9_./-]*)`")
 ERA_DIRECTORIES = {"oip-real-device"}
 # The digest of the personal store of the operator. It must never change.
 PERSONAL_STORE = "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e"
@@ -193,12 +197,31 @@ def check_the_record(receipts):
     problems.extend(f"the cited receipt {name} does not exist" for name in missing)
     problems.extend(f"the cited receipt {name} is not tracked" for name in untracked)
     problems.extend(f"the receipt {name} is cited by nobody" for name in orphans)
+
+    # every path that the record names must exist; the ledger must not present
+    # a path of the build tree as the evidence of a claim
+    dangling = []
+    for name in sorted(set(PATH_CITATION.findall(text))):
+        name = name.rstrip(".,;:)*")
+        if name.endswith("*") or name.startswith("target/"):
+            continue
+        if not (ROOT / name).exists():
+            dangling.append(name)
+    ledger_build_tree = sorted(set(
+        name.rstrip(".,;:)*") for name in PATH_CITATION.findall(LEDGER.read_text())
+        if name.rstrip(".,;:)*").startswith("target/")
+        and not name.rstrip(".,;:)*").startswith("target/release/")))
+    problems.extend(f"the cited path {name} does not exist" for name in dangling)
+    problems.extend(f"the ledger presents the path of a build tree as evidence: {name}"
+                    for name in ledger_build_tree)
     return {
         "the_citations": len(cited),
         "the_receipts_of_the_release": len(receipts),
         "the_missing": missing,
         "the_untracked": untracked,
         "the_orphaned": orphans,
+        "the_dangling_paths": dangling,
+        "the_paths_of_the_build_tree_in_the_ledger": ledger_build_tree,
     }, problems
 
 

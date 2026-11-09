@@ -2612,6 +2612,42 @@ measurement of the operator's **own** machine, not on the number of a throttled 
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 56 — the reconciliation of the worktrees is proved, not asserted
+
+**Status: PROVED on canonical `main`.**
+The binding rules demand that the active UI worktrees are reconciled **without overwriting newer
+implementations or foreign ownership**. The record stated that the question was settled — the
+Spectrum-2027 workstations are the canonical application of `main` and the branch
+`feature/oip-managed-diagnostics` is reconciled into them — but that was **prose**: the branch
+holds a commit (`55d4f50`, 1556 insertions) that `main` does not contain, and the ledger cited
+its recovery report, a path that **was not in the canonical branch**.
+
+The rehearsal of the reconciliation (`tests/oip_worktree_reconciliation.py`,
+`docs/evidence/oip-worktree-reconciliation/worktree-reconciliation.json`) proves the obligation:
+
+* the branches of **all 22 worktrees** and, for every branch, the commits that the canonical
+  branch does not contain — exactly one branch has one such commit;
+* the **files** of that commit: the canonical branch carries all **13** of them;
+* the **capability** of that commit, checked in the canonical branch: the documented gaps, the
+  health transitions, the opaque cursor of the continuation, the status of the diagnosis history,
+  the adapters of the Core and the model of the diagnostic page — all present;
+* the **receipt that proves the capability** in the canonical branch: the rehearsal of the
+  diagnostic continuation walks the documented gaps and the health history over the opaque cursor
+  of the Core in the browser.
+
+The **evidence of the reconciliation** — the recovery report and its machine-readable receipt — is
+preserved in the canonical branch now (`docs/recovery/`), so a reader of `main` sees how the
+capability of the branch was decided, not only that it is there.
+
+**The checker of the record now checks every path that the record names**, not only the
+receipts, and the ledger must not present a path of the build tree as the evidence of a claim. The
+strengthened check found the second defect of this kind immediately: the ledger presented
+`target/oip-canonical-regression-final/` as the evidence of the acceptance of the release. The
+ledger names the **tracked** acceptance now.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -2621,6 +2657,7 @@ no push, no deployment, no system service.
 | `docs/evidence/oip-record-integrity/record-integrity.json` | the integrity of the record itself: every cited receipt exists and is tracked by git, and every receipt of the current release is cited by the ledger or by this file (tracked) |
 | `docs/evidence/oip-release-verification/release-verification.json` | the verification of the release with **one command**: the manifest verifies, every receipt is fresh, the record is intact, the acceptance passed and the safety boundaries held (tracked) |
 | `docs/evidence/oip-loopback-rate/loopback-rate.json` | the rate of the path of the measurement: the loopback of this machine, the rate of the machine itself and what the first paint of the baseline means (tracked) |
+| `docs/evidence/oip-worktree-reconciliation/worktree-reconciliation.json` | the reconciliation of the worktrees: every branch, the commits that the canonical branch does not contain, the capability that it delivers in their place and the receipt that proves it (tracked) |
 | `docs/evidence/oip-canonical-acceptance/browser-gate.json` | the browser gate of the acceptance: the findings, the captures and the state of the visual acceptance of the operator (tracked) |
 | `docs/evidence/oip-canonical-acceptance/ui-gate.json` | the build provenance and the served bundle of the gate (tracked) |
 | `docs/evidence/oip-canonical-acceptance/captures/*.png` | the 13 actual captures of the six workstations at 1440 px and 1920 px of the acceptance of the release (tracked) |
