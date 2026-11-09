@@ -204,6 +204,16 @@ def build_manifest():
             manifest["the_artifacts"][name]["the_executable_sha256"] = next(
                 (item["sha256"] for item in entries
                  if item["path"] == "Contents/MacOS/oip_dashboard"), None)
+        if name == "the_core":
+            # The Core names the revision it was built from in its own binary.
+            # The manifest therefore states which revision the binary that it
+            # digests belongs to.
+            payload = path.read_bytes()
+            revision = git("rev-parse", "HEAD")
+            for candidate in (revision, revision + "-dirty"):
+                if candidate and candidate.encode() in payload:
+                    manifest["the_artifacts"][name]["the_revision_the_binary_names"] = candidate
+                    break
     receipts = dict(RECEIPTS)
     receipts.update(newest_gate_receipts())
     for name, path in receipts.items():

@@ -67,6 +67,25 @@ def build(command, timeout=3600, cwd=None):
     return round(time.monotonic() - began, 1)
 
 
+def embedded_revision(path):
+    """The revision that the binary of the Core names.
+
+    The build script of the Core embeds `git describe --always --abbrev=40
+    --dirty` into the binary. The binary therefore names the revision it was
+    built from, and the reproducibility of the Core is the property that
+    **the same revision** yields the same bytes.
+    """
+    if not path.is_file():
+        return None
+    payload = path.read_bytes()
+    revision = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    for candidate in (revision, revision + "-dirty"):
+        if candidate.encode() in payload:
+            return candidate
+    return None
+
+
 def sha256_of(path):
     """The digest of a file, or None when it is absent."""
     if not path.is_file():
@@ -188,6 +207,12 @@ def main():
             second_seconds, second_core, second_probe = build_the_core()
             report["the_core"] = {
                 "the_command": " ".join(command),
+                "the_revision_the_binary_names": embedded_revision(core),
+                "the_revision_of_the_run": subprocess.check_output(
+                    ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+                "the_note": "the binary names the revision it was built from; the "
+                            "reproducibility is the property that the same revision "
+                            "yields the same bytes",
                 "the_first_build_seconds": first_seconds,
                 "the_second_build_seconds": second_seconds,
                 "the_core_of_the_first_build": first_core,
