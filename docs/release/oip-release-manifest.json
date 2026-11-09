@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "d8dcb06cc050ba518e1a559b2d0ecf6b81e2fd39",
-  "the_tree": "f50ff77cde5b872d94bf9cb9e773fb5e344afeff",
+  "the_revision": "5bafa13c7208b410e555fde78ff34a1469d4e45a",
+  "the_tree": "079dbfc64f931e7174b2c6a7ddb7f497de077973",
   "the_branch": "main",
   "the_working_tree_is_clean": true,
   "the_toolchain": {
@@ -61,7 +61,7 @@
     },
     "the_security_review": {
       "path": "docs/evidence/oip-security-review/security-review.json",
-      "sha256": "1b0cbabd48630b2afd53e43589a306172c2357812d8ceb6e84cf117293811011"
+      "sha256": "43cdd3ddbf2725ab38f1d1856576298d9658211addb16a22f05fd8e00f6bc252"
     },
     "the_macos_application": {
       "path": "docs/evidence/oip-macos-app/macos-app.json",
