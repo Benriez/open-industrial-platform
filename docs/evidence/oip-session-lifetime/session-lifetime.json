@@ -6,13 +6,13 @@
     "the session of the operator is authorized",
     "the expired session is refused"
   ],
-  "the_code_issued_at": 1794189905.405205,
+  "the_code_issued_at": 1794198910.065705,
   "the_expired_code": {
     "status": 403,
     "code": "PERMISSION_DENIED",
     "waited_seconds": 130
   },
-  "the_session_authorized_at": 1794190035.6444988,
+  "the_session_authorized_at": 1794199040.290717,
   "the_session_before": {
     "status": 200,
     "authenticated": true
@@ -35,5 +35,8 @@
     "the_refusal": "PERMISSION_DENIED"
   },
   "status": "PASS",
-  "finished_utc": "2026-11-09T02:37:45Z"
+  "the_revision": "e017178591b614aac576b2d791466c50ac4093f8",
+  "the_tree": "5ffe261b493f236869d3b75632f5ab203713352e",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-09T05:07:50Z"
 }
