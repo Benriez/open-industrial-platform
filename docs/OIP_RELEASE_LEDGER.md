@@ -97,7 +97,15 @@ production-security scope of G10 and the operator acceptance of G12.
 * The UI ownership question is settled: the Spectrum-2027 workstations are the canonical
   application of `main` and `feature/oip-managed-diagnostics` is reconciled into them. The
   recovery review command of that branch (`docs/recovery/oip-loop-20261108.md`) is no longer
-  required for the integration.
+  required for the integration. The **evidence of that reconciliation** is preserved in the
+  canonical branch (`docs/recovery/oip-loop-20261108.md` and its machine-readable receipt
+  `docs/recovery/oip-loop-20261108-evidence.json`), and the capability of the branch is proven in
+  the canonical branch by the rehearsal of the diagnostic continuation
+  (`docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json`). The reconciliation
+  of the worktrees is proved, not asserted: `tests/oip_worktree_reconciliation.py`
+  (`docs/evidence/oip-worktree-reconciliation/worktree-reconciliation.json`) names every branch
+  of every worktree, the commits of the branches that `main` does not contain, and the
+  capability that the canonical branch delivers in their place.
 
 ## The evidence of the release (every receipt, with what it proves)
 

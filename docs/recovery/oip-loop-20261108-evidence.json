@@ -1,0 +1,603 @@
+{
+  "worktree": "/Users/benny/Code/open-industrial-platform-worktrees/managed-diagnostics",
+  "branch": "feature/oip-managed-diagnostics",
+  "baseline": "037afda92ac02ffc91dceb322d905a57dd2fc4ef",
+  "originalDirtyFiles": [
+    {
+      "path": "apps/flutter/lib/features/diagnostics.dart",
+      "sha256": "0df451f73bb3fc7b2551c3b540159d49cade8cb37de4d938df3fb60b8fa60e89",
+      "bytes": 27616,
+      "mode": "0o644"
+    },
+    {
+      "path": "apps/flutter/lib/services/api.dart",
+      "sha256": "22853aa2b262149fd8b19cde1c3dc55a93033772a61debc122dd359710687195",
+      "bytes": 11751,
+      "mode": "0o644"
+    },
+    {
+      "path": "apps/flutter/test/browser_onboarding.mjs",
+      "sha256": "a02b8339f010580e61c67ff7a504cdfafa184999da829ee027f8220914bae0c8",
+      "bytes": 16614,
+      "mode": "0o644"
+    },
+    {
+      "path": "apps/flutter/test/contracts_test.dart",
+      "sha256": "84ae26730b524f3d73d1cfd26f7e8fa87167f21c7d495bec3856d9ff8833e514",
+      "bytes": 10955,
+      "mode": "0o644"
+    },
+    {
+      "path": "apps/flutter/test/core_integration_test.dart",
+      "sha256": "ba81000bf1d7ba75e69f4afb4e828bd5c5fd9fadda6a85054f5f6c9537882e45",
+      "bytes": 5861,
+      "mode": "0o644"
+    },
+    {
+      "path": "apps/flutter/test/observation_history_test.dart",
+      "sha256": "0a230634e760cbb205e3476682f0d0d52e4f90b29b295aa62e3eb9e90e337b34",
+      "bytes": 12496,
+      "mode": "0o644"
+    },
+    {
+      "path": "apps/flutter/test/onboarding_dialog_test.dart",
+      "sha256": "82e39fd3943dc44798afab38038f1e7557670b21026e72e40df81fd3d5cf138b",
+      "bytes": 4110,
+      "mode": "0o644"
+    },
+    {
+      "path": "apps/flutter/test/support.dart",
+      "sha256": "288811c9cd05421cfeb674ae4a9c299c2ef33916b5954d2850b13d6a090e31d6",
+      "bytes": 9319,
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/architecture/oip-0082-diagnostics-flutter-contract.md",
+      "sha256": "50ef03864debec0fbb73909b4c2389592473656320212478e296c695d06c7b4f",
+      "bytes": 9160,
+      "mode": "0o644"
+    },
+    {
+      "path": "apps/flutter/lib/models/diagnostics.dart",
+      "sha256": "3f4fd40eccdc872091c2aa44fd423712702ac67c478cbbfbce27da877ca9c5c6",
+      "bytes": 3904,
+      "mode": "0o644"
+    },
+    {
+      "path": "apps/flutter/test/managed_diagnostics_test.dart",
+      "sha256": "36262c69415715306f33d358222c0537d8e67d759bba88d9abeb3bffeeca55d3",
+      "bytes": 5441,
+      "mode": "0o644"
+    }
+  ],
+  "backup": {
+    "directory": "/Users/benny/.local/share/oip-recovery/20261108T020032Z",
+    "archive": "dirty-state.tar.gz",
+    "sha256": "e8e49d8a95f4fa3d26da9f18a441c811035ce1975346024dde1d9c49d25c2b29",
+    "verifiedFiles": 11
+  },
+  "hostInterruption": {
+    "sessionID": "ses_e49318e9bffecVlYktt9Ot1W30",
+    "jobID": "mw6tm4xv-dc0cb0",
+    "runID": "msg_loop_6d8de48b44c6494e970bdfc4183bc73f",
+    "terminalID": "msg_1b8d6b554001lGPrvknfzWt3vf",
+    "at": "2026-11-08T01:47:21.300Z",
+    "outcome": "interrupted",
+    "toolError": "Tool execution interrupted",
+    "toolDurationSeconds": 467.98,
+    "toolTimeoutSeconds": 900,
+    "executedWorktree": "spectrum-2027-ui",
+    "callerOrUnderlyingTrigger": "NOT_PROVEN",
+    "oldRunReplayed": false
+  },
+  "flutter": [
+    {
+      "name": "analyze",
+      "command": [
+        "flutter",
+        "analyze"
+      ],
+      "exit": 0,
+      "seconds": 3.07
+    },
+    {
+      "name": "flutter-tests",
+      "command": [
+        "flutter",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "exit": 0,
+      "seconds": 22.06
+    },
+    {
+      "name": "web-build",
+      "command": [
+        "flutter",
+        "build",
+        "web",
+        "--release",
+        "--web-renderer",
+        "canvaskit",
+        "--no-web-resources-cdn",
+        "--pwa-strategy=none"
+      ],
+      "exit": 0,
+      "seconds": 25.82
+    }
+  ],
+  "flutterTests": {
+    "passed": 105,
+    "failed": 0,
+    "focusedDiagnostics": 4,
+    "expiredCursorRecoveryAndDedup": "PASS"
+  },
+  "browser": {
+    "status": "PASS",
+    "actual_flutter_ssh_monitoring": true,
+    "hardware": "owned loopback SSH fixture, not private Raspberry Pi",
+    "host_key_consent": true,
+    "identity_confirmation": true,
+    "existing_device_id_preserved": true,
+    "http_only_cookie": true,
+    "no_browser_token_storage": true,
+    "rendered_measurements": {
+      "observed_metrics": [
+        "host.architecture",
+        "host.cpu_info",
+        "host.disks",
+        "host.hostname",
+        "host.interfaces",
+        "host.memory_total_bytes",
+        "host.memory_used_bytes",
+        "host.model",
+        "host.os",
+        "host.uptime_seconds"
+      ],
+      "host_os": "Darwin",
+      "memory_total_bytes": 17179869184,
+      "all_fresh": true
+    },
+    "rendered_history": {
+      "persisted_samples": 10,
+      "rendered_samples": 6,
+      "all_stale": true,
+      "receive_times_shown": 1,
+      "first_receive_time": "2026-11-08 02:05:51.275 UTC",
+      "metrics": [
+        "host.uptime_seconds",
+        "host.cpu_info",
+        "host.os",
+        "host.memory_total_bytes",
+        "host.architecture",
+        "host.memory_used_bytes"
+      ]
+    },
+    "rendered_overview": {
+      "authorized_source": "SSH host browser-existing",
+      "source_registry_section": true,
+      "measured_metric": "host.memory_total_bytes",
+      "measured_value": 17179869184,
+      "demo_coordinates_absent": true
+    },
+    "rendered_network": {
+      "authorized_placement": "org-a · infra-a1 · site-a1",
+      "source": "63759230-62d2-4dc5-b959-ece73f9d75fa",
+      "loading_state_absent": true,
+      "demo_zones_absent": true
+    },
+    "rendered_diagnostics": {
+      "persisted_evidence_section": true,
+      "diagnosis_history_status": "not_implemented",
+      "health_transitions": 34,
+      "documented_gaps": 2
+    },
+    "loaded_build_sha256": "97f329ac097b9edc4e9773180404b906e5e6313066822247c346d8b5d3831c2b",
+    "errors": [],
+    "external": []
+  },
+  "integration": {
+    "baseline": "49a86bb0aa9f737fe9392eb2b5421e1ffe2f8c68",
+    "phases": [
+      {
+        "phase": "browser_identity_online_writer",
+        "status": "PASS",
+        "details": {
+          "single_use_pairing": true,
+          "http_only_cookie": true,
+          "csrf_origin": true,
+          "trusted_principal": "reader-org-a",
+          "foreign_site_denied": true,
+          "single_writer_online_registration": true
+        }
+      },
+      {
+        "phase": "ssh_handshake_confirmation_monitoring",
+        "status": "PASS",
+        "details": {
+          "explicit_host_key_consent": true,
+          "verified_hostname_present": true,
+          "facts_os": "Darwin",
+          "existing_id_preserved": true,
+          "inventory_count": 1,
+          "actual_observations": 10,
+          "read_only_mcp_parity": true,
+          "physical_pi": false
+        }
+      },
+      {
+        "phase": "restart_sigkill_identity",
+        "status": "PASS",
+        "details": {
+          "same_device_id": true,
+          "config_survives": true,
+          "integrity": "ok",
+          "foreign_keys": true,
+          "duplicate_keys": 0
+        }
+      },
+      {
+        "phase": "actual_flutter_ssh_onboarding",
+        "status": "PASS",
+        "details": {
+          "existing_id": "browser-existing",
+          "real_loopback_ssh": true,
+          "no_private_hardware_contact": true,
+          "persisted_history_samples": 10,
+          "persisted_history_is_stale": true
+        }
+      },
+      {
+        "phase": "no_clients_ingestion_progress",
+        "status": "PASS",
+        "details": {
+          "before": 140,
+          "after": 150,
+          "no_browser_or_mcp_sessions": true
+        }
+      },
+      {
+        "phase": "host_key_change_blocks_collection",
+        "status": "PASS",
+        "details": {
+          "changed_key_rejected": true,
+          "existing_id_unchanged": true,
+          "new_observations_after_block": 0
+        }
+      },
+      {
+        "phase": "weak_host_key_is_rejected_by_the_server",
+        "status": "PASS",
+        "details": {
+          "code": "SSH_HOST_KEY_TOO_WEAK",
+          "offered_for_acceptance": false,
+          "pinned": false,
+          "no_binding_created": true
+        }
+      },
+      {
+        "phase": "eight_official_mcp_clients",
+        "status": "PASS",
+        "details": {
+          "clients": 8,
+          "shared_core": true,
+          "disconnect_isolated": true
+        }
+      }
+    ],
+    "runtime_directory": "/private/tmp/oip82-14163-1794103438248198000",
+    "model_used": false,
+    "physical_raspberry_pi_tested": false,
+    "ssh_fixture": "owned loopback OpenSSH, actual host facts",
+    "performance": {
+      "connection_read_official_mcp": {
+        "samples": 20,
+        "p50_ms": 4.587666015140712,
+        "p95_ms": 5.430457997135818
+      },
+      "core_rss_kib_cpu_percent": "30240   6.9",
+      "short_local_measurement_not_sla": true
+    },
+    "status": "PASS",
+    "own_processes_stopped": true
+  },
+  "nativePluginTests": {
+    "recoveryPassed": 40,
+    "recoveryFailed": 0,
+    "tenRunReload": {
+      "root": "/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/opencode-loop-native-recovery-sQetxr",
+      "pass": true,
+      "projectOverride": false,
+      "hotActivation": false,
+      "reloadEvidence": {
+        "lostCompletionEvent": "evt_1b8e84865001caj8wc0au8U78l",
+        "persistedRunStatusBeforeReload": "admitted",
+        "sameSessionRecovered": true
+      },
+      "opencode": "2.2.5",
+      "sessionID": "ses_e4717b9f1ffeROSxmCIqdTRpzL",
+      "directory": "/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/opencode-loop-native-recovery-sQetxr/project",
+      "isolatedPID": 17138,
+      "productionPIDUntouched": 10251,
+      "runs": 10,
+      "admitted": 10,
+      "completed": 10,
+      "manualResumes": 0,
+      "realExternalInferenceRequests": 0,
+      "runIDs": [
+        "msg_loop_86c1c1e4eb6e4b4ea2c9d034771624dd",
+        "msg_loop_b04e4d4319c848caa84f4f8f3aa233dd",
+        "msg_loop_83d61c8d63bb4cb299146eb6ac1025eb",
+        "msg_loop_3a8ea60835034b45b68fe6681769ca2a",
+        "msg_loop_9913bc061e4440629a86428e43cf0bc8",
+        "msg_loop_fa304f151605432a8c928805567fe283",
+        "msg_loop_43c86538434c4cb4bb9c62ef6e64c20c",
+        "msg_loop_27b0cd821fa6490386dbbb09cf19eb73",
+        "msg_loop_6d385c05939f41bf8a3207c4f0c52ece",
+        "msg_loop_1308d78045cf4d758890590bcc9c568d"
+      ]
+    },
+    "statusWhileRunningQueue": {
+      "root": "/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/opencode-loop-native-recovery-uX6d0F",
+      "sessionID": "ses_e47196ab1ffeHz4Q23HORtHDl0",
+      "hostVersion": "2.2.5",
+      "isolatedPID": 15349,
+      "beforeTime": {
+        "created": 1794103481682,
+        "updated": 1794103482354,
+        "busy": 1794103482356
+      },
+      "afterStatusTime": {
+        "created": 1794103481682,
+        "updated": 1794103482402,
+        "busy": 1794103482356
+      },
+      "job": {
+        "id": "mw76w2m4-f87fcb",
+        "name": "status-probe",
+        "action": "HOLD_CANARY_RESPONSE harmless fixture.",
+        "intervalMs": 0,
+        "immediate": true,
+        "maxRuns": 1,
+        "maxRuntimeMs": 0,
+        "maxFailures": 3,
+        "timeoutMs": 0,
+        "untilChecklistComplete": false,
+        "includeFiles": [],
+        "watchPaths": [],
+        "compactEveryRuns": 0,
+        "compactEveryMs": 0,
+        "branchDone": false,
+        "goalAcceptance": [],
+        "goalChecks": [],
+        "goalCompleteWhenChecksPass": false,
+        "goalSummary": "",
+        "goalEvidence": "",
+        "goalBlockedReason": "",
+        "goalProgress": [],
+        "noProgressCount": 0,
+        "lastProgressAt": 0,
+        "noOverlap": true,
+        "safe": true,
+        "quiet": false,
+        "askNever": true,
+        "pauseOnVerifyFail": false,
+        "gitCheckpoint": false,
+        "checkpointOnly": false,
+        "dryRun": false,
+        "multi": false,
+        "batch": 0,
+        "runCount": 1,
+        "failureCount": 0,
+        "lastRunAt": 1794103482356,
+        "lastCompactAt": 0,
+        "lastCompactRunCount": 0,
+        "watchSnapshot": {},
+        "watchTriggered": false,
+        "createdAt": "2026-11-08T02:04:42.174Z",
+        "enabled": false,
+        "paused": false,
+        "scheduleMode": "idle",
+        "scheduleSyntax": "idle",
+        "lastCompletedAt": 1794103512456,
+        "lastV2Run": {
+          "id": "msg_loop_a561004e7d924edc8fb0dbaa7fca331e",
+          "outcome": "succeeded",
+          "terminalSeq": 19,
+          "completedAt": 1794103512456,
+          "replay": false
+        }
+      },
+      "terminals": [
+        {
+          "id": "msg_1b8e70d7f001BImf4CAwBu1hSs",
+          "time": {
+            "created": 1794103512447
+          },
+          "type": "idle",
+          "outcome": "succeeded"
+        }
+      ],
+      "externalInference": 0
+    },
+    "statusWhileRunningSteer": {
+      "root": "/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/opencode-loop-native-recovery-mS65vQ",
+      "sessionID": "ses_e4718ab65ffeC25wo5LUwTuPcl",
+      "hostVersion": "2.2.5",
+      "isolatedPID": 16040,
+      "beforeTime": {
+        "created": 1794103530654,
+        "updated": 1794103531466,
+        "busy": 1794103531468
+      },
+      "afterStatusTime": {
+        "created": 1794103530654,
+        "updated": 1794103531606,
+        "busy": 1794103531468
+      },
+      "job": {
+        "id": "mw76x4fs-4f99b3",
+        "name": "status-probe",
+        "action": "HOLD_CANARY_RESPONSE harmless fixture.",
+        "intervalMs": 0,
+        "immediate": true,
+        "maxRuns": 1,
+        "maxRuntimeMs": 0,
+        "maxFailures": 3,
+        "timeoutMs": 0,
+        "untilChecklistComplete": false,
+        "includeFiles": [],
+        "watchPaths": [],
+        "compactEveryRuns": 0,
+        "compactEveryMs": 0,
+        "branchDone": false,
+        "goalAcceptance": [],
+        "goalChecks": [],
+        "goalCompleteWhenChecksPass": false,
+        "goalSummary": "",
+        "goalEvidence": "",
+        "goalBlockedReason": "",
+        "goalProgress": [],
+        "noProgressCount": 0,
+        "lastProgressAt": 0,
+        "noOverlap": true,
+        "safe": true,
+        "quiet": false,
+        "askNever": true,
+        "pauseOnVerifyFail": false,
+        "gitCheckpoint": false,
+        "checkpointOnly": false,
+        "dryRun": false,
+        "multi": false,
+        "batch": 0,
+        "runCount": 1,
+        "failureCount": 0,
+        "lastRunAt": 1794103531467,
+        "lastCompactAt": 0,
+        "lastCompactRunCount": 0,
+        "watchSnapshot": {},
+        "watchTriggered": false,
+        "createdAt": "2026-11-08T02:05:31.193Z",
+        "enabled": false,
+        "paused": false,
+        "scheduleMode": "idle",
+        "scheduleSyntax": "idle",
+        "lastCompletedAt": 1794103561591,
+        "lastV2Run": {
+          "id": "msg_loop_8e52f7cf2d9d40a98150c678a0cb3f58",
+          "outcome": "succeeded",
+          "terminalSeq": 19,
+          "completedAt": 1794103561591,
+          "replay": false
+        }
+      },
+      "terminals": [
+        {
+          "id": "msg_1b8e7cd6a001tqtnaImGi5hb09",
+          "time": {
+            "created": 1794103561578
+          },
+          "type": "idle",
+          "outcome": "succeeded"
+        }
+      ],
+      "externalInference": 0
+    },
+    "implementationChanged": false
+  },
+  "scope": {
+    "mainUpdated": false,
+    "foreignWorktreesWritten": false,
+    "foreignProcessesStopped": false,
+    "existingDatabasesMigrated": false,
+    "push": false,
+    "deployment": false,
+    "liveLoopStateEditedManually": false
+  },
+  "uiRegression": {
+    "url": "http://127.0.0.1:64046",
+    "web_dir": "/Users/benny/Code/open-industrial-platform-worktrees/managed-diagnostics/apps/flutter/build/web-html",
+    "process_id": 17834,
+    "results": [
+      {
+        "name": "browser",
+        "exit_code": 0,
+        "seconds": 82.2,
+        "marker_required": null,
+        "marker_found": true,
+        "status": "PASS"
+      },
+      {
+        "name": "interactions",
+        "exit_code": 0,
+        "seconds": 46.9,
+        "marker_required": null,
+        "marker_found": true,
+        "status": "PASS"
+      },
+      {
+        "name": "visual",
+        "exit_code": 0,
+        "seconds": 60.7,
+        "marker_required": null,
+        "marker_found": true,
+        "status": "PASS"
+      },
+      {
+        "name": "native_build",
+        "exit_code": 0,
+        "seconds": 24.2,
+        "marker_required": "Built build/macos/Build/Products/Debug/oip_dashboard.app",
+        "marker_found": true,
+        "status": "PASS"
+      },
+      {
+        "name": "native_macos",
+        "exit_code": 0,
+        "seconds": 38.6,
+        "marker_required": "All tests passed!",
+        "marker_found": true,
+        "status": "PASS"
+      },
+      {
+        "name": "demo_core_shutdown",
+        "exit_code": 0,
+        "status": "PASS"
+      }
+    ]
+  },
+  "uiRunner": {
+    "canonical_commit": "037afda92ac02ffc91dceb322d905a57dd2fc4ef",
+    "cases": [
+      {
+        "name": "oip008_ui_regression",
+        "command": "python3 tests/oip008/ui_regression.py",
+        "exit_code": 0,
+        "seconds": 271.3,
+        "status": "PASS",
+        "log": "/Users/benny/.local/share/oip-recovery/20261108T020032Z/ui-regression/oip008_ui_regression.log",
+        "report": "/Users/benny/.local/share/oip-recovery/20261108T020032Z/ui-regression/oip008_ui_regression/ui-regression.json",
+        "harness_status": "PASS"
+      }
+    ],
+    "failed": [],
+    "blocked": [],
+    "status": "PASS"
+  },
+  "verifiedSourceSha256": {
+    "apps/flutter/lib/features/diagnostics.dart": "abd8967a18b48f32ebdb6ece655215715462f54165739bad41e30633608c3464",
+    "apps/flutter/lib/services/api.dart": "87547957cd17e742a2736b1cd298dda10962bd81884fe93dd264b04404b95e3b",
+    "apps/flutter/test/browser_onboarding.mjs": "a02b8339f010580e61c67ff7a504cdfafa184999da829ee027f8220914bae0c8",
+    "apps/flutter/test/contracts_test.dart": "84ae26730b524f3d73d1cfd26f7e8fa87167f21c7d495bec3856d9ff8833e514",
+    "apps/flutter/test/core_integration_test.dart": "ba81000bf1d7ba75e69f4afb4e828bd5c5fd9fadda6a85054f5f6c9537882e45",
+    "apps/flutter/test/observation_history_test.dart": "9a5f71e6fdd85f012f3f70db2c74ded3d0a024a3b76f443dccdb901c98de850a",
+    "apps/flutter/test/onboarding_dialog_test.dart": "8c067e666d653b03b4492c6bcd77fc23629ac9104984c94c0130fde5ae4aaeb1",
+    "apps/flutter/test/support.dart": "e7ab427a0cbd4fd39721aeba4a6cecce600c7f2b37b8a03cda6de8fd13729ba7",
+    "docs/architecture/oip-0082-diagnostics-flutter-contract.md": "7674cb945a1798db205931fdd3eded725853c48a700b1cee5dd471cc18fc54fe",
+    "apps/flutter/lib/models/diagnostics.dart": "8f74f3106757d6a584287b76ad9359d27855273fb1fbd4953cabf2d54c058877",
+    "apps/flutter/test/managed_diagnostics_test.dart": "0204c709073ef3257f56888575d9722850974f4dfb154fc23456b6a67e86d560"
+  },
+  "coreBinarySha256": "c4abc67e257a66995e0e3f520e1d6ed40235a316163b720acca348fd5eb63afb",
+  "coreUnchangedFromBaseline": true
+}
