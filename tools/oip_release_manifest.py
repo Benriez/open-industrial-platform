@@ -221,6 +221,21 @@ def build_manifest():
         manifest["the_revision_of_the_acceptance"] = payload.get("source_revision")
         manifest["the_tree_of_the_acceptance"] = payload.get("source_tree")
         manifest["the_acceptance_was_run_on_a_clean_tree"] = payload.get("source_dirty") is False
+    # The Core that the manifest names must be the reproducible one: the
+    # rehearsal of the reproducible builds builds it twice and records the
+    # digest of both builds.
+    reproducible = (ROOT / "docs/evidence/oip-reproducible-build/reproducible-build.json")
+    core = manifest["the_artifacts"].get("the_core", {})
+    if reproducible.is_file() and core.get("sha256"):
+        payload = json.loads(reproducible.read_text())
+        measured = payload.get("the_core", {})
+        manifest["the_core_is_the_reproducible_one"] = {
+            "the_receipt": reproducible.relative_to(ROOT).as_posix(),
+            "the_digest_of_the_reproducible_build": measured.get("the_core_of_the_second_build"),
+            "the_core_is_identical_across_the_two_builds": measured.get("the_core_is_identical"),
+            "the_manifest_names_the_reproducible_binary":
+                measured.get("the_core_of_the_second_build") == core.get("sha256"),
+        }
     # The state of the visual acceptance of the operator. It is recorded by the
     # gate itself and it is never a claim of this tool.
     browser = receipts.get("the_canonical_gate")

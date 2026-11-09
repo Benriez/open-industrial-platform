@@ -172,28 +172,43 @@ def main():
         if not args.skip_core:
             core = ROOT / "target/release/oip-server"
             probe = ROOT / "target/release/examples/mcp_probe"
-            before = (sha256_of(core), sha256_of(probe))
-            for artefact in (core, probe):
-                if artefact.exists():
-                    artefact.unlink()
-            seconds = build(["cargo", "build", "--locked", "--release", "--workspace",
-                             "--bin", "oip-server", "--example", "mcp_probe"],
-                            cwd=ROOT)
-            after = (sha256_of(core), sha256_of(probe))
+            command = ["cargo", "build", "--locked", "--release", "--workspace",
+                       "--bin", "oip-server", "--example", "mcp_probe"]
+
+            def build_the_core():
+                for artefact in (core, probe):
+                    if artefact.exists():
+                        artefact.unlink()
+                seconds = build(command, cwd=ROOT)
+                return seconds, sha256_of(core), sha256_of(probe)
+
+            # the Core is built twice from scratch: the comparison does not
+            # depend on a binary that happened to be there before.
+            first_seconds, first_core, first_probe = build_the_core()
+            second_seconds, second_core, second_probe = build_the_core()
             report["the_core"] = {
-                "the_command": "cargo build --locked --release --workspace --bin oip-server "
-                               "--example mcp_probe",
-                "the_rebuild_seconds": seconds,
-                "the_core_before": before[0],
-                "the_core_after": after[0],
-                "the_probe_before": before[1],
-                "the_probe_after": after[1],
-                "the_core_is_identical": before[0] == after[0],
-                "the_probe_is_identical": before[1] == after[1],
+                "the_command": " ".join(command),
+                "the_first_build_seconds": first_seconds,
+                "the_second_build_seconds": second_seconds,
+                "the_core_of_the_first_build": first_core,
+                "the_core_of_the_second_build": second_core,
+                "the_probe_of_the_first_build": first_probe,
+                "the_probe_of_the_second_build": second_probe,
+                "the_core_is_identical": first_core == second_core,
+                "the_probe_is_identical": first_probe == second_probe,
             }
-            assert before[0] == after[0], "the Core of the release is not reproducible"
-            assert before[1] == after[1], "the probe of the release is not reproducible"
+            assert first_core == second_core, "the Core of the release is not reproducible"
+            assert first_probe == second_probe, "the probe of the release is not reproducible"
             report["steps"].append("the Core of the release is reproducible")
+
+            # The binary that the release manifest names must be this binary.
+            manifest = ROOT / "docs/release/oip-release-manifest.json"
+            if manifest.is_file():
+                payload = json.loads(manifest.read_text())
+                named = (payload.get("the_artifacts", {})
+                         .get("the_core", {}).get("sha256"))
+                report["the_core"]["the_digest_of_the_release_manifest"] = named
+                report["the_core"]["the_release_names_this_binary"] = named == first_core
 
         report["status"] = "PASS"
     except AssertionError as error:
