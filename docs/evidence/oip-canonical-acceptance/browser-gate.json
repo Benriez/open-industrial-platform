@@ -1,8 +1,8 @@
 {
   "verdict": "PASS",
-  "revision": "eaf9c5c2b8bd7545f1121e7b2c2fb1a8f00fd767",
+  "revision": "0613b8d081fc49d515475c0035bafa34fd6b01c1",
   "the_detail_is": "the observed value of the check",
-  "base": "http://127.0.0.1:65509",
+  "base": "http://127.0.0.1:63095",
   "browser_version": "157.0.8103.39",
   "bundle_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
   "bundle_matches_local_build": true,
@@ -915,43 +915,43 @@
   "external_requests": [],
   "core_denials": [
     {
-      "url": "http://127.0.0.1:65509/api/v2/organizations?offset=0&limit=100",
+      "url": "http://127.0.0.1:63095/api/v2/organizations?offset=0&limit=100",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:65509/api/v1/system/status",
+      "url": "http://127.0.0.1:63095/api/v1/system/status",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:65509/api/v1/devices",
+      "url": "http://127.0.0.1:63095/api/v1/metrics/current",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:65509/api/v1/events",
+      "url": "http://127.0.0.1:63095/api/v1/events",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:65509/api/v1/sources",
+      "url": "http://127.0.0.1:63095/api/v1/devices",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:65509/api/v1/metrics/current",
+      "url": "http://127.0.0.1:63095/api/v1/sources",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:65509/api/v2/settings?scope=platform",
+      "url": "http://127.0.0.1:63095/api/v2/settings?scope=platform",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:65509/api/v2/settings?scope=platform",
+      "url": "http://127.0.0.1:63095/api/v2/settings?scope=platform",
       "status": 403
     }
   ],
   "fatal": null,
   "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-  "duration_ms": 86211,
-  "the_revision": "eaf9c5c2b8bd7545f1121e7b2c2fb1a8f00fd767",
-  "the_tree": "00d35278f47d80430ea2a6d9ba6e7f357b4b3647",
+  "duration_ms": 82741,
+  "the_revision": "0613b8d081fc49d515475c0035bafa34fd6b01c1",
+  "the_tree": "ae30a19b67fcfad08d9dafaa45f2a16a19e13adf",
   "the_working_tree_is_clean": true,
-  "the_revision_of_the_acceptance": "eaf9c5c2b8bd7545f1121e7b2c2fb1a8f00fd767"
+  "the_revision_of_the_acceptance": "0613b8d081fc49d515475c0035bafa34fd6b01c1"
 }
