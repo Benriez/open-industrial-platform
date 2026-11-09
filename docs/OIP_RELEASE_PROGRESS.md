@@ -2581,6 +2581,37 @@ The procedure is in the runbook (§13).
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 55 — the first paint of the baseline is a property of the path, not of the release
+
+**Status: PROVED on canonical `main`.**
+The performance baseline measures a first paint of about 50 seconds and the record attributes it to
+the **transfer** of the delivery — the application is interactive in a quarter of a second once the
+session exists. The operator was then asked to decide about the delivery of the web release: a
+smaller delivery, a compressed asset or a local cache.
+
+That decision was about to be taken on a number that is a property of the **measurement
+environment**, not of the release. The rehearsal of the rate (`tests/oip_loopback_rate.py`,
+`docs/evidence/oip-loopback-rate/loopback-rate.json`) measures the path:
+
+| Measurement | Result |
+|---|---|
+| one connection of the loopback (raw socket) | about **150 KiB/s** |
+| one HTTP request of the loopback | about **138 KiB/s** |
+| two connections in parallel | about **274 KiB/s** — the limit **grows** with the connections |
+| a Unix socket on the **same machine** | about **860 MiB/s** |
+| the delivery of the browser before the first paint | **18.2 MB** over 38 requests (the 3 MB bundle plus the renderer, the fonts and the assets) |
+| the transfer at the rate of one connection | **126 s** — the browser parallelises over a few connections, so the first paint is about 50 s |
+
+A limit that grows with the number of connections and a machine that is roughly six thousand times
+faster without the TCP path show that the **path** is slow, not the machine and not the release.
+On a machine with an ordinary loopback the same delivery is a fraction of a second.
+
+The operator decision stays the operator's — and the ledger now says that it must be taken on a
+measurement of the operator's **own** machine, not on the number of a throttled path.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -2589,6 +2620,7 @@ no push, no deployment, no system service.
 | `docs/evidence/oip-macos-install/macos-install.json` | the local installation of the macOS application bundle: the copy is byte-identical to the bundle of the release, the installed copy starts, is refused without a session, terminates without an orphan and starts again from the installation directory (tracked) |
 | `docs/evidence/oip-record-integrity/record-integrity.json` | the integrity of the record itself: every cited receipt exists and is tracked by git, and every receipt of the current release is cited by the ledger or by this file (tracked) |
 | `docs/evidence/oip-release-verification/release-verification.json` | the verification of the release with **one command**: the manifest verifies, every receipt is fresh, the record is intact, the acceptance passed and the safety boundaries held (tracked) |
+| `docs/evidence/oip-loopback-rate/loopback-rate.json` | the rate of the path of the measurement: the loopback of this machine, the rate of the machine itself and what the first paint of the baseline means (tracked) |
 | `docs/evidence/oip-canonical-acceptance/browser-gate.json` | the browser gate of the acceptance: the findings, the captures and the state of the visual acceptance of the operator (tracked) |
 | `docs/evidence/oip-canonical-acceptance/ui-gate.json` | the build provenance and the served bundle of the gate (tracked) |
 | `docs/evidence/oip-canonical-acceptance/captures/*.png` | the 13 actual captures of the six workstations at 1440 px and 1920 px of the acceptance of the release (tracked) |
