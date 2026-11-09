@@ -33,6 +33,37 @@ Two files must be owner-private (`0600`) and one directory (`0700`):
 The tool creates a missing credential and tightens the permissions of the IPC
 configuration. It never prints a credential.
 
+### 0.1 The files of an instance
+
+The procedures of this runbook use three paths. An instance of the operator
+lives in the personal installation; a disposable instance of a rehearsal lives
+in a directory of its own. The three paths are named once:
+
+```sh
+# the instance of the operator (the paths of the personal installation)
+export OIP_HOME="$HOME/Library/Application Support/OIP/real"
+export CORE_CONFIG="$OIP_HOME/core.json"      # the configuration of the Core
+export IPC_CONFIG="$OIP_HOME/ipc.json"        # the protected local IPC
+export STATE="$OIP_HOME/state"                # the pid, the log and the backups
+
+# a disposable instance (a rehearsal, a test)
+export OIP_HOME="/private/tmp/oip-instance"
+export CORE_CONFIG="$OIP_HOME/core.json"
+export IPC_CONFIG="$OIP_HOME/ipc.json"
+export STATE="$OIP_HOME/state"
+```
+
+The directory of the instance is owner-private (`0700`), the two
+configurations are `0600`, and the data store of the instance is the SQLite
+file `core.sqlite` beside them. The Core refuses a data store that anybody but
+the owner can read.
+
+**The tool refuses the personal installation.** Every operation of
+`tools/oip_ops.py` whose target resolves into `~/Library/Application Support/OIP`,
+`~/.local/share/OIP`, `/etc/oip` or `/var/lib/oip` is refused with
+`refusing to … the personal installation`. The activation of the release on
+that store is the operator's own step (§11) — the loop never performs it.
+
 ## 1. Provision the data store (once, offline)
 
 The Core creates its data store with the hierarchy and the enabled principals
