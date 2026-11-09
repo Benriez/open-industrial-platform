@@ -95,7 +95,9 @@ impl SqliteStore {
 }
 impl HistoryReader {
     pub fn open(&self, cancel: Arc<AtomicBool>) -> Result<Connection, StorageError> {
-        let c = Connection::open_with_flags(
+        // rusqlite 0.41 registers the progress handler on a mutable
+        // connection; the read-only flags are unchanged.
+        let mut c = Connection::open_with_flags(
             &self.path,
             rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
         )?;
@@ -571,7 +573,9 @@ mod tests {
     }
     #[test]
     fn indexed_source_time_queries_and_cancellation() {
-        let db = SqliteStore::open_in_memory().unwrap();
+        // rusqlite 0.41 registers the progress handler on a mutable
+        // connection.
+        let mut db = SqliteStore::open_in_memory().unwrap();
         for (sql,index) in [("SELECT event_key FROM collection_events WHERE data_source_id='s' AND at_ms>=0 ORDER BY at_ms,event_key LIMIT 10","history_events"),("SELECT observation_key FROM observations WHERE data_source_id='s' AND received_ts_ms>=0 ORDER BY received_ts_ms,observation_key LIMIT 10","history_observations_receive"),("SELECT gap_key FROM data_gaps WHERE data_source_id='s' AND started_at_ms>=0 ORDER BY started_at_ms,gap_key LIMIT 10","history_gaps")] {
    let mut s=db.connection.prepare(&format!("EXPLAIN QUERY PLAN {sql}")).unwrap();let plan=s.query_map([],|r|r.get::<_,String>(3)).unwrap().collect::<Result<Vec<_>,_>>().unwrap().join(" ");assert!(plan.contains(index),"{plan}");
   }

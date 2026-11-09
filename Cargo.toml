@@ -20,7 +20,10 @@ license = "Apache-2.0"
 unsafe_code = "forbid"
 
 [workspace.dependencies]
-rusqlite = { version = "0.38.0", features = ["bundled", "hooks"] }
+# rusqlite 0.41 bundles SQLite 3.54.0 and closes RUSTSEC-2026-0459
+# (CVE-2026-119375: uninitialized page-cache memory when a database is
+# opened together with a sibling -wal file of a different page size).
+rusqlite = { version = "0.41.0", features = ["bundled", "hooks"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"

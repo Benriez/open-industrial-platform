@@ -9,7 +9,9 @@ publish = false
 workspace = true
 
 [dependencies]
-rmcp = { version = "=3.8.0", default-features = false, features = ["server", "transport-io"] }
+# rmcp 3.9 closes RUSTSEC-2026-0462 (unbounded response body buffering in
+# the Streamable HTTP clients of the SDK).
+rmcp = { version = "=3.9.0", default-features = false, features = ["server", "transport-io"] }
 schemars = "1"
 axum = "0.8.9"
 futures = "0.3"
@@ -31,7 +33,7 @@ tower-http = { version = "0.6", features = ["fs", "set-header"] }
 rusqlite.workspace = true
 
 [dev-dependencies]
-rmcp = { version = "=3.8.0", default-features = false, features = ["client", "transport-child-process"] }
+rmcp = { version = "=3.9.0", default-features = false, features = ["client", "transport-child-process"] }
 jsonschema = { version = "0.46", default-features = false }
 
 tower = { version = "0.5", features = ["util"] }

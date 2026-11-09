@@ -82,6 +82,34 @@ def client_packages():
     return packages
 
 
+
+def the_digests_named_by(path):
+    """The digests that a receipt names for the files of the repository.
+
+    A measurement receipt records the digest of a source file under the path
+    of that file. A 64-hex value is therefore a digest only when the receipt
+    pairs it with a path — the shape of the value alone proves nothing.
+    """
+    found = set()
+
+    def walk(node, key=None):
+        if isinstance(node, dict):
+            for name, value in node.items():
+                walk(value, name)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value, key)
+        elif isinstance(node, str) and isinstance(key, str):
+            if re.fullmatch(r"[0-9a-f]{64}", node) and (
+                    "/" in key or re.search(r"\.[A-Za-z0-9]+$", key)):
+                found.add(node)
+
+    try:
+        walk(json.loads(path.read_text()))
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError):
+        pass
+    return found
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence", default=str(ROOT / "target" / "oip-security-review"))
@@ -196,12 +224,21 @@ def main():
                 value = item.get("Secret", "")
                 name = item["File"].split("/source/")[-1]
                 digest = bool(re.fullmatch(r"[0-9a-f]{64}", value))
-                in_receipt = name.startswith("docs/evidence/")
+                # A measurement receipt of the release lives under docs/evidence/
+                # or under docs/recovery/: both hold the receipts of the
+                # measurements of the platform.
+                in_receipt = name.startswith("docs/evidence/") or name.startswith("docs/recovery/")
+                # The shape of the value is not the proof: the receipt itself
+                # must name the file whose digest it is. A digest that a
+                # receipt does not name is unclassified.
+                named = value in the_digests_named_by(ROOT / name)
                 candidates.append({
                     "file": name, "line": item.get("StartLine"), "rule": item.get("RuleID"),
-                    "classification": "the SHA-256 of a source file in a measurement receipt"
-                    if (digest and in_receipt) else "unclassified",
-                    "false_positive": bool(digest and in_receipt),
+                    "classification": "the SHA-256 of a file of the repository that this "
+                    "receipt names" if (digest and named) else
+                    ("a digest-shaped value that this receipt does not name as a file digest"
+                     if (digest and in_receipt) else "unclassified"),
+                    "false_positive": bool(digest and named and in_receipt),
                 })
         report["secret_scan"]["candidates"] = candidates
         report["secret_scan"].update({"exit_code": leaks.returncode,
