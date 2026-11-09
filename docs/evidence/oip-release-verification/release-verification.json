@@ -4,15 +4,15 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "76331ef5d64080937e8b567f047c7dc64024257f",
+      "the_revision": "dd77a5117bda9b9d7482b8749eb8dfd0ff85f79f",
       "the_revision_of_the_source": {
         "the_revision": "a9ba646b826e9ad14a0f317397385c5babf7da95",
         "the_subject": "fix(g11): every browser receipt states what its detail carries"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
-        "the_files": 661,
-        "the_sha256": "8c450b9f78df13e0c9172622e89af7f6903e4c129c56b144251ecb22bd520e26"
+        "the_files": 665,
+        "the_sha256": "8b7d7059339efbd175cae2c4436551019cff53871f975ce7818332c29402cef0"
       },
       "the_artifacts": {
         "the_core": "3e22ddbc6ff45da7da754566be5698b4b714e710c5c110259de6ffc80e8615b0",
@@ -29,14 +29,16 @@
         "crates": "1287e23d0199",
         "apps/flutter/lib": "fa7d66a718c9"
       },
-      "the_receipts": 37
+      "the_receipts": 38
     },
     "the_record": {
-      "the_citations": 41,
-      "the_receipts_of_the_release": 37,
+      "the_citations": 42,
+      "the_receipts_of_the_release": 38,
       "the_missing": [],
       "the_untracked": [],
-      "the_orphaned": []
+      "the_orphaned": [],
+      "the_dangling_paths": [],
+      "the_paths_of_the_build_tree_in_the_ledger": []
     },
     "the_acceptance": {
       "the_verdict": "PASS",
@@ -122,8 +124,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "112cddc0c04c92f602a4b81833ef68df10094ae6",
-  "the_tree": "8087776ee12cf5a8adc9fe5a6f021e5091c2d524",
+  "the_revision": "d6d6f4ea9bbc2ca02a94d9d416ce23c607ae5566",
+  "the_tree": "146b86c270336ea40432165d593a5a1f208241d9",
   "the_working_tree_is_clean": true,
   "status": "PASS"
 }
