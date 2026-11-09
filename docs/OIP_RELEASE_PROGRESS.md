@@ -2516,11 +2516,41 @@ the manifest, by the rehearsal of the reproducible builds and by the runbook.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 53 — the local installation of the application is rehearsed
+
+**Status: PROVED on canonical `main`.**
+The gate G9 asks for a **local installation** that works without OpenCode. The rehearsal of the
+bundle proved the bundle **in the directory of the build**; the operator receives a **copy** in
+the directory of the installation, and it is the copy that must work. That was not measured.
+
+The rehearsal of the installation (`tests/oip_macos_install.py`,
+`docs/evidence/oip-macos-install/macos-install.json`) copies the bundle of the release into an
+installation directory — exactly as the operator copies it — and proves:
+
+* the copy is **byte-identical** to the bundle of the release: the digest over the tree of the
+  bundle is `e5cb5292…` before and after the copy, 43 files;
+* the installed copy is a **real application bundle**: the identifier
+  `org.openindustrial.oipDashboard`, the version `0.3.0`, the executable present;
+* the installed copy **starts** from the installation directory, reaches the Core and is refused
+  on **every** request (six of six with 403) — it obtains **no** unauthorized data;
+* the window shows the **approved shell with the operator login** (captured);
+* the installed copy **terminates on the operator's signal** (SIGTERM) and leaves **no orphan**
+  behind, and it **starts again** from the installation directory and reaches the Core again.
+
+The installation directory of the rehearsal is a directory of the temporary tree of the machine —
+**never** `/Applications`. The installation of the release into `/Applications` is the step of the
+operator and is now named in the runbook (§9.1): the copy, the first start, the quarantine
+attribute of a received copy and the identifier that proves the copy is this release.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `docs/evidence/oip-canonical-acceptance/acceptance.json` | the canonical acceptance of the release: the eight functional phases, the widget gate, the browser gate, the visual comparison, the global infrastructure context, the accessibility and the device administration, with the revision and the tree of the run (tracked) |
+| `docs/evidence/oip-macos-install/macos-install.json` | the local installation of the macOS application bundle: the copy is byte-identical to the bundle of the release, the installed copy starts, is refused without a session, terminates without an orphan and starts again from the installation directory (tracked) |
 | `docs/evidence/oip-record-integrity/record-integrity.json` | the integrity of the record itself: every cited receipt exists and is tracked by git, and every receipt of the current release is cited by the ledger or by this file (tracked) |
 | `docs/evidence/oip-canonical-acceptance/browser-gate.json` | the browser gate of the acceptance: the findings, the captures and the state of the visual acceptance of the operator (tracked) |
 | `docs/evidence/oip-canonical-acceptance/ui-gate.json` | the build provenance and the served bundle of the gate (tracked) |
