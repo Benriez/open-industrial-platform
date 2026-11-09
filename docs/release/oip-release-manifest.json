@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "eaf9c5c2b8bd7545f1121e7b2c2fb1a8f00fd767",
-  "the_tree": "00d35278f47d80430ea2a6d9ba6e7f357b4b3647",
+  "the_revision": "0afc07647381e0649c5b88bc127f6a1d4664fefd",
+  "the_tree": "89de07303b694e7ef181d1bde7ef5520c48ecbda",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "81701391dc36a18abc0d8cabbb989e43adc04397",
@@ -22,14 +22,15 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 669,
-    "the_sha256": "e896f030d00c0693a17c616ad7b9e681b4aa22d4393b433ea7e3aab361792060"
+    "the_sha256": "c5fac87c164651652f3fda85147de4b555e9478f3fed3e6db32bda60868d4a32"
   },
   "the_artifacts": {
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
       "bytes": 36271328,
-      "sha256": "a4fab0c0c4a35b6004909d768a3b9301461986c0c9e0a2c3f710d67acfe01c7a"
+      "sha256": "24727dd7f909af5ac2728890e7e3d7db22752b49df263aa507a8a65e66ab1663",
+      "the_revision_the_binary_names": "0afc07647381e0649c5b88bc127f6a1d4664fefd"
     },
     "the_official_mcp_probe": {
       "present": true,
@@ -106,7 +107,7 @@
     },
     "the_reproducible_build": {
       "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-      "sha256": "d4fc12e15a4562f6b6bc628d351ae2561a23cf33d393e252016513843b12a62d"
+      "sha256": "db780da7d9055437dce7e28e98c2c81c4f66fc09a902e55ffc5fed6897f86e96"
     },
     "the_upgrade_rollback": {
       "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
@@ -176,28 +177,18 @@
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/evidence/oip-accessibility/accessibility.json",
-    " M docs/evidence/oip-canonical-acceptance/acceptance.json",
-    " M docs/evidence/oip-canonical-acceptance/browser-gate.json",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-1440.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-1920.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-devices-1440.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-devices-1920.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-network-1440.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-network-1920.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-opcua-1440.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-opcua-1920.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-settings-1440.png",
-    " M docs/evidence/oip-canonical-acceptance/ui-gate.json",
-    " M docs/evidence/oip-device-administration/device-administration.json",
-    " M docs/evidence/oip-global-context/global-context.json"
+    "M docs/evidence/oip-reproducible-build/reproducible-build.json"
   ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-    "the_digest_of_the_reproducible_build": "3b4d42d3862ec83dddb0a46847fc6b4da143437599a994c6ff8205c91a57e3a0",
+    "the_digest_of_the_reproducible_build": "24727dd7f909af5ac2728890e7e3d7db22752b49df263aa507a8a65e66ab1663",
     "the_core_is_identical_across_the_two_builds": true,
-    "the_manifest_names_the_reproducible_binary": false,
-    "the_revision_the_binary_names": "68917ba1f17ced735a05d2ced1957adf0b68111f"
+    "the_manifest_names_the_reproducible_binary": true,
+    "the_revision_the_binary_names": "0afc07647381e0649c5b88bc127f6a1d4664fefd",
+    "the_revision_of_the_receipt": "0afc07647381e0649c5b88bc127f6a1d4664fefd",
+    "the_sources_of_the_core_are_unchanged_since_the_receipt": true,
+    "the_property_holds_for_the_release": true,
+    "the_note": "the binary names the revision it was built from, so the bytes of a later revision differ; the property of the release is that the same revision yields the same bytes \u2014 it is measured by the rehearsal and it carries over as long as the sources of the Core are unchanged"
   },
   "the_visual_acceptance": {
     "the_state": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",

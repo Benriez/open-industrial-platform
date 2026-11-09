@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "eaf9c5c2b8bd7545f1121e7b2c2fb1a8f00fd767",
+      "the_revision": "0afc07647381e0649c5b88bc127f6a1d4664fefd",
       "the_revision_of_the_source": {
         "the_revision": "81701391dc36a18abc0d8cabbb989e43adc04397",
         "the_subject": "feat(g4): the journey reads the painted surface after the tile is open"
@@ -12,17 +12,17 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 669,
-        "the_sha256": "e896f030d00c0693a17c616ad7b9e681b4aa22d4393b433ea7e3aab361792060"
+        "the_sha256": "c5fac87c164651652f3fda85147de4b555e9478f3fed3e6db32bda60868d4a32"
       },
       "the_artifacts": {
-        "the_core": "a4fab0c0c4a35b6004909d768a3b9301461986c0c9e0a2c3f710d67acfe01c7a",
+        "the_core": "24727dd7f909af5ac2728890e7e3d7db22752b49df263aa507a8a65e66ab1663",
         "the_official_mcp_probe": "f79e908bbb237e812c891f0344ab3a45dec4d6a7bc9621f322acb0aadb02bf9a",
         "the_macos_application_bundle": "e5cb529201e18bfc71802535297b0b3575ca4371033e347b48ad62778988b884",
         "the_web_release": "db506a2f0764afb23e5c2718a3273fd10435a5ab9c1c76b238837a2c9eb24f53"
       },
       "the_receipts": 29,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-      "the_core_is_the_reproducible_one": false
+      "the_core_is_the_reproducible_one": true
     },
     "the_freshness": {
       "the_last_change_of_the_product": {
@@ -129,8 +129,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "8ebd0815e52df733856debb80e54620670bfd145",
-  "the_tree": "e37eefdd98ed1bc31bf3955bf5edb947b6043735",
-  "the_working_tree_is_clean": true,
+  "the_revision": "0afc07647381e0649c5b88bc127f6a1d4664fefd",
+  "the_tree": "89de07303b694e7ef181d1bde7ef5520c48ecbda",
+  "the_working_tree_is_clean": false,
   "status": "PASS"
 }
