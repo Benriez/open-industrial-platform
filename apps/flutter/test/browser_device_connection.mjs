@@ -236,6 +236,15 @@ surface = await readSurface();
 check('the verified identity of the host is shown',
   /Arbeitsspeicher|Hostname|Betriebssystem|memory_total_bytes|operating_system/i.test(surface),
   'the identity of the host is missing');
+// The measurements that the host report does not deliver are **named** as
+// unavailable. A measurement that is silently missing would look like a
+// measurement of zero.
+check('the measurements that are not available are named',
+  /Nicht verfügbar/.test(surface)
+  && /gpu/i.test(surface)
+  && /temperature/i.test(surface)
+  && /cpu_utilization/i.test(surface),
+  'the unavailable measurements are not named on the surface');
 
 await page.screenshot({ path: `${outDir}/device-connection.png` });
 
