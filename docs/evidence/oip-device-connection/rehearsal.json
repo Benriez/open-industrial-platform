@@ -7,11 +7,11 @@
     "the device collects"
   ],
   "ssh_fixture": {
-    "port": 59337,
+    "port": 63933,
     "user": "benny",
     "loopback_only": true
   },
-  "host_key_fingerprint": "SHA256:rtoQb2te2Q94cnHXWXyGsSqQvzxK0w6w6xzcvaPg2lQ",
+  "host_key_fingerprint": "SHA256:aqa5C3/tykI8UCTopH8zVPsBIrJGHePGC8v1YrF9g6s",
   "verified_identity": {
     "hostname": "MacBookPro.fritz.box",
     "operating_system": "Darwin",
@@ -19,15 +19,15 @@
   },
   "connection": {
     "device_id": "existing-pi",
-    "source_id": "c1066c32-6d97-45f0-86a5-ec3764053ed4",
+    "source_id": "53fc8754-87c4-4506-b411-c34f94e02009",
     "endpoint": {
       "host": "127.0.0.1",
-      "port": 59337,
+      "port": 63933,
       "user": "benny",
       "identity_profile": "fixture",
       "alias": null
     },
-    "fingerprint": "SHA256:rtoQb2te2Q94cnHXWXyGsSqQvzxK0w6w6xzcvaPg2lQ",
+    "fingerprint": "SHA256:aqa5C3/tykI8UCTopH8zVPsBIrJGHePGC8v1YrF9g6s",
     "verified_identity": {
       "hostname": "MacBookPro.fritz.box",
       "operating_system": "Darwin",
@@ -36,64 +36,64 @@
       "model": "MacBookPro18,3",
       "stable_host_id_sha256": null,
       "memory_total_bytes": 17179869184,
-      "memory_used_bytes": 13352157184,
-      "uptime_seconds": 856035.0,
+      "memory_used_bytes": 13196263424,
+      "uptime_seconds": 883588.0,
       "disks": [
         {
           "filesystem": "/dev/disk3s1s1",
           "mount": "/",
           "total_bytes": 994662584320,
           "used_bytes": 12577067008,
-          "available_bytes": 6589308928
+          "available_bytes": 7532478464
         },
         {
           "filesystem": "/dev/disk3s6",
           "mount": "/System/Volumes/VM",
           "total_bytes": 994662584320,
-          "used_bytes": 16110092288,
-          "available_bytes": 6589308928
+          "used_bytes": 13961199616,
+          "available_bytes": 7532478464
         },
         {
           "filesystem": "/dev/disk3s2",
           "mount": "/System/Volumes/Preboot",
           "total_bytes": 994662584320,
           "used_bytes": 10806652928,
-          "available_bytes": 6589308928
+          "available_bytes": 7532478464
         },
         {
           "filesystem": "/dev/disk3s4",
           "mount": "/System/Volumes/Update",
           "total_bytes": 994662584320,
-          "used_bytes": 5935104,
-          "available_bytes": 6589308928
+          "used_bytes": 5959680,
+          "available_bytes": 7532478464
         },
         {
           "filesystem": "/dev/disk1s2",
           "mount": "/System/Volumes/xarts",
           "total_bytes": 524288000,
           "used_bytes": 6311936,
-          "available_bytes": 503578624
+          "available_bytes": 503582720
         },
         {
           "filesystem": "/dev/disk1s1",
           "mount": "/System/Volumes/iSCPreboot",
           "total_bytes": 524288000,
           "used_bytes": 5890048,
-          "available_bytes": 503578624
+          "available_bytes": 503582720
         },
         {
           "filesystem": "/dev/disk1s3",
           "mount": "/System/Volumes/Hardware",
           "total_bytes": 524288000,
-          "used_bytes": 3530752,
-          "available_bytes": 503578624
+          "used_bytes": 3526656,
+          "available_bytes": 503582720
         },
         {
           "filesystem": "/dev/disk3s5",
           "mount": "/System/Volumes/Data",
           "total_bytes": 994662584320,
-          "used_bytes": 945762177024,
-          "available_bytes": 6589308928
+          "used_bytes": 946967875584,
+          "available_bytes": 7532478464
         },
         {
           "filesystem": "/dev/disk5s1",
@@ -173,9 +173,11 @@
         {
           "name": "en0",
           "addresses": [
-            "fe80::1878:bbf6:2742:a111%en0",
-            "192.168.1.219",
-            "fd14:75ec:3e81:0:ea:ed57:96b6:2113"
+            "fe80::189b:48e3:2822:a3c2%en0",
+            "2003:c0:4721:4500:145e:8e65:ea1b:6d5a",
+            "2003:c0:4721:4500:8dda:a1e6:5ed0:8f40",
+            "fd57:213c:f2c5:0:1446:10d2:e360:e516",
+            "192.168.178.55"
           ]
         },
         {
@@ -217,7 +219,7 @@
           ]
         }
       ],
-      "captured_at_ms": 1794231127685,
+      "captured_at_ms": 1794258681399,
       "unavailable": [
         "gpu",
         "temperature",
@@ -225,12 +227,12 @@
       ],
       "provenance": "authenticated SSH host report; fixed read-only query; capture time is Core time, remote measurement clocks unknown; no hardware attestation or inferred sensors"
     },
-    "verified_at_ms": 1794231127685,
+    "verified_at_ms": 1794258681399,
     "monitoring_enabled": true,
     "poll_seconds": 10,
     "revision": 1,
-    "last_attempt_ms": 1794231127685,
-    "last_success_ms": 1794231127685,
+    "last_attempt_ms": 1794258681399,
+    "last_success_ms": 1794258681399,
     "error": null,
     "status": "collector_configured",
     "observations": []
@@ -238,11 +240,72 @@
   "connection_status": "collecting",
   "browser_receipt": {
     "schema": "oip-device-connection-v1",
-    "revision": "a9ba646b826e9ad14a0f317397385c5babf7da95",
+    "the_states_of_the_verified_identity": [
+      "collapsed",
+      "collapsed",
+      "collapsed",
+      "collapsed"
+    ],
+    "the_opening_of_the_verified_identity": {
+      "the_attempts": [
+        {
+          "the_variant": "center",
+          "the_state": "collapsed",
+          "the_x": 619,
+          "the_y": 870.2000122070312,
+          "the_role": "text",
+          "the_area": 24552
+        },
+        {
+          "the_variant": "focus-enter",
+          "the_state": "collapsed",
+          "the_x": 619,
+          "the_y": 870.2000122070312,
+          "the_role": "text",
+          "the_area": 24552
+        },
+        {
+          "the_variant": "dispatch-click",
+          "the_state": "expanded",
+          "the_x": 619,
+          "the_y": 545.4000244140625,
+          "the_role": "text",
+          "the_area": 24552
+        }
+      ],
+      "the_state": "expanded"
+    },
+    "the_stability_of_the_verified_identity": [
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded",
+      "expanded"
+    ],
+    "revision": "93aaab4c9b029179c598f0d55859fcd69873ba4a",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the verified connection of a device in the approved surface against the real Core",
-    "base": "http://127.0.0.1:59341",
-    "expected_fingerprint": "SHA256:rtoQb2te2Q94cnHXWXyGsSqQvzxK0w6w6xzcvaPg2lQ",
+    "base": "http://127.0.0.1:63942",
+    "expected_fingerprint": "SHA256:aqa5C3/tykI8UCTopH8zVPsBIrJGHePGC8v1YrF9g6s",
     "findings": [
       {
         "check": "browser-login accepted",
@@ -252,7 +315,7 @@
       {
         "check": "the inventory of the scope lists the device",
         "ok": true,
-        "the_detail": "Existing inventory identity \u00b7 existing-pi\nGer\u00e4t Existing inventory identity existing-pi ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 c1066c32-6d97-45f0-86a5-ec3764053ed4 \u00b7 10 Observations \u00b7 Reachability Erreichb"
+        "the_detail": "Existing inventory identity \u00b7 existing-pi\nGer\u00e4t Existing inventory identity existing-pi ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 53fc8754-87c4-4506-b411-c34f94e02009 \u00b7 10 Observations \u00b7 Reachability Erreichb"
       },
       {
         "check": "the connection panel of the device is shown",
@@ -283,14 +346,19 @@
         "check": "the verified identity of the host is shown",
         "ok": true,
         "the_detail": "the identity of the host is missing"
+      },
+      {
+        "check": "the measurements that are not available are named",
+        "ok": true,
+        "the_detail": "the unavailable measurements are not named on the surface"
       }
     ],
     "errors": []
   },
-  "checks": 8,
+  "checks": 9,
   "status": "PASS",
-  "the_revision": "a9ba646b826e9ad14a0f317397385c5babf7da95",
-  "the_tree": "6d73cae56f84eadc0ebe528a75d25cca84c3a45a",
+  "the_revision": "93aaab4c9b029179c598f0d55859fcd69873ba4a",
+  "the_tree": "e96a0dbdc906c5f75da209cd8e51298fb42666a1",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-09T13:33:26Z"
+  "finished_utc": "2026-11-09T21:13:13Z"
 }

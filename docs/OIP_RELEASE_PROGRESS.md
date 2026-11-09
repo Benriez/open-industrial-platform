@@ -2648,6 +2648,51 @@ ledger names the **tracked** acceptance now.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 57 — the kinds of the measurement are covered, and the ones that are not available are named
+
+**Status: PROVED on canonical `main`.**
+The gate G6 asks for **supported** CPU, RAM, storage, network and uptime measurements, and the
+contract of the real device onboarding is explicit about what the host report delivers and what
+it does not:
+
+> GPU, temperature and CPU utilization are explicitly unavailable. … Interface-reported addresses
+> are not reachability probes.
+
+That honesty was in the code and in the contract but had **no receipt**: the receipt of the device
+connection showed that a device collects, not *which* measurements it collects and which ones the
+release refuses to invent. The rehearsal `tests/oip_measurement_coverage.py` measures it against
+the real Core and an owned loopback SSH fixture:
+
+* every **supported** kind is delivered as an observation of the authorized source — CPU
+  (`host.cpu_info`, `host.model`), RAM (`host.memory_total_bytes`, `host.memory_used_bytes`),
+  storage (`host.disks`), network (`host.interfaces`) and uptime (`host.uptime_seconds`) — and the
+  source is published: the observations are readable on the authorized route of the Core, not only
+  stored;
+* the three kinds that the contract names as unavailable are **named** in the connection record
+  and are **never** delivered as a number — the receipt names the measurements that were invented,
+  and the list is empty;
+* the report carries its **provenance** (an authenticated SSH host report of a fixed read-only
+  query, not hardware attestation);
+* the painted surface **names** the kinds that are not available
+  (`Nicht verfügbar: gpu, temperature, cpu_utilization`), so a measurement that is missing never
+  looks like a measurement of zero.
+
+The rehearsal had to learn the shapes of the Core before it could measure it: the source list is a
+bare array without a `kind`, the observations are asked for by `source` and not by `source_id`,
+and the value of an observation is a tagged value and not a bare number. Two defects of the
+**journey** were found on the way and fixed: a control below the fold was activated by the
+geometry of a semantics node outside the viewport, so the click landed somewhere else and the
+verified identity was never opened; and the journey named the device and the name of its receipt
+in the source, so a second rehearsal could not use it. The journey now brings the control into
+the view, records **how** the tile was opened and keeps the painted surface as the evidence.
+
+The panel of the device refreshes itself every few seconds — the question was whether it throws
+away what the reader opened. It does not: the tile of the verified identity stays open over the
+refresh (24 observations over twelve seconds), and that is measured, not assumed.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -2658,6 +2703,7 @@ no push, no deployment, no system service.
 | `docs/evidence/oip-release-verification/release-verification.json` | the verification of the release with **one command**: the manifest verifies, every receipt is fresh, the record is intact, the acceptance passed and the safety boundaries held (tracked) |
 | `docs/evidence/oip-loopback-rate/loopback-rate.json` | the rate of the path of the measurement: the loopback of this machine, the rate of the machine itself and what the first paint of the baseline means (tracked) |
 | `docs/evidence/oip-worktree-reconciliation/worktree-reconciliation.json` | the reconciliation of the worktrees: every branch, the commits that the canonical branch does not contain, the capability that it delivers in their place and the receipt that proves it (tracked) |
+| `docs/evidence/oip-measurement-coverage/measurement-coverage.json` | the coverage of the kinds of the measurement of the real device: every supported kind is delivered, every kind that is not available is named and never delivered as a number, the painted surface names them (tracked) |
 | `docs/evidence/oip-canonical-acceptance/browser-gate.json` | the browser gate of the acceptance: the findings, the captures and the state of the visual acceptance of the operator (tracked) |
 | `docs/evidence/oip-canonical-acceptance/ui-gate.json` | the build provenance and the served bundle of the gate (tracked) |
 | `docs/evidence/oip-canonical-acceptance/captures/*.png` | the 13 actual captures of the six workstations at 1440 px and 1920 px of the acceptance of the release (tracked) |

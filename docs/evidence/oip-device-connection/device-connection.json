@@ -1,10 +1,71 @@
 {
   "schema": "oip-device-connection-v1",
-  "revision": "a9ba646b826e9ad14a0f317397385c5babf7da95",
+  "the_states_of_the_verified_identity": [
+    "collapsed",
+    "collapsed",
+    "collapsed",
+    "collapsed"
+  ],
+  "the_opening_of_the_verified_identity": {
+    "the_attempts": [
+      {
+        "the_variant": "center",
+        "the_state": "collapsed",
+        "the_x": 619,
+        "the_y": 870.2000122070312,
+        "the_role": "text",
+        "the_area": 24552
+      },
+      {
+        "the_variant": "focus-enter",
+        "the_state": "collapsed",
+        "the_x": 619,
+        "the_y": 870.2000122070312,
+        "the_role": "text",
+        "the_area": 24552
+      },
+      {
+        "the_variant": "dispatch-click",
+        "the_state": "expanded",
+        "the_x": 619,
+        "the_y": 545.4000244140625,
+        "the_role": "text",
+        "the_area": 24552
+      }
+    ],
+    "the_state": "expanded"
+  },
+  "the_stability_of_the_verified_identity": [
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded"
+  ],
+  "revision": "93aaab4c9b029179c598f0d55859fcd69873ba4a",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "the verified connection of a device in the approved surface against the real Core",
-  "base": "http://127.0.0.1:59341",
-  "expected_fingerprint": "SHA256:rtoQb2te2Q94cnHXWXyGsSqQvzxK0w6w6xzcvaPg2lQ",
+  "base": "http://127.0.0.1:63942",
+  "expected_fingerprint": "SHA256:aqa5C3/tykI8UCTopH8zVPsBIrJGHePGC8v1YrF9g6s",
   "findings": [
     {
       "check": "browser-login accepted",
@@ -14,7 +75,7 @@
     {
       "check": "the inventory of the scope lists the device",
       "ok": true,
-      "the_detail": "Existing inventory identity · existing-pi\nGerät Existing inventory identity existing-pi auswählen · SingleBoardComputer · c1066c32-6d97-45f0-86a5-ec3764053ed4 · 10 Observations · Reachability Erreichb"
+      "the_detail": "Existing inventory identity · existing-pi\nGerät Existing inventory identity existing-pi auswählen · SingleBoardComputer · 53fc8754-87c4-4506-b411-c34f94e02009 · 10 Observations · Reachability Erreichb"
     },
     {
       "check": "the connection panel of the device is shown",
@@ -45,6 +106,11 @@
       "check": "the verified identity of the host is shown",
       "ok": true,
       "the_detail": "the identity of the host is missing"
+    },
+    {
+      "check": "the measurements that are not available are named",
+      "ok": true,
+      "the_detail": "the unavailable measurements are not named on the surface"
     }
   ],
   "errors": []

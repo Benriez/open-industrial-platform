@@ -1,0 +1,117 @@
+{
+  "schema": "oip-device-connection-v1",
+  "the_states_of_the_verified_identity": [
+    "collapsed",
+    "collapsed",
+    "collapsed",
+    "collapsed"
+  ],
+  "the_opening_of_the_verified_identity": {
+    "the_attempts": [
+      {
+        "the_variant": "center",
+        "the_state": "collapsed",
+        "the_x": 619,
+        "the_y": 870.2000122070312,
+        "the_role": "text",
+        "the_area": 24552
+      },
+      {
+        "the_variant": "focus-enter",
+        "the_state": "collapsed",
+        "the_x": 619,
+        "the_y": 870.2000122070312,
+        "the_role": "text",
+        "the_area": 24552
+      },
+      {
+        "the_variant": "dispatch-click",
+        "the_state": "expanded",
+        "the_x": 619,
+        "the_y": 545.4000244140625,
+        "the_role": "text",
+        "the_area": 24552
+      }
+    ],
+    "the_state": "expanded"
+  },
+  "the_stability_of_the_verified_identity": [
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded",
+    "expanded"
+  ],
+  "revision": "93aaab4c9b029179c598f0d55859fcd69873ba4a",
+  "the_detail_is": "the message that describes the failure of the check",
+  "scope": "the verified connection of a device in the approved surface against the real Core",
+  "base": "http://127.0.0.1:60503",
+  "expected_fingerprint": "SHA256:JDaEfoFG0usg1LLAJSzCPlIY6leighp91WTDLMKifGA",
+  "findings": [
+    {
+      "check": "browser-login accepted",
+      "ok": true,
+      "the_detail": "{\"status\":200}"
+    },
+    {
+      "check": "the inventory of the scope lists the device",
+      "ok": true,
+      "the_detail": "Coverage device · coverage-device\nGerät Coverage device coverage-device auswählen · SingleBoardComputer · 8f2dae01-c051-4699-b7ec-eb42395b8a48 · 10 Observations · Reachability Erreichbar reported\nCove"
+    },
+    {
+      "check": "the connection panel of the device is shown",
+      "ok": true,
+      "the_detail": "the panel is missing"
+    },
+    {
+      "check": "the state of the connection is shown",
+      "ok": true,
+      "the_detail": "the state collecting is not shown as \"Collecting\""
+    },
+    {
+      "check": "the host key of the confirmed connection is shown",
+      "ok": true,
+      "the_detail": "the fingerprint of the fixture is missing"
+    },
+    {
+      "check": "the endpoint of the verified connection is shown",
+      "ok": true,
+      "the_detail": "the endpoint is missing"
+    },
+    {
+      "check": "the monitoring of the device is shown",
+      "ok": true,
+      "the_detail": "the read-only monitoring is missing"
+    },
+    {
+      "check": "the verified identity of the host is shown",
+      "ok": true,
+      "the_detail": "the identity of the host is missing"
+    },
+    {
+      "check": "the measurements that are not available are named",
+      "ok": true,
+      "the_detail": "the unavailable measurements are not named on the surface"
+    }
+  ],
+  "errors": []
+}
