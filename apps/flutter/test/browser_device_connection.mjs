@@ -264,18 +264,35 @@ await clickAccessible('Tatsächlich verifizierte Identität');
 // itself every few seconds, and a reader must be able to keep it open.
 const identityStates = [];
 let identitySeen = '';
-for (let step = 0; step < 20; step++) {
-  const state = await identityState();
-  identityStates.push(state);
-  if (state === 'expanded') {
-    const painted = await labels();
-    if (painted.includes('Nicht verfügbar')) {
-      identitySeen = painted;
-      break;
+const observeIdentity = async (rounds) => {
+  for (let step = 0; step < rounds; step++) {
+    const state = await identityState();
+    identityStates.push(state);
+    if (state === 'expanded') {
+      const painted = await labels();
+      if (painted.includes('Nicht verfügbar')) {
+        identitySeen = painted;
+        return true;
+      }
     }
+    await page.waitForTimeout(500);
   }
-  await page.waitForTimeout(500);
+  return false;
+};
+await observeIdentity(6);
+// The semantic control of the header of the tile is a button; if the
+// geometry of the click did not open the tile, the button is activated by
+// its role.
+if (!identitySeen) {
+  const button = page.getByRole('button', { name: /Tatsächlich verifizierte Identität/ }).first();
+  if (await button.count()) {
+    await button.click({ force: true });
+    await page.waitForTimeout(800);
+    await observeIdentity(6);
+  }
 }
+fs.writeFileSync(`${outDir}/device-connection-identity-states.txt`,
+  identityStates.join('\n') + '\n');
 receiptStates.identityStates = identityStates;
 surface = identitySeen || await readSurface();
 check('the verified identity of the host is shown',
