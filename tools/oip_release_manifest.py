@@ -40,10 +40,24 @@ ARTIFACTS = {
     "the_macos_application_bundle": ROOT / "apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
     "the_web_release": ROOT / "apps/flutter/build/web",
 }
+def newest_gate_receipts():
+    """The receipts of the newest canonical gate run.
+
+    The gate writes its receipts into a directory of its own; the manifest
+    names the newest run so that it never points at an older acceptance.
+    """
+    candidates = sorted((path for path in (ROOT / "target").glob("oip-canonical-regression*")
+                         if path.is_dir()),
+                        key=lambda path: path.stat().st_mtime)
+    base = candidates[-1] if candidates else ROOT / "target/oip-canonical-regression"
+    return {
+        "the_canonical_gate": base / "oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
+        "the_canonical_ui_gate": base / "oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
+        "the_acceptance_report": base / "oip_canonical_ui_gate/report.json",
+    }
+
+
 RECEIPTS = {
-    "the_canonical_gate": ROOT / "target/oip-canonical-regression-honesty/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
-    "the_canonical_ui_gate": ROOT / "target/oip-canonical-regression-honesty/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
-    "the_acceptance_report": ROOT / "target/oip-canonical-regression-honesty/oip_canonical_ui_gate/report.json",
     "the_global_context": ROOT / "docs/evidence/oip-global-context/global-context.json",
     "the_accessibility": ROOT / "docs/evidence/oip-accessibility/accessibility.json",
     "the_performance": ROOT / "docs/evidence/oip-performance/performance.json",
@@ -118,6 +132,8 @@ def build_manifest():
         },
         "the_artifacts": {},
         "the_receipts": {},
+        "the_gate_receipts_of_the_run": str(
+            newest_gate_receipts()["the_acceptance_report"].parent.parent),
     }
     for name, path in ARTIFACTS.items():
         if not path.exists():
@@ -144,13 +160,23 @@ def build_manifest():
             manifest["the_artifacts"][name]["the_executable_sha256"] = next(
                 (item["sha256"] for item in entries
                  if item["path"] == "Contents/MacOS/oip_dashboard"), None)
-    for name, path in RECEIPTS.items():
+    receipts = dict(RECEIPTS)
+    receipts.update(newest_gate_receipts())
+    for name, path in receipts.items():
         if path.is_file():
             manifest["the_receipts"][name] = {
                 "path": str(path.relative_to(ROOT)), "sha256": sha256_file(path),
             }
         else:
             manifest["the_receipts"][name] = {"present": False, "path": str(path)}
+    # The revision the acceptance proved. The artefacts of the manifest are the
+    # ones of that run; the tree may carry documentation commits after it.
+    gate = receipts.get("the_canonical_ui_gate")
+    if gate is not None and gate.is_file():
+        payload = json.loads(gate.read_text())
+        manifest["the_revision_of_the_acceptance"] = payload.get("source_revision")
+        manifest["the_tree_of_the_acceptance"] = payload.get("source_tree")
+        manifest["the_acceptance_was_run_on_a_clean_tree"] = payload.get("source_dirty") is False
     return manifest
 
 
