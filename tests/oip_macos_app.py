@@ -131,8 +131,14 @@ def port_is_free(port):
             return False
 
 
-def launch(label, deadline_seconds=300):
-    """Start the bundle and wait until it asks the Core for something."""
+def launch(label, deadline_seconds=300, settle_seconds=8.0):
+    """Start the bundle and wait until it asks the Core for something.
+
+    The witness is polled until the first request of the bundle arrives; then
+    the session is left to settle, so the receipt lists **all** the requests
+    of the session instead of the ones that happened to arrive between two
+    polls. The list is therefore the same from run to run.
+    """
     _LoggingProxy.routes = []
     started = time.monotonic()
     process = subprocess.Popen([str(EXECUTABLE)], stdout=subprocess.PIPE,
@@ -145,7 +151,9 @@ def launch(label, deadline_seconds=300):
             break
         if process.poll() is not None:
             break
-        time.sleep(0.25)
+        time.sleep(0.05)
+    if first_request is not None:
+        time.sleep(settle_seconds)
     return {
         "label": label,
         "process": process,
@@ -293,6 +301,21 @@ def main():
         report["bundle_bytes"] = sum(f.stat().st_size for f in APP.rglob("*") if f.is_file())
         report["bundle_executable_sha256"] = hashlib.sha256(
             EXECUTABLE.read_bytes()).hexdigest()
+        # The digest over the whole tree of the bundle: the reproducibility of
+        # the release is proved against this tree.
+        entries = {}
+        for path in sorted(APP.rglob("*")):
+            if path.is_file():
+                entries[path.relative_to(APP).as_posix()] = hashlib.sha256(
+                    path.read_bytes()).hexdigest()
+        tree = hashlib.sha256()
+        for name, value in entries.items():
+            tree.update(name.encode())
+            tree.update(b"\0")
+            tree.update(value.encode())
+            tree.update(b"\0")
+        report["bundle_tree_sha256"] = tree.hexdigest()
+        report["bundle_files"] = len(entries)
         info = (APP / "Contents/Info.plist").read_text(errors="ignore")
         for key in ("CFBundleIdentifier", "CFBundleShortVersionString", "CFBundleVersion"):
             marker = f"<key>{key}</key>"

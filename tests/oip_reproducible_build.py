@@ -34,8 +34,12 @@ WEB = APPS / "build/web"
 MACOS = APPS / "build/macos/Build/Products/Release/oip_dashboard.app"
 WEB_COMMAND = ["flutter", "build", "web", "--release", "--web-renderer", "canvaskit",
                "--no-web-resources-cdn", "--pwa-strategy=none"]
+# The release bundle is built for the port of the documented configuration of
+# an instance (18808). The reproducibility is proved for **that** bundle, so
+# the artefact of the rehearsal is the artefact of the release.
+RELEASE_PORT = 18808
 MACOS_COMMAND = ["flutter", "build", "macos", "--release",
-                 "--dart-define=OIP_API_URL=http://127.0.0.1:8080"]
+                  f"--dart-define=OIP_API_URL=http://127.0.0.1:{RELEASE_PORT}"]
 
 
 def digest_tree(root):
@@ -131,6 +135,23 @@ def main():
             })
             assert first_macos == second_macos, "the macOS bundle is not reproducible"
             report["steps"].append("the macOS bundle is reproducible")
+
+            # 3. the reproducible bundle is the bundle of the release. The
+            # rehearsal of the bundle of the release recorded the digest of
+            # its tree; the tree of the reproduction must be that tree.
+            released = ROOT / "docs/evidence/oip-macos-app/macos-app.json"
+            if released.is_file():
+                receipt = json.loads(released.read_text())
+                expected = receipt.get("bundle_tree_sha256")
+                report["the_release_bundle"] = {
+                    "the_receipt": released.relative_to(ROOT).as_posix(),
+                    "the_revision_of_the_receipt": receipt.get("the_revision"),
+                    "the_tree_sha256_of_the_release_bundle": expected,
+                    "the_reproduction_is_the_release_bundle": expected == first_macos,
+                }
+                if expected:
+                    assert first_macos == expected, (
+                        "the reproducible bundle is not the bundle of the release")
 
         report["status"] = "PASS"
     except AssertionError as error:

@@ -251,18 +251,20 @@ def main():
         report["the_inventory_before_the_handover"] = inventory(database)
         keys_before = distinct_keys(database, "observations", "observation_key")
         report["the_observation_keys_before"] = len(keys_before)
-        # The daemon of the historical binary is not started here: the
-        # subject of this rehearsal is the data store and its handover. The
-        # daemon itself is rehearsed in tests/oip_historical_daemon.py, which
-        # measures that the era refuses the actor shape of OIP-007 and starts
-        # with a credential bound to a provisioned, enabled principal.
+        # What this rehearsal proves about the daemon of the era, and what it
+        # does not. The daemon IS started here (step 1b): the store of the
+        # handover must be a live instance, not an empty shell. What is not
+        # rehearsed here is the *actor shape* of OIP-007 — that is the
+        # subject of tests/oip_historical_daemon.py, which measures that the
+        # era refuses it and starts with a credential bound to a provisioned,
+        # enabled principal.
         report["historical_daemon"] = {
-            "rehearsed": False,
-            "reason": "the daemon of the historical release is not started in this "
-                      "rehearsal; the rehearsal of the daemon handover is "
-                      "tests/oip_historical_daemon.py. The era binds the local clients to a "
-                      "provisioned, enabled principal; the actor/permissions shape of OIP-007 "
-                      "is refused by it.",
+            "started_in_this_rehearsal": True,
+            "the_daemon_of_the_era_collected": report["the_historical_daemon_collected"],
+            "the_actor_shape_of_OIP_007": "not rehearsed here; measured in "
+                                           "tests/oip_historical_daemon.py, which proves "
+                                           "that the era refuses it and binds the local "
+                                           "clients to a provisioned, enabled principal",
         }
 
         # 3. the state before the upgrade is backed up

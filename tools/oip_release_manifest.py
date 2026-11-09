@@ -14,9 +14,10 @@ This tool writes that list and proves it:
   * `apps/flutter/build/web/` — the delivered web release (the digest of
     `main.dart.js` and the digest over every asset).
 
-The manifest names the revision and the tree it was built from, the build
-commands, the toolchain versions, the digests of the acceptance receipts and
-the state of the operator's visual acceptance.
+The manifest names the revision and the tree it was built from, the digest
+over the tracked sources of that revision, the build commands, the toolchain
+versions, the digests of the acceptance receipts and the state of the
+operator's visual acceptance.
 
 `--verify` recomputes every digest and compares it with the written manifest:
 the manifest is a receipt, not a promise.
@@ -64,6 +65,22 @@ RECEIPTS = {
     "the_security_review": ROOT / "docs/evidence/oip-security-review/security-review.json",
     "the_macos_application": ROOT / "docs/evidence/oip-macos-app/macos-app.json",
     "the_transport_parity": ROOT / "docs/evidence/oip-transport-parity/transport-parity.json",
+    # The acceptance of the release itself, tracked with the release so that
+    # the handoff does not depend on a directory of a build that is not part
+    # of the checkout.
+    "the_acceptance": ROOT / "docs/evidence/oip-canonical-acceptance/acceptance.json",
+    "the_acceptance_browser_gate": ROOT / "docs/evidence/oip-canonical-acceptance/browser-gate.json",
+    "the_acceptance_ui_gate": ROOT / "docs/evidence/oip-canonical-acceptance/ui-gate.json",
+    "the_device_administration": ROOT / "docs/evidence/oip-device-administration/device-administration.json",
+    "the_session_lifetime": ROOT / "docs/evidence/oip-session-lifetime/session-lifetime.json",
+    "the_stability": ROOT / "docs/evidence/oip-stability/stability.json",
+    "the_reproducible_build": ROOT / "docs/evidence/oip-reproducible-build/reproducible-build.json",
+    "the_upgrade_rollback": ROOT / "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
+    "the_activation_dry_run": ROOT / "docs/evidence/oip-activation-dry-run/activation-dry-run.json",
+    "the_rust_regression": ROOT / "docs/evidence/oip-rust-regression/rust-regression.json",
+    "the_reconnect_recovery": ROOT / "docs/evidence/oip-reconnect-recovery/reconnect-recovery.json",
+    "the_operations": ROOT / "docs/evidence/oip-operations/operations.json",
+    "the_documented_plan": ROOT / "docs/evidence/oip-documented-plan/documented-plan.json",
 }
 
 
@@ -110,6 +127,21 @@ def git(*arguments):
     return result.stdout.strip()
 
 
+def source_manifest():
+    """The digest over the tracked sources of the revision.
+
+    `git ls-files -s` writes the mode, the blob and the path of every tracked
+    file of the index, in the order of the index. The digest over that list
+    identifies the sources of the release; a reader recomputes it with the
+    same command.
+    """
+    listing = git("ls-files", "-s")
+    digest = hashlib.sha256(listing.encode()).hexdigest()
+    files = len([line for line in listing.splitlines() if line.strip()])
+    return {"the_command": "git ls-files -s", "the_files": files,
+            "the_sha256": digest}
+
+
 def build_manifest():
     manifest = {
         "schema": "oip-release-manifest-v1",
@@ -130,6 +162,7 @@ def build_manifest():
             "the_macos_application_bundle": ("flutter build macos --release "
                                               "--dart-define=OIP_API_URL=<url of the instance>"),
         },
+        "the_source_manifest": source_manifest(),
         "the_artifacts": {},
         "the_receipts": {},
         "the_gate_receipts_of_the_run": str(
@@ -177,6 +210,17 @@ def build_manifest():
         manifest["the_revision_of_the_acceptance"] = payload.get("source_revision")
         manifest["the_tree_of_the_acceptance"] = payload.get("source_tree")
         manifest["the_acceptance_was_run_on_a_clean_tree"] = payload.get("source_dirty") is False
+    # The state of the visual acceptance of the operator. It is recorded by the
+    # gate itself and it is never a claim of this tool.
+    browser = receipts.get("the_canonical_gate")
+    if browser is not None and browser.is_file():
+        payload = json.loads(browser.read_text())
+        manifest["the_visual_acceptance"] = {
+            "the_state": payload.get("operator_visual_approval"),
+            "the_source": str(browser.relative_to(ROOT)),
+            "the_note": ("the operator alone accepts the visible result; "
+                         "the gate records the state, it never grants it"),
+        }
     return manifest
 
 
