@@ -1,9 +1,9 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "6a293571060ce2f1801f2ccf72cd50e51f4bc98d",
-  "the_tree": "91001a972aee0ee946effbddac10b3e3bce23580",
+  "the_revision": "26401850e29f9e02940596ee083d662fd3b98447",
+  "the_tree": "d4060127108194df8804bae5222c71598dc93f08",
   "the_branch": "main",
-  "the_working_tree_is_clean": false,
+  "the_working_tree_is_clean": true,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
