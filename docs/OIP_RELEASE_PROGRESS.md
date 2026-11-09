@@ -2227,12 +2227,38 @@ directory was emptied between them, so the second build was not an incremental a
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 43 — the regression of the Core of the current release
+
+**Status: PROVED on canonical `main`.**
+The acceptance of the release runs the **Flutter** tests, the widget gate, the browser gate, the
+visual comparison and the eight functional phases. The **Rust** suite of the Core — its unit
+tests, its integration tests and its doc tests — was not part of it: the receipts of the Rust
+regression belong to the eras of the milestones.
+
+`tests/oip_rust_regression.py` runs the suite of the current tree
+(`docs/evidence/oip-rust-regression/rust-regression.json`):
+
+| | |
+|---|---|
+| the command | `cargo test --workspace --release --no-fail-fast` |
+| the revision | the clean tree of this iteration |
+| the toolchain | rustc 1.93.0, cargo 1.93.0 |
+| the result | **181 tests, 0 failed, 0 ignored**, 29 suites, 197 s |
+
+The 29 suites include the **integration tests** of the Core — `api`, `browser_session`,
+`capabilities`, `diagnostics`, `hierarchy`, `inventory`, `ipc`, `mcp`, `provision_cli`,
+`reliability` and `settings` — beside the unit tests of every crate and the doc tests.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
 | `docs/evidence/oip-diagnostic-continuation/rehearsal.json`, `docs/evidence/oip-workstation-data/rehearsal.json`, `docs/evidence/oip-device-connection/rehearsal.json`, `docs/evidence/oip-reconnect-recovery/rehearsal.json` | the rehearsals that produced the four browser receipts above: the instances they own, their steps and their results (the browser receipt of each journey is the primary evidence) |
+| `docs/evidence/oip-rust-regression/rust-regression.json` | the measured Rust regression of the Core of the current release: 181 tests in 29 suites, 0 failed, with the unit, the integration and the doc tests (iteration 43) |
 | `docs/evidence/oip-reproducible-build/reproducible-build.json` | the measured reproducibility of the builds of the release: the web release and the macOS application bundle are byte-identical when they are built twice (iteration 42) |
 | `docs/evidence/oip-extend-registry/extend-registry.json` | the measured extension of the registry of an instance: the sources survive, the new source collects and a plan that drops a source is refused (iteration 41) |
 | `docs/evidence/oip-session-lifetime/session-lifetime.json` | the measured lifetimes of the one-time code (120 s) and of the session (30 min) against the real Core: both promises of the operator login hold (iteration 39) |

@@ -119,6 +119,7 @@ secrets/
 !/docs/evidence/oip-session-lifetime/session-lifetime.json
 !/docs/evidence/oip-extend-registry/extend-registry.json
 !/docs/evidence/oip-reproducible-build/reproducible-build.json
+!/docs/evidence/oip-rust-regression/rust-regression.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json
