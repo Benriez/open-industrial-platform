@@ -34,7 +34,13 @@ EVIDENCE = ROOT / "docs/evidence"
 # the documents of that era. The areas of the current release are the
 # directories that begin with "oip-"; `oip-real-device` belongs to the
 # milestone era.
-ERA_DIRECTORIES = {"oip-real-device"}
+# The areas that hold the receipts of the earlier eras: they are the history
+# of the measurement and not the evidence of this release. The record must
+# name every one of them — the checker looks for the name.
+ERA_AREAS = {
+    "oip-real-device", "git-baseline", "oip003", "oip004", "oip004-ui", "oip005",
+    "oip006", "oip0061", "oip007", "oip008", "oip0082", "oip0084", "oip0085",
+}
 CITATION = re.compile(r"docs/evidence/[A-Za-z0-9_./-]+")
 # Every path that the record names in a backtick. A path of the checkout must
 # exist; a path of the build tree must not be used as the receipt of a claim.
@@ -82,7 +88,11 @@ def main():
         if not path.exists():
             continue
         if path.is_dir():
-            # A cited directory: the files in it must be tracked.
+            # A cited directory of an era: the history of the measurement is
+            # not the evidence of this release and it is not tracked as such.
+            if name.split("/")[2] in ERA_AREAS:
+                continue
+            # A cited directory of the release: the files in it must be tracked.
             files = [item for item in path.rglob("*") if item.is_file()]
             if not files or not all(item.relative_to(ROOT).as_posix() in tracked_paths
                                     for item in files):
@@ -131,26 +141,42 @@ def main():
     problems.extend(f"the ledger presents the path of a build tree as evidence: {name}"
                     for name in ledger_build_tree)
 
-    # the receipts of the current release that nobody cites
+    # Every file of the evidence tree that nobody cites. The tree is walked
+    # whole: the receipts of the eras are the history of the measurement and
+    # not the evidence of this release — the record names every one of their
+    # areas, and every other file must be cited by the record.
     present = set()
-    for path in EVIDENCE.rglob("*.json"):
+    era_files = set()
+    for path in sorted(EVIDENCE.rglob("*")):
+        if not path.is_file():
+            continue
         relative = path.relative_to(ROOT).as_posix()
         area = relative.split("/")[2]
-        if not area.startswith("oip-") or area in ERA_DIRECTORIES:
-            continue
-        present.add(relative)
-    cited_receipts = {name for name in cited if name.endswith(".json")}
-    orphans = sorted(present - cited_receipts)
+        if area in ERA_AREAS:
+            era_files.add(relative)
+        else:
+            present.add(relative)
+    prefixes = tuple(name for name in cited if name.endswith("/"))
+    exact = {name for name in cited if not name.endswith("/")}
+    cited_files = {name for name in present
+                   if name in exact or name.startswith(prefixes)}
+    orphans = sorted(present - cited_files)
+    unnamed_eras = sorted(area for area in ERA_AREAS
+                           if (EVIDENCE / area).is_dir()
+                           and f"docs/evidence/{area}/" not in text)
     report["the_receipts_of_the_release"] = {
         "the_present": len(present),
-        "the_cited": len(cited_receipts & present),
+        "the_cited": len(cited_files),
         "the_orphaned": orphans,
+        "the_files_of_the_eras": len(era_files),
+        "the_areas_of_the_eras_that_the_record_does_not_name": unnamed_eras,
     }
-    report["steps"].append("every receipt of the release is cited")
+    report["steps"].append("every file of the evidence tree is cited")
 
     problems.extend(f"the cited receipt {name} does not exist" for name in missing)
     problems.extend(f"the cited receipt {name} is not tracked by git" for name in untracked)
-    problems.extend(f"the receipt {name} of the release is cited by nobody" for name in orphans)
+    problems.extend(f"the file {name} of the evidence tree is cited by nobody" for name in orphans)
+    problems.extend(f"the record does not name the era area {area}" for area in unnamed_eras)
     report["the_problems"] = problems
     report["status"] = "PASS" if not problems else "FAIL"
 

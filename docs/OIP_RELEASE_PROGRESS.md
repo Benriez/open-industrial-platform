@@ -2754,19 +2754,70 @@ oldest stored entry forward.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 60 — the record is audited clause by clause, and the clauses it did not measure are corrected
+
+**Status: PROVED on canonical `main`.**
+The record claimed that the independent work of G1–G11 is closed. That claim was **prose**: an
+independent audit read the gate table of the ledger clause by clause and opened every receipt under
+`docs/evidence/` to see whether it measures what the clause says. The audit found **four clauses
+that no receipt proves** and **seven clauses whose receipt proves something weaker than the claim**.
+The findings were verified against the sources before anything was changed.
+
+**The clauses that no receipt proved — the record now says what is measured:**
+
+* **G9** named the revision `3c663f9` and the digest `36c79dcb…` of the binary that the gate
+  executed. **Neither value exists in any receipt** — the acceptance names `eaf9c5c2…` and
+  `a4fab0c0…`, the manifest names `24727dd7…`. The row now names the receipts instead of the
+  values, so the claim cannot rot.
+* **G3** claimed that "the scope of the operator survives a refresh of the authorized projection"
+  while the browser receipt measures the **opposite** for a page reload: the selector returns to
+  the unified view, because the scope is the choice of the session. The row now states both facts:
+  the scope follows the session across the six workstations and survives a refresh of the
+  projection (a widget test over the contract fixtures), and a **new session starts in the unified
+  view again** (the browser receipt).
+* **G8** claimed that "the settings navigation names the status of the Core for every category"
+  without a receipt — only a widget test over fixture DTOs.
+* **G12** claimed that the operator login names **every** cause of the end of a session; the
+  widget test asserts two of the three.
+
+**The clauses that were stronger than their receipt — the wording now matches the measurement:**
+
+* the collectors of the load and of the parity run are the **simulated** endpoints (the Core under
+  test is the release binary) — the rows now say so;
+* the device of the fixture is the **local host** on the loopback, not a physical device — "a real
+  device" is reserved for evidence that names a physical host (G5 already says "fixture only");
+* the device-connection receipt carries **nine** checks, not eight;
+* the secret scan covered 631 files while **671** ship;
+* the Rust suite was measured on a revision that is not the revision of the release;
+* the rehearsal of the reproducible builds ran on a revision whose Core sources are identical to
+  the sources of the release — the row says exactly that.
+
+**The checker of the record now walks the whole evidence tree.** It enumerated the receipts of the
+areas whose name begins with `oip-` and therefore never saw the era directories
+(`oip003`…`oip0085`), the baseline of the initial commit (`git-baseline`) or the painted surface of
+the coverage journey. The tree is now walked whole: every file of the release must be cited by the
+record (55 of 55), and the receipts of the eras are a **named class** — the history of the
+measurement and not the evidence of this release (1 271 files over 13 areas, every area named by
+the record). The one-command verifier carries the same rule.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `docs/evidence/oip-canonical-acceptance/acceptance.json` | the canonical acceptance of the release: the eight functional phases, the widget gate, the browser gate, the visual comparison, the global infrastructure context, the accessibility and the device administration, with the revision and the tree of the run (tracked) |
 | `docs/evidence/oip-macos-install/macos-install.json` | the local installation of the macOS application bundle: the copy is byte-identical to the bundle of the release, the installed copy starts, is refused without a session, terminates without an orphan and starts again from the installation directory (tracked) |
+| `docs/evidence/oip003/`, `docs/evidence/oip004/`, `docs/evidence/oip004-ui/`, `docs/evidence/oip005/`, `docs/evidence/oip006/`, `docs/evidence/oip0061/`, `docs/evidence/oip007/`, `docs/evidence/oip008/`, `docs/evidence/oip0082/`, `docs/evidence/oip0084/`, `docs/evidence/oip0085/`, `docs/evidence/git-baseline/` | the receipts of the **earlier eras**: the history of the measurement and not the evidence of this release — the gate receipts of the eras 003 to 0085, the first real-device gate and the baseline of the initial commit |
 | `docs/evidence/oip-record-integrity/record-integrity.json` | the integrity of the record itself: every cited receipt exists and is tracked by git, and every receipt of the current release is cited by the ledger or by this file (tracked) |
 | `docs/evidence/oip-release-verification/release-verification.json` | the verification of the release with **one command**: the manifest verifies, every receipt is fresh, the record is intact, the acceptance passed and the safety boundaries held (tracked) |
 | `docs/evidence/oip-loopback-rate/loopback-rate.json` | the rate of the path of the measurement: the loopback of this machine, the rate of the machine itself and what the first paint of the baseline means (tracked) |
 | `docs/evidence/oip-worktree-reconciliation/worktree-reconciliation.json` | the reconciliation of the worktrees: every branch, the commits that the canonical branch does not contain, the capability that it delivers in their place and the receipt that proves it (tracked) |
-| `docs/evidence/oip-observation-history/observation-history.json` | the persisted observation history of a real device: it grows with the polling, every stored sample is stale, the order is ascending by the receive time, the cursor walks it forward without loss, the scope is enforced and it survives the restart (tracked) |
-| `docs/evidence/oip-measurement-coverage/measurement-coverage.json` | the coverage of the kinds of the measurement of the real device: every supported kind is delivered, every kind that is not available is named and never delivered as a number, the painted surface names them (tracked) |
+| `docs/evidence/oip-observation-history/observation-history.json` | the persisted observation history of the owned loopback SSH fixture: it grows with the polling, every stored sample is stale, the order is ascending by the receive time, the cursor walks it forward without loss, the scope is enforced and it survives the restart (tracked) |
+| `docs/evidence/oip-measurement-coverage/measurement-coverage.json` | the coverage of the kinds of the measurement of the owned loopback SSH fixture: every supported kind is delivered, every kind that is not available is named and never delivered as a number, the painted surface names them (tracked) |
 | `docs/evidence/oip-measurement-coverage/measurement-coverage-browser.json` | the browser receipt of the coverage: the findings of the journey against the real Core and the state of the tile of the verified identity (tracked) |
+| `docs/evidence/oip-measurement-coverage/painted-surface.txt` | the painted surface of that journey: what the operator actually sees, including the line that names the kinds of the measurement that are not available (tracked) |
 | `docs/evidence/oip-canonical-acceptance/browser-gate.json` | the browser gate of the acceptance: the findings, the captures and the state of the visual acceptance of the operator (tracked) |
 | `docs/evidence/oip-canonical-acceptance/ui-gate.json` | the build provenance and the served bundle of the gate (tracked) |
 | `docs/evidence/oip-canonical-acceptance/captures/*.png` | the 13 actual captures of the six workstations at 1440 px and 1920 px of the acceptance of the release (tracked) |

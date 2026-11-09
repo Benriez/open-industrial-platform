@@ -53,7 +53,13 @@ CITATION = re.compile(r"docs/evidence/[A-Za-z0-9_./-]+")
 # ledger must not present a path of the build tree as the evidence of a claim.
 PATH_CITATION = re.compile(
     r"`((?:docs|apps|crates|tests|tools|target)/[A-Za-z0-9_./-]*)`")
-ERA_DIRECTORIES = {"oip-real-device"}
+# The areas that hold the receipts of the earlier eras: they are the history
+# of the measurement and not the evidence of this release. The record must
+# name every one of them — the checker looks for the name.
+ERA_AREAS = {
+    "oip-real-device", "git-baseline", "oip003", "oip004", "oip004-ui", "oip005",
+    "oip006", "oip0061", "oip007", "oip008", "oip0082", "oip0084", "oip0085",
+}
 # The digest of the personal store of the operator. It must never change.
 PERSONAL_STORE = "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e"
 
@@ -86,12 +92,17 @@ def digest_tree(root):
 
 
 def the_release_receipts():
-    """The receipts of the current release under `docs/evidence/`."""
+    """The receipts of the current release under `docs/evidence/`.
+
+    The receipts of the earlier eras are the history of the measurement and
+    not the evidence of this release; the record names every one of their
+    areas. They are not the receipts of the release.
+    """
     receipts = {}
     for path in sorted(EVIDENCE.rglob("*.json")):
         relative = path.relative_to(ROOT).as_posix()
         area = relative.split("/")[2]
-        if not area.startswith("oip-") or area in ERA_DIRECTORIES:
+        if area in ERA_AREAS:
             continue
         try:
             receipts[relative] = json.loads(path.read_text())
@@ -186,14 +197,30 @@ def check_the_record(receipts):
         if name in tracked or not path.exists():
             continue
         if path.is_dir():
+            # A cited directory of an era: the history of the measurement is
+            # not the evidence of this release and it is not tracked as such.
+            if name.split("/")[2] in ERA_AREAS:
+                continue
             files = [item for item in path.rglob("*") if item.is_file()]
             if not files or not all(item.relative_to(ROOT).as_posix() in tracked
                                     for item in files):
                 untracked.append(name)
         else:
             untracked.append(name)
-    cited_receipts = {name for name in cited if name.endswith(".json")}
-    orphans = sorted(set(receipts) - cited_receipts)
+    # The whole evidence tree is walked: every file of the release that the
+    # record does not cite is a gap of the record.
+    prefixes = tuple(name for name in cited if name.endswith("/"))
+    exact = {name for name in cited if not name.endswith("/")}
+    present = set()
+    for path in sorted(EVIDENCE.rglob("*")):
+        if not path.is_file():
+            continue
+        relative = path.relative_to(ROOT).as_posix()
+        if relative.split("/")[2] in ERA_AREAS:
+            continue
+        present.add(relative)
+    orphans = sorted(name for name in present
+                     if name not in exact and not name.startswith(prefixes))
     problems.extend(f"the cited receipt {name} does not exist" for name in missing)
     problems.extend(f"the cited receipt {name} is not tracked" for name in untracked)
     problems.extend(f"the receipt {name} is cited by nobody" for name in orphans)
