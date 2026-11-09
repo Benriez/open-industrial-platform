@@ -13,12 +13,13 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision | `e9036ef` (`feat(flutter): show the authorized placement in the managed network view`) |
-| Canonical source tree | `665a9a566779534c6646a4e53acf8955be1839fc` |
-| Previous canonical source revision | `1e6b743` (iteration 10, managed overview of the authorized infrastructure) |
+| Canonical source revision | `f53e9ec` (`docs: every receipt names the revision it was measured on`) |
+| Canonical source tree | `381838f750c1c26512b3f365608c4cf6252d72ca` |
+| The revision of the final acceptance | `e7aa994` (tree `bf03f2465868`) — the clean tree the canonical gate passed on |
+| The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 451, source manifest SHA-256 `cfd9fc247352cbcd457a0fed3b59d7b2a60e1413ee41831f35db458df15f39eb` |
-| Documentation commit on top | changes only `docs/OIP_RELEASE_PROGRESS.md`, `docs/evidence/oip-real-device/*.json` and `docs/real-device-onboarding-verification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
+| Tracked files in the canonical source revision | 631, source manifest SHA-256 `5d1c40803eec8910a0fb4a7d5b39bd9a743cfd2889816b96875a9b59bea9af23` |
+| Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them |erification.md`; no source, contract, harness or test file is touched, so the manifest above stays the manifest of the source revision |
 | Working tree | clean; the loop state directory is ignored |
 | Push / deployment | none |
 | Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
@@ -39,12 +40,39 @@ overview branch `feature/oip-managed-overview` (`1e6b743`), iteration 11 the iso
 network branch `feature/oip-network-placement` (`e9036ef`). No iteration weakened a contract
 rule, and none activated the installation.
 
-## 2. Acceptance gates and their measured status
+## 2. The gates of the current release
+
+The authoritative table of the gates, their status and their measured evidence is
+**`docs/OIP_RELEASE_LEDGER.md`**. It is written in every iteration and names the receipts of
+`docs/evidence/`. The current state:
+
+| Gate | Status |
+|---|---|
+| G1 integrated Core and the six workstations | DONE |
+| G2 authentication, sessions, the parity of the transports, the isolation of the organizations | READY (the software part) |
+| G3 the global infrastructure context | DONE |
+| G4 device management in the application | READY (the software part) |
+| G5 real device connections | BLOCKED_OPERATOR |
+| G6 monitoring | READY (the software part) |
+| G7 the approved Spectrum-2027 UX | DONE |
+| G8 the six functional views | READY (the software part) |
+| G9 the macOS build and the local operations | READY (the software part) |
+| G10 the security release review | READY (the review is done) · BLOCKED_OPERATOR (the acceptance) |
+| G11 the acceptance | DONE (one resilience gap escalated) |
+| G12 the operator acceptance | BLOCKED_OPERATOR |
+
+The operator actions that the loop cannot perform are listed in the ledger. The release is
+**not** production-ready: the gates that need the operator are open.
+
+### 2a The acceptance of the milestone era (iteration 11 — historical)
+
+The table below is the acceptance of the milestone era of the release. It is kept as the history
+of that era; the state of the current release is the table above and the ledger.
 
 Legend: `PROVED` = measured in this run on canonical `main`; `WITHHELD` = deliberately not
 claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 
-| Gate | Status | Evidence (this run, canonical `main` = `e9036ef`) |
+| Gate | Status | Evidence (iteration 11, canonical `main` = `e9036ef`) |
 |---|---|---|
 | Rust format check | PROVED | `cargo fmt --all -- --check` → exit 0 |
 | Rust workspace check | PROVED | `cargo check --locked --workspace --all-targets` → exit 0 |
