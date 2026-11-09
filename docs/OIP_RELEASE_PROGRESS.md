@@ -2149,6 +2149,36 @@ operator cannot outlive its lifetime.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 40 — the honest connection states of a device are pinned
+
+**Status: PROVED on canonical `main` (`ad335f5`).**
+The gate G5 names the **honest connection states**. The Core produces them — the acceptance proves
+the collecting state and the block after a changed host key — but nothing pinned what the **surface**
+shows for each of them: a regression that showed a blocked connection as connected would have
+broken the promise of the gate without a single test failing.
+
+`apps/flutter/test/device_connection_states_test.dart` pins all six states of the panel of the
+connection with the real shape of the identity of the Core:
+
+| The state of the Core | What the operator sees |
+|---|---|
+| `collecting` | `Collecting · aktuelle Messwerte empfangen` with the confirmed host key and the read-only monitoring |
+| `ssh_verified` | `SSH Verified · Monitoring deaktiviert` |
+| `host_key_changed` | `Host-Key geändert · Verbindung blockiert` with the error of the Core (`HOST_KEY_CHANGED`) |
+| `host_key_unknown` | `Host-Key unbekannt · Identität vor der nächsten Verbindung bestätigen` |
+| `unreachable` | `Unreachable · tatsächlicher Verbindungsversuch fehlgeschlagen` with the error of the Core |
+| `stale` | `Stale · Messwerte veraltet` |
+
+The suite found a real weakness of the panel on the way: the identity of the Core must carry its
+whole shape (`disks`, `interfaces`, `unavailable`, `provenance`) — the panel casts the
+unavailable list directly, so an identity without that field breaks the build of the panel. The
+fixture of the suite now carries the real shape.
+
+356 of 356 Flutter tests pass (one skipped: the live test without an instance).
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
