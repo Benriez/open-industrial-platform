@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "26401850e29f9e02940596ee083d662fd3b98447",
-  "the_tree": "d4060127108194df8804bae5222c71598dc93f08",
+  "the_revision": "3b430081d0477ba8fd099b7731742dea19774750",
+  "the_tree": "abc89842d29dd5dfece4a13b36fa0e6712a72359",
   "the_branch": "main",
   "the_working_tree_is_clean": true,
   "the_toolchain": {
