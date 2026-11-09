@@ -380,17 +380,15 @@ if (!identitySeen) {
   // The panel refreshes itself every few seconds: the tile must stay open
   // while the operator reads the verified identity.
   await observeStability(24);
-  if (!identitySeen) {
-    const painted = await labels();
-    if (painted.includes('Nicht verfügbar: ')) identitySeen = painted;
-  }
 }
 fs.writeFileSync(`${outDir}/device-connection-identity-states.txt`,
   identityStates.join('\n') + '\n');
 fs.writeFileSync(`${outDir}/device-connection-identity-markup.json`,
   JSON.stringify(await identityMarkup(), null, 2) + '\n');
 receiptStates.identityStates = identityStates;
-surface = identitySeen || await readSurface();
+// The painted surface is read after the tile is open, so the evidence of the
+// surface names what the operator sees.
+surface = await readSurface();
 check('the verified identity of the host is shown',
   /Arbeitsspeicher|Hostname|Betriebssystem|memory_total_bytes|operating_system/i.test(surface),
   'the identity of the host is missing');
