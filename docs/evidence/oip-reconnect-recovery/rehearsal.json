@@ -5,66 +5,67 @@
   ],
   "browser_receipt": {
     "schema": "oip-reconnect-recovery-v1",
-    "revision": "964c3d1bc8a16cafdebd7160c0f25030d16b7334",
+    "revision": "a9ba646b826e9ad14a0f317397385c5babf7da95",
+    "the_detail_is": "the message that describes the failure of the check",
     "scope": "the reconnect and the recovery of the application against the real Core",
-    "base": "http://127.0.0.1:50335",
-    "the_moment_before_the_restart": "2026-11-09 13:18:09.380 UTC",
-    "the_moment_after_the_restart": "2026-11-09 13:18:15.621 UTC",
+    "base": "http://127.0.0.1:51153",
+    "the_moment_before_the_restart": "2026-11-09 13:37:47.101 UTC",
+    "the_moment_after_the_restart": "2026-11-09 13:37:53.560 UTC",
     "findings": [
       {
         "check": "the first code is issued",
         "ok": true,
-        "the_failure_message": "64 characters"
+        "the_detail": "64 characters"
       },
       {
         "check": "the login is accepted",
         "ok": true,
-        "the_failure_message": "the Core accepted the one-time code"
+        "the_detail": "the Core accepted the one-time code"
       },
       {
         "check": "the authorized projection is delivered",
         "ok": true,
-        "the_failure_message": "the selector names the unified view of the authorized infrastructures"
+        "the_detail": "the selector names the unified view of the authorized infrastructures"
       },
       {
         "check": "the instance is restarted",
         "ok": true,
-        "the_failure_message": "the control server answered 200"
+        "the_detail": "the control server answered 200"
       },
       {
         "check": "the surface asks the operator for a new session",
         "ok": true,
-        "the_failure_message": "the identity notice and the operator login are shown"
+        "the_detail": "the identity notice and the operator login are shown"
       },
       {
         "check": "the surface names the restart as a cause of the end of the session",
         "ok": true,
-        "the_failure_message": "the panel of the operator login names the restart of the instance"
+        "the_detail": "the panel of the operator login names the restart of the instance"
       },
       {
         "check": "a new code is issued",
         "ok": true,
-        "the_failure_message": "64 characters"
+        "the_detail": "64 characters"
       },
       {
         "check": "the new login is accepted",
         "ok": true,
-        "the_failure_message": "the Core accepted the second one-time code"
+        "the_detail": "the Core accepted the second one-time code"
       },
       {
         "check": "the authorized projection is restored",
         "ok": true,
-        "the_failure_message": "the selector names the unified view again"
+        "the_detail": "the selector names the unified view again"
       },
       {
         "check": "the projection carries a fresh moment",
         "ok": true,
-        "the_failure_message": "2026-11-09 13:18:09.380 UTC -> 2026-11-09 13:18:15.621 UTC"
+        "the_detail": "2026-11-09 13:37:47.101 UTC -> 2026-11-09 13:37:53.560 UTC"
       },
       {
         "check": "no browser JavaScript errors",
         "ok": true,
-        "the_failure_message": ""
+        "the_detail": ""
       }
     ],
     "errors": []
@@ -72,8 +73,8 @@
   "checks": 11,
   "the_restarts": 1,
   "status": "PASS",
-  "the_revision": "964c3d1bc8a16cafdebd7160c0f25030d16b7334",
-  "the_tree": "bb7804058e30906846202652c04e9c418971df28",
+  "the_revision": "a9ba646b826e9ad14a0f317397385c5babf7da95",
+  "the_tree": "6d73cae56f84eadc0ebe528a75d25cca84c3a45a",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-09T13:18:18Z"
+  "finished_utc": "2026-11-09T13:37:56Z"
 }

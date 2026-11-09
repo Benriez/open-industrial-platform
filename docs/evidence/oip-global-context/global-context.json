@@ -1,7 +1,8 @@
 {
   "schema": "oip-global-context-receipt-v1",
-  "revision": "9400d00161b0f4cda4ad766408e45466f6c24ff9",
-  "base": "http://127.0.0.1:57694",
+  "revision": "a9ba646b826e9ad14a0f317397385c5babf7da95",
+  "the_detail_is": "the message that describes the failure of the check",
+  "base": "http://127.0.0.1:60156",
   "options_offered": 4,
   "scope_per_workstation": [
     {
@@ -33,87 +34,87 @@
     {
       "check": "browser-login accepted",
       "ok": true,
-      "the_failure_message": "{\"status\":200}"
+      "the_detail": "{\"status\":200}"
     },
     {
       "check": "the selector starts in the unified view",
       "ok": true,
-      "the_failure_message": "Alle berechtigten Infrastrukturen"
+      "the_detail": "Alle berechtigten Infrastrukturen"
     },
     {
       "check": "the global selection offers the individual infrastructures",
       "ok": true,
-      "the_failure_message": "4 options"
+      "the_detail": "4 options"
     },
     {
       "check": "the individual infrastructures are offered",
       "ok": true,
-      "the_failure_message": "Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A2 global ausw\u00e4"
+      "the_detail": "Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A2 global ausw\u00e4"
     },
     {
       "check": "the selection grants no permission",
       "ok": true,
-      "the_failure_message": "an option offers another meaning"
+      "the_detail": "an option offers another meaning"
     },
     {
       "check": "the selector names the selected infrastructure",
       "ok": true,
-      "the_failure_message": "Infrastructure A1"
+      "the_detail": "Infrastructure A1"
     },
     {
       "check": "the scoped projection shows the selected infrastructure",
       "ok": true,
-      "the_failure_message": "the placement of the selection is missing"
+      "the_detail": "the placement of the selection is missing"
     },
     {
       "check": "the scoped projection hides the other infrastructure",
       "ok": true,
-      "the_failure_message": "another infrastructure is still in the projection"
+      "the_detail": "another infrastructure is still in the projection"
     },
     {
       "check": "overview: the shared scope follows the selection",
       "ok": true,
-      "the_failure_message": "Infrastructure A1"
+      "the_detail": "Infrastructure A1"
     },
     {
       "check": "devices: the shared scope follows the selection",
       "ok": true,
-      "the_failure_message": "Infrastructure A1"
+      "the_detail": "Infrastructure A1"
     },
     {
       "check": "network: the shared scope follows the selection",
       "ok": true,
-      "the_failure_message": "Infrastructure A1"
+      "the_detail": "Infrastructure A1"
     },
     {
       "check": "opcua: the shared scope follows the selection",
       "ok": true,
-      "the_failure_message": "Infrastructure A1"
+      "the_detail": "Infrastructure A1"
     },
     {
       "check": "diagnostics: the shared scope follows the selection",
       "ok": true,
-      "the_failure_message": "Infrastructure A1"
+      "the_detail": "Infrastructure A1"
     },
     {
       "check": "settings: the shared scope follows the selection",
       "ok": true,
-      "the_failure_message": "Infrastructure A1"
+      "the_detail": "Infrastructure A1"
     },
     {
       "check": "the selector returns to the unified view",
       "ok": true,
-      "the_failure_message": "Alle berechtigten Infrastrukturen"
+      "the_detail": "Alle berechtigten Infrastrukturen"
     },
     {
       "check": "the unified view shows every authorized infrastructure",
       "ok": true,
-      "the_failure_message": "an authorized infrastructure is missing"
+      "the_detail": "an authorized infrastructure is missing"
     },
     {
       "check": "no browser JavaScript errors",
       "ok": true,
-      "the_failure_message": ""
+      "the_detail": ""
     }
   ],
   "console_errors": [],
@@ -126,8 +127,8 @@
     "Failed to load resource: the server responded with a status of 403 (Forbidden)",
     "Failed to load resource: the server responded with a status of 403 (Forbidden)"
   ],
-  "the_revision": "9400d00161b0f4cda4ad766408e45466f6c24ff9",
-  "the_tree": "a9039d44e78662ce008f67decf69e17ef1ccb7fb",
-  "the_working_tree_is_clean": false,
-  "the_revision_of_the_acceptance": "9400d00161b0f4cda4ad766408e45466f6c24ff9"
+  "the_revision": "a9ba646b826e9ad14a0f317397385c5babf7da95",
+  "the_tree": "6d73cae56f84eadc0ebe528a75d25cca84c3a45a",
+  "the_working_tree_is_clean": true,
+  "the_revision_of_the_acceptance": "a9ba646b826e9ad14a0f317397385c5babf7da95"
 }
