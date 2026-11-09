@@ -79,6 +79,11 @@ def main():
               if line and not line[3:].startswith(("docs/evidence/", "docs/release/"))]
     clean = not status
     published = []
+    # The revision of the acceptance: the receipt of the UI gate names it.
+    acceptance_revision = None
+    ui_gate = run / "canonical-ui/canonical-ui-gate.json"
+    if ui_gate.is_file():
+        acceptance_revision = json.loads(ui_gate.read_text()).get("source_revision")
 
     for source, destination in PUBLISHED.items():
         path = run / source
@@ -91,7 +96,8 @@ def main():
         payload["the_working_tree_is_clean"] = clean
         payload["the_revision_of_the_acceptance"] = (
             payload.get("source_revision") or payload.get("revision")
-            or payload.get("the_revision_of_the_acceptance"))
+            or payload.get("the_revision_of_the_acceptance")
+            or acceptance_revision)
         if destination.endswith("ui-gate.json"):
             # This receipt is the precheck of the acceptance: the build
             # provenance and the widget gate. The browser gate is a receipt of

@@ -1,8 +1,8 @@
 {
   "schema": "oip-accessibility-receipt-v1",
-  "revision": "678c73a215f57aeae6d582144df5aa198b2a9f0a",
+  "revision": "9400d00161b0f4cda4ad766408e45466f6c24ff9",
   "scope": "name and role coverage of the rendered surface of the six workstations; not a full WCAG audit",
-  "base": "http://127.0.0.1:50750",
+  "base": "http://127.0.0.1:57694",
   "stations": [
     {
       "workstation": "overview",
@@ -71,82 +71,82 @@
     {
       "check": "the application demands an operator session",
       "ok": true,
-      "detail": "the anonymous state does not ask for the operator"
+      "the_failure_message": "the anonymous state does not ask for the operator"
     },
     {
       "check": "browser-login accepted",
       "ok": true,
-      "detail": "{\"status\":200}"
+      "the_failure_message": "{\"status\":200}"
     },
     {
       "check": "overview: every reachable control has an accessible name",
       "ok": true,
-      "detail": "0 unnamed controls"
+      "the_failure_message": "0 unnamed controls"
     },
     {
       "check": "overview: every focusable element is nameable",
       "ok": true,
-      "detail": "0 unnamed focusable elements"
+      "the_failure_message": "0 unnamed focusable elements"
     },
     {
       "check": "devices: every reachable control has an accessible name",
       "ok": true,
-      "detail": "0 unnamed controls"
+      "the_failure_message": "0 unnamed controls"
     },
     {
       "check": "devices: every focusable element is nameable",
       "ok": true,
-      "detail": "0 unnamed focusable elements"
+      "the_failure_message": "0 unnamed focusable elements"
     },
     {
       "check": "network: every reachable control has an accessible name",
       "ok": true,
-      "detail": "0 unnamed controls"
+      "the_failure_message": "0 unnamed controls"
     },
     {
       "check": "network: every focusable element is nameable",
       "ok": true,
-      "detail": "0 unnamed focusable elements"
+      "the_failure_message": "0 unnamed focusable elements"
     },
     {
       "check": "opcua: every reachable control has an accessible name",
       "ok": true,
-      "detail": "0 unnamed controls"
+      "the_failure_message": "0 unnamed controls"
     },
     {
       "check": "opcua: every focusable element is nameable",
       "ok": true,
-      "detail": "0 unnamed focusable elements"
+      "the_failure_message": "0 unnamed focusable elements"
     },
     {
       "check": "diagnostics: every reachable control has an accessible name",
       "ok": true,
-      "detail": "0 unnamed controls"
+      "the_failure_message": "0 unnamed controls"
     },
     {
       "check": "diagnostics: every focusable element is nameable",
       "ok": true,
-      "detail": "0 unnamed focusable elements"
+      "the_failure_message": "0 unnamed focusable elements"
     },
     {
       "check": "settings: every reachable control has an accessible name",
       "ok": true,
-      "detail": "0 unnamed controls"
+      "the_failure_message": "0 unnamed controls"
     },
     {
       "check": "settings: every focusable element is nameable",
       "ok": true,
-      "detail": "0 unnamed focusable elements"
+      "the_failure_message": "0 unnamed focusable elements"
     },
     {
       "check": "no browser JavaScript errors",
       "ok": true,
-      "detail": ""
+      "the_failure_message": ""
     },
     {
       "check": "no external browser requests",
       "ok": true,
-      "detail": ""
+      "the_failure_message": ""
     }
   ],
   "console_errors": [],
@@ -160,8 +160,8 @@
     "Failed to load resource: the server responded with a status of 403 (Forbidden)"
   ],
   "external_requests": [],
-  "the_revision": "18419dfe54331014a8b73979a47761967342a230",
-  "the_tree": "265cd8a38fe850ed18e11489a76c9bf450327117",
-  "the_working_tree_is_clean": true,
-  "the_revision_of_the_acceptance": "678c73a215f57aeae6d582144df5aa198b2a9f0a"
+  "the_revision": "9400d00161b0f4cda4ad766408e45466f6c24ff9",
+  "the_tree": "a9039d44e78662ce008f67decf69e17ef1ccb7fb",
+  "the_working_tree_is_clean": false,
+  "the_revision_of_the_acceptance": "9400d00161b0f4cda4ad766408e45466f6c24ff9"
 }

@@ -33,10 +33,9 @@ const check = (name, ok, detail) => {
   findings.push({
     check: name,
     ok: !!ok,
-    // The message describes the failure of the check. A check that
-    // passed carries it as well, so a reader does not mistake it for
-    // an observation of the surface.
-    the_failure_message: detail ?? null,
+    // The observed value of the check (the status of a request, the
+    // digest of a bundle). A check without an observation carries null.
+    the_detail: detail ?? null,
   });
   if (!ok) throw new Error(`${name}: ${detail ?? 'failed'}`);
 };
@@ -214,6 +213,7 @@ try {
   const receipt = {
     verdict: fatal !== null || errors.length || external.length ? 'FAIL' : 'PASS',
     revision: process.env.OIP_REVISION || null,
+    the_detail_is: 'the observed value of the check',
     base,
     browser_version: browser.version(),
     bundle_sha256: bundleSha256,

@@ -1,7 +1,7 @@
 {
   "schema": "oip-global-context-receipt-v1",
-  "revision": "678c73a215f57aeae6d582144df5aa198b2a9f0a",
-  "base": "http://127.0.0.1:50750",
+  "revision": "9400d00161b0f4cda4ad766408e45466f6c24ff9",
+  "base": "http://127.0.0.1:57694",
   "options_offered": 4,
   "scope_per_workstation": [
     {
@@ -33,87 +33,87 @@
     {
       "check": "browser-login accepted",
       "ok": true,
-      "detail": "{\"status\":200}"
+      "the_failure_message": "{\"status\":200}"
     },
     {
       "check": "the selector starts in the unified view",
       "ok": true,
-      "detail": "Alle berechtigten Infrastrukturen"
+      "the_failure_message": "Alle berechtigten Infrastrukturen"
     },
     {
       "check": "the global selection offers the individual infrastructures",
       "ok": true,
-      "detail": "4 options"
+      "the_failure_message": "4 options"
     },
     {
       "check": "the individual infrastructures are offered",
       "ok": true,
-      "detail": "Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A2 global ausw\u00e4"
+      "the_failure_message": "Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A2 global ausw\u00e4"
     },
     {
       "check": "the selection grants no permission",
       "ok": true,
-      "detail": "an option offers another meaning"
+      "the_failure_message": "an option offers another meaning"
     },
     {
       "check": "the selector names the selected infrastructure",
       "ok": true,
-      "detail": "Infrastructure A1"
+      "the_failure_message": "Infrastructure A1"
     },
     {
       "check": "the scoped projection shows the selected infrastructure",
       "ok": true,
-      "detail": "the placement of the selection is missing"
+      "the_failure_message": "the placement of the selection is missing"
     },
     {
       "check": "the scoped projection hides the other infrastructure",
       "ok": true,
-      "detail": "another infrastructure is still in the projection"
+      "the_failure_message": "another infrastructure is still in the projection"
     },
     {
       "check": "overview: the shared scope follows the selection",
       "ok": true,
-      "detail": "Infrastructure A1"
+      "the_failure_message": "Infrastructure A1"
     },
     {
       "check": "devices: the shared scope follows the selection",
       "ok": true,
-      "detail": "Infrastructure A1"
+      "the_failure_message": "Infrastructure A1"
     },
     {
       "check": "network: the shared scope follows the selection",
       "ok": true,
-      "detail": "Infrastructure A1"
+      "the_failure_message": "Infrastructure A1"
     },
     {
       "check": "opcua: the shared scope follows the selection",
       "ok": true,
-      "detail": "Infrastructure A1"
+      "the_failure_message": "Infrastructure A1"
     },
     {
       "check": "diagnostics: the shared scope follows the selection",
       "ok": true,
-      "detail": "Infrastructure A1"
+      "the_failure_message": "Infrastructure A1"
     },
     {
       "check": "settings: the shared scope follows the selection",
       "ok": true,
-      "detail": "Infrastructure A1"
+      "the_failure_message": "Infrastructure A1"
     },
     {
       "check": "the selector returns to the unified view",
       "ok": true,
-      "detail": "Alle berechtigten Infrastrukturen"
+      "the_failure_message": "Alle berechtigten Infrastrukturen"
     },
     {
       "check": "the unified view shows every authorized infrastructure",
       "ok": true,
-      "detail": "an authorized infrastructure is missing"
+      "the_failure_message": "an authorized infrastructure is missing"
     },
     {
       "check": "no browser JavaScript errors",
       "ok": true,
-      "detail": ""
+      "the_failure_message": ""
     }
   ],
   "console_errors": [],
@@ -126,8 +126,8 @@
     "Failed to load resource: the server responded with a status of 403 (Forbidden)",
     "Failed to load resource: the server responded with a status of 403 (Forbidden)"
   ],
-  "the_revision": "18419dfe54331014a8b73979a47761967342a230",
-  "the_tree": "265cd8a38fe850ed18e11489a76c9bf450327117",
-  "the_working_tree_is_clean": true,
-  "the_revision_of_the_acceptance": "678c73a215f57aeae6d582144df5aa198b2a9f0a"
+  "the_revision": "9400d00161b0f4cda4ad766408e45466f6c24ff9",
+  "the_tree": "a9039d44e78662ce008f67decf69e17ef1ccb7fb",
+  "the_working_tree_is_clean": false,
+  "the_revision_of_the_acceptance": "9400d00161b0f4cda4ad766408e45466f6c24ff9"
 }

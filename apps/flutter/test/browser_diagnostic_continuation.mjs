@@ -51,7 +51,7 @@ const check = (name, ok, detail) => {
     // The message describes the failure of the check. A check that
     // passed carries it as well, so a reader does not mistake it for
     // an observation of the surface.
-    the_failure_message: detail ?? null,
+    the_detail: detail ?? null,
   });
   if (!ok) throw new Error(`${name}: ${detail ?? 'failed'}`);
 };
@@ -276,6 +276,7 @@ await page.screenshot({ path: `${outDir}/diagnostic-continuation-after.png` });
 const receipt = {
   schema: 'oip-diagnostic-continuation-v1',
   revision: process.env.OIP_REVISION || null,
+  the_detail_is: 'the message that describes the failure of the check',
   scope: 'the diagnostic continuation of the approved surface against the real Core',
   base,
   gaps: {
