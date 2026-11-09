@@ -4,21 +4,21 @@
     "every cited receipt exists",
     "every receipt of the release is cited"
   ],
-  "the_cited_paths": 39,
+  "the_cited_paths": 41,
   "the_citations": {
-    "the_cited": 39,
+    "the_cited": 41,
     "the_missing_on_disk": [],
     "the_present_but_untracked": []
   },
   "the_receipts_of_the_release": {
-    "the_present": 35,
-    "the_cited": 35,
+    "the_present": 37,
+    "the_cited": 37,
     "the_orphaned": []
   },
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "e6cf9a7aba3a721a674abe8ebde4350d3559aff6",
-  "the_tree": "9b19c9915f83a3ec85606545b751f8d7a0db612d",
+  "the_revision": "d55ab42d48bbe1a45a806966e9a41adf90f0f017",
+  "the_tree": "7b5a9f9774588d5561cf93806805f5aabb2d0b4c",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-09T13:57:25Z"
+  "finished_utc": "2026-11-09T16:28:58Z"
 }
