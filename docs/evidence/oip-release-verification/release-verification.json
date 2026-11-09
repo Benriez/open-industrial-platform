@@ -4,15 +4,15 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "0afc07647381e0649c5b88bc127f6a1d4664fefd",
+      "the_revision": "338976574e1adf7a848b4e8eb584dd47571fb703",
       "the_revision_of_the_source": {
         "the_revision": "81701391dc36a18abc0d8cabbb989e43adc04397",
         "the_subject": "feat(g4): the journey reads the painted surface after the tile is open"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
-        "the_files": 669,
-        "the_sha256": "c5fac87c164651652f3fda85147de4b555e9478f3fed3e6db32bda60868d4a32"
+        "the_files": 671,
+        "the_sha256": "266dda25b7a2b3372a4953e452b44725a96818e03d96734eb621c419c8e6743d"
       },
       "the_artifacts": {
         "the_core": "24727dd7f909af5ac2728890e7e3d7db22752b49df263aa507a8a65e66ab1663",
@@ -29,11 +29,11 @@
         "crates": "1287e23d0199",
         "apps/flutter/lib": "fa7d66a718c9"
       },
-      "the_receipts": 40
+      "the_receipts": 41
     },
     "the_record": {
-      "the_citations": 44,
-      "the_receipts_of_the_release": 40,
+      "the_citations": 45,
+      "the_receipts_of_the_release": 41,
       "the_missing": [],
       "the_untracked": [],
       "the_orphaned": [],
@@ -129,8 +129,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "0afc07647381e0649c5b88bc127f6a1d4664fefd",
-  "the_tree": "89de07303b694e7ef181d1bde7ef5520c48ecbda",
+  "the_revision": "338976574e1adf7a848b4e8eb584dd47571fb703",
+  "the_tree": "bbe34497fcddb2246905637a3de8304e3d289490",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }
