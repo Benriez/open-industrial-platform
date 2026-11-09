@@ -1,8 +1,12 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "67e85a3f8e4c10b84115d250ffdd50a1e95e6759",
-  "the_tree": "77cde4c074790bc359e5da0a35a0dafd3b38e357",
+  "the_revision": "95ea28dfb05a7bd539fc7f9688a12a7069ff7e67",
+  "the_tree": "f3690b7428656f0645508c1458fbe4585652aa2d",
   "the_branch": "main",
+  "the_revision_of_the_source": {
+    "the_revision": "724d83b14fade61a96da7bb68d855cbb9cf1a48b",
+    "the_subject": "chore(tests): the acceptance receipts name the revision they were measured on"
+  },
   "the_working_tree_is_clean": false,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
@@ -18,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 651,
-    "the_sha256": "bf32be70f0884ca995436b7bdd3e40821fa2393d020ab522c72aeb3cff9b1f1b"
+    "the_sha256": "3fccc6043efa9577e9e2e5575bbc53cd8e71aa9a1b5ab5043adfc80f3143f744"
   },
   "the_artifacts": {
     "the_core": {
@@ -173,8 +177,7 @@
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final8",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/release/SHA256SUMS",
-    " M tools/oip_release_manifest.py"
+    "M tools/oip_release_manifest.py"
   ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",

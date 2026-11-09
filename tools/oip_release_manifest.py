@@ -137,6 +137,24 @@ def git(*arguments):
     return result.stdout.strip()
 
 
+def source_revision():
+    """The revision of the product source.
+
+    The commits that change only the record — the ledger, the receipts, the
+    manifest — do not change the product. The manifest therefore names the
+    revision of the product separately from the revision of the branch: the
+    artefacts of the release belong to the former.
+    """
+    result = subprocess.run(
+        ["git", "log", "-1", "--format=%H %s", "--", "apps", "crates"],
+        cwd=ROOT, capture_output=True, text=True)
+    line = result.stdout.strip()
+    if not line:
+        return None
+    revision, _, subject = line.partition(" ")
+    return {"the_revision": revision, "the_subject": subject}
+
+
 def tree_is_clean(exclude=("docs/release/",)):
     """The cleanliness of the working tree without the files of the manifest.
 
@@ -171,6 +189,7 @@ def build_manifest():
         "the_revision": git("rev-parse", "HEAD"),
         "the_tree": git("rev-parse", "HEAD^{tree}"),
         "the_branch": git("rev-parse", "--abbrev-ref", "HEAD"),
+        "the_revision_of_the_source": source_revision(),
         "the_working_tree_is_clean": tree_is_clean()[0],
         "the_toolchain": {
             "rustc": tool_version(["rustc", "--version"]),
