@@ -2470,6 +2470,50 @@ names the operation that was performed.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 52 — the record is checked against the evidence, and its integrity is proved
+
+**Status: PROVED on canonical `main`.**
+A second independent read-only audit of the ledger and of this state file against the receipts
+found fourteen defects. All of them are corrected, and the correction is driven by the receipts
+rather than by the prose:
+
+* the numbers of the current release were quoted from the **previous** measurement of the
+  rehearsals — the pages of the diagnostics, the build seconds of the bundle, the moments of the
+  reconnect, the inventory of the upgrade/rollback, the figures of the storage-failure path. Every
+  one of them now names the value of the receipt of the current run.
+* the **confirmed host key** of the device connection is a property, not a value: the SSH fixture
+  generates a fresh key for every run, so the record names the fingerprint of the **run**.
+* the gate **never recorded** the count of the Flutter tests: the pattern of the runner did not
+  match its own output (`+356 ~1: All tests passed!`). The pattern is correct now, and the
+  receipt of the acceptance carries the count (356 passed, 0 failed, 1 skipped).
+* the new receipts of the release were **not tracked** — the evidence policy of the repository
+  ignores the receipts of the eras and whitelists the reviewed ones by name. The whitelist names
+  the new receipts now, so the claim that the acceptance is a tracked receipt is true.
+* the manifest of the release named the receipts of a **build directory** and could not be
+  verified in a checkout. It names the tracked receipts now, measures the tree without its own
+  files, names the revision of the **product** separately from the revision of the record, and
+  states where its digests are verifiable.
+
+**The integrity of the record is itself proved** (`tests/oip_record_integrity.py`,
+`docs/evidence/oip-record-integrity/record-integrity.json`): every receipt that the record cites
+exists **and is tracked by git**, and every receipt of the current release is cited by the ledger
+or by this file. 37 citations, 33 receipts, no broken citation, no orphaned receipt.
+
+The **storage-failure path of the Core** — the last escalated gap of the acceptance — is measured
+on a bounded volume: the instance survives the full volume, the health degrades honestly
+(`persistence_healthy` false, the counter of the persistence errors grows, the last error is
+named), the log names the failure, the store is not corrupted, and the instance recovers when the
+space is freed. The rehearsal reports that it is blocked — with the reason — on a machine without
+`hdiutil`; it never claims a measurement it did not take.
+
+The **Core of the release is byte-reproducible** for its revision: the build script of the Core
+embeds the revision into the binary, so the binary names its own revision and the same revision
+yields the same bytes. The release has **one** build command for the Core, used by the gate, by
+the manifest, by the rehearsal of the reproducible builds and by the runbook.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
