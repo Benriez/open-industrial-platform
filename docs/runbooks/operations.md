@@ -645,6 +645,42 @@ application. The value becomes effective at the **next validated start** of
 the Core (`apply_status: active_startup_snapshot`) — the change itself is
 never applied to a running instance.
 
+## 13. How a third party verifies the release
+
+The whole handoff is checked with **one command**. It needs the checkout of
+the release and the build tree of the release (the artefacts live in
+`target/` and in `apps/flutter/build/`):
+
+```sh
+python3 tools/oip_verify_release.py
+```
+
+The command proves:
+
+1. the **manifest** of the release verifies — every digest of every artefact
+   and of every receipt is recomputed and compared with the written manifest;
+2. **every receipt is fresh** — no receipt of the release names a revision
+   that predates the last change of the product it covers;
+3. the **record is intact** — every receipt that the ledger and the state file
+   cite exists and is tracked by git, and every receipt of the release is
+   cited by one of them;
+4. the **acceptance passed** — the receipt of the canonical gate says PASS
+   with its phases, its browser findings, its Flutter tests, its captures and
+   its accessibility numbers;
+5. the **safety boundaries held** — no receipt claims that the schema 7 was
+   activated on the personal store of the operator.
+
+The verdict of the command is **`OIP_PRODUCTION_NOT_READY`** while the gates
+that need the operator are open (G5, G10, G12). The verification is **not** a
+production acceptance: the acceptance of the operator and the scope of the
+production security are the operator's. The command never claims the visual
+acceptance of the operator — a visual acceptance that is not pending is a
+problem of the verification.
+
+The receipt of the verification is `docs/evidence/oip-release-verification/release-verification.json`;
+the negative control of the verifier is `tests/oip_verify_release_test.py` and
+proves that it can fail.
+
 ## 13. What the receipts prove
 
 `docs/evidence/oip-operations/operations.json` records the measured result of

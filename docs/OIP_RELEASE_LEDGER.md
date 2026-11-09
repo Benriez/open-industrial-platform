@@ -114,6 +114,7 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-storage-failure/storage-failure.json` | the storage-failure path of the Core: a store that cannot be written, measured on a bounded volume |
 | `docs/evidence/oip-macos-install/macos-install.json` | the local installation of the bundle: the copy is byte-identical, the installed copy starts, is refused, terminates and starts again |
 | `docs/evidence/oip-record-integrity/record-integrity.json` | the integrity of the record itself: every cited receipt exists and is tracked, every receipt of the release is cited |
+| `docs/evidence/oip-release-verification/release-verification.json` | the verification of the release with one command: the manifest, the freshness of the receipts, the integrity of the record, the acceptance and the safety boundaries |
 | `docs/evidence/oip-session-lifetime/session-lifetime.json` | the promised lifetimes: the one-time code and the session |
 | `docs/evidence/oip-reproducible-build/reproducible-build.json` | the reproducibility of the web release and of the macOS bundle of the release |
 | `docs/evidence/oip-macos-app/macos-app.json` | the macOS bundle of the release: it starts, it is refused, it terminates, it starts again |
