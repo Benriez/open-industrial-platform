@@ -19,7 +19,7 @@ loopback SSH fixture:
   * every **supported** kind is delivered as an observation with its kind:
     CPU (the identity of the processor), RAM (total and used), storage (the
     local disks), network (the interface-reported addresses) and uptime;
-  * every **unavailable** kind — GPU, temperature, CPU utilization — is
+  * every **unavailable** kind — GPU, temperature, CPU utilisation — is
     **named** as unavailable in the connection record and is **not** delivered
     as an observation;
   * the report carries its **provenance**;
@@ -31,7 +31,7 @@ private endpoint is contacted and no hardware is invented: the host is an
 owned SSH fixture on the loopback.
 
 Usage:
-  python3 tests/oip_measurement_coverage.py [--evidence DIR]
+  python3 tests/oip_measurement_coverage.py [--evidence DIR] [--binary PATH]
 """
 import argparse
 import http.cookiejar
@@ -45,6 +45,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import traceback
 import urllib.error
 import urllib.request
 
@@ -55,10 +56,9 @@ sys.path.insert(0, str(ROOT / "tests"))
 from ssh_fixture import SshFixture  # noqa: E402
 
 TOOL = ROOT / "tools" / "oip_ops.py"
-SIMULATOR = ROOT / "target/debug/oip-simulated-server"
 
-# The kinds that the release supports, and the metric that carries each of
-# them. The names are the metric identifiers of the Core.
+# The kinds that the release supports, and the metrics of the Core that carry
+# each of them. The names are the metric identifiers of the Core.
 SUPPORTED = {
     "cpu": ["host.cpu_info", "host.model"],
     "ram": ["host.memory_total_bytes", "host.memory_used_bytes"],
@@ -77,24 +77,35 @@ def free_port():
         return probe.getsockname()[1]
 
 
-def request(base, path, method="GET", body=None, headers=None, opener=None):
+def request(base, path, body=None, headers=None, opener=None, method=None):
+    """The request helper of the proven rehearsals (the same signature)."""
+    headers = dict(headers or {})
     data = json.dumps(body).encode() if body is not None else None
-    message = urllib.request.Request(base + path, data=data, method=method)
-    message.add_header("Content-Type", "application/json")
-    for key, value in (headers or {}).items():
-        message.add_header(key, value)
-    send = opener.open if opener else urllib.request.urlopen
+    if data is not None:
+        headers["Content-Type"] = "application/json"
+    call = urllib.request.Request(base + path, data=data, headers=headers,
+                                  method=method or ("POST" if data else "GET"))
     try:
-        with send(message, timeout=60) as answer:
+        with (opener.open(call, timeout=60) if opener
+              else urllib.request.urlopen(call, timeout=60)) as answer:
             return answer.status, json.loads(answer.read().decode() or "{}")
     except urllib.error.HTTPError as error:
         return error.code, json.loads(error.read().decode() or "{}")
 
 
+def scalar(value):
+    """The scalar of a tagged metric value (``{"unsigned_integer": 42}``)."""
+    if not isinstance(value, dict):
+        return value
+    if len(value) == 1:
+        return next(iter(value.values()))
+    return value
+
+
 def playwright_module():
-    for candidate in (ROOT / "apps/flutter/.dart_tool" / "package_config.json",):
-        if candidate.is_file():
-            return candidate
+    candidate = ROOT / "apps/flutter/.dart_tool" / "package_config.json"
+    if candidate.is_file():
+        return candidate
     return ROOT / "apps/flutter"
 
 
@@ -110,24 +121,37 @@ def main():
     work = pathlib.Path(tempfile.mkdtemp(prefix="oip-coverage-")).resolve()
     work.chmod(0o700)
     fixture = None
-    simulators = []
     try:
         fixture = SshFixture()
         report["ssh_fixture"] = {"port": fixture.port, "user": fixture.user,
                                  "loopback_only": True}
-        source_ports = [free_port() for _ in range(4)]
-        port = free_port()
+        http_port = free_port()
+        # The configuration of the proven rehearsal of the device connection,
+        # with the SSH profile of the owned fixture.
+        config = json.loads((ROOT / "examples/multi-infrastructure-core.json").read_text())
+        config.update(database=str(work / "core.sqlite"), http_port=http_port,
+                      sources=[], stale_after_ms=2000, shutdown_timeout_ms=6000,
+                      web_dir=str(ROOT / "apps/flutter/build/web"))
+        config["ssh"] = {"profiles": [{
+            "id": "fixture", "label": "Owned loopback SSH fixture",
+            "principals": ["reader-org-a"], "allowed_hosts": ["127.0.0.1"],
+            "allowed_ports": [fixture.port],
+            "identity_file": str(pathlib.Path(fixture.directory) / "client"),
+            "agent_socket": None, "known_hosts_file": None, "aliases": {}}]}
+        (work / "core.json").write_text(json.dumps(config, indent=2))
+        # The hierarchy without the simulated sources: the measurement of the
+        # real device is the subject of this rehearsal.
         plan = json.loads((ROOT / "examples/multi-infrastructure-plan.json").read_text())
+        plan["sources"] = []
+        plan["bindings"] = [item for item in plan["bindings"]
+                            if item["scope"]["kind"] != "source"]
+        plan["roles"].append({"id": "inventory-admin", "name": "Explicit scoped operator",
+                               "permissions": ["inventory_manage", "devices_read",
+                                               "telemetry_read"]})
+        plan["bindings"].append({"principal_id": "reader-org-a",
+                                 "role_id": "inventory-admin",
+                                 "scope": {"kind": "organization", "id": "org-a"}})
         (work / "plan.json").write_text(json.dumps(plan, indent=2))
-        (work / "core.json").write_text(json.dumps({
-            "database": str(work / "core.sqlite"), "http_port": port,
-            "sources": [{"id": f"source-{letter}", "name": f"Local simulation {letter}",
-                         "endpoint": f"opc.tcp://127.0.0.1:{source_ports[index]}",
-                         "namespace": 2}
-                        for index, letter in enumerate("abcd")],
-            "legacy_single_infrastructure": False,
-            "web_dir": str(ROOT / "apps/flutter/build/web"),
-        }, indent=2))
         credential = work / "platform.credential"
         credential.write_bytes(secrets.token_bytes(32))
         credential.chmod(0o600)
@@ -138,25 +162,18 @@ def main():
         }, indent=2))
         (work / "ipc.json").chmod(0o600)
         state = work / "state"
-        base = f"http://127.0.0.1:{port}"
+        base = f"http://127.0.0.1:{http_port}"
 
         def tool(*arguments, expect_success=True):
             result = subprocess.run([sys.executable, str(TOOL), "--state-dir", str(state),
                                      "--config", str(work / "core.json"),
                                      "--ipc-config", str(work / "ipc.json"),
                                      "--binary", args.binary, *arguments],
-                                    capture_output=True, text=True, timeout=900)
+                                    capture_output=True, text=True, timeout=600)
             if expect_success and result.returncode != 0:
                 raise AssertionError(f"{arguments[0]} failed: "
                                      f"{result.stderr.strip() or result.stdout.strip()}")
             return result
-
-        for index, simulator_port in enumerate(source_ports):
-            simulator = subprocess.Popen(
-                [str(SIMULATOR), "--port", str(simulator_port), "--seed", str(42 + index * 7),
-                 "--tick-ms", "250"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            simulators.append(simulator)
-        time.sleep(2)
 
         tool("provision-plan", "--plan", str(work / "plan.json"))
         tool("start")
@@ -168,18 +185,21 @@ def main():
              "--ipc-credential", str(credential)], text=True))
         jar = http.cookiejar.CookieJar()
         opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
-        status, session = request(base, "/api/v2/browser/login", "POST",
+        status, session = request(base, "/api/v2/browser/login",
                                   {"code": minted["login_code"]}, {"Origin": base}, opener)
         assert status == 200, session
         headers = {"Origin": base, "x-oip-csrf": session["csrf_token"]}
 
-        status, _ = request(base, "/api/v2/inventory/apply", {"changes": [{
+        # 1. the device of the authorized inventory
+        status, answer = request(base, "/api/v2/inventory/apply", {"changes": [{
             "operation": "register",
             "device": {"id": "coverage-device", "display_name": "Coverage device",
                        "device_type": "single_board_computer", "site_id": "site-a1",
                        "metadata": {}}}]}, headers, opener)
-        assert status == 200, "the device was not registered"
+        assert status == 200, f"the device was not registered: {answer}"
+        report["steps"].append("the device is registered")
 
+        # 2. the connection with the confirmed host key
         endpoint = {"host": "127.0.0.1", "port": fixture.port, "user": fixture.user,
                     "identity_profile": "fixture"}
         target = {"kind": "existing", "id": "coverage-device", "expected_revision": 1}
@@ -202,30 +222,47 @@ def main():
 
         awaiting = wait_stage("awaiting_host_key")
         fingerprint = awaiting["host_key_fingerprint"]
-        request(base, "/api/v2/device-connections", {
+        assert fingerprint.startswith("SHA256:"), fingerprint
+        report["host_key_fingerprint"] = fingerprint
+        status, answer = request(base, "/api/v2/device-connections", {
             "operation": "trust_host_key", "plan_id": plan_id, "fingerprint": fingerprint},
             headers, opener)
-        request(base, "/api/v2/device-connections", {
+        assert status == 200, f"the host key was not accepted: {answer}"
+        status, answer = request(base, "/api/v2/device-connections", {
             "operation": "verify", "plan_id": plan_id}, headers, opener)
+        assert status == 200, f"the verification failed: {answer}"
         verified = wait_stage("verification_complete")
-        identity = verified["identity"]
-        request(base, "/api/v2/device-connections", {
-            "operation": "confirm", "plan_id": plan_id, "identity_confirmed": True,
-            "enable_monitoring": True, "poll_seconds": 5}, headers, opener)
-        report["steps"].append("the device is connected, verified and confirmed")
+        report["steps"].append("the host key is confirmed and the identity is verified")
 
-        # the connection record: the identity, the provenance and the kinds
+        status, answer = request(base, "/api/v2/device-connections", {
+            "operation": "confirm", "plan_id": plan_id, "identity_confirmed": True,
+            "enable_monitoring": True, "poll_seconds": 10}, headers, opener)
+        assert status == 200, f"the confirmation failed: {answer}"
+
+        deadline = time.monotonic() + 90
+        connection = {}
+        while time.monotonic() < deadline:
+            _, value = request(base, "/api/v2/device-connections?device_id=coverage-device",
+                               opener=opener)
+            connection = value.get("connection") or {}
+            if connection.get("status") == "collecting":
+                break
+            time.sleep(0.5)
+        report["connection_status"] = connection.get("status")
+        assert report["connection_status"] == "collecting", report["connection_status"]
+        report["steps"].append("the device collects")
+
+        # 3. the connection record: the identity, the provenance and the kinds
         # that are **not** delivered
-        _, value = request(base, "/api/v2/device-connections?device_id=coverage-device",
-                           opener=opener)
-        connection = value.get("connection", {})
-        record = connection.get("verified_identity") or identity
+        record = connection.get("verified_identity") or verified["identity"]
         report["the_connection"] = {
             "the_status": connection.get("status"),
+            "the_source_id": connection.get("source_id"),
             "the_host_key_fingerprint": fingerprint,
             "the_unavailable": record.get("unavailable"),
             "the_provenance": record.get("provenance"),
             "the_interfaces": record.get("interfaces"),
+            "the_disks": record.get("disks"),
         }
         named = [item for item in UNAVAILABLE if item in (record.get("unavailable") or [])]
         report["the_unavailable_named"] = named
@@ -233,24 +270,35 @@ def main():
         assert report["the_every_unavailable_kind_is_named"], \
             f"the kinds that are not available are not named: {record.get('unavailable')}"
         assert record.get("provenance"), "the report carries no provenance"
+        assert record.get("interfaces"), "the report carries no interface"
+        assert record.get("disks"), "the report carries no disk"
 
-        # the observations of the source: the supported kinds
+        # 4. the observations of the source: the supported kinds
         deadline = time.monotonic() + 180
         observations = []
-        source_id = None
+        source_id = connection.get("source_id")
+        published = None
         while time.monotonic() < deadline:
-            _, sources = request(base, "/api/v2/sources", opener=opener)
-            items = sources if isinstance(sources, list) else sources.get("items", [])
+            status, value = request(base, "/api/v2/sources", opener=opener)
+            assert status == 200, f"the sources are not readable: {value}"
+            items = value if isinstance(value, list) else value.get("items", [])
             ssh_source = next((item for item in items
-                               if str(item.get("id", "")).startswith("c") and
-                               item.get("kind") == "ssh_host"), None)
-            if ssh_source is None:
-                ssh_source = next((item for item in items
-                                   if "SSH" in str(item.get("name", ""))), None)
+                               if str(item.get("name", "")).startswith("SSH host ")
+                               or (item.get("simulated") is False
+                                   and item.get("entity_id") == "coverage-device")), None)
             if ssh_source:
-                source_id = ssh_source["id"]
-                _, observations = request(
-                    base, f"/api/v1/metrics/current?source_id={source_id}", opener=opener)
+                source_id = ssh_source.get("id") or source_id
+                report["the_source_in_the_hierarchy"] = {
+                    "the_id": ssh_source.get("id"), "the_name": ssh_source.get("name"),
+                    "the_entity_id": ssh_source.get("entity_id"),
+                    "the_simulated": ssh_source.get("simulated"),
+                    "the_reachability": ssh_source.get("reachability"),
+                }
+                status, value = request(
+                    base, f"/api/v1/metrics/current?source={source_id}", opener=opener)
+                assert status == 200, f"the observations are not readable: {value}"
+                published = value if isinstance(value, list) else value.get("items", [])
+                observations = published or connection.get("observations") or []
                 if observations:
                     break
             time.sleep(2)
@@ -258,11 +306,12 @@ def main():
 
         delivered = {}
         for observation in observations:
-            metric = observation.get("metric") or observation.get("metric_id") or {}
-            name = metric.get("id") if isinstance(metric, dict) else metric
-            value = observation.get("value")
+            name = observation.get("metric_id")
             if name:
-                delivered[name] = value
+                delivered[name] = scalar(observation.get("value"))
+        report["the_delivered_metrics"] = sorted(delivered)
+        report["the_observations_are_published"] = bool(published)
+
         coverage = {}
         for kind, metrics in SUPPORTED.items():
             present = [name for name in metrics if name in delivered]
@@ -271,9 +320,6 @@ def main():
         report["the_coverage"] = coverage
         report["the_every_supported_kind_is_covered"] = all(
             item["the_covered"] for item in coverage.values())
-        report["the_delivered_metrics"] = sorted(delivered)
-        report["the_steps"] = report["steps"]
-        report["steps"].append("the supported kinds are measured")
         assert report["the_every_supported_kind_is_covered"], \
             f"a supported kind is not measured: {coverage}"
 
@@ -282,8 +328,20 @@ def main():
                     if any(item in str(name) for item in UNAVAILABLE)]
         report["the_measurements_that_were_invented"] = invented
         assert not invented, f"a measurement that is not available was delivered: {invented}"
+        report["steps"].append("the supported kinds are measured")
 
-        # the surface names the kinds that are not available
+        # the readings of the kinds that carry a number
+        report["the_readings"] = {
+            "host.memory_total_bytes": delivered.get("host.memory_total_bytes"),
+            "host.memory_used_bytes": delivered.get("host.memory_used_bytes"),
+            "host.uptime_seconds": delivered.get("host.uptime_seconds"),
+            "host.cpu_info": delivered.get("host.cpu_info"),
+            "host.model": delivered.get("host.model"),
+            "the_disks": len(json.loads(delivered.get("host.disks", "[]"))),
+            "the_interfaces": len(json.loads(delivered.get("host.interfaces", "[]"))),
+        }
+
+        # 5. the surface names the kinds that are not available
         result = subprocess.run(
             ["node", str(ROOT / "apps/flutter/test/browser_device_connection.mjs"),
              base, str(evidence)],
@@ -295,34 +353,40 @@ def main():
                      OIP_BROWSER_CREDENTIAL=str(credential),
                      OIP_SERVER_BIN=args.binary,
                      OIP_EXPECTED_FINGERPRINT=fingerprint,
-                     OIP_EXPECTED_CONNECTION_STATUS=report["the_connection"]["the_status"],
+                     OIP_EXPECTED_CONNECTION_STATUS=report["connection_status"],
                      PLAYWRIGHT_MODULE=playwright_module()))
         if result.returncode != 0:
             raise AssertionError(f"the browser journey failed: "
                                  f"{result.stderr.strip()[-600:] or result.stdout.strip()[-600:]}")
         receipt = json.loads((evidence / "device-connection.json").read_text())
         report["browser_receipt"] = receipt
+        assert receipt["errors"] == [], receipt["errors"]
+        assert all(item["ok"] for item in receipt["findings"]), receipt["findings"]
         report["the_surface_names_the_unavailable"] = any(
             "not available are named" in str(item.get("check", "")) and item.get("ok")
-            for item in receipt.get("findings", []))
-        assert report["the_surface_names_the_unavailable"], receipt.get("findings")
+            for item in receipt["findings"])
+        assert report["the_surface_names_the_unavailable"], receipt["findings"]
+        report["checks"] = len(receipt["findings"])
         report["steps"].append("the surface names the measurements that are not available")
         report["status"] = "PASS"
     except AssertionError as error:
         report["status"] = "FAIL"
         report["error"] = str(error)
+        report["the_traceback"] = traceback.format_exc().splitlines()[-12:]
     except Exception as error:  # noqa: BLE001 - the receipt names every failure
         report["status"] = "FAIL"
         report["error"] = f"{type(error).__name__}: {error}"
+        report["the_traceback"] = traceback.format_exc().splitlines()[-12:]
     finally:
         try:
             tool("stop", expect_success=False)
         except Exception:
             pass
-        for simulator in simulators:
-            simulator.terminate()
         if fixture is not None:
-            fixture.stop()
+            try:
+                fixture.stop()
+            except Exception:
+                pass
         shutil.rmtree(work, ignore_errors=True)
 
     report["the_revision"] = subprocess.check_output(
@@ -333,7 +397,8 @@ def main():
         ["git", "status", "--porcelain"], cwd=ROOT, text=True).strip()
     report["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     (evidence / "measurement-coverage.json").write_text(json.dumps(report, indent=2) + "\n")
-    print(json.dumps({k: v for k, v in report.items() if k != "steps"}, indent=2))
+    print(json.dumps({k: v for k, v in report.items()
+                      if k not in ("steps", "browser_receipt")}, indent=2))
     return 0 if report.get("status") == "PASS" else 1
 
 
