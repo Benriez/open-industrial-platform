@@ -40,6 +40,8 @@ production-security scope of G10 and the operator acceptance of G12.
 
 ## Operator actions required (nothing here is executed by the loop)
 
+* Every receipt of the release names the revision and the tree it was measured on, so the
+  operator can tell whether the evidence of a claim is current (`docs/evidence/`).
 * Decide F5 permission rule (N1b) and protected schema-7 activation with a fresh schema-6 backup (N4).
 * Decide the storage-failure path of the Core: the behaviour is designed but not measured, and a
   rehearsal needs a volume with a quota (a full disk is forbidden here and a read-only mount is

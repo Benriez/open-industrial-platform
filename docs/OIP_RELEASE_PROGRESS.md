@@ -2333,6 +2333,25 @@ either keeps that port for the instance or asks for a bundle that is built for t
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 49 — every receipt names the revision it was measured on
+
+**Status: PROVED on canonical `main`.**
+A reader of the evidence must be able to tell whether a receipt is **current**. Most of the
+receipts of the release named neither the revision nor the tree they were measured on — the
+milestone receipts of the eras do (they carry their baseline), the receipts of this release did not.
+
+Every rehearsal now records the revision, the tree and the cleanliness of the working tree, and
+the browser journeys receive the revision from their runner and record it as well. The receipts of
+the acceptance (the canonical gate) name their revision already.
+
+The receipts of this release that were measured before the change were re-measured on the current
+tree — the seventeen rehearsals and their browser journeys — and the long ones (the performance
+baseline, the extended stability run, the lifetime of the session, the reproducibility of the
+builds) were re-measured in the background.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
