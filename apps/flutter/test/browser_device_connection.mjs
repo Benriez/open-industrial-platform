@@ -360,6 +360,18 @@ const observeIdentity = async (rounds) => {
   }
   return false;
 };
+
+// The stability of the tile: the panel refreshes itself, and the tile must
+// stay open while the operator reads the verified identity.
+const observeStability = async (rounds) => {
+  const states = [];
+  for (let step = 0; step < rounds; step++) {
+    states.push(await identityState());
+    await page.waitForTimeout(500);
+  }
+  receiptStates.identityStability = states;
+  return states;
+};
 await observeIdentity(4);
 let expansion = { 'the_attempts': [], 'the_state': 'not-tried' };
 if (!identitySeen) {
@@ -367,7 +379,11 @@ if (!identitySeen) {
   receiptStates.identityExpansion = expansion;
   // The panel refreshes itself every few seconds: the tile must stay open
   // while the operator reads the verified identity.
-  await observeIdentity(24);
+  await observeStability(24);
+  if (!identitySeen) {
+    const painted = await labels();
+    if (painted.includes('Nicht verfügbar: ')) identitySeen = painted;
+  }
 }
 fs.writeFileSync(`${outDir}/device-connection-identity-states.txt`,
   identityStates.join('\n') + '\n');
@@ -394,6 +410,7 @@ const receipt = {
   schema: 'oip-device-connection-v1',
   the_states_of_the_verified_identity: receiptStates.identityStates,
   the_opening_of_the_verified_identity: receiptStates.identityExpansion || null,
+  the_stability_of_the_verified_identity: receiptStates.identityStability || null,
   revision: process.env.OIP_REVISION || null,
   the_detail_is: 'the message that describes the failure of the check',
   scope: 'the verified connection of a device in the approved surface against the real Core',
