@@ -48,7 +48,14 @@ fs.mkdirSync(outDir, { recursive: true });
 const findings = [];
 const errors = [];
 const check = (name, ok, detail) => {
-  findings.push({ check: name, ok: !!ok, detail: detail ?? null });
+  findings.push({
+    check: name,
+    ok: !!ok,
+    // The message describes the failure of the check. A check that
+    // passed carries it as well, so a reader does not mistake it for
+    // an observation of the surface.
+    the_failure_message: detail ?? null,
+  });
   if (!ok) throw new Error(`${name}: ${detail ?? 'failed'}`);
 };
 
