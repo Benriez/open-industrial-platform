@@ -52,6 +52,63 @@ The plan names the principals. The IPC configuration must bind to a principal
 that the plan enables, otherwise the Core refuses to start with
 `IPC binding requires a provisioned enabled principal or explicit legacy mode`.
 
+### 1.1 The parts of a plan
+
+A plan is the hierarchy of the instance and the permissions of its principals.
+The example `examples/multi-infrastructure-plan.json` carries two
+organizations; the smallest useful plan for an operator looks like this:
+
+```json
+{
+  "organizations": [
+    { "id": "org-1", "name": "Meine Organisation" }
+  ],
+  "infrastructures": [
+    { "id": "infra-1", "organization_id": "org-1", "name": "Meine Infrastruktur" }
+  ],
+  "sites": [
+    { "id": "site-1", "infrastructure_id": "infra-1", "name": "Mein Standort" }
+  ],
+  "sources": [
+    { "source_id": "source-1", "site_id": "site-1", "device_id": "device-1",
+      "entity_id": "M-01" }
+  ],
+  "principals": [
+    { "id": "operator", "name": "operator", "enabled": true }
+  ],
+  "roles": [
+    { "id": "reader", "name": "Read only capabilities",
+      "permissions": ["core_read", "sources_read", "devices_read", "telemetry_read",
+                      "events_read", "opcua_read", "hierarchy_read"] }
+  ],
+  "bindings": [
+    { "principal_id": "operator", "role_id": "reader",
+      "scope": { "kind": "organization", "id": "org-1" } }
+  ],
+  "legacy_single_infrastructure": false
+}
+```
+
+* The **sources** of the plan must exactly match the sources of the
+  configuration of the instance — the same identifiers. The Core refuses the
+  start otherwise with `runtime sources must exactly match provisioned
+  registry`.
+* A **principal** may be bound to a scope: `platform`, `organization`,
+  `infrastructure`, `site` or `source`. The scope of a binding decides what the
+  principal sees; a role of an organization does not see the sources of the
+  next organization.
+* The **permissions** of a role decide what the principal may do. The read
+  permissions are `core_read`, `sources_read`, `devices_read`, `telemetry_read`,
+  `events_read`, `opcua_read` and `hierarchy_read`. The writing permissions
+  (`settings_write`, `inventory_manage`) are separate and are bound with their
+  own role.
+* `legacy_single_infrastructure` stays `false` for a multi-infrastructure
+  instance. It is the only way to the legacy mode, in which the instance
+  serves the local operator access without a bearer.
+* The **device** of a source placement (`device_id`) becomes the device of the
+  inventory of the instance. The registration of a device with a connection of
+  its own is a separate, later step (§7 and the onboarding of the surface).
+
 ## 2. Start, status, stop, restart
 
 ```sh
