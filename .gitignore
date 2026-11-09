@@ -115,6 +115,7 @@ secrets/
 !/docs/evidence/oip-reconnect-recovery/rehearsal.json
 !/docs/evidence/oip-activation-dry-run/activation-dry-run.json
 !/docs/evidence/oip-documented-plan/documented-plan.json
+!/docs/evidence/oip-settings-offline/settings-offline.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json

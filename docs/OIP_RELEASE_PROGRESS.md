@@ -2099,11 +2099,38 @@ byte-identical to the local build, the operator visual approval still
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 38 — the offline change of a setting of the instance
+
+**Status: PROVED on canonical `main`.**
+The Core has **no** HTTP and no MCP write path for the settings: the change is an offline
+operation of the local operator with the exclusive local CLI (`--settings-change`). The settings
+navigation of the application says so ("Kein Browser-Save"), but the runbook of the operations did
+not name the procedure — and the operator has no other way to give their instance a name.
+
+`tests/oip_settings_offline.py` proves the procedure against the **release** binary
+(`docs/evidence/oip-settings-offline/settings-offline.json`):
+
+| Step | Result |
+|---|---|
+| the change of `instance_name` of the instance | applied offline, the record has the revision 1 |
+| the same change with a wrong revision | **refused** — the guard of the write |
+| the same change with a principal without `settings_write` | **refused** |
+| a value outside the validation of the key (`history_page_size` = 9999) | **refused** |
+| the next validated start | the value is effective: `Meine Instanz`, `apply_status: active_startup_snapshot` |
+
+The procedure is now in the runbook (§12) with the three rules that the Core enforces: the
+principal needs the permission in the scope, the metadata belongs to the platform scope and
+`history_page_size` is inherited, and the `expected_revision` is the guard of the write.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
 | `target/oip-canonical-regression-final/` | the final canonical acceptance on the clean tree `4458d34` / `09f4cad`: the widget gate, the browser gate, the visual comparison, the eight functional phases and the gate receipt (iteration 26, local, not tracked) |
+| `docs/evidence/oip-settings-offline/settings-offline.json` | the measured offline change of a setting of the instance: the change, the guard of the revision, the permission, the validation and the effect at the next start (iteration 38) |
 | `docs/evidence/oip-documented-plan/documented-plan.json` | the measured example of the plan in the runbook: it provisions an instance, the instance answers and the operator of the example authorizes the session (iteration 36) |
 | `docs/evidence/oip-activation-dry-run/activation-dry-run.json` | the measured dry run of the activation of the release on a copy of the store of the operator: the migration is accepted, nothing is lost, the personal installation is unchanged (iteration 35) |
 | `docs/evidence/oip-reconnect-recovery/reconnect-recovery.json` | the measured reconnect and recovery of the application: the restart of the instance, the honest state of the surface, the named cause and the restored projection (iteration 33) |

@@ -399,7 +399,50 @@ the sources of the instance with closed loopback ports, so no private endpoint
 is contacted; and the local IPC binds to the enabled principal of the store,
 because a principal that the store does not carry is refused by the Core.
 
-## 12. What the receipts prove
+## 12. The offline change of a setting of the instance
+
+The Core has **no** HTTP and no MCP write path for the settings: the change
+is an offline operation of the local operator with the exclusive local CLI. The
+settings navigation of the application says so ("Kein Browser-Save"). The
+procedure is measured by `tests/oip_settings_offline.py`
+(`docs/evidence/oip-settings-offline/settings-offline.json`).
+
+```sh
+# 1. the instance is stopped: the change is an offline operation
+tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" stop
+
+# 2. the change is written as a file and handed to the binary
+cat > "$STATE/setting.json" <<'JSON'
+{
+  "principal": "reader-org-a",
+  "scope": { "kind": "platform" },
+  "key": "instance_name",
+  "value": { "type": "text", "value": "Meine Instanz" },
+  "expected_revision": 0
+}
+JSON
+target/release/oip-server --config "$CORE_CONFIG" --settings-change "$STATE/setting.json"
+
+# 3. the instance starts again; the value is effective from this start on
+tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" \
+    --ipc-config "$IPC_CONFIG" --binary target/release/oip-server start
+```
+
+**What the Core enforces.** The `principal` must carry the permission
+`settings_write` in the scope of the change — a principal without it is
+refused. The `scope` decides where the value lives: the metadata of the
+instance (`instance_name`, `instance_description`) belongs to the platform
+scope, `history_page_size` is inherited and may live in every scope. The
+`expected_revision` is the guard of the write: the revision of the value that
+the operator has seen; a wrong revision is refused. A value outside the
+validation of the key is refused (`history_page_size` accepts 4..100).
+
+The answer of the Core names the record, its revision and the status of the
+application. The value becomes effective at the **next validated start** of
+the Core (`apply_status: active_startup_snapshot`) — the change itself is
+never applied to a running instance.
+
+## 13. What the receipts prove
 
 `docs/evidence/oip-operations/operations.json` records the measured result of
 the sequence above against a disposable instance, and

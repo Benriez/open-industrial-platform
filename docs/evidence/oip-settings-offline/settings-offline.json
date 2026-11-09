@@ -1,0 +1,80 @@
+{
+  "schema": "oip-settings-offline-v1",
+  "steps": [
+    "the instance is provisioned",
+    "the setting is changed offline",
+    "the wrong revision is refused",
+    "the principal without the permission is refused",
+    "the invalid value is refused",
+    "the value is effective at the next start"
+  ],
+  "the_change": {
+    "exit_code": 0,
+    "answer": {
+      "record": {
+        "scope": {
+          "kind": "platform"
+        },
+        "key": "instance_name",
+        "value": {
+          "type": "text",
+          "value": "Meine Instanz"
+        },
+        "revision": 1,
+        "updated_ms": 1794190236374,
+        "actor": "reader-org-a"
+      },
+      "apply_status": "persisted_requires_restart",
+      "effective_runtime_value": null
+    },
+    "output": "{\"record\":{\"scope\":{\"kind\":\"platform\"},\"key\":\"instance_name\",\"value\":{\"type\":\"text\",\"value\":\"Meine Instanz\"},\"revision\":1,\"updated_ms\":1794190236374,\"actor\":\"reader-org-a\"},\"apply_status\":\"persisted_requires_restart\",\"effective_runtime_value\":null}"
+  },
+  "the_revision_of_the_setting": 1,
+  "the_value_of_the_setting": {
+    "type": "text",
+    "value": "Meine Instanz"
+  },
+  "the_wrong_revision": {
+    "exit_code": 1,
+    "output": "Error: Hierarchy(\"SETTINGS_REVISION_CONFLICT\")"
+  },
+  "the_unauthorized_principal": {
+    "exit_code": 1,
+    "output": "Error: Hierarchy(\"invalid typed settings or authorization\")"
+  },
+  "the_invalid_value": {
+    "exit_code": 1,
+    "output": "Error: Hierarchy(\"invalid typed settings or authorization\")"
+  },
+  "the_effective_setting": {
+    "key": "instance_name",
+    "requested_scope": {
+      "kind": "platform"
+    },
+    "persisted": {
+      "scope": {
+        "kind": "platform"
+      },
+      "key": "instance_name",
+      "value": {
+        "type": "text",
+        "value": "Meine Instanz"
+      },
+      "revision": 1,
+      "updated_ms": 1794190236374,
+      "actor": null
+    },
+    "effective": {
+      "type": "text",
+      "value": "Meine Instanz"
+    },
+    "origin": {
+      "kind": "platform"
+    },
+    "effective_revision": 1,
+    "apply_status": "active_startup_snapshot"
+  },
+  "the_value_is_effective": true,
+  "status": "PASS",
+  "finished_utc": "2026-11-09T02:10:40Z"
+}

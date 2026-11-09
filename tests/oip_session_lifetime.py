@@ -151,16 +151,27 @@ def main():
                   f"({SESSION_TTL} s)", flush=True)
             time.sleep(SESSION_TTL + 30)
             status, answer = request(base, "/api/v2/browser/session", opener=opener)
+            # The session route answers the state of the session: an expired
+            # session is reported as not authenticated. The management read
+            # is the proof that the identity is gone.
+            read_status, read_answer = request(base, "/api/v2/organizations",
+                                               opener=opener)
             report["the_session_after"] = {"status": status,
                                            "authenticated": answer.get("authenticated"),
                                            "code": answer.get("code")}
+            report["the_management_read_after"] = {"status": read_status,
+                                                    "code": read_answer.get("code")}
             report["the_session_lifetime"] = {
                 "measured": True, "the_promised_seconds": SESSION_TTL,
-                "the_refused_after_seconds": SESSION_TTL + 30,
-                "the_refusal": answer.get("code"),
+                "the_checked_after_seconds": SESSION_TTL + 30,
+                "the_session_is_authenticated": answer.get("authenticated"),
+                "the_management_read": read_status,
+                "the_refusal": read_answer.get("code"),
             }
-            assert status == 403, f"the expired session was accepted: {status}"
-            assert answer.get("authenticated") is False, answer
+            assert answer.get("authenticated") is False, \
+                f"the expired session is still authenticated: {answer}"
+            assert read_status == 403, \
+                f"the expired session still authorizes a management read: {read_status}"
             report["steps"].append("the expired session is refused")
 
         report["status"] = "PASS"

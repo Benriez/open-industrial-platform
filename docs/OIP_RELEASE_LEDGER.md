@@ -48,6 +48,10 @@ production-security scope of G10 and the operator acceptance of G12.
   backup remain the operator's.
 * Name an approved physical device and credentials path for G5/G12.
 * Accept or reject the production-security scope (G10).
+* The operator can give their instance a name with the **offline** change of a setting — the
+  only path the Core offers (`docs/runbooks/operations.md` §12, measured in
+  `docs/evidence/oip-settings-offline/settings-offline.json`). Nothing has to be authorized for
+  it; the procedure is documented.
 * Authorize the local installation of the application as a launch agent (G9/N17) and name the
   release artifacts that may be signed and distributed. The application bundle itself is built
   and proven (`docs/evidence/oip-macos-app/macos-app.json`); only the installation as a system
