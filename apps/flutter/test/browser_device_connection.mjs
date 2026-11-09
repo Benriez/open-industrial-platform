@@ -118,12 +118,31 @@ const clickAccessible = async (needle) => {
     const area = box.width * box.height;
     if (area < smallest) {
       smallest = area;
-      target = box;
+      target = element;
     }
   }
   if (!target) throw new Error(`the control "${needle}" has no geometry`);
-  await page.mouse.click(target.x + Math.min(target.width / 2, 60), target.y + target.height / 2);
+  // The control is brought into the view before it is activated: a control
+  // below the fold has a geometry outside the viewport, and the click would
+  // land on something else.
+  await target.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  const box = await target.boundingBox();
+  if (!box) throw new Error(`the control "${needle}" has no geometry after scrolling`);
+  await page.mouse.click(box.x + Math.min(box.width / 2, 60), box.y + box.height / 2);
   await page.waitForTimeout(1500);
+};
+
+// The state of the verified identity: the panel refreshes itself, so the
+// state of the tile is observed over the time.
+const identityState = async () => {
+  for (const element of await page.$$('flt-semantics')) {
+    const label = (await element.getAttribute('aria-label')) || '';
+    if (label.includes('Tatsächlich verifizierte Identität')) {
+      return label.includes('Expanded') ? 'expanded' : 'collapsed';
+    }
+  }
+  return 'absent';
 };
 
 const clickText = async (text) => {
@@ -205,6 +224,9 @@ if (code) {
   }, null, { timeout: 300000 });
 }
 
+// The states that the journey observed on the way.
+const receiptStates = {};
+
 // The device workspace of the approved shell.
 await page.getByRole('button', { name: 'Navigation Geräte & Dienste' }).click({ force: true });
 await page.waitForTimeout(5000);
@@ -238,8 +260,24 @@ check('the monitoring of the device is shown',
 
 // The really verified identity of the host.
 await clickAccessible('Tatsächlich verifizierte Identität');
-await page.waitForTimeout(1500);
-surface = await readSurface();
+// The state of the tile is observed while it is read: the panel refreshes
+// itself every few seconds, and a reader must be able to keep it open.
+const identityStates = [];
+let identitySeen = '';
+for (let step = 0; step < 20; step++) {
+  const state = await identityState();
+  identityStates.push(state);
+  if (state === 'expanded') {
+    const painted = await labels();
+    if (painted.includes('Nicht verfügbar')) {
+      identitySeen = painted;
+      break;
+    }
+  }
+  await page.waitForTimeout(500);
+}
+receiptStates.identityStates = identityStates;
+surface = identitySeen || await readSurface();
 check('the verified identity of the host is shown',
   /Arbeitsspeicher|Hostname|Betriebssystem|memory_total_bytes|operating_system/i.test(surface),
   'the identity of the host is missing');
@@ -257,6 +295,7 @@ await page.screenshot({ path: `${outDir}/device-connection.png` });
 
 const receipt = {
   schema: 'oip-device-connection-v1',
+  the_states_of_the_verified_identity: receiptStates.identityStates,
   revision: process.env.OIP_REVISION || null,
   the_detail_is: 'the message that describes the failure of the check',
   scope: 'the verified connection of a device in the approved surface against the real Core',
