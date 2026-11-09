@@ -1,0 +1,80 @@
+{
+  "status": "PASS",
+  "actual_flutter_ssh_monitoring": true,
+  "hardware": "owned loopback SSH fixture, not private Raspberry Pi",
+  "host_key_consent": true,
+  "identity_confirmation": true,
+  "existing_device_id_preserved": true,
+  "http_only_cookie": true,
+  "no_browser_token_storage": true,
+  "rendered_measurements": {
+    "observed_metrics": [
+      "host.architecture",
+      "host.cpu_info",
+      "host.disks",
+      "host.hostname",
+      "host.interfaces",
+      "host.memory_total_bytes",
+      "host.memory_used_bytes",
+      "host.model",
+      "host.os",
+      "host.uptime_seconds"
+    ],
+    "host_os": "Darwin",
+    "memory_total_bytes": 17179869184,
+    "all_fresh": true
+  },
+  "rendered_history": {
+    "persisted_samples": 10,
+    "rendered_samples": 6,
+    "all_stale": true,
+    "receive_times_shown": 1,
+    "first_receive_time": "2026-11-09 12:25:30.043 UTC",
+    "metrics": [
+      "host.disks",
+      "host.os",
+      "host.model",
+      "host.architecture",
+      "host.cpu_info",
+      "host.memory_total_bytes"
+    ]
+  },
+  "rendered_administration": {
+    "device_id": "95565935-f1ef-41dd-af0f-951623c1f3af",
+    "revision_before": 1,
+    "revision_after": 2,
+    "display_name_updated": true,
+    "online_archive_refused": "OFFLINE_ARCHIVE_REQUIRED",
+    "archive_is_offline_operation": true
+  },
+  "rendered_overview": {
+    "approved_surface": "unified_infrastructure_view",
+    "authorized_source": "SSH host browser-existing",
+    "source_registry_section": true,
+    "dynamic_device_metric": "3",
+    "dynamic_source_metric": "2/2",
+    "measured_metric": "host.memory_total_bytes",
+    "measured_value": 17179869184,
+    "measurement_proof": "device engineering workspace of the approved UI",
+    "demo_coordinates_absent": true
+  },
+  "rendered_diagnostics": {
+    "approved_surface": "persisted_evidence",
+    "persisted_evidence_section": true,
+    "diagnosis_history_status": "not_implemented",
+    "health_transitions": 50,
+    "documented_gaps": 2
+  },
+  "rendered_network": {
+    "approved_surface": "network_engineering_explorer",
+    "authorized_placement": "Infrastructure A1",
+    "rendered_device_id": "browser-existing",
+    "source_registry_proof": "overview source registry and device engineering workspace",
+    "loading_state_absent": true,
+    "demo_zones_absent": true
+  },
+  "loaded_build_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
+  "errors": [],
+  "external": [],
+  "the_revision_of_the_acceptance": "3c663f90c3f6"
+}

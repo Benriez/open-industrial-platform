@@ -1,0 +1,85 @@
+{
+  "schema": "oip-storage-failure-v1",
+  "steps": [
+    "the instance runs with its store on the bounded volume",
+    "the operator session is authorized",
+    "the collection runs",
+    "the volume is full",
+    "the instance survives the full volume and names the failure",
+    "the instance recovers and collects again",
+    "the instance stops"
+  ],
+  "the_volume": {
+    "the_megabytes": 64,
+    "the_mount": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-storage-failure-ygk8oqof/volume",
+    "the_free_bytes_at_the_start": 65499136
+  },
+  "core_pid": 84761,
+  "the_health_before": {
+    "the_status": 200,
+    "the_core": {
+      "lifecycle": "degraded",
+      "live": true,
+      "ready": true,
+      "persistence_healthy": true,
+      "persistence_errors": 0,
+      "last_persistence_error": null,
+      "revision": 60,
+      "run_id": 1,
+      "persisted_observations": 48
+    }
+  },
+  "the_observations_before": 48,
+  "the_fill": {
+    "the_bytes_written": 62193664,
+    "the_refusal": "[Errno 28] No space left on device",
+    "the_free_bytes": 20480
+  },
+  "the_free_bytes_when_full": 20480,
+  "the_health_when_the_store_cannot_be_written": {
+    "the_status": 200,
+    "the_core": {
+      "lifecycle": "degraded",
+      "live": true,
+      "ready": false,
+      "persistence_healthy": false,
+      "persistence_errors": 18,
+      "last_persistence_error": "commit_failed_retry_pending",
+      "revision": 60,
+      "run_id": 1,
+      "persisted_observations": 48
+    }
+  },
+  "the_observations_when_the_store_cannot_be_written": 48,
+  "the_status_of_the_instance_during_the_failure": 200,
+  "the_log_names_the_failure": true,
+  "the_release": {
+    "the_free_bytes": 61468672
+  },
+  "the_health_after_the_recovery": {
+    "the_status": 200,
+    "the_core": {
+      "lifecycle": "degraded",
+      "live": true,
+      "ready": true,
+      "persistence_healthy": true,
+      "persistence_errors": 19,
+      "last_persistence_error": null,
+      "revision": 75,
+      "run_id": 1,
+      "persisted_observations": 63
+    }
+  },
+  "the_observations_before_the_recovery": 70,
+  "the_observations_after_the_recovery": 72,
+  "the_integrity": "ok",
+  "the_shutdown": {
+    "the_exit_code": 0,
+    "the_output": "{\"status\": \"stopped\", \"pid\": 84761}"
+  },
+  "status": "PASS",
+  "the_revision": "96a2f1c8995668906ddd5ffb851a2d452cc28abc",
+  "the_tree": "f894d717dface237cb12359030ec898983bef283",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-09T11:59:58Z"
+}

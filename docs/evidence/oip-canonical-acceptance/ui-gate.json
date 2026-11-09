@@ -1,0 +1,89 @@
+{
+  "schema": "oip-canonical-ui-gate-v2",
+  "started_utc": "2026-11-09T12:17:35Z",
+  "source_revision": "3c663f90c3f62ad77b7f2a79a6e1a145eff04e44",
+  "source_tree": "c263b5620f702619633d5c4662ad1874134bba4e",
+  "source_worktree": "/Users/benny/Code/open-industrial-platform",
+  "source_dirty": false,
+  "baseline_document": "docs/design/OIP_CANONICAL_UI_BASELINE.md",
+  "handoff_manifest": "docs/design/OIP_UI_2027_HANDOFF_MANIFEST.json",
+  "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
+  "build_skipped": false,
+  "checks": [
+    {
+      "check": "current source web release build",
+      "ok": true,
+      "detail": "flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none"
+    },
+    {
+      "check": "bundle carries approved marker Alle berechtigten Infrastrukturen",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "bundle carries approved marker Einstellungen",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "bundle carries approved marker INFRASTRUCTURE COMMAND CENTER",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "bundle has no legacy marker OIP / 005 UI",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "bundle has no legacy marker Deine Infrastruktur. Ein Bild.",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "bundle has no legacy marker Erfasste Ger\u00e4te",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "bundle has no legacy marker Erreichbare Ger\u00e4te",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "bundle has no legacy marker Temperatur M-01",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "bundle has no legacy marker Temperatur \u00b7 M-01",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "full Flutter widget/unit and design gate",
+      "ok": true,
+      "detail": "flutter test (includes canonical_ui_gate_test.dart and all preserved expert workflows)"
+    }
+  ],
+  "verdict": "PARTIAL",
+  "build_command": [
+    "flutter",
+    "build",
+    "web",
+    "--release",
+    "--web-renderer",
+    "canvaskit",
+    "--no-web-resources-cdn",
+    "--pwa-strategy=none"
+  ],
+  "bundle_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
+  "bundle_bytes": 3032537,
+  "bundle_path": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/web/main.dart.js",
+  "flutter_tests_passed": null,
+  "flutter_tests_failed": null,
+  "browser_gate_executed": false,
+  "complete": false,
+  "finished_utc": "2026-11-09T12:18:33Z",
+  "the_revision_of_the_acceptance": "3c663f90c3f6"
+}

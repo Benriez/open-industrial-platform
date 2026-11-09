@@ -1,0 +1,1660 @@
+{
+  "baseline": "49a86bb0aa9f737fe9392eb2b5421e1ffe2f8c68",
+  "phases": [
+    {
+      "phase": "browser_identity_online_writer",
+      "status": "PASS",
+      "details": {
+        "single_use_pairing": true,
+        "http_only_cookie": true,
+        "csrf_origin": true,
+        "trusted_principal": "reader-org-a",
+        "foreign_site_denied": true,
+        "single_writer_online_registration": true
+      }
+    },
+    {
+      "phase": "ssh_handshake_confirmation_monitoring",
+      "status": "PASS",
+      "details": {
+        "explicit_host_key_consent": true,
+        "verified_hostname_present": true,
+        "facts_os": "Darwin",
+        "existing_id_preserved": true,
+        "inventory_count": 1,
+        "actual_observations": 10,
+        "read_only_mcp_parity": true,
+        "physical_pi": false
+      }
+    },
+    {
+      "phase": "restart_sigkill_identity",
+      "status": "PASS",
+      "details": {
+        "same_device_id": true,
+        "config_survives": true,
+        "integrity": "ok",
+        "foreign_keys": true,
+        "duplicate_keys": 0
+      }
+    },
+    {
+      "phase": "actual_flutter_ssh_onboarding",
+      "status": "PASS",
+      "details": {
+        "existing_id": "browser-existing",
+        "real_loopback_ssh": true,
+        "no_private_hardware_contact": true,
+        "persisted_history_samples": 20,
+        "persisted_history_is_stale": true
+      }
+    },
+    {
+      "phase": "no_clients_ingestion_progress",
+      "status": "PASS",
+      "details": {
+        "before": 450,
+        "after": 459,
+        "no_browser_or_mcp_sessions": true
+      }
+    },
+    {
+      "phase": "host_key_change_blocks_collection",
+      "status": "PASS",
+      "details": {
+        "changed_key_rejected": true,
+        "existing_id_unchanged": true,
+        "new_observations_after_block": 0
+      }
+    },
+    {
+      "phase": "weak_host_key_is_rejected_by_the_server",
+      "status": "PASS",
+      "details": {
+        "code": "SSH_HOST_KEY_TOO_WEAK",
+        "offered_for_acceptance": false,
+        "pinned": false,
+        "no_binding_created": true
+      }
+    },
+    {
+      "phase": "eight_official_mcp_clients",
+      "status": "PASS",
+      "details": {
+        "clients": 8,
+        "shared_core": true,
+        "disconnect_isolated": true
+      }
+    }
+  ],
+  "runtime_directory": "/private/tmp/oip82-94507-1794226616782793000",
+  "model_used": false,
+  "server_binary_sha256": "36c79dcbbc0d5331038458807b9998c465c06ff4afee5ccd4b7bd3b8f64128fe",
+  "mcp_probe_binary_sha256": "f79e908bbb237e812c891f0344ab3a45dec4d6a7bc9621f322acb0aadb02bf9a",
+  "canonical_ui_precheck": {
+    "schema": "oip-canonical-ui-gate-v2",
+    "started_utc": "2026-11-09T12:17:35Z",
+    "source_revision": "3c663f90c3f62ad77b7f2a79a6e1a145eff04e44",
+    "source_tree": "c263b5620f702619633d5c4662ad1874134bba4e",
+    "source_worktree": "/Users/benny/Code/open-industrial-platform",
+    "source_dirty": false,
+    "baseline_document": "docs/design/OIP_CANONICAL_UI_BASELINE.md",
+    "handoff_manifest": "docs/design/OIP_UI_2027_HANDOFF_MANIFEST.json",
+    "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
+    "build_skipped": false,
+    "checks": [
+      {
+        "check": "current source web release build",
+        "ok": true,
+        "detail": "flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none"
+      },
+      {
+        "check": "bundle carries approved marker Alle berechtigten Infrastrukturen",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "bundle carries approved marker Einstellungen",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "bundle carries approved marker INFRASTRUCTURE COMMAND CENTER",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "bundle has no legacy marker OIP / 005 UI",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "bundle has no legacy marker Deine Infrastruktur. Ein Bild.",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "bundle has no legacy marker Erfasste Ger\u00e4te",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "bundle has no legacy marker Erreichbare Ger\u00e4te",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "bundle has no legacy marker Temperatur M-01",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "bundle has no legacy marker Temperatur \u00b7 M-01",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "full Flutter widget/unit and design gate",
+        "ok": true,
+        "detail": "flutter test (includes canonical_ui_gate_test.dart and all preserved expert workflows)"
+      }
+    ],
+    "verdict": "PARTIAL",
+    "build_command": [
+      "flutter",
+      "build",
+      "web",
+      "--release",
+      "--web-renderer",
+      "canvaskit",
+      "--no-web-resources-cdn",
+      "--pwa-strategy=none"
+    ],
+    "bundle_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
+    "bundle_bytes": 3032537,
+    "bundle_path": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/web/main.dart.js",
+    "flutter_tests_passed": null,
+    "flutter_tests_failed": null,
+    "browser_gate_executed": false,
+    "complete": false,
+    "finished_utc": "2026-11-09T12:18:33Z"
+  },
+  "physical_raspberry_pi_tested": false,
+  "ssh_fixture": "owned loopback OpenSSH, actual host facts",
+  "canonical_ui_browser": {
+    "verdict": "PASS",
+    "revision": "3c663f90c3f62ad77b7f2a79a6e1a145eff04e44",
+    "base": "http://127.0.0.1:64434",
+    "browser_version": "156.0.8078.80",
+    "bundle_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
+    "bundle_matches_local_build": true,
+    "workstations": [
+      "\u00dcbersicht",
+      "Ger\u00e4te & Dienste",
+      "Netzwerk & VPN",
+      "OPC-UA-Browser",
+      "Diagnose & Ereignisse",
+      "Einstellungen"
+    ],
+    "session": {
+      "authenticated": true,
+      "principal_id": "reader-org-a",
+      "mode": "local_operator_session"
+    },
+    "findings": [
+      {
+        "check": "application HTTP status",
+        "ok": true,
+        "detail": 200
+      },
+      {
+        "check": "anonymous real mode requires operator login",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "anonymous state never restores unified managed content",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "anonymous state has no legacy marker Deine Infrastruktur. Ein Bild.",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "anonymous state has no legacy marker Erfasste Ger\u00e4te",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "anonymous state has no legacy marker Erreichbare Ger\u00e4te",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "anonymous state has no legacy marker Temperatur M-01",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "anonymous state has no legacy marker Temperatur \u00b7 M-01",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "anonymous state has no legacy marker Normalbetrieb",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "anonymous state has no legacy marker Tailnet",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "anonymous state has no legacy marker Remote Site",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "anonymous state has no legacy marker OIP / 005",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "anonymous state has no legacy marker AGENT-FIRST",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "anonymous state has no legacy marker M-01",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "one-use login code supplied",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "bundle HTTP status",
+        "ok": true,
+        "detail": 200
+      },
+      {
+        "check": "served bundle equals local build",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "global infrastructure context selector",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "workstation navigation \u00dcbersicht",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "workstation navigation Ger\u00e4te & Dienste",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "workstation navigation Netzwerk & VPN",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "workstation navigation OPC-UA-Browser",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "workstation navigation Diagnose & Ereignisse",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "workstation navigation Einstellungen",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "current application identity",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "authorized projection",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "honest unknown state",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "managed mode has no legacy marker Deine Infrastruktur. Ein Bild.",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "managed mode has no legacy marker Erfasste Ger\u00e4te",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "managed mode has no legacy marker Erreichbare Ger\u00e4te",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "managed mode has no legacy marker Temperatur M-01",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "managed mode has no legacy marker Temperatur \u00b7 M-01",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "managed mode has no legacy marker Normalbetrieb",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "managed mode has no legacy marker Tailnet",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "managed mode has no legacy marker Remote Site",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "managed mode has no legacy marker OIP / 005",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "managed mode has no legacy marker AGENT-FIRST",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "managed mode has no legacy marker M-01",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "browser session HTTP status",
+        "ok": true,
+        "detail": 200
+      },
+      {
+        "check": "browser session authenticated",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "browser session uses managed local operator mode",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "browser session principal present",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "document overflow overview 1440px",
+        "ok": true,
+        "detail": 0
+      },
+      {
+        "check": "screenshot overview 1440px",
+        "ok": true,
+        "detail": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-1440.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "document overflow devices 1440px",
+        "ok": true,
+        "detail": 0
+      },
+      {
+        "check": "screenshot devices 1440px",
+        "ok": true,
+        "detail": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-devices-1440.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "document overflow network 1440px",
+        "ok": true,
+        "detail": 0
+      },
+      {
+        "check": "screenshot network 1440px",
+        "ok": true,
+        "detail": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-network-1440.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "document overflow opcua 1440px",
+        "ok": true,
+        "detail": 0
+      },
+      {
+        "check": "screenshot opcua 1440px",
+        "ok": true,
+        "detail": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-opcua-1440.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "document overflow diagnostics 1440px",
+        "ok": true,
+        "detail": 0
+      },
+      {
+        "check": "screenshot diagnostics 1440px",
+        "ok": true,
+        "detail": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-diagnostics-1440.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "document overflow settings 1440px",
+        "ok": true,
+        "detail": 0
+      },
+      {
+        "check": "screenshot settings 1440px",
+        "ok": true,
+        "detail": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-settings-1440.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on overview",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "document overflow overview 1920px",
+        "ok": true,
+        "detail": 0
+      },
+      {
+        "check": "screenshot overview 1920px",
+        "ok": true,
+        "detail": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-1920.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on devices",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "document overflow devices 1920px",
+        "ok": true,
+        "detail": 0
+      },
+      {
+        "check": "screenshot devices 1920px",
+        "ok": true,
+        "detail": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-devices-1920.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on network",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "document overflow network 1920px",
+        "ok": true,
+        "detail": 0
+      },
+      {
+        "check": "screenshot network 1920px",
+        "ok": true,
+        "detail": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-network-1920.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on opcua",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "document overflow opcua 1920px",
+        "ok": true,
+        "detail": 0
+      },
+      {
+        "check": "screenshot opcua 1920px",
+        "ok": true,
+        "detail": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-opcua-1920.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on diagnostics",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "document overflow diagnostics 1920px",
+        "ok": true,
+        "detail": 0
+      },
+      {
+        "check": "screenshot diagnostics 1920px",
+        "ok": true,
+        "detail": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-diagnostics-1920.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on settings",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "check": "document overflow settings 1920px",
+        "ok": true,
+        "detail": 0
+      },
+      {
+        "check": "screenshot settings 1920px",
+        "ok": true,
+        "detail": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-settings-1920.png"
+      },
+      {
+        "check": "only expected Core authorization denials",
+        "ok": true,
+        "detail": "[]"
+      },
+      {
+        "check": "no external browser requests",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "no browser JavaScript errors",
+        "ok": true,
+        "detail": ""
+      }
+    ],
+    "screenshots": [
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/authentication-required.png",
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-1440.png",
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-devices-1440.png",
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-network-1440.png",
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-opcua-1440.png",
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-diagnostics-1440.png",
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-settings-1440.png",
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-1920.png",
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-devices-1920.png",
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-network-1920.png",
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-opcua-1920.png",
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-diagnostics-1920.png",
+      "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-settings-1920.png"
+    ],
+    "console_errors": [],
+    "external_requests": [],
+    "core_denials": [
+      {
+        "url": "http://127.0.0.1:64434/api/v2/organizations?offset=0&limit=100",
+        "status": 403
+      },
+      {
+        "url": "http://127.0.0.1:64434/api/v1/system/status",
+        "status": 403
+      },
+      {
+        "url": "http://127.0.0.1:64434/api/v1/devices",
+        "status": 403
+      },
+      {
+        "url": "http://127.0.0.1:64434/api/v1/events",
+        "status": 403
+      },
+      {
+        "url": "http://127.0.0.1:64434/api/v1/sources",
+        "status": 403
+      },
+      {
+        "url": "http://127.0.0.1:64434/api/v1/metrics/current",
+        "status": 403
+      },
+      {
+        "url": "http://127.0.0.1:64434/api/v2/settings?scope=platform",
+        "status": 403
+      },
+      {
+        "url": "http://127.0.0.1:64434/api/v2/settings?scope=platform",
+        "status": 403
+      }
+    ],
+    "fatal": null,
+    "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
+    "duration_ms": 90318
+  },
+  "canonical_ui_visual": {
+    "schema": "oip-canonical-ui-visual-comparison-v2",
+    "verdict": "PASS",
+    "crop_invariant": {
+      "ok": true,
+      "expected_shell_width": 224,
+      "evidence": "manifest crop and tolerant source geometry check; rendered workstation/selector semantics are separately asserted by the browser gate"
+    },
+    "comparisons": [
+      {
+        "width": 1440,
+        "height": 900,
+        "baseline": "/Users/benny/Code/open-industrial-platform/docs/design/baselines/canonical-ui-1440.png",
+        "baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
+        "expected_baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
+        "actual": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-1440.png",
+        "actual_sha256": "e63664728a6c7e7ecc90f756c6ff5c57a13b88a91006348b578b3ae6ea4c3003",
+        "crop": [
+          0,
+          0,
+          224,
+          900
+        ],
+        "archive_derivation": {
+          "ok": true,
+          "available": true,
+          "status": "DERIVED_AND_PIXEL_VERIFIED",
+          "archive": "/Users/benny/Documents/OIP-Handoffs/ui-adaptive-workspaces-2027/20261107T132751Z/oip-ui-adaptive-workspaces-2027-handoff.tar.gz",
+          "archive_member": "handoff/screenshots/after/orientation-1440x900.png",
+          "pixel_comparison": "IDENTICAL",
+          "expected_baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
+          "pillow_version": "9.1.1"
+        },
+        "dynamic_data_policy": "Only the manifest-cropped stable left shell is compared; workspace values and the historical footer are excluded. Semantic shell/workstation and geometry checks are separate mandatory gates.",
+        "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
+        "mean_absolute_difference": 0.0010913800705467372,
+        "mean_absolute_difference_limit": 0.01,
+        "antialias_tolerant_mean_absolute_difference": 0.0010917885672787632,
+        "antialias_tolerant_limit": 0.02,
+        "changed_pixel_ratio": 0.0,
+        "changed_pixel_ratio_limit": 0.01,
+        "channel_change_threshold": 32,
+        "ok": true
+      },
+      {
+        "width": 1920,
+        "height": 1080,
+        "baseline": "/Users/benny/Code/open-industrial-platform/docs/design/baselines/canonical-ui-1920.png",
+        "baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
+        "expected_baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
+        "actual": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/canonical-ui-1920.png",
+        "actual_sha256": "a8665691ff5b8e812fcd43b2486389a0e6706a37f589853eea91ced9d1c55969",
+        "crop": [
+          0,
+          0,
+          224,
+          1080
+        ],
+        "archive_derivation": {
+          "ok": true,
+          "available": true,
+          "status": "DERIVED_AND_PIXEL_VERIFIED",
+          "archive": "/Users/benny/Documents/OIP-Handoffs/ui-adaptive-workspaces-2027/20261107T132751Z/oip-ui-adaptive-workspaces-2027-handoff.tar.gz",
+          "archive_member": "handoff/screenshots/after/orientation-1920x1080.png",
+          "pixel_comparison": "IDENTICAL",
+          "expected_baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
+          "pillow_version": "9.1.1"
+        },
+        "dynamic_data_policy": "Only the manifest-cropped stable left shell is compared; workspace values and the historical footer are excluded. Semantic shell/workstation and geometry checks are separate mandatory gates.",
+        "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
+        "mean_absolute_difference": 0.0012634652626482693,
+        "mean_absolute_difference_limit": 0.01,
+        "antialias_tolerant_mean_absolute_difference": 0.0012643244026005463,
+        "antialias_tolerant_limit": 0.02,
+        "changed_pixel_ratio": 0.0,
+        "changed_pixel_ratio_limit": 0.01,
+        "channel_change_threshold": 32,
+        "ok": true
+      }
+    ],
+    "negative_controls": [
+      {
+        "width": 1440,
+        "mutation": "single-navigation-row",
+        "detected": true,
+        "detection_margin": 3.111111111111111,
+        "required_detection_margin": 2.0,
+        "mean_absolute_difference": 0.011532699190787424,
+        "antialias_tolerant_mean_absolute_difference": 0.011501167133520075,
+        "changed_pixel_ratio": 0.03111111111111111
+      },
+      {
+        "width": 1440,
+        "mutation": "large-gradient-band",
+        "detected": true,
+        "detection_margin": 28.888888888888886,
+        "required_detection_margin": 2.0,
+        "mean_absolute_difference": 0.12544602655877166,
+        "antialias_tolerant_mean_absolute_difference": 0.12468797333748315,
+        "changed_pixel_ratio": 0.28888888888888886
+      },
+      {
+        "width": 1920,
+        "mutation": "single-navigation-row",
+        "detected": true,
+        "detection_margin": 2.5925925925925926,
+        "required_detection_margin": 2.0,
+        "mean_absolute_difference": 0.00961058265898952,
+        "antialias_tolerant_mean_absolute_difference": 0.009584289734412284,
+        "changed_pixel_ratio": 0.025925925925925925
+      },
+      {
+        "width": 1920,
+        "mutation": "large-gradient-band",
+        "detected": true,
+        "detection_margin": 24.074074074074073,
+        "required_detection_margin": 2.0,
+        "mean_absolute_difference": 0.10408637220320228,
+        "antialias_tolerant_mean_absolute_difference": 0.10345702787287754,
+        "changed_pixel_ratio": 0.24074074074074073
+      }
+    ],
+    "negative_controls_pass": true,
+    "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
+    "handoff_manifest": "/Users/benny/Code/open-industrial-platform/docs/design/OIP_UI_2027_HANDOFF_MANIFEST.json"
+  },
+  "canonical_ui_global_context": {
+    "schema": "oip-global-context-receipt-v1",
+    "revision": "3c663f90c3f62ad77b7f2a79a6e1a145eff04e44",
+    "base": "http://127.0.0.1:64434",
+    "options_offered": 4,
+    "scope_per_workstation": [
+      {
+        "workstation": "overview",
+        "label": "Infrastructure A1"
+      },
+      {
+        "workstation": "devices",
+        "label": "Infrastructure A1"
+      },
+      {
+        "workstation": "network",
+        "label": "Infrastructure A1"
+      },
+      {
+        "workstation": "opcua",
+        "label": "Infrastructure A1"
+      },
+      {
+        "workstation": "diagnostics",
+        "label": "Infrastructure A1"
+      },
+      {
+        "workstation": "settings",
+        "label": "Infrastructure A1"
+      }
+    ],
+    "findings": [
+      {
+        "check": "browser-login accepted",
+        "ok": true,
+        "detail": "{\"status\":200}"
+      },
+      {
+        "check": "the selector starts in the unified view",
+        "ok": true,
+        "detail": "Alle berechtigten Infrastrukturen"
+      },
+      {
+        "check": "the global selection offers the individual infrastructures",
+        "ok": true,
+        "detail": "4 options"
+      },
+      {
+        "check": "the individual infrastructures are offered",
+        "ok": true,
+        "detail": "Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A1 global ausw\u00e4 | Infrastructure Organization A Infrastructure A2 global ausw\u00e4"
+      },
+      {
+        "check": "the selection grants no permission",
+        "ok": true,
+        "detail": "an option offers another meaning"
+      },
+      {
+        "check": "the selector names the selected infrastructure",
+        "ok": true,
+        "detail": "Infrastructure A1"
+      },
+      {
+        "check": "the scoped projection shows the selected infrastructure",
+        "ok": true,
+        "detail": "the placement of the selection is missing"
+      },
+      {
+        "check": "the scoped projection hides the other infrastructure",
+        "ok": true,
+        "detail": "another infrastructure is still in the projection"
+      },
+      {
+        "check": "overview: the shared scope follows the selection",
+        "ok": true,
+        "detail": "Infrastructure A1"
+      },
+      {
+        "check": "devices: the shared scope follows the selection",
+        "ok": true,
+        "detail": "Infrastructure A1"
+      },
+      {
+        "check": "network: the shared scope follows the selection",
+        "ok": true,
+        "detail": "Infrastructure A1"
+      },
+      {
+        "check": "opcua: the shared scope follows the selection",
+        "ok": true,
+        "detail": "Infrastructure A1"
+      },
+      {
+        "check": "diagnostics: the shared scope follows the selection",
+        "ok": true,
+        "detail": "Infrastructure A1"
+      },
+      {
+        "check": "settings: the shared scope follows the selection",
+        "ok": true,
+        "detail": "Infrastructure A1"
+      },
+      {
+        "check": "the selector returns to the unified view",
+        "ok": true,
+        "detail": "Alle berechtigten Infrastrukturen"
+      },
+      {
+        "check": "the unified view shows every authorized infrastructure",
+        "ok": true,
+        "detail": "an authorized infrastructure is missing"
+      },
+      {
+        "check": "no browser JavaScript errors",
+        "ok": true,
+        "detail": ""
+      }
+    ],
+    "console_errors": [],
+    "core_denials": [
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    ]
+  },
+  "canonical_ui_accessibility": {
+    "schema": "oip-accessibility-receipt-v1",
+    "revision": "3c663f90c3f62ad77b7f2a79a6e1a145eff04e44",
+    "scope": "name and role coverage of the rendered surface of the six workstations; not a full WCAG audit",
+    "base": "http://127.0.0.1:64434",
+    "stations": [
+      {
+        "workstation": "overview",
+        "controls": 19,
+        "focusable": 13,
+        "unnamed": 0,
+        "unnamedFocusable": 0,
+        "roles": [
+          "button"
+        ]
+      },
+      {
+        "workstation": "devices",
+        "controls": 37,
+        "focusable": 29,
+        "unnamed": 0,
+        "unnamedFocusable": 0,
+        "roles": [
+          "button"
+        ]
+      },
+      {
+        "workstation": "network",
+        "controls": 22,
+        "focusable": 14,
+        "unnamed": 0,
+        "unnamedFocusable": 0,
+        "roles": [
+          "button"
+        ]
+      },
+      {
+        "workstation": "opcua",
+        "controls": 25,
+        "focusable": 12,
+        "unnamed": 0,
+        "unnamedFocusable": 0,
+        "roles": [
+          "button"
+        ]
+      },
+      {
+        "workstation": "diagnostics",
+        "controls": 30,
+        "focusable": 15,
+        "unnamed": 0,
+        "unnamedFocusable": 0,
+        "roles": [
+          "button"
+        ]
+      },
+      {
+        "workstation": "settings",
+        "controls": 21,
+        "focusable": 15,
+        "unnamed": 0,
+        "unnamedFocusable": 0,
+        "roles": [
+          "button"
+        ]
+      }
+    ],
+    "controls_total": 154,
+    "unnamed_total": 0,
+    "findings": [
+      {
+        "check": "the application demands an operator session",
+        "ok": true,
+        "detail": "the anonymous state does not ask for the operator"
+      },
+      {
+        "check": "browser-login accepted",
+        "ok": true,
+        "detail": "{\"status\":200}"
+      },
+      {
+        "check": "overview: every reachable control has an accessible name",
+        "ok": true,
+        "detail": "0 unnamed controls"
+      },
+      {
+        "check": "overview: every focusable element is nameable",
+        "ok": true,
+        "detail": "0 unnamed focusable elements"
+      },
+      {
+        "check": "devices: every reachable control has an accessible name",
+        "ok": true,
+        "detail": "0 unnamed controls"
+      },
+      {
+        "check": "devices: every focusable element is nameable",
+        "ok": true,
+        "detail": "0 unnamed focusable elements"
+      },
+      {
+        "check": "network: every reachable control has an accessible name",
+        "ok": true,
+        "detail": "0 unnamed controls"
+      },
+      {
+        "check": "network: every focusable element is nameable",
+        "ok": true,
+        "detail": "0 unnamed focusable elements"
+      },
+      {
+        "check": "opcua: every reachable control has an accessible name",
+        "ok": true,
+        "detail": "0 unnamed controls"
+      },
+      {
+        "check": "opcua: every focusable element is nameable",
+        "ok": true,
+        "detail": "0 unnamed focusable elements"
+      },
+      {
+        "check": "diagnostics: every reachable control has an accessible name",
+        "ok": true,
+        "detail": "0 unnamed controls"
+      },
+      {
+        "check": "diagnostics: every focusable element is nameable",
+        "ok": true,
+        "detail": "0 unnamed focusable elements"
+      },
+      {
+        "check": "settings: every reachable control has an accessible name",
+        "ok": true,
+        "detail": "0 unnamed controls"
+      },
+      {
+        "check": "settings: every focusable element is nameable",
+        "ok": true,
+        "detail": "0 unnamed focusable elements"
+      },
+      {
+        "check": "no browser JavaScript errors",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "check": "no external browser requests",
+        "ok": true,
+        "detail": ""
+      }
+    ],
+    "console_errors": [],
+    "core_denials": [
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    ],
+    "external_requests": []
+  },
+  "canonical_ui_onboarding": {
+    "status": "PASS",
+    "actual_flutter_ssh_monitoring": true,
+    "hardware": "owned loopback SSH fixture, not private Raspberry Pi",
+    "host_key_consent": true,
+    "identity_confirmation": true,
+    "existing_device_id_preserved": true,
+    "http_only_cookie": true,
+    "no_browser_token_storage": true,
+    "rendered_measurements": {
+      "observed_metrics": [
+        "host.architecture",
+        "host.cpu_info",
+        "host.disks",
+        "host.hostname",
+        "host.interfaces",
+        "host.memory_total_bytes",
+        "host.memory_used_bytes",
+        "host.model",
+        "host.os",
+        "host.uptime_seconds"
+      ],
+      "host_os": "Darwin",
+      "memory_total_bytes": 17179869184,
+      "all_fresh": true
+    },
+    "rendered_history": {
+      "persisted_samples": 10,
+      "rendered_samples": 6,
+      "all_stale": true,
+      "receive_times_shown": 1,
+      "first_receive_time": "2026-11-09 12:25:30.043 UTC",
+      "metrics": [
+        "host.disks",
+        "host.os",
+        "host.model",
+        "host.architecture",
+        "host.cpu_info",
+        "host.memory_total_bytes"
+      ]
+    },
+    "rendered_administration": {
+      "device_id": "95565935-f1ef-41dd-af0f-951623c1f3af",
+      "revision_before": 1,
+      "revision_after": 2,
+      "display_name_updated": true,
+      "online_archive_refused": "OFFLINE_ARCHIVE_REQUIRED",
+      "archive_is_offline_operation": true
+    },
+    "rendered_overview": {
+      "approved_surface": "unified_infrastructure_view",
+      "authorized_source": "SSH host browser-existing",
+      "source_registry_section": true,
+      "dynamic_device_metric": "3",
+      "dynamic_source_metric": "2/2",
+      "measured_metric": "host.memory_total_bytes",
+      "measured_value": 17179869184,
+      "measurement_proof": "device engineering workspace of the approved UI",
+      "demo_coordinates_absent": true
+    },
+    "rendered_diagnostics": {
+      "approved_surface": "persisted_evidence",
+      "persisted_evidence_section": true,
+      "diagnosis_history_status": "not_implemented",
+      "health_transitions": 50,
+      "documented_gaps": 2
+    },
+    "rendered_network": {
+      "approved_surface": "network_engineering_explorer",
+      "authorized_placement": "Infrastructure A1",
+      "rendered_device_id": "browser-existing",
+      "source_registry_proof": "overview source registry and device engineering workspace",
+      "loading_state_absent": true,
+      "demo_zones_absent": true
+    },
+    "loaded_build_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
+    "errors": [],
+    "external": []
+  },
+  "canonical_ui_gate_receipt": {
+    "verdict": "PASS",
+    "precheck_path": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
+    "browser_path": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
+    "visual_path": "target/oip-canonical-regression-final7/oip_canonical_ui_gate/canonical-ui/visual-comparison.json",
+    "precheck_receipt_sha256": "f05f6d74cd9589ee0d7f487f95516bbdfa4795108710b91c8780d4360d73eccf",
+    "browser_receipt_sha256": "76ac08cfaf9707d1f1189aec5efcb353b8da4eca3bbbc932ecef348ab41205c9",
+    "visual_receipt_sha256": "47559bc630883f16caacd0a1bf50863d399bae79b2edce08b72a8375828858c4",
+    "flutter_tests_passed": null,
+    "flutter_tests_failed": null,
+    "browser_findings": 175,
+    "browser_failures": 0,
+    "screenshots": 13,
+    "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+  },
+  "performance": {
+    "connection_read_official_mcp": {
+      "samples": 20,
+      "p50_ms": 5.559417069889605,
+      "p95_ms": 12.719957972876728
+    },
+    "core_rss_kib_cpu_percent": "16496   2.1",
+    "short_local_measurement_not_sla": true
+  },
+  "status": "PASS",
+  "own_processes_stopped": true,
+  "the_revision_of_the_acceptance": "3c663f90c3f6"
+}

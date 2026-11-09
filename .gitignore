@@ -95,6 +95,15 @@ secrets/
 !/docs/evidence/oip-operations/operations.json
 !/docs/evidence/oip-accessibility/accessibility.json
 !/docs/evidence/oip-upgrade-rollback/upgrade-rollback.json
+# The whole acceptance of the release, its browser gate, its UI gate and the
+# 13 captures of the six workstations: the handoff must not depend on a
+# directory of a build that is not part of the checkout.
+!/docs/evidence/oip-canonical-acceptance/
+!/docs/evidence/oip-canonical-acceptance/**
+# The administration of a device through the approved surface and the
+# storage-failure path of the Core.
+!/docs/evidence/oip-device-administration/device-administration.json
+!/docs/evidence/oip-storage-failure/storage-failure.json
 !/docs/evidence/oip-global-context/global-context.json
 !/docs/evidence/oip-performance/performance.json
 !/docs/evidence/oip-offline-archive/offline-archive.json
