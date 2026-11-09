@@ -250,6 +250,12 @@ The Core answers with the plan it applied: `{"applied": true, "apply_mode":
 "offline_requires_restart"}` and the action `{"outcome": "archive"}`. The revision of the device
 is the guard of the write, exactly as in the online update.
 
+**The precondition of every offline inventory change.** The runtime migration of the Core must
+have run before: the instance was started at least once. A store that was only provisioned and
+never served has no inventory yet, and the Core refuses the change with
+`INVENTORY_MIGRATION_REQUIRED; run controlled runtime migration separately` — it does not migrate
+the registry of a store that it is not serving.
+
 **What the archive means.** The record of the device, its identity and its metadata stay intact —
 the archive is not a deletion — and the device collects no measurements anymore. An archived device
 is not part of the active inventory: the read only shows it when the archived ones are asked for
@@ -288,7 +294,13 @@ oip-server --config "$CORE_CONFIG" --inventory-plan "$STATE/register.json" --inv
 The answer names the plan it applied (`"applied": true`,
 `"apply_mode": "offline_requires_restart"`) and the action (`{"outcome": "register"}`). The
 registered device belongs to the site of the plan and inherits the scope of the principal that
-performed the change: a device of a site of another organization is refused.
+performed the change: a device of a site of another organization is refused with
+`invalid inventory or authorization; no changes applied` — the generic refusal, without the name
+of the site or of the device.
+
+Measured with the release binary: the registration of a device at the site of the own
+organization is applied (`{"outcome": "create"}`), the registration at the site of the other
+organization is refused.
 
 The rehearsal of the archive proves the plan, the flag and the guard of the revision on the same
 path; the registration is the same plan with the operation `register`.
