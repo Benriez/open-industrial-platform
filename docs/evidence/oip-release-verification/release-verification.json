@@ -4,15 +4,15 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "613eed94ae139bb0accda6bd2f7cf8d0321459aa",
+      "the_revision": "09ea72ea95b96c8ed8237b9d884e823d32e33e07",
       "the_revision_of_the_source": {
-        "the_revision": "ae2a8ab8e49390ff9d8d531af73b06713b87a437",
-        "the_subject": "fix(g8): the refusals of the Core are evidence, not a defect of the surface"
+        "the_revision": "354c651773be42ed226fa86849d9884493a6e6af",
+        "the_subject": "fix(g5): the journey proves the states the Core really reaches"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
-        "the_files": 679,
-        "the_sha256": "329e59a41d8806aab994983c1b5edaff85428be4b25ecbd63a2636e41b695ffd"
+        "the_files": 683,
+        "the_sha256": "4a59d40c7712451cd89289f201384b029687c2089e02e1ff0fcbe6a596fb0bc5"
       },
       "the_artifacts": {
         "the_core": "2bf4baa487fbcfc49c6810704db6f2734ed98cad94a30168d1f4913132d2eb2c",
@@ -32,14 +32,14 @@
         "apps/flutter/lib": "8ec554cc3f9b"
       },
       "the_revision_of_the_source": "8ec554cc3f9b",
-      "the_receipts": 43,
-      "the_receipts_measured_on_a_tree_that_carries_the_source": 43,
+      "the_receipts": 45,
+      "the_receipts_measured_on_a_tree_that_carries_the_source": 45,
       "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 0,
       "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
     "the_record": {
-      "the_citations": 62,
-      "the_receipts_of_the_release": 43,
+      "the_citations": 64,
+      "the_receipts_of_the_release": 45,
       "the_missing": [],
       "the_untracked": [],
       "the_orphaned": [],
@@ -50,11 +50,11 @@
       "the_source_revision": "8ec554cc3f9b2ebbbe723d58650cf5d29c5d3ba5",
       "the_acceptance_revision": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
       "the_core_binary_revision": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
-      "the_tracked_files": 679,
+      "the_tracked_files": 683,
       "the_product_is_committed": true
     },
     "the_numbers_of_the_record": {
-      "the_rows": 73,
+      "the_rows": 75,
       "the_measurements": 25
     },
     "the_acceptance": {
@@ -146,8 +146,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "613eed94ae139bb0accda6bd2f7cf8d0321459aa",
-  "the_tree": "2cb2dc2cfb0589bffa2b63d7c878422a1deb0ac2",
+  "the_revision": "09ea72ea95b96c8ed8237b9d884e823d32e33e07",
+  "the_tree": "c2d558397613e28f6f5eeefcd595bb66747dd426",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }
