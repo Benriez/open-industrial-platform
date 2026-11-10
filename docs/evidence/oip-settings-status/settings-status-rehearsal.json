@@ -1,0 +1,247 @@
+{
+  "schema": "oip-settings-status-rehearsal-v1",
+  "steps": [
+    "the instance runs",
+    "the navigation names the status of the Core for every category"
+  ],
+  "browser_receipt": {
+    "schema": "oip-settings-status-v1",
+    "revision": "b09598189d65be0c5fd4c061f838b27731cae86d",
+    "the_detail_is": "the message that describes the failure of the check",
+    "scope": "the status of the settings categories in the approved surface against the real Core",
+    "base": "http://127.0.0.1:59769",
+    "the_categories_of_the_core": [
+      {
+        "the_category": "general",
+        "the_label_of_the_surface": "General",
+        "the_status_of_the_core": "offline_administration_required",
+        "the_word_of_the_surface": "Nur offline administrierbar"
+      },
+      {
+        "the_category": "mcp_agents",
+        "the_label_of_the_surface": "MCP & Agents",
+        "the_status_of_the_core": "read_only",
+        "the_word_of_the_surface": "Nur lesend"
+      },
+      {
+        "the_category": "infrastructure",
+        "the_label_of_the_surface": "Infrastructure",
+        "the_status_of_the_core": "read_only",
+        "the_word_of_the_surface": "Nur lesend"
+      },
+      {
+        "the_category": "data_storage",
+        "the_label_of_the_surface": "Data & Storage",
+        "the_status_of_the_core": "read_only",
+        "the_word_of_the_surface": "Nur lesend"
+      },
+      {
+        "the_category": "diagnostics",
+        "the_label_of_the_surface": "Diagnostics",
+        "the_status_of_the_core": "offline_administration_required",
+        "the_word_of_the_surface": "Nur offline administrierbar"
+      },
+      {
+        "the_category": "security_access",
+        "the_label_of_the_surface": "Security & Access",
+        "the_status_of_the_core": "read_only",
+        "the_word_of_the_surface": "Nur lesend"
+      },
+      {
+        "the_category": "system",
+        "the_label_of_the_surface": "System",
+        "the_status_of_the_core": "read_only",
+        "the_word_of_the_surface": "Nur lesend"
+      }
+    ],
+    "the_statuses_of_the_surface": [
+      "Nur lesend"
+    ],
+    "findings": [
+      {
+        "check": "browser-login accepted",
+        "ok": true,
+        "the_detail": "{\"status\":200}"
+      },
+      {
+        "check": "the Core answers the settings of the instance",
+        "ok": true,
+        "the_detail": "{\"status\":200,\"body\":{\"definitions\":[{\"key\":\"instance_name\",\"category\":\"general\",\"description\":\"Non-sensitive local instance display name\",\"default\":{\"type\":\"text\",\"value\":\"Open Industrial Platform\"},\"data_type\":\"text\",\"validation\":\"1..80 UTF-8 bytes; no control characters\",\"scopes\":[\"platform\"],\"in"
+      },
+      {
+        "check": "the Core answers a status for every category of the settings",
+        "ok": true,
+        "the_detail": "[{\"category\":\"general\",\"status\":\"offline_administration_required\",\"capabilities\":[\"settings_read\"]},{\"category\":\"mcp_agents\",\"status\":\"read_only\",\"capabilities\":[\"mcp_management_read\"]},{\"category\":\"infrastructure\",\"status\":\"read_only\",\"capabilities\":[\"inventory_read\",\"inventory_plan_read\",\"organiza"
+      },
+      {
+        "check": "the navigation offers the category general",
+        "ok": true,
+        "the_detail": "the Core answered the category general, which the surface does not name"
+      },
+      {
+        "check": "the category general is in the navigation",
+        "ok": true,
+        "the_detail": "the navigation has no category General"
+      },
+      {
+        "check": "the status of the category general is the status of the Core",
+        "ok": true,
+        "the_detail": "the Core answered Nur offline administrierbar, the surface shows Nur offline administrierbar"
+      },
+      {
+        "check": "the navigation offers the category mcp_agents",
+        "ok": true,
+        "the_detail": "the Core answered the category mcp_agents, which the surface does not name"
+      },
+      {
+        "check": "the category mcp_agents is in the navigation",
+        "ok": true,
+        "the_detail": "the navigation has no category MCP & Agents"
+      },
+      {
+        "check": "the status of the category mcp_agents is the status of the Core",
+        "ok": true,
+        "the_detail": "the Core answered Nur lesend, the surface shows Nur lesend"
+      },
+      {
+        "check": "the navigation offers the category infrastructure",
+        "ok": true,
+        "the_detail": "the Core answered the category infrastructure, which the surface does not name"
+      },
+      {
+        "check": "the category infrastructure is in the navigation",
+        "ok": true,
+        "the_detail": "the navigation has no category Infrastructure"
+      },
+      {
+        "check": "the status of the category infrastructure is the status of the Core",
+        "ok": true,
+        "the_detail": "the Core answered Nur lesend, the surface shows Nur lesend"
+      },
+      {
+        "check": "the navigation offers the category data_storage",
+        "ok": true,
+        "the_detail": "the Core answered the category data_storage, which the surface does not name"
+      },
+      {
+        "check": "the category data_storage is in the navigation",
+        "ok": true,
+        "the_detail": "the navigation has no category Data & Storage"
+      },
+      {
+        "check": "the status of the category data_storage is the status of the Core",
+        "ok": true,
+        "the_detail": "the Core answered Nur lesend, the surface shows Nur lesend"
+      },
+      {
+        "check": "the navigation offers the category diagnostics",
+        "ok": true,
+        "the_detail": "the Core answered the category diagnostics, which the surface does not name"
+      },
+      {
+        "check": "the category diagnostics is in the navigation",
+        "ok": true,
+        "the_detail": "the navigation has no category Diagnostics"
+      },
+      {
+        "check": "the status of the category diagnostics is the status of the Core",
+        "ok": true,
+        "the_detail": "the Core answered Nur offline administrierbar, the surface shows Nur offline administrierbar"
+      },
+      {
+        "check": "the navigation offers the category security_access",
+        "ok": true,
+        "the_detail": "the Core answered the category security_access, which the surface does not name"
+      },
+      {
+        "check": "the category security_access is in the navigation",
+        "ok": true,
+        "the_detail": "the navigation has no category Security & Access"
+      },
+      {
+        "check": "the status of the category security_access is the status of the Core",
+        "ok": true,
+        "the_detail": "the Core answered Nur lesend, the surface shows Nur lesend"
+      },
+      {
+        "check": "the navigation offers the category system",
+        "ok": true,
+        "the_detail": "the Core answered the category system, which the surface does not name"
+      },
+      {
+        "check": "the category system is in the navigation",
+        "ok": true,
+        "the_detail": "the navigation has no category System"
+      },
+      {
+        "check": "the status of the category system is the status of the Core",
+        "ok": true,
+        "the_detail": "the Core answered Nur lesend, the surface shows Nur lesend"
+      },
+      {
+        "check": "no wire name of the Core leaks into the surface",
+        "ok": true,
+        "the_detail": "[\"Nur lesend\"]"
+      },
+      {
+        "check": "every category of the Core was measured",
+        "ok": true,
+        "the_detail": "7 of 7"
+      }
+    ],
+    "errors": []
+  },
+  "the_categories_of_the_core": [
+    {
+      "the_category": "general",
+      "the_label_of_the_surface": "General",
+      "the_status_of_the_core": "offline_administration_required",
+      "the_word_of_the_surface": "Nur offline administrierbar"
+    },
+    {
+      "the_category": "mcp_agents",
+      "the_label_of_the_surface": "MCP & Agents",
+      "the_status_of_the_core": "read_only",
+      "the_word_of_the_surface": "Nur lesend"
+    },
+    {
+      "the_category": "infrastructure",
+      "the_label_of_the_surface": "Infrastructure",
+      "the_status_of_the_core": "read_only",
+      "the_word_of_the_surface": "Nur lesend"
+    },
+    {
+      "the_category": "data_storage",
+      "the_label_of_the_surface": "Data & Storage",
+      "the_status_of_the_core": "read_only",
+      "the_word_of_the_surface": "Nur lesend"
+    },
+    {
+      "the_category": "diagnostics",
+      "the_label_of_the_surface": "Diagnostics",
+      "the_status_of_the_core": "offline_administration_required",
+      "the_word_of_the_surface": "Nur offline administrierbar"
+    },
+    {
+      "the_category": "security_access",
+      "the_label_of_the_surface": "Security & Access",
+      "the_status_of_the_core": "read_only",
+      "the_word_of_the_surface": "Nur lesend"
+    },
+    {
+      "the_category": "system",
+      "the_label_of_the_surface": "System",
+      "the_status_of_the_core": "read_only",
+      "the_word_of_the_surface": "Nur lesend"
+    }
+  ],
+  "the_statuses_of_the_surface": [
+    "Nur lesend"
+  ],
+  "checks": 26,
+  "status": "PASS",
+  "the_revision": "b09598189d65be0c5fd4c061f838b27731cae86d",
+  "the_tree": "5fa3f5a3594d4ebfa7cea70e766d32a543a05a36",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-10T02:06:09Z"
+}

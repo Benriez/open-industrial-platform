@@ -63,6 +63,9 @@ REHEARSALS = [
           "oip-measurement-coverage/measurement-coverage-browser.json"}),
     ("oip_observation_history", "tests/oip_observation_history.py",
      {"observation-history.json": "oip-observation-history/observation-history.json"}),
+    ("oip_settings_status", "tests/oip_settings_status.py",
+     {"settings-status-rehearsal.json": "oip-settings-status/settings-status-rehearsal.json",
+      "settings-status.json": "oip-settings-status/settings-status.json"}),
     ("oip_diagnostic_continuation", "tests/oip_diagnostic_continuation.py",
      {"diagnostic-continuation-rehearsal.json":
           "oip-diagnostic-continuation/rehearsal.json",
