@@ -2712,7 +2712,7 @@ of this run are byte-identical to the artefacts of the acceptance — so the acc
 describes what the release delivers.
 
 The **canonical acceptance** was run again on the current tree with the release binary and the
-delivered web bundle: the eight functional phases PASS, 356 of 356 Flutter tests, 175 browser
+delivered web bundle: the eight functional phases PASS, 358 of 358 Flutter tests, 175 browser
 findings with zero failures, 13 captures, the visual comparison PASS, the served bundle
 byte-identical with the local build, no JavaScript error and no external request. The whole
 acceptance is a tracked receipt and names the revision and the tree of its run; the visual
