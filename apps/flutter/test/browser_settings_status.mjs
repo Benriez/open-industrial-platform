@@ -202,6 +202,31 @@ check('the answer of the Core is the same in the scope of the organization',
 await page.getByRole('button', { name: 'Navigation Einstellungen' }).click({ force: true });
 await page.waitForTimeout(4000);
 
+// The structure of the navigation, so a reader can see how the surface
+// publishes the state of the selection.
+const structure = await page.evaluate(() => {
+  const out = [];
+  for (const el of document.querySelectorAll('flt-semantics')) {
+    const label = el.getAttribute('aria-label') || '';
+    let own = '';
+    for (const child of el.childNodes) {
+      if (child.nodeType === 3) own += child.textContent || '';
+    }
+    const text = (el.textContent || '').trim();
+    if (!label.startsWith('Settings-Kategorie ') && !own.includes('CORE')
+        && !text.includes('CORE')) continue;
+    out.push({
+      'the_label': label,
+      'the_own_text': own.trim().slice(0, 80),
+      'the_text': text.slice(0, 120),
+      'the_children': el.children.length,
+      'the_attributes': Array.from(el.attributes).map((a) => a.name + '=' + a.value.slice(0, 40)),
+    });
+  }
+  return out;
+});
+fs.writeFileSync(`${outDir}/settings-status-dom.json`, JSON.stringify(structure, null, 2) + '\n');
+
 const measured = [];
 for (const category of categories) {
   const name = category.category;
