@@ -224,8 +224,19 @@ for (let step = 0; step < 30 && !refreshed; step++) {
   after = await labels();
   refreshed = after.includes(newName);
 }
+// The answer of the Core: what the write really changed.
+const record = await page.evaluate(async () => {
+  const r = await fetch('/api/v2/inventory/devices?q=device-a',
+    { headers: { 'Content-Type': 'application/json' } });
+  return { status: r.status, body: await r.json() };
+});
+fs.writeFileSync(`${outDir}/scope-persistence-surface.txt`, after + '\n');
+const written = ((record.body || {}).items || []).map((item) => item.record);
+check('the Core holds the name of the write',
+  written.some((item) => item.display_name === newName),
+  JSON.stringify(written).slice(0, 300));
 check('the refreshed projection reaches the surface', refreshed,
-  'the name of the write is not shown');
+  `the Core holds ${JSON.stringify(written.map((item) => item.display_name))}`);
 
 // 5. the scope of the operator survived the refresh
 const survived = await scopeLabel();
