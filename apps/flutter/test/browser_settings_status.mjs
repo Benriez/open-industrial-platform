@@ -145,7 +145,9 @@ const selectedCategory = async () => await page.evaluate(() => {
     // The client publishes the name of the control as the name of the
     // category; the node carries it as its text.
     if (whole.startsWith('Settings-Kategorie ') && whole.length < 60) {
-      current = whole.slice('Settings-Kategorie '.length);
+      // The node carries the name of the control and the visible label of
+      // the category; the name of the category is the first of the two.
+      current = whole.slice('Settings-Kategorie '.length).split('\n')[0].trim();
       continue;
     }
     // The text of the status is a direct child of the node of the surface.
