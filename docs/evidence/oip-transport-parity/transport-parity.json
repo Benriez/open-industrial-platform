@@ -65,8 +65,12 @@
   },
   "the_transports_refuse_an_unauthorized_session": true,
   "status": "PASS",
-  "the_revision": "122c359bc2776f8d059770fe934d264016e35c54",
-  "the_tree": "6bea54afcbfd45c61e84822f1bb82ee39289fd62",
+  "the_core_binary": {
+    "the_path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
+    "the_sha256": "20b75d293d51d896c171295a2a63972686cf3263c3e29dde35cd7cc20d6c762d"
+  },
+  "the_revision": "d0c99fd69430a3d251ad9ba4b5f25aff14adba6c",
+  "the_tree": "20a6437281f57b35710af0c06993d0d2e036603f",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T04:21:11Z"
+  "finished_utc": "2026-11-10T07:29:42Z"
 }
