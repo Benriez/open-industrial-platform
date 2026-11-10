@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "5267664b3bebbf47ccac6ad4ff223b8aa0dabbc9",
+      "the_revision": "db73f493c3423bd3069a5e24a8bc77df5c1a7a4d",
       "the_revision_of_the_source": {
         "the_revision": "ae2a8ab8e49390ff9d8d531af73b06713b87a437",
         "the_subject": "fix(g8): the refusals of the Core are evidence, not a defect of the surface"
@@ -12,7 +12,7 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 676,
-        "the_sha256": "28af89da1ba109d48e6a368f65609851c9e673ae5567f6cf4df67a89342bc7f8"
+        "the_sha256": "99bc977ce4a305693fbdafe806e910a0fbd016edb328d20e7036319f797c1b2d"
       },
       "the_artifacts": {
         "the_core": "20b75d293d51d896c171295a2a63972686cf3263c3e29dde35cd7cc20d6c762d",
@@ -33,8 +33,8 @@
       },
       "the_revision_of_the_source": "8ec554cc3f9b",
       "the_receipts": 43,
-      "the_receipts_measured_on_a_tree_that_carries_the_source": 42,
-      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 1,
+      "the_receipts_measured_on_a_tree_that_carries_the_source": 43,
+      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 0,
       "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
     "the_record": {
@@ -134,12 +134,9 @@
     "G10",
     "G12"
   ],
-  "the_problems": [
-    "the receipt docs/evidence/oip-security-review/security-review.json names the revision 23383e183063, which predates the last change of crates (8ec554cc3f9b)",
-    "the receipt docs/evidence/oip-security-review/security-review.json names the revision 23383e183063, which predates the last change of apps/flutter/lib (8ec554cc3f9b)"
-  ],
-  "the_revision": "5267664b3bebbf47ccac6ad4ff223b8aa0dabbc9",
-  "the_tree": "4c2d5152e4dd89e2c348b2988d7a87f51fdd71d6",
+  "the_problems": [],
+  "the_revision": "db73f493c3423bd3069a5e24a8bc77df5c1a7a4d",
+  "the_tree": "b3261cba375b58361c098efcd89e6c71b380473b",
   "the_working_tree_is_clean": false,
-  "status": "FAIL"
+  "status": "PASS"
 }

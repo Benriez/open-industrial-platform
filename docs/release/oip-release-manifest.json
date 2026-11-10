@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "5267664b3bebbf47ccac6ad4ff223b8aa0dabbc9",
-  "the_tree": "4c2d5152e4dd89e2c348b2988d7a87f51fdd71d6",
+  "the_revision": "db73f493c3423bd3069a5e24a8bc77df5c1a7a4d",
+  "the_tree": "b3261cba375b58361c098efcd89e6c71b380473b",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "ae2a8ab8e49390ff9d8d531af73b06713b87a437",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 676,
-    "the_sha256": "28af89da1ba109d48e6a368f65609851c9e673ae5567f6cf4df67a89342bc7f8"
+    "the_sha256": "99bc977ce4a305693fbdafe806e910a0fbd016edb328d20e7036319f797c1b2d"
   },
   "the_artifacts": {
     "the_core": {
@@ -71,7 +71,7 @@
     },
     "the_security_review": {
       "path": "docs/evidence/oip-security-review/security-review.json",
-      "sha256": "4afca6b998d340c96511517d894cf375e9994adf7d30298bcbe2f96b829b019f"
+      "sha256": "2101558cc1804a46e2cc08786453346fafdcf7e405278f147fa0d23c99e3ed21"
     },
     "the_macos_application": {
       "path": "docs/evidence/oip-macos-app/macos-app.json",
