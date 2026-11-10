@@ -139,7 +139,8 @@ def run(name, script, receipts):
             missing.append(published)
             continue
         sources[published] = str(source.relative_to(ROOT))
-        payloads.append(json.loads(source.read_text()))
+        if produced.endswith(".json"):
+            payloads.append(json.loads(source.read_text()))
     if result.returncode != 0 or missing:
         detail = (result.stderr.strip() or result.stdout.strip())[-400:]
         return {"the_rehearsal": name, "the_status": "FAIL", "the_seconds": seconds,
@@ -184,6 +185,28 @@ def publish(outcomes):
     return published
 
 
+
+def publish_only(name, receipts):
+    """The receipts of the last run, published without measuring them again."""
+    area = the_area(sorted(receipts.values())[0].split("/")[0])
+    sources = {}
+    missing = []
+    for produced, published in receipts.items():
+        source = area / produced
+        if not source.is_file():
+            missing.append(published)
+            continue
+        sources[published] = str(source.relative_to(ROOT))
+    return {
+        "the_rehearsal": name,
+        "the_status": "PASS" if sources and not missing else "FAIL",
+        "the_seconds": 0,
+        "the_published": sorted(receipts.values()),
+        "the_sources": sources,
+        "the_missing": missing,
+        "the_detail": None if sources and not missing else f"the missing receipts: {missing}",
+    }
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--list", action="store_true",
@@ -193,6 +216,9 @@ def main():
     parser.add_argument("--skip", action="append", default=[],
                         help="do not run this rehearsal (repeatable)")
     parser.add_argument("--report", default=str(ROOT / "target" / "oip-refresh-evidence.json"))
+    parser.add_argument("--publish-only", action="store_true",
+                        help="publish the receipts that the last run measured, "
+                             "without measuring them again")
     args = parser.parse_args()
 
     if args.list:
@@ -214,6 +240,13 @@ def main():
         if args.only and name not in args.only:
             continue
         if name in args.skip:
+            continue
+        if args.publish_only:
+            # The receipts of the last run are published without being
+            # measured again.
+            outcome = publish_only(name, receipts)
+            report["the_rehearsals"].append(outcome)
+            print(f"PUB {name}: {outcome['the_status']}", flush=True)
             continue
         print(f"RUN {name}", flush=True)
         outcome = run(name, script, receipts)
