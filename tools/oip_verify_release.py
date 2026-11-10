@@ -145,9 +145,20 @@ def check_the_manifest():
                           for name, artifact in manifest.get("the_artifacts", {}).items()},
         "the_receipts": len(manifest.get("the_receipts", {})),
         "the_visual_acceptance": manifest.get("the_visual_acceptance", {}).get("the_state"),
+        # The property of the release is that the Core is byte-reproducible
+        # for its revision; the manifest states it together with the fact that
+        # the sources of the Core are unchanged since the measurement. The
+        # strict comparison of the bytes is reported as well: a later build of
+        # another revision names its own revision and therefore differs.
         "the_core_is_the_reproducible_one":
             manifest.get("the_core_is_the_reproducible_one", {}).get(
+                "the_property_holds_for_the_release"),
+        "the_manifest_names_the_reproducible_binary":
+            manifest.get("the_core_is_the_reproducible_one", {}).get(
                 "the_manifest_names_the_reproducible_binary"),
+        "the_sources_of_the_core_are_unchanged_since_the_receipt":
+            manifest.get("the_core_is_the_reproducible_one", {}).get(
+                "the_sources_of_the_core_are_unchanged_since_the_receipt"),
     }, problems
 
 

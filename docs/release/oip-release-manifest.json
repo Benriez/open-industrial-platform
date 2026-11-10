@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "c9de030a543b8f5a17cf667bec6da3fe79650b81",
-  "the_tree": "b9bfa4c706d9479bf9993664a25dc33f2d354a1d",
+  "the_revision": "d7a865543e9a7750b93a3249c145a1ce34d6a1f9",
+  "the_tree": "bb6d518d4f35bfcfcd7cd2b6fb36440dafa7f17d",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "f0120f81ac7826aa4f2f3aa6efa7210080f659ae",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 672,
-    "the_sha256": "56bfa6b00e6df3d25ec39bdeea5f8ea1b5ac06d8d13223edb2f24e8eb396ac76"
+    "the_sha256": "807ff0cb3e1084c6eef7354fbc9a0b6829776ec5984f095dbe3c18c9702e08df"
   },
   "the_artifacts": {
     "the_core": {
@@ -177,16 +177,10 @@
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/evidence/oip-device-connection/device-connection.json",
-    " M docs/evidence/oip-device-connection/rehearsal.json",
-    " M docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json",
-    " M docs/evidence/oip-diagnostic-continuation/rehearsal.json",
-    " M docs/evidence/oip-measurement-coverage/measurement-coverage-browser.json",
-    " M docs/evidence/oip-measurement-coverage/measurement-coverage.json",
-    " M docs/evidence/oip-reconnect-recovery/reconnect-recovery.json",
-    " M docs/evidence/oip-reconnect-recovery/rehearsal.json",
-    " M docs/evidence/oip-workstation-data/rehearsal.json",
-    " M docs/evidence/oip-workstation-data/workstation-data.json"
+    "M docs/OIP_RELEASE_LEDGER.md",
+    " M docs/OIP_RELEASE_PROGRESS.md",
+    " M docs/evidence/oip-release-verification/release-verification.json",
+    " M tools/oip_verify_release.py"
   ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",

@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "c9de030a543b8f5a17cf667bec6da3fe79650b81",
+      "the_revision": "d7a865543e9a7750b93a3249c145a1ce34d6a1f9",
       "the_revision_of_the_source": {
         "the_revision": "f0120f81ac7826aa4f2f3aa6efa7210080f659ae",
         "the_subject": "fix(g4): the tool runs every rehearsal once, and the tile is opened in every way"
@@ -12,7 +12,7 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 672,
-        "the_sha256": "56bfa6b00e6df3d25ec39bdeea5f8ea1b5ac06d8d13223edb2f24e8eb396ac76"
+        "the_sha256": "807ff0cb3e1084c6eef7354fbc9a0b6829776ec5984f095dbe3c18c9702e08df"
       },
       "the_artifacts": {
         "the_core": "1cb8958eff5e5480a72047b4dfff7b2f2bf6167f521654e444719db1754a7ae3",
@@ -22,7 +22,9 @@
       },
       "the_receipts": 29,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-      "the_core_is_the_reproducible_one": false
+      "the_core_is_the_reproducible_one": true,
+      "the_manifest_names_the_reproducible_binary": false,
+      "the_sources_of_the_core_are_unchanged_since_the_receipt": true
     },
     "the_freshness": {
       "the_last_change_of_the_product": {
@@ -129,8 +131,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "c9de030a543b8f5a17cf667bec6da3fe79650b81",
-  "the_tree": "b9bfa4c706d9479bf9993664a25dc33f2d354a1d",
+  "the_revision": "d7a865543e9a7750b93a3249c145a1ce34d6a1f9",
+  "the_tree": "bb6d518d4f35bfcfcd7cd2b6fb36440dafa7f17d",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }

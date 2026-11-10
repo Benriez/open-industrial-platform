@@ -2835,6 +2835,42 @@ unclassified. The review of the current tree stands at **9 resolved, 2 mitigated
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 62 — the whole evidence of the release is re-measured after the upgrade
+
+**Status: PROVED on canonical `main`.**
+The upgrade of the dependencies changed the Core, and the freshness rule of the record is
+unforgiving: **no receipt may predate the last change of the code it covers**. Thirty receipts
+became stale — the activation dry run, the device connection, the diagnostic continuation, the
+documented plan, the registry extension, the daemon handover, the loopback rate, the macOS
+application and its installation, the coverage of the measurements, the history of the
+measurements, the native session, the offline archive, the OPC-UA parity, the operations, the
+performance, the reconnect, the session lifetime, the offline setting, the stability, the storage
+failure, the transport parity, the upgrade and rollback, the workstation data and the
+reconciliation of the worktrees.
+
+Every one of them was measured again against the release binary of the upgraded dependencies. The
+rehearsals run **once** each — the rehearsal and the browser journey it drives write their
+receipts in the same run — and the receipts are published **together at the end**, so that every
+receipt is measured on a clean tree. The whole set runs with one command
+(`tools/oip_refresh_evidence.py`), which the operator can run on their own machine.
+
+Two defects of the tool were found and fixed on the way: it ran every rehearsal twice — once for
+its receipt and once for the receipt of the browser journey — which gave a flake a second chance
+to fail, and it read the state of a rehearsal from the alphabetically first of its receipts, which
+for one rehearsal is the receipt of the browser journey (a receipt without a state of its own).
+
+The journey that opens the tile of the verified identity now repeats the rounds that do not open
+it: the geometry of the control depends on the layout of the surface, which is not stable while
+the panel refreshes itself.
+
+The record is whole again: **41 receipts, all fresh**, the manifest verifies, the canonical
+acceptance of the release passes with the new binary (8/8 phases, 356 of 356 Flutter tests, 175
+browser findings with zero failures, 13 captures, the served bundle byte-identical with the local
+build), and the boundary of the personal store is measured unchanged.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
