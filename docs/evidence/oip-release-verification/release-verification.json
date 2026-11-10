@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "b79c31db0d3643bac016ab90f05fbc8c1de2bc92",
+      "the_revision": "d7028ed4788e1964c6e03d81f656024a8f89f9b5",
       "the_revision_of_the_source": {
         "the_revision": "b09598189d65be0c5fd4c061f838b27731cae86d",
         "the_subject": "feat(g8): the journey walks every category of the settings"
@@ -12,7 +12,7 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 676,
-        "the_sha256": "eb13286ee05e775b3a256726ab5480bd5d2968a20f36371625618d77206f358c"
+        "the_sha256": "3e9fdeca493041d541137adb03255a35a42c4c869a5f582d906ef861a9c60c3d"
       },
       "the_artifacts": {
         "the_core": "cfe5a493a2fdb84f24f8cfe47da9ff09631e52401a0238e0c57e499da976159a",
@@ -135,8 +135,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "b79c31db0d3643bac016ab90f05fbc8c1de2bc92",
-  "the_tree": "55c0d25c2fcc75931559485b1f96b4573528100d",
+  "the_revision": "d7028ed4788e1964c6e03d81f656024a8f89f9b5",
+  "the_tree": "6afdec39004637a5057a7e0d6a6b703d8369cf11",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }
