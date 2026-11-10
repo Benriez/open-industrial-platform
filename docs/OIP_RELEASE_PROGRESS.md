@@ -2980,6 +2980,40 @@ captures), the security review, the Rust suite and the reproducible build.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 66 — the witness of the macOS rehearsals observed the wrong refusal, and the record said so
+
+**Status: PROVED on canonical `main`.**
+The operator's chain of G12 was examined link by link: launch ✓, configure ✓, connect ✓,
+monitoring ✓, use after a restart ✓ — and **authenticate** was proved in the browser (the
+acceptance) and in the native transport (the native client), but not in the **shipped macOS
+bundle**: the bundle is proven to reach the Core and to be refused without a session, and the
+login itself was never driven.
+
+Two facts came out of the examination:
+
+* **the witness of the macOS rehearsals broke the rule of the Core.** The witness stands on the
+  documented port of the instance — so that the bundle carries the URL of the operator — and
+  forwards the request to the Core of the rehearsal. It forwarded the **Host** of the Core, so the
+  Core saw the origin of the bundle and the host of another port and refused every request with
+  `LOCAL_ONLY`: the **session was never evaluated** and the witness observed the wrong refusal.
+  The witness now forwards its own host, the Core evaluates the session as it must, and the
+  receipt names the **code** of every refusal — `403 PERMISSION_DENIED`, the refusal of the
+  session. A status without a code proves little; the code says whether the Core refused the
+  session, the origin or the scope.
+* **the login in the bundle cannot be driven by an autonomous run on this machine.** A one-time
+  code is typed into a native window, and the terminal of this machine holds **no assistive
+  access** (`osascript` is refused with `-25211`), so no rehearsal can type into the bundle. The
+  login of the browser is proven by the acceptance, the login of the native transport by the
+  native client, and the bundle is proven to reach the Core and to be refused without a session.
+  **That step is the operator's own** and belongs to his acceptance of G12 — the record says so
+  instead of implying that the path is rehearsed.
+
+The macOS rehearsals were measured again with the corrected witness, and the runbook names the
+code of the refusal.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |

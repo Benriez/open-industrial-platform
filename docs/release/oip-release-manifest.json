@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
-  "the_tree": "53797325507aefc078aebc8cb3bf19504068725c",
+  "the_revision": "0db0b88a27322ba4e7ef6f2062e7af573cb74c1e",
+  "the_tree": "e0fae3bdf57a20f5d9c10075ef5764f84e1015f1",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "ae2a8ab8e49390ff9d8d531af73b06713b87a437",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 679,
-    "the_sha256": "466c1a686c29c897c7ae4c3ca8da0393713415c7a4b3ee8850bd16e9b060e318"
+    "the_sha256": "6cec28cff47ea86d33fb682aa91a36f0c1e26fd2b901bd77b22592e3aea90be9"
   },
   "the_artifacts": {
     "the_core": {
@@ -75,7 +75,7 @@
     },
     "the_macos_application": {
       "path": "docs/evidence/oip-macos-app/macos-app.json",
-      "sha256": "15f8d11c952704d673d378ed53d4e5b4a607d01f5273bb038fecfd113446b134"
+      "sha256": "d35d610474562251952c6dfa56055fb83c48719cdeb33267580e0dc407f61676"
     },
     "the_transport_parity": {
       "path": "docs/evidence/oip-transport-parity/transport-parity.json",
@@ -177,27 +177,8 @@
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/OIP_RELEASE_LEDGER.md",
-    " M docs/OIP_RELEASE_PROGRESS.md",
-    " M docs/evidence/oip-accessibility/accessibility.json",
-    " M docs/evidence/oip-canonical-acceptance/acceptance.json",
-    " M docs/evidence/oip-canonical-acceptance/browser-gate.json",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-1440.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-1920.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-devices-1440.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-devices-1920.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-network-1440.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-network-1920.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-opcua-1440.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-opcua-1920.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-settings-1440.png",
-    " M docs/evidence/oip-canonical-acceptance/captures/canonical-ui-settings-1920.png",
-    " M docs/evidence/oip-canonical-acceptance/ui-gate.json",
-    " M docs/evidence/oip-device-administration/device-administration.json",
-    " M docs/evidence/oip-global-context/global-context.json",
-    " M docs/evidence/oip-record-integrity/record-integrity.json",
-    " M docs/evidence/oip-release-verification/release-verification.json",
-    " M docs/evidence/oip-reproducible-build/reproducible-build.json"
+    "M docs/OIP_RELEASE_PROGRESS.md",
+    " M docs/runbooks/operations.md"
   ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",

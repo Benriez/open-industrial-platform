@@ -447,8 +447,9 @@ port **18808** — the port of the example configuration of an instance
 
 The rehearsal `tests/oip_macos_app.py` proves the bundle **of the release**:
 it builds it for the documented port, puts a witness on that port, and shows
-that the bundle asks the Core, is refused with 403, obtains **no** data,
-terminates without an orphan and starts again
+that the bundle asks the Core, is refused with `403 PERMISSION_DENIED` — the
+refusal of the **session**, and the receipt names the code of every refusal —
+obtains **no** data, terminates without an orphan and starts again
 (`docs/evidence/oip-macos-app/macos-app.json`).
 
 **What the operator does with the bundle.**
@@ -462,7 +463,8 @@ target/release/oip-server --browser-login \
 
 # 2. the bundle
 open "$BUNDLE"
-# the code of the session is entered in the window of the bundle
+# the code of the session is entered in the window of the bundle; the window
+# asks for it and the Core refuses every read until the session exists
 
 # 3. the bundle is stopped with the signal of the operator
 pkill -TERM -f oip_dashboard.app
