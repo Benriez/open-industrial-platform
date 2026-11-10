@@ -179,5 +179,6 @@ void main() {
         find.textContaining('mit einem Neustart der Instanz'), findsOneWidget);
     expect(find.textContaining('Die lokale Sitzung endet nach 30 Minuten'),
         findsOneWidget);
+    expect(find.textContaining('beim Abmelden'), findsOneWidget);
   });
 }
