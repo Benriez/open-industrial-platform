@@ -211,9 +211,6 @@ await typeField.click({ force: true });
 await page.waitForTimeout(1200);
 await clickText(newType);
 await page.waitForTimeout(800);
-await page.keyboard.press('Meta+A');
-await page.keyboard.type(newName);
-await page.waitForTimeout(400);
 const save = page.getByRole('button', { name: 'Änderungen speichern' }).first();
 check('the administration can be saved', await save.count() > 0,
   'the save of the administration is not shown');
