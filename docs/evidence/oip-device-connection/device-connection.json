@@ -20,7 +20,7 @@
         "the_variant": "focus-enter",
         "the_state": "collapsed",
         "the_x": 619,
-        "the_y": 870.2000122070312,
+        "the_y": 545.4000244140625,
         "the_role": "text",
         "the_area": 24552
       },
@@ -61,11 +61,11 @@
     "expanded",
     "expanded"
   ],
-  "revision": "93aaab4c9b029179c598f0d55859fcd69873ba4a",
+  "revision": "c9de030a543b8f5a17cf667bec6da3fe79650b81",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "the verified connection of a device in the approved surface against the real Core",
-  "base": "http://127.0.0.1:63942",
-  "expected_fingerprint": "SHA256:aqa5C3/tykI8UCTopH8zVPsBIrJGHePGC8v1YrF9g6s",
+  "base": "http://127.0.0.1:54544",
+  "expected_fingerprint": "SHA256:la8z1ODt/ClsvyXko+36rNSZh55uChb/Gw4liFxs7ec",
   "findings": [
     {
       "check": "browser-login accepted",
@@ -75,7 +75,7 @@
     {
       "check": "the inventory of the scope lists the device",
       "ok": true,
-      "the_detail": "Existing inventory identity · existing-pi\nGerät Existing inventory identity existing-pi auswählen · SingleBoardComputer · 53fc8754-87c4-4506-b411-c34f94e02009 · 10 Observations · Reachability Erreichb"
+      "the_detail": "Existing inventory identity · existing-pi\nGerät Existing inventory identity existing-pi auswählen · SingleBoardComputer · 3b059c14-0d71-4c45-99ed-bf38c6f4b0b1 · 10 Observations · Reachability Erreichb"
     },
     {
       "check": "the connection panel of the device is shown",

@@ -1,13 +1,13 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "8d0493f064f220742172b15011e7dda96649c165",
-  "the_tree": "ef29d4cca26ac0099e736c2e68b4bf36265cc22b",
+  "the_revision": "c9de030a543b8f5a17cf667bec6da3fe79650b81",
+  "the_tree": "b9bfa4c706d9479bf9993664a25dc33f2d354a1d",
   "the_branch": "main",
   "the_revision_of_the_source": {
-    "the_revision": "ac0bc10911f1e8e15912fbdf7268c77638fb80aa",
-    "the_subject": "fix(g10): the two dependency advisories of the lockfile are closed"
+    "the_revision": "f0120f81ac7826aa4f2f3aa6efa7210080f659ae",
+    "the_subject": "fix(g4): the tool runs every rehearsal once, and the tile is opened in every way"
   },
-  "the_working_tree_is_clean": true,
+  "the_working_tree_is_clean": false,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -21,8 +21,8 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 671,
-    "the_sha256": "b824a25308e6164109ec07f453f11d23bbc941f1ef9953134ca0eb879c2d04a2"
+    "the_files": 672,
+    "the_sha256": "56bfa6b00e6df3d25ec39bdeea5f8ea1b5ac06d8d13223edb2f24e8eb396ac76"
   },
   "the_artifacts": {
     "the_core": {
@@ -67,7 +67,7 @@
     },
     "the_performance": {
       "path": "docs/evidence/oip-performance/performance.json",
-      "sha256": "81b0029d23a59319402b7a995cc045654959ea57c27bf8f4faf7c0e009e5daca"
+      "sha256": "dc4bd6159b12291362bbadd10e1a5caf7e39a5efb4bd540f1fb094839240cbff"
     },
     "the_security_review": {
       "path": "docs/evidence/oip-security-review/security-review.json",
@@ -75,11 +75,11 @@
     },
     "the_macos_application": {
       "path": "docs/evidence/oip-macos-app/macos-app.json",
-      "sha256": "a4f0ccafc32b0eec3bea31230cb85db2eeb378f07337b397251ccac27628f477"
+      "sha256": "e7ae2ef52cc69d79c9e9eb72fa8339f7a9c658cbd1dd0f651ab7efad8aac82c8"
     },
     "the_transport_parity": {
       "path": "docs/evidence/oip-transport-parity/transport-parity.json",
-      "sha256": "94f1ae51e60c6736e3813d005c97689e0c964a80d83e37f8b5286ac979dbae98"
+      "sha256": "bb69256af554939bd3d7a8f89a3e5739d09628e35e5e31a8f75a1b30b1fce5c7"
     },
     "the_acceptance": {
       "path": "docs/evidence/oip-canonical-acceptance/acceptance.json",
@@ -99,11 +99,11 @@
     },
     "the_session_lifetime": {
       "path": "docs/evidence/oip-session-lifetime/session-lifetime.json",
-      "sha256": "21b69f6b7a1341f6b8c362a2badc8d784ba25b080c9fe908ef3408bc743d17a6"
+      "sha256": "26dc843d2c3001f91c4b69428f0e3474a03a7c18a7bcbe0aa9eb11ec10c2181c"
     },
     "the_stability": {
       "path": "docs/evidence/oip-stability/stability.json",
-      "sha256": "df5b15e5a425b1245604fe6a3c964d58c2959a5bc8cc2b023e088c03f699616b"
+      "sha256": "0564d58d0f1ba5c90d3669969d05013f65b09fd63a73346c1f10a92e7b4c3793"
     },
     "the_reproducible_build": {
       "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
@@ -111,11 +111,11 @@
     },
     "the_upgrade_rollback": {
       "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
-      "sha256": "8313ad6025c85f7510e7fa46942d57a57c0cf52ccbf52c57776be8013cd90f0e"
+      "sha256": "068e744aba590ca030ed7f7e1425e74822923b8ce200c34aa913569895b4708c"
     },
     "the_activation_dry_run": {
       "path": "docs/evidence/oip-activation-dry-run/activation-dry-run.json",
-      "sha256": "1acdc26a66c820afa241c0ecfa7b6119379d7318d99d92f172a299be18bffd6d"
+      "sha256": "f60616f37a99874f5c731091ac8daf4fa220fac194ef4c0fe0b2a18499d9dd08"
     },
     "the_rust_regression": {
       "path": "docs/evidence/oip-rust-regression/rust-regression.json",
@@ -123,60 +123,71 @@
     },
     "the_reconnect_recovery": {
       "path": "docs/evidence/oip-reconnect-recovery/reconnect-recovery.json",
-      "sha256": "fbac40d8f3f048c76eccf83750f87a1c11d38613a5e8698e629179711cca682e"
+      "sha256": "aff11b2a9b5ccf6daaa3ed5e19121e3e39e3cfd1e9739a1427d63760588ac38f"
     },
     "the_operations": {
       "path": "docs/evidence/oip-operations/operations.json",
-      "sha256": "18d116d54b73028428896c4fc8e860430da4fd2a91a88d9c037592faf646e19c"
+      "sha256": "af57843f85ef9f885286c474a1d901afd34e300d3a3e2f091615e80fea76b022"
     },
     "the_documented_plan": {
       "path": "docs/evidence/oip-documented-plan/documented-plan.json",
-      "sha256": "2c9bf6e891531465d74b1f8856d670d6213dc75bcb36fd441c7e7e4a05518f18"
+      "sha256": "7ecd0cc89f9e7372642f34718fd6c157acb01ec6567da400719e32e683bdd4c3"
     },
     "the_storage_failure": {
       "path": "docs/evidence/oip-storage-failure/storage-failure.json",
-      "sha256": "c2ae7fa79dbd27c79ae981a7c67180d8d516688b08e150633768f9b7fd96f6a7"
+      "sha256": "16e58e9f795d9cb751da6f3905311906968fffd56afb2cb66cb27480fddc7b42"
     },
     "the_operations_rehearsal": {
       "path": "docs/evidence/oip-operations/operations.json",
-      "sha256": "18d116d54b73028428896c4fc8e860430da4fd2a91a88d9c037592faf646e19c"
+      "sha256": "af57843f85ef9f885286c474a1d901afd34e300d3a3e2f091615e80fea76b022"
     },
     "the_settings_offline": {
       "path": "docs/evidence/oip-settings-offline/settings-offline.json",
-      "sha256": "1a8735f793692f9b1a3a563e5882d3241c4f73f3c6299315a2650fc758f4bb85"
+      "sha256": "f5303ebd5a36a6047e3f33eb0b146f1d1136bce05ebe4d41627e86bdd7aef11a"
     },
     "the_offline_archive": {
       "path": "docs/evidence/oip-offline-archive/offline-archive.json",
-      "sha256": "d142df89faedd03610c57e4190e485db8a122e8b1cd883a8de9cdc66876ef800"
+      "sha256": "b7e853cd83af5fb7cd0ba5a297cab46f83ca819ddb88de34ebbf246a1633d6de"
     },
     "the_opcua_parity": {
       "path": "docs/evidence/oip-opcua-parity/opcua-parity.json",
-      "sha256": "cff67a6b20960255efc7c8ee90a43846364057d67c1d89be68d68a253adfcf59"
+      "sha256": "dc65ae2e591c219d15b8e65ae9e8d78d9d3c1b667e686ec7870e99fe666c9060"
     },
     "the_extend_registry": {
       "path": "docs/evidence/oip-extend-registry/extend-registry.json",
-      "sha256": "7fcdf55ef74b26128773b348012c7f017c36cb25e6e82376d466a4c729296776"
+      "sha256": "e33176920216759811ece88c2f0e532817b9d9b2ada57833278b31161d03a31d"
     },
     "the_historical_daemon": {
       "path": "docs/evidence/oip-historical-daemon/historical-daemon.json",
-      "sha256": "3f5a81e411a917e73efc8b0836d98062a279e825d80eea13e8801743b2fbfb96"
+      "sha256": "5fde7b03f0f3ff71dd9d66934b2c0727e3d0b1ef11d461c237899d6b7b11e299"
     },
     "the_diagnostic_continuation": {
       "path": "docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json",
-      "sha256": "de9fe497bba7caf9e62d1966e3f2f23bd311e33ec0633ae1586e91130b143e03"
+      "sha256": "3050852a49db7f46f0ce8867b1d71b77b61dd1996fd8f2a38530d9839c2e891b"
     },
     "the_device_connection": {
       "path": "docs/evidence/oip-device-connection/device-connection.json",
-      "sha256": "0e808f25c81899c88db505e0f8386a4308447a12303c2f3d6d0c58a36a1eb776"
+      "sha256": "f75b6618db8fe3927bf397f5be5dd213bdf0b4d5c038b2c770db5091ccb895ac"
     },
     "the_workstation_data": {
       "path": "docs/evidence/oip-workstation-data/workstation-data.json",
-      "sha256": "bcc68673fb2bd181795bf467fd183bc481612ef871050cf3556cd09a04cbfd8f"
+      "sha256": "c566f13bf494158613b9e1335c26cda9f860efb6ef6d7406f7733571b8b5f527"
     }
   },
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
-  "the_working_tree_without_the_manifest": [],
+  "the_working_tree_without_the_manifest": [
+    "M docs/evidence/oip-device-connection/device-connection.json",
+    " M docs/evidence/oip-device-connection/rehearsal.json",
+    " M docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json",
+    " M docs/evidence/oip-diagnostic-continuation/rehearsal.json",
+    " M docs/evidence/oip-measurement-coverage/measurement-coverage-browser.json",
+    " M docs/evidence/oip-measurement-coverage/measurement-coverage.json",
+    " M docs/evidence/oip-reconnect-recovery/reconnect-recovery.json",
+    " M docs/evidence/oip-reconnect-recovery/rehearsal.json",
+    " M docs/evidence/oip-workstation-data/rehearsal.json",
+    " M docs/evidence/oip-workstation-data/workstation-data.json"
+  ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
     "the_digest_of_the_reproducible_build": "146b8bc5387359879abffe622b9cbe32bcb86d5630c8ab98eaa451c294b8fe65",

@@ -7,11 +7,11 @@
     "the device collects"
   ],
   "ssh_fixture": {
-    "port": 58932,
+    "port": 54537,
     "user": "benny",
     "loopback_only": true
   },
-  "host_key_fingerprint": "SHA256:j4+SMnhrxmN5DsraWQvyJdbWr+NjL6m3zUDweNs9R/Q",
+  "host_key_fingerprint": "SHA256:la8z1ODt/ClsvyXko+36rNSZh55uChb/Gw4liFxs7ec",
   "verified_identity": {
     "hostname": "MacBookPro.fritz.box",
     "operating_system": "Darwin",
@@ -19,15 +19,15 @@
   },
   "connection": {
     "device_id": "existing-pi",
-    "source_id": "9bc0cf92-c1a5-47f2-9b00-14fd35e72453",
+    "source_id": "3b059c14-0d71-4c45-99ed-bf38c6f4b0b1",
     "endpoint": {
       "host": "127.0.0.1",
-      "port": 58932,
+      "port": 54537,
       "user": "benny",
       "identity_profile": "fixture",
       "alias": null
     },
-    "fingerprint": "SHA256:j4+SMnhrxmN5DsraWQvyJdbWr+NjL6m3zUDweNs9R/Q",
+    "fingerprint": "SHA256:la8z1ODt/ClsvyXko+36rNSZh55uChb/Gw4liFxs7ec",
     "verified_identity": {
       "hostname": "MacBookPro.fritz.box",
       "operating_system": "Darwin",
@@ -36,36 +36,36 @@
       "model": "MacBookPro18,3",
       "stable_host_id_sha256": null,
       "memory_total_bytes": 17179869184,
-      "memory_used_bytes": 13118488576,
-      "uptime_seconds": 898927.0,
+      "memory_used_bytes": 12985925632,
+      "uptime_seconds": 899698.0,
       "disks": [
         {
           "filesystem": "/dev/disk3s1s1",
           "mount": "/",
           "total_bytes": 994662584320,
           "used_bytes": 12577067008,
-          "available_bytes": 4727533568
+          "available_bytes": 4709330944
         },
         {
           "filesystem": "/dev/disk3s6",
           "mount": "/System/Volumes/VM",
           "total_bytes": 994662584320,
           "used_bytes": 13961170944,
-          "available_bytes": 4727533568
+          "available_bytes": 4709330944
         },
         {
           "filesystem": "/dev/disk3s2",
           "mount": "/System/Volumes/Preboot",
           "total_bytes": 994662584320,
           "used_bytes": 10806652928,
-          "available_bytes": 4727533568
+          "available_bytes": 4709330944
         },
         {
           "filesystem": "/dev/disk3s4",
           "mount": "/System/Volumes/Update",
           "total_bytes": 994662584320,
           "used_bytes": 7151616,
-          "available_bytes": 4727533568
+          "available_bytes": 4709330944
         },
         {
           "filesystem": "/dev/disk1s2",
@@ -92,8 +92,8 @@
           "filesystem": "/dev/disk3s5",
           "mount": "/System/Volumes/Data",
           "total_bytes": 994662584320,
-          "used_bytes": 949771657216,
-          "available_bytes": 4727533568
+          "used_bytes": 949789859840,
+          "available_bytes": 4709330944
         },
         {
           "filesystem": "/dev/disk5s1",
@@ -219,7 +219,7 @@
           ]
         }
       ],
-      "captured_at_ms": 1794274020719,
+      "captured_at_ms": 1794274791275,
       "unavailable": [
         "gpu",
         "temperature",
@@ -227,12 +227,12 @@
       ],
       "provenance": "authenticated SSH host report; fixed read-only query; capture time is Core time, remote measurement clocks unknown; no hardware attestation or inferred sensors"
     },
-    "verified_at_ms": 1794274020719,
+    "verified_at_ms": 1794274791275,
     "monitoring_enabled": true,
     "poll_seconds": 10,
     "revision": 1,
-    "last_attempt_ms": 1794274020719,
-    "last_success_ms": 1794274020719,
+    "last_attempt_ms": 1794274791275,
+    "last_success_ms": 1794274791275,
     "error": null,
     "status": "collector_configured",
     "observations": []
@@ -301,11 +301,11 @@
       "expanded",
       "expanded"
     ],
-    "revision": "f0120f81ac7826aa4f2f3aa6efa7210080f659ae",
+    "revision": "c9de030a543b8f5a17cf667bec6da3fe79650b81",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the verified connection of a device in the approved surface against the real Core",
-    "base": "http://127.0.0.1:58937",
-    "expected_fingerprint": "SHA256:j4+SMnhrxmN5DsraWQvyJdbWr+NjL6m3zUDweNs9R/Q",
+    "base": "http://127.0.0.1:54544",
+    "expected_fingerprint": "SHA256:la8z1ODt/ClsvyXko+36rNSZh55uChb/Gw4liFxs7ec",
     "findings": [
       {
         "check": "browser-login accepted",
@@ -315,7 +315,7 @@
       {
         "check": "the inventory of the scope lists the device",
         "ok": true,
-        "the_detail": "Existing inventory identity \u00b7 existing-pi\nGer\u00e4t Existing inventory identity existing-pi ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 9bc0cf92-c1a5-47f2-9b00-14fd35e72453 \u00b7 10 Observations \u00b7 Reachability Erreichb"
+        "the_detail": "Existing inventory identity \u00b7 existing-pi\nGer\u00e4t Existing inventory identity existing-pi ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 3b059c14-0d71-4c45-99ed-bf38c6f4b0b1 \u00b7 10 Observations \u00b7 Reachability Erreichb"
       },
       {
         "check": "the connection panel of the device is shown",
@@ -357,8 +357,8 @@
   },
   "checks": 9,
   "status": "PASS",
-  "the_revision": "f0120f81ac7826aa4f2f3aa6efa7210080f659ae",
-  "the_tree": "6248d6fafabd680fbd9c7ccf69cfc47b3ad48590",
+  "the_revision": "c9de030a543b8f5a17cf667bec6da3fe79650b81",
+  "the_tree": "b9bfa4c706d9479bf9993664a25dc33f2d354a1d",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T01:29:20Z"
+  "finished_utc": "2026-11-10T01:41:50Z"
 }

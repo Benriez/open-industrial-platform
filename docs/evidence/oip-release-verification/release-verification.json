@@ -4,15 +4,15 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "8d0493f064f220742172b15011e7dda96649c165",
+      "the_revision": "c9de030a543b8f5a17cf667bec6da3fe79650b81",
       "the_revision_of_the_source": {
-        "the_revision": "ac0bc10911f1e8e15912fbdf7268c77638fb80aa",
-        "the_subject": "fix(g10): the two dependency advisories of the lockfile are closed"
+        "the_revision": "f0120f81ac7826aa4f2f3aa6efa7210080f659ae",
+        "the_subject": "fix(g4): the tool runs every rehearsal once, and the tile is opened in every way"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
-        "the_files": 671,
-        "the_sha256": "b824a25308e6164109ec07f453f11d23bbc941f1ef9953134ca0eb879c2d04a2"
+        "the_files": 672,
+        "the_sha256": "56bfa6b00e6df3d25ec39bdeea5f8ea1b5ac06d8d13223edb2f24e8eb396ac76"
       },
       "the_artifacts": {
         "the_core": "1cb8958eff5e5480a72047b4dfff7b2f2bf6167f521654e444719db1754a7ae3",
@@ -128,41 +128,9 @@
     "G10",
     "G12"
   ],
-  "the_problems": [
-    "the receipt docs/evidence/oip-activation-dry-run/activation-dry-run.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-device-connection/device-connection.json names the revision 93aaab4c9b02, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-device-connection/rehearsal.json names the revision 93aaab4c9b02, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json names the revision a9ba646b826e, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-diagnostic-continuation/rehearsal.json names the revision a9ba646b826e, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-documented-plan/documented-plan.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-extend-registry/extend-registry.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-historical-daemon/historical-daemon.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-loopback-rate/loopback-rate.json names the revision e159fbf6071e, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-macos-app/macos-app.json names the revision 96a2f1c89956, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-macos-install/macos-install.json names the revision 6d6100504a4a, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-measurement-coverage/measurement-coverage-browser.json names the revision 93aaab4c9b02, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-measurement-coverage/measurement-coverage.json names the revision 93aaab4c9b02, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-native-session/native-session.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-observation-history/observation-history.json names the revision 5b9482b51d05, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-offline-archive/offline-archive.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-opcua-parity/opcua-parity.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-operations/operations.json names the revision 96a2f1c89956, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-performance/performance.json names the revision f53e9ec938a3, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-reconnect-recovery/reconnect-recovery.json names the revision a9ba646b826e, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-reconnect-recovery/rehearsal.json names the revision a9ba646b826e, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-release-verification/release-verification.json names the revision 338976574e1a, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-session-lifetime/session-lifetime.json names the revision e017178591b6, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-settings-offline/settings-offline.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-stability/stability.json names the revision 87bab07cad0b, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-storage-failure/storage-failure.json names the revision 96a2f1c89956, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-transport-parity/transport-parity.json names the revision c5951c3480fc, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-upgrade-rollback/upgrade-rollback.json names the revision 96a2f1c89956, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-workstation-data/rehearsal.json names the revision a9ba646b826e, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-workstation-data/workstation-data.json names the revision a9ba646b826e, which predates the last change of crates (ac0bc10911f1)",
-    "the receipt docs/evidence/oip-worktree-reconciliation/worktree-reconciliation.json names the revision 4841f2f7918c, which predates the last change of crates (ac0bc10911f1)"
-  ],
-  "the_revision": "8d0493f064f220742172b15011e7dda96649c165",
-  "the_tree": "ef29d4cca26ac0099e736c2e68b4bf36265cc22b",
+  "the_problems": [],
+  "the_revision": "c9de030a543b8f5a17cf667bec6da3fe79650b81",
+  "the_tree": "b9bfa4c706d9479bf9993664a25dc33f2d354a1d",
   "the_working_tree_is_clean": false,
-  "status": "FAIL"
+  "status": "PASS"
 }
