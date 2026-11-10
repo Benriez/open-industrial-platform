@@ -9,11 +9,11 @@
   ],
   "the_witness": {
     "the_port": 18808,
-    "the_core_of_the_rehearsal": 50011,
+    "the_core_of_the_rehearsal": 55905,
     "the_note": "the witness stands on the documented port of the instance; the bundle therefore carries the URL that the operator uses"
   },
   "build_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18808",
-  "build_seconds": 13.9,
+  "build_seconds": 11.3,
   "bundle": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
   "bundle_bytes": 96996325,
   "bundle_executable_sha256": "6123cdc51b08b7cac10a0048f21e0e9407c9a2cfad3349d26d0a2949d05facd3",
@@ -91,14 +91,14 @@
       "the_status": 403
     }
   ],
-  "screenshot": "target/oip-macos-app/oip-macos-app.png",
+  "screenshot": "/Users/benny/Code/open-industrial-platform/target/oip-macos-app/oip-macos-app.png",
   "screenshot_captured": true,
   "shutdown": {
     "signal": "SIGTERM",
     "terminated": true,
     "seconds": 0.0,
     "exit_code": -15,
-    "the_output": "[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n"
+    "the_output": "[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
   },
   "orphaned_processes": [],
   "restart": {
@@ -112,17 +112,17 @@
       },
       {
         "the_method": "GET",
+        "the_path": "/api/v1/devices",
+        "the_status": 403
+      },
+      {
+        "the_method": "GET",
         "the_path": "/api/v1/system/status",
         "the_status": 403
       },
       {
         "the_method": "GET",
         "the_path": "/api/v1/metrics/current",
-        "the_status": 403
-      },
-      {
-        "the_method": "GET",
-        "the_path": "/api/v1/devices",
         "the_status": 403
       },
       {
@@ -143,11 +143,11 @@
     "terminated": true,
     "seconds": 0.0,
     "exit_code": -15,
-    "the_output": "[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0), (-494.0, 982.0, 2560.0, 1440.0)] window=(386.0, 1400.0, 800.0, 632.0) visible=true\n"
+    "the_output": "[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
   },
   "status": "PASS",
-  "the_revision": "96a2f1c8995668906ddd5ffb851a2d452cc28abc",
-  "the_tree": "f894d717dface237cb12359030ec898983bef283",
+  "the_revision": "e2cdcfc5bd10a9373daa37677e1af6401ae975a0",
+  "the_tree": "b9b899047d88068544e78d047c4f99e9a3aa0fa4",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-09T11:59:33Z"
+  "finished_utc": "2026-11-10T00:49:19Z"
 }

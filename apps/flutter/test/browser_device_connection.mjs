@@ -164,6 +164,11 @@ const identityNodes = async () => {
 // The attempt that works is recorded, so the evidence names the way.
 const expandIdentity = async () => {
   const attempts = [];
+  // The tile is opened in every way a control of the surface can be
+  // activated. A round that does not open it is repeated: the geometry of the
+  // control depends on the layout of the surface, which is not stable while
+  // the panel refreshes itself.
+  for (let round = 0; round < 3; round++) {
   for (const variant of ['center', 'focus-enter', 'dispatch-click']) {
     const found = await identityNodes();
     if (!found.length) {
@@ -175,6 +180,14 @@ const expandIdentity = async () => {
     if (!box) {
       attempts.push({ 'the_variant': variant, 'the_state': 'no-geometry' });
       continue;
+    }
+    // The control is brought into the view before it is activated.
+    try {
+      await node.element.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(200);
+    } catch (error) {
+      attempts.push({ 'the_variant': variant, 'the_state': 'no-scroll',
+                      'the_detail': String(error).slice(0, 120) });
     }
     const x = box.x + Math.min(box.width / 2, 80);
     const y = box.y + box.height / 2;
@@ -197,6 +210,7 @@ const expandIdentity = async () => {
     attempts.push({ 'the_variant': variant, 'the_state': state, 'the_x': x, 'the_y': y,
                     'the_role': node.role, 'the_area': node.area });
     if (state === 'expanded') return { 'the_attempts': attempts, 'the_state': state };
+  }
   }
   return { 'the_attempts': attempts, 'the_state': await identityState() };
 };

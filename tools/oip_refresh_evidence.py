@@ -35,71 +35,66 @@ EVIDENCE = ROOT / "docs" / "evidence"
 # the quick ones first and the sustained runs last.
 REHEARSALS = [
     ("oip_record_integrity", "tests/oip_record_integrity.py",
-     "record-integrity.json", "oip-record-integrity/record-integrity.json"),
+     {"record-integrity.json": "oip-record-integrity/record-integrity.json"}),
     ("oip_documented_plan", "tests/oip_documented_plan.py",
-     "documented-plan.json", "oip-documented-plan/documented-plan.json"),
+     {"documented-plan.json": "oip-documented-plan/documented-plan.json"}),
     ("oip_session_lifetime", "tests/oip_session_lifetime.py",
-     "session-lifetime.json", "oip-session-lifetime/session-lifetime.json"),
+     {"session-lifetime.json": "oip-session-lifetime/session-lifetime.json"}),
     ("oip_native_session", "tests/oip_native_session.py",
-     "native-session.json", "oip-native-session/native-session.json"),
+     {"native-session.json": "oip-native-session/native-session.json"}),
     ("oip_settings_offline", "tests/oip_settings_offline.py",
-     "settings-offline.json", "oip-settings-offline/settings-offline.json"),
+     {"settings-offline.json": "oip-settings-offline/settings-offline.json"}),
     ("oip_offline_archive", "tests/oip_offline_archive.py",
-     "offline-archive.json", "oip-offline-archive/offline-archive.json"),
+     {"offline-archive.json": "oip-offline-archive/offline-archive.json"}),
     ("oip_extend_registry", "tests/oip_extend_registry.py",
-     "extend-registry.json", "oip-extend-registry/extend-registry.json"),
+     {"extend-registry.json": "oip-extend-registry/extend-registry.json"}),
     ("oip_activation_dry_run", "tests/oip_activation_dry_run.py",
-     "activation-dry-run.json", "oip-activation-dry-run/activation-dry-run.json"),
+     {"activation-dry-run.json": "oip-activation-dry-run/activation-dry-run.json"}),
     ("oip_transport_parity", "tests/oip_transport_parity.py",
-     "transport-parity.json", "oip-transport-parity/transport-parity.json"),
+     {"transport-parity.json": "oip-transport-parity/transport-parity.json"}),
     ("oip_opcua_parity", "tests/oip_opcua_parity.py",
-     "opcua-parity.json", "oip-opcua-parity/opcua-parity.json"),
+     {"opcua-parity.json": "oip-opcua-parity/opcua-parity.json"}),
     ("oip_device_connection", "tests/oip_device_connection.py",
-     "device-connection-rehearsal.json", "oip-device-connection/rehearsal.json"),
-    ("oip_device_connection_browser", "tests/oip_device_connection.py",
-     "device-connection.json", "oip-device-connection/device-connection.json"),
+     {"device-connection-rehearsal.json": "oip-device-connection/rehearsal.json",
+      "device-connection.json": "oip-device-connection/device-connection.json"}),
     ("oip_measurement_coverage", "tests/oip_measurement_coverage.py",
-     "measurement-coverage.json", "oip-measurement-coverage/measurement-coverage.json"),
-    ("oip_measurement_coverage_browser", "tests/oip_measurement_coverage.py",
-     "measurement-coverage-browser.json",
-     "oip-measurement-coverage/measurement-coverage-browser.json"),
+     {"measurement-coverage.json": "oip-measurement-coverage/measurement-coverage.json",
+      "measurement-coverage-browser.json":
+          "oip-measurement-coverage/measurement-coverage-browser.json"}),
     ("oip_observation_history", "tests/oip_observation_history.py",
-     "observation-history.json", "oip-observation-history/observation-history.json"),
+     {"observation-history.json": "oip-observation-history/observation-history.json"}),
     ("oip_diagnostic_continuation", "tests/oip_diagnostic_continuation.py",
-     "diagnostic-continuation-rehearsal.json",
-     "oip-diagnostic-continuation/rehearsal.json"),
-    ("oip_diagnostic_continuation_browser", "tests/oip_diagnostic_continuation.py",
-     "diagnostic-continuation.json",
-     "oip-diagnostic-continuation/diagnostic-continuation.json"),
+     {"diagnostic-continuation-rehearsal.json":
+          "oip-diagnostic-continuation/rehearsal.json",
+      "diagnostic-continuation.json":
+          "oip-diagnostic-continuation/diagnostic-continuation.json"}),
     ("oip_workstation_data", "tests/oip_workstation_data.py",
-     "workstation-data-rehearsal.json", "oip-workstation-data/rehearsal.json"),
-    ("oip_workstation_data_browser", "tests/oip_workstation_data.py",
-     "workstation-data.json", "oip-workstation-data/workstation-data.json"),
+     {"workstation-data-rehearsal.json": "oip-workstation-data/rehearsal.json",
+      "workstation-data.json": "oip-workstation-data/workstation-data.json"}),
     ("oip_reconnect_recovery", "tests/oip_reconnect_recovery.py",
-     "reconnect-recovery-rehearsal.json", "oip-reconnect-recovery/rehearsal.json"),
-    ("oip_reconnect_recovery_browser", "tests/oip_reconnect_recovery.py",
-     "reconnect-recovery.json", "oip-reconnect-recovery/reconnect-recovery.json"),
+     {"reconnect-recovery-rehearsal.json": "oip-reconnect-recovery/rehearsal.json",
+      "reconnect-recovery.json": "oip-reconnect-recovery/reconnect-recovery.json"}),
     ("oip_operations", "tests/oip_operations.py",
-     "operations.json", "oip-operations/operations.json"),
+     {"operations.json": "oip-operations/operations.json"}),
     ("oip_storage_failure", "tests/oip_storage_failure.py",
-     "storage-failure.json", "oip-storage-failure/storage-failure.json"),
+     {"storage-failure.json": "oip-storage-failure/storage-failure.json"}),
     ("oip_upgrade_rollback", "tests/oip_upgrade_rollback.py",
-     "upgrade-rollback.json", "oip-upgrade-rollback/upgrade-rollback.json"),
+     {"upgrade-rollback.json": "oip-upgrade-rollback/upgrade-rollback.json"}),
     ("oip_historical_daemon", "tests/oip_historical_daemon.py",
-     "historical-daemon.json", "oip-historical-daemon/historical-daemon.json"),
+     {"historical-daemon.json": "oip-historical-daemon/historical-daemon.json"}),
     ("oip_macos_app", "tests/oip_macos_app.py",
-     "macos-app.json", "oip-macos-app/macos-app.json"),
+     {"macos-app.json": "oip-macos-app/macos-app.json"}),
     ("oip_macos_install", "tests/oip_macos_install.py",
-     "macos-install.json", "oip-macos-install/macos-install.json"),
+     {"macos-install.json": "oip-macos-install/macos-install.json"}),
     ("oip_performance", "tests/oip_performance.py",
-     "performance.json", "oip-performance/performance.json"),
+     {"performance.json": "oip-performance/performance.json"}),
     ("oip_loopback_rate", "tests/oip_loopback_rate.py",
-     "loopback-rate.json", "oip-loopback-rate/loopback-rate.json"),
+     {"loopback-rate.json": "oip-loopback-rate/loopback-rate.json"}),
     ("oip_stability", "tests/oip_stability.py",
-     "stability.json", "oip-stability/stability.json"),
+     {"stability.json": "oip-stability/stability.json"}),
     ("oip_worktree_reconciliation", "tests/oip_worktree_reconciliation.py",
-     "worktree-reconciliation.json",
-     "oip-worktree-reconciliation/worktree-reconciliation.json"),
+     {"worktree-reconciliation.json":
+          "oip-worktree-reconciliation/worktree-reconciliation.json"}),
 ]
 
 
@@ -108,26 +103,39 @@ def the_area(area):
     return ROOT / "target" / area
 
 
-def run(name, script, produced, published):
-    """One rehearsal, its receipt and the place it is published in."""
-    area = the_area(published.split("/")[0])
+def run(name, script, receipts):
+    """One rehearsal and every receipt it writes.
+
+    A rehearsal runs **once** and writes more than one receipt: the receipt of
+    the rehearsal and the receipt of the browser journey it drives. Running
+    the rehearsal twice would measure the same thing twice and give a second
+    chance to a flake.
+    """
+    area = the_area(sorted(receipts.values())[0].split("/")[0])
     area.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
     result = subprocess.run([sys.executable, str(ROOT / script), "--evidence", str(area)],
                             cwd=ROOT, capture_output=True, text=True, timeout=7200)
     seconds = round(time.monotonic() - started, 1)
-    source = area / produced
-    if result.returncode != 0 or not source.is_file():
+    sources = {}
+    missing = []
+    for produced, published in receipts.items():
+        source = area / produced
+        if not source.is_file():
+            missing.append(published)
+            continue
+        sources[published] = str(source.relative_to(ROOT))
+    if result.returncode != 0 or missing:
         detail = (result.stderr.strip() or result.stdout.strip())[-400:]
         return {"the_rehearsal": name, "the_status": "FAIL", "the_seconds": seconds,
-                "the_detail": detail}
-    payload = json.loads(source.read_text())
+                "the_detail": detail, "the_missing": missing}
+    payload = json.loads((area / sorted(receipts)[0]).read_text())
     return {
         "the_rehearsal": name,
         "the_status": "PASS" if payload.get("status") == "PASS" else "FAIL",
         "the_seconds": seconds,
-        "the_published": published,
-        "the_source": str(source.relative_to(ROOT)),
+        "the_published": sorted(receipts.values()),
+        "the_sources": sources,
         "the_revision": payload.get("the_revision"),
         "the_working_tree_is_clean": payload.get("the_working_tree_is_clean"),
         "the_detail": None if payload.get("status") == "PASS"
@@ -144,13 +152,13 @@ def publish(outcomes):
     """
     published = []
     for item in outcomes:
-        if item["the_status"] != "PASS" or "the_source" not in item:
+        if item["the_status"] != "PASS" or "the_sources" not in item:
             continue
-        source = ROOT / item["the_source"]
-        target = EVIDENCE / item["the_published"]
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source, target)
-        published.append(item["the_published"])
+        for published, source in item["the_sources"].items():
+            target = EVIDENCE / published
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / source, target)
+            published.append(published)
     return published
 
 
@@ -166,8 +174,8 @@ def main():
     args = parser.parse_args()
 
     if args.list:
-        for name, script, produced, published in REHEARSALS:
-            print(f"{name:38s} {script:42s} -> {published}")
+        for name, script, receipts in REHEARSALS:
+            print(f"{name:38s} {script:42s} -> {', '.join(receipts.values())}")
         return 0
 
     # A receipt that is measured on a dirty tree says so; the tool refuses to
@@ -180,13 +188,13 @@ def main():
         return 2
 
     report = {"schema": "oip-refresh-evidence-v1", "the_rehearsals": []}
-    for name, script, produced, published in REHEARSALS:
+    for name, script, receipts in REHEARSALS:
         if args.only and name not in args.only:
             continue
         if name in args.skip:
             continue
         print(f"RUN {name}", flush=True)
-        outcome = run(name, script, produced, published)
+        outcome = run(name, script, receipts)
         report["the_rehearsals"].append(outcome)
         print(f"  {outcome['the_status']} {outcome['the_seconds']}s {name}", flush=True)
     report["the_published"] = publish(report["the_rehearsals"])

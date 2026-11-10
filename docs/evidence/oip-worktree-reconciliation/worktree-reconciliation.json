@@ -2,7 +2,7 @@
   "schema": "oip-worktree-reconciliation-v1",
   "steps": [],
   "the_canonical_branch": "main",
-  "the_canonical_revision": "4841f2f7918ca755a6da3b44c235ffc118848490",
+  "the_canonical_revision": "e2cdcfc5bd10a9373daa37677e1af6401ae975a0",
   "the_branches": [
     "feature/oip-007-baseline-adoption",
     "feature/oip-008-multi-infrastructure",
@@ -163,8 +163,8 @@
   },
   "the_reconciliation_is_complete": true,
   "status": "PASS",
-  "the_revision": "4841f2f7918ca755a6da3b44c235ffc118848490",
-  "the_tree": "c5a091f3ff9662368b85c3f8cf1e248b671bc476",
+  "the_revision": "e2cdcfc5bd10a9373daa37677e1af6401ae975a0",
+  "the_tree": "b9b899047d88068544e78d047c4f99e9a3aa0fa4",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-09T19:57:33Z"
+  "finished_utc": "2026-11-10T01:14:51Z"
 }

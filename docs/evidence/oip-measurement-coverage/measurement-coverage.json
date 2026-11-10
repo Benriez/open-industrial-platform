@@ -9,16 +9,16 @@
     "the surface names the measurements that are not available"
   ],
   "ssh_fixture": {
-    "port": 60500,
+    "port": 49962,
     "user": "benny",
     "loopback_only": true
   },
-  "host_key_fingerprint": "SHA256:JDaEfoFG0usg1LLAJSzCPlIY6leighp91WTDLMKifGA",
+  "host_key_fingerprint": "SHA256:sdkUsNvD+qL1ejON4eF3n0+t+z4L81MYxWnjFd1Lfc8",
   "connection_status": "collecting",
   "the_connection": {
     "the_status": "collecting",
-    "the_source_id": "8f2dae01-c051-4699-b7ec-eb42395b8a48",
-    "the_host_key_fingerprint": "SHA256:JDaEfoFG0usg1LLAJSzCPlIY6leighp91WTDLMKifGA",
+    "the_source_id": "6fdf8464-efbf-4faa-8c6e-0f5271b49b48",
+    "the_host_key_fingerprint": "SHA256:sdkUsNvD+qL1ejON4eF3n0+t+z4L81MYxWnjFd1Lfc8",
     "the_unavailable": [
       "gpu",
       "temperature",
@@ -147,56 +147,56 @@
         "mount": "/",
         "total_bytes": 994662584320,
         "used_bytes": 12577067008,
-        "available_bytes": 7816200192
+        "available_bytes": 2934235136
       },
       {
         "filesystem": "/dev/disk3s6",
         "mount": "/System/Volumes/VM",
         "total_bytes": 994662584320,
-        "used_bytes": 13961199616,
-        "available_bytes": 7816200192
+        "used_bytes": 15037353984,
+        "available_bytes": 2934235136
       },
       {
         "filesystem": "/dev/disk3s2",
         "mount": "/System/Volumes/Preboot",
         "total_bytes": 994662584320,
         "used_bytes": 10806652928,
-        "available_bytes": 7816200192
+        "available_bytes": 2934235136
       },
       {
         "filesystem": "/dev/disk3s4",
         "mount": "/System/Volumes/Update",
         "total_bytes": 994662584320,
-        "used_bytes": 5959680,
-        "available_bytes": 7816200192
+        "used_bytes": 7045120,
+        "available_bytes": 2934235136
       },
       {
         "filesystem": "/dev/disk1s2",
         "mount": "/System/Volumes/xarts",
         "total_bytes": 524288000,
         "used_bytes": 6311936,
-        "available_bytes": 503582720
+        "available_bytes": 503578624
       },
       {
         "filesystem": "/dev/disk1s1",
         "mount": "/System/Volumes/iSCPreboot",
         "total_bytes": 524288000,
         "used_bytes": 5890048,
-        "available_bytes": 503582720
+        "available_bytes": 503578624
       },
       {
         "filesystem": "/dev/disk1s3",
         "mount": "/System/Volumes/Hardware",
         "total_bytes": 524288000,
-        "used_bytes": 3526656,
-        "available_bytes": 503582720
+        "used_bytes": 3530752,
+        "available_bytes": 503578624
       },
       {
         "filesystem": "/dev/disk3s5",
         "mount": "/System/Volumes/Data",
         "total_bytes": 994662584320,
-        "used_bytes": 946684153856,
-        "available_bytes": 7816200192
+        "used_bytes": 950488879104,
+        "available_bytes": 2934235136
       },
       {
         "filesystem": "/dev/disk5s1",
@@ -214,7 +214,7 @@
   ],
   "the_every_unavailable_kind_is_named": true,
   "the_source_in_the_hierarchy": {
-    "the_id": "8f2dae01-c051-4699-b7ec-eb42395b8a48",
+    "the_id": "6fdf8464-efbf-4faa-8c6e-0f5271b49b48",
     "the_name": "SSH host coverage-device",
     "the_entity_id": "coverage-device",
     "the_simulated": false,
@@ -288,8 +288,8 @@
   "the_measurements_that_were_invented": [],
   "the_readings": {
     "host.memory_total_bytes": 17179869184,
-    "host.memory_used_bytes": 13223526400,
-    "host.uptime_seconds": 883465.0,
+    "host.memory_used_bytes": 13484539904,
+    "host.uptime_seconds": 895609.0,
     "host.cpu_info": "Apple M1 Pro",
     "host.model": "MacBookPro18,3",
     "the_disks": 9,
@@ -358,11 +358,11 @@
       "expanded",
       "expanded"
     ],
-    "revision": "93aaab4c9b029179c598f0d55859fcd69873ba4a",
+    "revision": "e2cdcfc5bd10a9373daa37677e1af6401ae975a0",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the verified connection of a device in the approved surface against the real Core",
-    "base": "http://127.0.0.1:60503",
-    "expected_fingerprint": "SHA256:JDaEfoFG0usg1LLAJSzCPlIY6leighp91WTDLMKifGA",
+    "base": "http://127.0.0.1:49970",
+    "expected_fingerprint": "SHA256:sdkUsNvD+qL1ejON4eF3n0+t+z4L81MYxWnjFd1Lfc8",
     "findings": [
       {
         "check": "browser-login accepted",
@@ -372,7 +372,7 @@
       {
         "check": "the inventory of the scope lists the device",
         "ok": true,
-        "the_detail": "Coverage device \u00b7 coverage-device\nGer\u00e4t Coverage device coverage-device ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 8f2dae01-c051-4699-b7ec-eb42395b8a48 \u00b7 10 Observations \u00b7 Reachability Erreichbar reported\nCove"
+        "the_detail": "Coverage device \u00b7 coverage-device\nGer\u00e4t Coverage device coverage-device ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 6fdf8464-efbf-4faa-8c6e-0f5271b49b48 \u00b7 10 Observations \u00b7 Reachability Erreichbar reported\nCove"
       },
       {
         "check": "the connection panel of the device is shown",
@@ -415,8 +415,8 @@
   "the_surface_names_the_unavailable": true,
   "checks": 9,
   "status": "PASS",
-  "the_revision": "93aaab4c9b029179c598f0d55859fcd69873ba4a",
-  "the_tree": "e96a0dbdc906c5f75da209cd8e51298fb42666a1",
+  "the_revision": "e2cdcfc5bd10a9373daa37677e1af6401ae975a0",
+  "the_tree": "b9b899047d88068544e78d047c4f99e9a3aa0fa4",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-09T21:11:16Z"
+  "finished_utc": "2026-11-10T00:33:35Z"
 }

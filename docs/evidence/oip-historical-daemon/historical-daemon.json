@@ -15,10 +15,10 @@
       "exit_code": 0,
       "stdout": {
         "status": "started",
-        "pid": 57759,
-        "http_port": 55661,
-        "database": "/private/tmp/oip-historical-daemon-b0gc2lt3/core.sqlite",
-        "log": "/private/tmp/oip-historical-daemon-b0gc2lt3/state-historical/oip.log",
+        "pid": 40871,
+        "http_port": 54116,
+        "database": "/private/tmp/oip-historical-daemon-dlyu9y25/core.sqlite",
+        "log": "/private/tmp/oip-historical-daemon-dlyu9y25/state-historical/oip.log",
         "ipc_credentials_provisioned": 0
       },
       "stderr": ""
@@ -29,7 +29,7 @@
       "exit_code": 0,
       "stdout": {
         "status": "stopped",
-        "pid": 57759
+        "pid": 40871
       },
       "stderr": ""
     },
@@ -39,9 +39,9 @@
       "exit_code": 0,
       "stdout": {
         "status": "backed up",
-        "source": "/private/tmp/oip-historical-daemon-b0gc2lt3/core.sqlite",
-        "backup": "/private/tmp/oip-historical-daemon-b0gc2lt3/state-historical/backups/20261109T033917Z.sqlite",
-        "bytes": 438272,
+        "source": "/private/tmp/oip-historical-daemon-dlyu9y25/core.sqlite",
+        "backup": "/private/tmp/oip-historical-daemon-dlyu9y25/state-historical/backups/20261110T004837Z.sqlite",
+        "bytes": 540672,
         "integrity": "ok"
       },
       "stderr": ""
@@ -52,10 +52,10 @@
       "exit_code": 0,
       "stdout": {
         "status": "started",
-        "pid": 57798,
-        "http_port": 55661,
-        "database": "/private/tmp/oip-historical-daemon-b0gc2lt3/core.sqlite",
-        "log": "/private/tmp/oip-historical-daemon-b0gc2lt3/state-release/oip.log",
+        "pid": 40919,
+        "http_port": 54116,
+        "database": "/private/tmp/oip-historical-daemon-dlyu9y25/core.sqlite",
+        "log": "/private/tmp/oip-historical-daemon-dlyu9y25/state-release/oip.log",
         "ipc_credentials_provisioned": 0
       },
       "stderr": ""
@@ -66,8 +66,8 @@
       "exit_code": 0,
       "stdout": {
         "status": "restored",
-        "backup": "/private/tmp/oip-historical-daemon-b0gc2lt3/state-historical/backups/20261109T033917Z.sqlite",
-        "database": "/private/tmp/oip-historical-daemon-b0gc2lt3/core.sqlite",
+        "backup": "/private/tmp/oip-historical-daemon-dlyu9y25/state-historical/backups/20261110T004837Z.sqlite",
+        "database": "/private/tmp/oip-historical-daemon-dlyu9y25/core.sqlite",
         "schema_version": "5",
         "integrity": "ok"
       },
@@ -79,10 +79,10 @@
       "exit_code": 0,
       "stdout": {
         "status": "started",
-        "pid": 57817,
-        "http_port": 55661,
-        "database": "/private/tmp/oip-historical-daemon-b0gc2lt3/core.sqlite",
-        "log": "/private/tmp/oip-historical-daemon-b0gc2lt3/state-historical/oip.log",
+        "pid": 40931,
+        "http_port": 54116,
+        "database": "/private/tmp/oip-historical-daemon-dlyu9y25/core.sqlite",
+        "log": "/private/tmp/oip-historical-daemon-dlyu9y25/state-historical/oip.log",
         "ipc_credentials_provisioned": 0
       },
       "stderr": ""
@@ -93,7 +93,7 @@
       "exit_code": 0,
       "stdout": {
         "status": "stopped",
-        "pid": 57817
+        "pid": 40931
       },
       "stderr": ""
     }
@@ -104,7 +104,7 @@
   },
   "release_binary": {
     "path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
-    "sha256": "4f49cc1512fa8e10083bdf01e5cb618077e3337ed4ce8fc948fd08b37adef30f"
+    "sha256": "1cb8958eff5e5480a72047b4dfff7b2f2bf6167f521654e444719db1754a7ae3"
   },
   "schema_after_provisioning": "3",
   "oip007_shape_refused": {
@@ -114,7 +114,7 @@
     "started": false
   },
   "simulators": 4,
-  "historical_daemon_pid": 57759,
+  "historical_daemon_pid": 40871,
   "era_authorized_read": {
     "principal": "reader-org-a",
     "status": 200,
@@ -133,20 +133,20 @@
   },
   "era_read_without_credential": 403,
   "historical_daemon_collects": true,
-  "observations_collected_by_the_historical_daemon": "41",
+  "observations_collected_by_the_historical_daemon": "88",
   "schema_with_the_historical_daemon": "5",
-  "backup": "/private/tmp/oip-historical-daemon-b0gc2lt3/state-historical/backups/20261109T033917Z.sqlite",
+  "backup": "/private/tmp/oip-historical-daemon-dlyu9y25/state-historical/backups/20261110T004837Z.sqlite",
   "schema_of_the_backup": "5",
-  "observations_in_the_backup": "44",
+  "observations_in_the_backup": "92",
   "release_serves_the_handover": 200,
   "schema_after_the_handover": "7",
-  "observations_after_the_handover": "44",
+  "observations_after_the_handover": "92",
   "schema_after_the_restore": "5",
-  "observations_after_the_restore": "44",
-  "observations_after_the_restored_daemon": "44",
+  "observations_after_the_restore": "92",
+  "observations_after_the_restored_daemon": "92",
   "status": "PASS",
-  "the_revision": "c5951c3480fc47a8779196141c36b975de4a89e8",
-  "the_tree": "1fc951502feac914d8fea6c32b4c51290704e924",
+  "the_revision": "e2cdcfc5bd10a9373daa37677e1af6401ae975a0",
+  "the_tree": "b9b899047d88068544e78d047c4f99e9a3aa0fa4",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-09T03:39:18Z"
+  "finished_utc": "2026-11-10T00:48:38Z"
 }

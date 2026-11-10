@@ -8,7 +8,7 @@
     "the collection resumes after the restart"
   ],
   "ssh_fixture": {
-    "port": 52510,
+    "port": 54349,
     "user": "benny",
     "loopback_only": true
   },
@@ -57,8 +57,8 @@
   },
   "the_collection_resumes_after_the_restart": true,
   "status": "PASS",
-  "the_revision": "5b9482b51d0588bfcf597bb428a2fe7658523053",
-  "the_tree": "1f423319477c183de379c2123800e97188c9c51b",
+  "the_revision": "e2cdcfc5bd10a9373daa37677e1af6401ae975a0",
+  "the_tree": "b9b899047d88068544e78d047c4f99e9a3aa0fa4",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-09T21:43:50Z"
+  "finished_utc": "2026-11-10T00:34:07Z"
 }
