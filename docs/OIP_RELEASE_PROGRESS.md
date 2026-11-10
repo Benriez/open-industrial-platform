@@ -19,7 +19,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 679 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 683 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -3018,6 +3018,37 @@ delivers the same data over a Unix socket at a rate that is orders of magnitude 
 receipt of the run names the rates it measured. The checker of the numbers now reads the
 **runbook** as well: 73 rows and 25 measurements, every one of them carried by a receipt the
 row names.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
+### Iteration 67 — the honest connection states are proven against the real Core, not against a fixture
+
+**Status: PROVED on canonical `main`.**
+The record pinned the six states of the surface with a **widget test over fixture DTOs**: a fixture
+proves that the client maps a state to a word, not that the **Core** produces that state and that
+the surface tells the truth about it. The rehearsal `tests/oip_connection_states.py` drives the real
+Core and an owned loopback SSH fixture through the states the Core can really produce, and the
+journey `apps/flutter/test/browser_connection_states.mjs` reads the **state of the Core** over the
+authorized route and the **word of the surface** in the same moment:
+
+* the device is verified without the monitoring → `SSH Verified · Monitoring deaktiviert`;
+* the **operator** enables the monitoring through the switch of the surface → `Collecting · aktuelle
+  Messwerte empfangen`;
+* the host of the rehearsal disappears → `Unreachable · tatsächlicher Verbindungsversuch
+  fehlgeschlagen`;
+* the host comes back → the Core collects again and the surface says `Collecting` — the **recovery
+  of the collection**, in the surface, against the real Core;
+* the host comes back with **another key** → `Host-Key geändert · Verbindung blockiert`, and the
+  reason `HOST_KEY_CHANGED` is named.
+
+The Core is never touched by the rehearsal: the operator acts through the surface, and the host of
+the fixture is changed by the control of the rehearsal. Twelve checks, no JavaScript error.
+
+The sixth state, **stale measurements**, stays pinned by the widget test — and the record says
+why: the Core derives the cadence of a source from its polling (twice the interval plus fifteen
+seconds), so a collected device reaches `unreachable` before it reaches `stale`; the stale state
+needs samples that stop without a failed attempt.
 
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.

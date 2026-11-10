@@ -1,11 +1,11 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "613eed94ae139bb0accda6bd2f7cf8d0321459aa",
-  "the_tree": "2cb2dc2cfb0589bffa2b63d7c878422a1deb0ac2",
+  "the_revision": "af06e87a6a05a34f68286c631ad79947e9476f62",
+  "the_tree": "77a44ddc8fb6ebd5eec95ea432139a5436ca9700",
   "the_branch": "main",
   "the_revision_of_the_source": {
-    "the_revision": "ae2a8ab8e49390ff9d8d531af73b06713b87a437",
-    "the_subject": "fix(g8): the refusals of the Core are evidence, not a defect of the surface"
+    "the_revision": "354c651773be42ed226fa86849d9884493a6e6af",
+    "the_subject": "fix(g5): the journey proves the states the Core really reaches"
   },
   "the_working_tree_is_clean": false,
   "the_toolchain": {
@@ -21,8 +21,8 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 679,
-    "the_sha256": "329e59a41d8806aab994983c1b5edaff85428be4b25ecbd63a2636e41b695ffd"
+    "the_files": 683,
+    "the_sha256": "97792aab24486f2d5d616110c140c66b4c65600db39e71499e3c4d5013800bd0"
   },
   "the_artifacts": {
     "the_core": {
@@ -178,9 +178,7 @@
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
     "M docs/OIP_RELEASE_LEDGER.md",
-    " M docs/OIP_RELEASE_PROGRESS.md",
-    " M docs/runbooks/operations.md",
-    " M tests/oip_record_numbers.py"
+    " M docs/OIP_RELEASE_PROGRESS.md"
   ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
