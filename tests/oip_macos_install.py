@@ -204,6 +204,12 @@ def main():
         report["steps"].append("the installed bundle starts and reaches the Core")
         assert first["the_requests"], "the installed bundle asked the Core for nothing"
         refused = [item for item in first["the_requests"] if item["the_status"] in (401, 403)]
+        # The refusal must be the refusal of the **session**: a refusal of the
+        # origin would mean that the witness broke the rule of the Core.
+        codes = {item.get("the_code") for item in refused}
+        report["the_codes_of_the_refusals"] = sorted(c for c in codes if c)
+        assert "LOCAL_ONLY" not in codes, \
+            f"the Core refused the origin of the witness, not the session: {refused}"
         report["the_refusals_of_the_core"] = refused
         assert refused, f"the Core did not refuse the unauthorized session: {first['the_requests']}"
         assert not any(item["the_status"] == 200 for item in first["the_requests"]), \

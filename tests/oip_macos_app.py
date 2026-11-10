@@ -81,10 +81,16 @@ class _LoggingProxy(http.server.BaseHTTPRequestHandler):
             value = self.headers.get(key)
             if value:
                 request.add_header(key, value)
+        # The Core accepts a request whose origin is its own host. The witness
+        # stands on the documented port of the instance, so it forwards **its**
+        # host: the Core must see the origin of the bundle as the origin of
+        # the request. Without this the Core refuses every request with
+        # `LOCAL_ONLY` and the witness would never observe the session.
+        request.add_header("Host", self.headers.get("Host") or self.server_host)
         try:
             with urllib.request.urlopen(request, timeout=60) as answer:
                 payload = answer.read()
-                self._record(method, answer.status)
+                self._record(method, answer.status, payload)
                 self.send_response(answer.status)
                 for key in ("Content-Type", "Set-Cookie"):
                     value = answer.headers.get(key)
@@ -94,7 +100,7 @@ class _LoggingProxy(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(payload)
         except urllib.error.HTTPError as error:
             payload = error.read()
-            self._record(method, error.code)
+            self._record(method, error.code, payload)
             self.send_response(error.code)
             for key in ("Content-Type",):
                 value = error.headers.get(key)
@@ -103,13 +109,21 @@ class _LoggingProxy(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(payload)
         except Exception as error:
-            self._record(method, 502)
+            self._record(method, 502, b"")
             self.send_response(502)
             self.end_headers()
             self.wfile.write(str(error).encode())
 
-    def _record(self, method, status):
-        _LoggingProxy.routes.append((method, self.path, status))
+    def _record(self, method, status, payload=b""):
+        # The **code** of the refusal is the evidence: a status alone does not
+        # say whether the Core refused the origin, the session or the scope.
+        code = None
+        if payload:
+            try:
+                code = json.loads(payload.decode("utf-8", "replace")).get("code")
+            except (json.JSONDecodeError, AttributeError):
+                code = None
+        _LoggingProxy.routes.append((method, self.path, status, code))
 
     def log_message(self, *arguments):
         return
@@ -161,8 +175,9 @@ def launch(label, deadline_seconds=300, settle_seconds=8.0, executable=None):
         "label": label,
         "process": process,
         "the_seconds_until_the_first_request": first_request,
-        "the_requests": [{"the_method": method, "the_path": path, "the_status": status}
-                         for method, path, status in _LoggingProxy.routes],
+        "the_requests": [{"the_method": method, "the_path": path, "the_status": status,
+                          "the_code": code}
+                         for method, path, status, code in _LoggingProxy.routes],
     }
 
 
@@ -338,6 +353,13 @@ def main():
         denied = [item for item in first["the_requests"] if item["the_status"] in (401, 403)]
         report["the_refusals_of_the_core"] = denied
         assert denied, f"the Core did not refuse the unauthorized session: {first['the_requests']}"
+        # The refusal must be the refusal of the **session**: a refusal of the
+        # origin would mean that the witness broke the rule of the Core and
+        # that the session was never evaluated.
+        codes = {item.get("the_code") for item in denied}
+        report["the_codes_of_the_refusals"] = sorted(c for c in codes if c)
+        assert "LOCAL_ONLY" not in codes, \
+            f"the Core refused the origin of the witness, not the session: {denied}"
         assert not any(item["the_status"] == 200 for item in first["the_requests"]), \
             f"the bundle obtained unauthorized data: {first['the_requests']}"
 
