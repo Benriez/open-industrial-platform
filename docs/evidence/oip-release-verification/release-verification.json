@@ -46,6 +46,10 @@
       "the_dangling_paths": [],
       "the_paths_of_the_build_tree_in_the_ledger": []
     },
+    "the_numbers_of_the_record": {
+      "the_rows": 60,
+      "the_measurements": 24
+    },
     "the_acceptance": {
       "the_verdict": "PASS",
       "the_phases": "8 of 8",
@@ -135,8 +139,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "2c183861746fb171bb8d74204f0d379d7e84a07c",
-  "the_tree": "69797ac4cb498f9cc84e53fd171792d12ff04b68",
+  "the_revision": "0774d82beddcfa6c68e344d35b06012dcd9cf209",
+  "the_tree": "d542615cecdf2a55e22c80d2c6d51e22b6e41a7c",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }

@@ -387,6 +387,31 @@ def check_the_boundaries(receipts):
     }, problems
 
 
+def check_the_numbers_of_the_record():
+    """The numbers of the record must be the numbers of the receipts.
+
+    The record quotes the **properties** of the release; the receipts quote
+    the **numbers** of a run. A number that a gate row quotes is a claim
+    that the receipt it names carries that number — and a claim that drifts
+    when the receipt is measured again is a false claim in the record.
+    """
+    problems = []
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "tests/oip_record_numbers.py"),
+         "--evidence", str(ROOT / "target" / "oip-record-numbers")],
+        cwd=ROOT, capture_output=True, text=True, timeout=600)
+    measured = {}
+    try:
+        measured = json.loads(result.stdout or "{}")
+    except json.JSONDecodeError:
+        problems.append("the numbers of the record could not be checked")
+    problems.extend(measured.get("the_problems", []))
+    return {
+        "the_rows": measured.get("the_rows"),
+        "the_measurements": measured.get("the_measurements"),
+    }, problems
+
+
 def the_gates():
     """The gate table of the ledger."""
     gates = []
@@ -411,6 +436,7 @@ def main():
     for name, checker in (("the_manifest", check_the_manifest),
                           ("the_freshness", None),
                           ("the_record", None),
+                          ("the_numbers_of_the_record", check_the_numbers_of_the_record),
                           ("the_acceptance", check_the_acceptance),
                           ("the_boundaries", None)):
         if name == "the_freshness":

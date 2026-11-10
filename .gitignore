@@ -133,6 +133,9 @@ secrets/
 # The status of the settings categories in the surface.
 !/docs/evidence/oip-settings-status/settings-status.json
 !/docs/evidence/oip-settings-status/settings-status-rehearsal.json
+!/docs/evidence/oip-settings-status/painted-surface.txt
+# The painted surface of the connection of a device.
+!/docs/evidence/oip-device-connection/painted-surface.txt
 # The persisted observation history of the real device.
 !/docs/evidence/oip-observation-history/observation-history.json
 # The coverage of the kinds of the measurement of the real device.

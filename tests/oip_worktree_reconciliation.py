@@ -69,14 +69,23 @@ def git_carries(path):
     return result.returncode == 0
 
 
+def the_worktrees():
+    """Every worktree of the repository with the branch it carries."""
+    listing = git("worktree", "list", "--porcelain").splitlines()
+    worktrees = []
+    path = None
+    for line in listing:
+        if line.startswith("worktree "):
+            path = line[len("worktree "):]
+        elif line.startswith("branch refs/heads/"):
+            worktrees.append({"the_path": path,
+                              "the_branch": line[len("branch refs/heads/"):]})
+    return worktrees
+
+
 def the_branches():
     """Every branch of every worktree of the repository."""
-    listing = git("worktree", "list", "--porcelain").splitlines()
-    branches = []
-    for line in listing:
-        if line.startswith("branch refs/heads/"):
-            branches.append(line[len("branch refs/heads/"):])
-    return sorted(set(branches))
+    return sorted({item["the_branch"] for item in the_worktrees()})
 
 
 def the_unmerged(branch):
@@ -103,7 +112,9 @@ def main():
               "the_canonical_branch": "main",
               "the_canonical_revision": git("rev-parse", "main")}
 
-    branches = the_branches()
+    worktrees = the_worktrees()
+    branches = sorted({item["the_branch"] for item in worktrees})
+    report["the_worktrees"] = worktrees
     report["the_branches"] = branches
     report["the_steps_of_the_reconciliation"] = []
 
@@ -147,7 +158,7 @@ def main():
         gaps = payload.get("gaps", {})
         report["the_proof_of_the_capability"] = {
             "the_receipt": proof.relative_to(ROOT).as_posix(),
-            "the_revision": payload.get("the_revision"),
+            "the_revision": payload.get("the_revision") or payload.get("revision"),
             "the_documented_gaps": gaps.get("total_rows"),
             "the_distinct_rows": gaps.get("distinct_rows"),
             "the_first_page_items": gaps.get("first_page_items"),
@@ -182,6 +193,13 @@ def main():
     report["the_reconciliation_is_complete"] = complete
     report["status"] = "PASS" if complete and report["the_canonical_branch_carries_the_capability"] else "FAIL"
 
+    report["the_steps_of_the_reconciliation"] = [
+        "every worktree of the repository is listed with the branch it carries",
+        "for every branch the commits that the canonical branch does not contain are named",
+        "for every such commit the files it touches are carried by the canonical branch",
+        "the capability of the commit is looked for in the canonical branch",
+        "the receipt that proves the capability in the canonical branch is named",
+    ]
     report["the_revision"] = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     report["the_tree"] = subprocess.check_output(

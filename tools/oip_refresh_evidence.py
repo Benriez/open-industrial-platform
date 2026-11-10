@@ -56,16 +56,20 @@ REHEARSALS = [
      {"opcua-parity.json": "oip-opcua-parity/opcua-parity.json"}),
     ("oip_device_connection", "tests/oip_device_connection.py",
      {"device-connection-rehearsal.json": "oip-device-connection/rehearsal.json",
-      "device-connection.json": "oip-device-connection/device-connection.json"}),
+      "device-connection.json": "oip-device-connection/device-connection.json",
+      "device-connection-surface.txt": "oip-device-connection/painted-surface.txt"}),
     ("oip_measurement_coverage", "tests/oip_measurement_coverage.py",
      {"measurement-coverage.json": "oip-measurement-coverage/measurement-coverage.json",
       "measurement-coverage-browser.json":
-          "oip-measurement-coverage/measurement-coverage-browser.json"}),
+          "oip-measurement-coverage/measurement-coverage-browser.json",
+      "device-connection-surface.txt":
+          "oip-measurement-coverage/painted-surface.txt"}),
     ("oip_observation_history", "tests/oip_observation_history.py",
      {"observation-history.json": "oip-observation-history/observation-history.json"}),
     ("oip_settings_status", "tests/oip_settings_status.py",
      {"settings-status-rehearsal.json": "oip-settings-status/settings-status-rehearsal.json",
-      "settings-status.json": "oip-settings-status/settings-status.json"}),
+      "settings-status.json": "oip-settings-status/settings-status.json",
+      "settings-status-surface.txt": "oip-settings-status/painted-surface.txt"}),
     ("oip_diagnostic_continuation", "tests/oip_diagnostic_continuation.py",
      {"diagnostic-continuation-rehearsal.json":
           "oip-diagnostic-continuation/rehearsal.json",

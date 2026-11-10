@@ -30,6 +30,7 @@ Usage:
 """
 import argparse
 import http.cookiejar
+import hashlib
 import json
 import os
 import pathlib
@@ -155,6 +156,20 @@ class BoundedVolume:
         if self.image.exists():
             self.image.unlink()
 
+
+
+def the_digest_of_the_binary(path):
+    """The digest of the binary that the rehearsal drives.
+
+    A receipt that claims to measure the **release** Core must name the
+    binary it measured: the path alone is an inference, the digest is a
+    fact.
+    """
+    digest = hashlib.sha256()
+    with pathlib.Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 def main():
     parser = argparse.ArgumentParser()
@@ -353,6 +368,8 @@ def main():
 
     # The revision the receipt was measured on: a reader of the evidence must
     # be able to tell whether it is current.
+    report["the_core_binary"] = {"the_path": str(args.binary),
+                                 "the_sha256": the_digest_of_the_binary(args.binary)}
     report["the_revision"] = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     report["the_tree"] = subprocess.check_output(
