@@ -2,7 +2,7 @@
   "schema": "oip-worktree-reconciliation-v1",
   "steps": [],
   "the_canonical_branch": "main",
-  "the_canonical_revision": "328e6b287e1a44e063405beff921a4714bf70806",
+  "the_canonical_revision": "acdd0a694411d8f76aa3da6365c1af31c7a071bc",
   "the_worktrees": [
     {
       "the_path": "/Users/benny/Code/open-industrial-platform",
@@ -259,8 +259,8 @@
   },
   "the_reconciliation_is_complete": true,
   "status": "PASS",
-  "the_revision": "328e6b287e1a44e063405beff921a4714bf70806",
-  "the_tree": "7d1c80164a26ca7b1b15a51b11a40b41949da88e",
+  "the_revision": "acdd0a694411d8f76aa3da6365c1af31c7a071bc",
+  "the_tree": "b16533226dcf7b44964b13bf5e5d52017d37d82b",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T08:26:00Z"
+  "finished_utc": "2026-11-10T16:20:46Z"
 }

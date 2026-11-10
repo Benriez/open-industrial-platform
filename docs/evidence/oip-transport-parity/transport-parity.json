@@ -7,6 +7,11 @@
     "the projection carries nothing of the other organization",
     "the transports refuse an unauthorized session"
   ],
+  "the_transports": {
+    "the_rest_route": "/api/v2/snapshot",
+    "the_sse_stream": "/api/v2/stream",
+    "the_mcp_resource": "oip://v2/snapshot/current"
+  },
   "projections": {
     "rest": {
       "revision": null,
@@ -67,10 +72,10 @@
   "status": "PASS",
   "the_core_binary": {
     "the_path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
-    "the_sha256": "20b75d293d51d896c171295a2a63972686cf3263c3e29dde35cd7cc20d6c762d"
+    "the_sha256": "6895104e977e13bb2441f9c45083c9f2719b727bf063574f2458dfd8a4c01a42"
   },
-  "the_revision": "d0c99fd69430a3d251ad9ba4b5f25aff14adba6c",
-  "the_tree": "20a6437281f57b35710af0c06993d0d2e036603f",
+  "the_revision": "acdd0a694411d8f76aa3da6365c1af31c7a071bc",
+  "the_tree": "b16533226dcf7b44964b13bf5e5d52017d37d82b",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T07:29:42Z"
+  "finished_utc": "2026-11-10T15:18:58Z"
 }

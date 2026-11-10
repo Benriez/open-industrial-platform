@@ -7,50 +7,50 @@
   ],
   "the_one_connection": {
     "the_bytes": 3145728,
-    "the_seconds": 21.56,
-    "the_kib_per_second": 142.5
+    "the_seconds": 24.83,
+    "the_kib_per_second": 123.7
   },
   "the_one_http_request": {
     "the_bytes": 3145728,
-    "the_seconds": 23.69,
-    "the_kib_per_second": 129.7
+    "the_seconds": 28.22,
+    "the_kib_per_second": 108.9
   },
   "the_two_connections": {
     "the_bytes": 6291456,
-    "the_seconds": 21.6,
-    "the_kib_per_second": 284.5
+    "the_seconds": 32.17,
+    "the_kib_per_second": 191.0
   },
   "the_limit_grows_with_the_connections": true,
   "the_unix_socket": {
     "the_bytes": 3145728,
-    "the_seconds": 0.002,
-    "the_mib_per_second": 1438.3
+    "the_seconds": 0.003,
+    "the_mib_per_second": 967.6
   },
   "the_baseline": {
     "the_runs": 3,
     "the_requests": 38,
     "the_transferred_bytes": [
-      18245814,
-      18250761,
-      18255717
+      18245848,
+      18250087,
+      18255751
     ],
     "the_first_paint_ms": [
-      49221,
-      46974,
-      50852
+      49198,
+      41520,
+      41565
     ],
-    "the_bundle_bytes": 3032537
+    "the_bundle_bytes": 3032554
   },
   "the_interpretation": {
-    "the_transferred_bytes": 18255717,
-    "the_measured_first_paint_ms": 50852,
-    "the_seconds_the_transfer_needs_at_the_measured_rate": 125.1,
-    "the_rate_of_the_machine_without_the_network_path": 1438.3,
+    "the_transferred_bytes": 18255751,
+    "the_measured_first_paint_ms": 49198,
+    "the_seconds_the_transfer_needs_at_the_measured_rate": 144.1,
+    "the_rate_of_the_machine_without_the_network_path": 967.6,
     "the_note": "the first paint of the baseline is the transfer of the delivery at the rate of the loopback of this machine. The rate is a property of the path, not of the release: the machine itself is far faster without the TCP path."
   },
   "status": "PASS",
-  "the_revision": "122c359bc2776f8d059770fe934d264016e35c54",
-  "the_tree": "6bea54afcbfd45c61e84822f1bb82ee39289fd62",
+  "the_revision": "acdd0a694411d8f76aa3da6365c1af31c7a071bc",
+  "the_tree": "b16533226dcf7b44964b13bf5e5d52017d37d82b",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T04:41:55Z"
+  "finished_utc": "2026-11-10T16:00:32Z"
 }
