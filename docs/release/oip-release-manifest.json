@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "0db0b88a27322ba4e7ef6f2062e7af573cb74c1e",
-  "the_tree": "e0fae3bdf57a20f5d9c10075ef5764f84e1015f1",
+  "the_revision": "613eed94ae139bb0accda6bd2f7cf8d0321459aa",
+  "the_tree": "2cb2dc2cfb0589bffa2b63d7c878422a1deb0ac2",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "ae2a8ab8e49390ff9d8d531af73b06713b87a437",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 679,
-    "the_sha256": "6cec28cff47ea86d33fb682aa91a36f0c1e26fd2b901bd77b22592e3aea90be9"
+    "the_sha256": "329e59a41d8806aab994983c1b5edaff85428be4b25ecbd63a2636e41b695ffd"
   },
   "the_artifacts": {
     "the_core": {
@@ -177,8 +177,10 @@
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/OIP_RELEASE_PROGRESS.md",
-    " M docs/runbooks/operations.md"
+    "M docs/OIP_RELEASE_LEDGER.md",
+    " M docs/OIP_RELEASE_PROGRESS.md",
+    " M docs/runbooks/operations.md",
+    " M tests/oip_record_numbers.py"
   ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",

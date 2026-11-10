@@ -3011,6 +3011,14 @@ Two facts came out of the examination:
 The macOS rehearsals were measured again with the corrected witness, and the runbook names the
 code of the refusal.
 
+The same sweep found the **rates of the loopback** quoted in the ledger and in the runbook from an
+earlier run of the measurement. They are now stated as the property of the path — the loopback of
+this machine is throttled, the limit grows with the number of connections, and the same machine
+delivers the same data over a Unix socket at a rate that is orders of magnitude higher — and the
+receipt of the run names the rates it measured. The checker of the numbers now reads the
+**runbook** as well: 73 rows and 25 measurements, every one of them carried by a receipt the
+row names.
+
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 

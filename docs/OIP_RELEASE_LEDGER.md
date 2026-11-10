@@ -84,11 +84,12 @@ production-security scope of G10 and the operator acceptance of G12.
   (284 ms to the interactive shell). **The number is a property of the measurement path, not of
   the release** (`tests/oip_loopback_rate.py`,
   `docs/evidence/oip-loopback-rate/loopback-rate.json`): one connection of the loopback of this
-  machine delivers about **150 KiB/s**, the limit grows with the number of connections (two
-  connections deliver 274 KiB/s), and the **same machine** delivers **860 MiB/s** over a Unix
-  socket — the path, not the machine, is slow. The delivery of the browser is **18.2 MB** over 38
+machine delivers a rate of a few hundred KiB/s, the limit grows with the number of connections, and the
+**same machine** delivers the same data over a Unix socket at a rate that is **orders of
+magnitude** higher — the path, not the machine, is slow. The receipt of the run names the rates
+it measured. The delivery of the browser is **18.2 MB** over 38
   requests before the first paint (the 3 MB bundle plus the renderer, the fonts and the
-  assets), which needs 126 s at the rate of one connection and about 50 s over the few
+  assets), which needs about two minutes at the rate of one connection and about 50 s over the few
   connections the browser opens in parallel. On a machine with an ordinary loopback the same
   delivery is a fraction of a second. **The operator should therefore measure the first paint on
   their own machine before deciding** — `python3 tools/oip_measure_delivery.py` reports the size of

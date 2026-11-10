@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "0db0b88a27322ba4e7ef6f2062e7af573cb74c1e",
+      "the_revision": "613eed94ae139bb0accda6bd2f7cf8d0321459aa",
       "the_revision_of_the_source": {
         "the_revision": "ae2a8ab8e49390ff9d8d531af73b06713b87a437",
         "the_subject": "fix(g8): the refusals of the Core are evidence, not a defect of the surface"
@@ -12,7 +12,7 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 679,
-        "the_sha256": "6cec28cff47ea86d33fb682aa91a36f0c1e26fd2b901bd77b22592e3aea90be9"
+        "the_sha256": "329e59a41d8806aab994983c1b5edaff85428be4b25ecbd63a2636e41b695ffd"
       },
       "the_artifacts": {
         "the_core": "2bf4baa487fbcfc49c6810704db6f2734ed98cad94a30168d1f4913132d2eb2c",
@@ -54,8 +54,8 @@
       "the_product_is_committed": true
     },
     "the_numbers_of_the_record": {
-      "the_rows": 62,
-      "the_measurements": 24
+      "the_rows": 73,
+      "the_measurements": 25
     },
     "the_acceptance": {
       "the_verdict": "PASS",
@@ -146,8 +146,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "0db0b88a27322ba4e7ef6f2062e7af573cb74c1e",
-  "the_tree": "e0fae3bdf57a20f5d9c10075ef5764f84e1015f1",
+  "the_revision": "613eed94ae139bb0accda6bd2f7cf8d0321459aa",
+  "the_tree": "2cb2dc2cfb0589bffa2b63d7c878422a1deb0ac2",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }

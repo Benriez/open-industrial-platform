@@ -65,7 +65,12 @@ CITATION = re.compile(r"docs/evidence/[A-Za-z0-9_./-]+")
 
 
 def the_rows():
-    """The rows of the ledger that carry claims: the gate rows and the index."""
+    """The rows of the ledger that carry claims and the paragraphs of the runbook.
+
+    The gate rows and the index rows of the ledger carry the claims of the
+    release; the paragraphs of the runbook carry the claims of the procedure.
+    A paragraph that names a receipt is checked against it like a row.
+    """
     rows = []
     for line in LEDGER.read_text().splitlines():
         if not line.startswith("|"):
@@ -77,7 +82,27 @@ def the_rows():
         if re.fullmatch(r"G\d+.*", head) or head.startswith("`docs/evidence/"):
             # An index row names its receipt in its own first cell.
             rows.append((head, head + " " + " ".join(cells[2:])))
+    runbook = ROOT / "docs/runbooks/operations.md"
+    if runbook.is_file():
+        for number, paragraph in enumerate(the_paragraphs(runbook.read_text()), start=1):
+            if CITATION.search(paragraph):
+                rows.append((f"the runbook §{number}", paragraph))
     return rows
+
+
+def the_paragraphs(text):
+    """The paragraphs of a document: the blocks between the empty lines."""
+    blocks = []
+    current = []
+    for line in text.splitlines():
+        if line.strip():
+            current.append(line.strip())
+        elif current:
+            blocks.append(" ".join(current))
+            current = []
+    if current:
+        blocks.append(" ".join(current))
+    return blocks
 
 
 def the_receipts(text):
