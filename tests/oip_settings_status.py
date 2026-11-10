@@ -78,9 +78,11 @@ def main():
             "id": "settings-reader", "name": "Explicit scoped settings reader",
             "permissions": ["settings_read"],
         })
+        # The settings of an instance are a **platform** capability: the
+        # reader needs the permission in the scope of the platform.
         plan["bindings"].append({
             "principal_id": "reader-org-a", "role_id": "settings-reader",
-            "scope": {"kind": "organization", "id": "org-a"},
+            "scope": {"kind": "platform"},
         })
         (work / "plan.json").write_text(json.dumps(plan, indent=2))
         (work / "core.json").write_text(json.dumps({
