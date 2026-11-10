@@ -3109,11 +3109,11 @@ caught them are now part of the one-command verification.
   receipt names* now, and the canonical gate, the reproducible build and the manifest are measured
   at one revision — so that the binary the gate executed is the binary the manifest names. The
   verification checks that equality and fails when it does not hold.
-* **The performance baseline quoted the numbers of an earlier run** (`p50 50 886 ms`, `284 ms` and
-  `102 ms` against the receipt's `41 565`, `392` and `9 ms`). The row quotes the **property** now
-  and the receipt carries the numbers. The checker of the numbers of the record knows the
-  durations and the sizes — it would have caught that drift, and it caught a second one in the
-  runbook (an observation count of an earlier run).
+* **The performance baseline quoted the numbers of an earlier run** — the milliseconds of a run
+  that the receipt no longer carries. The row quotes the **property** now and the receipt carries
+  the numbers. The checker of the numbers of the record knows the durations and the sizes, and it
+  reads the list items of the ledger as well — it would have caught that drift, and it caught a
+  second one in the runbook (an observation count of an earlier run).
 * **The rehearsal receipt of the scope carried an empty device.** It reads the record of the Core
   now, with its revision.
 * **The captures of the acceptance were described as thirteen workstation captures.** Twelve are
@@ -3155,6 +3155,8 @@ no push, no deployment, no system service.
 | `docs/evidence/oip-scope-persistence/scope-persistence.json` | the measured scope of the operator across a refresh of the authorized projection against the real Core: the scope before and after the refresh, the revision of the device that advanced and the scope of a new session (tracked) |
 | `docs/evidence/oip-scope-persistence/scope-persistence-rehearsal.json` | the rehearsal that produced it: the instance it owns, the device of the scope and the digest of the Core it drove (tracked) |
 | `docs/evidence/oip-scope-persistence/painted-surface.txt` | the painted surface of the scope: the devices of the scope with the administration that changed the Core (tracked) |
+| `docs/evidence/oip-storage-failure/storage-failure.json` | the measured storage-failure path of the Core: a store that cannot be written, measured on a bounded volume (tracked) |
+| `docs/evidence/oip-device-connection/painted-surface.txt` | the painted surface of the connection of a device: the state, the endpoint, the confirmed host key and the read-only monitoring (tracked) |
 | `docs/evidence/oip-connection-states/connection-states.json` | the measured honest connection states of the surface against the real Core: the state of the Core and the word of the surface in the same moment (tracked) |
 | `docs/evidence/oip-connection-states/connection-states-rehearsal.json` | the rehearsal that produced it: the instance it owns, the host of the fixture and the actions of the control (tracked) |
 | `docs/evidence/oip-connection-states/painted-surface.txt` | the painted surface of the connection: the state of the Core and the reason of the block (tracked) |

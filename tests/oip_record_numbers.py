@@ -13,8 +13,8 @@ and wrong after the receipts were measured again.
 
 This checker prevents the class of defect:
 
-  * every **measurement** that a gate row or an index row of the ledger
-    quotes — a duration in milliseconds or seconds, a number of samples, a
+  * every **measurement** that a gate row, an index row or a list item of the
+    ledger quotes — a duration in milliseconds or seconds, a number of samples, a
     size in bytes, kibibytes or mebibytes, a percentage, a count of
     observations, files, tests, suites, findings, checks, controls, captures
     or branches — is looked up in the receipts that the same row names;
@@ -84,16 +84,28 @@ def the_rows():
     A paragraph that names a receipt is checked against it like a row.
     """
     rows = []
+    items = []
     for line in LEDGER.read_text().splitlines():
-        if not line.startswith("|"):
+        if line.startswith("|"):
+            cells = [cell.strip() for cell in line.split("|")]
+            if len(cells) < 4:
+                continue
+            head = cells[1]
+            if re.fullmatch(r"G\d+.*", head) or head.startswith("`docs/evidence/"):
+                # An index row names its receipt in its own first cell.
+                rows.append((head, head + " " + " ".join(cells[2:])))
             continue
-        cells = [cell.strip() for cell in line.split("|")]
-        if len(cells) < 4:
-            continue
-        head = cells[1]
-        if re.fullmatch(r"G\d+.*", head) or head.startswith("`docs/evidence/"):
-            # An index row names its receipt in its own first cell.
-            rows.append((head, head + " " + " ".join(cells[2:])))
+        # The list items of the ledger carry claims as well — the next READY
+        # tasks and the operator actions. A drift in a list item was invisible
+        # to this checker until the audit of the third iteration found it.
+        if re.match(r"\s*(\d+\.|\*)\s", line):
+            items.append([line.strip()])
+        elif items:
+            items[-1].append(line.strip())
+    for number, item in enumerate(items, start=1):
+        text = " ".join(item)
+        if CITATION.search(text):
+            rows.append((f"the item {number}", text))
     runbook = ROOT / "docs/runbooks/operations.md"
     if runbook.is_file():
         for number, paragraph in enumerate(the_paragraphs(runbook.read_text()), start=1):
