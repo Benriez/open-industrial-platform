@@ -3127,6 +3127,17 @@ The canonical gate asserts the exemption of the agent-first principle in both di
 absent from the shell and from the five other workstations, and it is named in the technical
 capability context of the settings — the case the rule R6 of the baseline permits.
 
+**A fourth, independent verification of the same claim** — again a delegated, read-only audit —
+confirmed eleven of the thirteen rewritten claims and found five residuals. All five are closed
+in the same iteration: the stale numbers of an earlier run in the **list items** of the ledger
+(the next READY tasks and the operator actions — the checker of the numbers read only the table
+rows and the runbook, which is why the drift survived there; the checker reads the list items now
+and its negative control proves it), the two receipts of the index that the state file did not
+name, the observation count of an earlier run in the runbook, the wording of the rows that name
+the Core binary, and the receipt of the operations that the manifest digested twice. The audit
+also named the claim of the typed status of the settings as belonging to the state file only; the
+row of the ledger names `SettingsCategoryStatus` now as well.
+
 **The volume of the machine filled up during the run.** It reached 100% while the evidence was
 being re-measured: the Core could not commit its store any more, the collection was backpressured
 and the rehearsal of the parity of the OPC-UA address space hung on a call that never came back.
