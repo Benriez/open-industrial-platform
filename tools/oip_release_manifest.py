@@ -101,6 +101,15 @@ ERA_AREAS = {
     "oip006", "oip0061", "oip007", "oip008", "oip0082", "oip0084", "oip0085",
 }
 
+# The two receipts that are measured **after** the manifest: the integrity of
+# the record and the verification of the release both read the manifest. The
+# manifest cannot digest them without a circularity — they are named by the
+# record instead, and the verifier knows that they are the two.
+LATE_RECEIPTS = {
+    "docs/evidence/oip-record-integrity/record-integrity.json",
+    "docs/evidence/oip-release-verification/release-verification.json",
+}
+
 
 def the_receipts_of_the_release():
     """Every receipt of the release, with a name of its own.
@@ -120,6 +129,8 @@ def the_receipts_of_the_release():
         if relative.parts[0] in ERA_AREAS:
             continue
         if path.resolve() in known:
+            continue
+        if path.relative_to(ROOT).as_posix() in LATE_RECEIPTS:
             continue
         name = "the_" + "_".join(
             part.replace(".", "_") for part in relative.parts)

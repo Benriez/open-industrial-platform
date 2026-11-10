@@ -60,6 +60,12 @@ ERA_AREAS = {
     "oip-real-device", "git-baseline", "oip003", "oip004", "oip004-ui", "oip005",
     "oip006", "oip0061", "oip007", "oip008", "oip0082", "oip0084", "oip0085",
 }
+# The two receipts that are measured after the manifest: they read it and can
+# therefore not be digested by it.
+LATE_RECEIPTS = {
+    "docs/evidence/oip-record-integrity/record-integrity.json",
+    "docs/evidence/oip-release-verification/release-verification.json",
+}
 # The digest of the personal store of the operator. It must never change.
 PERSONAL_STORE = "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e"
 
@@ -160,11 +166,17 @@ def check_the_manifest():
     named = {ROOT / receipt["path"] for receipt in manifest.get("the_receipts", {}).values()
              if receipt.get("sha256")}
     uncovered = []
+    late = []
     for path in sorted(EVIDENCE.rglob("*")):
         if not path.is_file():
             continue
         relative = path.relative_to(ROOT).as_posix()
         if relative.split("/")[2] in ERA_AREAS:
+            continue
+        # The two receipts that are measured after the manifest read it; they
+        # are named by the record and not by the manifest.
+        if relative in LATE_RECEIPTS:
+            late.append(relative)
             continue
         if path not in named:
             uncovered.append(relative)
@@ -177,6 +189,7 @@ def check_the_manifest():
                           for name, artifact in manifest.get("the_artifacts", {}).items()},
         "the_receipts": len(manifest.get("the_receipts", {})),
         "the_receipts_that_the_manifest_does_not_name": len(uncovered),
+        "the_receipts_that_are_measured_after_the_manifest": sorted(late),
         "the_core_the_acceptance_executed": executed,
         "the_acceptance_executed_the_core_that_the_manifest_names":
             bool(executed and named and executed == named),
