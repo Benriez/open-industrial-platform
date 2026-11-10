@@ -1,0 +1,133 @@
+{
+  "schema": "oip-connection-states-v1",
+  "revision": "bb0655cccd3260ea5b7973a6b1462a617b3bca9f",
+  "the_detail_is": "the message that describes the failure of the check",
+  "scope": "the honest connection states of the surface against the real Core",
+  "base": "http://127.0.0.1:60849",
+  "device": "state-device",
+  "the_states": [
+    {
+      "the_state": "ssh_verified",
+      "the_core": {
+        "the_status": 200,
+        "the_state": "ssh_verified"
+      },
+      "the_surface": {
+        "the_state": "ssh_verified",
+        "the_line": "SSH Verified · Monitoring deaktiviert"
+      },
+      "the_line": "SSH Verified · Monitoring deaktiviert"
+    },
+    {
+      "the_state": "collecting",
+      "the_core": {
+        "the_status": 200,
+        "the_state": "collecting"
+      },
+      "the_surface": {
+        "the_state": "collecting",
+        "the_line": "Collecting · aktuelle Messwerte empfangen"
+      },
+      "the_line": "Collecting · aktuelle Messwerte empfangen"
+    },
+    {
+      "the_state": "unreachable",
+      "the_core": {
+        "the_status": 200,
+        "the_state": "unreachable"
+      },
+      "the_surface": {
+        "the_state": "unreachable",
+        "the_line": "Unreachable · tatsächlicher Verbindungsversuch fehlgeschlagen"
+      },
+      "the_line": "Unreachable · tatsächlicher Verbindungsversuch fehlgeschlagen"
+    },
+    {
+      "the_state": "collecting",
+      "the_core": {
+        "the_status": 200,
+        "the_state": "collecting"
+      },
+      "the_surface": {
+        "the_state": "collecting",
+        "the_line": "Collecting · aktuelle Messwerte empfangen"
+      },
+      "the_line": "Collecting · aktuelle Messwerte empfangen"
+    },
+    {
+      "the_state": "host_key_changed",
+      "the_core": {
+        "the_status": 200,
+        "the_state": "host_key_changed"
+      },
+      "the_surface": {
+        "the_state": "host_key_changed",
+        "the_line": "Host-Key geändert · Verbindung blockiert"
+      },
+      "the_line": "Host-Key geändert · Verbindung blockiert"
+    }
+  ],
+  "findings": [
+    {
+      "check": "browser-login accepted",
+      "ok": true,
+      "the_detail": "{\"status\":200}"
+    },
+    {
+      "check": "the inventory of the scope lists the device",
+      "ok": true,
+      "the_detail": "State device · state-device\nGerät State device state-device auswählen · SingleBoardComputer · f04e03c1-fe00-4567-818d-7574a76d9d8a · keine aktuelle Observation · Reachability Unbekannt reported\nState "
+    },
+    {
+      "check": "the surface shows the verified state of the Core",
+      "ok": true,
+      "the_detail": "SSH Verified · Monitoring deaktiviert"
+    },
+    {
+      "check": "the confirmed host key is shown",
+      "ok": true,
+      "the_detail": "the fingerprint of the fixture is missing"
+    },
+    {
+      "check": "the surface shows the collecting state of the Core",
+      "ok": true,
+      "the_detail": "Collecting · aktuelle Messwerte empfangen"
+    },
+    {
+      "check": "the host of the rehearsal is stopped",
+      "ok": true,
+      "the_detail": "{\"status\":200,\"body\":{\"the_action\":\"stop\",\"the_outcome\":\"the host is stopped\",\"the_actions\":1}}"
+    },
+    {
+      "check": "the surface shows the unreachable state of the Core",
+      "ok": true,
+      "the_detail": "Unreachable · tatsächlicher Verbindungsversuch fehlgeschlagen"
+    },
+    {
+      "check": "the host of the rehearsal runs again",
+      "ok": true,
+      "the_detail": "{\"status\":200,\"body\":{\"the_action\":\"start\",\"the_outcome\":\"the host runs again\",\"the_actions\":2}}"
+    },
+    {
+      "check": "the surface shows the recovery of the Core",
+      "ok": true,
+      "the_detail": "Collecting · aktuelle Messwerte empfangen"
+    },
+    {
+      "check": "the host of the rehearsal has another key",
+      "ok": true,
+      "the_detail": "{\"status\":200,\"body\":{\"the_action\":\"rotate\",\"the_outcome\":\"the host has another key\",\"the_actions\":3}}"
+    },
+    {
+      "check": "the surface shows the blocked state of the Core",
+      "ok": true,
+      "the_detail": "Host-Key geändert · Verbindung blockiert"
+    },
+    {
+      "check": "the reason of the block is named",
+      "ok": true,
+      "the_detail": "the reason of the block is missing"
+    }
+  ],
+  "errors": []
+}

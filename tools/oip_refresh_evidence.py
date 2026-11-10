@@ -66,6 +66,10 @@ REHEARSALS = [
           "oip-measurement-coverage/painted-surface.txt"}),
     ("oip_observation_history", "tests/oip_observation_history.py",
      {"observation-history.json": "oip-observation-history/observation-history.json"}),
+    ("oip_connection_states", "tests/oip_connection_states.py",
+     {"connection-states-rehearsal.json":
+          "oip-connection-states/connection-states-rehearsal.json",
+      "connection-states.json": "oip-connection-states/connection-states.json"}),
     ("oip_settings_status", "tests/oip_settings_status.py",
      {"settings-status-rehearsal.json": "oip-settings-status/settings-status-rehearsal.json",
       "settings-status.json": "oip-settings-status/settings-status.json",
