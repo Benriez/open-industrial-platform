@@ -387,6 +387,63 @@ def check_the_boundaries(receipts):
     }, problems
 
 
+def check_the_canonical_state():
+    """The canonical state of the record must name the release.
+
+    The table of §1 of the state file names the revision of the product, the
+    revision of the acceptance, the revision of the Core binary of the release
+    and the number of the tracked files. Every one of them is checked against
+    the manifest and the receipts: a table that drifts away from the release is
+    a false statement in the record.
+    """
+    problems = []
+    values = {}
+    section = (ROOT / "docs/OIP_RELEASE_PROGRESS.md").read_text()
+    section = section.split("## 1. Canonical state", 1)[-1].split("## 2.", 1)[0]
+    for line in section.splitlines():
+        if not line.startswith("| ") or "---" in line:
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) == 2:
+            values[cells[0]] = cells[1]
+    manifest = json.loads((ROOT / "docs/release/oip-release-manifest.json").read_text())
+    acceptance = json.loads(
+        (ROOT / "docs/evidence/oip-canonical-acceptance/acceptance.json").read_text())
+    source = git("log", "-1", "--format=%H", "--", "crates", "apps/flutter/lib")
+    core = manifest.get("the_artifacts", {}).get("the_core", {}).get(
+        "the_revision_the_binary_names")
+    expected = {
+        "Canonical source revision (the product: `apps/flutter/lib/`, `crates/`)": source,
+        "The revision of the final acceptance": acceptance.get("the_revision"),
+        "The revision of the Core binary of the release": core,
+    }
+    for label, wanted in expected.items():
+        if not wanted:
+            continue
+        found = re.search(r"`([0-9a-f]{7,40})`", values.get(label, ""))
+        if not found or not found.group(1).startswith(wanted[:len(found.group(1))]):
+            problems.append(f"the canonical state names "
+                            f"{found.group(1) if found else 'nothing'} for {label}, "
+                            f"the release names {wanted[:12]}")
+    files = manifest.get("the_source_manifest", {}).get("the_files")
+    if files is not None:
+        found = re.search(r"(\d+)", values.get("Tracked files in the canonical source revision", ""))
+        if not found or int(found.group(1)) != files:
+            problems.append(f"the canonical state names "
+                            f"{found.group(1) if found else 'nothing'} tracked files, "
+                            f"the manifest names {files}")
+    uncommitted = git("status", "--porcelain", "--", "crates", "apps/flutter")
+    if uncommitted:
+        problems.append(f"the product of the release is not committed: {uncommitted[:200]}")
+    return {
+        "the_source_revision": source,
+        "the_acceptance_revision": acceptance.get("the_revision"),
+        "the_core_binary_revision": core,
+        "the_tracked_files": files,
+        "the_product_is_committed": not uncommitted,
+    }, problems
+
+
 def check_the_numbers_of_the_record():
     """The numbers of the record must be the numbers of the receipts.
 
@@ -436,6 +493,7 @@ def main():
     for name, checker in (("the_manifest", check_the_manifest),
                           ("the_freshness", None),
                           ("the_record", None),
+                          ("the_canonical_state", check_the_canonical_state),
                           ("the_numbers_of_the_record", check_the_numbers_of_the_record),
                           ("the_acceptance", check_the_acceptance),
                           ("the_boundaries", None)):

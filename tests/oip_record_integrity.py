@@ -237,12 +237,14 @@ def main():
     unnamed_eras = sorted(area for area in ERA_AREAS
                            if (EVIDENCE / area).is_dir()
                            and f"docs/evidence/{area}/" not in text)
-    report["the_receipts_of_the_release"] = {
+    report["the_files_of_the_release"] = {
         "the_present": len(present),
         "the_cited": len(cited_files),
         "the_orphaned": orphans,
         "the_files_of_the_eras": len(era_files),
         "the_areas_of_the_eras_that_the_record_does_not_name": unnamed_eras,
+        "the_note": "every file of the evidence tree, not only the receipts: the "
+                    "captures and the painted surfaces are evidence as well",
     }
     report["steps"].append("every file of the evidence tree is cited")
 
