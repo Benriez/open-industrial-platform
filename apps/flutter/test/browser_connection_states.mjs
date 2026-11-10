@@ -41,7 +41,9 @@ const WORDS = {
   stale: 'Stale',
   unreachable: 'Unreachable',
   host_key_changed: 'Host-Key geändert',
-  collector_configured: 'Collecting',
+  host_key_unknown: 'Host-Key unbekannt',
+  collector_configured: 'Überwachung konfiguriert',
+  verification_failed: 'Verifikation fehlgeschlagen',
 };
 
 fs.mkdirSync(outDir, { recursive: true });

@@ -13,9 +13,9 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `8ec554c` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `ad3a33f` (tree `5379732`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `ad3a33f` — the binary names its own revision; the same revision yields the same bytes |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `8c40a01` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
+| The revision of the final acceptance | `8c40a01` (tree `d927208`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `8c40a01` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
@@ -103,7 +103,7 @@ claimed; `BLOCKED` = cannot be executed without an explicit external decision.
 | Native macOS build and test | PROVED | `tests/oip008/ui_regression.py` → native build 11.6 s with the build marker, native integration test 39.1 s with the `All tests passed!` marker, against an owned isolated demo core |
 | Legacy browser, interaction and visual regression | PROVED | browser 80.4 s, interactions 47.1 s, visual 63.4 s on the separately built HTML renderer |
 | Milestone acceptance harnesses on the canonical tree | PROVED | `tests/canonical_regression.py`: OIP-008, OIP-008.2, OIP-008.2 schema3 migration, OIP-008.4, OIP-008.5, OIP-008.5 migration, the UI regression and the schema2 adoption all PASS on the canonical tree, no failed and no blocked case |
-| Canonical Spectrum-2027 UI baseline and design regression gate | **PROVED** | `OIP_CANONICAL_UI_GATE=1 python3 tests/real_device/acceptance.py` → PASS on canonical `main` = `525f5c86d6baf5f27d5b13bd648d2d17794bb5a5` (tree `b5b23c6f2ac0d3ee02e09837933027facdeb6042`): 335/335 Flutter tests, 175 browser findings with zero failures, 13 captures of the six workstations at 1440 px and 1920 px, the stable-shell visual comparison with both negative-control classes, all 8/8 managed acceptance phases including the actual Flutter SSH onboarding. Local and served bundle are byte-identical: `169aaa8257a782ae52d5afe7b9de68b6acedb013cc24c96783e11e054cc22caa`. Operator visual acceptance remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE` |
+| Canonical Spectrum-2027 UI baseline and design regression gate | **PROVED** | `OIP_CANONICAL_UI_GATE=1 python3 tests/real_device/acceptance.py` → PASS on canonical `main` = `8c40a018b55e67ef17b69192ba35d255f336c542` (tree `d9272088659d5f5c979752d0fd31f94d34ed909d`): 361/361 Flutter tests, 187 browser findings with zero failures, 13 captures of the six workstations at 1440 px and 1920 px, the stable-shell visual comparison with both negative-control classes, all 8/8 managed acceptance phases including the actual Flutter SSH onboarding. The local and the served bundle are byte-identical (`docs/evidence/oip-canonical-acceptance/ui-gate.json`). Operator visual acceptance remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE` |
 | Physical Raspberry-Pi acceptance | **WITHHELD** | no endpoint, SSH user or approved identity was supplied; no personal device was contacted |
 | Real installation activation (schema 7) | **BLOCKED** | requires a separate operator decision plus a fresh protected backup; forbidden in this loop |
 | Productive remote/browser identity | **OPEN** | loopback local operator session only; no HTTPS, no remote identity, no hostile same-UID isolation |

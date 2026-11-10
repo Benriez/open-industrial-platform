@@ -1,10 +1,10 @@
 {
   "verdict": "PASS",
-  "revision": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
+  "revision": "8c40a018b55e67ef17b69192ba35d255f336c542",
   "the_detail_is": "the observed value of the check",
-  "base": "http://127.0.0.1:57055",
+  "base": "http://127.0.0.1:50389",
   "browser_version": "157.0.8103.50",
-  "bundle_sha256": "dec5c994800c9d8f0b322f228f08f3be14a8f1a86eda93cd6eec99dcdb102364",
+  "bundle_sha256": "a8919117bcac093c7d0431baff8e01f3117d2c4d1ed676be2e19cfea41846682",
   "bundle_matches_local_build": true,
   "workstations": [
     "\u00dcbersicht",
@@ -276,6 +276,11 @@
       "the_detail": null
     },
     {
+      "check": "no agent-first principle on overview",
+      "ok": true,
+      "the_detail": null
+    },
+    {
       "check": "document overflow overview 1440px",
       "ok": true,
       "the_detail": 0
@@ -327,6 +332,11 @@
     },
     {
       "check": "no legacy marker AGENT-FIRST on devices",
+      "ok": true,
+      "the_detail": null
+    },
+    {
+      "check": "no agent-first principle on devices",
       "ok": true,
       "the_detail": null
     },
@@ -386,6 +396,11 @@
       "the_detail": null
     },
     {
+      "check": "no agent-first principle on network",
+      "ok": true,
+      "the_detail": null
+    },
+    {
       "check": "document overflow network 1440px",
       "ok": true,
       "the_detail": 0
@@ -437,6 +452,11 @@
     },
     {
       "check": "no legacy marker AGENT-FIRST on opcua",
+      "ok": true,
+      "the_detail": null
+    },
+    {
+      "check": "no agent-first principle on opcua",
       "ok": true,
       "the_detail": null
     },
@@ -496,6 +516,11 @@
       "the_detail": null
     },
     {
+      "check": "no agent-first principle on diagnostics",
+      "ok": true,
+      "the_detail": null
+    },
+    {
       "check": "document overflow diagnostics 1440px",
       "ok": true,
       "the_detail": 0
@@ -542,6 +567,11 @@
     },
     {
       "check": "no legacy marker OIP / 005 on settings",
+      "ok": true,
+      "the_detail": null
+    },
+    {
+      "check": "the agent-first principle is named in the technical context of the settings",
       "ok": true,
       "the_detail": null
     },
@@ -601,6 +631,11 @@
       "the_detail": null
     },
     {
+      "check": "no agent-first principle on overview",
+      "ok": true,
+      "the_detail": null
+    },
+    {
       "check": "document overflow overview 1920px",
       "ok": true,
       "the_detail": 0
@@ -652,6 +687,11 @@
     },
     {
       "check": "no legacy marker AGENT-FIRST on devices",
+      "ok": true,
+      "the_detail": null
+    },
+    {
+      "check": "no agent-first principle on devices",
       "ok": true,
       "the_detail": null
     },
@@ -711,6 +751,11 @@
       "the_detail": null
     },
     {
+      "check": "no agent-first principle on network",
+      "ok": true,
+      "the_detail": null
+    },
+    {
       "check": "document overflow network 1920px",
       "ok": true,
       "the_detail": 0
@@ -762,6 +807,11 @@
     },
     {
       "check": "no legacy marker AGENT-FIRST on opcua",
+      "ok": true,
+      "the_detail": null
+    },
+    {
+      "check": "no agent-first principle on opcua",
       "ok": true,
       "the_detail": null
     },
@@ -821,6 +871,11 @@
       "the_detail": null
     },
     {
+      "check": "no agent-first principle on diagnostics",
+      "ok": true,
+      "the_detail": null
+    },
+    {
       "check": "document overflow diagnostics 1920px",
       "ok": true,
       "the_detail": 0
@@ -871,6 +926,11 @@
       "the_detail": null
     },
     {
+      "check": "the agent-first principle is named in the technical context of the settings",
+      "ok": true,
+      "the_detail": null
+    },
+    {
       "check": "document overflow settings 1920px",
       "ok": true,
       "the_detail": 0
@@ -915,43 +975,43 @@
   "external_requests": [],
   "core_denials": [
     {
-      "url": "http://127.0.0.1:57055/api/v2/organizations?offset=0&limit=100",
+      "url": "http://127.0.0.1:50389/api/v2/organizations?offset=0&limit=100",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57055/api/v1/system/status",
+      "url": "http://127.0.0.1:50389/api/v1/system/status",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57055/api/v1/devices",
+      "url": "http://127.0.0.1:50389/api/v1/devices",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57055/api/v1/events",
+      "url": "http://127.0.0.1:50389/api/v1/sources",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57055/api/v1/sources",
+      "url": "http://127.0.0.1:50389/api/v1/events",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57055/api/v1/metrics/current",
+      "url": "http://127.0.0.1:50389/api/v1/metrics/current",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57055/api/v2/settings?scope=platform",
+      "url": "http://127.0.0.1:50389/api/v2/settings?scope=platform",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57055/api/v2/settings?scope=platform",
+      "url": "http://127.0.0.1:50389/api/v2/settings?scope=platform",
       "status": 403
     }
   ],
   "fatal": null,
   "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-  "duration_ms": 88688,
-  "the_revision": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
-  "the_tree": "53797325507aefc078aebc8cb3bf19504068725c",
+  "duration_ms": 84883,
+  "the_revision": "8c40a018b55e67ef17b69192ba35d255f336c542",
+  "the_tree": "d9272088659d5f5c979752d0fd31f94d34ed909d",
   "the_working_tree_is_clean": true,
-  "the_revision_of_the_acceptance": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe"
+  "the_revision_of_the_acceptance": "8c40a018b55e67ef17b69192ba35d255f336c542"
 }

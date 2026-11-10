@@ -53,8 +53,8 @@
       "phase": "no_clients_ingestion_progress",
       "status": "PASS",
       "details": {
-        "before": 430,
-        "after": 440,
+        "before": 440,
+        "after": 450,
         "no_browser_or_mcp_sessions": true
       }
     },
@@ -87,15 +87,15 @@
       }
     }
   ],
-  "runtime_directory": "/private/tmp/oip82-55897-1794299518704506000",
+  "runtime_directory": "/private/tmp/oip82-88036-1794312949760972000",
   "model_used": false,
-  "server_binary_sha256": "2bf4baa487fbcfc49c6810704db6f2734ed98cad94a30168d1f4913132d2eb2c",
+  "server_binary_sha256": "6895104e977e13bb2441f9c45083c9f2719b727bf063574f2458dfd8a4c01a42",
   "mcp_probe_binary_sha256": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
   "canonical_ui_precheck": {
     "schema": "oip-canonical-ui-gate-v2",
-    "started_utc": "2026-11-10T08:31:59Z",
-    "source_revision": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
-    "source_tree": "53797325507aefc078aebc8cb3bf19504068725c",
+    "started_utc": "2026-11-10T12:16:34Z",
+    "source_revision": "8c40a018b55e67ef17b69192ba35d255f336c542",
+    "source_tree": "d9272088659d5f5c979752d0fd31f94d34ed909d",
     "source_worktree": "/Users/benny/Code/open-industrial-platform",
     "source_dirty": false,
     "baseline_document": "docs/design/OIP_CANONICAL_UI_BASELINE.md",
@@ -170,25 +170,25 @@
       "--no-web-resources-cdn",
       "--pwa-strategy=none"
     ],
-    "bundle_sha256": "dec5c994800c9d8f0b322f228f08f3be14a8f1a86eda93cd6eec99dcdb102364",
-    "bundle_bytes": 3032554,
+    "bundle_sha256": "a8919117bcac093c7d0431baff8e01f3117d2c4d1ed676be2e19cfea41846682",
+    "bundle_bytes": 3032812,
     "bundle_path": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/web/main.dart.js",
-    "flutter_tests_passed": 358,
+    "flutter_tests_passed": 361,
     "flutter_tests_failed": 0,
     "flutter_tests_skipped": 1,
     "browser_gate_executed": false,
     "complete": false,
-    "finished_utc": "2026-11-10T08:32:52Z"
+    "finished_utc": "2026-11-10T12:18:12Z"
   },
   "physical_raspberry_pi_tested": false,
   "ssh_fixture": "owned loopback OpenSSH, actual host facts",
   "canonical_ui_browser": {
     "verdict": "PASS",
-    "revision": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
+    "revision": "8c40a018b55e67ef17b69192ba35d255f336c542",
     "the_detail_is": "the observed value of the check",
-    "base": "http://127.0.0.1:57055",
+    "base": "http://127.0.0.1:50389",
     "browser_version": "157.0.8103.50",
-    "bundle_sha256": "dec5c994800c9d8f0b322f228f08f3be14a8f1a86eda93cd6eec99dcdb102364",
+    "bundle_sha256": "a8919117bcac093c7d0431baff8e01f3117d2c4d1ed676be2e19cfea41846682",
     "bundle_matches_local_build": true,
     "workstations": [
       "\u00dcbersicht",
@@ -460,6 +460,11 @@
         "the_detail": null
       },
       {
+        "check": "no agent-first principle on overview",
+        "ok": true,
+        "the_detail": null
+      },
+      {
         "check": "document overflow overview 1440px",
         "ok": true,
         "the_detail": 0
@@ -511,6 +516,11 @@
       },
       {
         "check": "no legacy marker AGENT-FIRST on devices",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no agent-first principle on devices",
         "ok": true,
         "the_detail": null
       },
@@ -570,6 +580,11 @@
         "the_detail": null
       },
       {
+        "check": "no agent-first principle on network",
+        "ok": true,
+        "the_detail": null
+      },
+      {
         "check": "document overflow network 1440px",
         "ok": true,
         "the_detail": 0
@@ -621,6 +636,11 @@
       },
       {
         "check": "no legacy marker AGENT-FIRST on opcua",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no agent-first principle on opcua",
         "ok": true,
         "the_detail": null
       },
@@ -680,6 +700,11 @@
         "the_detail": null
       },
       {
+        "check": "no agent-first principle on diagnostics",
+        "ok": true,
+        "the_detail": null
+      },
+      {
         "check": "document overflow diagnostics 1440px",
         "ok": true,
         "the_detail": 0
@@ -726,6 +751,11 @@
       },
       {
         "check": "no legacy marker OIP / 005 on settings",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "the agent-first principle is named in the technical context of the settings",
         "ok": true,
         "the_detail": null
       },
@@ -785,6 +815,11 @@
         "the_detail": null
       },
       {
+        "check": "no agent-first principle on overview",
+        "ok": true,
+        "the_detail": null
+      },
+      {
         "check": "document overflow overview 1920px",
         "ok": true,
         "the_detail": 0
@@ -836,6 +871,11 @@
       },
       {
         "check": "no legacy marker AGENT-FIRST on devices",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no agent-first principle on devices",
         "ok": true,
         "the_detail": null
       },
@@ -895,6 +935,11 @@
         "the_detail": null
       },
       {
+        "check": "no agent-first principle on network",
+        "ok": true,
+        "the_detail": null
+      },
+      {
         "check": "document overflow network 1920px",
         "ok": true,
         "the_detail": 0
@@ -946,6 +991,11 @@
       },
       {
         "check": "no legacy marker AGENT-FIRST on opcua",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no agent-first principle on opcua",
         "ok": true,
         "the_detail": null
       },
@@ -1005,6 +1055,11 @@
         "the_detail": null
       },
       {
+        "check": "no agent-first principle on diagnostics",
+        "ok": true,
+        "the_detail": null
+      },
+      {
         "check": "document overflow diagnostics 1920px",
         "ok": true,
         "the_detail": 0
@@ -1055,6 +1110,11 @@
         "the_detail": null
       },
       {
+        "check": "the agent-first principle is named in the technical context of the settings",
+        "ok": true,
+        "the_detail": null
+      },
+      {
         "check": "document overflow settings 1920px",
         "ok": true,
         "the_detail": 0
@@ -1099,41 +1159,41 @@
     "external_requests": [],
     "core_denials": [
       {
-        "url": "http://127.0.0.1:57055/api/v2/organizations?offset=0&limit=100",
+        "url": "http://127.0.0.1:50389/api/v2/organizations?offset=0&limit=100",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:57055/api/v1/system/status",
+        "url": "http://127.0.0.1:50389/api/v1/system/status",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:57055/api/v1/devices",
+        "url": "http://127.0.0.1:50389/api/v1/devices",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:57055/api/v1/events",
+        "url": "http://127.0.0.1:50389/api/v1/sources",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:57055/api/v1/sources",
+        "url": "http://127.0.0.1:50389/api/v1/events",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:57055/api/v1/metrics/current",
+        "url": "http://127.0.0.1:50389/api/v1/metrics/current",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:57055/api/v2/settings?scope=platform",
+        "url": "http://127.0.0.1:50389/api/v2/settings?scope=platform",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:57055/api/v2/settings?scope=platform",
+        "url": "http://127.0.0.1:50389/api/v2/settings?scope=platform",
         "status": 403
       }
     ],
     "fatal": null,
     "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-    "duration_ms": 88688
+    "duration_ms": 84883
   },
   "canonical_ui_visual": {
     "schema": "oip-canonical-ui-visual-comparison-v2",
@@ -1151,7 +1211,7 @@
         "baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
         "expected_baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
         "actual": "target/oip-canonical-acceptance/oip_canonical_ui_gate/browser/canonical-ui-1440.png",
-        "actual_sha256": "e8fe17ca17317185036369612fa42499d95e85676ab1d8618d7fcdae64ff0c1d",
+        "actual_sha256": "bbdfbe5bf5e31e4b36eb6b665186c83565df573d9f6e15e32c045e3e0d96a588",
         "crop": [
           0,
           0,
@@ -1186,7 +1246,7 @@
         "baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
         "expected_baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
         "actual": "target/oip-canonical-acceptance/oip_canonical_ui_gate/browser/canonical-ui-1920.png",
-        "actual_sha256": "5846748da44a83c0eda2788cb75811d380e8a44931218318b2390e97fd9fcd66",
+        "actual_sha256": "a4e07152d87f03a547f68b6e338fb18450208a6d7bf92ae6a7a48857520fe0c7",
         "crop": [
           0,
           0,
@@ -1263,9 +1323,9 @@
   },
   "canonical_ui_global_context": {
     "schema": "oip-global-context-receipt-v1",
-    "revision": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
+    "revision": "8c40a018b55e67ef17b69192ba35d255f336c542",
     "the_detail_is": "the message that describes the failure of the check",
-    "base": "http://127.0.0.1:57055",
+    "base": "http://127.0.0.1:50389",
     "options_offered": 4,
     "scope_per_workstation": [
       {
@@ -1393,10 +1453,10 @@
   },
   "canonical_ui_accessibility": {
     "schema": "oip-accessibility-receipt-v1",
-    "revision": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
+    "revision": "8c40a018b55e67ef17b69192ba35d255f336c542",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "name and role coverage of the rendered surface of the six workstations; not a full WCAG audit",
-    "base": "http://127.0.0.1:57055",
+    "base": "http://127.0.0.1:50389",
     "stations": [
       {
         "workstation": "overview",
@@ -1586,18 +1646,18 @@
       "rendered_samples": 6,
       "all_stale": true,
       "receive_times_shown": 1,
-      "first_receive_time": "2026-11-10 08:39:34.706 UTC",
+      "first_receive_time": "2026-11-10 12:24:56.972 UTC",
       "metrics": [
-        "host.memory_used_bytes",
-        "host.os",
+        "host.model",
         "host.uptime_seconds",
-        "host.cpu_info",
         "host.disks",
-        "host.interfaces"
+        "host.interfaces",
+        "host.memory_total_bytes",
+        "host.os"
       ]
     },
     "rendered_administration": {
-      "device_id": "2d48a827-0de9-404b-b917-ca61ee67e5af",
+      "device_id": "a41d0e7d-ca59-48fb-ad89-2faedca1dc32",
       "revision_before": 1,
       "revision_after": 2,
       "display_name_updated": true,
@@ -1630,7 +1690,7 @@
       "loading_state_absent": true,
       "demo_zones_absent": true
     },
-    "loaded_build_sha256": "dec5c994800c9d8f0b322f228f08f3be14a8f1a86eda93cd6eec99dcdb102364",
+    "loaded_build_sha256": "a8919117bcac093c7d0431baff8e01f3117d2c4d1ed676be2e19cfea41846682",
     "errors": [],
     "external": []
   },
@@ -1639,12 +1699,12 @@
     "precheck_path": "target/oip-canonical-acceptance/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
     "browser_path": "target/oip-canonical-acceptance/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
     "visual_path": "target/oip-canonical-acceptance/oip_canonical_ui_gate/canonical-ui/visual-comparison.json",
-    "precheck_receipt_sha256": "ad73300eec6ee9d15db7b3ac105663d6107ab8352061cbd47b6280090a3d8f91",
-    "browser_receipt_sha256": "815d5fea12da9f2aee032375cacc64d2467d3e493eed9f980e8c7fe285cda8a3",
-    "visual_receipt_sha256": "2563825631006f35da6b387c2db26344b2a58bc70c93cce03de3778cebe67f58",
-    "flutter_tests_passed": 358,
+    "precheck_receipt_sha256": "d054138ea279f36a9e58f5c820bb2fc2ba87e03c6dcecbac4d9ae8f233417c80",
+    "browser_receipt_sha256": "af9bbb0a5a78bc11e2fff354297818bba3e426fb123b5d503b98ff83fcc30fc3",
+    "visual_receipt_sha256": "887c5d14c0aa98324b420b68e8d771a0719f6e1dc795b23799bf2a353bd3229e",
+    "flutter_tests_passed": 361,
     "flutter_tests_failed": 0,
-    "browser_findings": 175,
+    "browser_findings": 187,
     "browser_failures": 0,
     "screenshots": 13,
     "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
@@ -1652,16 +1712,16 @@
   "performance": {
     "connection_read_official_mcp": {
       "samples": 20,
-      "p50_ms": 0.6644580280408263,
-      "p95_ms": 0.7911670254543424
+      "p50_ms": 0.8775000460445881,
+      "p95_ms": 1.014875015243888
     },
-    "core_rss_kib_cpu_percent": "20816   0.2",
+    "core_rss_kib_cpu_percent": "20752   1.0",
     "short_local_measurement_not_sla": true
   },
   "status": "PASS",
   "own_processes_stopped": true,
-  "the_revision": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
-  "the_tree": "53797325507aefc078aebc8cb3bf19504068725c",
+  "the_revision": "8c40a018b55e67ef17b69192ba35d255f336c542",
+  "the_tree": "d9272088659d5f5c979752d0fd31f94d34ed909d",
   "the_working_tree_is_clean": true,
-  "the_revision_of_the_acceptance": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe"
+  "the_revision_of_the_acceptance": "8c40a018b55e67ef17b69192ba35d255f336c542"
 }

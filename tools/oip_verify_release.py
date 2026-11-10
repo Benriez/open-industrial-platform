@@ -142,6 +142,18 @@ def check_the_manifest():
             continue
         if sha256_file(path) != receipt["sha256"]:
             problems.append(f"the receipt {name} does not match its digest")
+    # The claim of the gate G9: the canonical gate executed the binary that
+    # the manifest names. The acceptance receipt names the digest of the Core
+    # it really drove; the manifest names the digest of the Core of the
+    # release. The two must be the same bytes.
+    acceptance = ROOT / "docs/evidence/oip-canonical-acceptance/acceptance.json"
+    executed = None
+    if acceptance.is_file():
+        executed = json.loads(acceptance.read_text()).get("server_binary_sha256")
+    named = manifest.get("the_artifacts", {}).get("the_core", {}).get("sha256")
+    if executed and named and executed != named:
+        problems.append(f"the acceptance executed a Core that the manifest does not "
+                        f"name: {executed[:12]} against {named[:12]}")
     # The manifest must name **every** receipt of the release with its digest:
     # a receipt that the manifest does not digest is a receipt that nobody can
     # verify. The captures and the painted surfaces are receipts as well.
@@ -165,6 +177,9 @@ def check_the_manifest():
                           for name, artifact in manifest.get("the_artifacts", {}).items()},
         "the_receipts": len(manifest.get("the_receipts", {})),
         "the_receipts_that_the_manifest_does_not_name": len(uncovered),
+        "the_core_the_acceptance_executed": executed,
+        "the_acceptance_executed_the_core_that_the_manifest_names":
+            bool(executed and named and executed == named),
         "the_visual_acceptance": manifest.get("the_visual_acceptance", {}).get("the_state"),
         # The property of the release is that the Core is byte-reproducible
         # for its revision; the manifest states it together with the fact that
