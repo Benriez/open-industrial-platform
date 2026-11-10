@@ -203,12 +203,18 @@ check('the administration of the device is shown', administration.length > 0,
   'the administration of the device is not shown');
 const newName = 'Scope persistence device';
 const field = page.locator('input[aria-label="Anzeigename"]').first();
-await field.focus();
-await page.waitForTimeout(400);
-await page.keyboard.press('Meta+A');
-await page.keyboard.type(newName);
-await page.waitForTimeout(600);
-const typed = await field.inputValue();
+let typed = '';
+for (let attempt = 0; attempt < 3 && typed !== newName; attempt++) {
+  await field.focus();
+  await page.waitForTimeout(350);
+  await page.keyboard.press('Meta+A');
+  await page.waitForTimeout(200);
+  await page.keyboard.press('Backspace');
+  await page.waitForTimeout(200);
+  await page.keyboard.type(newName, { delay: 45 });
+  await page.waitForTimeout(700);
+  typed = await field.inputValue();
+}
 check('the name is typed into the administration', typed === newName, String(typed));
 await page.keyboard.press('Meta+A');
 await page.keyboard.type(newName);
