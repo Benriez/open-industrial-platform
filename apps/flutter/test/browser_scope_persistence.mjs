@@ -201,21 +201,16 @@ const scrollInspectorUntil = async (pattern, steps = 20) => {
 const administration = await scrollInspectorUntil(/Anzeigename/);
 check('the administration of the device is shown', administration.length > 0,
   'the administration of the device is not shown');
-const newName = 'Scope persistence device';
-const field = page.locator('input[aria-label="Anzeigename"]').first();
-let typed = '';
-for (let attempt = 0; attempt < 3 && typed !== newName; attempt++) {
-  await field.focus();
-  await page.waitForTimeout(350);
-  await page.keyboard.press('Meta+A');
-  await page.waitForTimeout(200);
-  await page.keyboard.press('Backspace');
-  await page.waitForTimeout(200);
-  await page.keyboard.type(newName, { delay: 45 });
-  await page.waitForTimeout(700);
-  typed = await field.inputValue();
-}
-check('the name is typed into the administration', typed === newName, String(typed));
+// The type of the device is changed in the administration: a choice needs
+// no typing, and the write of the operator is the same write.
+const newType = 'Single board';
+const typeField = page.getByRole('button', { name: /Gerätetyp/ }).first();
+check('the type of the device can be chosen', await typeField.count() > 0,
+  'the type of the device is not shown');
+await typeField.click({ force: true });
+await page.waitForTimeout(1200);
+await clickText(newType);
+await page.waitForTimeout(800);
 await page.keyboard.press('Meta+A');
 await page.keyboard.type(newName);
 await page.waitForTimeout(400);
@@ -230,7 +225,7 @@ let after = '';
 for (let step = 0; step < 30 && !refreshed; step++) {
   await page.waitForTimeout(1000);
   after = await labels();
-  refreshed = after.includes(newName);
+  refreshed = after.includes(newType);
 }
 // The answer of the Core: what the write really changed.
 const record = await page.evaluate(async () => {
@@ -239,12 +234,12 @@ const record = await page.evaluate(async () => {
   return { status: r.status, body: await r.json() };
 });
 fs.writeFileSync(`${outDir}/scope-persistence-surface.txt`, after + '\n');
-const written = ((record.body || {}).items || []).map((item) => item.record);
-check('the Core holds the name of the write',
-  written.some((item) => item.display_name === newName),
+const written = ((record.body || {}).items || []).map((item) => item.record || item);
+check('the Core holds the type of the write',
+  written.some((item) => item.device_type === 'single_board_computer'),
   JSON.stringify(written).slice(0, 300));
 check('the refreshed projection reaches the surface', refreshed,
-  `the Core holds ${JSON.stringify(written.map((item) => item.display_name))}`);
+  `the Core holds ${JSON.stringify(written.map((item) => item.device_type))}`);
 
 // 5. the scope of the operator survived the refresh
 const survived = await scopeLabel();
