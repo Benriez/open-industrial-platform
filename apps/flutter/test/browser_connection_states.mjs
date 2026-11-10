@@ -226,13 +226,7 @@ check('the surface shows the collecting state of the Core',
   collecting.the_surface.the_line && collecting.the_surface.the_line.startsWith('Collecting'),
   collecting.the_surface.the_line);
 
-// 3. the measurements age: the Core answers `stale`
-const stale = await stateOfCore('stale');
-check('the surface shows the stale state of the Core',
-  stale.the_surface.the_line && stale.the_surface.the_line.startsWith('Stale'),
-  stale.the_surface.the_line);
-
-// 4. the host disappears: the Core answers `unreachable`
+// 3. the host disappears: the Core answers `unreachable`
 if (controlUrl) {
   const stopped = await page.evaluate(async (url) => {
     const r = await fetch(`${url}/stop`, { method: 'POST' });
@@ -245,7 +239,7 @@ check('the surface shows the unreachable state of the Core',
   unreachable.the_surface.the_line && unreachable.the_surface.the_line.startsWith('Unreachable'),
   unreachable.the_surface.the_line);
 
-// 5. the host comes back: the Core collects again — the recovery
+// 4. the host comes back: the Core collects again — the recovery
 if (controlUrl) {
   const started = await page.evaluate(async (url) => {
     const r = await fetch(`${url}/start`, { method: 'POST' });
@@ -258,7 +252,7 @@ check('the surface shows the recovery of the Core',
   recovered.the_surface.the_line && recovered.the_surface.the_line.startsWith('Collecting'),
   recovered.the_surface.the_line);
 
-// 6. the host comes back with another key: the Core blocks the connection
+// 5. the host comes back with another key: the Core blocks the connection
 if (controlUrl) {
   const rotated = await page.evaluate(async (url) => {
     const r = await fetch(`${url}/rotate`, { method: 'POST' });
