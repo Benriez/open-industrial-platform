@@ -130,18 +130,22 @@ const shownStatus = async () => {
   return null;
 };
 
-// The category that the surface names as the selected one: the header of the
-// workstation names the category and the section of the session.
-const selectedCategory = async () => {
-  const painted = await labels();
-  for (const line of painted.split('\n')) {
-    const match = /^(.+?) \/ .+$/.exec(line.trim());
-    if (!match) continue;
-    const name = match[1].trim();
-    if (Object.values(CATEGORIES).includes(name)) return name;
+// The category that the status line belongs to. The navigation builds the
+// status of a category **under** the category that is selected, so the
+// status line of the tree follows the control of that category.
+const selectedCategory = async () => await page.evaluate(() => {
+  let current = null;
+  for (const el of document.querySelectorAll('flt-semantics')) {
+    const label = el.getAttribute('aria-label') || '';
+    if (label.startsWith('Settings-Kategorie ')) {
+      current = label.slice('Settings-Kategorie '.length);
+      continue;
+    }
+    const own = (el.textContent || '').trim();
+    if (/^CORE · /.test(own) && own.length < 120) return current;
   }
   return null;
-};
+});
 
 await page.goto(base, { waitUntil: 'domcontentloaded' });
 await page.waitForFunction(() => !!document.querySelector('flutter-view'), null, { timeout: 300000 });
