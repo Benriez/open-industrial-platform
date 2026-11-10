@@ -6,10 +6,10 @@
   ],
   "browser_receipt": {
     "schema": "oip-settings-status-v1",
-    "revision": "b09598189d65be0c5fd4c061f838b27731cae86d",
+    "revision": "122c359bc2776f8d059770fe934d264016e35c54",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the status of the settings categories in the approved surface against the real Core",
-    "base": "http://127.0.0.1:59769",
+    "base": "http://127.0.0.1:54193",
     "the_categories_of_the_core": [
       {
         "the_category": "general",
@@ -54,8 +54,57 @@
         "the_word_of_the_surface": "Nur lesend"
       }
     ],
+    "the_answer_in_the_scope_of_the_organization": [
+      {
+        "the_category": "general",
+        "the_status": "offline_administration_required"
+      },
+      {
+        "the_category": "mcp_agents",
+        "the_status": "read_only"
+      },
+      {
+        "the_category": "infrastructure",
+        "the_status": "read_only"
+      },
+      {
+        "the_category": "data_storage",
+        "the_status": "read_only"
+      },
+      {
+        "the_category": "diagnostics",
+        "the_status": "offline_administration_required"
+      },
+      {
+        "the_category": "security_access",
+        "the_status": "read_only"
+      },
+      {
+        "the_category": "system",
+        "the_status": "read_only"
+      }
+    ],
     "the_statuses_of_the_surface": [
+      "Nur offline administrierbar",
+      "Nur lesend",
+      "Nur lesend",
+      "Nur lesend",
+      "Nur offline administrierbar",
+      "Nur lesend",
       "Nur lesend"
+    ],
+    "the_refusals_of_the_core": [
+      "/api/v2/organizations?offset=0&limit=100",
+      "/api/v1/system/status",
+      "/api/v1/devices",
+      "/api/v1/metrics/current",
+      "/api/v1/events",
+      "/api/v1/sources",
+      "/api/v2/management?section=server",
+      "/api/v2/management?section=storage",
+      "/api/v2/management?section=diagnostic_rules",
+      "/api/v2/management?section=security",
+      "/api/v2/management?section=system"
     ],
     "findings": [
       {
@@ -74,6 +123,16 @@
         "the_detail": "[{\"category\":\"general\",\"status\":\"offline_administration_required\",\"capabilities\":[\"settings_read\"]},{\"category\":\"mcp_agents\",\"status\":\"read_only\",\"capabilities\":[\"mcp_management_read\"]},{\"category\":\"infrastructure\",\"status\":\"read_only\",\"capabilities\":[\"inventory_read\",\"inventory_plan_read\",\"organiza"
       },
       {
+        "check": "the Core answers the settings in the scope of an organization",
+        "ok": true,
+        "the_detail": "{\"status\":200,\"body\":{\"definitions\":[{\"key\":\"history_page_size\",\"category\":\"diagnostics\",\"description\":\"Default historical diagnostics page size when the request omits limit\",\"default\":{\"type\":\"integer\",\"value\":50},\"data_type\":\"integer\",\"validation\":\"4..100 inclusive\",\"scopes\":[\"platform\",\"organizat"
+      },
+      {
+        "check": "the answer of the Core is the same in the scope of the organization",
+        "ok": true,
+        "the_detail": "[]"
+      },
+      {
         "check": "the navigation offers the category general",
         "ok": true,
         "the_detail": "the Core answered the category general, which the surface does not name"
@@ -84,9 +143,19 @@
         "the_detail": "the navigation has no category General"
       },
       {
-        "check": "the status of the category general is the status of the Core",
+        "check": "the category general is the selected one",
         "ok": true,
-        "the_detail": "the Core answered Nur offline administrierbar, the surface shows Nur offline administrierbar"
+        "the_detail": "the navigation selected General instead of General"
+      },
+      {
+        "check": "the category general shows a status",
+        "ok": true,
+        "the_detail": "the surface shows no status for general"
+      },
+      {
+        "check": "the status of the category general is not a wire name of the Core",
+        "ok": true,
+        "the_detail": "the surface shows the wire name Nur offline administrierbar"
       },
       {
         "check": "the navigation offers the category mcp_agents",
@@ -99,9 +168,19 @@
         "the_detail": "the navigation has no category MCP & Agents"
       },
       {
-        "check": "the status of the category mcp_agents is the status of the Core",
+        "check": "the category mcp_agents is the selected one",
         "ok": true,
-        "the_detail": "the Core answered Nur lesend, the surface shows Nur lesend"
+        "the_detail": "the navigation selected MCP & Agents instead of MCP & Agents"
+      },
+      {
+        "check": "the category mcp_agents shows a status",
+        "ok": true,
+        "the_detail": "the surface shows no status for mcp_agents"
+      },
+      {
+        "check": "the status of the category mcp_agents is not a wire name of the Core",
+        "ok": true,
+        "the_detail": "the surface shows the wire name Nur lesend"
       },
       {
         "check": "the navigation offers the category infrastructure",
@@ -114,9 +193,19 @@
         "the_detail": "the navigation has no category Infrastructure"
       },
       {
-        "check": "the status of the category infrastructure is the status of the Core",
+        "check": "the category infrastructure is the selected one",
         "ok": true,
-        "the_detail": "the Core answered Nur lesend, the surface shows Nur lesend"
+        "the_detail": "the navigation selected Infrastructure instead of Infrastructure"
+      },
+      {
+        "check": "the category infrastructure shows a status",
+        "ok": true,
+        "the_detail": "the surface shows no status for infrastructure"
+      },
+      {
+        "check": "the status of the category infrastructure is not a wire name of the Core",
+        "ok": true,
+        "the_detail": "the surface shows the wire name Nur lesend"
       },
       {
         "check": "the navigation offers the category data_storage",
@@ -129,9 +218,19 @@
         "the_detail": "the navigation has no category Data & Storage"
       },
       {
-        "check": "the status of the category data_storage is the status of the Core",
+        "check": "the category data_storage is the selected one",
         "ok": true,
-        "the_detail": "the Core answered Nur lesend, the surface shows Nur lesend"
+        "the_detail": "the navigation selected Data & Storage instead of Data & Storage"
+      },
+      {
+        "check": "the category data_storage shows a status",
+        "ok": true,
+        "the_detail": "the surface shows no status for data_storage"
+      },
+      {
+        "check": "the status of the category data_storage is not a wire name of the Core",
+        "ok": true,
+        "the_detail": "the surface shows the wire name Nur lesend"
       },
       {
         "check": "the navigation offers the category diagnostics",
@@ -144,9 +243,19 @@
         "the_detail": "the navigation has no category Diagnostics"
       },
       {
-        "check": "the status of the category diagnostics is the status of the Core",
+        "check": "the category diagnostics is the selected one",
         "ok": true,
-        "the_detail": "the Core answered Nur offline administrierbar, the surface shows Nur offline administrierbar"
+        "the_detail": "the navigation selected Diagnostics instead of Diagnostics"
+      },
+      {
+        "check": "the category diagnostics shows a status",
+        "ok": true,
+        "the_detail": "the surface shows no status for diagnostics"
+      },
+      {
+        "check": "the status of the category diagnostics is not a wire name of the Core",
+        "ok": true,
+        "the_detail": "the surface shows the wire name Nur offline administrierbar"
       },
       {
         "check": "the navigation offers the category security_access",
@@ -159,9 +268,19 @@
         "the_detail": "the navigation has no category Security & Access"
       },
       {
-        "check": "the status of the category security_access is the status of the Core",
+        "check": "the category security_access is the selected one",
         "ok": true,
-        "the_detail": "the Core answered Nur lesend, the surface shows Nur lesend"
+        "the_detail": "the navigation selected Security & Access instead of Security & Access"
+      },
+      {
+        "check": "the category security_access shows a status",
+        "ok": true,
+        "the_detail": "the surface shows no status for security_access"
+      },
+      {
+        "check": "the status of the category security_access is not a wire name of the Core",
+        "ok": true,
+        "the_detail": "the surface shows the wire name Nur lesend"
       },
       {
         "check": "the navigation offers the category system",
@@ -174,19 +293,244 @@
         "the_detail": "the navigation has no category System"
       },
       {
-        "check": "the status of the category system is the status of the Core",
+        "check": "the category system is the selected one",
         "ok": true,
-        "the_detail": "the Core answered Nur lesend, the surface shows Nur lesend"
+        "the_detail": "the navigation selected System instead of System"
+      },
+      {
+        "check": "the category system shows a status",
+        "ok": true,
+        "the_detail": "the surface shows no status for system"
+      },
+      {
+        "check": "the status of the category system is not a wire name of the Core",
+        "ok": true,
+        "the_detail": "the surface shows the wire name Nur lesend"
+      },
+      {
+        "check": "the categories general and mcp_agents show different words",
+        "ok": true,
+        "the_detail": "the Core answered offline_administration_required and read_only, the surface shows the same word Nur offline administrierbar"
+      },
+      {
+        "check": "the categories general and infrastructure show different words",
+        "ok": true,
+        "the_detail": "the Core answered offline_administration_required and read_only, the surface shows the same word Nur offline administrierbar"
+      },
+      {
+        "check": "the categories general and data_storage show different words",
+        "ok": true,
+        "the_detail": "the Core answered offline_administration_required and read_only, the surface shows the same word Nur offline administrierbar"
+      },
+      {
+        "check": "the categories general and diagnostics show the same word",
+        "ok": true,
+        "the_detail": "the Core answered offline_administration_required for both, the surface shows Nur offline administrierbar and Nur offline administrierbar"
+      },
+      {
+        "check": "the categories general and security_access show different words",
+        "ok": true,
+        "the_detail": "the Core answered offline_administration_required and read_only, the surface shows the same word Nur offline administrierbar"
+      },
+      {
+        "check": "the categories general and system show different words",
+        "ok": true,
+        "the_detail": "the Core answered offline_administration_required and read_only, the surface shows the same word Nur offline administrierbar"
+      },
+      {
+        "check": "the categories mcp_agents and general show different words",
+        "ok": true,
+        "the_detail": "the Core answered read_only and offline_administration_required, the surface shows the same word Nur lesend"
+      },
+      {
+        "check": "the categories mcp_agents and infrastructure show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories mcp_agents and data_storage show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories mcp_agents and diagnostics show different words",
+        "ok": true,
+        "the_detail": "the Core answered read_only and offline_administration_required, the surface shows the same word Nur lesend"
+      },
+      {
+        "check": "the categories mcp_agents and security_access show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories mcp_agents and system show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories infrastructure and general show different words",
+        "ok": true,
+        "the_detail": "the Core answered read_only and offline_administration_required, the surface shows the same word Nur lesend"
+      },
+      {
+        "check": "the categories infrastructure and mcp_agents show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories infrastructure and data_storage show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories infrastructure and diagnostics show different words",
+        "ok": true,
+        "the_detail": "the Core answered read_only and offline_administration_required, the surface shows the same word Nur lesend"
+      },
+      {
+        "check": "the categories infrastructure and security_access show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories infrastructure and system show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories data_storage and general show different words",
+        "ok": true,
+        "the_detail": "the Core answered read_only and offline_administration_required, the surface shows the same word Nur lesend"
+      },
+      {
+        "check": "the categories data_storage and mcp_agents show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories data_storage and infrastructure show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories data_storage and diagnostics show different words",
+        "ok": true,
+        "the_detail": "the Core answered read_only and offline_administration_required, the surface shows the same word Nur lesend"
+      },
+      {
+        "check": "the categories data_storage and security_access show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories data_storage and system show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories diagnostics and general show the same word",
+        "ok": true,
+        "the_detail": "the Core answered offline_administration_required for both, the surface shows Nur offline administrierbar and Nur offline administrierbar"
+      },
+      {
+        "check": "the categories diagnostics and mcp_agents show different words",
+        "ok": true,
+        "the_detail": "the Core answered offline_administration_required and read_only, the surface shows the same word Nur offline administrierbar"
+      },
+      {
+        "check": "the categories diagnostics and infrastructure show different words",
+        "ok": true,
+        "the_detail": "the Core answered offline_administration_required and read_only, the surface shows the same word Nur offline administrierbar"
+      },
+      {
+        "check": "the categories diagnostics and data_storage show different words",
+        "ok": true,
+        "the_detail": "the Core answered offline_administration_required and read_only, the surface shows the same word Nur offline administrierbar"
+      },
+      {
+        "check": "the categories diagnostics and security_access show different words",
+        "ok": true,
+        "the_detail": "the Core answered offline_administration_required and read_only, the surface shows the same word Nur offline administrierbar"
+      },
+      {
+        "check": "the categories diagnostics and system show different words",
+        "ok": true,
+        "the_detail": "the Core answered offline_administration_required and read_only, the surface shows the same word Nur offline administrierbar"
+      },
+      {
+        "check": "the categories security_access and general show different words",
+        "ok": true,
+        "the_detail": "the Core answered read_only and offline_administration_required, the surface shows the same word Nur lesend"
+      },
+      {
+        "check": "the categories security_access and mcp_agents show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories security_access and infrastructure show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories security_access and data_storage show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories security_access and diagnostics show different words",
+        "ok": true,
+        "the_detail": "the Core answered read_only and offline_administration_required, the surface shows the same word Nur lesend"
+      },
+      {
+        "check": "the categories security_access and system show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories system and general show different words",
+        "ok": true,
+        "the_detail": "the Core answered read_only and offline_administration_required, the surface shows the same word Nur lesend"
+      },
+      {
+        "check": "the categories system and mcp_agents show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories system and infrastructure show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories system and data_storage show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
+      },
+      {
+        "check": "the categories system and diagnostics show different words",
+        "ok": true,
+        "the_detail": "the Core answered read_only and offline_administration_required, the surface shows the same word Nur lesend"
+      },
+      {
+        "check": "the categories system and security_access show the same word",
+        "ok": true,
+        "the_detail": "the Core answered read_only for both, the surface shows Nur lesend and Nur lesend"
       },
       {
         "check": "no wire name of the Core leaks into the surface",
         "ok": true,
-        "the_detail": "[\"Nur lesend\"]"
+        "the_detail": "[\"Nur offline administrierbar\",\"Nur lesend\",\"Nur lesend\",\"Nur lesend\",\"Nur offline administrierbar\",\"Nur lesend\",\"Nur lesend\"]"
       },
       {
         "check": "every category of the Core was measured",
         "ok": true,
         "the_detail": "7 of 7"
+      },
+      {
+        "check": "the Core does not refuse the read of the settings in the scope of the platform",
+        "ok": true,
+        "the_detail": "[\"/api/v2/organizations?offset=0&limit=100\",\"/api/v1/system/status\",\"/api/v1/devices\",\"/api/v1/metrics/current\",\"/api/v1/events\",\"/api/v1/sources\",\"/api/v2/management?section=server\",\"/api/v2/management?section=storage\",\"/api/v2/management?section=diagnostic_rules\",\"/api/v2/management?section=securi"
       }
     ],
     "errors": []
@@ -236,12 +580,31 @@
     }
   ],
   "the_statuses_of_the_surface": [
+    "Nur offline administrierbar",
+    "Nur lesend",
+    "Nur lesend",
+    "Nur lesend",
+    "Nur offline administrierbar",
+    "Nur lesend",
     "Nur lesend"
   ],
-  "checks": 26,
+  "the_refusals_of_the_core": [
+    "/api/v2/organizations?offset=0&limit=100",
+    "/api/v1/system/status",
+    "/api/v1/devices",
+    "/api/v1/metrics/current",
+    "/api/v1/events",
+    "/api/v1/sources",
+    "/api/v2/management?section=server",
+    "/api/v2/management?section=storage",
+    "/api/v2/management?section=diagnostic_rules",
+    "/api/v2/management?section=security",
+    "/api/v2/management?section=system"
+  ],
+  "checks": 85,
   "status": "PASS",
-  "the_revision": "b09598189d65be0c5fd4c061f838b27731cae86d",
-  "the_tree": "5fa3f5a3594d4ebfa7cea70e766d32a543a05a36",
+  "the_revision": "122c359bc2776f8d059770fe934d264016e35c54",
+  "the_tree": "6bea54afcbfd45c61e84822f1bb82ee39289fd62",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T02:06:09Z"
+  "finished_utc": "2026-11-10T04:27:39Z"
 }

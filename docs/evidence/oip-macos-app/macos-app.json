@@ -9,22 +9,22 @@
   ],
   "the_witness": {
     "the_port": 18808,
-    "the_core_of_the_rehearsal": 55905,
+    "the_core_of_the_rehearsal": 58754,
     "the_note": "the witness stands on the documented port of the instance; the bundle therefore carries the URL that the operator uses"
   },
   "build_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18808",
-  "build_seconds": 11.3,
+  "build_seconds": 38.2,
   "bundle": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
   "bundle_bytes": 96996325,
-  "bundle_executable_sha256": "6123cdc51b08b7cac10a0048f21e0e9407c9a2cfad3349d26d0a2949d05facd3",
-  "bundle_tree_sha256": "e5cb529201e18bfc71802535297b0b3575ca4371033e347b48ad62778988b884",
+  "bundle_executable_sha256": "c46697934fed2bdc70233a9d7d380f792f5c7446934e2a0ac7f10896716b4860",
+  "bundle_tree_sha256": "43d13611c07034f571dd4f7c7ae7f0473eb5471544dad2b36799c206c5377b67",
   "bundle_files": 43,
   "cfbundleidentifier": "org.openindustrial.oipDashboard",
   "cfbundleshortversionstring": "0.3.0",
   "cfbundleversion": "3",
   "start": {
     "label": "start",
-    "the_seconds_until_the_first_request": 0.7,
+    "the_seconds_until_the_first_request": 0.6,
     "the_requests": [
       {
         "the_method": "GET",
@@ -48,12 +48,12 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/events",
+        "the_path": "/api/v1/sources",
         "the_status": 403
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/sources",
+        "the_path": "/api/v1/events",
         "the_status": 403
       }
     ]
@@ -82,12 +82,12 @@
     },
     {
       "the_method": "GET",
-      "the_path": "/api/v1/events",
+      "the_path": "/api/v1/sources",
       "the_status": 403
     },
     {
       "the_method": "GET",
-      "the_path": "/api/v1/sources",
+      "the_path": "/api/v1/events",
       "the_status": 403
     }
   ],
@@ -103,7 +103,7 @@
   "orphaned_processes": [],
   "restart": {
     "label": "restart",
-    "the_seconds_until_the_first_request": 0.4,
+    "the_seconds_until_the_first_request": 0.3,
     "the_requests": [
       {
         "the_method": "GET",
@@ -146,8 +146,8 @@
     "the_output": "[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
   },
   "status": "PASS",
-  "the_revision": "e2cdcfc5bd10a9373daa37677e1af6401ae975a0",
-  "the_tree": "b9b899047d88068544e78d047c4f99e9a3aa0fa4",
+  "the_revision": "122c359bc2776f8d059770fe934d264016e35c54",
+  "the_tree": "6bea54afcbfd45c61e84822f1bb82ee39289fd62",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T00:49:19Z"
+  "finished_utc": "2026-11-10T04:36:32Z"
 }

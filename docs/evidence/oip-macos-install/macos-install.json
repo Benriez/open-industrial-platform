@@ -8,24 +8,24 @@
     "the installed bundle starts again from the installation directory"
   ],
   "the_installation": {
-    "the_directory_of_the_rehearsal": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-install-b7536r0a/Applications",
+    "the_directory_of_the_rehearsal": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-install-5rc9fqrh/Applications",
     "the_bundle": "oip_dashboard.app",
     "the_files": 43,
-    "the_tree_sha256": "e5cb529201e18bfc71802535297b0b3575ca4371033e347b48ad62778988b884",
-    "the_tree_of_the_release_bundle": "e5cb529201e18bfc71802535297b0b3575ca4371033e347b48ad62778988b884",
+    "the_tree_sha256": "43d13611c07034f571dd4f7c7ae7f0473eb5471544dad2b36799c206c5377b67",
+    "the_tree_of_the_release_bundle": "43d13611c07034f571dd4f7c7ae7f0473eb5471544dad2b36799c206c5377b67",
     "the_copy_is_byte_identical": true,
     "the_note": "the rehearsal installs into a directory of the temporary tree; the installation into /Applications is the step of the operator and is named in the runbook"
   },
   "the_installed_bundle": {
     "the_bundle_identifier": "org.openindustrial.oipDashboard",
     "the_version": "0.3.0",
-    "the_executable": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-install-b7536r0a/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard",
+    "the_executable": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-install-5rc9fqrh/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard",
     "the_executable_exists": true,
-    "the_executable_sha256": "6123cdc51b08b7cac10a0048f21e0e9407c9a2cfad3349d26d0a2949d05facd3"
+    "the_executable_sha256": "c46697934fed2bdc70233a9d7d380f792f5c7446934e2a0ac7f10896716b4860"
   },
   "the_witness": {
     "the_port": 18808,
-    "the_core_of_the_rehearsal": 57636,
+    "the_core_of_the_rehearsal": 61600,
     "the_note": "the witness stands on the documented port of the instance; the installed bundle therefore carries the URL that the operator uses"
   },
   "the_start": {
@@ -39,7 +39,17 @@
       },
       {
         "the_method": "GET",
+        "the_path": "/api/v1/system/status",
+        "the_status": 403
+      },
+      {
+        "the_method": "GET",
         "the_path": "/api/v1/devices",
+        "the_status": 403
+      },
+      {
+        "the_method": "GET",
+        "the_path": "/api/v1/events",
         "the_status": 403
       },
       {
@@ -49,17 +59,7 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/system/status",
-        "the_status": 403
-      },
-      {
-        "the_method": "GET",
         "the_path": "/api/v1/sources",
-        "the_status": 403
-      },
-      {
-        "the_method": "GET",
-        "the_path": "/api/v1/events",
         "the_status": 403
       }
     ]
@@ -72,7 +72,17 @@
     },
     {
       "the_method": "GET",
+      "the_path": "/api/v1/system/status",
+      "the_status": 403
+    },
+    {
+      "the_method": "GET",
       "the_path": "/api/v1/devices",
+      "the_status": 403
+    },
+    {
+      "the_method": "GET",
+      "the_path": "/api/v1/events",
       "the_status": 403
     },
     {
@@ -82,17 +92,7 @@
     },
     {
       "the_method": "GET",
-      "the_path": "/api/v1/system/status",
-      "the_status": 403
-    },
-    {
-      "the_method": "GET",
       "the_path": "/api/v1/sources",
-      "the_status": 403
-    },
-    {
-      "the_method": "GET",
-      "the_path": "/api/v1/events",
       "the_status": 403
     }
   ],
@@ -108,7 +108,7 @@
   "the_orphaned_processes": [],
   "the_restart": {
     "label": "the installed bundle, again",
-    "the_seconds_until_the_first_request": 0.4,
+    "the_seconds_until_the_first_request": 0.2,
     "the_requests": [
       {
         "the_method": "GET",
@@ -122,17 +122,17 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/events",
-        "the_status": 403
-      },
-      {
-        "the_method": "GET",
         "the_path": "/api/v1/devices",
         "the_status": 403
       },
       {
         "the_method": "GET",
         "the_path": "/api/v1/metrics/current",
+        "the_status": 403
+      },
+      {
+        "the_method": "GET",
+        "the_path": "/api/v1/events",
         "the_status": 403
       },
       {
@@ -151,8 +151,8 @@
     "the_output": "[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
   },
   "status": "PASS",
-  "the_revision": "e2cdcfc5bd10a9373daa37677e1af6401ae975a0",
-  "the_tree": "b9b899047d88068544e78d047c4f99e9a3aa0fa4",
+  "the_revision": "122c359bc2776f8d059770fe934d264016e35c54",
+  "the_tree": "6bea54afcbfd45c61e84822f1bb82ee39289fd62",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T00:49:44Z"
+  "finished_utc": "2026-11-10T04:36:57Z"
 }

@@ -11,31 +11,31 @@
   ],
   "the_volume": {
     "the_megabytes": 64,
-    "the_mount": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-storage-failure-n9obcg7n/volume",
+    "the_mount": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-storage-failure-yzdq5x1a/volume",
     "the_free_bytes_at_the_start": 65499136
   },
-  "core_pid": 40373,
+  "core_pid": 55140,
   "the_health_before": {
     "the_status": 200,
     "the_core": {
-      "lifecycle": "degraded",
+      "lifecycle": "ready",
       "live": true,
       "ready": true,
       "persistence_healthy": true,
       "persistence_errors": 0,
       "last_persistence_error": null,
-      "revision": 86,
+      "revision": 130,
       "run_id": 1,
-      "persisted_observations": 65
+      "persisted_observations": 102
     }
   },
-  "the_observations_before": 65,
+  "the_observations_before": 102,
   "the_fill": {
-    "the_bytes_written": 61014016,
+    "the_bytes_written": 60751872,
     "the_refusal": "[Errno 28] No space left on device",
-    "the_free_bytes": 61440
+    "the_free_bytes": 36864
   },
-  "the_free_bytes_when_full": 0,
+  "the_free_bytes_when_full": 36864,
   "the_health_when_the_store_cannot_be_written": {
     "the_status": 200,
     "the_core": {
@@ -43,18 +43,18 @@
       "live": true,
       "ready": false,
       "persistence_healthy": false,
-      "persistence_errors": 1,
+      "persistence_errors": 12,
       "last_persistence_error": "commit_failed_retry_pending",
-      "revision": 87,
+      "revision": 168,
       "run_id": 1,
-      "persisted_observations": 66
+      "persisted_observations": 140
     }
   },
-  "the_observations_when_the_store_cannot_be_written": 66,
+  "the_observations_when_the_store_cannot_be_written": 140,
   "the_status_of_the_instance_during_the_failure": 200,
   "the_log_names_the_failure": true,
   "the_release": {
-    "the_free_bytes": 61014016
+    "the_free_bytes": 60751872
   },
   "the_health_after_the_recovery": {
     "the_status": 200,
@@ -63,23 +63,23 @@
       "live": true,
       "ready": true,
       "persistence_healthy": true,
-      "persistence_errors": 1,
+      "persistence_errors": 12,
       "last_persistence_error": null,
-      "revision": 129,
+      "revision": 208,
       "run_id": 1,
-      "persisted_observations": 103
+      "persisted_observations": 180
     }
   },
-  "the_observations_before_the_recovery": 103,
-  "the_observations_after_the_recovery": 150,
+  "the_observations_before_the_recovery": 181,
+  "the_observations_after_the_recovery": 182,
   "the_integrity": "ok",
   "the_shutdown": {
     "the_exit_code": 0,
-    "the_output": "{\"status\": \"stopped\", \"pid\": 40373}"
+    "the_output": "{\"status\": \"stopped\", \"pid\": 55140}"
   },
   "status": "PASS",
-  "the_revision": "e2cdcfc5bd10a9373daa37677e1af6401ae975a0",
-  "the_tree": "b9b899047d88068544e78d047c4f99e9a3aa0fa4",
+  "the_revision": "122c359bc2776f8d059770fe934d264016e35c54",
+  "the_tree": "6bea54afcbfd45c61e84822f1bb82ee39289fd62",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T00:47:52Z"
+  "finished_utc": "2026-11-10T04:34:40Z"
 }
