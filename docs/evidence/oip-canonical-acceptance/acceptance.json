@@ -53,8 +53,8 @@
       "phase": "no_clients_ingestion_progress",
       "status": "PASS",
       "details": {
-        "before": 430,
-        "after": 440,
+        "before": 440,
+        "after": 450,
         "no_browser_or_mcp_sessions": true
       }
     },
@@ -87,15 +87,15 @@
       }
     }
   ],
-  "runtime_directory": "/private/tmp/oip82-93894-1794267321833632000",
+  "runtime_directory": "/private/tmp/oip82-81424-1794276493805429000",
   "model_used": false,
-  "server_binary_sha256": "1cb8958eff5e5480a72047b4dfff7b2f2bf6167f521654e444719db1754a7ae3",
+  "server_binary_sha256": "cfe5a493a2fdb84f24f8cfe47da9ff09631e52401a0238e0c57e499da976159a",
   "mcp_probe_binary_sha256": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
   "canonical_ui_precheck": {
     "schema": "oip-canonical-ui-gate-v2",
-    "started_utc": "2026-11-09T23:36:00Z",
-    "source_revision": "0613b8d081fc49d515475c0035bafa34fd6b01c1",
-    "source_tree": "ae30a19b67fcfad08d9dafaa45f2a16a19e13adf",
+    "started_utc": "2026-11-10T02:08:47Z",
+    "source_revision": "3b1e53caaeb65de1ce3d16118f391055961f42a8",
+    "source_tree": "c5af2f712201c9ba5fc29b70ffe36943a244a955",
     "source_worktree": "/Users/benny/Code/open-industrial-platform",
     "source_dirty": false,
     "baseline_document": "docs/design/OIP_CANONICAL_UI_BASELINE.md",
@@ -178,16 +178,16 @@
     "flutter_tests_skipped": 1,
     "browser_gate_executed": false,
     "complete": false,
-    "finished_utc": "2026-11-09T23:36:53Z"
+    "finished_utc": "2026-11-10T02:09:42Z"
   },
   "physical_raspberry_pi_tested": false,
   "ssh_fixture": "owned loopback OpenSSH, actual host facts",
   "canonical_ui_browser": {
     "verdict": "PASS",
-    "revision": "0613b8d081fc49d515475c0035bafa34fd6b01c1",
+    "revision": "3b1e53caaeb65de1ce3d16118f391055961f42a8",
     "the_detail_is": "the observed value of the check",
-    "base": "http://127.0.0.1:63095",
-    "browser_version": "157.0.8103.39",
+    "base": "http://127.0.0.1:51002",
+    "browser_version": "157.0.8103.50",
     "bundle_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
     "bundle_matches_local_build": true,
     "workstations": [
@@ -1099,41 +1099,41 @@
     "external_requests": [],
     "core_denials": [
       {
-        "url": "http://127.0.0.1:63095/api/v2/organizations?offset=0&limit=100",
+        "url": "http://127.0.0.1:51002/api/v2/organizations?offset=0&limit=100",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:63095/api/v1/system/status",
+        "url": "http://127.0.0.1:51002/api/v1/devices",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:63095/api/v1/metrics/current",
+        "url": "http://127.0.0.1:51002/api/v1/system/status",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:63095/api/v1/events",
+        "url": "http://127.0.0.1:51002/api/v1/metrics/current",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:63095/api/v1/devices",
+        "url": "http://127.0.0.1:51002/api/v1/sources",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:63095/api/v1/sources",
+        "url": "http://127.0.0.1:51002/api/v1/events",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:63095/api/v2/settings?scope=platform",
+        "url": "http://127.0.0.1:51002/api/v2/settings?scope=platform",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:63095/api/v2/settings?scope=platform",
+        "url": "http://127.0.0.1:51002/api/v2/settings?scope=platform",
         "status": 403
       }
     ],
     "fatal": null,
     "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-    "duration_ms": 82741
+    "duration_ms": 100767
   },
   "canonical_ui_visual": {
     "schema": "oip-canonical-ui-visual-comparison-v2",
@@ -1151,7 +1151,7 @@
         "baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
         "expected_baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
         "actual": "target/oip-canonical-acceptance/oip_canonical_ui_gate/browser/canonical-ui-1440.png",
-        "actual_sha256": "c394158e07a43ffd5ba39ad98821b933a6fb47ab1754d074143d397482f84a80",
+        "actual_sha256": "c926a78d76b42f70f85bcc34157ad484c4cef3f36383a085707936c92a6af054",
         "crop": [
           0,
           0,
@@ -1186,7 +1186,7 @@
         "baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
         "expected_baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
         "actual": "target/oip-canonical-acceptance/oip_canonical_ui_gate/browser/canonical-ui-1920.png",
-        "actual_sha256": "109a58c73432248b720d95560d47d8425be2b408672e1bb114cfcf411e8232df",
+        "actual_sha256": "19d9101d916a4d4f2ea1537b9431fbe7c975a6407f0ab054abbc03549097e4b9",
         "crop": [
           0,
           0,
@@ -1263,9 +1263,9 @@
   },
   "canonical_ui_global_context": {
     "schema": "oip-global-context-receipt-v1",
-    "revision": "0613b8d081fc49d515475c0035bafa34fd6b01c1",
+    "revision": "3b1e53caaeb65de1ce3d16118f391055961f42a8",
     "the_detail_is": "the message that describes the failure of the check",
-    "base": "http://127.0.0.1:63095",
+    "base": "http://127.0.0.1:51002",
     "options_offered": 4,
     "scope_per_workstation": [
       {
@@ -1393,10 +1393,10 @@
   },
   "canonical_ui_accessibility": {
     "schema": "oip-accessibility-receipt-v1",
-    "revision": "0613b8d081fc49d515475c0035bafa34fd6b01c1",
+    "revision": "3b1e53caaeb65de1ce3d16118f391055961f42a8",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "name and role coverage of the rendered surface of the six workstations; not a full WCAG audit",
-    "base": "http://127.0.0.1:63095",
+    "base": "http://127.0.0.1:51002",
     "stations": [
       {
         "workstation": "overview",
@@ -1586,18 +1586,18 @@
       "rendered_samples": 6,
       "all_stale": true,
       "receive_times_shown": 1,
-      "first_receive_time": "2026-11-09 23:43:29.222 UTC",
+      "first_receive_time": "2026-11-10 02:16:36.366 UTC",
       "metrics": [
-        "host.memory_used_bytes",
-        "host.hostname",
-        "host.model",
+        "host.memory_total_bytes",
+        "host.os",
         "host.interfaces",
-        "host.uptime_seconds",
-        "host.architecture"
+        "host.memory_used_bytes",
+        "host.model",
+        "host.uptime_seconds"
       ]
     },
     "rendered_administration": {
-      "device_id": "b2f1839b-eec9-406e-b564-920f1c1dbadf",
+      "device_id": "92a91653-7c2a-4069-9719-24014cc95d9f",
       "revision_before": 1,
       "revision_after": 2,
       "display_name_updated": true,
@@ -1639,9 +1639,9 @@
     "precheck_path": "target/oip-canonical-acceptance/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
     "browser_path": "target/oip-canonical-acceptance/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
     "visual_path": "target/oip-canonical-acceptance/oip_canonical_ui_gate/canonical-ui/visual-comparison.json",
-    "precheck_receipt_sha256": "95f26f3908358dcd47a8fb31a35479dbe64ee8233f942de6b956cd15d399f900",
-    "browser_receipt_sha256": "ad4065e284afdaa4d3f7931b7cba8832f368c87683a0b4d8f6247e33a3c75c8a",
-    "visual_receipt_sha256": "fee0a26456b1ac5616bf1c7b8f03f215c586e449160d5466d677ec3df25eb282",
+    "precheck_receipt_sha256": "6d0afdae5b327edc7cd312123fcd7b0f0ff2353891f9c7d9480b2dfd107546c3",
+    "browser_receipt_sha256": "c4dbf44ed802530825adcdf6acf212e2eca9c11d779c0ee2d06223b5344bd26a",
+    "visual_receipt_sha256": "42940f10cf3347c10a3ce445516485d1ba882712c7fdcde748bba5ae4700f37f",
     "flutter_tests_passed": 356,
     "flutter_tests_failed": 0,
     "browser_findings": 175,
@@ -1652,16 +1652,16 @@
   "performance": {
     "connection_read_official_mcp": {
       "samples": 20,
-      "p50_ms": 0.7526249391958117,
-      "p95_ms": 0.8089590119197965
+      "p50_ms": 0.6763749988749623,
+      "p95_ms": 0.8726660162210464
     },
-    "core_rss_kib_cpu_percent": "18640   0.8",
+    "core_rss_kib_cpu_percent": "19456   2.8",
     "short_local_measurement_not_sla": true
   },
   "status": "PASS",
   "own_processes_stopped": true,
-  "the_revision": "0613b8d081fc49d515475c0035bafa34fd6b01c1",
-  "the_tree": "ae30a19b67fcfad08d9dafaa45f2a16a19e13adf",
+  "the_revision": "3b1e53caaeb65de1ce3d16118f391055961f42a8",
+  "the_tree": "c5af2f712201c9ba5fc29b70ffe36943a244a955",
   "the_working_tree_is_clean": true,
-  "the_revision_of_the_acceptance": "0613b8d081fc49d515475c0035bafa34fd6b01c1"
+  "the_revision_of_the_acceptance": "3b1e53caaeb65de1ce3d16118f391055961f42a8"
 }

@@ -29,18 +29,18 @@
     "rendered_samples": 6,
     "all_stale": true,
     "receive_times_shown": 1,
-    "first_receive_time": "2026-11-09 23:43:29.222 UTC",
+    "first_receive_time": "2026-11-10 02:16:36.366 UTC",
     "metrics": [
-      "host.memory_used_bytes",
-      "host.hostname",
-      "host.model",
+      "host.memory_total_bytes",
+      "host.os",
       "host.interfaces",
-      "host.uptime_seconds",
-      "host.architecture"
+      "host.memory_used_bytes",
+      "host.model",
+      "host.uptime_seconds"
     ]
   },
   "rendered_administration": {
-    "device_id": "b2f1839b-eec9-406e-b564-920f1c1dbadf",
+    "device_id": "92a91653-7c2a-4069-9719-24014cc95d9f",
     "revision_before": 1,
     "revision_after": 2,
     "display_name_updated": true,
@@ -76,8 +76,8 @@
   "loaded_build_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
   "errors": [],
   "external": [],
-  "the_revision": "0613b8d081fc49d515475c0035bafa34fd6b01c1",
-  "the_tree": "ae30a19b67fcfad08d9dafaa45f2a16a19e13adf",
+  "the_revision": "3b1e53caaeb65de1ce3d16118f391055961f42a8",
+  "the_tree": "c5af2f712201c9ba5fc29b70ffe36943a244a955",
   "the_working_tree_is_clean": true,
-  "the_revision_of_the_acceptance": "0613b8d081fc49d515475c0035bafa34fd6b01c1"
+  "the_revision_of_the_acceptance": "3b1e53caaeb65de1ce3d16118f391055961f42a8"
 }
