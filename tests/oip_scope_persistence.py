@@ -119,6 +119,7 @@ def main():
             [args.binary, "--browser-login", "--ipc-socket", str(work / "s"),
              "--ipc-credential", str(credential)], text=True))
         import http.cookiejar
+        import urllib.error
         import urllib.request
         jar = http.cookiejar.CookieJar()
         opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
@@ -136,8 +137,12 @@ def main():
             headers={"Content-Type": "application/json",
                      "Origin": f"http://127.0.0.1:{port}",
                      "x-oip-csrf": session["csrf_token"]}, method="POST")
-        with opener.open(write, timeout=60) as answer:
-            registered = json.loads(answer.read().decode())
+        try:
+            with opener.open(write, timeout=60) as answer:
+                registered = json.loads(answer.read().decode())
+        except urllib.error.HTTPError as error:
+            raise AssertionError(f"the Core refused the registration: "
+                                 f"{error.code} {error.read().decode()[:300]}")
         report["the_registered_device"] = registered.get("changes", [{}])[0].get("device", {})
         report["steps"].append("a manual device of the scope is registered")
 
