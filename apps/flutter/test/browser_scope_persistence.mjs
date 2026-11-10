@@ -86,6 +86,27 @@ const clickText = async (text) => {
   await page.waitForTimeout(1500);
 };
 
+// The surface is scrolled until the control is painted.
+const scrollUntil = async (pattern, steps = 18) => {
+  await page.mouse.move(700, 600);
+  for (let step = 0; step < steps; step++) {
+    const found = await page.evaluate((source) => {
+      const expression = new RegExp(source);
+      const out = [];
+      document.querySelectorAll('flt-semantics').forEach((el) => {
+        const label = el.getAttribute('aria-label');
+        const text = (label || el.textContent || '').trim();
+        if (expression.test(text) && text.length < 400) out.push(text);
+      });
+      return out;
+    }, pattern.source);
+    if (found.length > 0) return found;
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(220);
+  }
+  return [];
+};
+
 const optionTexts = async () => await page.evaluate(() => {
   const out = [];
   document.querySelectorAll('flt-semantics').forEach((el) => {
@@ -151,11 +172,13 @@ check('the device of the scope can be selected', await device.count() > 0,
   'the device of the scope is not in the list');
 await device.click({ force: true });
 await page.waitForTimeout(2500);
-const nameField = page.getByRole('textbox', { name: /Anzeigename/ }).first();
-check('the administration of the device is shown', await nameField.count() > 0,
+const administration = await scrollUntil(/Anzeigename/);
+check('the administration of the device is shown', administration.length > 0,
   'the administration of the device is not shown');
+const nameField = page.getByRole('textbox', { name: /Anzeigename/ }).first();
 const newName = 'Scope persistence device';
 await nameField.click({ force: true });
+await page.waitForTimeout(400);
 await page.keyboard.press('Meta+A');
 await page.keyboard.type(newName);
 await page.waitForTimeout(400);
