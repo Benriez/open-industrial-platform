@@ -168,17 +168,32 @@ if (code) {
   await page.waitForTimeout(8000);
 }
 
+// The inventory of the devices is below the fold of the workstation: the
+// surface is scrolled until the device is painted.
+const scrollUntil = async (pattern, steps = 18) => {
+  await page.mouse.move(700, 600);
+  for (let step = 0; step < steps; step++) {
+    const found = await page.evaluate((source) => {
+      const expression = new RegExp(source);
+      const out = [];
+      document.querySelectorAll('flt-semantics').forEach((el) => {
+        const label = el.getAttribute('aria-label');
+        const text = (label || el.textContent || '').trim();
+        if (expression.test(text) && text.length < 400) out.push(text);
+      });
+      return out;
+    }, pattern.source);
+    if (found.length > 0) return found;
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(220);
+  }
+  return [];
+};
+
 // The workspace of the devices and the panel of the device.
 await page.getByRole('button', { name: 'Navigation Geräte & Dienste' }).click({ force: true });
 await page.waitForTimeout(4000);
-const deviceOption = await page.evaluate((id) => {
-  const out = [];
-  document.querySelectorAll('flt-semantics').forEach((el) => {
-    const text = (el.textContent || '').trim();
-    if (text.includes(id) && text.length < 300) out.push(text);
-  });
-  return out;
-}, deviceId);
+const deviceOption = await scrollUntil(new RegExp(`${deviceId}.*auswählen`));
 check('the inventory of the scope lists the device', deviceOption.length > 0,
   deviceOption.join(' | ').slice(0, 200));
 await clickAccessible(`${deviceId} auswählen`);
