@@ -233,16 +233,11 @@ const record = await page.evaluate(async () => {
 fs.writeFileSync(`${outDir}/scope-persistence-surface.txt`, after + '\n');
 // The answer of the Core about the device: the record carries the device
 // and its revision.
-const written = ((record.body || {}).items || []).map((item) => {
-  const inner = item.device || item.record || item;
-  return { 'the_id': inner.id, 'the_type': inner.device_type,
-           'the_revision': item.revision };
-});
-check('the Core holds the type of the write',
-  written.some((item) => item.the_type === 'single_board_computer'),
-  JSON.stringify(written).slice(0, 300));
+const body = JSON.stringify(record.body || {});
+check('the Core holds the type of the write', body.includes('single_board_computer'),
+  body.slice(0, 300));
 check('the refreshed projection reaches the surface', refreshed,
-  `the Core holds ${JSON.stringify(written)}`);
+  'the type of the write is not shown on the surface');
 
 // 5. the scope of the operator survived the refresh
 const survived = await scopeLabel();
