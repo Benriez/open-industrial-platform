@@ -436,22 +436,19 @@ impl ApplicationServices {
         let items = stream::iter(selected)
             .map(|(node_id, name, folder)| {
                 let client = client.clone();
-                let s = s.clone();
                 let source = source.clone();
                 async move {
+                    // The browser reads the address space; it does not
+                    // measure. The value of a node is read for the display
+                    // and **not** ingested: a measurement belongs to the
+                    // collector, which subscribes to the registered metrics
+                    // of the source. A node without a readable name carries
+                    // no value, and the Core states none.
                     let observation = if let Some(client) = client {
-                        // A node without a readable name carries no metric:
-                        // the Core reads nothing and states nothing.
                         match MetricId::new(&name) {
                             Ok(metric) => match client.read(&metric).await {
                                 Ok(mut o) => {
                                     o.data_source_id = source.clone();
-                                    s.ingest_for(
-                                        &source,
-                                        ClientEvent::Observation(Box::new(o.clone())),
-                                    )
-                                    .await
-                                    .map_err(storage)?;
                                     Some(o)
                                 }
                                 Err(_) => None,
