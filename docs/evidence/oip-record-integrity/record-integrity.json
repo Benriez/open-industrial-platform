@@ -5,9 +5,9 @@
     "every path that the record names exists",
     "every file of the evidence tree is cited"
   ],
-  "the_cited_paths": 58,
+  "the_cited_paths": 60,
   "the_citations": {
-    "the_cited": 58,
+    "the_cited": 60,
     "the_missing_on_disk": [],
     "the_present_but_untracked": []
   },
@@ -34,16 +34,16 @@
     "the_note": "a path of the build tree is not a receipt: the ledger must not present a directory of a build as the evidence of a claim. The artefacts of the release live in the build tree by nature and are named by the manifest."
   },
   "the_receipts_of_the_release": {
-    "the_present": 55,
-    "the_cited": 55,
+    "the_present": 57,
+    "the_cited": 57,
     "the_orphaned": [],
     "the_files_of_the_eras": 1271,
     "the_areas_of_the_eras_that_the_record_does_not_name": []
   },
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "d7a865543e9a7750b93a3249c145a1ce34d6a1f9",
-  "the_tree": "bb6d518d4f35bfcfcd7cd2b6fb36440dafa7f17d",
-  "the_working_tree_is_clean": false,
-  "finished_utc": "2026-11-10T01:52:51Z"
+  "the_revision": "1160749b33c8433f366ed39c2982944975d40679",
+  "the_tree": "accc7986e6ceb0f8cbda3852580ee0f8c7fe45ee",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-10T02:08:02Z"
 }

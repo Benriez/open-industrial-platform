@@ -4,15 +4,15 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "d7a865543e9a7750b93a3249c145a1ce34d6a1f9",
+      "the_revision": "2c526695559611310735d62cb0466ca6432b6b96",
       "the_revision_of_the_source": {
-        "the_revision": "f0120f81ac7826aa4f2f3aa6efa7210080f659ae",
-        "the_subject": "fix(g4): the tool runs every rehearsal once, and the tile is opened in every way"
+        "the_revision": "b09598189d65be0c5fd4c061f838b27731cae86d",
+        "the_subject": "feat(g8): the journey walks every category of the settings"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
-        "the_files": 672,
-        "the_sha256": "807ff0cb3e1084c6eef7354fbc9a0b6829776ec5984f095dbe3c18c9702e08df"
+        "the_files": 676,
+        "the_sha256": "ee6529d5d055a676f505b4728cc3d43dcd83b391feda056ccb94d196acf8622b"
       },
       "the_artifacts": {
         "the_core": "1cb8958eff5e5480a72047b4dfff7b2f2bf6167f521654e444719db1754a7ae3",
@@ -31,11 +31,11 @@
         "crates": "ac0bc10911f1",
         "apps/flutter/lib": "fa7d66a718c9"
       },
-      "the_receipts": 41
+      "the_receipts": 43
     },
     "the_record": {
-      "the_citations": 58,
-      "the_receipts_of_the_release": 41,
+      "the_citations": 60,
+      "the_receipts_of_the_release": 43,
       "the_missing": [],
       "the_untracked": [],
       "the_orphaned": [],
@@ -131,8 +131,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "d7a865543e9a7750b93a3249c145a1ce34d6a1f9",
-  "the_tree": "bb6d518d4f35bfcfcd7cd2b6fb36440dafa7f17d",
+  "the_revision": "1160749b33c8433f366ed39c2982944975d40679",
+  "the_tree": "accc7986e6ceb0f8cbda3852580ee0f8c7fe45ee",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }
