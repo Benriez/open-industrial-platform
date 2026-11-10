@@ -202,11 +202,12 @@ const administration = await scrollInspectorUntil(/Anzeigename/);
 check('the administration of the device is shown', administration.length > 0,
   'the administration of the device is not shown');
 const newName = 'Scope persistence device';
-await clickText('Anzeigename');
+const field = page.locator('input[aria-label="Anzeigename"]').first();
+await field.click({ force: true });
 await page.waitForTimeout(400);
 await page.keyboard.press('Meta+A');
 await page.keyboard.type(newName);
-await page.waitForTimeout(400);
+await page.waitForTimeout(600);
 await page.keyboard.press('Meta+A');
 await page.keyboard.type(newName);
 await page.waitForTimeout(400);
