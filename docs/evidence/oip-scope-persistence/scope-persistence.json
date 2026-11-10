@@ -1,0 +1,73 @@
+{
+  "schema": "oip-scope-persistence-v1",
+  "revision": "fc226c9395ede9e10f3a1c3cd5e5f62e3d4a3adf",
+  "the_detail_is": "the message that describes the failure of the check",
+  "scope": "the scope of the operator across a refresh of the authorized projection",
+  "base": "http://127.0.0.1:59104",
+  "the_selected_scope": "site-a1",
+  "the_scope_after_the_refresh": "site-a1",
+  "the_scope_of_the_new_session": "Alle berechtigten Infrastrukturen",
+  "findings": [
+    {
+      "check": "browser-login accepted",
+      "ok": true,
+      "the_detail": "{\"status\":200}"
+    },
+    {
+      "check": "the global selection offers the site of the scope",
+      "ok": true,
+      "the_detail": "Kontext Unified View · gesamter autorisierter Principal-Scope auswähle | Kontext org-a auswählen\nOrganization A\norg-a | Kontext Organization A / Infrastructure A1 · infra-a1 auswählen\nInfras | Kontext Organization A / Infrastructure A1 / site-a1 · site-a1 auswähl | Kontext Organization A / Infrastructure A1 / site-a1 / source-a auswäh | Kontext Organization A / Infrastructure A1 / site-a1 / source-b auswäh | Kontext Organization A / Infrastructure A1 / site-a2 · site-a2 auswähl | Kontext Organization A / Infrastructure A1 / site-a2 / source-c auswäh | Kontext Organization A / Infrastructure A2 · infra-a2 auswählen\nInfras | Kontext Organization A / Infrastructure A2 / site-a3 · site-a3 auswähl"
+    },
+    {
+      "check": "the scope of the operator is the selected site",
+      "ok": true,
+      "the_detail": "site-a1"
+    },
+    {
+      "check": "the devices of the scope are shown",
+      "ok": true,
+      "the_detail": "the device of the scope is missing"
+    },
+    {
+      "check": "the device of the scope can be selected",
+      "ok": true,
+      "the_detail": "the device of the scope is not in the list"
+    },
+    {
+      "check": "the administration of the device is shown",
+      "ok": true,
+      "the_detail": "the administration of the device is not shown"
+    },
+    {
+      "check": "the type of the device can be chosen",
+      "ok": true,
+      "the_detail": "the type of the device is not shown"
+    },
+    {
+      "check": "the administration can be saved",
+      "ok": true,
+      "the_detail": "the save of the administration is not shown"
+    },
+    {
+      "check": "the Core holds the type of the write",
+      "ok": true,
+      "the_detail": "{\"items\":[{\"record\":{\"device\":{\"id\":\"scope-device\",\"display_name\":\"Scope device\",\"device_type\":\"single_board_computer\",\"site_id\":\"site-a1\",\"metadata\":{\"manufacturer\":null,\"model\":null,\"operating_system\":null,\"hostname\":null,\"ip_address\":null,\"mac_address\":null,\"serial_number\":null,\"description\":null"
+    },
+    {
+      "check": "the refreshed projection reaches the surface",
+      "ok": true,
+      "the_detail": "the type of the write is not shown on the surface"
+    },
+    {
+      "check": "the scope of the operator survives the refresh of the projection",
+      "ok": true,
+      "the_detail": "site-a1"
+    },
+    {
+      "check": "a new session starts in the unified view again",
+      "ok": true,
+      "the_detail": "Alle berechtigten Infrastrukturen"
+    }
+  ],
+  "errors": []
+}

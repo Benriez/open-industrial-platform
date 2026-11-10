@@ -130,6 +130,9 @@ secrets/
 !/docs/evidence/oip-workstation-data/rehearsal.json
 !/docs/evidence/oip-device-connection/device-connection.json
 !/docs/evidence/oip-device-connection/rehearsal.json
+# The scope of the operator across a refresh of the projection.
+!/docs/evidence/oip-scope-persistence/scope-persistence.json
+!/docs/evidence/oip-scope-persistence/scope-persistence-rehearsal.json
 # The honest connection states of the surface.
 !/docs/evidence/oip-connection-states/connection-states.json
 !/docs/evidence/oip-connection-states/connection-states-rehearsal.json
