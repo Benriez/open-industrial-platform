@@ -162,12 +162,12 @@ check('the scope of the operator is the selected site',
 await page.getByRole('button', { name: 'Navigation Geräte & Dienste' }).click({ force: true });
 await page.waitForTimeout(3000);
 const before = await labels();
-check('the devices of the scope are shown', /device-a/.test(before),
+check('the devices of the scope are shown', /scope-device/.test(before),
   'the device of the scope is missing');
 
 // 3. the administration of the device: the write of the operator changes the
 //    Core, and the surface reads the authorized projection again.
-const device = page.getByRole('button', { name: /Gerät .*device-a.* auswählen/ }).first();
+const device = page.getByRole('button', { name: /Gerät .*scope-device.* auswählen/ }).first();
 check('the device of the scope can be selected', await device.count() > 0,
   'the device of the scope is not in the list');
 await device.click({ force: true });
@@ -226,7 +226,7 @@ for (let step = 0; step < 30 && !refreshed; step++) {
 }
 // The answer of the Core: what the write really changed.
 const record = await page.evaluate(async () => {
-  const r = await fetch('/api/v2/inventory/devices?q=device-a',
+  const r = await fetch('/api/v2/inventory/devices?q=scope-device',
     { headers: { 'Content-Type': 'application/json' } });
   return { status: r.status, body: await r.json() };
 });

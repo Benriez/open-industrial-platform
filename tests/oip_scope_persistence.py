@@ -113,6 +113,34 @@ def main():
         time.sleep(4)
         report["steps"].append("the instance runs")
 
+        # A **manually registered** device of the scope: the devices of the
+        # plan belong to their source and are not administered by the surface.
+        minted = json.loads(subprocess.check_output(
+            [args.binary, "--browser-login", "--ipc-socket", str(work / "s"),
+             "--ipc-credential", str(credential)], text=True))
+        import http.cookiejar
+        import urllib.request
+        jar = http.cookiejar.CookieJar()
+        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+        login = urllib.request.Request(
+            f"http://127.0.0.1:{port}/api/v2/browser/login",
+            data=json.dumps({"code": minted["login_code"]}).encode(),
+            headers={"Content-Type": "application/json"}, method="POST")
+        with opener.open(login, timeout=60) as answer:
+            session = json.loads(answer.read().decode())
+        write = urllib.request.Request(
+            f"http://127.0.0.1:{port}/api/v2/inventory/apply",
+            data=json.dumps({"changes": [{"operation": "register", "device": {
+                "id": "scope-device", "display_name": "Scope device",
+                "device_type": "other", "site_id": "site-a1", "metadata": {}}}]}).encode(),
+            headers={"Content-Type": "application/json",
+                     "Origin": f"http://127.0.0.1:{port}",
+                     "x-oip-csrf": session["csrf_token"]}, method="POST")
+        with opener.open(write, timeout=60) as answer:
+            registered = json.loads(answer.read().decode())
+        report["the_registered_device"] = registered.get("changes", [{}])[0].get("device", {})
+        report["steps"].append("a manual device of the scope is registered")
+
         result = subprocess.run(
             ["node", str(ROOT / "apps/flutter/test/browser_scope_persistence.mjs"),
              f"http://127.0.0.1:{port}", str(evidence)],
