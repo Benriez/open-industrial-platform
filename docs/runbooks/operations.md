@@ -701,7 +701,35 @@ The receipt of the verification is `docs/evidence/oip-release-verification/relea
 the negative control of the verifier is `tests/oip_verify_release_test.py` and
 proves that it can fail.
 
-## 13. What the receipts prove
+## 13.1 How a third party re-measures the evidence of the release
+
+The command above **verifies** the receipts that the checkout carries. A third party who wants
+to **measure** them again — on their own machine, after a change of the product — runs the
+rehearsals of the release:
+
+```sh
+python3 tools/oip_refresh_evidence.py
+```
+
+The command runs every rehearsal of the release in the order of the release, and it publishes
+every receipt into its place in the checkout (`docs/evidence/`). The tree must be **clean**: a
+receipt that is measured on a dirty tree would not say what it covers. `--list` names the
+rehearsals and the receipts they publish, `--only NAME` runs one of them and `--skip NAME`
+leaves one out.
+
+Two facts about the runtime:
+
+* the rehearsals measure the **real** lifetimes of the Core — the session of the browser and the
+  stability run each last half an hour — so the whole set needs about an hour;
+* every rehearsal owns a **disposable** instance of the Core, its own collectors and its own
+  store. Nothing of the rehearsal touches the personal installation of the operator, no private
+  endpoint is contacted and nothing leaves the machine.
+
+The freshness rule of the record demands that no receipt predates the last change of the code it
+covers: after a change of the Core, the command is the way to measure the evidence of the release
+again — the verification above then proves that every receipt is fresh.
+
+## 14. What the receipts prove
 
 `docs/evidence/oip-operations/operations.json` records the measured result of
 the sequence above against a disposable instance, and
