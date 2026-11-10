@@ -137,8 +137,15 @@ const selectedCategory = async () => await page.evaluate(() => {
   let current = null;
   for (const el of document.querySelectorAll('flt-semantics')) {
     const label = el.getAttribute('aria-label') || '';
+    const whole = (el.textContent || '').trim();
     if (label.startsWith('Settings-Kategorie ')) {
       current = label.slice('Settings-Kategorie '.length);
+      continue;
+    }
+    // The client publishes the name of the control as the name of the
+    // category; the node carries it as its text.
+    if (whole.startsWith('Settings-Kategorie ') && whole.length < 60) {
+      current = whole.slice('Settings-Kategorie '.length);
       continue;
     }
     // The text of the status is a direct child of the node of the surface.
