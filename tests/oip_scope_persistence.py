@@ -126,7 +126,8 @@ def main():
         login = urllib.request.Request(
             f"http://127.0.0.1:{port}/api/v2/browser/login",
             data=json.dumps({"code": minted["login_code"]}).encode(),
-            headers={"Content-Type": "application/json"}, method="POST")
+            headers={"Content-Type": "application/json",
+                     "Origin": f"http://127.0.0.1:{port}"}, method="POST")
         with opener.open(login, timeout=60) as answer:
             session = json.loads(answer.read().decode())
         write = urllib.request.Request(
