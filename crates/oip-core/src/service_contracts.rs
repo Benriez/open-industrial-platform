@@ -99,6 +99,12 @@ pub struct NodePage {
     pub total: usize,
     pub offset: usize,
     pub limit: usize,
+    /// The folders of the address space of the source.
+    ///
+    /// They are the folders that the **server** delivers — the operator can
+    /// reach every folder of the address space, not only the folders of the
+    /// page that was delivered last.
+    pub folders: Vec<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

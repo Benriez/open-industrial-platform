@@ -1,6 +1,5 @@
 //! Canonical application queries and simulation control. Axum and future MCP are adapters.
 use crate::{
-    collector::METRICS,
     demo::SCENARIOS,
     state::{now_ms, AppState},
 };
@@ -394,24 +393,40 @@ impl ApplicationServices {
             .get(&source)
             .cloned()
             .unwrap_or_default();
+        // The address space of the source is browsed **as it is**: every node
+        // of the catalogue is admitted, with the name and the folder that the
+        // server delivers. A node outside the legacy catalogue is no longer
+        // dropped behind a filter, and no folder is derived from the name of
+        // a node.
+        let folders: Vec<String> = {
+            let mut names: Vec<String> = catalog
+                .iter()
+                .map(|entry| entry.folder.clone())
+                .filter(|folder| !folder.is_empty())
+                .collect();
+            names.sort();
+            names.dedup();
+            names
+        };
         let mut found: Vec<_> = catalog
             .into_iter()
             .filter_map(|entry| {
-                let name = entry.node_id.split(";s=").nth(1)?.to_owned();
-                if !METRICS.contains(&name.as_str()) && !name.starts_with("bulk.") {
-                    return None;
-                }
-                let folder = if name.starts_with("bulk.") {
-                    "Bulk"
+                // The browse name is the name of the node in the address
+                // space of the server. The node id of a real server carries
+                // no readable name — it may be numeric — so it is only the
+                // fallback.
+                let name = if entry.browse_name.trim().is_empty() {
+                    entry.node_id.clone()
                 } else {
-                    "M-01"
+                    entry.browse_name.clone()
                 };
-                if q.folder.as_ref().is_some_and(|f| f != "all" && f != folder)
+                let folder = entry.folder.clone();
+                if q.folder.as_ref().is_some_and(|f| f != "all" && *f != folder)
                     || !name.to_lowercase().contains(&search)
                 {
                     return None;
                 }
-                Some((entry.node_id, name, folder.to_owned()))
+                Some((entry.node_id, name, folder))
             })
             .collect();
         found.sort_by(|a, b| a.1.cmp(&b.1));
@@ -425,30 +440,40 @@ impl ApplicationServices {
                 let source = source.clone();
                 async move {
                     let observation = if let Some(client) = client {
-                        match client
-                            .read(&MetricId::new(&name).expect("browsed nonempty id"))
-                            .await
-                        {
-                            Ok(mut o) => {
-                                o.data_source_id = source.clone();
-                                s.ingest_for(
-                                    &source,
-                                    ClientEvent::Observation(Box::new(o.clone())),
-                                )
-                                .await
-                                .map_err(storage)?;
-                                Some(o)
-                            }
+                        // A node without a readable name carries no metric:
+                        // the Core reads nothing and states nothing.
+                        match MetricId::new(&name) {
+                            Ok(metric) => match client.read(&metric).await {
+                                Ok(mut o) => {
+                                    o.data_source_id = source.clone();
+                                    s.ingest_for(
+                                        &source,
+                                        ClientEvent::Observation(Box::new(o.clone())),
+                                    )
+                                    .await
+                                    .map_err(storage)?;
+                                    Some(o)
+                                }
+                                Err(_) => None,
+                            },
                             Err(_) => None,
                         }
                     } else {
                         None
                     };
-                    let data_type = match name.as_str() {
-                        "motor_running" | "alarm_active" => "Boolean",
-                        "operating_mode" => "String",
-                        "units_produced" => "UInt64",
-                        _ => "Double",
+                    // The data type is the type of the value that the Core
+                    // read for the node. A node without a value carries no
+                    // data type, and the surface says so.
+                    let data_type = match &observation {
+                        Some(o) => match &o.value {
+                            Some(MetricValue::Boolean(_)) => "Boolean",
+                            Some(MetricValue::Text(_)) => "String",
+                            Some(MetricValue::Float(_)) => "Double",
+                            Some(MetricValue::SignedInteger(_)) => "Int64",
+                            Some(MetricValue::UnsignedInteger(_)) => "UInt64",
+                            None => "Nicht geliefert",
+                        },
+                        None => "Nicht geliefert",
                     }
                     .into();
                     Ok(Node {
@@ -473,6 +498,7 @@ impl ApplicationServices {
             total,
             offset,
             limit,
+            folders,
         })
     }
 }

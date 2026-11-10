@@ -12,6 +12,19 @@ import 'support.dart';
 /// Regression coverage for the OPC UA workstation (context rail, explorer,
 /// inspector). Every assertion uses data the fake API actually delivered.
 void main() {
+  testWidgets('The folder chips are the folders that the Core delivered',
+      (tester) async {
+    await _bootstrap(tester, const Size(1440, 1000),
+        configure: (api) => api.generatedBulkNodes = 1000);
+    await _navigate(tester, 1440);
+    // The Core delivered the folders of the address space with the page.
+    expect(find.byKey(const Key('folder-Bulk')), findsOneWidget);
+    expect(find.byKey(const Key('folder-M-01')), findsOneWidget);
+    expect(find.byKey(const Key('folder-all')), findsOneWidget);
+    // A folder that the Core did not deliver is not offered.
+    expect(find.byKey(const Key('folder-Simulation')), findsNothing);
+  });
+
   testWidgets('The live values bind to the entity of the Core, not to the demo',
       (tester) async {
     await _bootstrap(tester, const Size(1440, 1000), data: _managedSnapshot());

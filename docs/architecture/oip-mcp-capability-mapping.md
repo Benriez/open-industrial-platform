@@ -25,7 +25,7 @@ Maschinenlesbar und aus derselben Rust-Allowlist generiert: [capability-mapping.
 | device_read / IMPLEMENTED | Tool `oip_device_read` / IMPLEMENTED | DeviceRequest → DeviceDetail | GET devices/{id}; bestehender Detaildialog |
 | observations_read / IMPLEMENTED | Tool `oip_observations_read` / IMPLEMENTED | SourceQuery → Vec<ObservationEnvelope> | GET metrics/current; Messwerte/Trend |
 | events_read / IMPLEMENTED | Tool `oip_events_read` / IMPLEMENTED | SourceQuery → EventsResponse | GET events; Diagnostics |
-| opcua_nodes_read / IMPLEMENTED | Tool `oip_opcua_nodes_read` / IMPLEMENTED | NodeQuery → NodePage | GET opcua/nodes; vorhandener Primärquellen-Browser |
+| opcua_nodes_read / IMPLEMENTED | Tool `oip_opcua_nodes_read` / IMPLEMENTED | NodeQuery → NodePage (mit `folders`: die Ordner des Adressraums des Servers) | GET opcua/nodes; vorhandener Primärquellen-Browser; der Adressraum wird ungefiltert geliefert |
 | simulation_scenario_set / IMPLEMENTED | **BLOCKED**, kein MCP-Name | ScenarioRequest → ScenarioResponse nur über bisherigen lokalen Demo-Service | bisheriges POST demo/scenario und GUI-Demoprofil erhalten; nicht im MCP-Modus freigegeben |
 
 REST-Pfade ohne Präfix beziehen sich auf `/api/v1/`. Alle MCP-Ausgaben behalten den Core-Dispatch-Umschlag `{type,value}`. REST liefert die vorhandenen v1-Bodies; Queue/Snapshot werden für Parität aus SSE gelesen. Liveness/Readiness verwenden denselben Health-DTO; REST übersetzt das boolesche Ergebnis zusätzlich in 200/503. Das MCP-Resultat erfindet keinen separaten Health-Status.

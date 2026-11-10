@@ -461,11 +461,17 @@ class OpcNode {
 class NodePage {
   final List<OpcNode> items;
   final int total, offset, limit;
+  /// The folders of the address space of the source, as the Core delivered
+  /// them. A Core that delivers none leaves the list empty.
+  final List<String> folders;
   NodePage.fromJson(Json j)
       : items = (j['items'] as List)
             .map((v) => OpcNode.fromJson(v as Json))
             .toList(),
         total = j['total'] as int,
         offset = j['offset'] as int,
-        limit = j['limit'] as int;
+        limit = j['limit'] as int,
+        folders = ((j['folders'] as List?) ?? const [])
+            .map((v) => v.toString())
+            .toList();
 }

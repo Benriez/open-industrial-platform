@@ -152,6 +152,37 @@ async fn browse_uses_continuation_points_beyond_one_thousand_nodes() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn browse_reports_the_folder_of_every_node() {
+    let port = free_port();
+    let server = RunningAsyncOpcUaServer::start(test_config(port, Scenario::Normal, 20))
+        .await
+        .expect("start server");
+    let client = connect(&server).await;
+    let entries = client.browse().await.expect("browse");
+
+    // Every node names the folder it lives in: the browse name of its
+    // parent. The folder is not derived from the name of the node.
+    let folder_of = |name: &str| {
+        entries
+            .iter()
+            .find(|entry| entry.browse_name == name)
+            .map(|entry| entry.folder.clone())
+            .unwrap_or_default()
+    };
+    assert_eq!(folder_of("M-01"), "OIP", "the machine folder");
+    assert_eq!(folder_of("Bulk"), "OIP", "the bulk folder");
+    assert_eq!(folder_of("temperature"), "M-01", "the process variable");
+    assert_eq!(folder_of("bulk.0000"), "Bulk", "the bulk variable");
+    // A node without a readable name keeps the folder of its parent.
+    assert!(
+        entries.iter().all(|entry| !entry.folder.is_empty()),
+        "every entry names a folder"
+    );
+    client.disconnect().await.expect("disconnect");
+    server.stop().await.expect("stop server");
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn browse_respects_the_configured_node_limit() {
     let port = free_port();
     let server = RunningAsyncOpcUaServer::start(test_config(port, Scenario::Normal, 1_000))

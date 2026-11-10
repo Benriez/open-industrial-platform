@@ -29,7 +29,10 @@ class OpcuaPage extends StatefulWidget {
 enum _ViewMode { list, grouped }
 
 class _OpcuaPageState extends State<OpcuaPage> {
-  static const folders = ['M-01', 'Bulk', 'all'];
+  /// The folders of the address space of the source, as the **Core** names
+  /// them. The list is delivered with every page; the legacy catalogue of
+  /// the demo is not assumed by the client any more.
+  List<String> theFolders = const [];
   static const maxPins = 8, maxRecent = 5, maxSamples = 60, maxCompare = 4;
 
   NodePage? page;
@@ -256,6 +259,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
       if (changedWindow && listScroll.hasClients) listScroll.jumpTo(0);
       setState(() {
         page = result;
+        if (result.folders.isNotEmpty) theFolders = result.folders;
         if (requestSearch.trim().isEmpty) {
           totals['$requestSource|$requestFolder'] = result.total;
         }
@@ -787,15 +791,21 @@ class _OpcuaPageState extends State<OpcuaPage> {
     return 'Namespaces ${(indices.toList()..sort()).join(', ')}';
   }
 
+  /// The scopes of the address space: every folder that the Core delivered
+  /// and the whole catalogue.
+  List<String> get theScopes => [...theFolders, 'all'];
+
   String _scopeTitle(String value) => value == 'all' ? 'Alle' : value;
   String _scopeCaption(String value) => switch (value) {
         'M-01' => 'Prozessvariablen',
         'Bulk' => 'Massendaten',
-        _ => 'Gesamter gelieferter Katalog',
+        'all' => 'Gesamter gelieferter Katalog',
+        _ => 'Ordner des gelieferten Adressraums',
       };
   IconData _scopeIcon(String value) => switch (value) {
         'M-01' => Icons.precision_manufacturing_outlined,
         'Bulk' => Icons.dataset_outlined,
+        'all' => Icons.all_inclusive,
         _ => Icons.account_tree_outlined,
       };
 
@@ -953,7 +963,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
         const Hairline(),
         PanelLabel('Adressraum',
             color: OipTokens.violet,
-            trailing: Text('${folders.length} Scopes',
+            trailing: Text('${theScopes.length} Scopes',
                 style: WorkstationTokens.mono(context,
                     size: 10, color: OipTokens.muted(context)))),
         Text(_namespaceLabel(), style: Theme.of(context).textTheme.titleSmall),
@@ -963,7 +973,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
                 .bodySmall
                 ?.copyWith(fontSize: 10.5)),
         const SizedBox(height: OipTokens.s2),
-        for (final value in folders)
+        for (final value in theScopes)
           Padding(
               padding: const EdgeInsets.only(bottom: 3),
               child: _scopeRow(context, value)),
@@ -1126,7 +1136,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
             runSpacing: OipTokens.s2,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              for (final value in folders)
+              for (final value in theScopes)
                 _scopeRow(context, value, compact: true),
             ],
           ),
@@ -1308,7 +1318,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Server-Suche: abgeleiteter Name · gesamte ausgewählte Quelle. Typ/Quality: nur geladene Seite.',
+                      'Server-Suche: Browse-Name des Servers · gesamte ausgewählte Quelle. Typ/Quality: nur geladene Seite.',
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall

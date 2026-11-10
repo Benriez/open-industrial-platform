@@ -252,10 +252,13 @@ class FakeApi extends OipApi {
         'items': all.skip(offset).take(nodeLimit).toList(),
         'total': all.length,
         'offset': offset,
-        'limit': nodeLimit
+        'limit': nodeLimit,
+        // The Core delivers the folders of the address space with every page.
+        'folders': const ['Bulk', 'M-01']
       });
     }
     return NodePage.fromJson({
+      'folders': const ['M-01'],
       'items': [
         {
           'node_id': 'ns=2;s=temperature',

@@ -244,10 +244,13 @@ impl ReadOnlyOpcUaAdapter for AsyncOpcUaClient {
     async fn browse(&self) -> Result<Vec<BrowseEntry>, AdapterError> {
         let mut entries = Vec::new();
         let mut visited = HashSet::new();
-        let mut pending = vec![NodeId::objects_folder_id()];
+        // The pending node carries the browse name of its **parent**: it is
+        // the folder of every node below it. The standard root of a server
+        // has the browse name of its standard folder.
+        let mut pending = vec![(NodeId::objects_folder_id(), "Objects".to_owned())];
         visited.insert(NodeId::objects_folder_id());
 
-        while let Some(node_id) = pending.pop() {
+        while let Some((node_id, parent_name)) = pending.pop() {
             let description = BrowseDescription {
                 node_id,
                 browse_direction: BrowseDirection::Forward,
@@ -276,17 +279,19 @@ impl ReadOnlyOpcUaAdapter for AsyncOpcUaClient {
                 if let Some(references) = result.references.take() {
                     for reference in references {
                         let target = reference.node_id.node_id;
+                        let browse_name = reference.browse_name.to_string();
                         if visited.insert(target.clone()) && target.namespace == self.namespace {
-                            pending.push(target.clone());
+                            pending.push((target.clone(), browse_name.clone()));
                         }
                         if entries.len() >= self.max_browse_nodes {
                             return Err(AdapterError::BrowseLimitExceeded(self.max_browse_nodes));
                         }
                         entries.push(BrowseEntry {
                             node_id: target.to_string(),
-                            browse_name: reference.browse_name.to_string(),
+                            browse_name,
                             display_name: reference.display_name.to_string(),
                             node_class: format!("{:?}", reference.node_class),
+                            folder: parent_name.clone(),
                         });
                     }
                 }

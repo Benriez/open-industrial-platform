@@ -19,6 +19,12 @@ pub struct BrowseEntry {
     pub browse_name: String,
     pub display_name: String,
     pub node_class: String,
+    /// The folder the node lives in: the browse name of its parent.
+    ///
+    /// It is the **structure of the address space of the server** and not a
+    /// name derived from the node itself. A server that organises its
+    /// variables in folders is browsed as it is.
+    pub folder: String,
 }
 
 /// Security posture requested by the caller.
