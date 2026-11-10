@@ -115,8 +115,16 @@ class Control(http.server.BaseHTTPRequestHandler):
     def _answer(self, status, payload):
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
+        # The journey asks the control from the page of the application: the
+        # answer must be readable for the browser.
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
         self.wfile.write(payload.encode())
+
+    def do_OPTIONS(self):
+        self._answer(204, b"")
 
     def log_message(self, *arguments):
         return
