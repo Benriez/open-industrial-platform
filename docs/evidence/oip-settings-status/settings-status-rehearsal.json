@@ -6,10 +6,10 @@
   ],
   "browser_receipt": {
     "schema": "oip-settings-status-v1",
-    "revision": "122c359bc2776f8d059770fe934d264016e35c54",
+    "revision": "328e6b287e1a44e063405beff921a4714bf70806",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the status of the settings categories in the approved surface against the real Core",
-    "base": "http://127.0.0.1:54193",
+    "base": "http://127.0.0.1:63239",
     "the_categories_of_the_core": [
       {
         "the_category": "general",
@@ -95,8 +95,8 @@
     ],
     "the_refusals_of_the_core": [
       "/api/v2/organizations?offset=0&limit=100",
-      "/api/v1/system/status",
       "/api/v1/devices",
+      "/api/v1/system/status",
       "/api/v1/metrics/current",
       "/api/v1/events",
       "/api/v1/sources",
@@ -530,7 +530,7 @@
       {
         "check": "the Core does not refuse the read of the settings in the scope of the platform",
         "ok": true,
-        "the_detail": "[\"/api/v2/organizations?offset=0&limit=100\",\"/api/v1/system/status\",\"/api/v1/devices\",\"/api/v1/metrics/current\",\"/api/v1/events\",\"/api/v1/sources\",\"/api/v2/management?section=server\",\"/api/v2/management?section=storage\",\"/api/v2/management?section=diagnostic_rules\",\"/api/v2/management?section=securi"
+        "the_detail": "[\"/api/v2/organizations?offset=0&limit=100\",\"/api/v1/devices\",\"/api/v1/system/status\",\"/api/v1/metrics/current\",\"/api/v1/events\",\"/api/v1/sources\",\"/api/v2/management?section=server\",\"/api/v2/management?section=storage\",\"/api/v2/management?section=diagnostic_rules\",\"/api/v2/management?section=securi"
       }
     ],
     "errors": []
@@ -590,8 +590,8 @@
   ],
   "the_refusals_of_the_core": [
     "/api/v2/organizations?offset=0&limit=100",
-    "/api/v1/system/status",
     "/api/v1/devices",
+    "/api/v1/system/status",
     "/api/v1/metrics/current",
     "/api/v1/events",
     "/api/v1/sources",
@@ -603,8 +603,8 @@
   ],
   "checks": 85,
   "status": "PASS",
-  "the_revision": "122c359bc2776f8d059770fe934d264016e35c54",
-  "the_tree": "6bea54afcbfd45c61e84822f1bb82ee39289fd62",
+  "the_revision": "328e6b287e1a44e063405beff921a4714bf70806",
+  "the_tree": "7d1c80164a26ca7b1b15a51b11a40b41949da88e",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T04:27:39Z"
+  "finished_utc": "2026-11-10T08:05:30Z"
 }

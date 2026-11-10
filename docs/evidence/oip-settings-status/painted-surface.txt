@@ -1,0 +1,63 @@
+OPEN INDUSTRIAL
+PLATFORM
+Einstellungen
+WORKSPACE / LOCAL LAB
+SPECTRUM
+Darstellung wechseln
+ARBEITSBEREICH
+Alle berechtigten Infrastrukturen
+Infrastructure Context: Alle berechtigten Infrastrukturen
+API CONNECTED
+Read-only · Self-hosted
+Navigation Übersicht
+Navigation Geräte & Dienste
+Navigation Netzwerk & VPN
+DATEN & ANALYSE
+Navigation OPC-UA-Browser
+Navigation Diagnose & Ereignisse
+SYSTEM
+Navigation Einstellungen
+SETTINGS · APPLICATION MANAGEMENT
+Effektive Werte verstehen · Änderbarkeit und Berechtigung prüfen
+Autorisierten Management-Read erneut prüfen
+Status aktualisieren
+Detail-Inspector manuell öffnen
+AGENT-FIRST
+READ-ONLY / OFFLINE ADMIN
+AUTH / CONNECTION LIMITED
+Technischer Kontext & Vertragsdetails
+Alle berechtigten Infrastrukturen Collapsed
+double tap to expand
+SETTINGS NAVIGATION
+Settings-Kategorie General
+General
+Settings-Kategorie MCP & Agents
+MCP & Agents
+Settings-Kategorie Infrastructure
+Infrastructure
+Settings-Kategorie Data & Storage
+Data & Storage
+Settings-Kategorie Diagnostics
+Diagnostics
+Settings-Kategorie Security & Access
+Security & Access
+Settings-Kategorie System
+System
+CORE · Nur lesend
+Settings-Bereich Runtime
+Runtime
+Settings-Bereich Versions
+Versions
+Settings-Bereich Capabilities
+Capabilities
+Management-Zugriff nicht autorisiert
+HTTP 401/403 ist ein Identitäts- oder Berechtigungsproblem, nicht „Core offline“. Lokale UI-Präferenzen bleiben funktionsfähig. Eine sichere Browser-Session und die zentrale Platform-Policy sind erforderlich.
+Fachlicher Status
+Browser-Session oder zentrale Policy erlaubt diesen Management-Read nicht. (PERMISSION_DENIED)
+Autorisierten Read erneut versuchen
+Technische Fehlerdetails
+Sanitized · keine Credentials Collapsed
+OIP · SPECTRUM 2027
+Reale Infrastruktur · lokale Operator-Sitzung
+Security-Blocker: an diese Sitzung nicht geliefert
+Operator abmelden

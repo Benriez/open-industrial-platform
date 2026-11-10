@@ -2,7 +2,97 @@
   "schema": "oip-worktree-reconciliation-v1",
   "steps": [],
   "the_canonical_branch": "main",
-  "the_canonical_revision": "122c359bc2776f8d059770fe934d264016e35c54",
+  "the_canonical_revision": "328e6b287e1a44e063405beff921a4714bf70806",
+  "the_worktrees": [
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform",
+      "the_branch": "main"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/canonical-regression",
+      "the_branch": "feature/oip-canonical-regression"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/canonical-ui-gate",
+      "the_branch": "feature/oip-canonical-ui-regression-gate"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/managed-diagnostics",
+      "the_branch": "feature/oip-managed-diagnostics"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/managed-overview",
+      "the_branch": "feature/oip-managed-overview"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/monitoring-observations",
+      "the_branch": "feature/oip-monitoring-observations"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/native-macos-harness",
+      "the_branch": "feature/oip-native-macos-harness"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/network-placement",
+      "the_branch": "feature/oip-network-placement"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/observation-history",
+      "the_branch": "feature/oip-observation-history"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/oip-007-adoption",
+      "the_branch": "feature/oip-007-baseline-adoption"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/oip-008",
+      "the_branch": "feature/oip-008-multi-infrastructure"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0082",
+      "the_branch": "feature/oip-0082-diagnostics-evidence"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0084",
+      "the_branch": "feature/oip-0084-application-settings"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/oip-0085",
+      "the_branch": "feature/oip-0085-real-infrastructure"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/oip-009-contract",
+      "the_branch": "feature/oip-009-context-contract"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/parity-gate",
+      "the_branch": "feature/oip-parity-gate-convergence"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/payload-bound",
+      "the_branch": "feature/oip-connection-payload-bound"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/real-device-conformance",
+      "the_branch": "feature/oip-real-device-conformance"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/real-device-core",
+      "the_branch": "feature/real-device-connection-core"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/real-device-integration",
+      "the_branch": "feature/real-device-onboarding-integration"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/real-device-ui",
+      "the_branch": "feature/real-device-connection-ui"
+    },
+    {
+      "the_path": "/Users/benny/Code/open-industrial-platform-worktrees/spectrum-2027-ui",
+      "the_branch": "feature/oip-spectrum-2027-ui"
+    }
+  ],
   "the_branches": [
     "feature/oip-007-baseline-adoption",
     "feature/oip-008-multi-infrastructure",
@@ -27,7 +117,13 @@
     "feature/real-device-onboarding-integration",
     "main"
   ],
-  "the_steps_of_the_reconciliation": [],
+  "the_steps_of_the_reconciliation": [
+    "every worktree of the repository is listed with the branch it carries",
+    "for every branch the commits that the canonical branch does not contain are named",
+    "for every such commit the files it touches are carried by the canonical branch",
+    "the capability of the commit is looked for in the canonical branch",
+    "the receipt that proves the capability in the canonical branch is named"
+  ],
   "the_branches_that_main_does_not_contain": {
     "feature/oip-managed-diagnostics": [
       {
@@ -107,7 +203,7 @@
   "the_canonical_branch_carries_the_capability": true,
   "the_proof_of_the_capability": {
     "the_receipt": "docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json",
-    "the_revision": null,
+    "the_revision": "122c359bc2776f8d059770fe934d264016e35c54",
     "the_documented_gaps": 51,
     "the_distinct_rows": 51,
     "the_first_page_items": 50,
@@ -163,8 +259,8 @@
   },
   "the_reconciliation_is_complete": true,
   "status": "PASS",
-  "the_revision": "122c359bc2776f8d059770fe934d264016e35c54",
-  "the_tree": "6bea54afcbfd45c61e84822f1bb82ee39289fd62",
+  "the_revision": "328e6b287e1a44e063405beff921a4714bf70806",
+  "the_tree": "7d1c80164a26ca7b1b15a51b11a40b41949da88e",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T05:02:10Z"
+  "finished_utc": "2026-11-10T08:26:00Z"
 }
