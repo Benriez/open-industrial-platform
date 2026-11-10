@@ -31,7 +31,11 @@
         "crates": "ac0bc10911f1",
         "apps/flutter/lib": "fa7d66a718c9"
       },
-      "the_receipts": 43
+      "the_revision_of_the_source": "ac0bc10911f1",
+      "the_receipts": 43,
+      "the_receipts_measured_on_a_tree_that_carries_the_source": 43,
+      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 0,
+      "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
     "the_record": {
       "the_citations": 60,
@@ -131,8 +135,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "6682ac8492f9ce634acec8cae556957c4601958d",
-  "the_tree": "999472f18dd636ac63f50bf4109debd5e1618be8",
+  "the_revision": "c7591fd73a541389632cb080223c82812dda8452",
+  "the_tree": "5c42114f504ac2773b7559aa70ffce6d9689dcd5",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }

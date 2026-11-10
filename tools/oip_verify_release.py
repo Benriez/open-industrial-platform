@@ -64,6 +64,11 @@ ERA_AREAS = {
 PERSONAL_STORE = "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e"
 
 
+def the_release_source():
+    """The revision of the source of the release."""
+    return git("log", "-1", "--format=%H", "--", "crates", "apps/flutter/lib")
+
+
 def git(*arguments):
     result = subprocess.run(["git", *arguments], cwd=ROOT, capture_output=True, text=True)
     return result.stdout.strip()
@@ -169,6 +174,13 @@ def check_the_freshness(receipts):
     for scope in PRODUCT:
         revision = git("log", "-1", "--format=%H", "--", *scope)
         boundaries["/".join(scope)] = revision
+    # The revision of the source of the release: the last commit that changed
+    # the product. A receipt that was measured on it covers the release as it
+    # is; a receipt that was measured earlier is fresh because the code it
+    # covers did not change since that measurement.
+    release_source = the_release_source()
+    on_the_release = []
+    fresh_by_scope = []
     for relative, payload in receipts.items():
         revision = payload.get("the_revision") or payload.get("revision")
         if not revision:
@@ -183,10 +195,29 @@ def check_the_freshness(receipts):
                 problems.append(
                     f"the receipt {relative} names the revision {revision[:12]}, which "
                     f"predates the last change of {scope} ({boundary[:12]})")
+        # A receipt that was measured on a tree that **carries** the source of
+        # the release covers the release as it is; a receipt that was measured
+        # before the last change of the code it covers is fresh only because
+        # that code did not change since. The record states both, so that a
+        # reader can see which is which.
+        carries = subprocess.run(["git", "merge-base", "--is-ancestor",
+                                  release_source, revision],
+                                 cwd=ROOT, capture_output=True)
+        if carries.returncode == 0:
+            on_the_release.append(relative)
+        else:
+            fresh_by_scope.append(relative)
     return {
         "the_last_change_of_the_product": {name: revision[:12] for name, revision
                                            in boundaries.items()},
+        "the_revision_of_the_source": release_source[:12],
         "the_receipts": len(receipts),
+        "the_receipts_measured_on_a_tree_that_carries_the_source": len(on_the_release),
+        "the_receipts_measured_before_the_last_change_of_the_code_they_cover":
+            len(fresh_by_scope),
+        "the_note": "a receipt that was measured on an earlier revision is fresh because "
+                    "the code it covers did not change since that measurement; the "
+                    "freshness rule of the record is exactly that",
     }, problems
 
 
