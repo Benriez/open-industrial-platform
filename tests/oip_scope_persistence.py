@@ -76,8 +76,14 @@ def main():
             "principal_id": "reader-org-a", "role_id": "inventory-admin",
             "scope": {"kind": "organization", "id": "org-a"}})
         (work / "plan.json").write_text(json.dumps(plan, indent=2))
+        # The sources of the plan are declared, so that the hierarchy of the
+        # instance holds the devices of the scope. No collector runs: the
+        # proof is about the scope of the operator, not about the telemetry.
         (work / "core.json").write_text(json.dumps({
-            "database": str(work / "core.sqlite"), "http_port": port, "sources": [],
+            "database": str(work / "core.sqlite"), "http_port": port,
+            "sources": [{"id": f"source-{letter}", "name": f"Local simulation {letter}",
+                         "endpoint": f"opc.tcp://127.0.0.1:{15860 + index}"}
+                        for index, letter in enumerate("abcd")],
             "legacy_single_infrastructure": False,
             "web_dir": str(ROOT / "apps/flutter/build/web")}, indent=2))
         credential = work / "platform.credential"
