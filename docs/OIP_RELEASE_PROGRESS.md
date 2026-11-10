@@ -19,7 +19,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 683 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 687 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -3049,6 +3049,34 @@ The sixth state, **stale measurements**, stays pinned by the widget test — and
 why: the Core derives the cadence of a source from its polling (twice the interval plus fifteen
 seconds), so a collected device reaches `unreachable` before it reaches `stale`; the stale state
 needs samples that stop without a failed attempt.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
+### Iteration 68 — the scope of the operator survives a refresh of the projection, against the real Core
+
+**Status: PROVED on canonical `main`.**
+The last clause that was pinned by a fixture was the scope of the operator across a refresh of the
+authorized projection. The pinned widget test drives the **real method of the client**
+(`resyncInfrastructure`) with the contract fixtures — it proves the logic of the client, but not
+that the **Core** and the **session** deliver what the restoration needs. The rehearsal
+`tests/oip_scope_persistence.py` proves it against the real Core:
+
+* the operator selects the scope of a site in the Global Infrastructure Context — the scope of the
+  operator is `site-a1`;
+* the **administration of a device** changes the Core: the revision of the device advances, and the
+  surface reads the authorized projection again and shows the new state of the device;
+* the scope of the operator is **the scope of the operator still** — `site-a1` before and after;
+* the **new session** of the page (the reload) starts in the unified view again — the scope is the
+  choice of the session and not a persisted state.
+
+Twelve checks, no JavaScript error. The evidence of the identity of the session is what keeps the
+scope: the Core has no whoami route, and the session of the browser carries the principal.
+
+The journey had to learn the surface: the administration of the device lives in the inspector of
+the devices workstation and has its own scroll, and the choice of the type of the device is a
+dropdown — a typing into the field of the administration proved to be racy in the browser, and the
+choice needs no typing and exercises the same write of the operator.
 
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
