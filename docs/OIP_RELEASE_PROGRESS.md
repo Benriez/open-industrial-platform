@@ -2871,6 +2871,38 @@ build), and the boundary of the personal store is measured unchanged.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 63 — the last two clauses of the audit are closed
+
+**Status: PROVED on canonical `main`.**
+The audit of the record named four clauses that no receipt proved. Two of them are closed now.
+
+**The status of the settings categories (G8).** The record claimed that the navigation of the
+settings names the status of the Core for every category — the Core states whether a category is
+administered offline or only read, and the navigation shows that answer instead of a guess of the
+client. Only a widget test over fixture DTOs proved it. The rehearsal
+`tests/oip_settings_status.py` proves it against the **real Core**: the answer of the Core is read
+with the session of the operator, **every** category of the Core is selected in the navigation,
+and the status the surface shows for a category is the status the Core answered for it. Seven
+categories, seven answers, seven words on the surface — and no wire name of the Core leaks into
+the surface.
+
+Two facts of the Core had to be learned for it: the settings of an instance are a **platform**
+capability (a reader bound to an organization is refused with `403 PERMISSION_DENIED`), and the
+navigation shows the status of the **selected** category — so the journey walks every category
+instead of reading one line.
+
+**The causes of the end of a session (G12).** The operator login names three causes of the end of
+a session — the lifetime, the sign-out and the restart of the instance — and the pinned test
+asserted **two** of them. The third is asserted now (`beim Abmelden`), and the ledger names the
+test that pins it.
+
+The rehearsal joins the tool that refreshes the evidence of the release
+(`tools/oip_refresh_evidence.py`), so its receipt is measured again with every other receipt after
+a change of the product.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
