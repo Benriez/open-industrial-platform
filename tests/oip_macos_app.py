@@ -413,6 +413,13 @@ def main():
 
     # be able to tell whether it is current.
 
+    # The digest of the Core that the bundle really reached: the record names
+    # the binary it drove, and not only its path.
+    report["the_core_binary"] = {
+        "the_path": str(args.binary),
+        "the_sha256": hashlib.sha256(
+            pathlib.Path(args.binary).read_bytes()).hexdigest(),
+    }
     report["the_revision"] = subprocess.check_output(
 
         ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()

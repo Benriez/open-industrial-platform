@@ -165,6 +165,26 @@ const before = await labels();
 check('the devices of the scope are shown', /scope-device/.test(before),
   'the device of the scope is missing');
 
+// The record of the Core about the device: the device and its revision. The
+// revision is what proves that the Core really changed — a surface that
+// paints a new word without a new revision would be a lie.
+const the_record_of_the_device = async () => {
+  const answer = await page.evaluate(async () => {
+    const r = await fetch('/api/v2/inventory/devices?q=scope-device',
+      { headers: { 'Content-Type': 'application/json' } });
+    return { status: r.status, body: await r.json() };
+  });
+  const items = (answer.body || {}).items || [];
+  const record = items[0] ? (items[0].record || items[0]) : null;
+  const device = record && (record.device || record);
+  return {
+    the_status: answer.status,
+    the_revision: record ? record.revision : null,
+    the_type: device ? device.device_type : null,
+    the_id: device ? device.id : null,
+  };
+};
+
 // 3. the administration of the device: the write of the operator changes the
 //    Core, and the surface reads the authorized projection again.
 const device = page.getByRole('button', { name: /Gerät .*scope-device.* auswählen/ }).first();
@@ -201,6 +221,11 @@ const scrollInspectorUntil = async (pattern, steps = 20) => {
 const administration = await scrollInspectorUntil(/Anzeigename/);
 check('the administration of the device is shown', administration.length > 0,
   'the administration of the device is not shown');
+// The revision of the device before the write of the operator.
+const the_device_before = await the_record_of_the_device();
+check('the Core holds the device of the scope before the write',
+  the_device_before.the_status === 200 && the_device_before.the_id === 'scope-device' &&
+  typeof the_device_before.the_revision === 'number', JSON.stringify(the_device_before));
 // The type of the device is changed in the administration: a choice needs
 // no typing, and the write of the operator is the same write.
 const newType = 'Single board';
@@ -224,18 +249,17 @@ for (let step = 0; step < 30 && !refreshed; step++) {
   after = await labels();
   refreshed = after.includes(newType);
 }
-// The answer of the Core: what the write really changed.
-const record = await page.evaluate(async () => {
-  const r = await fetch('/api/v2/inventory/devices?q=scope-device',
-    { headers: { 'Content-Type': 'application/json' } });
-  return { status: r.status, body: await r.json() };
-});
 fs.writeFileSync(`${outDir}/scope-persistence-surface.txt`, after + '\n');
-// The answer of the Core about the device: the record carries the device
-// and its revision.
-const body = JSON.stringify(record.body || {});
-check('the Core holds the type of the write', body.includes('single_board_computer'),
-  body.slice(0, 300));
+// The answer of the Core after the write: the revision of the device has
+// advanced and the record carries the type of the write.
+const written = await the_record_of_the_device();
+check('the Core holds the type of the write',
+  written.the_type === 'single_board_computer', JSON.stringify(written));
+check('the revision of the device advances with the write',
+  typeof written.the_revision === 'number' &&
+  typeof the_device_before.the_revision === 'number' &&
+  written.the_revision > the_device_before.the_revision,
+  `before ${the_device_before.the_revision}, after ${written.the_revision}`);
 check('the refreshed projection reaches the surface', refreshed,
   'the type of the write is not shown on the surface');
 
@@ -261,6 +285,8 @@ const receipt = {
   the_selected_scope: selected,
   the_scope_after_the_refresh: survived,
   the_scope_of_the_new_session: fresh,
+  the_device_revision_before: the_device_before.the_revision,
+  the_device_revision_after: written.the_revision,
   findings,
   errors,
 };

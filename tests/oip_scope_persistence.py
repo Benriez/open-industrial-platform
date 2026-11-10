@@ -42,6 +42,16 @@ def free_port():
         return probe.getsockname()[1]
 
 
+def the_digest_of(path):
+    """The digest of the binary that the rehearsal drove."""
+    import hashlib
+    digest = hashlib.sha256()
+    with open(path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def playwright_module():
     """The Playwright module of the browser scripts."""
     module = os.environ.get("PLAYWRIGHT_MODULE")
@@ -144,7 +154,26 @@ def main():
         except urllib.error.HTTPError as error:
             raise AssertionError(f"the Core refused the registration: "
                                  f"{error.code} {error.read().decode()[:300]}")
-        report["the_registered_device"] = registered.get("changes", [{}])[0].get("device", {})
+        # The answer of the Core names the action and the revision it
+        # expected. The device itself is read back from the Core, so that the
+        # receipt carries the record of the Core and not a guess about the
+        # shape of its answer.
+        report["the_registered_actions"] = registered.get("actions", [])
+        with opener.open(urllib.request.Request(
+                f"http://127.0.0.1:{port}/api/v2/inventory/devices?q=scope-device",
+                headers={"Content-Type": "application/json"}), timeout=60) as answer:
+            page = json.loads(answer.read().decode())
+        records = [item.get("record", item) for item in page.get("items", [])]
+        if not records:
+            raise AssertionError(f"the Core holds no device of the scope: {page}")
+        device = records[0].get("device", records[0])
+        report["the_registered_device"] = {
+            "the_id": device.get("id"),
+            "the_display_name": device.get("display_name"),
+            "the_type": device.get("device_type"),
+            "the_site": device.get("site_id"),
+            "the_revision": records[0].get("revision"),
+        }
         report["steps"].append("a manual device of the scope is registered")
 
         result = subprocess.run(
@@ -184,6 +213,8 @@ def main():
             pass
         shutil.rmtree(work, ignore_errors=True)
 
+    report["the_core_binary"] = {"the_path": str(args.binary),
+                                 "the_sha256": the_digest_of(args.binary)}
     report["the_revision"] = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     report["the_tree"] = subprocess.check_output(

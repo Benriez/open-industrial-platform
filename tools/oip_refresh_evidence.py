@@ -69,11 +69,15 @@ REHEARSALS = [
     ("oip_scope_persistence", "tests/oip_scope_persistence.py",
      {"scope-persistence-rehearsal.json":
           "oip-scope-persistence/scope-persistence-rehearsal.json",
-      "scope-persistence.json": "oip-scope-persistence/scope-persistence.json"}),
+      "scope-persistence.json": "oip-scope-persistence/scope-persistence.json",
+      "scope-persistence-surface.txt":
+          "oip-scope-persistence/painted-surface.txt"}),
     ("oip_connection_states", "tests/oip_connection_states.py",
      {"connection-states-rehearsal.json":
           "oip-connection-states/connection-states-rehearsal.json",
-      "connection-states.json": "oip-connection-states/connection-states.json"}),
+      "connection-states.json": "oip-connection-states/connection-states.json",
+      "connection-states-surface.txt":
+          "oip-connection-states/painted-surface.txt"}),
     ("oip_settings_status", "tests/oip_settings_status.py",
      {"settings-status-rehearsal.json": "oip-settings-status/settings-status-rehearsal.json",
       "settings-status.json": "oip-settings-status/settings-status.json",

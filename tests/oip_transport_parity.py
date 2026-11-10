@@ -36,6 +36,13 @@ import urllib.error
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+
+# The three transports of the release, named once: the receipt carries the
+# identifiers that were driven, so that the claim of the record can be
+# checked against them.
+REST_ROUTE = "/api/v2/snapshot"
+SSE_STREAM = "/api/v2/stream"
+MCP_RESOURCE = "oip://v2/snapshot/current"
 TOOL = ROOT / "tools" / "oip_ops.py"
 SIMULATOR = ROOT / "target/debug/oip-simulated-server"
 PROBE = ROOT / "target/release/examples/mcp_probe"
@@ -232,16 +239,23 @@ def main():
         report["steps"].append("the operator session is authorized")
 
         # REST
-        with opener.open(urllib.request.Request(base + "/api/v2/snapshot"), timeout=30) as answer:
+        with opener.open(urllib.request.Request(base + REST_ROUTE), timeout=30) as answer:
             rest = json.loads(answer.read().decode())
         # SSE
-        event, streamed, sse_status = read_sse(base, "/api/v2/stream", opener)
+        event, streamed, sse_status = read_sse(base, SSE_STREAM, opener)
         # MCP
         # The same principal in all three transports: the parity is about the
         # transports, not about the principals.
         client = McpClient(args.binary, work / "s", work / "reader-org-a.credential")
         clients.append(client)
-        mcp = client.resource("oip://v2/snapshot/current")
+        mcp = client.resource(MCP_RESOURCE)
+        # The identifiers that were driven are part of the receipt: a parity
+        # without the names of the three transports is not reproducible.
+        report["the_transports"] = {
+            "the_rest_route": REST_ROUTE,
+            "the_sse_stream": SSE_STREAM,
+            "the_mcp_resource": MCP_RESOURCE,
+        }
 
         projections = {"rest": projection(rest), "sse": projection(streamed),
                        "mcp": projection(mcp)}
@@ -268,11 +282,11 @@ def main():
         # the transports refuse what they must refuse
         status = None
         try:
-            urllib.request.urlopen(base + "/api/v2/snapshot", timeout=15)
+            urllib.request.urlopen(base + REST_ROUTE, timeout=15)
         except urllib.error.HTTPError as error:
             status = error.code
         report["rest_without_a_session"] = status
-        event, streamed, sse_status = read_sse(base, "/api/v2/stream")
+        event, streamed, sse_status = read_sse(base, SSE_STREAM)
         report["sse_without_a_session"] = {"event": event, "status": sse_status,
                                            "payload": streamed}
         assert status in (401, 403), f"the REST route served an unauthorized read: {status}"

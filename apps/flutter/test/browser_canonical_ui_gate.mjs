@@ -179,6 +179,18 @@ try {
         check(`no legacy marker ${marker} on ${workstation.slug}`,
           !workstationSnapshot.includes(marker));
       }
+      // R6 permits the agent-first principle in the technical capability
+      // context of the Settings workstation only. The exemption is therefore
+      // asserted and not assumed: the principle is named there, and it is
+      // nowhere else — the shell and the five other workstations carry no
+      // trace of it.
+      if (workstation.slug === 'settings') {
+        check('the agent-first principle is named in the technical context of the settings',
+          workstationSnapshot.includes('AGENT-FIRST'));
+      } else {
+        check(`no agent-first principle on ${workstation.slug}`,
+          !workstationSnapshot.includes('AGENT-FIRST'));
+      }
       const overflow = await page.evaluate(() => Math.max(
         document.documentElement.scrollWidth - window.innerWidth,
         document.body.scrollWidth - window.innerWidth,

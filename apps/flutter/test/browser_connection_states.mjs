@@ -268,6 +268,10 @@ const painted = await labels();
 check('the reason of the block is named', painted.includes('HOST_KEY_CHANGED'),
   'the reason of the block is missing');
 
+// The painted surface of the last state, so that the receipt carries the
+// words of the surface and not only the word of one line.
+fs.writeFileSync(`${outDir}/connection-states-surface.txt`, painted + '\n');
+
 const receipt = {
   schema: 'oip-connection-states-v1',
   revision: process.env.OIP_REVISION || null,

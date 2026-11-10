@@ -142,6 +142,21 @@ def check_the_manifest():
             continue
         if sha256_file(path) != receipt["sha256"]:
             problems.append(f"the receipt {name} does not match its digest")
+    # The manifest must name **every** receipt of the release with its digest:
+    # a receipt that the manifest does not digest is a receipt that nobody can
+    # verify. The captures and the painted surfaces are receipts as well.
+    named = {ROOT / receipt["path"] for receipt in manifest.get("the_receipts", {}).values()
+             if receipt.get("sha256")}
+    uncovered = []
+    for path in sorted(EVIDENCE.rglob("*")):
+        if not path.is_file():
+            continue
+        relative = path.relative_to(ROOT).as_posix()
+        if relative.split("/")[2] in ERA_AREAS:
+            continue
+        if path not in named:
+            uncovered.append(relative)
+    problems.extend(f"the receipt {name} is not named by the manifest" for name in uncovered)
     return {
         "the_revision": manifest.get("the_revision"),
         "the_revision_of_the_source": manifest.get("the_revision_of_the_source"),
@@ -149,6 +164,7 @@ def check_the_manifest():
         "the_artifacts": {name: artifact.get("sha256")
                           for name, artifact in manifest.get("the_artifacts", {}).items()},
         "the_receipts": len(manifest.get("the_receipts", {})),
+        "the_receipts_that_the_manifest_does_not_name": len(uncovered),
         "the_visual_acceptance": manifest.get("the_visual_acceptance", {}).get("the_state"),
         # The property of the release is that the Core is byte-reproducible
         # for its revision; the manifest states it together with the fact that

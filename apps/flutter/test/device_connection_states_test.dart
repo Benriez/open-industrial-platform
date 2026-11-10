@@ -11,11 +11,14 @@ import 'package:oip_dashboard/services/api.dart';
 
 /// The honest states of the connection of a device.
 ///
-/// The gate G5 names the honest connection states. The Core produces them
-/// (the acceptance proves `collecting` and the block after a changed host
-/// key); this suite pins what the **surface** shows for every one of them.
-/// A regression that showed a blocked connection as connected would break the
-/// promise of the gate.
+/// The gate G5 names the honest connection states. The Core derives **eight**
+/// of them (`crates/oip-server/src/connection_service.rs`): `host_key_changed`,
+/// `host_key_unknown`, `unreachable`, `verification_failed`, `collecting`,
+/// `stale`, `collector_configured` and `ssh_verified`. This suite pins what
+/// the **surface** shows for every one of them — a state that the client does
+/// not know is named, never shown as the wire name of the Core. A regression
+/// that showed a blocked connection as connected would break the promise of
+/// the gate.
 
 class _ConnectionApi extends OipApi implements DeviceManagementApi {
   _ConnectionApi(this.device);
@@ -216,5 +219,29 @@ void main() {
   testWidgets('A stale measurement is shown as stale', (tester) async {
     await _pumpPanel(tester, _connection('stale'));
     expect(find.text('Stale · Messwerte veraltet'), findsOneWidget);
+  });
+
+  testWidgets('A monitoring without a measurement is shown as configured',
+      (tester) async {
+    await _pumpPanel(tester, _connection('collector_configured'));
+    expect(find.text('Überwachung konfiguriert · noch keine Messwerte empfangen'),
+        findsOneWidget);
+  });
+
+  testWidgets('A failed verification is shown as a failure', (tester) async {
+    await _pumpPanel(tester, _connection('verification_failed', error: {
+          'code': 'SSH_HOST_KEY_UNKNOWN',
+          'message': 'Die Identität des Hosts konnte nicht bestätigt werden.',
+        }));
+    expect(find.text('Verifikation fehlgeschlagen · Identität nicht bestätigt'),
+        findsOneWidget);
+    expect(find.textContaining('SSH_HOST_KEY_UNKNOWN'), findsOneWidget);
+  });
+
+  testWidgets('A state that the client does not know is named, never shown as '
+      'the wire name', (tester) async {
+    await _pumpPanel(tester, _connection('a_state_of_the_future'));
+    expect(find.text('Verbindungsstatus unbekannt'), findsOneWidget);
+    expect(find.text('a_state_of_the_future'), findsNothing);
   });
 }

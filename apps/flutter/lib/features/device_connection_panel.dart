@@ -123,7 +123,19 @@ class _DeviceConnectionPanelState extends State<DeviceConnectionPanel> {
               'host_key_changed' => 'Host-Key geändert · Verbindung blockiert',
               'host_key_unknown' =>
                 'Host-Key unbekannt · Identität vor der nächsten Verbindung bestätigen',
-              _ => c.status
+              // The monitoring is armed and the host has not delivered a
+              // measurement yet: the state says so, and not that the
+              // connection works.
+              'collector_configured' =>
+                'Überwachung konfiguriert · noch keine Messwerte empfangen',
+              // The Core refused the connection and the identity of the host
+              // could not be confirmed: the state names the refusal.
+              'verification_failed' =>
+                'Verifikation fehlgeschlagen · Identität nicht bestätigt',
+              // A state that the client does not know is **named**, never
+              // shown as the wire name of the Core: the surface speaks to the
+              // operator.
+              _ => 'Verbindungsstatus unbekannt'
             },
             key: const Key('device-monitoring-status')),
         Text(

@@ -94,6 +94,39 @@ RECEIPTS = {
 }
 
 
+# The areas that hold the receipts of the earlier eras: the history of the
+# measurement and not the evidence of this release.
+ERA_AREAS = {
+    "oip-real-device", "git-baseline", "oip003", "oip004", "oip004-ui", "oip005",
+    "oip006", "oip0061", "oip007", "oip008", "oip0082", "oip0084", "oip0085",
+}
+
+
+def the_receipts_of_the_release():
+    """Every receipt of the release, with a name of its own.
+
+    The map above names the receipts that the record speaks of. The **whole**
+    evidence tree of the release is named as well: a receipt that the manifest
+    does not digest is a receipt that nobody can verify. The eras are the
+    history of the measurement and stay out.
+    """
+    receipts = dict(RECEIPTS)
+    known = {path.resolve() for path in receipts.values()}
+    evidence = ROOT / "docs" / "evidence"
+    for path in sorted(evidence.rglob("*")):
+        if not path.is_file():
+            continue
+        relative = path.relative_to(evidence)
+        if relative.parts[0] in ERA_AREAS:
+            continue
+        if path.resolve() in known:
+            continue
+        name = "the_" + "_".join(
+            part.replace(".", "_") for part in relative.parts)
+        receipts[name] = path
+    return receipts
+
+
 def sha256_file(path):
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -256,7 +289,7 @@ def build_manifest():
     # The receipts of the acceptance are **tracked** files; the receipts of a
     # run in the build tree are named by the run, not by the manifest, because
     # a manifest must be verifiable against the files of the checkout.
-    receipts = dict(RECEIPTS)
+    receipts = the_receipts_of_the_release()
     for name, path in receipts.items():
         if path.is_file():
             manifest["the_receipts"][name] = {

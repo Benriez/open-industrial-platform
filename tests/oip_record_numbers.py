@@ -14,10 +14,10 @@ and wrong after the receipts were measured again.
 This checker prevents the class of defect:
 
   * every **measurement** that a gate row or an index row of the ledger
-    quotes — a duration, a number of samples, a size in KiB, a percentage, a
-    count of observations, files, tests, suites, findings, checks, controls,
-    captures or branches — is looked up in the receipts that the same row
-    names;
+    quotes — a duration in milliseconds or seconds, a number of samples, a
+    size in bytes, kibibytes or mebibytes, a percentage, a count of
+    observations, files, tests, suites, findings, checks, controls, captures
+    or branches — is looked up in the receipts that the same row names;
   * a number that no named receipt carries is a problem of the record.
 
 The rule is deliberately narrow: it checks the **measurements** of a run, not
@@ -40,26 +40,38 @@ EVIDENCE = ROOT / "docs" / "evidence"
 
 # The measurements of a run that a row may quote. Every pattern names the
 # unit it measures, so that a reader of a problem knows what drifted.
+# A number of the record is written with a thin space as the separator of the
+# thousands: "50 886". The pattern accepts the grouped form and the plain
+# form, and it never swallows the number that stands in front of it — the
+# "p50 50 886 ms" of a performance row is the percentile 50 and the
+# measurement 50 886, not the measurement 50 50 886.
+def a_measurement(unit):
+    return re.compile(r"(\d{1,3}(?: \d{3})*|\d+) " + re.escape(unit))
+
+
 MEASUREMENTS = [
-    (re.compile(r"(\d[\d  ]*) KiB"), "KiB"),
-    (re.compile(r"(\d[\d  ]*) samples"), "samples"),
-    (re.compile(r"(\d[\d  ]*) minutes"), "minutes"),
-    (re.compile(r"(\d[\d  ]*) seconds"), "seconds"),
-    (re.compile(r"(\d[\d  ]*) observations"), "observations"),
-    (re.compile(r"(\d[\d  ]*) %"), "percent"),
-    (re.compile(r"(\d[\d  ]*) files"), "files"),
-    (re.compile(r"(\d[\d  ]*) candidates"), "candidates"),
-    (re.compile(r"(\d[\d  ]*) findings"), "findings"),
-    (re.compile(r"(\d[\d  ]*) checks"), "checks"),
-    (re.compile(r"(\d[\d  ]*) controls"), "controls"),
-    (re.compile(r"(\d[\d  ]*) captures"), "captures"),
-    (re.compile(r"(\d[\d  ]*) screenshots"), "screenshots"),
-    (re.compile(r"(\d[\d  ]*) branches"), "branches"),
-    (re.compile(r"(\d[\d  ]*) tests"), "tests"),
-    (re.compile(r"(\d[\d  ]*) suites"), "suites"),
-    (re.compile(r"(\d[\d  ]*) phases"), "phases"),
-    (re.compile(r"(\d[\d  ]*) browser findings"), "browser findings"),
-    (re.compile(r"(\d[\d  ]*) Flutter tests"), "Flutter tests"),
+    (a_measurement("ms"), "ms"),
+    (a_measurement("MiB"), "MiB"),
+    (a_measurement("MB"), "MB"),
+    (a_measurement("KiB"), "KiB"),
+    (a_measurement("samples"), "samples"),
+    (a_measurement("minutes"), "minutes"),
+    (a_measurement("seconds"), "seconds"),
+    (a_measurement("observations"), "observations"),
+    (a_measurement("%"), "percent"),
+    (a_measurement("files"), "files"),
+    (a_measurement("candidates"), "candidates"),
+    (a_measurement("findings"), "findings"),
+    (a_measurement("checks"), "checks"),
+    (a_measurement("controls"), "controls"),
+    (a_measurement("captures"), "captures"),
+    (a_measurement("screenshots"), "screenshots"),
+    (a_measurement("branches"), "branches"),
+    (a_measurement("tests"), "tests"),
+    (a_measurement("suites"), "suites"),
+    (a_measurement("phases"), "phases"),
+    (a_measurement("browser findings"), "browser findings"),
+    (a_measurement("Flutter tests"), "Flutter tests"),
 ]
 CITATION = re.compile(r"docs/evidence/[A-Za-z0-9_./-]+")
 
