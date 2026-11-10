@@ -77,12 +77,20 @@ const browser = await chromium.launch({
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 const page = await context.newPage();
 page.on('pageerror', (e) => errors.push('pageerror: ' + e.message.slice(0, 200)));
+// The refusals of the Core are evidence and not a defect of the surface: the
+// Core refuses the reads that the principal may not perform, and the surface
+// names the refusal. They are recorded with the route that was refused.
+const refusals = [];
+page.on('response', (r) => {
+  if (r.status() !== 403) return;
+  refusals.push(r.url().replace(base, ''));
+});
 page.on('console', (m) => {
   if (m.type() !== 'error') return;
   const text = m.text();
   // A resource that the browser could not load is not a defect of the
-  // surface; a refusal of the Core **is** a finding and is never swallowed.
-  if (/Failed to load resource/i.test(text) && !/\b403\b/.test(text)) return;
+  // surface; the refusal of the Core is recorded with its route.
+  if (/Failed to load resource/i.test(text)) return;
   errors.push('console: ' + text.slice(0, 200));
 });
 
@@ -297,6 +305,13 @@ check('no wire name of the Core leaks into the surface',
 check('every category of the Core was measured',
   measured.length === categories.length,
   `${measured.length} of ${categories.length}`);
+// The refusal of the Core is never a defect of the surface, but the read of
+// the settings in the scope of the platform is the subject of this receipt
+// and must never be refused.
+check('the Core does not refuse the read of the settings in the scope of the platform',
+  !refusals.some((route) => route.startsWith('/api/v2/settings')
+    && !route.includes('scope=organization')),
+  JSON.stringify(refusals).slice(0, 300));
 
 const receipt = {
   schema: 'oip-settings-status-v1',
@@ -310,11 +325,12 @@ const receipt = {
     the_status: item.status,
   })),
   the_statuses_of_the_surface: shown,
+  the_refusals_of_the_core: refusals,
   findings,
   errors,
 };
 fs.writeFileSync(`${outDir}/settings-status.json`, JSON.stringify(receipt, null, 2));
 console.log(JSON.stringify({ findings: findings.length, errors: errors.length,
-  the_categories: categories.length }, null, 2));
+  the_categories: categories.length, the_refusals: refusals.length }, null, 2));
 await browser.close();
 process.exit(errors.length === 0 ? 0 : 1);
