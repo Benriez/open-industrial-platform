@@ -65,6 +65,12 @@ def main():
     try:
         port = free_port()
         plan = json.loads((ROOT / "examples/multi-infrastructure-plan.json").read_text())
+        # The instance of this rehearsal owns no collector: the subject is the
+        # answer of the Core about its own settings. The sources of the plan
+        # are therefore removed with their bindings.
+        plan["sources"] = []
+        plan["bindings"] = [item for item in plan["bindings"]
+                            if item["scope"]["kind"] != "source"]
         # The reader role of the plan may not read the settings of the Core:
         # the rehearsal gives the principal the scoped permission, so the view
         # shows the real answer of the instance.
