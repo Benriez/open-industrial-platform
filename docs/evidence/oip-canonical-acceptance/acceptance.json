@@ -87,15 +87,15 @@
       }
     }
   ],
-  "runtime_directory": "/private/tmp/oip82-57084-1794330960657600000",
+  "runtime_directory": "/private/tmp/oip82-30561-1794341903913217000",
   "model_used": false,
-  "server_binary_sha256": "a96a74e244aaf5847d247fc607a7fc6a0678cf3ec018a90af822c313053e5ae1",
+  "server_binary_sha256": "16e9526eb4b02ce4afdb20770586aab04fd285905575f6ea42e1530844f85647",
   "mcp_probe_binary_sha256": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
   "canonical_ui_precheck": {
     "schema": "oip-canonical-ui-gate-v2",
-    "started_utc": "2026-11-10T17:16:01Z",
-    "source_revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
-    "source_tree": "9a8031211d019cb5ac1815e686f38ed5b1f09ec2",
+    "started_utc": "2026-11-10T20:18:24Z",
+    "source_revision": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
+    "source_tree": "22e26fd52230e54ff4c901364289a8fc8cc3cd1c",
     "source_worktree": "/Users/benny/Code/open-industrial-platform",
     "source_dirty": false,
     "baseline_document": "docs/design/OIP_CANONICAL_UI_BASELINE.md",
@@ -170,25 +170,25 @@
       "--no-web-resources-cdn",
       "--pwa-strategy=none"
     ],
-    "bundle_sha256": "a8919117bcac093c7d0431baff8e01f3117d2c4d1ed676be2e19cfea41846682",
-    "bundle_bytes": 3032812,
+    "bundle_sha256": "2a9ae4e3c5c2ace08b6faa184c3dad0d4c3931dca59b4c69dea3a3cb50de6a92",
+    "bundle_bytes": 3033317,
     "bundle_path": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/web/main.dart.js",
-    "flutter_tests_passed": 361,
+    "flutter_tests_passed": 362,
     "flutter_tests_failed": 0,
     "flutter_tests_skipped": 1,
     "browser_gate_executed": false,
     "complete": false,
-    "finished_utc": "2026-11-10T17:16:59Z"
+    "finished_utc": "2026-11-10T20:19:18Z"
   },
   "physical_raspberry_pi_tested": false,
   "ssh_fixture": "owned loopback OpenSSH, actual host facts",
   "canonical_ui_browser": {
     "verdict": "PASS",
-    "revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
+    "revision": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
     "the_detail_is": "the observed value of the check",
-    "base": "http://127.0.0.1:58149",
+    "base": "http://127.0.0.1:59730",
     "browser_version": "157.0.8103.50",
-    "bundle_sha256": "a8919117bcac093c7d0431baff8e01f3117d2c4d1ed676be2e19cfea41846682",
+    "bundle_sha256": "2a9ae4e3c5c2ace08b6faa184c3dad0d4c3931dca59b4c69dea3a3cb50de6a92",
     "bundle_matches_local_build": true,
     "workstations": [
       "\u00dcbersicht",
@@ -1159,41 +1159,41 @@
     "external_requests": [],
     "core_denials": [
       {
-        "url": "http://127.0.0.1:58149/api/v2/organizations?offset=0&limit=100",
+        "url": "http://127.0.0.1:59730/api/v2/organizations?offset=0&limit=100",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:58149/api/v1/system/status",
+        "url": "http://127.0.0.1:59730/api/v1/system/status",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:58149/api/v1/devices",
+        "url": "http://127.0.0.1:59730/api/v1/metrics/current",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:58149/api/v1/events",
+        "url": "http://127.0.0.1:59730/api/v1/devices",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:58149/api/v1/sources",
+        "url": "http://127.0.0.1:59730/api/v1/events",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:58149/api/v1/metrics/current",
+        "url": "http://127.0.0.1:59730/api/v1/sources",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:58149/api/v2/settings?scope=platform",
+        "url": "http://127.0.0.1:59730/api/v2/settings?scope=platform",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:58149/api/v2/settings?scope=platform",
+        "url": "http://127.0.0.1:59730/api/v2/settings?scope=platform",
         "status": 403
       }
     ],
     "fatal": null,
     "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-    "duration_ms": 89226
+    "duration_ms": 89393
   },
   "canonical_ui_visual": {
     "schema": "oip-canonical-ui-visual-comparison-v2",
@@ -1211,7 +1211,7 @@
         "baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
         "expected_baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
         "actual": "target/oip-canonical-acceptance/oip_canonical_ui_gate/browser/canonical-ui-1440.png",
-        "actual_sha256": "a9b3e59e75bdde1813cd5cb1e3ecdf2fdf134f0dd83142297e6ef5402025009d",
+        "actual_sha256": "3152de8abbedb78f480886170cf5435a95da67906f5b8ca32a220e960f3b1189",
         "crop": [
           0,
           0,
@@ -1230,9 +1230,9 @@
         },
         "dynamic_data_policy": "Only the manifest-cropped stable left shell is compared; workspace values and the historical footer are excluded. Semantic shell/workstation and geometry checks are separate mandatory gates.",
         "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-        "mean_absolute_difference": 0.00042431787529826747,
+        "mean_absolute_difference": 0.001516158315177923,
         "mean_absolute_difference_limit": 0.01,
-        "antialias_tolerant_mean_absolute_difference": 0.00042381860151467993,
+        "antialias_tolerant_mean_absolute_difference": 0.0015171503786699865,
         "antialias_tolerant_limit": 0.02,
         "changed_pixel_ratio": 0.0,
         "changed_pixel_ratio_limit": 0.01,
@@ -1246,7 +1246,7 @@
         "baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
         "expected_baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
         "actual": "target/oip-canonical-acceptance/oip_canonical_ui_gate/browser/canonical-ui-1920.png",
-        "actual_sha256": "7884c8bd7a33456e7e427b9656998432412c87e2ab20d8b1260601592a5ccc75",
+        "actual_sha256": "c96f84975c17231914a230b53fe6e9e19d047f7af8c936f6f4f1db4d14412a74",
         "crop": [
           0,
           0,
@@ -1323,9 +1323,9 @@
   },
   "canonical_ui_global_context": {
     "schema": "oip-global-context-receipt-v1",
-    "revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
+    "revision": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
     "the_detail_is": "the message that describes the failure of the check",
-    "base": "http://127.0.0.1:58149",
+    "base": "http://127.0.0.1:59730",
     "options_offered": 4,
     "scope_per_workstation": [
       {
@@ -1453,10 +1453,10 @@
   },
   "canonical_ui_accessibility": {
     "schema": "oip-accessibility-receipt-v1",
-    "revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
+    "revision": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "name and role coverage of the rendered surface of the six workstations; not a full WCAG audit",
-    "base": "http://127.0.0.1:58149",
+    "base": "http://127.0.0.1:59730",
     "stations": [
       {
         "workstation": "overview",
@@ -1646,18 +1646,18 @@
       "rendered_samples": 6,
       "all_stale": true,
       "receive_times_shown": 1,
-      "first_receive_time": "2026-11-10 17:23:39.065 UTC",
+      "first_receive_time": "2026-11-10 20:25:57.143 UTC",
       "metrics": [
-        "host.hostname",
-        "host.architecture",
-        "host.memory_used_bytes",
         "host.model",
-        "host.uptime_seconds",
-        "host.disks"
+        "host.interfaces",
+        "host.memory_used_bytes",
+        "host.architecture",
+        "host.disks",
+        "host.os"
       ]
     },
     "rendered_administration": {
-      "device_id": "65e6434b-46b0-4d59-b123-af599c61ec02",
+      "device_id": "bfd6dff5-a2ba-4648-9b1e-31aeb7c833d0",
       "revision_before": 1,
       "revision_after": 2,
       "display_name_updated": true,
@@ -1690,7 +1690,7 @@
       "loading_state_absent": true,
       "demo_zones_absent": true
     },
-    "loaded_build_sha256": "a8919117bcac093c7d0431baff8e01f3117d2c4d1ed676be2e19cfea41846682",
+    "loaded_build_sha256": "2a9ae4e3c5c2ace08b6faa184c3dad0d4c3931dca59b4c69dea3a3cb50de6a92",
     "errors": [],
     "external": []
   },
@@ -1699,10 +1699,10 @@
     "precheck_path": "target/oip-canonical-acceptance/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
     "browser_path": "target/oip-canonical-acceptance/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
     "visual_path": "target/oip-canonical-acceptance/oip_canonical_ui_gate/canonical-ui/visual-comparison.json",
-    "precheck_receipt_sha256": "4422008bf4bab44ea7afbe5b20bf97e8fb4403568fe5f000a84c2e64b33955b3",
-    "browser_receipt_sha256": "d4faa6107beae44d496df396541a7e74a6c4116884670ecd3b7348648333b41b",
-    "visual_receipt_sha256": "c4e9fcc28dc55c3a51b6179102bf5fb5210282fbd1981223cced9dc485bcb979",
-    "flutter_tests_passed": 361,
+    "precheck_receipt_sha256": "509d2ebf76e0f2e81f5812d3aeab90668c4d8e58bb59c290c1fe866eb08303b7",
+    "browser_receipt_sha256": "46a4291de4e073d1b8bc08d540d4454a714d81687d529eb3ddfb7e4e9722b885",
+    "visual_receipt_sha256": "939e29b546d14745eca518f833d574bb38a9b98845b074ef03988f1e69380bed",
+    "flutter_tests_passed": 362,
     "flutter_tests_failed": 0,
     "browser_findings": 187,
     "browser_failures": 0,
@@ -1712,16 +1712,16 @@
   "performance": {
     "connection_read_official_mcp": {
       "samples": 20,
-      "p50_ms": 0.6680829683318734,
-      "p95_ms": 0.7787079084664583
+      "p50_ms": 0.655542011372745,
+      "p95_ms": 0.704374979250133
     },
-    "core_rss_kib_cpu_percent": "20128   1.0",
+    "core_rss_kib_cpu_percent": "20032   2.6",
     "short_local_measurement_not_sla": true
   },
   "status": "PASS",
   "own_processes_stopped": true,
-  "the_revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
-  "the_tree": "9a8031211d019cb5ac1815e686f38ed5b1f09ec2",
+  "the_revision": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
+  "the_tree": "22e26fd52230e54ff4c901364289a8fc8cc3cd1c",
   "the_working_tree_is_clean": false,
-  "the_revision_of_the_acceptance": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc"
+  "the_revision_of_the_acceptance": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17"
 }

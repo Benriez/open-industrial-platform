@@ -4,21 +4,21 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "5ae12f63906d18e3565450a0fed28db5de7521d2",
+      "the_revision": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
       "the_revision_of_the_source": {
-        "the_revision": "acdd0a694411d8f76aa3da6365c1af31c7a071bc",
-        "the_subject": "docs(g11): the acceptance of the current revision, the numbers of the record and the binary that the gate executed"
+        "the_revision": "164c8214cea087329aac4c0b5634f96d8dddc9b7",
+        "the_subject": "fix(g7,g8): the client no longer hardcodes the demo identity and the record names what the Core does not deliver"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 689,
-        "the_sha256": "a502737737e291396a53495a8269f7ff6d51c530df53bc8eeae369e959054cba"
+        "the_sha256": "707e46b8bed15e994869783d3145faa5de93adaf2a457c6b4e2fadc4c6533a48"
       },
       "the_artifacts": {
-        "the_core": "a96a74e244aaf5847d247fc607a7fc6a0678cf3ec018a90af822c313053e5ae1",
+        "the_core": "16e9526eb4b02ce4afdb20770586aab04fd285905575f6ea42e1530844f85647",
         "the_official_mcp_probe": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
-        "the_macos_application_bundle": "bd65e5ac118f76aea9135874880aade68c36cd71ba629c2db3a36cac85e1e0b4",
-        "the_web_release": "dbaf3a847bfbe7b0cbd130b88799748bc4bff293c901fb67184c611aacbeb1c7"
+        "the_macos_application_bundle": "b9ad1fbea6e4013372f881ec9f5590e13ab0b80142ecc7efe9f84d0d8ba4937b",
+        "the_web_release": "ac8c54f4abd3afeb1221ac2a0f751c332996efbe029d131aaddf85eceb7faade"
       },
       "the_receipts": 63,
       "the_receipts_that_the_manifest_does_not_name": 0,
@@ -26,7 +26,7 @@
         "docs/evidence/oip-record-integrity/record-integrity.json",
         "docs/evidence/oip-release-verification/release-verification.json"
       ],
-      "the_core_the_acceptance_executed": "a96a74e244aaf5847d247fc607a7fc6a0678cf3ec018a90af822c313053e5ae1",
+      "the_core_the_acceptance_executed": "16e9526eb4b02ce4afdb20770586aab04fd285905575f6ea42e1530844f85647",
       "the_acceptance_executed_the_core_that_the_manifest_names": true,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
       "the_core_is_the_reproducible_one": true,
@@ -36,9 +36,9 @@
     "the_freshness": {
       "the_last_change_of_the_product": {
         "crates": "8ec554cc3f9b",
-        "apps/flutter/lib": "8c40a018b55e"
+        "apps/flutter/lib": "164c8214cea0"
       },
-      "the_revision_of_the_source": "8c40a018b55e",
+      "the_revision_of_the_source": "164c8214cea0",
       "the_receipts": 47,
       "the_receipts_measured_on_a_tree_that_carries_the_source": 45,
       "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 0,
@@ -54,9 +54,9 @@
       "the_paths_of_the_build_tree_in_the_ledger": []
     },
     "the_canonical_state": {
-      "the_source_revision": "8c40a018b55e67ef17b69192ba35d255f336c542",
-      "the_acceptance_revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
-      "the_core_binary_revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
+      "the_source_revision": "164c8214cea087329aac4c0b5634f96d8dddc9b7",
+      "the_acceptance_revision": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
+      "the_core_binary_revision": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
       "the_tracked_files": 689,
       "the_product_is_committed": true
     },
@@ -69,10 +69,10 @@
       "the_phases": "8 of 8",
       "the_browser_findings": 187,
       "the_browser_failures": 0,
-      "the_flutter_tests_passed": 361,
+      "the_flutter_tests_passed": 362,
       "the_flutter_tests_failed": 0,
       "the_screenshots": 13,
-      "the_revision_of_the_acceptance": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
+      "the_revision_of_the_acceptance": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
       "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
     },
     "the_boundaries": {
@@ -153,8 +153,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "e1f890ea008fe86ca16f2c2aac81d935357a73e8",
-  "the_tree": "9b649dd728218dee315c250e3f43b6fb33a65776",
+  "the_revision": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
+  "the_tree": "22e26fd52230e54ff4c901364289a8fc8cc3cd1c",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }

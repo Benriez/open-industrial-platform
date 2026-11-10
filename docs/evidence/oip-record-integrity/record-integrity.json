@@ -35,9 +35,9 @@
     "the_note": "a path of the build tree is not a receipt: the ledger must not present a directory of a build as the evidence of a claim. The artefacts of the release live in the build tree by nature and are named by the manifest."
   },
   "the_canonical_state": {
-    "the_source_revision": "8c40a018b55e67ef17b69192ba35d255f336c542",
-    "the_acceptance_revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
-    "the_core_binary_revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
+    "the_source_revision": "164c8214cea087329aac4c0b5634f96d8dddc9b7",
+    "the_acceptance_revision": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
+    "the_core_binary_revision": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
     "the_tracked_files": 689,
     "the_product_is_committed": true
   },
@@ -51,8 +51,8 @@
   },
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "e1f890ea008fe86ca16f2c2aac81d935357a73e8",
-  "the_tree": "9b649dd728218dee315c250e3f43b6fb33a65776",
+  "the_revision": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
+  "the_tree": "22e26fd52230e54ff4c901364289a8fc8cc3cd1c",
   "the_working_tree_is_clean": false,
-  "finished_utc": "2026-11-10T17:35:46Z"
+  "finished_utc": "2026-11-10T20:30:08Z"
 }
