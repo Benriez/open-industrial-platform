@@ -114,7 +114,7 @@ const TOOLS: [ToolSpec; 21] = [
     ToolSpec { name: "oip_observations_read", id: CapabilityId::ObservationsRead, description: "Read current observations with source/entity, quality, freshness, timestamps and simulation provenance; not historical replay." },
     ToolSpec { name: "oip_sources_read", id: CapabilityId::SourcesRead, description: "Read registered source health, preserving connection, reachability, service, validity and freshness as separate fields." },
     ToolSpec { name: "oip_events_read", id: CapabilityId::EventsRead, description: "Read the last 100 persisted control events, source context, sequences and data gaps; no complete history/replay. Diagnostics fixtures are labeled." },
-    ToolSpec { name: "oip_opcua_nodes_read", id: CapabilityId::OpcuaNodesRead, description: "Browse/read existing registered simulation nodes. Offset pagination, max 100 nodes, no arbitrary endpoint or device writes. Read samples use normal core ingestion." },
+    ToolSpec { name: "oip_opcua_nodes_read", id: CapabilityId::OpcuaNodesRead, description: "Browse/read the address space of the registered source. Offset pagination, max 100 nodes, no arbitrary endpoint or device writes. A single read shows the value of the node; it does not measure and is not persisted — the collector owns the measurement." },
 ];
 const RESOURCES: [(&str, CapabilityId); 7] = [
     (

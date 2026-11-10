@@ -187,7 +187,9 @@ const server = createServer(async (req, res) => {
       const observations = current.snapshot.observations.filter(item => item.data_source_id === source);
       const items = observations.map(item => ({node_id: `ns=2;s=${item.metric_id}`, name: item.metric_id, folder: item.entity_id, data_type: 'Double', access: 'Read', namespace: 2, observation: item}));
       const offset = Number(query.offset ?? 0);
-      return send(res, {items: items.slice(offset, offset + 40), total: items.length, offset, limit: 40});
+      // The Core delivers the folders of the address space with every page.
+      const folders = [...new Set(items.map(item => item.folder))].sort();
+      return send(res, {items: items.slice(offset, offset + 40), total: items.length, offset, limit: 40, folders});
     }
     if (url.pathname === '/api/v2/stream') {
       headers(res, false);

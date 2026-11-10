@@ -37,7 +37,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
 
   NodePage? page;
   OpcNode? selected;
-  String search = '', folder = 'M-01';
+  String search = '', folder = 'all';
   String? error, loadedFolder, loadedSource, selectedNodeSource;
   String? selectedSource, sourcesError, typeFilter, qualityFilter;
   bool loading = false, dense = false, showCompare = false, showFilters = false;
@@ -249,6 +249,21 @@ class _OpcuaPageState extends State<OpcuaPage> {
           requestFolder, offset, widget.controller.infrastructure,
           source: requestSource);
       if (!mounted || gen != generation) return;
+      // The Core names the folders of its address space. A requested folder
+      // that the Core does not deliver does not exist: the whole catalogue
+      // is shown instead, and the scope of the operator is named.
+      if (result.folders.isNotEmpty &&
+          requestFolder != 'all' &&
+          !result.folders.contains(requestFolder)) {
+        if (mounted && gen == generation) {
+          setState(() {
+            folder = 'all';
+            offset = 0;
+          });
+          await _load();
+          return;
+        }
+      }
       final changedWindow = page == null ||
           page!.offset != result.offset ||
           page!.total != result.total ||
@@ -797,14 +812,10 @@ class _OpcuaPageState extends State<OpcuaPage> {
 
   String _scopeTitle(String value) => value == 'all' ? 'Alle' : value;
   String _scopeCaption(String value) => switch (value) {
-        'M-01' => 'Prozessvariablen',
-        'Bulk' => 'Massendaten',
         'all' => 'Gesamter gelieferter Katalog',
         _ => 'Ordner des gelieferten Adressraums',
       };
   IconData _scopeIcon(String value) => switch (value) {
-        'M-01' => Icons.precision_manufacturing_outlined,
-        'Bulk' => Icons.dataset_outlined,
         'all' => Icons.all_inclusive,
         _ => Icons.account_tree_outlined,
       };
@@ -2008,7 +2019,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
               'Modus',
               live
                   ? 'Fortlaufendes Abonnement über den Rust-Adapter'
-                  : 'Seitenweise gelesen und in SQLite persistiert',
+                  : 'Seitenweise gelesen · die Messung entsteht im Kollektor',
               mono: false),
         ]),
         _section(context, 'Provenienz', [
@@ -2025,7 +2036,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
         const SizedBox(height: OipTokens.s3),
         const WorkstationNote(
           'Sicherer Analysemodus',
-          'Lesender Adressraumzugriff über typisierte Rust-Capabilities. Sechs Prozessvariablen werden fortlaufend abonniert; Bulk-Nodes werden seitenweise gelesen und in SQLite persistiert. Kein Schreibpfad – by design.',
+          'Lesender Adressraumzugriff über typisierte Rust-Capabilities. Die Messung entsteht im Kollektor; der Browser liest den Adressraum des Servers, ohne zu messen und ohne zu schreiben. Kein Schreibpfad – by design.',
           icon: Icons.lock_outline,
           color: OipTokens.lime,
         ),
@@ -2090,10 +2101,15 @@ class _OpcuaPageState extends State<OpcuaPage> {
   String _nodeValue(OpcNode node, Observation? observation) {
     final value = observation?.display ?? 'Unbekannt';
     final symbol = observation?.symbol ?? '';
-    if (node.folder != 'Bulk' || observation?.number == null) {
+    if (observation?.number == null) {
       return '$value $symbol'.trim();
     }
     if (value.contains('e') || value.contains('E')) {
+      return '$value $symbol'.trim();
+    }
+    // Large values are grouped. The rule depends on the **value**, not on
+    // the name of a folder of a demo.
+    if (value.split('.').first.replaceAll('-', '').length < 5) {
       return '$value $symbol'.trim();
     }
     final parts = value.split('.');

@@ -14,9 +14,12 @@ import 'support.dart';
 void main() {
   testWidgets('The folder chips are the folders that the Core delivered',
       (tester) async {
-    await _bootstrap(tester, const Size(1440, 1000),
+    final app = await _bootstrap(tester, const Size(1440, 1000),
         configure: (api) => api.generatedBulkNodes = 1000);
     await _navigate(tester, 1440);
+    // The first request asks for the whole catalogue: the client assumes no
+    // folder of a demo.
+    expect(app.api.nodeRequests.first.folder, 'all');
     // The Core delivered the folders of the address space with the page.
     expect(find.byKey(const Key('folder-Bulk')), findsOneWidget);
     expect(find.byKey(const Key('folder-M-01')), findsOneWidget);
@@ -40,12 +43,17 @@ void main() {
     final app = await _bootstrap(tester, const Size(1440, 1000),
         configure: (api) => api.generatedBulkNodes = 1000);
     await _navigate(tester, 1440);
+    // The client asks for the whole catalogue of the Core: it assumes no
+    // folder of a demo.
+    expect(find.text('1006 Nodes · Seite 1'), findsOneWidget);
+    expect(find.text('von 26'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('folder-M-01')));
+    await tester.pumpAndSettle();
     expect(find.text('6 Nodes · Seite 1'), findsOneWidget);
     expect(find.text('von 1'), findsOneWidget);
     await tester.tap(find.byKey(const Key('folder-all')));
     await tester.pumpAndSettle();
     expect(find.text('1006 Nodes · Seite 1'), findsOneWidget);
-    expect(find.text('von 26'), findsOneWidget);
     expect(find.text('Namespace 2'), findsOneWidget);
     expect(find.byKey(const Key('node-alarm_active')), findsOneWidget);
     expect(find.byKey(const Key('node-temperature')), findsOneWidget);
@@ -88,6 +96,10 @@ void main() {
     await _bootstrap(tester, const Size(1440, 1000),
         configure: (api) => api.generatedBulkNodes = 1000);
     await _navigate(tester, 1440);
+    // The groups of the grouped view are the groups of the delivered page:
+    // the folder of the Core that carries the process variables.
+    await tester.tap(find.byKey(const Key('folder-M-01')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('density-toggle')));
     await tester.pumpAndSettle();
     final row = tester.getSize(find.byKey(const Key('node-temperature')));

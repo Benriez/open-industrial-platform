@@ -33,7 +33,9 @@ try {
   }
 
   await page.getByRole('button', {name: /^Alle Gesamter/}).click();
-  await page.getByText('1006 Nodes · Seite 1', {exact: true}).waitFor();
+  // The count of the catalogue is the count that the **Core** delivers.
+  const catalogue = await (await context.request.get(`${base}/api/v1/opcua/nodes?q=&folder=all&offset=0&limit=40`)).json();
+  await page.getByText(`${catalogue.total} Nodes · Seite 1`, {exact: true}).waitFor();
   await page.getByRole('button', {name: 'Dichte Liste', exact: true}).click();
   const searchStart = Date.now();
   await page.keyboard.press('Control+k');
@@ -41,7 +43,7 @@ try {
   await page.getByText('1 Nodes · Seite 1', {exact: true}).waitFor({timeout: 15000});
   const searchMs = Date.now() - searchStart;
   await page.getByRole('button', {name: 'Suche löschen', exact: true}).click();
-  await page.getByText('1006 Nodes · Seite 1', {exact: true}).waitFor();
+  await page.getByText(`${catalogue.total} Nodes · Seite 1`, {exact: true}).waitFor();
   await page.getByRole('button', {name: /^Node bulk\.0000,/}).click();
 
   await page.evaluate(() => {
@@ -82,7 +84,7 @@ try {
     }
     const pageStart = Date.now();
     await page.getByRole('button', {name: 'Nächste Nodes', exact: true}).click();
-    await page.getByText(`1006 Nodes · Seite ${round + 2}`, {exact: true}).waitFor();
+    await page.getByText(`${catalogue.total} Nodes · Seite ${round + 2}`, {exact: true}).waitFor();
     pageChangeMs.push(Date.now() - pageStart);
     await page.waitForTimeout(250);
   }

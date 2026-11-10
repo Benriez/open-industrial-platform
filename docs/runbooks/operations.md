@@ -751,3 +751,186 @@ measured result of the daemon handover: the refused shape of OIP-007, the
 started daemon of the era, the scoped reads of its principals, the collection,
 the takeover of the release binary and the restored store served by the era
 again.
+
+## 15. The Core on another host (the Raspberry Pi `bodi-pi`)
+
+### 15.0 The intended architecture
+
+The operator intends the **Rust OIP Core to run on `bodi-pi`** (a Raspberry
+Pi) and the Mac to run **only the Flutter presentation client**. The Mac must
+not remain the only host of the application.
+
+This section reconciles that intention with the contracts of the Core and of
+the client, and it names the smallest safe step that moves towards it. It
+describes what the **operator** runs; the loop does not run it (see §15.6).
+
+### 15.1 What the contracts say today
+
+| Contract | Consequence for a Core on the Pi |
+|---|---|
+| The Core binds to `127.0.0.1` only; a productive remote identity is **not** implemented and **not** claimed (G10, escalated) | The Core on the Pi keeps that binding. It is reachable through a **forward on the loopback of the Mac**, not through the network. |
+| The browser session is bound to the **origin** of the Core (`HttpOnly`, `SameSite=Strict`, the origin rule of every write) | A tunnel that forwards a **port** of the Mac to a port of the Pi keeps the origin **identical**: `http://127.0.0.1:<port>`. No TLS, no new origin, no change of the product. |
+| The address of the instance is baked into the client as `OIP_API_URL` (`--dart-define`) | The client needs **no change** for the Pi: the tunnel publishes the Core of the Pi under the same address the client already uses. |
+| The one-time code of the operator session is minted over the **local IPC socket** of the Core (`oip-server --browser-login`) | The code is minted **on the Pi** and entered by the operator in the client on the Mac. The socket stays local; it is not forwarded. |
+| The Core owns **no service registry** and **no VPN route**; the surfaces name the absence | Unchanged by the place of the Core. The **Network & VPN** workstation still names the absence of a VPN route — a Core on the Pi does not deliver one. |
+| The data store of the operator is never touched by the loop | The instance on the Pi is a **disposable** instance with its **own** store. The personal store of the operator stays where it is. |
+
+### 15.2 The reconciliation: the tunnel keeps the product identical
+
+```text
+Mac                                         bodi-pi
+┌────────────────────────────────┐          ┌──────────────────────────────┐
+│ Flutter client (macOS bundle)  │          │ OIP Core (oip-server)       │
+│   -> http://127.0.0.1:18808    │  ssh -N  │   binds 127.0.0.1:18808      │
+│                                │ -L 18808 │   own data store, own state │
+│ ssh tunnel: 127.0.0.1:18808   │ :18808   │   own simulator (loopback)   │
+│   -> 127.0.0.1:18808 of the Pi │          │   no BODI service touched   │
+└────────────────────────────────┘          └──────────────────────────────┘
+```
+
+* The origin of the session is `http://127.0.0.1:18808` **on both sides**. The
+  browser session, the origin rule, the CSRF rule and the cookie contract of
+  G2 and G10 are therefore **unchanged** — the tunnel is not a new remote
+  identity and it does not weaken a rule.
+* **Nothing is exposed**: the Core listens on the loopback of the Pi, the
+  tunnel is a forward on the loopback of the Mac, and no port of the Pi is
+  published to the network. No firewall rule is changed.
+* **The Core on the Pi needs a source that the Pi can reach.** The simulation
+  of the Mac listens on the loopback of the Mac and is *not* reachable from
+  the Pi. The instance on the Pi therefore runs **its own** simulator on the
+  loopback of the Pi (`oip-simulated-server`, built for the same target), or
+  collects from a device that the Pi reaches over the tailnet. The Core reads
+  the source it can reach and states the sources it cannot.
+* The escalation of G10 stays as it is: the execution audit of the Core is a
+  structured local log and is **neither durable nor tamper-resistant**. A Core
+  on the Pi does not change that, and the acceptance of the production-security
+  scope stays an operator action.
+
+### 15.3 The smallest safe step
+
+The step is split so that every part can be measured and undone on its own.
+**Phase 0 and phase 1 change nothing on the Pi.**
+
+**Phase 0 — the read-only discovery of the host (operator, one command).**
+
+```sh
+scp tools/oip_pi_discovery.sh bodi-pi:/tmp/oip_pi_discovery.sh
+ssh bodi-pi 'sh /tmp/oip_pi_discovery.sh'
+```
+
+The script reads the identity, the architecture, the memory, the disk, the
+running services and the listeners of the host and **changes nothing**: it
+installs no package, starts no service, stops no service and writes no file
+outside `/tmp`. Its answer decides the target of the cross build (phase 1) and
+names the free port of the instance.
+
+**Phase 1 — the cross build of the Core for the target of the Pi (Mac).**
+
+```sh
+sh tools/oip_pi_build.sh aarch64-unknown-linux-gnu
+# -> target/pi/aarch64-unknown-linux-gnu/release/oip-server
+# -> target/pi/aarch64-unknown-linux-gnu/release/oip-simulated-server
+```
+
+The script builds the **same workspace** with the **same flags** as the
+release (`--locked --release --workspace`) for the target of the Pi, uses
+`zig cc` as the cross compiler and the cross linker and verifies the artefact
+(the ELF machine, the digest). It writes **only** into `target/pi/` and it
+changes nothing of the release: the release binary of the manifest is the
+macOS binary and stays the artefact of the release.
+
+**Phase 2 — a disposable instance on the Pi, started by hand (operator).**
+
+The instance is started **by hand over SSH** — no systemd unit, no service
+installation, no change of the BODI services of the host:
+
+```sh
+ssh bodi-pi
+# on the Pi, as the user of the operator:
+export OIP_HOME="$HOME/oip-instance"
+export CORE_CONFIG="$OIP_HOME/core.json"
+export IPC_CONFIG="$OIP_HOME/ipc.json"
+export STATE="$OIP_HOME/state"
+mkdir -p "$OIP_HOME" && chmod 700 "$OIP_HOME"
+# the configuration of the instance: its own store, the loopback of the Pi,
+# the source of the Pi, the simulator of the Pi on the loopback
+# (examples/multi-infrastructure-core.json is the template)
+python3 tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" \
+    --ipc-config "$IPC_CONFIG" --binary ./oip-server provision-plan \
+    --plan examples/multi-infrastructure-plan.json
+python3 tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" \
+    --ipc-config "$IPC_CONFIG" --binary ./oip-server start
+```
+
+The verification of the instance on the Pi is the same one the local instance
+has (`python3 tools/oip_ops.py … status`, the log, the backup) — the receipts
+of the local instance are in `docs/evidence/oip-operations/`.
+
+**Phase 3 — the tunnel and the client (operator, on the Mac).**
+
+```sh
+# the forward: the loopback of the Mac carries the port of the Core of the Pi
+ssh -N -L 127.0.0.1:18808:127.0.0.1:18808 bodi-pi
+# in a second terminal: the code of the session, minted on the Pi
+ssh bodi-pi 'cd ~/oip-instance && ./oip-server --browser-login \
+    --ipc-socket "$STATE/s" --ipc-credential "$STATE/platform.credential"'
+# the client of the Mac (the bundle of the release, built for the port 18808)
+open apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app
+```
+
+**Phase 4 — the verification of the whole path (operator).**
+
+| Check | How it is proven |
+|---|---|
+| The Core of the Pi answers on the loopback of the Mac | `curl -s http://127.0.0.1:18808/api/v2/system/status` through the tunnel |
+| The session works with the **same** origin | the client asks for the code, the Core mints it on the Pi, the client logs in |
+| The scope is enforced | the session of another organization is refused with `RESOURCE_NOT_ACCESSIBLE` |
+| The data is the data of the Pi | the values of the source of the Pi differ from the values of the simulation of the Mac |
+| Nothing is exposed | `ss -ltn` on the Pi shows the Core only on `127.0.0.1`; `ss -ltn` on the Mac shows the forward only on `127.0.0.1` |
+| The BODI services of the Pi are untouched | `systemctl list-units --state=running` before and after the instance — the same list |
+
+**The rollback** is one command and needs no plan: the instance of the Pi is
+stopped by hand (`python3 tools/oip_ops.py … stop`), the tunnel is closed
+(`Ctrl-C`) and the directory of the instance is removed. Nothing of the release
+on the Mac changes, nothing of the personal store changes, and the BODI
+services of the Pi were never part of the instance.
+
+### 15.4 What is **not** done by this plan
+
+* **No systemd unit and no service installation** — the instance is started by
+  hand. A launch agent on the Pi is a system service and needs an explicit
+  operator authorization (like the launch agent of the Mac, G9/N17).
+* **No change of the firewall and no published port** — the Core binds the
+  loopback of the Pi; the tunnel is the only way in.
+* **No change of the BODI services** of the host — the instance owns its own
+  directory, its own port and its own store.
+* **No change of the personal store** of the operator — the instance on the Pi
+  is disposable and owns its own data.
+* **No change of the product's remote identity** — the origin of the session
+  is the loopback of the Mac, exactly as with a local Core. The escalation of
+  G10 is not withdrawn by the place of the Core.
+
+### 15.5 The limits that stay limits
+
+* The Core binds the loopback. **A productive remote identity is still not
+  implemented** — the tunnel is an operator's measure, not a feature of the
+  product.
+* The execution audit of the Core is a structured local log: it is **not
+  durable** and **not tamper-resistant**. On the Pi that is the same as on the
+  Mac, and it stays an escalated finding of G10.
+* The cross build produces a binary for the **target of the Pi**. It is not
+  executed by the loop: the loop has no session on that host, and a binary
+  that was never started there is not a proven artefact. The proof is the
+  operator's phase 2 and phase 4.
+* The address space of a **real** OPC-UA server is still only reachable for a
+  server that speaks the profile of the local simulation (the adapter reads
+  the five metadata nodes of the simulation when it connects). A real device
+  is collected over the SSH onboarding, not over OPC-UA.
+
+### 15.6 The operator action that is outstanding
+
+The loop cannot run the discovery of §15.3 phase 0: **the SSH session of this
+session is not permitted** (`ssh bodi-pi …` is refused by the permission layer
+of the session, which cannot ask the operator). The operator runs the script of
+phase 0 and reports its answer; the loop then fixes the target of the cross
+build of phase 1 and continues with the receipts of the release.

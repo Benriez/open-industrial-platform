@@ -230,8 +230,43 @@ impl AsyncOpcUaClient {
         self.state.dropped_observations.load(Ordering::Relaxed)
     }
 
-    async fn read_data_value(&self, metric: &MetricId) -> Result<DataValue, AdapterError> {
-        read_data_value(&self.session, self.namespace, metric).await
+    /// Reads the value of one node of the server.
+    ///
+    /// `observe` states whether the read belongs to the **collector**: only
+    /// the collector observes the source, because only the collector
+    /// subscribes to the metrics of the source. The read of the browser
+    /// shows the value of a node and changes nothing.
+    async fn read_at(
+        &self,
+        node_id: NodeId,
+        name: &MetricId,
+        observe: bool,
+        entity: Option<oip_core::EntityId>,
+    ) -> Result<oip_core::ObservationEnvelope, AdapterError> {
+        let value = read_data_value_at(&self.session, node_id).await?;
+        let metadata = self
+            .state
+            .metadata
+            .lock()
+            .map_err(|_| AdapterError::Task("metadata lock poisoned".to_owned()))?
+            .clone();
+        let latest = if observe {
+            value
+                .source_timestamp
+                .filter(|timestamp| external_datetime_is_valid(*timestamp))
+                .map(datetime_to_timestamp)
+                .and_then(|source| self.state.observe_source_timestamp(name.as_str(), source))
+        } else {
+            None
+        };
+        let mut observation =
+            data_value_to_observation(name, &value, &metadata, latest, &self.state.freshness)?;
+        if let Some(entity) = entity {
+            // The value of a node belongs to the entity that the **source**
+            // declares — not to the machine of a simulator profile.
+            observation.entity_id = entity;
+        }
+        Ok(observation)
     }
 }
 
@@ -244,6 +279,10 @@ impl ReadOnlyOpcUaAdapter for AsyncOpcUaClient {
     async fn browse(&self) -> Result<Vec<BrowseEntry>, AdapterError> {
         let mut entries = Vec::new();
         let mut visited = HashSet::new();
+        // The catalogue is a **set of nodes**: a node that is reachable
+        // through several parents is delivered once, so the pages of the
+        // Core stay disjoint and the total is exact.
+        let mut emitted = HashSet::new();
         // The pending node carries the browse name of its **parent**: it is
         // the folder of every node below it. The standard root of a server
         // has the browse name of its standard folder.
@@ -280,11 +319,17 @@ impl ReadOnlyOpcUaAdapter for AsyncOpcUaClient {
                     for reference in references {
                         let target = reference.node_id.node_id;
                         let browse_name = reference.browse_name.to_string();
-                        if visited.insert(target.clone()) && target.namespace == self.namespace {
-                            pending.push((target.clone(), browse_name.clone()));
+                        // A node that was already delivered is not delivered
+                        // again: the folder of a node with several parents is
+                        // the folder of the parent that reached it first.
+                        if !emitted.insert(target.clone()) {
+                            continue;
                         }
                         if entries.len() >= self.max_browse_nodes {
                             return Err(AdapterError::BrowseLimitExceeded(self.max_browse_nodes));
+                        }
+                        if visited.insert(target.clone()) && target.namespace == self.namespace {
+                            pending.push((target.clone(), browse_name.clone()));
                         }
                         entries.push(BrowseEntry {
                             node_id: target.to_string(),
@@ -313,21 +358,28 @@ impl ReadOnlyOpcUaAdapter for AsyncOpcUaClient {
     }
 
     async fn read(&self, metric: &MetricId) -> Result<oip_core::ObservationEnvelope, AdapterError> {
-        let value = self.read_data_value(metric).await?;
-        let metadata = self
-            .state
-            .metadata
-            .lock()
-            .map_err(|_| AdapterError::Task("metadata lock poisoned".to_owned()))?
-            .clone();
-        let latest = value
-            .source_timestamp
-            .filter(|timestamp| external_datetime_is_valid(*timestamp))
-            .map(datetime_to_timestamp)
-            .and_then(|source| self.state.observe_source_timestamp(metric.as_str(), source));
-        data_value_to_observation(metric, &value, &metadata, latest, &self.state.freshness)
+        let node_id = NodeId::new(self.namespace, metric.as_str());
+        self.read_at(node_id, metric, true, None).await
     }
 
+    async fn read_node(
+        &self,
+        node_id: &str,
+        name: &MetricId,
+        entity: &oip_core::EntityId,
+    ) -> Result<oip_core::ObservationEnvelope, AdapterError> {
+        let node = node_id.parse::<NodeId>().map_err(|_| {
+            AdapterError::Protocol(format!("the node id {node_id} of the server is invalid"))
+        })?;
+        self.read_at(node, name, false, Some(entity.clone())).await
+    }
+
+    /// Reads the value of one node of the server.
+    ///
+    /// `observe` states whether the read belongs to the **collector**: only
+    /// the collector observes the source, because only the collector
+    /// subscribes to the metrics of the source. The read of the browser
+    /// shows the value of a node and changes nothing.
     async fn subscribe(&self, metrics: &[MetricId]) -> Result<(), AdapterError> {
         let stale = self
             .state
@@ -391,7 +443,14 @@ async fn read_data_value(
     namespace: u16,
     metric: &MetricId,
 ) -> Result<DataValue, AdapterError> {
-    let node_id = NodeId::new(namespace, metric.as_str());
+    read_data_value_at(session, NodeId::new(namespace, metric.as_str())).await
+}
+
+/// Reads the value of the node with the given **node id** of the server.
+async fn read_data_value_at(
+    session: &Arc<Session>,
+    node_id: NodeId,
+) -> Result<DataValue, AdapterError> {
     let mut values = session
         .read(&[ReadValueId::from(node_id)], TimestampsToReturn::Both, 0.0)
         .await

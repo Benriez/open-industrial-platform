@@ -128,8 +128,10 @@ void main() {
       expect(find.text('1/8'), findsOneWidget);
       await _selectSource(tester, 'source-b');
       expect(find.text('1006 Nodes · Seite 1'), findsNothing);
-      expect(find.text('12 Nodes · Seite 1'), findsNothing);
-      expect(find.text('6 Nodes · Seite 1'), findsOneWidget);
+      // The scope of the operator is the whole catalogue of the Core: the
+      // six process variables and the six bulk nodes of the source.
+      expect(find.text('12 Nodes · Seite 1'), findsOneWidget);
+      expect(find.text('6 Nodes · Seite 1'), findsNothing);
       await tester.tap(find.byKey(const Key('pin-toggle')));
       await tester.pumpAndSettle();
       expect(find.text('2/8'), findsOneWidget);
@@ -191,17 +193,17 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Typ: Boolean').last);
       await tester.pumpAndSettle();
-      expect(find.text('2/6 auf dieser Seite'), findsOneWidget);
-      expect(find.text('6 Nodes · Seite 1'), findsOneWidget);
+      expect(find.text('2/12 auf dieser Seite'), findsOneWidget);
+      expect(find.text('12 Nodes · Seite 1'), findsOneWidget);
       await tester.tap(find.byKey(const Key('quality-filter')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Quality: bad').last);
       await tester.pumpAndSettle();
-      expect(find.text('0/6 auf dieser Seite'), findsOneWidget);
+      expect(find.text('0/12 auf dieser Seite'), findsOneWidget);
       expect(find.text('Keine Seiten-Treffer'), findsOneWidget);
       await tester.tap(find.byKey(const Key('clear-page-filters')));
       await tester.pumpAndSettle();
-      expect(find.text('6/6 auf dieser Seite'), findsOneWidget);
+      expect(find.text('12/12 auf dieser Seite'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

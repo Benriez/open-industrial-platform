@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 pub use oip_core::{ClientEvent, DataGap};
-use oip_core::{MetricId, ObservationEnvelope, TimestampError};
+use oip_core::{EntityId, MetricId, ObservationEnvelope, TimestampError};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::time::Duration;
@@ -197,6 +197,18 @@ pub trait ReadOnlyOpcUaAdapter: Send + Sync {
     async fn endpoints(&self) -> Result<Vec<EndpointInfo>, AdapterError>;
     async fn browse(&self) -> Result<Vec<BrowseEntry>, AdapterError>;
     async fn read(&self, metric: &MetricId) -> Result<ObservationEnvelope, AdapterError>;
+    /// Reads the value of the node with the given **node id** of the server.
+    ///
+    /// The browse delivers the node id of every node of the address space.
+    /// The value belongs to that node — not to a node that is reconstructed
+    /// from its name — and it is bound to the entity that the **source**
+    /// declares.
+    async fn read_node(
+        &self,
+        node_id: &str,
+        name: &MetricId,
+        entity: &EntityId,
+    ) -> Result<ObservationEnvelope, AdapterError>;
     async fn subscribe(&self, metrics: &[MetricId]) -> Result<(), AdapterError>;
     /// Waits for the next collection event.
     async fn next_event(&self, timeout: Duration) -> Result<ClientEvent, AdapterError>;

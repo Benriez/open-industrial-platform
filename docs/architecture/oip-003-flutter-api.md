@@ -24,7 +24,7 @@ Flutter/Dart ist die einzige Produkt-UI. Material 3 trägt ein eigenes OIP-Desig
 5. REST lädt den Anfangszustand. SSE überträgt vollständige, konvergente Snapshots bei Änderungen und spätestens jede Sekunde. Ein unterbrochener Client lädt REST erneut und erhält einen neuen vollständigen Snapshot; kein unimplementiertes Event-Replay wird zugesagt.
 6. Flutter hält maximal 60 empfangene Temperaturpunkte der Sitzung. Fehlende/ungültige Werte und Quellzeitsprünge werden nicht zu Linien über Datenlücken verbunden.
 
-Sechs Prozessvariablen sind kontinuierlich abonniert. Der Bulk-Browser liest maximal 100 Variablen je API-Seite (UI: 40), mit maximal acht gleichzeitigen Reads; jede erfolgreiche Einzelabfrage wird ebenfalls persistiert. Die UI rendert nur die Seite über `ListView.builder`. Bulk-Einzelabfragen behaupten keinen gesunden Prozess-Collector.
+Sechs Prozessvariablen sind kontinuierlich abonniert. Der Adressraum-Browser liest maximal 100 Variablen je API-Seite (UI: 40), mit maximal acht gleichzeitigen Reads. **Der Browser misst nicht:** eine Einzelabfrage liest den Wert des Nodes für die Anzeige und wird **nicht** persistiert; die Messung entsteht im Kollektor, der die registrierten Metriken der Quelle abonniert. Die Seite nennt die Ordner des gelieferten Adressraums (`folders`), und der Wert eines Nodes gehört zum Node mit der Node-Id des Servers. Die UI rendert nur die Seite über `ListView.builder`. Bulk-Einzelabfragen behaupten keinen gesunden Prozess-Collector.
 
 Der lokale Dashboard-Server verlangt eine eigene Simulationsdatenbank; fremde oder externe Observation-Herkünfte werden vor Veröffentlichung abgelehnt.
 
@@ -41,7 +41,7 @@ Verbindliche Rust-DTOs: `crates/oip-server/src/contracts.rs`; Dart-DTOs: `apps/f
 | `GET /api/v1/devices/{id}` | `{device, metrics, history_status:"not_implemented"}`; unbekannte ID: 404 |
 | `GET /api/v1/metrics/current` | `ObservationEnvelope[]` für sechs Prozessvariablen, nach Commit |
 | `GET /api/v1/events` | `{incidents, collection_events, diagnosis_history_status:"demo_only"}`; höchstens 50 publizierte Nicht-Observation-Events |
-| `GET /api/v1/opcua/nodes` | `NodePage {items,total,offset,limit}`; Query `q`, `folder=M-01|Bulk|all`, `offset`, `limit` (1–100) |
+| `GET /api/v1/opcua/nodes` | `NodePage {items,total,offset,limit,folders}`; Query `q`, `folder` (der Ordner des Servers oder `all`), `offset`, `limit` (1–100) |
 | `GET /api/v1/stream` | `text/event-stream`, Ereignistyp `snapshot`, Daten `Snapshot {system,devices,metrics,incidents,topology}`; 2-s-Keepalive, vollständiger Zustand mindestens jede Sekunde |
 | `POST /api/v1/demo/scenario` | Nur `--demo`; JSON `{"scenario":"normal"}`; 200 bedeutet angenommen, nicht bereits abgeschlossenen OPC-UA-Wiederanlauf |
 

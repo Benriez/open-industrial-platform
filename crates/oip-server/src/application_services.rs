@@ -40,6 +40,16 @@ pub struct ApplicationServices {
     pub(crate) state: AppState,
     audit: Arc<dyn CapabilityAudit>,
 }
+/// The namespace of a node id of the server (`ns=2;s=temperature`).
+///
+/// A node id of namespace 0 carries no prefix; it belongs to namespace 0.
+fn namespace_of(node_id: &str) -> u16 {
+    node_id
+        .strip_prefix("ns=")
+        .and_then(|rest| rest.split(';').next())
+        .and_then(|namespace| namespace.parse().ok())
+        .unwrap_or(0)
+}
 fn storage(_: String) -> CapabilityError {
     CapabilityError::new(
         CapabilityErrorCode::PersistenceUnavailable,
@@ -379,13 +389,18 @@ impl ApplicationServices {
                 "No source configured",
             )
         })?;
-        if !s.view().sources.iter().any(|v| v.id == source) {
-            return Err(CapabilityError::new(
-                CapabilityErrorCode::ResourceNotFound,
-                "SOURCE_NOT_FOUND",
-                "Source not registered",
-            ));
-        }
+        // The entity of the source is the entity that the **source**
+        // declares: the value of a node of the source belongs to it.
+        let entity = match s.view().sources.iter().find(|v| v.id == source) {
+            Some(v) => v.entity_id.clone(),
+            None => {
+                return Err(CapabilityError::new(
+                    CapabilityErrorCode::ResourceNotFound,
+                    "SOURCE_NOT_FOUND",
+                    "Source not registered",
+                ))
+            }
+        };
         let catalog = s
             .catalogs
             .read()
@@ -426,7 +441,7 @@ impl ApplicationServices {
                 {
                     return None;
                 }
-                Some((entry.node_id, name, folder))
+                Some((entry.node_id, name, folder, entry.node_class))
             })
             .collect();
         found.sort_by(|a, b| a.1.cmp(&b.1));
@@ -434,19 +449,22 @@ impl ApplicationServices {
         let selected: Vec<_> = found.into_iter().skip(offset).take(limit).collect();
         let client = s.clients.read().await.get(&source).cloned();
         let items = stream::iter(selected)
-            .map(|(node_id, name, folder)| {
+            .map(|(node_id, name, folder, node_class)| {
                 let client = client.clone();
                 let source = source.clone();
+                let entity = entity.clone();
                 async move {
                     // The browser reads the address space; it does not
                     // measure. The value of a node is read for the display
                     // and **not** ingested: a measurement belongs to the
                     // collector, which subscribes to the registered metrics
-                    // of the source. A node without a readable name carries
-                    // no value, and the Core states none.
+                    // of the source. The value belongs to the node with the
+                    // **node id of the server** — not to a node that is
+                    // reconstructed from its name — and it is bound to the
+                    // entity that the source declares.
                     let observation = if let Some(client) = client {
                         match MetricId::new(&name) {
-                            Ok(metric) => match client.read(&metric).await {
+                            Ok(metric) => match client.read_node(&node_id, &metric, &entity).await {
                                 Ok(mut o) => {
                                     o.data_source_id = source.clone();
                                     Some(o)
@@ -473,14 +491,22 @@ impl ApplicationServices {
                         None => "Nicht geliefert",
                     }
                     .into();
+                    // The namespace is the namespace of the node id of the
+                    // server, and the access is the access of the class of
+                    // the node — neither is a constant of the demo.
+                    let namespace = namespace_of(&node_id);
                     Ok(Node {
                         data_source_id: source.clone(),
                         node_id,
                         name,
-                        namespace: 2,
+                        namespace,
                         folder,
                         data_type,
-                        access: "Read".into(),
+                        access: if node_class.eq_ignore_ascii_case("Variable") {
+                            "Read".into()
+                        } else {
+                            "Browse".into()
+                        },
                         observation,
                     })
                 }

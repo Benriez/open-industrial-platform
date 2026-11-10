@@ -113,7 +113,7 @@ try {
 
   await page.keyboard.press('Control+k');
   await page.keyboard.type('bulk.0999', {delay: 35});
-  await page.getByRole('button', {name: /^Bulk Massendaten/}).click();
+  await page.getByRole('button', {name: /^Bulk /}).click();
   await page.getByText('1 Nodes · Seite 1', {exact: true}).waitFor({timeout: 15000});
   await selectNode('bulk.0999');
   await page.getByText('Einzelabfrage', {exact: true}).first().waitFor();
@@ -122,12 +122,16 @@ try {
 
   await page.getByRole('button', {name: 'Suche löschen', exact: true}).click();
   await page.getByRole('button', {name: /^M-01/}).first().click();
-  await page.getByText('6 Nodes · Seite 1', {exact: true}).waitFor();
+  // The count of the folder is the count that the **Core** delivers; the
+  // gate names no number of a demo.
+  const machine = await (await context.request.get(`${base}/api/v1/opcua/nodes?q=&folder=M-01&offset=0&limit=40`)).json();
+  await page.getByText(`${machine.total} Nodes · Seite 1`, {exact: true}).waitFor();
   await page.getByRole('button', {name: 'Seitenfilter für Typ und Quality', exact: true}).click();
   await page.getByText('Typ: alle', {exact: true}).click();
   await page.getByText('Typ: Boolean', {exact: true}).last().click();
-  await page.getByText('2/6 auf dieser Seite', {exact: true}).waitFor();
-  await pass('Type filter is explicitly limited to the loaded six-node page');
+  const booleans = machine.items.filter((node) => node.data_type === 'Boolean').length;
+  await page.getByText(`${booleans}/${machine.total} auf dieser Seite`, {exact: true}).waitFor();
+  await pass(`Type filter is explicitly limited to the loaded ${machine.total}-node page`);
   await capture('page-filter');
   await page.getByRole('button', {name: 'Seitenfilter zurücksetzen', exact: true}).click();
   await page.getByRole('button', {name: 'Seitenfilter für Typ und Quality', exact: true}).click();

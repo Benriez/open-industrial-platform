@@ -1,6 +1,6 @@
 use super::*;
 use crate::async_opcua::{AsyncOpcUaServerConfig, RunningAsyncOpcUaServer};
-use oip_core::{CollectionError, DataQuality, Freshness, MetricValue};
+use oip_core::{CollectionError, DataQuality, EntityId, Freshness, MetricValue};
 use oip_simulator::{Scenario, SimulationConfig, SIMULATION_EPOCH_UNIX_MS};
 use opcua::types::{AttributeId, Variant};
 use std::time::Instant;
@@ -178,6 +178,52 @@ async fn browse_reports_the_folder_of_every_node() {
         entries.iter().all(|entry| !entry.folder.is_empty()),
         "every entry names a folder"
     );
+    client.disconnect().await.expect("disconnect");
+    server.stop().await.expect("stop server");
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn read_node_reads_the_node_id_and_not_the_name() {
+    let port = free_port();
+    let server = RunningAsyncOpcUaServer::start(test_config(port, Scenario::Normal, 4))
+        .await
+        .expect("start server");
+    let client = connect(&server).await;
+
+    // The name of a node in the address space is its **browse name**; the
+    // value belongs to the node with the node id of the server. A name that
+    // names no node must not change the node that is read.
+    let name = MetricId::new("a_name_that_names_no_node").expect("valid metric id");
+    let entity = EntityId::new("the-entity-of-the-source").expect("valid entity id");
+    let observation = client
+        .read_node("ns=2;s=temperature", &name, &entity)
+        .await
+        .expect("read the node with the node id");
+    assert!(
+        matches!(observation.value, Some(MetricValue::Float(_))),
+        "the value of the node with the node id is delivered"
+    );
+    assert_eq!(
+        observation.entity_id, entity,
+        "the value belongs to the entity that the source declares"
+    );
+    // A node id that names no node delivers no value.
+    let missing = client
+        .read_node("ns=2;s=a_node_that_does_not_exist", &name, &entity)
+        .await;
+    assert!(
+        missing.map(|o| o.value.is_none()).unwrap_or(true),
+        "a node id without a node delivers no value"
+    );
+    // The read of the browser does not observe the source: the collector
+    // alone subscribes to the metrics of the source.
+    let before = client.dropped_observations();
+    let _ = client
+        .read_node("ns=2;s=temperature", &name, &entity)
+        .await
+        .expect("read the node again");
+    assert_eq!(client.dropped_observations(), before, "the read drops nothing");
+
     client.disconnect().await.expect("disconnect");
     server.stop().await.expect("stop server");
 }

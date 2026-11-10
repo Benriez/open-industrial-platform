@@ -134,7 +134,7 @@ try {
   await page.getByRole('button',{name:'Node anheften',exact:true}).click();
   await page.getByRole('button',{name:/^Angeheftet temperature/}).waitFor();
   await capture('opcua-process');
-  await page.getByRole('button',{name:/^Bulk Massendaten/}).click();
+  await page.getByRole('button',{name:/^Bulk /}).click();
   const bulkPage=await api('/api/v1/opcua/nodes?q=&folder=Bulk&offset=0&limit=40');
   const bulkTotal=bulkPage.total;
   await page.getByText(`${bulkTotal} Nodes · Seite 1`,{exact:true}).waitFor();

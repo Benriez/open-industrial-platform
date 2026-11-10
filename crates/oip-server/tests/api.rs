@@ -181,6 +181,53 @@ async fn real_opcua_storage_api_sse_and_reconnect() {
     assert_eq!(nodes["total"], 1000);
     assert_eq!(nodes["items"].as_array().unwrap().len(), 40);
     assert!(nodes["items"][0]["observation"]["value"]["float"].is_number());
+    // The address space of the server is delivered as it is: every node
+    // names the folder of the server, the namespace of the node id and the
+    // access of the class of the node.
+    let folders = nodes["folders"]
+        .as_array()
+        .expect("the folders of the address space")
+        .clone();
+    assert!(
+        folders.iter().any(|folder| folder == "Bulk"),
+        "the folder of the server is named"
+    );
+    assert!(
+        folders.iter().any(|folder| folder == "M-01"),
+        "the folder of the server is named"
+    );
+    for item in nodes["items"].as_array().unwrap() {
+        let node_id = item["node_id"].as_str().expect("the node id of the server");
+        let namespace = node_id
+            .strip_prefix("ns=")
+            .and_then(|rest| rest.split(';').next())
+            .and_then(|namespace| namespace.parse::<u64>().ok())
+            .unwrap_or(0);
+        assert_eq!(
+            item["namespace"].as_u64(),
+            Some(namespace),
+            "the namespace is the namespace of the node id"
+        );
+        assert_eq!(item["access"], "Read", "a variable of the server is read");
+    }
+    // Every node of the address space belongs to exactly one folder: the
+    // catalogue is a set of nodes and the pages stay disjoint.
+    let (_, all) = get(app.clone(), "/api/v1/opcua/nodes?folder=all&limit=1").await;
+    let total = all["total"].as_u64().expect("the total of the address space");
+    let mut sum = 0u64;
+    for folder in &folders {
+        let folder = folder.as_str().expect("the name of the folder");
+        let (_, page) = get(
+            app.clone(),
+            &format!("/api/v1/opcua/nodes?folder={folder}&limit=1"),
+        )
+        .await;
+        sum += page["total"].as_u64().expect("the total of the folder");
+    }
+    assert_eq!(
+        sum, total,
+        "every node of the address space belongs to exactly one folder"
+    );
     let (_, device) = get(app.clone(), "/api/v1/devices/M-01").await;
     assert!(device["metrics"]
         .as_array()

@@ -195,7 +195,9 @@ void main() {
                 'items': <dynamic>[],
                 'total': 0,
                 'offset': 80,
-                'limit': 40
+                'limit': 40,
+                // The Core delivers the folders of the address space.
+                'folders': <String>['M-01']
               }),
               200,
             );
@@ -212,6 +214,8 @@ void main() {
     final nodes = await api.nodes('bulk', 'Bulk', 80);
     expect(nodes.offset, 80);
     expect(nodes.limit, 40);
+    // The Core names the folders of its address space with every page.
+    expect(nodes.folders, ['M-01']);
     final nodeRequest = requests.last;
     expect(nodeRequest.url.queryParameters,
         {'q': 'bulk', 'folder': 'Bulk', 'offset': '80', 'limit': '40'});
