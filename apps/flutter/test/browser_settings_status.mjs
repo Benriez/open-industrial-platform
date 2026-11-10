@@ -130,15 +130,15 @@ const shownStatus = async () => {
   return null;
 };
 
-// The category that the navigation marks as selected. The client publishes
-// the state of the selection in the semantics of the control.
+// The category that the surface names as the selected one: the header of the
+// workstation names the category and the section of the session.
 const selectedCategory = async () => {
-  for (const element of await page.$$('flt-semantics')) {
-    const label = (await element.getAttribute('aria-label')) || '';
-    if (!label.startsWith('Settings-Kategorie ')) continue;
-    if ((await element.getAttribute('aria-selected')) === 'true') {
-      return label.slice('Settings-Kategorie '.length);
-    }
+  const painted = await labels();
+  for (const line of painted.split('\n')) {
+    const match = /^(.+?) \/ .+$/.exec(line.trim());
+    if (!match) continue;
+    const name = match[1].trim();
+    if (Object.values(CATEGORIES).includes(name)) return name;
   }
   return null;
 };
