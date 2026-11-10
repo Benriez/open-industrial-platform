@@ -4,23 +4,30 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "d32c769fb268dba788900dbbff2e2c7230302ff8",
+      "the_revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
       "the_revision_of_the_source": {
-        "the_revision": "fc226c9395ede9e10f3a1c3cd5e5f62e3d4a3adf",
-        "the_subject": "fix(g3): the journey looks for the type in the answer of the Core"
+        "the_revision": "acdd0a694411d8f76aa3da6365c1af31c7a071bc",
+        "the_subject": "docs(g11): the acceptance of the current revision, the numbers of the record and the binary that the gate executed"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
-        "the_files": 687,
-        "the_sha256": "b988d3643c106c933e72a562608f421c20ac28c803285b733f60e3e9ec6a39ca"
+        "the_files": 689,
+        "the_sha256": "c8341130a593f37c1eb53460ec5d98668bd094b47bc24e68657bc3358c6e1afc"
       },
       "the_artifacts": {
-        "the_core": "2bf4baa487fbcfc49c6810704db6f2734ed98cad94a30168d1f4913132d2eb2c",
+        "the_core": "a96a74e244aaf5847d247fc607a7fc6a0678cf3ec018a90af822c313053e5ae1",
         "the_official_mcp_probe": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
-        "the_macos_application_bundle": "43d13611c07034f571dd4f7c7ae7f0473eb5471544dad2b36799c206c5377b67",
-        "the_web_release": "911c5e0e1cf0a22847d78faef363389fcc372c79e2ce774568cd3cbdc903de04"
+        "the_macos_application_bundle": "bd65e5ac118f76aea9135874880aade68c36cd71ba629c2db3a36cac85e1e0b4",
+        "the_web_release": "dbaf3a847bfbe7b0cbd130b88799748bc4bff293c901fb67184c611aacbeb1c7"
       },
-      "the_receipts": 29,
+      "the_receipts": 64,
+      "the_receipts_that_the_manifest_does_not_name": 0,
+      "the_receipts_that_are_measured_after_the_manifest": [
+        "docs/evidence/oip-record-integrity/record-integrity.json",
+        "docs/evidence/oip-release-verification/release-verification.json"
+      ],
+      "the_core_the_acceptance_executed": "a96a74e244aaf5847d247fc607a7fc6a0678cf3ec018a90af822c313053e5ae1",
+      "the_acceptance_executed_the_core_that_the_manifest_names": true,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
       "the_core_is_the_reproducible_one": true,
       "the_manifest_names_the_reproducible_binary": true,
@@ -29,16 +36,16 @@
     "the_freshness": {
       "the_last_change_of_the_product": {
         "crates": "8ec554cc3f9b",
-        "apps/flutter/lib": "8ec554cc3f9b"
+        "apps/flutter/lib": "8c40a018b55e"
       },
-      "the_revision_of_the_source": "8ec554cc3f9b",
+      "the_revision_of_the_source": "8c40a018b55e",
       "the_receipts": 47,
-      "the_receipts_measured_on_a_tree_that_carries_the_source": 47,
+      "the_receipts_measured_on_a_tree_that_carries_the_source": 45,
       "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 0,
       "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
     "the_record": {
-      "the_citations": 66,
+      "the_citations": 68,
       "the_receipts_of_the_release": 47,
       "the_missing": [],
       "the_untracked": [],
@@ -47,25 +54,25 @@
       "the_paths_of_the_build_tree_in_the_ledger": []
     },
     "the_canonical_state": {
-      "the_source_revision": "8ec554cc3f9b2ebbbe723d58650cf5d29c5d3ba5",
-      "the_acceptance_revision": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
-      "the_core_binary_revision": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
-      "the_tracked_files": 687,
+      "the_source_revision": "8c40a018b55e67ef17b69192ba35d255f336c542",
+      "the_acceptance_revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
+      "the_core_binary_revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
+      "the_tracked_files": 689,
       "the_product_is_committed": true
     },
     "the_numbers_of_the_record": {
-      "the_rows": 77,
-      "the_measurements": 25
+      "the_rows": 79,
+      "the_measurements": 26
     },
     "the_acceptance": {
       "the_verdict": "PASS",
       "the_phases": "8 of 8",
-      "the_browser_findings": 175,
+      "the_browser_findings": 187,
       "the_browser_failures": 0,
-      "the_flutter_tests_passed": 358,
+      "the_flutter_tests_passed": 361,
       "the_flutter_tests_failed": 0,
       "the_screenshots": 13,
-      "the_revision_of_the_acceptance": "ad3a33f31fb5a8e95f0f0ee86bf787c00beb2bbe",
+      "the_revision_of_the_acceptance": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
       "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
     },
     "the_boundaries": {
@@ -146,8 +153,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "d32c769fb268dba788900dbbff2e2c7230302ff8",
-  "the_tree": "04249a8a1d3f70abe193f998ec8c4db1acb7003e",
+  "the_revision": "f2c0ee57d830c3dabb35d15d5e3c7872807835bc",
+  "the_tree": "9a8031211d019cb5ac1815e686f38ed5b1f09ec2",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }

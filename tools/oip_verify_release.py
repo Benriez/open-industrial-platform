@@ -163,8 +163,9 @@ def check_the_manifest():
     # The manifest must name **every** receipt of the release with its digest:
     # a receipt that the manifest does not digest is a receipt that nobody can
     # verify. The captures and the painted surfaces are receipts as well.
-    named = {ROOT / receipt["path"] for receipt in manifest.get("the_receipts", {}).values()
-             if receipt.get("sha256")}
+    named_receipts = {ROOT / receipt["path"]
+                      for receipt in manifest.get("the_receipts", {}).values()
+                      if receipt.get("sha256")}
     uncovered = []
     late = []
     for path in sorted(EVIDENCE.rglob("*")):
@@ -178,7 +179,7 @@ def check_the_manifest():
         if relative in LATE_RECEIPTS:
             late.append(relative)
             continue
-        if path not in named:
+        if path not in named_receipts:
             uncovered.append(relative)
     problems.extend(f"the receipt {name} is not named by the manifest" for name in uncovered)
     return {
@@ -229,6 +230,11 @@ def check_the_freshness(receipts):
         revision = payload.get("the_revision") or payload.get("revision")
         if not revision:
             problems.append(f"the receipt {relative} names no revision")
+            continue
+        # The two receipts that are measured after everything else are not
+        # checked for freshness: they are the receipts *about* the record and
+        # about this verification, and they are written last by construction.
+        if relative in LATE_RECEIPTS:
             continue
         for scope, boundary in boundaries.items():
             if not boundary:
