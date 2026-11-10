@@ -137,6 +137,7 @@ def main():
         assert all(item["ok"] for item in receipt["findings"]), receipt["findings"]
         report["the_categories_of_the_core"] = receipt["the_categories_of_the_core"]
         report["the_statuses_of_the_surface"] = receipt["the_statuses_of_the_surface"]
+        report["the_refusals_of_the_core"] = receipt.get("the_refusals_of_the_core", [])
         report["checks"] = len(receipt["findings"])
         report["steps"].append("the navigation names the status of the Core for every category")
         report["status"] = "PASS"
