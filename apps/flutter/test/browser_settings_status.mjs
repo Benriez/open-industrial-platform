@@ -33,15 +33,13 @@ if (!code && process.env.OIP_IPC_SOCKET && process.env.OIP_BROWSER_CREDENTIAL) {
   code = minted.login_code;
 }
 
-// The explicit mapping of the client: the wire name of the Core and the word
-// the surface shows. A status that the Core sends and the client does not
-// know is shown as it is — the journey proves that this does not happen.
-const LABELS = {
-  offline_administration_required: 'Nur offline administrierbar',
-  read_only: 'Nur lesend',
-};
-const labelOf = (status) => (Object.prototype.hasOwnProperty.call(LABELS, status)
-  ? LABELS[status] : status);
+// The journey does **not** carry the mapping of the client. It compares the
+// word of the surface with the answer of the Core by their relation: two
+// categories that the Core answers alike must show the same word, and two
+// categories that the Core answers differently must show different words.
+// The word of a state that the Core does not know is a word and never a
+// wire name.
+const isAWireName = (word) => /^[a-z][a-z0-9_]*$/.test(word);
 
 // The categories of the navigation, as the surface names them.
 const CATEGORIES = {
@@ -82,7 +80,9 @@ page.on('pageerror', (e) => errors.push('pageerror: ' + e.message.slice(0, 200))
 page.on('console', (m) => {
   if (m.type() !== 'error') return;
   const text = m.text();
-  if (/Failed to load resource/i.test(text) || /\b403\b/.test(text)) return;
+  // A resource that the browser could not load is not a defect of the
+  // surface; a refusal of the Core **is** a finding and is never swallowed.
+  if (/Failed to load resource/i.test(text) && !/\b403\b/.test(text)) return;
   errors.push('console: ' + text.slice(0, 200));
 });
 
@@ -130,6 +130,19 @@ const shownStatus = async () => {
   return null;
 };
 
+// The category that the navigation marks as selected. The client publishes
+// the state of the selection in the semantics of the control.
+const selectedCategory = async () => {
+  for (const element of await page.$$('flt-semantics')) {
+    const label = (await element.getAttribute('aria-label')) || '';
+    if (!label.startsWith('Settings-Kategorie ')) continue;
+    if ((await element.getAttribute('aria-selected')) === 'true') {
+      return label.slice('Settings-Kategorie '.length);
+    }
+  }
+  return null;
+};
+
 await page.goto(base, { waitUntil: 'domcontentloaded' });
 await page.waitForFunction(() => !!document.querySelector('flutter-view'), null, { timeout: 300000 });
 await page.waitForTimeout(6000);
@@ -146,11 +159,14 @@ if (code) {
   await page.waitForTimeout(8000);
 }
 
-// The answer of the Core, read with the session of the operator.
-const answer = await page.evaluate(async () => {
-  const r = await fetch('/api/v2/settings', { headers: { 'Content-Type': 'application/json' } });
+// The answer of the Core, read with the session of the operator. The scope
+// is part of the question: the settings of an instance are read in the scope
+// of the platform and in the scope of an organization.
+const readSettings = async (query) => await page.evaluate(async (q) => {
+  const r = await fetch('/api/v2/settings' + q, { headers: { 'Content-Type': 'application/json' } });
   return { status: r.status, body: await r.json() };
-});
+}, query);
+const answer = await readSettings('');
 check('the Core answers the settings of the instance', answer.status === 200,
   JSON.stringify(answer).slice(0, 300));
 const categories = (answer.body && answer.body.categories) || [];
@@ -158,6 +174,21 @@ check('the Core answers a status for every category of the settings',
   categories.length > 0 && categories.every((item) => typeof item.status === 'string'
     && item.status.length > 0),
   JSON.stringify(categories).slice(0, 300));
+
+// The same question in the scope of an organization.
+const scoped = await readSettings('?scope=organization&scope_id=org-a');
+check('the Core answers the settings in the scope of an organization',
+  scoped.status === 200, JSON.stringify(scoped).slice(0, 300));
+const scopedCategories = (scoped.body && scoped.body.categories) || [];
+const statusOf = (list, category) => {
+  const item = list.find((entry) => entry.category === category);
+  return item ? item.status : null;
+};
+const differing = categories.filter((item) =>
+  statusOf(scopedCategories, item.category) !== item.status);
+check('the answer of the Core is the same in the scope of the organization',
+  scopedCategories.length === categories.length && differing.length === 0,
+  JSON.stringify(differing).slice(0, 300));
 
 // The workstation of the settings.
 await page.getByRole('button', { name: 'Navigation Einstellungen' }).click({ force: true });
@@ -175,10 +206,16 @@ for (const category of categories) {
     `the navigation has no category ${label}`);
   await button.first().click({ force: true });
   await page.waitForTimeout(1200);
+  // The word must belong to the category that was selected: the navigation
+  // shows the status of the selected category only.
+  const selected = await selectedCategory();
+  check(`the category ${name} is the selected one`, selected === label,
+    `the navigation selected ${selected} instead of ${label}`);
   const shown = await shownStatus();
-  const expected = labelOf(category.status);
-  check(`the status of the category ${name} is the status of the Core`,
-    shown === expected, `the Core answered ${expected}, the surface shows ${shown}`);
+  check(`the category ${name} shows a status`, typeof shown === 'string' && shown.length > 0,
+    `the surface shows no status for ${name}`);
+  check(`the status of the category ${name} is not a wire name of the Core`,
+    !isAWireName(shown), `the surface shows the wire name ${shown}`);
   measured.push({
     the_category: name,
     the_label_of_the_surface: label,
@@ -187,15 +224,34 @@ for (const category of categories) {
   });
 }
 
+// The word of the surface is determined by the answer of the Core: the same
+// answer carries the same word, and two different answers carry two
+// different words. The journey does not name the words itself — it compares
+// the relation of the answers with the relation of the words.
+for (const category of categories) {
+  const first = measured.find((item) => item.the_category === category.category);
+  for (const other of measured) {
+    if (other.the_category === first.the_category) continue;
+    if (other.the_status_of_the_core === first.the_status_of_the_core) {
+      check(`the categories ${first.the_category} and ${other.the_category} show the same word`,
+        other.the_word_of_the_surface === first.the_word_of_the_surface,
+        `the Core answered ${first.the_status_of_the_core} for both, the surface shows `
+        + `${first.the_word_of_the_surface} and ${other.the_word_of_the_surface}`);
+    } else {
+      check(`the categories ${first.the_category} and ${other.the_category} show different words`,
+        other.the_word_of_the_surface !== first.the_word_of_the_surface,
+        `the Core answered ${first.the_status_of_the_core} and `
+        + `${other.the_status_of_the_core}, the surface shows the same word `
+        + `${first.the_word_of_the_surface}`);
+    }
+  }
+}
+
 const surface = await readSurface();
 fs.writeFileSync(`${outDir}/settings-status-surface.txt`, surface + '\n');
-const shown = [...surface.split('\n')]
-  .map((line) => /^CORE · (.+)$/.exec(line.trim()))
-  .filter(Boolean)
-  .map((match) => match[1].trim());
+const shown = measured.map((item) => item.the_word_of_the_surface);
 check('no wire name of the Core leaks into the surface',
-  !shown.some((item) => Object.prototype.hasOwnProperty.call(LABELS, item)),
-  JSON.stringify(shown));
+  !shown.some((item) => isAWireName(item)), JSON.stringify(shown));
 check('every category of the Core was measured',
   measured.length === categories.length,
   `${measured.length} of ${categories.length}`);
@@ -207,6 +263,10 @@ const receipt = {
   scope: 'the status of the settings categories in the approved surface against the real Core',
   base,
   the_categories_of_the_core: measured,
+  the_answer_in_the_scope_of_the_organization: scopedCategories.map((item) => ({
+    the_category: item.category,
+    the_status: item.status,
+  })),
   the_statuses_of_the_surface: shown,
   findings,
   errors,

@@ -158,7 +158,9 @@ class SettingsNavigation extends StatelessWidget {
     final status = switch (definition.status) {
       'offline_administration_required' => 'Nur offline administrierbar',
       'read_only' => 'Nur lesend',
-      final value => value,
+      // A state that the client does not know is **named**, never shown as
+      // the wire name of the Core: the surface speaks to the operator.
+      _ => 'Status unbekannt',
     };
     return Padding(
       padding: const EdgeInsets.only(left: 34, right: 9, bottom: 4),

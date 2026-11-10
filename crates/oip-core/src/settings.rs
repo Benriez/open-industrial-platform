@@ -27,11 +27,28 @@ pub enum SettingsApplyStatus {
     ActiveStartupSnapshot,
     PersistedRequiresRestart,
 }
+/// The state of a category of the settings.
+///
+/// The states are named and typed: the wire names are the names of the
+/// contract, and a state that the client does not know cannot be sent. The
+/// contract of the settings requires that the states **Available**,
+/// **Read-only**, **Offline Administration Required**, **Requires Restart**,
+/// **Permission Denied** and **Unsupported** are distinguished; the Core
+/// answers the first two for the categories of an instance.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum SettingsCategoryStatus {
+    /// The category is administered offline on the instance.
+    OfflineAdministrationRequired,
+    /// The category is only read.
+    ReadOnly,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 pub struct SettingsCategoryDefinition {
     pub category: SettingCategory,
-    pub status: String,
+    pub status: SettingsCategoryStatus,
     pub capabilities: Vec<CapabilityId>,
 }
 

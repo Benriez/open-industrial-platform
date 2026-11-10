@@ -14,8 +14,14 @@ import 'support.dart';
 
 class FixtureSettingsApi extends FakeApi {
   FixtureSettingsApi(
-      {this.contextName = 'platform', this.delay = Duration.zero});
+      {this.contextName = 'platform',
+      this.delay = Duration.zero,
+      this.statusOverride = const {}});
   final String contextName;
+  /// The states the Core answers, if a test wants to change them. The
+  /// negative control of the navigation needs an answer that differs from
+  /// the usual one.
+  final Map<String, String> statusOverride;
   final managementCalls = <String>[];
   final settingsCalls = <String>[];
   final managementFailures = <String, Object>{};
@@ -42,6 +48,12 @@ class FixtureSettingsApi extends FakeApi {
           code: 'PERMISSION_DENIED', statusCode: 403);
     }
     final data = _read(catalog ? 'settings-catalog' : 'settings-platform');
+    if (statusOverride.isNotEmpty) {
+      for (final category in (data['categories'] as List).cast<Json>()) {
+        final replacement = statusOverride[category['category']];
+        if (replacement != null) category['status'] = replacement;
+      }
+    }
     if (key != null) {
       data['definitions'] = (data['definitions'] as List)
           .where((item) => (item as Json)['key'] == key)
@@ -158,6 +170,36 @@ void main() {
       await tester.pump(const Duration(milliseconds: 120));
     }
     expect(find.text('CORE · Nur lesend'), findsOneWidget);
+  });
+
+  testWidgets('The navigation follows the answer of the Core, not a table of the client',
+      (tester) async {
+    // The negative control: the Core answers that the General category is
+    // only read — the opposite of the usual answer. A navigation that showed
+    // a table of its own would show the wrong word here.
+    await bootstrapSettings(
+        tester,
+        api: FixtureSettingsApi(
+            statusOverride: const {'general': 'read_only'}));
+
+    expect(find.text('CORE · Nur lesend'), findsOneWidget);
+    expect(find.text('CORE · Nur offline administrierbar'), findsNothing);
+  });
+
+  testWidgets('A state that the client does not know is named, never shown as the wire name',
+      (tester) async {
+    // The contract of the settings requires that the states are distinguished
+    // in the words of the surface; the wire name of an unknown state belongs
+    // to the contract of the Core and not to the operator.
+    await bootstrapSettings(
+        tester,
+        api: FixtureSettingsApi(
+            statusOverride: const {'general': 'requires_restart'}));
+
+    expect(find.text('CORE · Status unbekannt'), findsOneWidget);
+    // The wire name of the state must not be the word of the surface. The
+    // text of the panel may mention the name of a state of another subject.
+    expect(find.textContaining('CORE · requires_restart'), findsNothing);
   });
 
   testWidgets('A all seven categories open with functional default sections',
