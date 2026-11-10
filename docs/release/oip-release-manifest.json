@@ -1,13 +1,13 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "d7028ed4788e1964c6e03d81f656024a8f89f9b5",
-  "the_tree": "6afdec39004637a5057a7e0d6a6b703d8369cf11",
+  "the_revision": "f0fcc43f68e1d8e9347560523a6fd6d234aa5e88",
+  "the_tree": "09b078d429190cd9558a66efda43b389373beba9",
   "the_branch": "main",
   "the_revision_of_the_source": {
-    "the_revision": "b09598189d65be0c5fd4c061f838b27731cae86d",
-    "the_subject": "feat(g8): the journey walks every category of the settings"
+    "the_revision": "ae2a8ab8e49390ff9d8d531af73b06713b87a437",
+    "the_subject": "fix(g8): the refusals of the Core are evidence, not a defect of the surface"
   },
-  "the_working_tree_is_clean": true,
+  "the_working_tree_is_clean": false,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -22,14 +22,14 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 676,
-    "the_sha256": "3e9fdeca493041d541137adb03255a35a42c4c869a5f582d906ef861a9c60c3d"
+    "the_sha256": "6193c34ac2cec2e9344242052a95f27931ccf8c55ed15f1202dec286ae9baf07"
   },
   "the_artifacts": {
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
-      "bytes": 36393552,
-      "sha256": "cfe5a493a2fdb84f24f8cfe47da9ff09631e52401a0238e0c57e499da976159a",
+      "bytes": 36395792,
+      "sha256": "f31ce93451d53cab6776bdea4d114d3e92a889fa611593883f37c7b5601c033c",
       "the_revision_the_binary_names": "be75e125c960b11844a4cdda4fdd924b6e297b0e"
     },
     "the_official_mcp_probe": {
@@ -43,31 +43,31 @@
       "path": "apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
       "files": 43,
       "bytes": 96996325,
-      "sha256": "e5cb529201e18bfc71802535297b0b3575ca4371033e347b48ad62778988b884",
-      "the_executable_sha256": "6123cdc51b08b7cac10a0048f21e0e9407c9a2cfad3349d26d0a2949d05facd3"
+      "sha256": "43d13611c07034f571dd4f7c7ae7f0473eb5471544dad2b36799c206c5377b67",
+      "the_executable_sha256": "c46697934fed2bdc70233a9d7d380f792f5c7446934e2a0ac7f10896716b4860"
     },
     "the_web_release": {
       "present": true,
       "path": "apps/flutter/build/web",
       "files": 35,
-      "bytes": 25109343,
-      "sha256": "db506a2f0764afb23e5c2718a3273fd10435a5ab9c1c76b238837a2c9eb24f53",
-      "the_main_bundle_sha256": "a51b62cdd3644a6be44bcb6409feb5345fe353c921ec281c9be6c4fcde4c56d2",
-      "the_main_bundle_bytes": 3032537
+      "bytes": 25109360,
+      "sha256": "911c5e0e1cf0a22847d78faef363389fcc372c79e2ce774568cd3cbdc903de04",
+      "the_main_bundle_sha256": "dec5c994800c9d8f0b322f228f08f3be14a8f1a86eda93cd6eec99dcdb102364",
+      "the_main_bundle_bytes": 3032554
     }
   },
   "the_receipts": {
     "the_global_context": {
       "path": "docs/evidence/oip-global-context/global-context.json",
-      "sha256": "689dd26a6d697cd3e77775443d1d90ab2ba71185e54a4eafa51fa61883dd69f8"
+      "sha256": "8635333a007dcce0f89f7d96c66c389768521d989a42ce9c405ba01304384100"
     },
     "the_accessibility": {
       "path": "docs/evidence/oip-accessibility/accessibility.json",
-      "sha256": "af570f204c15b7c83c0943c0d14514e37e685effbdf3caa9daf3cae73e4e3e8b"
+      "sha256": "5221976f82c6a93592198ff99153229e6462a45d37c75ce95e8ab2af688f633e"
     },
     "the_performance": {
       "path": "docs/evidence/oip-performance/performance.json",
-      "sha256": "dc4bd6159b12291362bbadd10e1a5caf7e39a5efb4bd540f1fb094839240cbff"
+      "sha256": "60fe6971fbdfc669b277d5fa9b219b7ad06de3b1a633b32e02fc672cf799c5db"
     },
     "the_security_review": {
       "path": "docs/evidence/oip-security-review/security-review.json",
@@ -75,35 +75,35 @@
     },
     "the_macos_application": {
       "path": "docs/evidence/oip-macos-app/macos-app.json",
-      "sha256": "e7ae2ef52cc69d79c9e9eb72fa8339f7a9c658cbd1dd0f651ab7efad8aac82c8"
+      "sha256": "15f8d11c952704d673d378ed53d4e5b4a607d01f5273bb038fecfd113446b134"
     },
     "the_transport_parity": {
       "path": "docs/evidence/oip-transport-parity/transport-parity.json",
-      "sha256": "bb69256af554939bd3d7a8f89a3e5739d09628e35e5e31a8f75a1b30b1fce5c7"
+      "sha256": "ce208b77ab631c1aad1ca3f5bafc29a514f91c84bf1dbc8142bf188a638fe1c3"
     },
     "the_acceptance": {
       "path": "docs/evidence/oip-canonical-acceptance/acceptance.json",
-      "sha256": "b602d1734e49b71293e220314648d9b9a7aafdd7716fb697ac9af5e6e9e45c1d"
+      "sha256": "5b4cc56645aceb404a156ee6e524a2614f45bc418f31c950c761b09ba66ee6a1"
     },
     "the_acceptance_browser_gate": {
       "path": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
-      "sha256": "e74e693802abdeea3415df8aff220e72407e4c30057f1e11ba6550502b343443"
+      "sha256": "02cdc029f204813eaf9a519e9cd2d75960115b2d0fd1d179a1b49637a28b29be"
     },
     "the_acceptance_ui_gate": {
       "path": "docs/evidence/oip-canonical-acceptance/ui-gate.json",
-      "sha256": "321ca2285243159cb912c0b6c61531b35a59c3569130279ceaae9a26df1e43a9"
+      "sha256": "2b84ca3e8e72c532116b32fefab868325058dc095144ae39a61fecd2bee0f03d"
     },
     "the_device_administration": {
       "path": "docs/evidence/oip-device-administration/device-administration.json",
-      "sha256": "7e626ea07683c619aaaee9f7ad178312205205dff55c57597971a84a396c00b0"
+      "sha256": "68b2ae562edc503767ebed74f43e9b89e7d12575fe3fa22e533e1de0f2420b3a"
     },
     "the_session_lifetime": {
       "path": "docs/evidence/oip-session-lifetime/session-lifetime.json",
-      "sha256": "26dc843d2c3001f91c4b69428f0e3474a03a7c18a7bcbe0aa9eb11ec10c2181c"
+      "sha256": "204a284a3e418594586742c17a2880bba4b742f3892aa6ac8fd71031c53f4e14"
     },
     "the_stability": {
       "path": "docs/evidence/oip-stability/stability.json",
-      "sha256": "0564d58d0f1ba5c90d3669969d05013f65b09fd63a73346c1f10a92e7b4c3793"
+      "sha256": "8b98bfcb84ebf392adaf16aee0f5fe94c6e162d45a425f3e1a0dd7d65015d938"
     },
     "the_reproducible_build": {
       "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
@@ -111,72 +111,74 @@
     },
     "the_upgrade_rollback": {
       "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
-      "sha256": "068e744aba590ca030ed7f7e1425e74822923b8ce200c34aa913569895b4708c"
+      "sha256": "cde755ab2c49e947613b6b4a86dd3067c4c0e4c0d61801f354c2c3213e483414"
     },
     "the_activation_dry_run": {
       "path": "docs/evidence/oip-activation-dry-run/activation-dry-run.json",
-      "sha256": "f60616f37a99874f5c731091ac8daf4fa220fac194ef4c0fe0b2a18499d9dd08"
+      "sha256": "7843a7fb3783f6449e3ee34c6427e62b4cf3f1a4868d8905cb888ba73b3b30c1"
     },
     "the_rust_regression": {
       "path": "docs/evidence/oip-rust-regression/rust-regression.json",
-      "sha256": "9d307b33ae3e1d4084819c862e5802d332c8c01fa7ceb9e84ea91eee8e90914d"
+      "sha256": "d1d9ce39747e7611800540b1a901eaf856fc42b5753039139e932df4fb4a78d1"
     },
     "the_reconnect_recovery": {
       "path": "docs/evidence/oip-reconnect-recovery/reconnect-recovery.json",
-      "sha256": "aff11b2a9b5ccf6daaa3ed5e19121e3e39e3cfd1e9739a1427d63760588ac38f"
+      "sha256": "bea485fbe501c532ab5169aa5d8f2e974f43e61acd9ae040e50e264e8c316d79"
     },
     "the_operations": {
       "path": "docs/evidence/oip-operations/operations.json",
-      "sha256": "af57843f85ef9f885286c474a1d901afd34e300d3a3e2f091615e80fea76b022"
+      "sha256": "202415e650f6459d8d56b3c3831c7e51b4a72fdb9e675d8e9d2340de31495c50"
     },
     "the_documented_plan": {
       "path": "docs/evidence/oip-documented-plan/documented-plan.json",
-      "sha256": "7ecd0cc89f9e7372642f34718fd6c157acb01ec6567da400719e32e683bdd4c3"
+      "sha256": "e79938f35c993c8f35a66423414fb698d40d785eec9c3746d0fd7b6f97598e22"
     },
     "the_storage_failure": {
       "path": "docs/evidence/oip-storage-failure/storage-failure.json",
-      "sha256": "16e58e9f795d9cb751da6f3905311906968fffd56afb2cb66cb27480fddc7b42"
+      "sha256": "b8cd3d61de45dfbd6318e12175e6f3d6f99bc6fb7698b2d41642eb986b51c053"
     },
     "the_operations_rehearsal": {
       "path": "docs/evidence/oip-operations/operations.json",
-      "sha256": "af57843f85ef9f885286c474a1d901afd34e300d3a3e2f091615e80fea76b022"
+      "sha256": "202415e650f6459d8d56b3c3831c7e51b4a72fdb9e675d8e9d2340de31495c50"
     },
     "the_settings_offline": {
       "path": "docs/evidence/oip-settings-offline/settings-offline.json",
-      "sha256": "f5303ebd5a36a6047e3f33eb0b146f1d1136bce05ebe4d41627e86bdd7aef11a"
+      "sha256": "8f1e159766c81f88d8aa0e5a54b61270f17ca498bdac1b8fa574162f90876a1a"
     },
     "the_offline_archive": {
       "path": "docs/evidence/oip-offline-archive/offline-archive.json",
-      "sha256": "b7e853cd83af5fb7cd0ba5a297cab46f83ca819ddb88de34ebbf246a1633d6de"
+      "sha256": "09cec178f36656f640ac913ca5a179d64c73a5cf75da3daaa76647fc0d556344"
     },
     "the_opcua_parity": {
       "path": "docs/evidence/oip-opcua-parity/opcua-parity.json",
-      "sha256": "dc65ae2e591c219d15b8e65ae9e8d78d9d3c1b667e686ec7870e99fe666c9060"
+      "sha256": "0932b8745369000292c0db5ad9ff090ab6282b53137b5dfecf5b5bf917a695aa"
     },
     "the_extend_registry": {
       "path": "docs/evidence/oip-extend-registry/extend-registry.json",
-      "sha256": "e33176920216759811ece88c2f0e532817b9d9b2ada57833278b31161d03a31d"
+      "sha256": "fd58ae7b38db402f88704ea81f672e480bff1f1159f73c7ea00ecbede0fa23ec"
     },
     "the_historical_daemon": {
       "path": "docs/evidence/oip-historical-daemon/historical-daemon.json",
-      "sha256": "5fde7b03f0f3ff71dd9d66934b2c0727e3d0b1ef11d461c237899d6b7b11e299"
+      "sha256": "80ddc92a2b0f626ebfb6283c02b6b107ad9892727be99cdf707ab15bc7fe0afa"
     },
     "the_diagnostic_continuation": {
       "path": "docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json",
-      "sha256": "3050852a49db7f46f0ce8867b1d71b77b61dd1996fd8f2a38530d9839c2e891b"
+      "sha256": "febec6cc84199e8b37df473b6ab038004ca92c30e0df849c181562f64d3f992d"
     },
     "the_device_connection": {
       "path": "docs/evidence/oip-device-connection/device-connection.json",
-      "sha256": "f75b6618db8fe3927bf397f5be5dd213bdf0b4d5c038b2c770db5091ccb895ac"
+      "sha256": "cd7c6344d0a7504d5c3d7a16a4bae7a7c2af392c239a33391cae979cee9146dd"
     },
     "the_workstation_data": {
       "path": "docs/evidence/oip-workstation-data/workstation-data.json",
-      "sha256": "c566f13bf494158613b9e1335c26cda9f860efb6ef6d7406f7733571b8b5f527"
+      "sha256": "c5d6057eaf0b2bffbf794edea3d446a15055d6e4a053b4c3611312fa6028b464"
     }
   },
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
-  "the_working_tree_without_the_manifest": [],
+  "the_working_tree_without_the_manifest": [
+    "M docs/OIP_RELEASE_PROGRESS.md"
+  ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
     "the_digest_of_the_reproducible_build": "146b8bc5387359879abffe622b9cbe32bcb86d5630c8ab98eaa451c294b8fe65",
@@ -184,14 +186,14 @@
     "the_manifest_names_the_reproducible_binary": false,
     "the_revision_the_binary_names": "be75e125c960b11844a4cdda4fdd924b6e297b0e",
     "the_revision_of_the_receipt": "be75e125c960b11844a4cdda4fdd924b6e297b0e",
-    "the_sources_of_the_core_are_unchanged_since_the_receipt": true,
-    "the_property_holds_for_the_release": true,
+    "the_sources_of_the_core_are_unchanged_since_the_receipt": false,
+    "the_property_holds_for_the_release": false,
     "the_note": "the binary names the revision it was built from, so the bytes of a later revision differ; the property of the release is that the same revision yields the same bytes \u2014 it is measured by the rehearsal and it carries over as long as the sources of the Core are unchanged"
   },
   "the_visual_acceptance": {
     "the_state": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
     "the_source": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
-    "the_revision_of_the_acceptance": "3b1e53caaeb65de1ce3d16118f391055961f42a8",
+    "the_revision_of_the_acceptance": "7391bd7780224fa87fe67964af3ca637411ea326",
     "the_note": "the operator alone accepts the visible result; the gate records the state, it never grants it"
   },
   "the_manifest_verifies": true,

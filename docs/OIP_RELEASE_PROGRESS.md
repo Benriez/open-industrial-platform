@@ -2903,6 +2903,42 @@ a change of the product.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 64 — the proof of the settings status is proved against the Core, and the review that found it is answered
+
+**Status: PROVED on canonical `main`.**
+An independent review of the new proof of the settings status found three weaknesses that the
+proof itself could not see:
+
+* the journey carried the **mapping of the client** and compared the surface with its own table —
+  a client that ignored the answer of the Core and hardcoded the same two words would have passed
+  every check;
+* the navigation shows the status of the **selected** category, so a stale selection among the
+  five categories that the Core answers alike would have passed;
+* the client showed the **wire name** of a state it did not know, and the Core answered the state
+  as an untyped string.
+
+All three are closed:
+
+* the journey now compares the **relation** of the answers of the Core with the relation of the
+  words — two categories that the Core answers alike show the same word, two that it answers
+  differently show different words — and it **proves the selection** by the order of the
+  semantics tree. The dependence is proved by a **negative control**: the pinned widget test
+  answers that the General category is only read — the opposite of the usual answer — and the
+  navigation shows that answer, so a navigation with a table of its own fails;
+* the Core answers a **typed** state (`SettingsCategoryStatus`) — the wire names are unchanged —
+  and the client names a state it does not know instead of showing the wire name of the Core, as
+  the contract of the settings requires;
+* the journey asks the Core in the scope of the platform **and** in the scope of an organization,
+  and the refusals of the Core are recorded with their route instead of being swallowed by the
+  filter of the console errors.
+
+The receipt proves **seven** categories, **85** checks, and the word of the surface is determined
+by the answer of the Core. The whole evidence of the release was measured again — the Core
+changed — with the one command of the release: 27 rehearsals, 33 receipts, none failed.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |
