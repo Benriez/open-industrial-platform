@@ -539,6 +539,9 @@ def main():
             "the_problems": problems,
             "the_gates_that_need_the_operator": report["the_gates_that_need_the_operator"],
             "the_receipts_of_the_release": len(receipts),
+            "the_note": "the receipts of the release: the JSON receipts of the areas "
+                        "of the release; the checker of the record counts every file of "
+                        "the evidence tree, the captures and the painted surfaces as well",
         }, indent=2))
     return 0 if not problems else 1
 
