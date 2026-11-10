@@ -169,7 +169,13 @@ def main():
             "database": str(work / "core.sqlite"), "http_port": port, "sources": [],
             "legacy_single_infrastructure": False,
             "stale_after_ms": 8000, "shutdown_timeout_ms": 6000,
-            "web_dir": str(ROOT / "apps/flutter/build/web")}, indent=2))
+            "web_dir": str(ROOT / "apps/flutter/build/web"),
+            "ssh": {"profiles": [{
+                "id": "fixture", "label": "Owned loopback SSH fixture",
+                "principals": ["reader-org-a"], "allowed_hosts": ["127.0.0.1"],
+                "allowed_ports": [fixture.port],
+                "identity_file": str(pathlib.Path(fixture.directory) / "client"),
+                "agent_socket": None, "known_hosts_file": None, "aliases": {}}]}}, indent=2))
         credential = work / "platform.credential"
         credential.write_bytes(secrets.token_bytes(32))
         credential.chmod(0o600)
