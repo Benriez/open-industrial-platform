@@ -59,6 +59,73 @@ def tracked(paths):
     return set(line for line in result.stdout.splitlines() if line)
 
 
+
+def the_canonical_state():
+    """The canonical state of the record must name the release.
+
+    The table of §1 of the state file names the revision of the product, the
+    revision of the acceptance, the revision of the Core binary of the release
+    and the number of the tracked files. Every one of them is checked against
+    the manifest and the receipts: a table that drifts away from the release
+    is a false statement in the record.
+    """
+    problems = []
+    values = {}
+    section = PROGRESS.read_text().split("## 1. Canonical state", 1)[-1]
+    section = section.split("## 2.", 1)[0]
+    for line in section.splitlines():
+        if not line.startswith("| ") or "---" in line:
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) == 2:
+            values[cells[0]] = cells[1]
+    manifest = json.loads((ROOT / "docs/release/oip-release-manifest.json").read_text())
+    acceptance = json.loads(
+        (ROOT / "docs/evidence/oip-canonical-acceptance/acceptance.json").read_text())
+    source = subprocess.check_output(
+        ["git", "log", "-1", "--format=%H", "--", "crates", "apps/flutter/lib"],
+        cwd=ROOT, text=True).strip()
+    core = manifest.get("the_artifacts", {}).get("the_core", {}).get(
+        "the_revision_the_binary_names")
+    expected = {
+        "Canonical source revision (the product: `apps/flutter/lib/`, `crates/`)": source,
+        "The revision of the final acceptance": acceptance.get("the_revision"),
+        "The revision of the Core binary of the release": core,
+    }
+    for label, wanted in expected.items():
+        if not wanted:
+            continue
+        quoted = values.get(label, "")
+        found = re.search(r"`([0-9a-f]{7,40})`", quoted)
+        if not found or not found.group(1).startswith(wanted[:len(found.group(1))]):
+            problems.append(f"the canonical state names "
+                            f"{found.group(1) if found else 'nothing'} for {label}, "
+                            f"the release names {wanted[:12]}")
+    files = manifest.get("the_source_manifest", {}).get("the_files")
+    row = values.get("Tracked files in the canonical source revision", "")
+    if files is not None:
+        found = re.search(r"(\d+)", row)
+        if not found or int(found.group(1)) != files:
+            problems.append(f"the canonical state names "
+                            f"{found.group(1) if found else 'nothing'} tracked files, "
+                            f"the manifest names {files}")
+    # The product of the release must be committed. The receipts are published
+    # with the record, so a measurement that is published leaves the working
+    # tree changed until the publication is committed — that is the record,
+    # not the product.
+    uncommitted = subprocess.check_output(
+        ["git", "status", "--porcelain", "--", "crates", "apps/flutter"],
+        cwd=ROOT, text=True).strip()
+    if uncommitted:
+        problems.append(f"the product of the release is not committed: {uncommitted[:200]}")
+    return {
+        "the_source_revision": source,
+        "the_acceptance_revision": acceptance.get("the_revision"),
+        "the_core_binary_revision": core,
+        "the_tracked_files": files,
+        "the_product_is_committed": not uncommitted,
+    }, problems
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence", default=str(ROOT / "target" / "oip-record-integrity"))
@@ -140,6 +207,12 @@ def main():
     problems.extend(f"the cited path {name} does not exist" for name in dangling)
     problems.extend(f"the ledger presents the path of a build tree as evidence: {name}"
                     for name in ledger_build_tree)
+
+    # the canonical state of the record names the release
+    state, state_problems = the_canonical_state()
+    report["the_canonical_state"] = state
+    report["steps"].append("the canonical state names the release")
+    problems.extend(state_problems)
 
     # Every file of the evidence tree that nobody cites. The tree is walked
     # whole: the receipts of the eras are the history of the measurement and
