@@ -3149,6 +3149,49 @@ and passed. The receipts of the run carry the revision and the tree they were me
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 70 — the product audit: what the client hardcoded, what it claimed and what the Core does not deliver
+
+**Status: PROVED on canonical `main`.**
+The third audit of the **record** found the record itself in order. This iteration audited the
+**product** — a delegated, read-only audit of the twelve gate texts against the source of the
+Flutter client, the Core, the gates and the receipts. It found five places where the product did
+not do what the gate names, and every one of them is closed here.
+
+* **The legacy demo was one boolean away.** The client fell back to the OIP/005 demo dashboard
+  whenever the Core answered with `simulated: true` — and the Core sets that flag when **one
+  source** is simulated. The rule R7 of the baseline ("no automatic legacy fallback") was therefore
+  proved only in a fixture that had the fallback switched off by hand. The client now accepts the
+  legacy demo only when the Core states its demo mode with the scenario controls it offers
+  (`apps/flutter/lib/app/controller.dart`), and the widget gate proves the rule with the **default**
+  fixture: a Core with simulated data and no demo mode never shows the demo
+  (`apps/flutter/test/canonical_ui_gate_test.dart`).
+* **The OPC-UA workstation assumed the identity of the demo.** Its live values, its session history
+  and its alarm were bound to the hardcoded entity `M-01`; against a real device the live series
+  stayed empty and the rail read `Live M-01`. The workstation binds to the entity the **Core** names
+  for the source now — the id of the device for a real source, the identifier of the simulation for
+  a simulated one (`apps/flutter/lib/features/opcua.dart`), and the widget test proves it
+  (`apps/flutter/test/opcua_workstation_test.dart`).
+* **The diagnostics inspector claimed a reason it did have.** The panel stated that the reason of a
+  data gap is not projected into the Flutter DTO — the shared DTO carries it, and the sibling panel
+  of the same workstation renders it. The inspector shows the reason of the Core now and the false
+  statement is gone (`apps/flutter/lib/features/diagnostics/evidence_inspector.dart`).
+* **The gate G8 did not name what the Core does not deliver.** The Core owns no service registry and
+  no VPN read route, and it has no HTTP or MCP write path for a setting. The surface names all
+  three absences; the row of the ledger now says so as well, so that no reader can take the record
+  for an administration capability that the Core does not have.
+* **The audit named three limits that stay limits** and are recorded as such: the address space of
+  the Core is a filtered legacy view (six metric names and `bulk.*`), the parity receipt measures
+  the simulator catalog and not a real OPC-UA server, and the archive of a device is an offline
+  procedure. They are named in the ledger and in the runbook; they are contract decisions of the
+  operator, not defects of the loop.
+
+The painted surfaces of the journeys now carry the head that names the surface they belong to — a
+reader of `docs/evidence/oip-scope-persistence/painted-surface.txt` sees which surface the lines
+below belong to.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |

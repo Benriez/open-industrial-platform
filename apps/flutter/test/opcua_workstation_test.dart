@@ -12,6 +12,16 @@ import 'support.dart';
 /// Regression coverage for the OPC UA workstation (context rail, explorer,
 /// inspector). Every assertion uses data the fake API actually delivered.
 void main() {
+  testWidgets('The live values bind to the entity of the Core, not to the demo',
+      (tester) async {
+    await _bootstrap(tester, const Size(1440, 1000), data: _managedSnapshot());
+    await _navigate(tester, 1440);
+    // The rail names the entity that the Core delivered for the source.
+    expect(find.text('Live device-a'), findsOneWidget);
+    // The identity of the demo is never assumed by the workstation.
+    expect(find.text('Live M-01'), findsNothing);
+  });
+
   testWidgets('Explorer renders a full 40-node page with pins and keyboard',
       (tester) async {
     final app = await _bootstrap(tester, const Size(1440, 1000),
@@ -256,6 +266,31 @@ void main() {
     expect(find.text('nicht geliefert'), findsWidgets);
     expect(find.text('authorized_context'), findsNothing);
   });
+}
+
+/// A snapshot of a **real** source: the Core names the entity of the source
+/// and the observations carry it. The workstation must bind to that name.
+Json _managedSnapshot() {
+  final data = fixture();
+  (data['system'] as Map<String, dynamic>)['primary_source_id'] = 'source-a';
+  (data['sources'] = (data['sources'] as List?) ?? <dynamic>[]).add({
+    'id': 'source-a',
+    'name': 'Collector SOURCE-A',
+    'entity_id': 'device-a',
+    'simulated': false,
+    'reachability': 'reachable',
+    'connection': 'connected',
+    'service': 'available',
+    'freshness': 'fresh',
+    'validity': 'verified',
+    'last_received_ms': 1800000000000,
+    'last_error': null,
+  });
+  for (final metric in (data['metrics'] as List).cast<Map<String, dynamic>>()) {
+    metric['entity_id'] = 'device-a';
+    metric['data_source_id'] = 'source-a';
+  }
+  return data;
 }
 
 Future<_TestApp> _bootstrap(

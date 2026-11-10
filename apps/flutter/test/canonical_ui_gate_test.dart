@@ -249,8 +249,10 @@ void main() {
             code: 'CONNECTION_FAILED', statusCode: 500),
       ]) {
         final api = FakeApi()..infrastructureFailure = failure;
+        // The Core is **not** in demo mode — it still answers with simulated
+        // data. The rule of the baseline is proved by the mode of the Core,
+        // not by a fixture that has the fallback switched off by hand.
         (api.data['system'] as Map<String, dynamic>)['demo_controls'] = false;
-        (api.data['system'] as Map<String, dynamic>)['simulated'] = false;
         final controller = OipController(
             api, retryDelay: const Duration(milliseconds: 1));
         final running = controller.start();

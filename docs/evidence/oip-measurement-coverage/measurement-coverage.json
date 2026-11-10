@@ -9,16 +9,16 @@
     "the surface names the measurements that are not available"
   ],
   "ssh_fixture": {
-    "port": 55312,
+    "port": 63296,
     "user": "benny",
     "loopback_only": true
   },
-  "host_key_fingerprint": "SHA256:TwyipBD+edeS9tIvuN0vxpQPSdcw1+zh6PV+H8RZdYk",
+  "host_key_fingerprint": "SHA256:AcFMSdPGFhSunHpgz3mRZ45XVHnwwBZe6FYOFYhZpWc",
   "connection_status": "collecting",
   "the_connection": {
     "the_status": "collecting",
-    "the_source_id": "d50b99dd-00f7-423c-9972-eb31efe547a1",
-    "the_host_key_fingerprint": "SHA256:TwyipBD+edeS9tIvuN0vxpQPSdcw1+zh6PV+H8RZdYk",
+    "the_source_id": "7958f2ca-2b5b-484a-b8d1-d995ed05679e",
+    "the_host_key_fingerprint": "SHA256:AcFMSdPGFhSunHpgz3mRZ45XVHnwwBZe6FYOFYhZpWc",
     "the_unavailable": [
       "gpu",
       "temperature",
@@ -145,28 +145,28 @@
         "mount": "/",
         "total_bytes": 994662584320,
         "used_bytes": 12577067008,
-        "available_bytes": 7565500416
+        "available_bytes": 5330776064
       },
       {
         "filesystem": "/dev/disk3s6",
         "mount": "/System/Volumes/VM",
         "total_bytes": 994662584320,
-        "used_bytes": 15581990912,
-        "available_bytes": 7565500416
+        "used_bytes": 16108834816,
+        "available_bytes": 5330776064
       },
       {
         "filesystem": "/dev/disk3s2",
         "mount": "/System/Volumes/Preboot",
         "total_bytes": 994662584320,
         "used_bytes": 10806661120,
-        "available_bytes": 7565500416
+        "available_bytes": 5330776064
       },
       {
         "filesystem": "/dev/disk3s4",
         "mount": "/System/Volumes/Update",
         "total_bytes": 994662584320,
-        "used_bytes": 7540736,
-        "available_bytes": 7565500416
+        "used_bytes": 6602752,
+        "available_bytes": 5330776064
       },
       {
         "filesystem": "/dev/disk1s2",
@@ -193,8 +193,8 @@
         "filesystem": "/dev/disk3s5",
         "mount": "/System/Volumes/Data",
         "total_bytes": 994662584320,
-        "used_bytes": 945312473088,
-        "available_bytes": 7565500416
+        "used_bytes": 947021291520,
+        "available_bytes": 5330776064
       },
       {
         "filesystem": "/dev/disk5s1",
@@ -212,7 +212,7 @@
   ],
   "the_every_unavailable_kind_is_named": true,
   "the_source_in_the_hierarchy": {
-    "the_id": "d50b99dd-00f7-423c-9972-eb31efe547a1",
+    "the_id": "7958f2ca-2b5b-484a-b8d1-d995ed05679e",
     "the_name": "SSH host coverage-device",
     "the_entity_id": "coverage-device",
     "the_simulated": false,
@@ -286,8 +286,8 @@
   "the_measurements_that_were_invented": [],
   "the_readings": {
     "host.memory_total_bytes": 17179869184,
-    "host.memory_used_bytes": 13633880064,
-    "host.uptime_seconds": 950197.0,
+    "host.memory_used_bytes": 12868190208,
+    "host.uptime_seconds": 957968.0,
     "host.cpu_info": "Apple M1 Pro",
     "host.model": "MacBookPro18,3",
     "the_disks": 9,
@@ -356,11 +356,11 @@
       "expanded",
       "expanded"
     ],
-    "revision": "acdd0a694411d8f76aa3da6365c1af31c7a071bc",
+    "revision": "8f0f4baa7832407b7c265318455fea71627c0b61",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the verified connection of a device in the approved surface against the real Core",
-    "base": "http://127.0.0.1:55315",
-    "expected_fingerprint": "SHA256:TwyipBD+edeS9tIvuN0vxpQPSdcw1+zh6PV+H8RZdYk",
+    "base": "http://127.0.0.1:63299",
+    "expected_fingerprint": "SHA256:AcFMSdPGFhSunHpgz3mRZ45XVHnwwBZe6FYOFYhZpWc",
     "findings": [
       {
         "check": "browser-login accepted",
@@ -370,7 +370,7 @@
       {
         "check": "the inventory of the scope lists the device",
         "ok": true,
-        "the_detail": "Coverage device \u00b7 coverage-device\nGer\u00e4t Coverage device coverage-device ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 d50b99dd-00f7-423c-9972-eb31efe547a1 \u00b7 10 Observations \u00b7 Reachability Erreichbar reported\nCove"
+        "the_detail": "Coverage device \u00b7 coverage-device\nGer\u00e4t Coverage device coverage-device ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 7958f2ca-2b5b-484a-b8d1-d995ed05679e \u00b7 10 Observations \u00b7 Reachability Erreichbar reported\nCove"
       },
       {
         "check": "the connection panel of the device is shown",
@@ -413,8 +413,8 @@
   "the_surface_names_the_unavailable": true,
   "checks": 9,
   "status": "PASS",
-  "the_revision": "acdd0a694411d8f76aa3da6365c1af31c7a071bc",
-  "the_tree": "b16533226dcf7b44964b13bf5e5d52017d37d82b",
+  "the_revision": "8f0f4baa7832407b7c265318455fea71627c0b61",
+  "the_tree": "322a2334ac19e7d140a88cc2403fe41db3354407",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T15:43:29Z"
+  "finished_utc": "2026-11-10T17:52:54Z"
 }

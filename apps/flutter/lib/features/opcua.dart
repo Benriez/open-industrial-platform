@@ -128,7 +128,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
     selectedSource ??= snapshot.primarySourceId;
     for (final observation in snapshot.metrics.where((item) =>
         item.sourceId != null &&
-        item.entityId == 'M-01' &&
+        _entityOf(item.sourceId!) == item.entityId &&
         item.sourceMs != null)) {
       final key = _sampleKey(observation.sourceId!, observation.metricId);
       final list = sessionHistory.putIfAbsent(key, () => []);
@@ -151,6 +151,32 @@ class _OpcuaPageState extends State<OpcuaPage> {
   String _keySource(String key) => key.split('\n').first;
   String? get _currentSource =>
       selectedSource ?? widget.controller.snapshot?.primarySourceId;
+
+  /// The entity of a source.
+  ///
+  /// The Core names the entity of a source: the id of the device for a real
+  /// source, the identifier of the simulation for a simulated one. The
+  /// workstation binds its live values, its history and its alarm to that
+  /// name — it never assumes the identity of the demo. Only the legacy demo,
+  /// whose sources the Core does not list, keeps the identity of the demo,
+  /// and only as long as the Core says that its data is simulated.
+  String? _entityOf(String sourceId) {
+    for (final source in sources) {
+      if (source.id == sourceId) return source.entityId;
+    }
+    for (final source
+        in widget.controller.snapshot?.sources ?? const <SourceInfo>[]) {
+      if (source.id == sourceId) return source.entityId;
+    }
+    if (widget.controller.snapshot?.system.simulated == true) return 'M-01';
+    return null;
+  }
+
+  /// The entity of the selected source.
+  String? get _currentEntity {
+    final id = _currentSource;
+    return id == null ? null : _entityOf(id);
+  }
 
   String _sourceFor(OpcNode node) =>
       node.observation?.sourceId ??
@@ -431,12 +457,14 @@ class _OpcuaPageState extends State<OpcuaPage> {
 
   Map<String, Observation> _liveMap() {
     final source = _currentSource;
+    final entity = _currentEntity;
     return {
       for (final observation
           in widget.controller.snapshot?.metrics ?? const <Observation>[])
         if (source != null &&
+            entity != null &&
             observation.sourceId == source &&
-            observation.entityId == 'M-01')
+            observation.entityId == entity)
           observation.metricId: observation
     };
   }
@@ -488,7 +516,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
     final node = selected;
     final (observation, live) =
         node == null ? (null, false) : _resolve(node, liveById, primary);
-    final alarm = snapshot.hasAlarm(deviceId: 'M-01');
+    final alarm = snapshot.hasAlarm(deviceId: _currentEntity ?? 'M-01');
     final viewport = MediaQuery.sizeOf(context).height;
 
     return CallbackShortcuts(
@@ -713,7 +741,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
               SourceInfo.fromJson({
                 'id': current,
                 'name': current,
-                'entity_id': 'M-01',
+                'entity_id': _currentEntity ?? current,
                 'simulated':
                     widget.controller.snapshot?.system.simulated ?? false,
                 'reachability': 'unknown',
@@ -945,7 +973,10 @@ class _OpcuaPageState extends State<OpcuaPage> {
         _statusLine(
             context, 'Sichtbar', _total == 0 ? '—' : 'Position $first–$last'),
         _statusLine(context, 'Je Abruf', '$_pageSize'),
-        _statusLine(context, 'Live M-01', '${liveById.length} Variablen'),
+        _statusLine(
+            context,
+            _currentEntity == null ? 'Live' : 'Live ${_currentEntity!}',
+            '${liveById.length} Variablen'),
         const Hairline(),
         PanelLabel('Angeheftet',
             color: OipTokens.violet,

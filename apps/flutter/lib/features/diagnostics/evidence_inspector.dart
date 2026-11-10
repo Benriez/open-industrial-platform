@@ -218,9 +218,6 @@ class DiagnosticsEvidenceInspector extends StatelessWidget {
         const KeyValue('Messwerte',
             'Keine ereignisverknüpften Observation-Referenzen geliefert',
             mono: false),
-        const KeyValue('Gap-Grund',
-            'DataGap.reason ist im gemeinsamen Flutter-DTO nicht projiziert; daher hier nicht verfügbar',
-            mono: false),
       ]),
     ]);
   }
@@ -245,6 +242,14 @@ class DiagnosticsEvidenceInspector extends StatelessWidget {
       KeyValue('Beginn', timestamp(event.gapStartedMs)),
       KeyValue('Ende', timestamp(event.gapEndedMs)),
       KeyValue('Gemeldete/ableitbare Dauer', duration),
+      // The Core delivers the reason of the gap with the event. The panel
+      // shows it; it never claims that the reason is missing.
+      KeyValue(
+          'Grund',
+          (event.reason == null || event.reason!.isEmpty)
+              ? 'Der Core hat für dieses Ereignis keinen Grund geliefert'
+              : '${event.reason} · vom Core für dieses Ereignis geliefert',
+          mono: false),
       const KeyValue('Recovery',
           'Reconnect ist kein Nachweis aktueller oder vollständiger Messwerte',
           mono: false),

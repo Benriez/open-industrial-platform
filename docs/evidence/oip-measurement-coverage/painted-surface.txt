@@ -1,3 +1,6 @@
+# the painted surface of the devices workstation: the connection of the device
+# the state, the endpoint, the confirmed host key and the read-only monitoring
+# the semantics of the page, in the order of the DOM
 OPEN INDUSTRIAL
 PLATFORM
 Geräte & Dienste
@@ -32,7 +35,7 @@ SOURCES
 REGISTRY
 1 Geräte
 EMPFANG
-2026-11-10 15:43:14.510 UTC
+2026-11-10 17:52:45.041 UTC
 PROVENIENZ
 REPORTED / OBSERVED
 ORG / SITE
@@ -55,10 +58,10 @@ Comfortable-Dichte
 GRUPPIERUNG
 Source
 1/1
-D50B99DD-00F7-423C-9972-EB31EFE547A1
+7958F2CA-2B5B-484A-B8D1-D995ED05679E
 Coverage device · coverage-device
-Gerät Coverage device coverage-device auswählen · SingleBoardComputer · d50b99dd-00f7-423c-9972-eb31efe547a1 · 10 Observations · Reachability Erreichbar reported
-SingleBoardComputer · d50b99dd-00f7-423c-9972-eb31efe547a1 · Aktuell · Erreichbar reported
+Gerät Coverage device coverage-device auswählen · SingleBoardComputer · 7958f2ca-2b5b-484a-b8d1-d995ed05679e · 10 Observations · Reachability Erreichbar reported
+SingleBoardComputer · 7958f2ca-2b5b-484a-b8d1-d995ed05679e · Aktuell · Erreichbar reported
 Gerät pinnen
 Vergleich hinzufügen
 Vorherige Geräte
@@ -81,7 +84,7 @@ Coverage device
 DEVICE TYPE
 SOURCE ID
 SingleBoardComputer
-d50b99dd-00f7-423c-9972-eb31efe547a1
+7958f2ca-2b5b-484a-b8d1-d995ed05679e
 REGISTRY LOCATION
 REGISTRY CONNECTION TYPE
 site-a1
@@ -99,14 +102,14 @@ Nicht separat verfügbar; Registry Connection Type oben
 OBSERVATION & TELEMETRY
 host.architecture  arm64  · Gut · Aktuell
 host.cpu_info  Apple M1 Pro  · Gut · Aktuell
-host.disks  [{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":7540596736},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":15581990912,"available_bytes":7540596736},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806661120,"available_bytes":7540596736},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":7540736,"available_bytes":7540596736},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503582720},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503582720},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3526656,"available_bytes":503582720},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":945337376768,"available_bytes":7540596736},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}]  · Gut · Aktuell
+host.disks  [{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":5315047424},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":16108834816,"available_bytes":5315047424},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806661120,"available_bytes":5315047424},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":6602752,"available_bytes":5315047424},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503582720},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503582720},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3526656,"available_bytes":503582720},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":947037020160,"available_bytes":5315047424},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}]  · Gut · Aktuell
 CONNECTION & MONITORING
 Verbindung & Monitoring
 Collecting · aktuelle Messwerte empfangen
-SSH · benny@127.0.0.1:55312
-Host-Key: SHA256:TwyipBD+edeS9tIvuN0vxpQPSdcw1+zh6PV+H8RZdYk
-Letzter Prüfversuch: 2026-11-10 15:43:14.507 UTC
-Letzte erfolgreiche Erfassung: 2026-11-10 15:43:14.507 UTC
+SSH · benny@127.0.0.1:63296
+Host-Key: SHA256:AcFMSdPGFhSunHpgz3mRZ45XVHnwwBZe6FYOFYhZpWc
+Letzter Prüfversuch: 2026-11-10 17:52:45.038 UTC
+Letzte erfolgreiche Erfassung: 2026-11-10 17:52:45.038 UTC
 Tatsächlich verifizierte Identität Expanded
 double tap to collapse
 Hostname: MacBookPro.fritz.box
@@ -115,10 +118,10 @@ Architektur: arm64
 CPU: Apple M1 Pro
 Modell: MacBookPro18,3
 RAM gesamt (Bytes): 17179869184
-RAM belegt (Bytes): 13604077568
-Uptime (Sekunden): 950196
-Erfasst um: 1794325290046
-Datenträger: [{filesystem: /dev/disk3s1s1, mount: /, total_bytes: 994662584320, used_bytes: 12577067008, available_bytes: 7565500416}, {filesystem: /dev/disk3s6, mount: /System/Volumes/VM, total_bytes: 994662584320, used_bytes: 15581990912, available_bytes: 7565500416}, {filesystem: /dev/disk3s2, mount: /System/Volumes/Preboot, total_bytes: 994662584320, used_bytes: 10806661120, available_bytes: 7565500416}, {filesystem: /dev/disk3s4, mount: /System/Volumes/Update, total_bytes: 994662584320, used_bytes: 7540736, available_bytes: 7565500416}, {filesystem: /dev/disk1s2, mount: /System/Volumes/xarts, total_bytes: 524288000, used_bytes: 6311936, available_bytes: 503582720}, {filesystem: /dev/disk1s1, mount: /System/Volumes/iSCPreboot, total_bytes: 524288000, used_bytes: 5890048, available_bytes: 503582720}, {filesystem: /dev/disk1s3, mount: /System/Volumes/Hardware, total_bytes: 524288000, used_bytes: 3526656, available_bytes: 503582720}, {filesystem: /dev/disk3s5, mount: /System/Volumes/Data, total_bytes: 994662584320, used_bytes: 945312473088, available_bytes: 7565500416}, {filesystem: /dev/disk5s1, mount: /private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume, total_bytes: 25124864, used_bytes: 24702976, available_bytes: 421888}]
+RAM belegt (Bytes): 12852379648
+Uptime (Sekunden): 957967
+Erfasst um: 1794333060302
+Datenträger: [{filesystem: /dev/disk3s1s1, mount: /, total_bytes: 994662584320, used_bytes: 12577067008, available_bytes: 5330776064}, {filesystem: /dev/disk3s6, mount: /System/Volumes/VM, total_bytes: 994662584320, used_bytes: 16108834816, available_bytes: 5330776064}, {filesystem: /dev/disk3s2, mount: /System/Volumes/Preboot, total_bytes: 994662584320, used_bytes: 10806661120, available_bytes: 5330776064}, {filesystem: /dev/disk3s4, mount: /System/Volumes/Update, total_bytes: 994662584320, used_bytes: 6602752, available_bytes: 5330776064}, {filesystem: /dev/disk1s2, mount: /System/Volumes/xarts, total_bytes: 524288000, used_bytes: 6311936, available_bytes: 503582720}, {filesystem: /dev/disk1s1, mount: /System/Volumes/iSCPreboot, total_bytes: 524288000, used_bytes: 5890048, available_bytes: 503582720}, {filesystem: /dev/disk1s3, mount: /System/Volumes/Hardware, total_bytes: 524288000, used_bytes: 3526656, available_bytes: 503582720}, {filesystem: /dev/disk3s5, mount: /System/Volumes/Data, total_bytes: 994662584320, used_bytes: 947021291520, available_bytes: 5330776064}, {filesystem: /dev/disk5s1, mount: /private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume, total_bytes: 25124864, used_bytes: 24702976, available_bytes: 421888}]
 Netzwerk-Interfaces (vom Host gemeldet): [{name: lo0, addresses: [127.0.0.1, ::1, fe80::1%lo0]}, {name: gif0, addresses: []}, {name: stf0, addresses: []}, {name: anpi1, addresses: []}, {name: anpi2, addresses: []}, {name: anpi0, addresses: []}, {name: en4, addresses: []}, {name: en5, addresses: []}, {name: en6, addresses: []}, {name: en1, addresses: []}, {name: en2, addresses: []}, {name: en3, addresses: []}, {name: bridge0, addresses: []}, {name: utun0, addresses: [fe80::c521:1aac:ad72:d54f%utun0]}, {name: ap1, addresses: []}, {name: en0, addresses: [fe80::1878:bbf6:2742:a111%en0, fd14:75ec:3e81:0:ea:ed57:96b6:2113, 192.168.1.219]}, {name: utun1, addresses: [fe80::39ff:4771:b6c:63be%utun1]}, {name: awdl0, addresses: [fe80::701c:4aff:fec2:902e%awdl0]}, {name: llw0, addresses: [fe80::701c:4aff:fec2:902e%llw0]}, {name: utun3, addresses: [fe80::378a:3e38:7093:eadb%utun3]}, {name: utun4, addresses: [fe80::ce81:b1c:bd2c:69e%utun4]}, {name: utun2, addresses: [fe80::7ceb:d263:d038:12f%utun2, 100.72.167.42, fd7a:115c:a1e0::1234:a72a]}]
 Nicht verfügbar: gpu, temperature, cpu_utilization
 Provenienz: authenticated SSH host report; fixed read-only query; capture time is Core time, remote measurement clocks unknown; no hardware attestation or inferred sensors
@@ -127,54 +130,54 @@ Polling: 10 s · Revision 1
 Aktuelle Messwerte
 Vom autorisierten Gerät tatsächlich gelesene Werte · keine Ersatzwerte
 host.architecture
-arm64 · Gut · Aktuell · 2026-11-10 15:43:14.507 UTC
+arm64 · Gut · Aktuell · 2026-11-10 17:52:45.038 UTC
 host.cpu_info
-Apple M1 Pro · Gut · Aktuell · 2026-11-10 15:43:14.507 UTC
+Apple M1 Pro · Gut · Aktuell · 2026-11-10 17:52:45.038 UTC
 host.disks
-[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":754059… · Gut · Aktuell · 2026-11-10 15:43:14.507 UTC Collapsed
+[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":531504… · Gut · Aktuell · 2026-11-10 17:52:45.038 UTC Collapsed
 double tap to expand
 host.hostname
-MacBookPro.fritz.box · Gut · Aktuell · 2026-11-10 15:43:14.507 UTC
+MacBookPro.fritz.box · Gut · Aktuell · 2026-11-10 17:52:45.038 UTC
 host.interfaces
-[{"name":"lo0","addresses":["127.0.0.1","::1","fe80::1%lo0"]},{"name":"gif0","addresses":[]},{"name":"stf0","addresses":… · Gut · Aktuell · 2026-11-10 15:43:14.507 UTC Collapsed
+[{"name":"lo0","addresses":["127.0.0.1","::1","fe80::1%lo0"]},{"name":"gif0","addresses":[]},{"name":"stf0","addresses":… · Gut · Aktuell · 2026-11-10 17:52:45.038 UTC Collapsed
 host.memory_total_bytes
-17179869184.0 bytes · Gut · Aktuell · 2026-11-10 15:43:14.507 UTC
+17179869184.0 bytes · Gut · Aktuell · 2026-11-10 17:52:45.038 UTC
 host.memory_used_bytes
-13772832768.0 bytes · Gut · Aktuell · 2026-11-10 15:43:14.507 UTC
+13616545792.0 bytes · Gut · Aktuell · 2026-11-10 17:52:45.038 UTC
 host.model
-MacBookPro18,3 · Gut · Aktuell · 2026-11-10 15:43:14.507 UTC
+MacBookPro18,3 · Gut · Aktuell · 2026-11-10 17:52:45.038 UTC
 host.os
-Darwin · Gut · Aktuell · 2026-11-10 15:43:14.507 UTC
+Darwin · Gut · Aktuell · 2026-11-10 17:52:45.038 UTC
 host.uptime_seconds
-950301.0 seconds · Gut · Aktuell · 2026-11-10 15:43:14.507 UTC
+958072.0 seconds · Gut · Aktuell · 2026-11-10 17:52:45.038 UTC
 PERSISTIERTE MESSHISTORIE
 Persistierte Messhistorie
 Aus der Core-Datenbank · gespeicherte Werte, kein Live-Zustand
-host.model · Historie
-MacBookPro18,3 · Gut · Veraltet
-Empfangen 2026-11-10 15:41:31.064 UTC
-host.os · Historie
-Darwin · Gut · Veraltet
-host.memory_total_bytes · Historie
-17179869184.0 bytes · Gut · Veraltet
-host.cpu_info · Historie
-Apple M1 Pro · Gut · Veraltet
-host.architecture · Historie
-arm64 · Gut · Veraltet
-host.uptime_seconds · Historie
-950197.0 seconds · Gut · Veraltet
 host.disks · Historie
-[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":7564914688},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":15581990912,"available_bytes":7564914688},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806661120,"available_bytes":7564914688},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":7540736,"available_bytes":7564914688},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503582720},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503582720},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3526656,"available_bytes":503582720},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":945313058816,"available_bytes":7564914688},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}] · Gut · Veraltet
+[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":5330604032},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":16108834816,"available_bytes":5330604032},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806661120,"available_bytes":5330604032},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":6602752,"available_bytes":5330604032},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503582720},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503582720},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3526656,"available_bytes":503582720},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":947021467648,"available_bytes":5330604032},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}] · Gut · Veraltet
+Empfangen 2026-11-10 17:51:01.470 UTC
 host.hostname · Historie
 MacBookPro.fritz.box · Gut · Veraltet
+host.os · Historie
+Darwin · Gut · Veraltet
 host.interfaces · Historie
 [{"name":"lo0","addresses":["127.0.0.1","::1","fe80::1%lo0"]},{"name":"gif0","addresses":[]},{"name":"stf0","addresses":[]},{"name":"anpi1","addresses":[]},{"name":"anpi2","addresses":[]},{"name":"anpi0","addresses":[]},{"name":"en4","addresses":[]},{"name":"en5","addresses":[]},{"name":"en6","addresses":[]},{"name":"en1","addresses":[]},{"name":"en2","addresses":[]},{"name":"en3","addresses":[]},{"name":"bridge0","addresses":[]},{"name":"utun0","addresses":["fe80::c521:1aac:ad72:d54f%utun0"]},{"name":"ap1","addresses":[]},{"name":"en0","addresses":["fe80::1878:bbf6:2742:a111%en0","fd14:75ec:3e81:0:ea:ed57:96b6:2113","192.168.1.219"]},{"name":"utun1","addresses":["fe80::39ff:4771:b6c:63be%utun1"]},{"name":"awdl0","addresses":["fe80::701c:4aff:fec2:902e%awdl0"]},{"name":"llw0","addresses":["fe80::701c:4aff:fec2:902e%llw0"]},{"name":"utun3","addresses":["fe80::378a:3e38:7093:eadb%utun3"]},{"name":"utun4","addresses":["fe80::ce81:b1c:bd2c:69e%utun4"]},{"name":"utun2","addresses":["fe80::7ceb:d263:d038:12f%utun2","100.72.167.42","fd7a:115c:a1e0::1234:a72a"]}] · Gut · Veraltet
+host.architecture · Historie
+arm64 · Gut · Veraltet
+host.memory_total_bytes · Historie
+17179869184.0 bytes · Gut · Veraltet
+host.model · Historie
+MacBookPro18,3 · Gut · Veraltet
+host.cpu_info · Historie
+Apple M1 Pro · Gut · Veraltet
 host.memory_used_bytes · Historie
-13633880064.0 bytes · Gut · Veraltet
-Empfangen 2026-11-10 15:41:41.443 UTC
-[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":7560429568},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":15581990912,"available_bytes":7560429568},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806661120,"available_bytes":7560429568},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":7540736,"available_bytes":7560429568},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503582720},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503582720},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3526656,"available_bytes":503582720},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":945317543936,"available_bytes":7560429568},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}] · Gut · Veraltet
-950208.0 seconds · Gut · Veraltet
-13983383552.0 bytes · Gut · Veraltet
+12868190208.0 bytes · Gut · Veraltet
+host.uptime_seconds · Historie
+957968.0 seconds · Gut · Veraltet
+Empfangen 2026-11-10 17:51:11.753 UTC
+957978.0 seconds · Gut · Veraltet
+13101940736.0 bytes · Gut · Veraltet
+[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":5326417920},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":16108834816,"available_bytes":5326417920},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806661120,"available_bytes":5326417920},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":6602752,"available_bytes":5326417920},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503582720},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503582720},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3526656,"available_bytes":503582720},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":947025649664,"available_bytes":5326417920},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}] · Gut · Veraltet
 Neuere Einträge laden
 Grenzen dieser Historie: Samples without receive time are excluded; source/server clocks may not match the runtime clock
 Zeit- und Herkunftssemantik Collapsed
@@ -215,7 +218,7 @@ CONTEXT INSPECTOR
 API
 IDENTIFICATION
 TYPE / SOURCE
-SingleBoardComputer · d50b99dd-00f7-423c-9972-eb31efe547a1
+SingleBoardComputer · 7958f2ca-2b5b-484a-b8d1-d995ed05679e
 REGISTRATION STATE
 registered
 TELEMETRY AVAILABILITY
@@ -231,9 +234,9 @@ DATA QUALITY
 LETZTER MESSWERT
 host.architecture · arm64
 QUALITÄT / EMPFANG
-Gut · 2026-11-10 15:43:14.507 UTC
+Gut · 2026-11-10 17:52:45.038 UTC
 RELATIONSHIPS
-SSH host coverage-device · d50b99dd-00f7-423c-9972-eb31efe547a1
+SSH host coverage-device · 7958f2ca-2b5b-484a-b8d1-d995ed05679e
 DEVICE / SERVICE RELATION
 Unbekannt · kein autorisiertes Service-Inventar
 NETZWERKBEZIEHUNG
@@ -272,18 +275,3 @@ OIP · SPECTRUM 2027
 Reale Infrastruktur · lokale Operator-Sitzung
 Security-Blocker: an diese Sitzung nicht geliefert
 Operator abmelden
-2026-11-10 15:43:24.898 UTC
-host.disks  [{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":7540748288},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":15581990912,"available_bytes":7540748288},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806661120,"available_bytes":7540748288},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":7540736,"available_bytes":7540748288},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503582720},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503582720},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3526656,"available_bytes":503582720},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":945337225216,"available_bytes":7540748288},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}]  · Gut · Aktuell
-Gut · 2026-11-10 15:43:24.896 UTC
-Letzter Prüfversuch: 2026-11-10 15:43:24.896 UTC
-Letzte erfolgreiche Erfassung: 2026-11-10 15:43:24.896 UTC
-arm64 · Gut · Aktuell · 2026-11-10 15:43:24.896 UTC
-Apple M1 Pro · Gut · Aktuell · 2026-11-10 15:43:24.896 UTC
-[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":754074… · Gut · Aktuell · 2026-11-10 15:43:24.896 UTC Collapsed
-MacBookPro.fritz.box · Gut · Aktuell · 2026-11-10 15:43:24.896 UTC
-[{"name":"lo0","addresses":["127.0.0.1","::1","fe80::1%lo0"]},{"name":"gif0","addresses":[]},{"name":"stf0","addresses":… · Gut · Aktuell · 2026-11-10 15:43:24.896 UTC Collapsed
-17179869184.0 bytes · Gut · Aktuell · 2026-11-10 15:43:24.896 UTC
-13672251392.0 bytes · Gut · Aktuell · 2026-11-10 15:43:24.896 UTC
-MacBookPro18,3 · Gut · Aktuell · 2026-11-10 15:43:24.896 UTC
-Darwin · Gut · Aktuell · 2026-11-10 15:43:24.896 UTC
-950311.0 seconds · Gut · Aktuell · 2026-11-10 15:43:24.896 UTC

@@ -1,3 +1,6 @@
+# the painted surface of the settings workstation: the navigation of the categories
+# the state of the Core for the selected category, in the technical context
+# the semantics of the page, in the order of the DOM
 OPEN INDUSTRIAL
 PLATFORM
 Einstellungen

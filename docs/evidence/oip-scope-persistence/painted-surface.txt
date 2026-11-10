@@ -1,3 +1,6 @@
+# the painted surface of the devices workstation: the scope of the operator
+# the devices of the scope and the administration that changed the Core
+# the semantics of the page, in the order of the DOM
 OPEN INDUSTRIAL
 PLATFORM
 WORKSPACE / LOCAL LAB

@@ -334,9 +334,19 @@ class OipController extends ChangeNotifier {
       error.code == 'PERMISSION_DENIED' ||
       error.code == 'PRINCIPAL_REQUIRED';
 
+  /// Is the Core an **explicit** legacy demo?
+  ///
+  /// The flag `simulated` says that a source of the Core is simulated: a
+  /// real instance with one simulated source is not a demo, and the demo
+  /// dashboard must never appear in its place (R7 of the baseline). The Core
+  /// states its demo mode with the scenario controls it offers — they exist
+  /// only in the demo. Without that statement the client refuses.
+  bool _isExplicitDemo(Snapshot initial) =>
+      initial.system.simulated && initial.system.demoControls;
+
   Future<void> _acceptLegacyDemo() async {
     final initial = await api.initial();
-    if (!initial.system.simulated) {
+    if (!_isExplicitDemo(initial)) {
       throw const ApiFailure(
           'Dieser Core bietet keinen autorisierten v2-Kontext; reale v1-Daten werden nicht anonym übernommen.',
           code: 'UNSUPPORTED_CONTEXT',
@@ -353,7 +363,7 @@ class OipController extends ChangeNotifier {
   Future<bool> _tryExplicitDemo() async {
     try {
       final initial = await api.initial();
-      if (!initial.system.simulated) {
+      if (!_isExplicitDemo(initial)) {
         return false;
       }
       _transport = _TransportMode.legacyDemo;
