@@ -1,13 +1,13 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "f0fcc43f68e1d8e9347560523a6fd6d234aa5e88",
-  "the_tree": "09b078d429190cd9558a66efda43b389373beba9",
+  "the_revision": "5267664b3bebbf47ccac6ad4ff223b8aa0dabbc9",
+  "the_tree": "4c2d5152e4dd89e2c348b2988d7a87f51fdd71d6",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "ae2a8ab8e49390ff9d8d531af73b06713b87a437",
     "the_subject": "fix(g8): the refusals of the Core are evidence, not a defect of the surface"
   },
-  "the_working_tree_is_clean": false,
+  "the_working_tree_is_clean": true,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -22,15 +22,15 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 676,
-    "the_sha256": "6193c34ac2cec2e9344242052a95f27931ccf8c55ed15f1202dec286ae9baf07"
+    "the_sha256": "28af89da1ba109d48e6a368f65609851c9e673ae5567f6cf4df67a89342bc7f8"
   },
   "the_artifacts": {
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
       "bytes": 36395792,
-      "sha256": "f31ce93451d53cab6776bdea4d114d3e92a889fa611593883f37c7b5601c033c",
-      "the_revision_the_binary_names": "be75e125c960b11844a4cdda4fdd924b6e297b0e"
+      "sha256": "20b75d293d51d896c171295a2a63972686cf3263c3e29dde35cd7cc20d6c762d",
+      "the_revision_the_binary_names": "5e676ec19e9e3a9bef3f90cc013a694faed583ac"
     },
     "the_official_mcp_probe": {
       "present": true,
@@ -107,7 +107,7 @@
     },
     "the_reproducible_build": {
       "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-      "sha256": "aabc840a8d28a2e94baac492a54b02efd312fdf17681a03b613e62eca785aa4f"
+      "sha256": "5be7f6c6321ef121e097c94a2419e901b463ab372b0d2124aed13a260e4fae99"
     },
     "the_upgrade_rollback": {
       "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
@@ -176,18 +176,16 @@
   },
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
-  "the_working_tree_without_the_manifest": [
-    "M docs/OIP_RELEASE_PROGRESS.md"
-  ],
+  "the_working_tree_without_the_manifest": [],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-    "the_digest_of_the_reproducible_build": "146b8bc5387359879abffe622b9cbe32bcb86d5630c8ab98eaa451c294b8fe65",
+    "the_digest_of_the_reproducible_build": "20b75d293d51d896c171295a2a63972686cf3263c3e29dde35cd7cc20d6c762d",
     "the_core_is_identical_across_the_two_builds": true,
-    "the_manifest_names_the_reproducible_binary": false,
-    "the_revision_the_binary_names": "be75e125c960b11844a4cdda4fdd924b6e297b0e",
-    "the_revision_of_the_receipt": "be75e125c960b11844a4cdda4fdd924b6e297b0e",
-    "the_sources_of_the_core_are_unchanged_since_the_receipt": false,
-    "the_property_holds_for_the_release": false,
+    "the_manifest_names_the_reproducible_binary": true,
+    "the_revision_the_binary_names": "5e676ec19e9e3a9bef3f90cc013a694faed583ac",
+    "the_revision_of_the_receipt": "5e676ec19e9e3a9bef3f90cc013a694faed583ac",
+    "the_sources_of_the_core_are_unchanged_since_the_receipt": true,
+    "the_property_holds_for_the_release": true,
     "the_note": "the binary names the revision it was built from, so the bytes of a later revision differ; the property of the release is that the same revision yields the same bytes \u2014 it is measured by the rehearsal and it carries over as long as the sources of the Core are unchanged"
   },
   "the_visual_acceptance": {

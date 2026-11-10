@@ -98,6 +98,12 @@ REHEARSALS = [
     ("oip_worktree_reconciliation", "tests/oip_worktree_reconciliation.py",
      {"worktree-reconciliation.json":
           "oip-worktree-reconciliation/worktree-reconciliation.json"}),
+    ("oip_security_review", "tests/oip_security_review.py",
+     {"security-review.json": "oip-security-review/security-review.json"}),
+    ("oip_rust_regression", "tests/oip_rust_regression.py",
+     {"rust-regression.json": "oip-rust-regression/rust-regression.json"}),
+    ("oip_reproducible_build", "tests/oip_reproducible_build.py",
+     {"reproducible-build.json": "oip-reproducible-build/reproducible-build.json"}),
 ]
 
 
