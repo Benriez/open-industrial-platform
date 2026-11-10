@@ -298,8 +298,8 @@ def main():
         report["browser_receipt"] = receipt
         assert receipt["errors"] == [], receipt["errors"]
         assert all(item["ok"] for item in receipt["findings"]), receipt["findings"]
-        report["the_states_of_the_surface"] = receipt["the_states"]
-        report["the_states_of_the_core"] = receipt["the_states_of_the_core"]
+        report["the_states"] = receipt["the_states"]
+        report["the_states_of_the_surface"] = [item["the_line"] for item in receipt["the_states"]]
         report["the_actions_of_the_control"] = Control.actions
         report["checks"] = len(receipt["findings"])
         report["steps"].append("the surface shows the truth in every state of the Core")
