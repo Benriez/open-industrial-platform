@@ -133,9 +133,11 @@ secrets/
 # The scope of the operator across a refresh of the projection.
 !/docs/evidence/oip-scope-persistence/scope-persistence.json
 !/docs/evidence/oip-scope-persistence/scope-persistence-rehearsal.json
+!/docs/evidence/oip-scope-persistence/painted-surface.txt
 # The honest connection states of the surface.
 !/docs/evidence/oip-connection-states/connection-states.json
 !/docs/evidence/oip-connection-states/connection-states-rehearsal.json
+!/docs/evidence/oip-connection-states/painted-surface.txt
 # The status of the settings categories in the surface.
 !/docs/evidence/oip-settings-status/settings-status.json
 !/docs/evidence/oip-settings-status/settings-status-rehearsal.json

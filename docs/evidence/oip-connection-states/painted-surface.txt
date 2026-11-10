@@ -1,0 +1,323 @@
+OPEN INDUSTRIAL
+PLATFORM
+Geräte & Dienste
+WORKSPACE / LOCAL LAB
+SPECTRUM
+Darstellung wechseln
+ARBEITSBEREICH
+Alle berechtigten Infrastrukturen
+Infrastructure Context: Alle berechtigten Infrastrukturen
+Alle berechtigten Infrastrukturen
+API CONNECTED
+Read-only · Self-hosted
+Navigation Übersicht
+Navigation Geräte & Dienste
+Navigation Netzwerk & VPN
+DATEN & ANALYSE
+Navigation OPC-UA-Browser
+Navigation Diagnose & Ereignisse
+SYSTEM
+Navigation Einstellungen
+Geräte & Dienste
+DEVICES & SERVICES · OBJECT WORKSPACE
+Sicheren lokalen Registrierungsweg anzeigen; kein Browser-Write
+Gerät hinzufügen
+Detail-Inspector manuell öffnen
+Engineering Workspace dauerhaft für diese Sitzung öffnen
+API-INVENTAR
+READ-ONLY
+1 von 1 Geräten · API-Inventar
+SCOPE  
+Autorisierter v2-Scope
+SOURCES  
+1 geliefert
+REGISTRY  
+1 Geräte
+EMPFANG  
+2026-11-10 15:48:42.055 UTC
+PROVENIENZ  
+REPORTED / OBSERVED
+ORG / SITE  
+Alle berechtigten Infrastrukturen
+Devices
+Services
+Inventory Health
+TYP
+Alle
+SOURCE
+Alle
+STANDORT
+Alle
+SORTIERUNG
+Name
+Weitere Filter
+Filter zurücksetzen
+v2 autorisierter Scope · UI-Auswahl ist Präsentationsfilter
+INVENTORY EXPLORER
+Alle
+Pinned 0
+Recents 1
+Comfortable-Dichte
+GRUPPIERUNG
+Source
+1/1
+9B11B2FB-ED85-4664-AB1A-7BCE86B3A954
+State device · state-device
+Gerät State device state-device auswählen · SingleBoardComputer · 9b11b2fb-ed85-4664-ab1a-7bce86b3a954 · 10 Observations · Reachability Unbekannt reported
+State device · state-device
+SingleBoardComputer · 9b11b2fb-ed85-4664-ab1a-7bce86b3a954 · Veraltet · Unbekannt reported
+Gerät pinnen
+Vergleich hinzufügen
+Vorherige Geräte
+Seite 1 / 1
+Pfeile/Home/End · Enter öffnet · P Pin · C Compare
+Nächste Geräte
+ENGINEERING WORKSPACE
+State device · state-device
+Engineering
+Tab 1 of 3
+Telemetry
+Tab 2 of 3
+Related Events
+Tab 3 of 3
+Details schließen
+IDENTITY & REGISTRY
+READ-ONLY
+DEVICE ID
+DISPLAY NAME
+state-device
+State device
+DEVICE TYPE
+SOURCE ID
+SingleBoardComputer
+9b11b2fb-ed85-4664-ab1a-7bce86b3a954
+REGISTRY LOCATION
+REGISTRY CONNECTION TYPE
+site-a1
+SSH
+MANUFACTURER / MODEL
+FIRMWARE / OS
+Nicht verfügbar
+Nicht verfügbar
+ORGANIZATION
+INFRASTRUCTURE
+Organization A
+Infrastructure A1
+SITE
+INTERFACE TYPE
+site-a1
+Nicht separat verfügbar; Registry Connection Type oben
+OBSERVATION & TELEMETRY
+Keine Telemetrie für dieses Gerät verfügbar
+DeviceDetail enthält keine Observations. Kein Ersatzwert, kein 0 % und kein künstlicher Chart.
+CONNECTION & MONITORING
+Verbindung & Monitoring
+Host-Key geändert · Verbindung blockiert
+SSH · benny@127.0.0.1:56737
+Host-Key: SHA256:XZLn50WPWg8+rN4Zk7OVos57gmWRnoyoJAoO7nI5lyk
+Letzter Prüfversuch: 2026-11-10 15:49:12.103 UTC
+Letzte erfolgreiche Erfassung: 2026-11-10 15:48:42.053 UTC
+SSH_HOST_KEY_CHANGED: SSH host key differs from the trusted binding; connection blocked
+Tatsächlich verifizierte Identität Collapsed
+ double tap to expand
+Read-only Monitoring
+Polling: 30 s · Revision 2
+Aktuelle Messwerte
+Vom autorisierten Gerät tatsächlich gelesene Werte · keine Ersatzwerte
+host.architecture
+arm64 · Gut · Veraltet · 2026-11-10 15:48:42.053 UTC
+host.cpu_info
+Apple M1 Pro · Gut · Veraltet · 2026-11-10 15:48:42.053 UTC
+host.disks
+[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":754135… · Gut · Veraltet · 2026-11-10 15:48:42.053 UTC Collapsed
+ double tap to expand
+host.hostname
+MacBookPro.fritz.box · Gut · Veraltet · 2026-11-10 15:48:42.053 UTC
+host.interfaces
+[{"name":"lo0","addresses":["127.0.0.1","::1","fe80::1%lo0"]},{"name":"gif0","addresses":[]},{"name":"stf0","addresses":… · Gut · Veraltet · 2026-11-10 15:48:42.053 UTC Collapsed
+ double tap to expand
+host.memory_total_bytes
+17179869184.0 bytes · Gut · Veraltet · 2026-11-10 15:48:42.053 UTC
+host.memory_used_bytes
+13633175552.0 bytes · Gut · Veraltet · 2026-11-10 15:48:42.053 UTC
+host.model
+MacBookPro18,3 · Gut · Veraltet · 2026-11-10 15:48:42.053 UTC
+host.os
+Darwin · Gut · Veraltet · 2026-11-10 15:48:42.053 UTC
+host.uptime_seconds
+950629.0 seconds · Gut · Veraltet · 2026-11-10 15:48:42.053 UTC
+PERSISTIERTE MESSHISTORIE
+Persistierte Messhistorie
+Aus der Core-Datenbank · gespeicherte Werte, kein Live-Zustand
+host.interfaces · Historie
+[{"name":"lo0","addresses":["127.0.0.1","::1","fe80::1%lo0"]},{"name":"gif0","addresses":[]},{"name":"stf0","addresses":[]},{"name":"anpi1","addresses":[]},{"name":"anpi2","addresses":[]},{"name":"anpi0","addresses":[]},{"name":"en4","addresses":[]},{"name":"en5","addresses":[]},{"name":"en6","addresses":[]},{"name":"en1","addresses":[]},{"name":"en2","addresses":[]},{"name":"en3","addresses":[]},{"name":"bridge0","addresses":[]},{"name":"utun0","addresses":["fe80::c521:1aac:ad72:d54f%utun0"]},{"name":"ap1","addresses":[]},{"name":"en0","addresses":["fe80::1878:bbf6:2742:a111%en0","fd14:75ec:3e81:0:ea:ed57:96b6:2113","192.168.1.219"]},{"name":"utun1","addresses":["fe80::39ff:4771:b6c:63be%utun1"]},{"name":"awdl0","addresses":["fe80::701c:4aff:fec2:902e%awdl0"]},{"name":"llw0","addresses":["fe80::701c:4aff:fec2:902e%llw0"]},{"name":"utun3","addresses":["fe80::378a:3e38:7093:eadb%utun3"]},{"name":"utun4","addresses":["fe80::ce81:b1c:bd2c:69e%utun4"]},{"name":"utun2","addresses":["fe80::7ceb:d263:d038:12f%utun2","100.72.167.42","fd7a:115c:a1e0::1234:a72a"]}] · Gut · Veraltet
+Empfangen 2026-11-10 15:47:11.743 UTC
+host.memory_used_bytes · Historie
+13698285568.0 bytes · Gut · Veraltet
+Empfangen 2026-11-10 15:47:11.743 UTC
+host.hostname · Historie
+MacBookPro.fritz.box · Gut · Veraltet
+Empfangen 2026-11-10 15:47:11.743 UTC
+host.memory_total_bytes · Historie
+17179869184.0 bytes · Gut · Veraltet
+Empfangen 2026-11-10 15:47:11.743 UTC
+host.uptime_seconds · Historie
+950538.0 seconds · Gut · Veraltet
+Empfangen 2026-11-10 15:47:11.743 UTC
+host.cpu_info · Historie
+Apple M1 Pro · Gut · Veraltet
+Empfangen 2026-11-10 15:47:11.743 UTC
+host.model · Historie
+MacBookPro18,3 · Gut · Veraltet
+Empfangen 2026-11-10 15:47:11.743 UTC
+host.os · Historie
+Darwin · Gut · Veraltet
+Empfangen 2026-11-10 15:47:11.743 UTC
+host.disks · Historie
+[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":7546376192},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":15581990912,"available_bytes":7546376192},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806661120,"available_bytes":7546376192},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":7540736,"available_bytes":7546376192},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503582720},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503582720},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3526656,"available_bytes":503582720},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":945331597312,"available_bytes":7546376192},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}] · Gut · Veraltet
+Empfangen 2026-11-10 15:47:11.743 UTC
+host.architecture · Historie
+arm64 · Gut · Veraltet
+Empfangen 2026-11-10 15:47:11.743 UTC
+host.cpu_info · Historie
+Apple M1 Pro · Gut · Veraltet
+Empfangen 2026-11-10 15:48:42.053 UTC
+host.interfaces · Historie
+[{"name":"lo0","addresses":["127.0.0.1","::1","fe80::1%lo0"]},{"name":"gif0","addresses":[]},{"name":"stf0","addresses":[]},{"name":"anpi1","addresses":[]},{"name":"anpi2","addresses":[]},{"name":"anpi0","addresses":[]},{"name":"en4","addresses":[]},{"name":"en5","addresses":[]},{"name":"en6","addresses":[]},{"name":"en1","addresses":[]},{"name":"en2","addresses":[]},{"name":"en3","addresses":[]},{"name":"bridge0","addresses":[]},{"name":"utun0","addresses":["fe80::c521:1aac:ad72:d54f%utun0"]},{"name":"ap1","addresses":[]},{"name":"en0","addresses":["fe80::1878:bbf6:2742:a111%en0","fd14:75ec:3e81:0:ea:ed57:96b6:2113","192.168.1.219"]},{"name":"utun1","addresses":["fe80::39ff:4771:b6c:63be%utun1"]},{"name":"awdl0","addresses":["fe80::701c:4aff:fec2:902e%awdl0"]},{"name":"llw0","addresses":["fe80::701c:4aff:fec2:902e%llw0"]},{"name":"utun3","addresses":["fe80::378a:3e38:7093:eadb%utun3"]},{"name":"utun4","addresses":["fe80::ce81:b1c:bd2c:69e%utun4"]},{"name":"utun2","addresses":["fe80::7ceb:d263:d038:12f%utun2","100.72.167.42","fd7a:115c:a1e0::1234:a72a"]}] · Gut · Veraltet
+Empfangen 2026-11-10 15:48:42.053 UTC
+host.disks · Historie
+[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":7541358592},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":15581990912,"available_bytes":7541358592},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806661120,"available_bytes":7541358592},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":7540736,"available_bytes":7541358592},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503582720},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503582720},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3526656,"available_bytes":503582720},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":945336614912,"available_bytes":7541358592},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}] · Gut · Veraltet
+Empfangen 2026-11-10 15:48:42.053 UTC
+host.memory_used_bytes · Historie
+13633175552.0 bytes · Gut · Veraltet
+Empfangen 2026-11-10 15:48:42.053 UTC
+host.model · Historie
+MacBookPro18,3 · Gut · Veraltet
+Empfangen 2026-11-10 15:48:42.053 UTC
+host.uptime_seconds · Historie
+950629.0 seconds · Gut · Veraltet
+Empfangen 2026-11-10 15:48:42.053 UTC
+host.os · Historie
+Darwin · Gut · Veraltet
+Empfangen 2026-11-10 15:48:42.053 UTC
+host.memory_total_bytes · Historie
+17179869184.0 bytes · Gut · Veraltet
+Empfangen 2026-11-10 15:48:42.053 UTC
+host.architecture · Historie
+arm64 · Gut · Veraltet
+Empfangen 2026-11-10 15:48:42.053 UTC
+host.hostname · Historie
+MacBookPro.fritz.box · Gut · Veraltet
+Empfangen 2026-11-10 15:48:42.053 UTC
+Grenzen dieser Historie: Samples without receive time are excluded; source/server clocks may not match the runtime clock
+Zeit- und Herkunftssemantik Collapsed
+ double tap to expand
+CONNECTIVITY EVIDENCE
+REGISTRY CONNECTION TYPE
+REPORTED REACHABILITY
+SSH
+Unbekannt · REPORTED
+OBSERVED SOURCE CONNECTION
+ACTUAL PROBE RESULT
+disconnected
+Unbekannt · kein aktiver Probe ausgeführt
+Fünf unabhängige Statusdimensionen
+REPORTED
+DEVICE REACHABILITY
+VPN TRANSPORT
+Unbekannt
+Nicht zutreffend
+AGENT AVAILABILITY
+SERVICE HEALTH
+Nicht zutreffend
+not_evaluated
+TELEMETRY FRESHNESS
+Veraltet
+ZUSTANDSDIMENSIONEN GETRENNT
+SOURCE HEALTH
+DEVICE TELEMETRY FRESHNESS
+disconnected · Degradiert
+Veraltet
+OBSERVATION QUALITY
+NETWORK REACHABILITY
+Unbekannt
+Unbekannt · REPORTED, nicht gemessen
+DIAGNOSTIC FINDINGS
+0 exakt zugeordnet
+Keine Gesundheitsableitung
+Ein Source-Reconnect beweist nicht, dass jedes zugeordnete Gerät vollständig funktioniert. Registry Presence, Telemetrie, Reachability und Findings bleiben getrennt.
+Inspector für diese Workstation anheften
+Gerätekontext & Provenienz
+Inspector schließen · Objekt- und Datenwahl bleibt erhalten
+CONTEXT INSPECTOR
+API
+State device
+state-device
+IDENTIFICATION
+TYPE / SOURCE
+SingleBoardComputer · 9b11b2fb-ed85-4664-ab1a-7bce86b3a954
+ORGANIZATION
+Organization A
+INFRASTRUCTURE
+Infrastructure A1
+SITE
+site-a1
+REGISTRATION STATE
+registered
+TELEMETRY AVAILABILITY
+collector_configured
+AVAILABILITY
+REGISTRY PRESENCE
+Im aktuellen autorisierten Snapshot vorhanden
+DATA FRESHNESS
+Veraltet · REPORTED
+SOURCE CONNECTION
+disconnected
+REACHABILITY PROVENANCE
+Unbekannt · REPORTED · keine Probe
+DATA QUALITY
+LETZTER MESSWERT
+Nicht verfügbar
+QUALITÄT / EMPFANG
+Unbekannt
+RELATIONSHIPS
+SOURCE
+SSH host state-device · 9b11b2fb-ed85-4664-ab1a-7bce86b3a954
+DEVICE / SERVICE RELATION
+Unbekannt · kein autorisiertes Service-Inventar
+NETZWERKBEZIEHUNG
+Keine belegte Relation im Snapshot
+OPC-UA REFERENZ
+Source-Zuordnung vorhanden; Node-ID-Routing nicht verfügbar
+DIAGNOSTIC REFERENCES
+0 exakte Device-ID-Findings
+PROVENANCE
+OBSERVED
+Keine Observation im DeviceDetail
+REPORTED / DERIVED
+Registry-/Health-Felder reported; UI-Aggregate derived ohne neue Fachlogik
+UNKNOWN
+Organization, Site, Firmware, OS, Services, aktive Probes und physische Beziehungen
+VERWALTUNG · REVISION 2
+Gerätetyp
+Single board
+Änderungen speichern
+Archivierung ist ein Offline-Vorgang
+Der Core archiviert nur mit gestopptem Betrieb. Der Datensatz und seine Historie bleiben erhalten, das Gerät sammelt keine Messwerte mehr. Der Vorgang läuft mit dem Offline-Plan des Core: oip-server --config <core.json> --inventory-plan <plan.json>.
+Pinnen
+Vergleichen
+Device ID kopieren
+Source ID kopieren
+Network Explorer öffnen · Modulziel, kein ID-Deep-Link
+OPC-UA-Browser öffnen · Source-Modul, kein Node-Deep-Link
+Diagnostics öffnen · Modulziel, kein Event-Deep-Link
+Overview öffnen · Modulziel, kein Device-Deep-Link
+Comparison 0/4
+Related Activity
+SESSION-LOCAL · keine Persistenz
+Vergleich ausklappen
+Bis zu vier Geräte über Compare auswählen. Unterschiedliche Messdimensionen werden nicht zu einer gemeinsamen Kennzahl verrechnet.
+OIP · SPECTRUM 2027
+Reale Infrastruktur · lokale Operator-Sitzung
+Security-Blocker: an diese Sitzung nicht geliefert
+Operator abmelden

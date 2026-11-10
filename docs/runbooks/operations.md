@@ -174,7 +174,7 @@ removed.
 Measured with the release binary (`tests/oip_extend_registry.py`,
 `docs/evidence/oip-extend-registry/extend-registry.json`): an instance with four
 sources is extended by a fifth, the four sources survive, the fifth is
-registered and collects (44 observations), and the plan that drops the fifth
+registered and collects (the receipt of the run names its observations), and the plan that drops the fifth
 source is refused while the registry keeps its five sources.
 
 ## 2. Start, status, stop, restart

@@ -3081,6 +3081,63 @@ choice needs no typing and exercises the same write of the operator.
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 69 — the record names what the receipts prove, and the client names every state of the Core
+
+**Status: PROVED on canonical `main`.**
+The third independent audit of the record — a delegated, read-only audit of the ledger, of this
+state file and of every receipt the record names — found eleven defects of the **record** and one
+of the **product**. All of them are closed in this iteration, and the checkers that would have
+caught them are now part of the one-command verification.
+
+* **The gate G5 claimed "every state the Core really produces".** The Core derives **eight**
+  states (`crates/oip-server/src/connection_service.rs`); the receipt proves four of them against
+  the real Core and the widget test pinned six. The client had no word of its own for two of the
+  eight (`collector_configured`, `verification_failed`) and showed the **wire name** of the Core
+  for them — and for every state it does not know. The client names all eight now, an unknown
+  state is `Verbindungsstatus unbekannt` and never the wire name, and the widget test asserts all
+  eight (`apps/flutter/test/device_connection_states_test.dart`).
+* **The gate G3 claimed that "the revision of the device advances"** — the journey never asserted
+  it. It reads the record of the device from the Core before and after the write now and asserts
+  that the revision advanced (`docs/evidence/oip-scope-persistence/scope-persistence.json`).
+* **The gate G8 mixed the proof of the code with the proof of the fixture.** The typed status of
+  the Core (`SettingsCategoryStatus` of `crates/oip-core/src/settings.rs`) is a fact of the code,
+  the unknown state is pinned by the widget test, and the journey against the real Core never
+  meets an unknown state. The row says so.
+* **The gate G2 named three transport identifiers that no receipt carried.** The rehearsal records
+  the REST route, the SSE stream and the MCP resource that it drove.
+* **"The release Core" denoted two digests.** The rows name the Core binary *whose digest the
+  receipt names* now, and the canonical gate, the reproducible build and the manifest are measured
+  at one revision — so that the binary the gate executed is the binary the manifest names. The
+  verification checks that equality and fails when it does not hold.
+* **The performance baseline quoted the numbers of an earlier run** (`p50 50 886 ms`, `284 ms` and
+  `102 ms` against the receipt's `41 565`, `392` and `9 ms`). The row quotes the **property** now
+  and the receipt carries the numbers. The checker of the numbers of the record knows the
+  durations and the sizes — it would have caught that drift, and it caught a second one in the
+  runbook (an observation count of an earlier run).
+* **The rehearsal receipt of the scope carried an empty device.** It reads the record of the Core
+  now, with its revision.
+* **The captures of the acceptance were described as thirteen workstation captures.** Twelve are
+  workstation captures; the thirteenth is the state of the anonymous session.
+* **The manifest named 28 of the 63 receipts of the release.** It names every receipt now, and the
+  verification fails when a receipt of the release is not digested by the manifest.
+* **The state file named seven of the receipts of the index.** It names all of them now.
+* **Two journeys published no painted surface.** They publish theirs now.
+
+The canonical gate asserts the exemption of the agent-first principle in both directions: it is
+absent from the shell and from the five other workstations, and it is named in the technical
+capability context of the settings — the case the rule R6 of the baseline permits.
+
+**The volume of the machine filled up during the run.** It reached 100% while the evidence was
+being re-measured: the Core could not commit its store any more, the collection was backpressured
+and the rehearsal of the parity of the OPC-UA address space hung on a call that never came back.
+The rehearsal was terminated and named as failed — nothing was published that was not measured. The
+debug profile of the build tree was cleared (34.4 GiB) and the debug simulator was rebuilt; the
+rehearsals that had failed because of the full volume or the missing binary were measured again
+and passed. The receipts of the run carry the revision and the tree they were measured on.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
 ## 5. Evidence index
 
 | Artifact | Content |

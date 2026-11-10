@@ -1,0 +1,244 @@
+OPEN INDUSTRIAL
+PLATFORM
+WORKSPACE / LOCAL LAB
+Geräte & Dienste
+SPECTRUM
+Darstellung wechseln
+ARBEITSBEREICH
+Organization A / Infrastructure A1 / site-a1
+Infrastructure Context: site-a1
+site-a1
+API CONNECTED
+Read-only · Self-hosted
+Navigation Übersicht
+Navigation Geräte & Dienste
+Navigation Netzwerk & VPN
+DATEN & ANALYSE
+Navigation OPC-UA-Browser
+Navigation Diagnose & Ereignisse
+SYSTEM
+Navigation Einstellungen
+Geräte & Dienste
+DEVICES & SERVICES · OBJECT WORKSPACE
+Sicheren lokalen Registrierungsweg anzeigen; kein Browser-Write
+Gerät hinzufügen
+Detail-Inspector manuell öffnen
+Engineering Workspace dauerhaft für diese Sitzung öffnen
+DEMO / SIMULIERTES INVENTAR
+READ-ONLY
+3 von 3 Geräten · Simuliertes Inventar
+SCOPE  
+Autorisierter v2-Scope
+SOURCES  
+2 geliefert
+REGISTRY  
+3 Geräte
+EMPFANG  
+Unbekannt
+PROVENIENZ  
+SIMULATED / REPORTED / OBSERVED
+ORG / SITE  
+Organization A / Infrastructure A1 / site-a1
+Devices
+Services
+Inventory Health
+TYP
+Alle
+SOURCE
+Alle
+STANDORT
+Alle
+SORTIERUNG
+Name
+Weitere Filter
+Filter zurücksetzen
+v2 autorisierter Scope · UI-Auswahl ist Präsentationsfilter
+INVENTORY EXPLORER
+Alle
+Pinned 0
+Recents 1
+Comfortable-Dichte
+GRUPPIERUNG
+Source
+3/3
+SOURCE-A
+Local simulation a · device-a
+Gerät Local simulation a device-a auswählen · Other · source-a · keine aktuelle Observation · Reachability Unbekannt reported · simuliert
+Local simulation a · device-a
+Other · source-a · keine Observation · Unbekannt reported · SIM
+Gerät pinnen
+Vergleich hinzufügen
+SOURCE-B
+Local simulation b · device-b
+Gerät Local simulation b device-b auswählen · Other · source-b · keine aktuelle Observation · Reachability Unbekannt reported · simuliert
+Local simulation b · device-b
+Other · source-b · keine Observation · Unbekannt reported · SIM
+Gerät pinnen
+Vergleich hinzufügen
+KEINE SOURCE-ZUORDNUNG
+Scope device · scope-device
+Gerät Scope device scope-device auswählen · SingleBoardComputer · keine Source · keine aktuelle Observation · Reachability Unbekannt reported
+Scope device · scope-device
+SingleBoardComputer · keine Source · keine Observation · Unbekannt reported
+Gerät pinnen
+Vergleich hinzufügen
+Vorherige Geräte
+Seite 1 / 1
+Pfeile/Home/End · Enter öffnet · P Pin · C Compare
+Nächste Geräte
+ENGINEERING WORKSPACE
+Scope device · scope-device
+Engineering
+Tab 1 of 3
+Telemetry
+Tab 2 of 3
+Related Events
+Tab 3 of 3
+Details schließen
+IDENTITY & REGISTRY
+READ-ONLY
+DEVICE ID
+DISPLAY NAME
+scope-device
+Scope device
+DEVICE TYPE
+SOURCE ID
+SingleBoardComputer
+Nicht verfügbar
+REGISTRY LOCATION
+REGISTRY CONNECTION TYPE
+site-a1
+No collector
+MANUFACTURER / MODEL
+FIRMWARE / OS
+Nicht verfügbar
+Nicht verfügbar
+ORGANIZATION
+INFRASTRUCTURE
+Organization A
+Infrastructure A1
+SITE
+INTERFACE TYPE
+site-a1
+Nicht separat verfügbar; Registry Connection Type oben
+OBSERVATION & TELEMETRY
+Keine Telemetrie für dieses Gerät verfügbar
+DeviceDetail enthält keine Observations. Kein Ersatzwert, kein 0 % und kein künstlicher Chart.
+CONNECTION & MONITORING
+Verbindung & Monitoring
+Registered · Connectivity Unknown · Telemetry NoCollector · Health NotEvaluated
+Verbindung für dieses Gerät einrichten
+PERSISTIERTE MESSHISTORIE
+Persistierte Messhistorie
+Aus der Core-Datenbank · gespeicherte Werte, kein Live-Zustand
+Historie nicht verfügbar
+Resource is not accessible (RESOURCE_NOT_ACCESSIBLE)
+CONNECTIVITY EVIDENCE
+REGISTRY CONNECTION TYPE
+REPORTED REACHABILITY
+No collector
+Unbekannt · REPORTED
+OBSERVED SOURCE CONNECTION
+ACTUAL PROBE RESULT
+Unbekannt / keine Source
+Unbekannt · kein aktiver Probe ausgeführt
+Fünf unabhängige Statusdimensionen
+REPORTED
+DEVICE REACHABILITY
+VPN TRANSPORT
+Unbekannt
+Unbekannt
+AGENT AVAILABILITY
+SERVICE HEALTH
+Unbekannt
+not_evaluated
+TELEMETRY FRESHNESS
+no_collector
+ZUSTANDSDIMENSIONEN GETRENNT
+SOURCE HEALTH
+DEVICE TELEMETRY FRESHNESS
+Unbekannt
+no_collector
+OBSERVATION QUALITY
+NETWORK REACHABILITY
+Unbekannt
+Unbekannt · REPORTED, nicht gemessen
+DIAGNOSTIC FINDINGS
+0 exakt zugeordnet
+Keine Gesundheitsableitung
+Ein Source-Reconnect beweist nicht, dass jedes zugeordnete Gerät vollständig funktioniert. Registry Presence, Telemetrie, Reachability und Findings bleiben getrennt.
+Inspector für diese Workstation anheften
+Gerätekontext & Provenienz
+Inspector schließen · Objekt- und Datenwahl bleibt erhalten
+CONTEXT INSPECTOR
+API
+Scope device
+scope-device
+IDENTIFICATION
+TYPE / SOURCE
+SingleBoardComputer · Nicht zugeordnet
+ORGANIZATION
+Organization A
+INFRASTRUCTURE
+Infrastructure A1
+SITE
+site-a1
+REGISTRATION STATE
+registered
+TELEMETRY AVAILABILITY
+no_collector
+AVAILABILITY
+REGISTRY PRESENCE
+Im aktuellen autorisierten Snapshot vorhanden
+DATA FRESHNESS
+no_collector · REPORTED
+SOURCE CONNECTION
+Unbekannt
+REACHABILITY PROVENANCE
+Unbekannt · REPORTED · keine Probe
+DATA QUALITY
+LETZTER MESSWERT
+Nicht verfügbar
+QUALITÄT / EMPFANG
+Unbekannt
+RELATIONSHIPS
+SOURCE
+Keine Source-Zuordnung
+DEVICE / SERVICE RELATION
+Unbekannt · kein autorisiertes Service-Inventar
+NETZWERKBEZIEHUNG
+Keine belegte Relation im Snapshot
+OPC-UA REFERENZ
+Nicht zuordenbar
+DIAGNOSTIC REFERENCES
+0 exakte Device-ID-Findings
+PROVENANCE
+OBSERVED
+Keine Observation im DeviceDetail
+REPORTED / DERIVED
+Registry-/Health-Felder reported; UI-Aggregate derived ohne neue Fachlogik
+UNKNOWN
+Organization, Site, Firmware, OS, Services, aktive Probes und physische Beziehungen
+VERWALTUNG · REVISION 2
+Gerätetyp
+Single board
+Änderungen speichern
+Archivierung ist ein Offline-Vorgang
+Der Core archiviert nur mit gestopptem Betrieb. Der Datensatz und seine Historie bleiben erhalten, das Gerät sammelt keine Messwerte mehr. Der Vorgang läuft mit dem Offline-Plan des Core: oip-server --config <core.json> --inventory-plan <plan.json>.
+Pinnen
+Vergleichen
+Device ID kopieren
+Source ID kopieren
+Network Explorer öffnen · Modulziel, kein ID-Deep-Link
+OPC-UA nicht zuordenbar
+Diagnostics öffnen · Modulziel, kein Event-Deep-Link
+Overview öffnen · Modulziel, kein Device-Deep-Link
+Comparison 0/4
+Related Activity
+SESSION-LOCAL · keine Persistenz
+Vergleich ausklappen
+Bis zu vier Geräte über Compare auswählen. Unterschiedliche Messdimensionen werden nicht zu einer gemeinsamen Kennzahl verrechnet.
+OIP · SPECTRUM 2027
+Reale Infrastruktur · lokale Operator-Sitzung
+Security-Blocker: an diese Sitzung nicht geliefert
+Operator abmelden
