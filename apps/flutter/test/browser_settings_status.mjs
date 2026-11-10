@@ -141,8 +141,12 @@ const selectedCategory = async () => await page.evaluate(() => {
       current = label.slice('Settings-Kategorie '.length);
       continue;
     }
-    const own = (el.textContent || '').trim();
-    if (/^CORE · /.test(own) && own.length < 120) return current;
+    // The text of the status is a direct child of the node of the surface.
+    let own = '';
+    for (const child of el.childNodes) {
+      if (child.nodeType === 3) own += child.textContent || '';
+    }
+    if (/^CORE · /.test(own.trim())) return current;
   }
   return null;
 });
