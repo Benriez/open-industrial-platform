@@ -144,35 +144,36 @@ const before = await labels();
 check('the devices of the scope are shown', /device-a/.test(before),
   'the device of the scope is missing');
 
-// 3. an authorized write: the Core changes, the authorized projection is
-//    delivered again and the surface shows the new state.
-const session = await page.evaluate(async () => {
-  const r = await fetch('/api/v2/browser/session', { headers: { 'Content-Type': 'application/json' } });
-  return { status: r.status, body: await r.json() };
-});
-check('the session of the operator is readable', session.status === 200, JSON.stringify(session).slice(0, 200));
-const write = await page.evaluate(async ({ csrf, name, site }) => {
-  const r = await fetch('/api/v2/inventory/apply', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Origin': window.location.origin, 'x-oip-csrf': csrf },
-    body: JSON.stringify({ changes: [{ operation: 'register', device: {
-      id: name, display_name: 'Scope persistence device', device_type: 'single_board_computer',
-      site_id: site, metadata: {} } }] }),
-  });
-  return { status: r.status, body: await r.json() };
-}, { csrf: session.body.csrf_token, name: 'scope-persistence-device', site: 'site-a1' });
-check('the Core accepts the authorized write', write.status === 200, JSON.stringify(write).slice(0, 300));
+// 3. the administration of the device: the write of the operator changes the
+//    Core, and the surface reads the authorized projection again.
+const device = page.getByRole('button', { name: /Gerät .*device-a.* auswählen/ }).first();
+check('the device of the scope can be selected', await device.count() > 0,
+  'the device of the scope is not in the list');
+await device.click({ force: true });
+await page.waitForTimeout(2500);
+const nameField = page.getByRole('textbox', { name: /Anzeigename/ }).first();
+check('the administration of the device is shown', await nameField.count() > 0,
+  'the administration of the device is not shown');
+const newName = 'Scope persistence device';
+await nameField.click({ force: true });
+await page.keyboard.press('Meta+A');
+await page.keyboard.type(newName);
+await page.waitForTimeout(400);
+const save = page.getByRole('button', { name: 'Änderungen speichern' }).first();
+check('the administration can be saved', await save.count() > 0,
+  'the save of the administration is not shown');
+await save.click({ force: true });
 
-// 4. the authorized projection is delivered again and the surface shows it
+// 4. the authorized projection is read again and the surface shows it
 let refreshed = false;
 let after = '';
 for (let step = 0; step < 30 && !refreshed; step++) {
   await page.waitForTimeout(1000);
   after = await labels();
-  refreshed = after.includes('scope-persistence-device');
+  refreshed = after.includes(newName);
 }
 check('the refreshed projection reaches the surface', refreshed,
-  'the device of the write is not shown');
+  'the name of the write is not shown');
 
 // 5. the scope of the operator survived the refresh
 const survived = await scopeLabel();
