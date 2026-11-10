@@ -261,7 +261,10 @@ def check_the_record(receipts):
         if relative.split("/")[2] in ERA_AREAS:
             continue
         present.add(relative)
-    orphans = sorted(name for name in present
+    # The receipts that were handed in are part of the release: a receipt that
+    # nobody cites is an orphan, whether it stands on the disk or not.
+    handed = {name for name in receipts if name.split("/")[2] not in ERA_AREAS}
+    orphans = sorted(name for name in set(present) | handed
                      if name not in exact and not name.startswith(prefixes))
     problems.extend(f"the cited receipt {name} does not exist" for name in missing)
     problems.extend(f"the cited receipt {name} is not tracked" for name in untracked)
