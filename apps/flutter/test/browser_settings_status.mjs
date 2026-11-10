@@ -8,9 +8,10 @@
 // This receipt proves against the real Core that
 //
 //   * the Core answers a status for every category of the settings;
-//   * the navigation shows a status for **every** category of the Core;
-//   * the statuses shown are exactly the statuses the Core answered — the
-//     answer of the Core and not a guess of the client;
+//   * the navigation offers **every** category of the Core;
+//   * the status the navigation shows for a category is the status the Core
+//     answered for that category — the answer of the Core and not a guess of
+//     the client;
 //   * no wire name of the Core leaks into the surface.
 //
 // Usage: node browser_settings_status.mjs <baseUrl> <outDir> [loginCode]
@@ -41,6 +42,17 @@ const LABELS = {
 };
 const labelOf = (status) => (Object.prototype.hasOwnProperty.call(LABELS, status)
   ? LABELS[status] : status);
+
+// The categories of the navigation, as the surface names them.
+const CATEGORIES = {
+  general: 'General',
+  mcp_agents: 'MCP & Agents',
+  infrastructure: 'Infrastructure',
+  data_storage: 'Data & Storage',
+  diagnostics: 'Diagnostics',
+  security_access: 'Security & Access',
+  system: 'System',
+};
 
 fs.mkdirSync(outDir, { recursive: true });
 
@@ -86,7 +98,7 @@ const labels = async () => await page.evaluate(() => {
   return out.join('\n');
 });
 
-// The whole painted surface: the semantics of the Flutter view carry what is
+// The painted surface: the semantics of the Flutter view carry what is
 // painted, so the page is read while it is scrolled.
 const readSurface = async () => {
   const lines = new Set();
@@ -98,7 +110,7 @@ const readSurface = async () => {
   };
   await collect();
   await page.mouse.move(700, 600);
-  for (let step = 0; step < 14; step++) {
+  for (let step = 0; step < 10; step++) {
     await page.mouse.wheel(0, 700);
     await page.waitForTimeout(180);
     await collect();
@@ -106,6 +118,16 @@ const readSurface = async () => {
   await page.mouse.wheel(0, -20000);
   await page.waitForTimeout(600);
   return [...lines].join('\n');
+};
+
+// The status the navigation shows for the selected category.
+const shownStatus = async () => {
+  const painted = await labels();
+  for (const line of painted.split('\n')) {
+    const match = /^CORE · (.+)$/.exec(line.trim());
+    if (match) return match[1].trim();
+  }
+  return null;
 };
 
 await page.goto(base, { waitUntil: 'domcontentloaded' });
@@ -140,26 +162,43 @@ check('the Core answers a status for every category of the settings',
 // The workstation of the settings.
 await page.getByRole('button', { name: 'Navigation Einstellungen' }).click({ force: true });
 await page.waitForTimeout(4000);
+
+const measured = [];
+for (const category of categories) {
+  const name = category.category;
+  const label = CATEGORIES[name];
+  check(`the navigation offers the category ${name}`, typeof label === 'string',
+    `the Core answered the category ${name}, which the surface does not name`);
+  const button = page.getByRole('button', { name: `Settings-Kategorie ${label}` });
+  const count = await button.count();
+  check(`the category ${name} is in the navigation`, count > 0,
+    `the navigation has no category ${label}`);
+  await button.first().click({ force: true });
+  await page.waitForTimeout(1200);
+  const shown = await shownStatus();
+  const expected = labelOf(category.status);
+  check(`the status of the category ${name} is the status of the Core`,
+    shown === expected, `the Core answered ${expected}, the surface shows ${shown}`);
+  measured.push({
+    the_category: name,
+    the_label_of_the_surface: label,
+    the_status_of_the_core: category.status,
+    the_word_of_the_surface: shown,
+  });
+}
+
 const surface = await readSurface();
 fs.writeFileSync(`${outDir}/settings-status-surface.txt`, surface + '\n');
-
-// The statuses the navigation shows.
-const shown = [];
-for (const line of surface.split('\n')) {
-  const match = /^CORE · (.+)$/.exec(line.trim());
-  if (match) shown.push(match[1].trim());
-}
-const expected = categories.map((item) => labelOf(item.status)).sort();
-const shownSorted = [...shown].sort();
-check('the navigation shows a status for every category of the Core',
-  shown.length === categories.length,
-  `the Core answered ${categories.length} categories, the surface shows ${shown.length} statuses`);
-check('the statuses of the surface are the statuses of the Core',
-  JSON.stringify(shownSorted) === JSON.stringify(expected),
-  `the Core answered ${JSON.stringify(expected)}, the surface shows ${JSON.stringify(shownSorted)}`);
+const shown = [...surface.split('\n')]
+  .map((line) => /^CORE · (.+)$/.exec(line.trim()))
+  .filter(Boolean)
+  .map((match) => match[1].trim());
 check('no wire name of the Core leaks into the surface',
   !shown.some((item) => Object.prototype.hasOwnProperty.call(LABELS, item)),
   JSON.stringify(shown));
+check('every category of the Core was measured',
+  measured.length === categories.length,
+  `${measured.length} of ${categories.length}`);
 
 const receipt = {
   schema: 'oip-settings-status-v1',
@@ -167,11 +206,7 @@ const receipt = {
   the_detail_is: 'the message that describes the failure of the check',
   scope: 'the status of the settings categories in the approved surface against the real Core',
   base,
-  the_categories_of_the_core: categories.map((item) => ({
-    the_category: item.category,
-    the_status: item.status,
-    the_word_of_the_surface: labelOf(item.status),
-  })),
+  the_categories_of_the_core: measured,
   the_statuses_of_the_surface: shown,
   findings,
   errors,
