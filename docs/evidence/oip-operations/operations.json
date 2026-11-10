@@ -4,22 +4,22 @@
     {
       "command": "provision-plan",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "provision-plan",
         "--plan",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/plan.json"
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/plan.json"
       ],
       "exit_code": 0,
       "stdout": {
         "status": "provisioned",
-        "plan": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/plan.json",
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.sqlite",
+        "plan": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/plan.json",
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.sqlite",
         "result": "{\"schema_version\":3,\"organizations\":2,\"sources\":0,\"idempotent\":false,\"legacy_migrated\":false}"
       },
       "stderr": ""
@@ -27,11 +27,11 @@
     {
       "command": "start",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "start"
@@ -39,10 +39,10 @@
       "exit_code": 0,
       "stdout": {
         "status": "started",
-        "pid": 21604,
-        "http_port": 57328,
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.sqlite",
-        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state/oip.log",
+        "pid": 13748,
+        "http_port": 63568,
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.sqlite",
+        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state/oip.log",
         "ipc_credentials_provisioned": 1
       },
       "stderr": ""
@@ -50,11 +50,11 @@
     {
       "command": "status",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "status"
@@ -62,24 +62,24 @@
       "exit_code": 0,
       "stdout": {
         "status": "running",
-        "pid": 21604,
-        "http_port": 57328,
+        "pid": 13748,
+        "http_port": 63568,
         "port_open": true,
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.sqlite",
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.sqlite",
         "database_exists": true,
         "schema_version": "7",
-        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state/oip.log"
+        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state/oip.log"
       },
       "stderr": ""
     },
     {
       "command": "log",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "log",
@@ -88,11 +88,11 @@
       ],
       "exit_code": 0,
       "stdout": {
-        "timestamp": "2026-11-10T15:50:46.759527Z",
+        "timestamp": "2026-11-10T19:41:05.097985Z",
         "level": "INFO",
         "fields": {
           "message": "loopback simulation core; frontend optional",
-          "port": 57328,
+          "port": 63568,
           "sources": 0,
           "code": "core_started",
           "security_blocker": "RUSTSEC-2023-0071"
@@ -104,11 +104,11 @@
     {
       "command": "backup",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "backup"
@@ -116,8 +116,8 @@
       "exit_code": 0,
       "stdout": {
         "status": "backed up",
-        "source": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.sqlite",
-        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state/backups/20261110T155047Z.sqlite",
+        "source": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.sqlite",
+        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state/backups/20261110T194105Z.sqlite",
         "bytes": 294912,
         "integrity": "ok"
       },
@@ -126,16 +126,16 @@
     {
       "command": "restore",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "restore",
         "--source",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state/backups/20261110T155047Z.sqlite"
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state/backups/20261110T194105Z.sqlite"
       ],
       "exit_code": 2,
       "stdout": {},
@@ -144,11 +144,11 @@
     {
       "command": "stop",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "stop"
@@ -156,29 +156,29 @@
       "exit_code": 0,
       "stdout": {
         "status": "stopped",
-        "pid": 21604
+        "pid": 13748
       },
       "stderr": ""
     },
     {
       "command": "restore",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "restore",
         "--source",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state/backups/20261110T155047Z.sqlite"
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state/backups/20261110T194105Z.sqlite"
       ],
       "exit_code": 0,
       "stdout": {
         "status": "restored",
-        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state/backups/20261110T155047Z.sqlite",
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.sqlite",
+        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state/backups/20261110T194105Z.sqlite",
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.sqlite",
         "schema_version": "7",
         "integrity": "ok"
       },
@@ -187,11 +187,11 @@
     {
       "command": "start",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "start"
@@ -199,10 +199,10 @@
       "exit_code": 0,
       "stdout": {
         "status": "started",
-        "pid": 21619,
-        "http_port": 57328,
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.sqlite",
-        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state/oip.log",
+        "pid": 13763,
+        "http_port": 63568,
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.sqlite",
+        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state/oip.log",
         "ipc_credentials_provisioned": 0
       },
       "stderr": ""
@@ -210,11 +210,11 @@
     {
       "command": "restart",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "restart"
@@ -222,10 +222,10 @@
       "exit_code": 0,
       "stdout": {
         "status": "started",
-        "pid": 21631,
-        "http_port": 57328,
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.sqlite",
-        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state/oip.log",
+        "pid": 13782,
+        "http_port": 63568,
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.sqlite",
+        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state/oip.log",
         "ipc_credentials_provisioned": 0
       },
       "stderr": ""
@@ -233,11 +233,11 @@
     {
       "command": "status",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "status"
@@ -245,24 +245,24 @@
       "exit_code": 0,
       "stdout": {
         "status": "running",
-        "pid": 21631,
-        "http_port": 57328,
+        "pid": 13782,
+        "http_port": 63568,
         "port_open": true,
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.sqlite",
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.sqlite",
         "database_exists": true,
         "schema_version": "7",
-        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state/oip.log"
+        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state/oip.log"
       },
       "stderr": ""
     },
     {
       "command": "stop",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/core.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/core.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "stop"
@@ -270,18 +270,18 @@
       "exit_code": 0,
       "stdout": {
         "status": "stopped",
-        "pid": 21631
+        "pid": 13782
       },
       "stderr": ""
     },
     {
       "command": "backup",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/personal.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/personal.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "backup"
@@ -293,16 +293,16 @@
     {
       "command": "restore",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/personal.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/personal.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "restore",
         "--source",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state/backups/20261110T155047Z.sqlite"
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state/backups/20261110T194105Z.sqlite"
       ],
       "exit_code": 2,
       "stdout": {},
@@ -311,11 +311,11 @@
     {
       "command": "start",
       "arguments": [
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state",
         "--config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/personal.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/personal.json",
         "--ipc-config",
-        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/ipc.json",
+        "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/ipc.json",
         "--binary",
         "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
         "start"
@@ -327,9 +327,9 @@
   ],
   "http_status": 200,
   "log_bytes": 631,
-  "the_log_the_operator_reads": "{\"timestamp\": \"2026-11-10T15:50:46.759527Z\", \"level\": \"INFO\", \"fields\": {\"message\": \"loopback simulation core; frontend optional\", \"port\": 57328, \"sources\": 0, \"code\": \"core_started\", \"security_blocke",
+  "the_log_the_operator_reads": "{\"timestamp\": \"2026-11-10T19:41:05.097985Z\", \"level\": \"INFO\", \"fields\": {\"message\": \"loopback simulation core; frontend optional\", \"port\": 63568, \"sources\": 0, \"code\": \"core_started\", \"security_blocke",
   "backup": {
-    "path": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-nt2pdflr/state/backups/20261110T155047Z.sqlite",
+    "path": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-operations-xsmg0iik/state/backups/20261110T194105Z.sqlite",
     "bytes": 294912
   },
   "clean_shutdown": {
@@ -343,8 +343,8 @@
   "personal_installation_refused": true,
   "personal_database_sha256": "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e",
   "status": "PASS",
-  "the_revision": "acdd0a694411d8f76aa3da6365c1af31c7a071bc",
-  "the_tree": "b16533226dcf7b44964b13bf5e5d52017d37d82b",
+  "the_revision": "164c8214cea087329aac4c0b5634f96d8dddc9b7",
+  "the_tree": "f12265cf5bc9ab689fd61abe2c5786c6dff19b4c",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T15:50:48Z"
+  "finished_utc": "2026-11-10T19:41:07Z"
 }

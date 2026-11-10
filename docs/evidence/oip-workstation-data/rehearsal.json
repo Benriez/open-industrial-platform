@@ -5,26 +5,26 @@
   ],
   "browser_receipt": {
     "schema": "oip-workstation-data-v1",
-    "revision": "6c879b88fde9f01c250930998c776f7ae0e4e1d5",
+    "revision": "164c8214cea087329aac4c0b5634f96d8dddc9b7",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the functional depth of the six workstations against the real Core",
-    "base": "http://127.0.0.1:52479",
+    "base": "http://127.0.0.1:63041",
     "selected_source": "Kontext Organization A / Infrastructure A1 / site-a1 / source-a ausw\u00e4hlen\nsource-a\nOrganization A / Infrastructure A1 / site-a1 / source-a",
     "surfaces": {
       "overview": {
-        "lines": 57
+        "lines": 58
       },
       "devices": {
-        "lines": 80
+        "lines": 79
       },
       "network": {
         "lines": 58
       },
       "opcua": {
-        "lines": 94
+        "lines": 95
       },
       "diagnostics": {
-        "lines": 114
+        "lines": 110
       },
       "settings": {
         "lines": 77
@@ -121,8 +121,8 @@
   },
   "checks": 17,
   "status": "PASS",
-  "the_revision": "6c879b88fde9f01c250930998c776f7ae0e4e1d5",
-  "the_tree": "9644afa56b23fb93b578b51028e6907fa326c4fe",
+  "the_revision": "164c8214cea087329aac4c0b5634f96d8dddc9b7",
+  "the_tree": "f12265cf5bc9ab689fd61abe2c5786c6dff19b4c",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T16:46:47Z"
+  "finished_utc": "2026-11-10T19:39:57Z"
 }
