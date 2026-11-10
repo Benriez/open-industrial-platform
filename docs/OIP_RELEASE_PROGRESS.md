@@ -14,12 +14,12 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 |---|---|
 | Canonical branch | `main` |
 | Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `8ec554c` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `7391bd7` (tree `b6ef44b`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `5e676ec` — the binary names its own revision; the same revision yields the same bytes |
+| The revision of the final acceptance | `ad3a33f` (tree `5379732`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `ad3a33f` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 676 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 679 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -2934,6 +2934,48 @@ All three are closed:
 The receipt proves **seven** categories, **85** checks, and the word of the surface is determined
 by the answer of the Core. The whole evidence of the release was measured again — the Core
 changed — with the one command of the release: 27 rehearsals, 33 receipts, none failed.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
+
+### Iteration 65 — the record is audited a second time, and the numbers that drifted are gone
+
+**Status: PROVED on canonical `main`.**
+The first audit of the record read the gate table clause by clause. A **second, independent** audit
+read the **corrected** record and found what the first one had missed:
+
+* **the volatile numbers of a run were still quoted in the gate rows** — the minutes, the samples,
+  the resident memory, the CPU, the observations and the log of the stability run, the free space
+  and the error count of the storage failure, and the count of the Flutter tests. They were correct
+  when they were written and wrong after the receipts were measured again. The **rule of the record**
+  is that the record quotes the **properties** and the receipts quote the **numbers**: the numbers
+  of a run have left the gate rows, and the rows quote the property instead.
+* **the canonical state of the state file named an earlier era** — a source revision, a branch
+  revision, an acceptance revision, a binary revision and a file count that had all drifted. The
+  table names the release now, and **the checker of the record proves every one of its values**
+  against the manifest and the receipts, so it cannot drift away again.
+* **the canonical gate had not executed the binary that the manifest names**: the acceptance built
+  the Core itself, and a later rehearsal rebuilt the binary, so the two digests differed. The
+  reproducible build and the canonical acceptance now run at the **same revision** — the binary the
+  gate executed is **byte-identical** with the reproducible binary and with the artefact of the
+  manifest, and the served web bundle is byte-identical with the local build.
+* **the receipts that claim to measure the release Core named only the path** of the binary, not its
+  digest. The rehearsals of the stability, the transport parity, the session lifetime and the
+  storage failure now name the **digest** of the binary they drove.
+* the reconciliation of the worktrees named the branches but neither the worktrees nor its steps —
+  it names all of them now; the painted surfaces of the journeys are published with their receipts
+  instead of lying over from an earlier run; the count of the receipts and the count of the files
+  of the evidence tree carry different names now.
+
+**The class of defect is closed by a checker.** Every **measurement** that a gate row or an index row
+quotes is looked up in the receipts that the row names (`tests/oip_record_numbers.py`), and the
+one-command verification runs it: 62 rows, 24 measurements, every one of them carried by a receipt.
+A number that no receipt carries is a problem of the record — the check would have caught the
+drifted numbers of this iteration before a reader did.
+
+The whole evidence of the release was measured again where it changed: 27 rehearsals, the canonical
+acceptance (8/8 phases, 358 of 358 Flutter tests, 175 browser findings with zero failures, 13
+captures), the security review, the Rust suite and the reproducible build.
 
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
