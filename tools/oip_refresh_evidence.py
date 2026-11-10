@@ -119,27 +119,36 @@ def run(name, script, receipts):
     seconds = round(time.monotonic() - started, 1)
     sources = {}
     missing = []
+    payloads = []
     for produced, published in receipts.items():
         source = area / produced
         if not source.is_file():
             missing.append(published)
             continue
         sources[published] = str(source.relative_to(ROOT))
+        payloads.append(json.loads(source.read_text()))
     if result.returncode != 0 or missing:
         detail = (result.stderr.strip() or result.stdout.strip())[-400:]
         return {"the_rehearsal": name, "the_status": "FAIL", "the_seconds": seconds,
                 "the_detail": detail, "the_missing": missing}
-    payload = json.loads((area / sorted(receipts)[0]).read_text())
+    # The status is the state of the rehearsal. The receipt of a browser
+    # journey carries no status of its own.
+    statuses = [item.get("status") for item in payloads if "status" in item]
+    the_status = "FAIL" if "FAIL" in statuses else "PASS"
+    the_revision = next((item.get("the_revision") for item in payloads
+                         if item.get("the_revision")), None)
+    the_clean = next((item.get("the_working_tree_is_clean") for item in payloads
+                      if "the_working_tree_is_clean" in item), None)
     return {
         "the_rehearsal": name,
-        "the_status": "PASS" if payload.get("status") == "PASS" else "FAIL",
+        "the_status": the_status,
         "the_seconds": seconds,
         "the_published": sorted(receipts.values()),
         "the_sources": sources,
-        "the_revision": payload.get("the_revision"),
-        "the_working_tree_is_clean": payload.get("the_working_tree_is_clean"),
-        "the_detail": None if payload.get("status") == "PASS"
-        else json.dumps(payload)[:400],
+        "the_revision": the_revision,
+        "the_working_tree_is_clean": the_clean,
+        "the_detail": None if the_status == "PASS"
+        else json.dumps([item for item in payloads if item.get("status") == "FAIL"])[:400],
     }
 
 
@@ -154,11 +163,11 @@ def publish(outcomes):
     for item in outcomes:
         if item["the_status"] != "PASS" or "the_sources" not in item:
             continue
-        for published, source in item["the_sources"].items():
-            target = EVIDENCE / published
+        for place, source in item["the_sources"].items():
+            target = EVIDENCE / place
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / source, target)
-            published.append(published)
+            published.append(place)
     return published
 
 
