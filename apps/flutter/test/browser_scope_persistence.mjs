@@ -249,7 +249,13 @@ for (let step = 0; step < 30 && !refreshed; step++) {
   after = await labels();
   refreshed = after.includes(newType);
 }
-fs.writeFileSync(`${outDir}/scope-persistence-surface.txt`, after + '\n');
+const head = [
+  '# the painted surface of the devices workstation: the scope of the operator',
+  '# the devices of the scope and the administration that changed the Core',
+  '# the semantics of the page, in the order of the DOM',
+];
+fs.writeFileSync(`${outDir}/scope-persistence-surface.txt`,
+  head.concat(after.split('\n')).join('\n') + '\n');
 // The answer of the Core after the write: the revision of the device has
 // advanced and the record carries the type of the write.
 const written = await the_record_of_the_device();

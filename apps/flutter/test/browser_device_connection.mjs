@@ -289,7 +289,13 @@ const readSurface = async () => {
   await page.waitForTimeout(600);
   // The painted surface is kept as the evidence of what the operator sees.
   const surface = [...lines].join('\n');
-  fs.writeFileSync(`${outDir}/device-connection-surface.txt`, surface + '\n');
+  const head = [
+    '# the painted surface of the devices workstation: the connection of the device',
+    '# the state, the endpoint, the confirmed host key and the read-only monitoring',
+    '# the semantics of the page, in the order of the DOM',
+  ];
+  fs.writeFileSync(`${outDir}/device-connection-surface.txt`,
+    head.concat(surface.split('\n')).join('\n') + '\n');
   return surface;
 };
 

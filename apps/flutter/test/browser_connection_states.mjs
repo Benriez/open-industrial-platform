@@ -272,7 +272,13 @@ check('the reason of the block is named', painted.includes('HOST_KEY_CHANGED'),
 
 // The painted surface of the last state, so that the receipt carries the
 // words of the surface and not only the word of one line.
-fs.writeFileSync(`${outDir}/connection-states-surface.txt`, painted + '\n');
+const head = [
+  '# the painted surface of the devices workstation: the connection of the device',
+  '# the state of the Core and the word of the surface in the same moment',
+  '# the semantics of the page, in the order of the DOM',
+];
+fs.writeFileSync(`${outDir}/connection-states-surface.txt`,
+  head.concat(painted.split('\n')).join('\n') + '\n');
 
 const receipt = {
   schema: 'oip-connection-states-v1',

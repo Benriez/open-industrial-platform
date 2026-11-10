@@ -298,7 +298,13 @@ for (const category of categories) {
 }
 
 const surface = await readSurface();
-fs.writeFileSync(`${outDir}/settings-status-surface.txt`, surface + '\n');
+const head = [
+  '# the painted surface of the settings workstation: the navigation of the categories',
+  '# the state of the Core for the selected category, in the technical context',
+  '# the semantics of the page, in the order of the DOM',
+];
+fs.writeFileSync(`${outDir}/settings-status-surface.txt`,
+  head.concat(surface.split('\n')).join('\n') + '\n');
 const shown = measured.map((item) => item.the_word_of_the_surface);
 check('no wire name of the Core leaks into the surface',
   !shown.some((item) => isAWireName(item)), JSON.stringify(shown));
