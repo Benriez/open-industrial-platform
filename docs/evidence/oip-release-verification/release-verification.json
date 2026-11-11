@@ -40,8 +40,8 @@
       },
       "the_revision_of_the_source": "61c1531fa9f2",
       "the_receipts": 48,
-      "the_receipts_measured_on_a_tree_that_carries_the_source": 45,
-      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 1,
+      "the_receipts_measured_on_a_tree_that_carries_the_source": 46,
+      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 0,
       "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
     "the_record": {
@@ -153,11 +153,10 @@
     "G12"
   ],
   "the_problems": [
-    "the receipt docs/evidence/oip-reproducible-build/reproducible-build.json names the revision 29f25573fb1a, which predates the last change of crates (61c1531fa9f2)",
-    "the receipt docs/evidence/oip-reproducible-build/reproducible-build.json names the revision 29f25573fb1a, which predates the last change of apps/flutter/lib (61c1531fa9f2)"
+    "the receipt the_reproducible_build does not match its digest"
   ],
-  "the_revision": "f8bb11210eed55e5974f5b51d8027a769a156850",
-  "the_tree": "16ed8c15bdc8596596c1ba30a3ca6d7248d531f5",
+  "the_revision": "163e7a3e64289e1f1fdbff6d1457b6bcd4928a6b",
+  "the_tree": "724dd9883442bfa75d51cd65aed30affefe9f885",
   "the_working_tree_is_clean": false,
   "status": "FAIL"
 }
