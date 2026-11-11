@@ -228,7 +228,7 @@ def publish_only(name, receipts):
     missing = []
     for produced, published in receipts.items():
         source = area / produced
-        if not source.is_file():
+        if not source.exists():
             missing.append(published)
             continue
         sources[published] = str(source.relative_to(ROOT))
