@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "1a632230269fd550174f62bfb0ca8cbffddae459",
-  "the_tree": "3013872c9f12cc73fc681e72ea29ec64c48c8e9c",
+  "the_revision": "57a93585b196d965e66fed6d5a82964e88cdc0d4",
+  "the_tree": "c5747286ab131bebf8d754109979743c9d5de3a7",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "53b9ef8081f800b588960841c64cc05b678d8d50",
@@ -22,14 +22,14 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 692,
-    "the_sha256": "caac67193c68abb50750408af4042d41cb7c58b7876dee65cc7ec1152af3944b"
+    "the_sha256": "a0f304d8ff6346a57be8ae8052a2656b9858d2b4fc4eeffd642ddecf138f42c6"
   },
   "the_artifacts": {
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
       "bytes": 36396224,
-      "sha256": "9b50fb170f1307e6c604ec948a12565702bce02d4c694cf6b5dbbe256ac914ab",
+      "sha256": "e29beca2bf9aa6a6769376078972b0694ca456dd21dec87e9062f147303ac218",
       "the_revision_the_binary_names": "29f25573fb1a14689178203bbd21e4ae22520172"
     },
     "the_official_mcp_probe": {
@@ -119,7 +119,7 @@
     },
     "the_rust_regression": {
       "path": "docs/evidence/oip-rust-regression/rust-regression.json",
-      "sha256": "da6cb649f899223a1d0d937ebb121a8e0da2341bf055e63df80c2c75b38cc42f"
+      "sha256": "8dbe0fce7d771737cb9cf0089fcaa897101d1a4f1b9bb579109696dbdd34c241"
     },
     "the_reconnect_recovery": {
       "path": "docs/evidence/oip-reconnect-recovery/reconnect-recovery.json",
@@ -313,13 +313,13 @@
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/evidence/oip-reproducible-build/reproducible-build.json"
+    "M docs/evidence/oip-rust-regression/rust-regression.json"
   ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
     "the_digest_of_the_reproducible_build": "9b50fb170f1307e6c604ec948a12565702bce02d4c694cf6b5dbbe256ac914ab",
     "the_core_is_identical_across_the_two_builds": true,
-    "the_manifest_names_the_reproducible_binary": true,
+    "the_manifest_names_the_reproducible_binary": false,
     "the_revision_the_binary_names": "29f25573fb1a14689178203bbd21e4ae22520172",
     "the_revision_of_the_receipt": "29f25573fb1a14689178203bbd21e4ae22520172",
     "the_sources_of_the_core_are_unchanged_since_the_receipt": true,
