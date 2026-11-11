@@ -333,12 +333,22 @@ def build_manifest():
             manifest["the_receipts"][name] = {"present": False, "path": str(path)}
     # The revision the acceptance proved. The artefacts of the manifest are the
     # ones of that run; the tree may carry documentation commits after it.
-    gate = receipts.get("the_canonical_ui_gate")
+    #
+    # The revision is read out of the **tracked** receipt of the gate — the
+    # receipt of the run in the build tree is named by the run itself, and a
+    # manifest must be verifiable against the files of the checkout.
+    gate = receipts.get("the_acceptance_ui_gate") or receipts.get("the_acceptance")
     if gate is not None and gate.is_file():
         payload = json.loads(gate.read_text())
-        manifest["the_revision_of_the_acceptance"] = payload.get("source_revision")
-        manifest["the_tree_of_the_acceptance"] = payload.get("source_tree")
-        manifest["the_acceptance_was_run_on_a_clean_tree"] = payload.get("source_dirty") is False
+        manifest["the_revision_of_the_acceptance"] = (
+            payload.get("source_revision") or payload.get("the_revision")
+            or payload.get("the_revision_of_the_acceptance"))
+        manifest["the_tree_of_the_acceptance"] = (
+            payload.get("source_tree") or payload.get("the_tree"))
+        manifest["the_acceptance_was_run_on_a_clean_tree"] = (
+            payload.get("source_dirty") is False
+            or payload.get("the_working_tree_is_clean") is True)
+        manifest["the_receipt_of_the_acceptance"] = str(gate.relative_to(ROOT))
     # The Core that the manifest names must be the reproducible one: the
     # rehearsal of the reproducible builds builds it twice and records the
     # digest of both builds.
