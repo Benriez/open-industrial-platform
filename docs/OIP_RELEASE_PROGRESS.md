@@ -3311,7 +3311,7 @@ the bundle that makes the operator's part of the Raspberry Pi one command.
   procedure writes nothing outside it, the code of the session is minted over the local IPC, the
   instance stops without a forced signal, and the bundle installs no service and names no path of
   the machine it was built on (`docs/evidence/oip-pi-bundle/pi-bundle.json`,
-  0 measured steps).
+  9 measured steps).
 
 The whole evidence of the release was re-measured on a clean tree: the canonical acceptance passed
 on the clean tree `a2add7d` with the release binary
