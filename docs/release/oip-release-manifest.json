@@ -1,11 +1,11 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "c417d2f26eab9504b53d182471b82c6570968808",
-  "the_tree": "2d68ad6690151a2577de98a13f7bfa5884f6b48a",
+  "the_revision": "f417ba0e52165cbdf6eeead29c49b5051bdfa860",
+  "the_tree": "360732d75dd29de1b74782f309c705a4eb0e1814",
   "the_branch": "main",
   "the_revision_of_the_source": {
-    "the_revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
-    "the_subject": "fix(g11): the tests name the entity of their source"
+    "the_revision": "a941d2f63c91d28af3886a7070cc61240708c236",
+    "the_subject": "feat(g9): the store assets of the App Store listing are measured"
   },
   "the_working_tree_is_clean": true,
   "the_toolchain": {
@@ -21,8 +21,8 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 715,
-    "the_sha256": "cc50b886b69f8e6d0c09d099ecb28460a9596d3988780b72382a84703090a66c"
+    "the_files": 726,
+    "the_sha256": "8f69af571c43b4c7e8cc1523ac0f65f8ae4588e85a1a0e87b74c77c454ce0647"
   },
   "the_artifacts": {
     "the_core": {
@@ -317,6 +317,38 @@
     "the_oip-settings-status_settings-status_json": {
       "path": "docs/evidence/oip-settings-status/settings-status.json",
       "sha256": "be951f190ca95a7b14d16a7e9c97827ce07b7ddc620d2eb08aa4fe7cc9b491bd"
+    },
+    "the_oip-store-screenshots_captures_browser-store-screenshots_json": {
+      "path": "docs/evidence/oip-store-screenshots/captures/browser-store-screenshots.json",
+      "sha256": "b40db041e7be3123ce5faaa198660aabbe12a3a9270095a35065d55bc15b864b"
+    },
+    "the_oip-store-screenshots_captures_store-devices-1440x900_png": {
+      "path": "docs/evidence/oip-store-screenshots/captures/store-devices-1440x900.png",
+      "sha256": "7add9319ee56842e9cf23004f5b05f5cb5153a3f3df4ca80831bae48640869a1"
+    },
+    "the_oip-store-screenshots_captures_store-diagnostics-1440x900_png": {
+      "path": "docs/evidence/oip-store-screenshots/captures/store-diagnostics-1440x900.png",
+      "sha256": "195b6898528818f565d208959ff976c6b3f62c746f4b39e5500c9367c145752b"
+    },
+    "the_oip-store-screenshots_captures_store-network-1440x900_png": {
+      "path": "docs/evidence/oip-store-screenshots/captures/store-network-1440x900.png",
+      "sha256": "d89e6f50d08ed03e997d5596f27f243ac2d4028b24a28e2bc29365dfd72efd9b"
+    },
+    "the_oip-store-screenshots_captures_store-opcua-1440x900_png": {
+      "path": "docs/evidence/oip-store-screenshots/captures/store-opcua-1440x900.png",
+      "sha256": "53875bfb18b5c30c87ea0e559ee92588ecffa08cf7ce085a5a1e65b7aed17c1b"
+    },
+    "the_oip-store-screenshots_captures_store-overview-1440x900_png": {
+      "path": "docs/evidence/oip-store-screenshots/captures/store-overview-1440x900.png",
+      "sha256": "19cdb2a16e18db7d28a494374d6f52d7a1c35c0c25df7bcaf0a709a0c33a727a"
+    },
+    "the_oip-store-screenshots_captures_store-settings-1440x900_png": {
+      "path": "docs/evidence/oip-store-screenshots/captures/store-settings-1440x900.png",
+      "sha256": "c5a86e31e3aaeb1a8c03bd931758e7e7948aabb1382401ed171d0c1863e42668"
+    },
+    "the_oip-store-screenshots_store-screenshots_json": {
+      "path": "docs/evidence/oip-store-screenshots/store-screenshots.json",
+      "sha256": "a3977aee5d0daced6b4c3559ae753f072077e7a22713683770c9bc047cbf8814"
     },
     "the_oip-update_update_json": {
       "path": "docs/evidence/oip-update/update.json",
