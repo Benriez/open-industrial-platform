@@ -861,25 +861,43 @@ another revision names another revision and yields other bytes.
 **Phase 2 — a disposable instance on the Pi, started by hand (operator).**
 
 The instance is started **by hand over SSH** — no systemd unit, no service
-installation, no change of the BODI services of the host:
+installation, no change of the BODI services of the host.
+
+First the artefacts of phase 1 and the tool of the instance go to the Pi (on
+the Mac):
+
+```sh
+PI_BIN="target/pi/aarch64-unknown-linux-gnu/aarch64-unknown-linux-gnu/release"
+ssh bodi-pi 'mkdir -p ~/oip-instance && chmod 700 ~/oip-instance'
+scp "$PI_BIN/oip-server" "$PI_BIN/oip-simulated-server" bodi-pi:~/oip-instance/
+scp -r tools examples bodi-pi:~/oip-instance/
+```
+
+Then the instance is provisioned and started on the Pi:
 
 ```sh
 ssh bodi-pi
 # on the Pi, as the user of the operator:
+cd ~/oip-instance
 export OIP_HOME="$HOME/oip-instance"
 export CORE_CONFIG="$OIP_HOME/core.json"
 export IPC_CONFIG="$OIP_HOME/ipc.json"
 export STATE="$OIP_HOME/state"
-mkdir -p "$OIP_HOME" && chmod 700 "$OIP_HOME"
+mkdir -p "$STATE" && chmod 700 "$STATE"
 # the configuration of the instance: its own store, the loopback of the Pi,
 # the source of the Pi, the simulator of the Pi on the loopback
 # (examples/multi-infrastructure-core.json is the template)
+# ./oip-simulated-server --port <the port of the source> &
 python3 tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" \
     --ipc-config "$IPC_CONFIG" --binary ./oip-server provision-plan \
     --plan examples/multi-infrastructure-plan.json
 python3 tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" \
     --ipc-config "$IPC_CONFIG" --binary ./oip-server start
 ```
+
+The simulator of the Pi is started **by hand** and belongs to the instance: it
+is the source that the Pi can reach. It is not a service either, and it is
+stopped with the instance.
 
 The verification of the instance on the Pi is the same one the local instance
 has (`python3 tools/oip_ops.py … status`, the log, the backup) — the receipts
