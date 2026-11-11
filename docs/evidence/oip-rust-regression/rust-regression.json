@@ -1,14 +1,14 @@
 {
   "schema": "oip-rust-regression-v1",
   "the_command": "cargo test --workspace --release --no-fail-fast",
-  "the_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
-  "the_tree": "bb601b98108a2e8abe34475a3f8e27eb42afaa89",
+  "the_revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
+  "the_tree": "9acef728e1567435fdae2600d0b2e31f54ebfc79",
   "the_working_tree_is_clean": true,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)"
   },
-  "the_seconds": 145.3,
+  "the_seconds": 153.0,
   "the_exit_code": 0,
   "the_tests": {
     "passed": 187,
@@ -18,5 +18,5 @@
   "the_suites": 29,
   "the_failures": [],
   "status": "PASS",
-  "finished_utc": "2026-11-11T18:30:51Z"
+  "finished_utc": "2026-11-11T20:52:58Z"
 }

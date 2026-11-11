@@ -7,7 +7,7 @@
       "stdout": {
         "status": "provisioned",
         "plan": "/Users/benny/Code/open-industrial-platform/examples/multi-infrastructure-plan.json",
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-0qnhf3t5/core.sqlite",
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-xaiv_55z/core.sqlite",
         "result": "{\"schema_version\":3,\"organizations\":2,\"sources\":4,\"idempotent\":false,\"legacy_migrated\":false}"
       },
       "stderr": ""
@@ -17,10 +17,10 @@
       "exit_code": 0,
       "stdout": {
         "status": "started",
-        "pid": 18628,
-        "http_port": 64982,
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-0qnhf3t5/core.sqlite",
-        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-0qnhf3t5/state-historical/oip.log",
+        "pid": 26487,
+        "http_port": 59878,
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-xaiv_55z/core.sqlite",
+        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-xaiv_55z/state-historical/oip.log",
         "ipc_credentials_provisioned": 1
       },
       "stderr": ""
@@ -30,7 +30,7 @@
       "exit_code": 0,
       "stdout": {
         "status": "stopped",
-        "pid": 18628
+        "pid": 26487
       },
       "stderr": ""
     },
@@ -39,9 +39,9 @@
       "exit_code": 0,
       "stdout": {
         "status": "backed up",
-        "source": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-0qnhf3t5/core.sqlite",
-        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-0qnhf3t5/state-historical/backups/20261111T180001Z.sqlite",
-        "bytes": 356352,
+        "source": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-xaiv_55z/core.sqlite",
+        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-xaiv_55z/state-historical/backups/20261111T202259Z.sqlite",
+        "bytes": 360448,
         "integrity": "ok"
       },
       "stderr": ""
@@ -51,10 +51,10 @@
       "exit_code": 0,
       "stdout": {
         "status": "started",
-        "pid": 18700,
-        "http_port": 64982,
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-0qnhf3t5/core.sqlite",
-        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-0qnhf3t5/state-release/oip.log",
+        "pid": 26539,
+        "http_port": 59878,
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-xaiv_55z/core.sqlite",
+        "log": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-xaiv_55z/state-release/oip.log",
         "ipc_credentials_provisioned": 1
       },
       "stderr": ""
@@ -64,7 +64,7 @@
       "exit_code": 0,
       "stdout": {
         "status": "stopped",
-        "pid": 18700
+        "pid": 26539
       },
       "stderr": ""
     },
@@ -73,8 +73,8 @@
       "exit_code": 0,
       "stdout": {
         "status": "restored",
-        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-0qnhf3t5/state-historical/backups/20261111T180001Z.sqlite",
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-0qnhf3t5/core.sqlite",
+        "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-xaiv_55z/state-historical/backups/20261111T202259Z.sqlite",
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-xaiv_55z/core.sqlite",
         "schema_version": "5",
         "integrity": "ok"
       },
@@ -86,7 +86,7 @@
       "stdout": {
         "status": "provisioned",
         "plan": "/Users/benny/Code/open-industrial-platform/examples/multi-infrastructure-plan.json",
-        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-0qnhf3t5/core.sqlite",
+        "database": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-xaiv_55z/core.sqlite",
         "result": "{\"schema_version\":5,\"organizations\":2,\"sources\":4,\"idempotent\":true,\"legacy_migrated\":false}"
       },
       "stderr": ""
@@ -98,7 +98,7 @@
   },
   "release_binary": {
     "path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
-    "sha256": "1a650f970ce8906d4926eb44d0fff5647b21fbf90ff01d76cff4f3db200c74b9"
+    "sha256": "3e84db0b57726294f6f721b77efc6e679521f6fe739175c2f17d1b18b8a75855"
   },
   "schema_after_provisioning": "3",
   "the_historical_daemon_collected": true,
@@ -113,20 +113,20 @@
     "read_roles": "1",
     "role_bindings": "6",
     "inventory_devices": null,
-    "observations": "11",
-    "collection_events": "12",
+    "observations": "13",
+    "collection_events": "14",
     "data_gaps": "1",
     "source_health_history": "9",
     "settings": "0",
     "device_connections": null
   },
-  "the_observation_keys_before": 11,
+  "the_observation_keys_before": 13,
   "historical_daemon": {
     "started_in_this_rehearsal": true,
     "the_daemon_of_the_era_collected": true,
     "the_actor_shape_of_OIP_007": "not rehearsed here; measured in tests/oip_historical_daemon.py, which proves that the era refuses it and binds the local clients to a provisioned, enabled principal"
   },
-  "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-0qnhf3t5/state-historical/backups/20261111T180001Z.sqlite",
+  "backup": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-upgrade-xaiv_55z/state-historical/backups/20261111T202259Z.sqlite",
   "http_release": 200,
   "schema_release": "7",
   "organizations_release": "2",
@@ -140,14 +140,14 @@
     "read_roles": "1",
     "role_bindings": "6",
     "inventory_devices": "4",
-    "observations": "11",
-    "collection_events": "12",
+    "observations": "13",
+    "collection_events": "14",
     "data_gaps": "1",
     "source_health_history": "13",
     "settings": "0",
     "device_connections": "0"
   },
-  "the_observation_keys_after": 11,
+  "the_observation_keys_after": 13,
   "the_observation_keys_preserved": true,
   "schema_after_rollback": "5",
   "the_inventory_after_the_rollback": {
@@ -159,8 +159,8 @@
     "read_roles": "1",
     "role_bindings": "6",
     "inventory_devices": null,
-    "observations": "11",
-    "collection_events": "12",
+    "observations": "13",
+    "collection_events": "14",
     "data_gaps": "1",
     "source_health_history": "9",
     "settings": "0",
@@ -168,8 +168,8 @@
   },
   "historical_adopts_the_restored_store": true,
   "status": "PASS",
-  "the_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
-  "the_tree": "bb601b98108a2e8abe34475a3f8e27eb42afaa89",
+  "the_revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
+  "the_tree": "9acef728e1567435fdae2600d0b2e31f54ebfc79",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T18:00:02Z"
+  "finished_utc": "2026-11-11T20:23:00Z"
 }

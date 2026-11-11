@@ -6,13 +6,13 @@
     "the session of the operator is authorized",
     "the expired session is refused"
   ],
-  "the_code_issued_at": 1794416782.918624,
+  "the_code_issued_at": 1794425308.508296,
   "the_expired_code": {
     "status": 403,
     "code": "PERMISSION_DENIED",
     "waited_seconds": 130
   },
-  "the_session_authorized_at": 1794416913.1570072,
+  "the_session_authorized_at": 1794425438.759464,
   "the_session_before": {
     "status": 200,
     "authenticated": true
@@ -37,10 +37,10 @@
   "status": "PASS",
   "the_core_binary": {
     "the_path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
-    "the_sha256": "1a650f970ce8906d4926eb44d0fff5647b21fbf90ff01d76cff4f3db200c74b9"
+    "the_sha256": "3e84db0b57726294f6f721b77efc6e679521f6fe739175c2f17d1b18b8a75855"
   },
-  "the_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
-  "the_tree": "bb601b98108a2e8abe34475a3f8e27eb42afaa89",
+  "the_revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
+  "the_tree": "9acef728e1567435fdae2600d0b2e31f54ebfc79",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T17:39:03Z"
+  "finished_utc": "2026-11-11T20:01:09Z"
 }

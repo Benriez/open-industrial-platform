@@ -1,9 +1,9 @@
 {
   "schema": "oip-diagnostic-continuation-v1",
-  "revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
+  "revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "the diagnostic continuation of the approved surface against the real Core",
-  "base": "http://127.0.0.1:57458",
+  "base": "http://127.0.0.1:51602",
   "gaps": {
     "first_page_items": 50,
     "first_page_truncated": true,
@@ -20,18 +20,18 @@
         "truncated": true
       },
       {
-        "cursor_asked": "78dc68b53ecd3e6c456ac92e48681c4d11c222afeed3b73da2a2481ccfd5efdf",
+        "cursor_asked": "4293271d1dd25eff9f74f984713b9cd402c506be0105102dedb36212141d2df4",
         "items": 50,
         "truncated": true
       },
       {
-        "cursor_asked": "594b8eb222a281d9481af283a01e37ebeab582ce3800ab1643963e7126a8801f",
+        "cursor_asked": "0cccd6dd87f482816c5edefa1acec0defeb63ecf62037627b44bb3fd3ff76cf8",
         "items": 50,
         "truncated": true
       },
       {
-        "cursor_asked": "ae5740e65dd121d2268feceb966db87f50b183a05e4488c5ebd5e0f9341369e2",
-        "items": 10,
+        "cursor_asked": "b4435e69f6f6e747ce97870497487050d0d9635929d1a1b640e519ddb5cbe81c",
+        "items": 5,
         "truncated": false
       }
     ]
@@ -43,7 +43,7 @@
     },
     "after": {
       "gaps": 51,
-      "transitions": 160
+      "transitions": 155
     }
   },
   "core_pages": [
@@ -54,7 +54,7 @@
       "status": 200,
       "items": 50,
       "truncated": true,
-      "next_cursor": "94693b30ea74e8441e2f7982e98c90c8dcbbd9b6c536fa0031a5da3032a71a24",
+      "next_cursor": "e6c8469590ed36cb050dd54f8128674176a7befe519f7b95092472e15ff404c0",
       "missing_evidence": [],
       "time_semantics": 281,
       "ids": 50
@@ -66,7 +66,7 @@
       "status": 200,
       "items": 50,
       "truncated": true,
-      "next_cursor": "78dc68b53ecd3e6c456ac92e48681c4d11c222afeed3b73da2a2481ccfd5efdf",
+      "next_cursor": "4293271d1dd25eff9f74f984713b9cd402c506be0105102dedb36212141d2df4",
       "missing_evidence": [
         "No historical state transitions are reconstructed before schema4 or across process boundaries"
       ],
@@ -75,7 +75,7 @@
     },
     {
       "route": "gaps",
-      "cursor_asked": "94693b30ea74e8441e2f7982e98c90c8dcbbd9b6c536fa0031a5da3032a71a24",
+      "cursor_asked": "e6c8469590ed36cb050dd54f8128674176a7befe519f7b95092472e15ff404c0",
       "limit": "50",
       "status": 200,
       "items": 1,
@@ -87,12 +87,12 @@
     },
     {
       "route": "health-history",
-      "cursor_asked": "78dc68b53ecd3e6c456ac92e48681c4d11c222afeed3b73da2a2481ccfd5efdf",
+      "cursor_asked": "4293271d1dd25eff9f74f984713b9cd402c506be0105102dedb36212141d2df4",
       "limit": "50",
       "status": 200,
       "items": 50,
       "truncated": true,
-      "next_cursor": "594b8eb222a281d9481af283a01e37ebeab582ce3800ab1643963e7126a8801f",
+      "next_cursor": "0cccd6dd87f482816c5edefa1acec0defeb63ecf62037627b44bb3fd3ff76cf8",
       "missing_evidence": [
         "No historical state transitions are reconstructed before schema4 or across process boundaries"
       ],
@@ -101,12 +101,12 @@
     },
     {
       "route": "health-history",
-      "cursor_asked": "594b8eb222a281d9481af283a01e37ebeab582ce3800ab1643963e7126a8801f",
+      "cursor_asked": "0cccd6dd87f482816c5edefa1acec0defeb63ecf62037627b44bb3fd3ff76cf8",
       "limit": "50",
       "status": 200,
       "items": 50,
       "truncated": true,
-      "next_cursor": "ae5740e65dd121d2268feceb966db87f50b183a05e4488c5ebd5e0f9341369e2",
+      "next_cursor": "b4435e69f6f6e747ce97870497487050d0d9635929d1a1b640e519ddb5cbe81c",
       "missing_evidence": [
         "No historical state transitions are reconstructed before schema4 or across process boundaries"
       ],
@@ -115,17 +115,17 @@
     },
     {
       "route": "health-history",
-      "cursor_asked": "ae5740e65dd121d2268feceb966db87f50b183a05e4488c5ebd5e0f9341369e2",
+      "cursor_asked": "b4435e69f6f6e747ce97870497487050d0d9635929d1a1b640e519ddb5cbe81c",
       "limit": "50",
       "status": 200,
-      "items": 10,
+      "items": 5,
       "truncated": false,
       "next_cursor": null,
       "missing_evidence": [
         "No historical state transitions are reconstructed before schema4 or across process boundaries"
       ],
       "time_semantics": 281,
-      "ids": 10
+      "ids": 5
     }
   ],
   "checks": [
@@ -147,7 +147,7 @@
     {
       "check": "the Core handed a cursor for the continuation",
       "ok": true,
-      "the_detail": "\"94693b30ea74e8441e2f7982e98c90c8dcbbd9b6c536fa0031a5da3032a71a24\""
+      "the_detail": "\"e6c8469590ed36cb050dd54f8128674176a7befe519f7b95092472e15ff404c0\""
     },
     {
       "check": "the surface offers the continuation of the gaps",
@@ -172,7 +172,7 @@
     {
       "check": "the continuation asked the Core with the opaque cursor",
       "ok": true,
-      "the_detail": "[{\"cursor\":null,\"items\":50},{\"cursor\":\"94693b30ea74e8441e2f7982e98c90c8dcbbd9b6c536fa0031a5da3032a71a24\",\"items\":1}]"
+      "the_detail": "[{\"cursor\":null,\"items\":50},{\"cursor\":\"e6c8469590ed36cb050dd54f8128674176a7befe519f7b95092472e15ff404c0\",\"items\":1}]"
     },
     {
       "check": "the continuation repeats no row of the first page",
@@ -202,7 +202,7 @@
     {
       "check": "the health history is continued with the cursor of the Core",
       "ok": true,
-      "the_detail": "[{\"cursor\":null,\"items\":50},{\"cursor\":\"78dc68b53ecd3e6c456ac92e48681c4d11c222afeed3b73da2a2481ccfd5efdf\",\"items\":50},{\"cursor\":\"594b8eb222a281d9481af283a01e37ebeab582ce3800ab1643963e7126a8801f\",\"items\":50},{\"cursor\":\"ae5740e65dd121d2268feceb966db87f50b183a05e4488c5ebd5e0f9341369e2\",\"items\":10}]"
+      "the_detail": "[{\"cursor\":null,\"items\":50},{\"cursor\":\"4293271d1dd25eff9f74f984713b9cd402c506be0105102dedb36212141d2df4\",\"items\":50},{\"cursor\":\"0cccd6dd87f482816c5edefa1acec0defeb63ecf62037627b44bb3fd3ff76cf8\",\"items\":50},{\"cursor\":\"b4435e69f6f6e747ce97870497487050d0d9635929d1a1b640e519ddb5cbe81c\",\"items\":5}]"
     },
     {
       "check": "the offer of the health history is gone after the continuation",
@@ -212,12 +212,12 @@
     {
       "check": "the last page of the health history is not truncated",
       "ok": true,
-      "the_detail": "{\"truncated\":false,\"items\":10}"
+      "the_detail": "{\"truncated\":false,\"items\":5}"
     },
     {
       "check": "the evidence stays visible after the continuation",
       "ok": true,
-      "the_detail": "{\"gaps\":51,\"transitions\":160}"
+      "the_detail": "{\"gaps\":51,\"transitions\":155}"
     },
     {
       "check": "no failure of the evidence is shown",

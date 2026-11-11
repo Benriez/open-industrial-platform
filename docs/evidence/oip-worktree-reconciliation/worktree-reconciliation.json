@@ -2,7 +2,7 @@
   "schema": "oip-worktree-reconciliation-v1",
   "steps": [],
   "the_canonical_branch": "main",
-  "the_canonical_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
+  "the_canonical_revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
   "the_worktrees": [
     {
       "the_path": "/Users/benny/Code/open-industrial-platform",
@@ -203,7 +203,7 @@
   "the_canonical_branch_carries_the_capability": true,
   "the_proof_of_the_capability": {
     "the_receipt": "docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json",
-    "the_revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
+    "the_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
     "the_documented_gaps": 51,
     "the_distinct_rows": 51,
     "the_first_page_items": 50,
@@ -259,8 +259,8 @@
   },
   "the_reconciliation_is_complete": true,
   "status": "PASS",
-  "the_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
-  "the_tree": "bb601b98108a2e8abe34475a3f8e27eb42afaa89",
+  "the_revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
+  "the_tree": "9acef728e1567435fdae2600d0b2e31f54ebfc79",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T18:28:18Z"
+  "finished_utc": "2026-11-11T20:50:15Z"
 }
