@@ -6,9 +6,9 @@
     "the canonical state names the release",
     "every file of the evidence tree is cited"
   ],
-  "the_cited_paths": 72,
+  "the_cited_paths": 76,
   "the_citations": {
-    "the_cited": 72,
+    "the_cited": 76,
     "the_missing_on_disk": [],
     "the_present_but_untracked": []
   },
@@ -36,15 +36,15 @@
     "the_note": "a path of the build tree is not a receipt: the ledger must not present a directory of a build as the evidence of a claim. The artefacts of the release live in the build tree by nature and are named by the manifest."
   },
   "the_canonical_state": {
-    "the_source_revision": "0593497cfc5a8f315a40511695cf02b1a035fe41",
-    "the_acceptance_revision": "58f6c827defbe12158394ea77ae28e39ba0a6900",
-    "the_core_binary_revision": "58f6c827defbe12158394ea77ae28e39ba0a6900",
-    "the_tracked_files": 713,
+    "the_source_revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
+    "the_acceptance_revision": "0aa1595cc46f019075eff0a313ba126824106981",
+    "the_core_binary_revision": "f8519292fa324ce6a2a74f6b8d605dfa84fbf235",
+    "the_tracked_files": 726,
     "the_product_is_committed": true
   },
   "the_files_of_the_release": {
-    "the_present": 69,
-    "the_cited": 69,
+    "the_present": 78,
+    "the_cited": 78,
     "the_orphaned": [],
     "the_files_of_the_eras": 1271,
     "the_areas_of_the_eras_that_the_record_does_not_name": [],
@@ -52,8 +52,8 @@
   },
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "51256dc97941e03cf23eb06ad8ae1e501774c298",
-  "the_tree": "f9fc78cb181b4362b6d17696d34cf907f74ddefc",
+  "the_revision": "b10ec2847581aad9c28df73f5e533186cccf0b15",
+  "the_tree": "481cef9dfa82b3394d42261d9dc08f3feb6945af",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T08:22:16Z"
+  "finished_utc": "2026-11-11T13:52:02Z"
 }

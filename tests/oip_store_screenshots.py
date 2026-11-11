@@ -202,6 +202,8 @@ def main() -> int:
         environment["OIP_IPC_SOCKET"] = str(work / "s")
         environment["OIP_BROWSER_CREDENTIAL"] = str(credential)
         environment["OIP_STORE_EVIDENCE"] = str(captures)
+        environment["OIP_REVISION"] = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
         result = subprocess.run(
             ["node", str(SCRIPT), base, str(captures), str(args.width), str(args.height)],
             cwd=str(ROOT / "apps/flutter"), env=environment,

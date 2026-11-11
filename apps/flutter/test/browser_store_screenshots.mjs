@@ -227,6 +227,9 @@ try {
 
 const receipt = {
   schema: 'oip-store-screenshots-browser-v1',
+  // The revision the captures were taken on: a receipt that names no
+  // revision says nothing about what it covers.
+  the_revision: process.env.OIP_REVISION || null,
   the_base: base,
   the_size: { the_width: width, the_height: height },
   the_sizes_that_apple_accepts: ACCEPTED,
