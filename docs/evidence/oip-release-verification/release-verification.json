@@ -4,49 +4,49 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "a489b2993d3e6c9918b88404070afb1e185981bf",
+      "the_revision": "75a792f73e104f565f8cda344c90fd82a0a8b368",
       "the_revision_of_the_source": {
-        "the_revision": "61c1531fa9f205c8a6f3db68350904f1642256d9",
-        "the_subject": "feat(g8,g10): the address space is honest; the instance of the Pi is one bundle"
+        "the_revision": "0593497cfc5a8f315a40511695cf02b1a035fe41",
+        "the_subject": "feat(g5,g6): the collector reads a BusyBox host; the deployed hosts and the two device classes are measured"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
-        "the_files": 701,
-        "the_sha256": "a32b0e340352c4c2d35d9a49b95a41f2d3d6db11b09f50fd81f814632c3a02ad"
+        "the_files": 703,
+        "the_sha256": "ad6858f7018a2c8186f794fde4517b36e15a765f48add73fbe3ea7fb94e61c47"
       },
       "the_artifacts": {
-        "the_core": "1a4e7870968863bf96de80bbb58efca4510fccf1e6e61da18574b33f2955b00c",
+        "the_core": "87a56a2e5c7f4717605cac7288a3636edb1645be697565dabb3d6a66d47a652c",
         "the_official_mcp_probe": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
         "the_macos_application_bundle": "f9e63179022bdc9ea50c8a47244297c848d6c56d93c78684d31cc4a477f4d10a",
         "the_web_release": "7e4662330efdf8de81cce6c7cdb9cdc076d2f4b1fec52bb3a27506fdb96a711f"
       },
-      "the_receipts": 64,
+      "the_receipts": 65,
       "the_receipts_that_the_manifest_does_not_name": 0,
       "the_receipts_that_are_measured_after_the_manifest": [
         "docs/evidence/oip-record-integrity/record-integrity.json",
         "docs/evidence/oip-release-verification/release-verification.json"
       ],
-      "the_core_the_acceptance_executed": "1a4e7870968863bf96de80bbb58efca4510fccf1e6e61da18574b33f2955b00c",
+      "the_core_the_acceptance_executed": "87a56a2e5c7f4717605cac7288a3636edb1645be697565dabb3d6a66d47a652c",
       "the_acceptance_executed_the_core_that_the_manifest_names": true,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-      "the_core_is_the_reproducible_one": true,
-      "the_manifest_names_the_reproducible_binary": true,
-      "the_sources_of_the_core_are_unchanged_since_the_receipt": true
+      "the_core_is_the_reproducible_one": false,
+      "the_manifest_names_the_reproducible_binary": false,
+      "the_sources_of_the_core_are_unchanged_since_the_receipt": false
     },
     "the_freshness": {
       "the_last_change_of_the_product": {
-        "crates": "61c1531fa9f2",
+        "crates": "0593497cfc5a",
         "apps/flutter/lib": "61c1531fa9f2"
       },
-      "the_revision_of_the_source": "61c1531fa9f2",
-      "the_receipts": 48,
+      "the_revision_of_the_source": "0593497cfc5a",
+      "the_receipts": 49,
       "the_receipts_measured_on_a_tree_that_carries_the_source": 46,
-      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 0,
+      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 1,
       "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
     "the_record": {
-      "the_citations": 69,
-      "the_receipts_of_the_release": 48,
+      "the_citations": 70,
+      "the_receipts_of_the_release": 49,
       "the_missing": [],
       "the_untracked": [],
       "the_orphaned": [],
@@ -54,14 +54,14 @@
       "the_paths_of_the_build_tree_in_the_ledger": []
     },
     "the_canonical_state": {
-      "the_source_revision": "61c1531fa9f205c8a6f3db68350904f1642256d9",
-      "the_acceptance_revision": "6036ef9118d94900929cf44aef209840c9dee2b0",
-      "the_core_binary_revision": "6036ef9118d94900929cf44aef209840c9dee2b0",
-      "the_tracked_files": 701,
+      "the_source_revision": "0593497cfc5a8f315a40511695cf02b1a035fe41",
+      "the_acceptance_revision": "1e806309e6b4c18b71bda669a39b90ae7db41362",
+      "the_core_binary_revision": "1e806309e6b4c18b71bda669a39b90ae7db41362",
+      "the_tracked_files": 703,
       "the_product_is_committed": true
     },
     "the_numbers_of_the_record": {
-      "the_rows": 93,
+      "the_rows": 95,
       "the_measurements": 26
     },
     "the_acceptance": {
@@ -72,7 +72,7 @@
       "the_flutter_tests_passed": 365,
       "the_flutter_tests_failed": 0,
       "the_screenshots": 13,
-      "the_revision_of_the_acceptance": "6036ef9118d94900929cf44aef209840c9dee2b0",
+      "the_revision_of_the_acceptance": "1e806309e6b4c18b71bda669a39b90ae7db41362",
       "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
     },
     "the_boundaries": {
@@ -152,9 +152,11 @@
     "G10",
     "G12"
   ],
-  "the_problems": [],
-  "the_revision": "f6d83f639df788eab7108d1944f87799e603e97b",
-  "the_tree": "3f830c175e85ebf8970a87563c95ef862627ff2c",
+  "the_problems": [
+    "the receipt docs/evidence/oip-reproducible-build/reproducible-build.json names the revision 6036ef9118d9, which predates the last change of crates (0593497cfc5a)"
+  ],
+  "the_revision": "7d3d4236fd722c12ed019a4292ab381c1bd80d8c",
+  "the_tree": "6f0db64e913f5b2f329ceaafbb716de64424b75a",
   "the_working_tree_is_clean": true,
-  "status": "PASS"
+  "status": "FAIL"
 }
