@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "75a792f73e104f565f8cda344c90fd82a0a8b368",
-  "the_tree": "1c506af594ed502ae82f6f6e64a0cc6b3bf310de",
+  "the_revision": "354275c8e4f64e705ac226fd9b41d9a7e2f90627",
+  "the_tree": "fcfd9f1091fd532d0ce778977e0b23ef5b83284d",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "0593497cfc5a8f315a40511695cf02b1a035fe41",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 703,
-    "the_sha256": "ad6858f7018a2c8186f794fde4517b36e15a765f48add73fbe3ea7fb94e61c47"
+    "the_sha256": "bd7e6831320f1f59a4a477ec9b8b7f7a72d508ab7849ac7ba0bc5d12506ad2f4"
   },
   "the_artifacts": {
     "the_core": {
@@ -108,7 +108,7 @@
     },
     "the_reproducible_build": {
       "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-      "sha256": "7f762fc75c4a8f19878326fc096a1238e90e819ab55cd3531b395db67ddaf3dc"
+      "sha256": "6eaba062afc58ca90fe03c23b7b48506dc141d1552efd98e6be4548a1785a95f"
     },
     "the_upgrade_rollback": {
       "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
@@ -322,20 +322,19 @@
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/OIP_RELEASE_LEDGER.md",
-    " M docs/OIP_RELEASE_PROGRESS.md"
+    "M docs/evidence/oip-reproducible-build/reproducible-build.json"
   ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-    "the_digest_of_the_reproducible_build": "1a4e7870968863bf96de80bbb58efca4510fccf1e6e61da18574b33f2955b00c",
+    "the_digest_of_the_reproducible_build": "87a56a2e5c7f4717605cac7288a3636edb1645be697565dabb3d6a66d47a652c",
     "the_core_is_identical_across_the_two_builds": true,
-    "the_manifest_names_the_reproducible_binary": false,
-    "the_revision_the_binary_names": "6036ef9118d94900929cf44aef209840c9dee2b0",
-    "the_revision_of_the_receipt": "6036ef9118d94900929cf44aef209840c9dee2b0",
-    "the_sources_of_the_core_are_unchanged_since_the_receipt": false,
-    "the_property_holds_for_the_release": false,
+    "the_manifest_names_the_reproducible_binary": true,
+    "the_revision_the_binary_names": "1e806309e6b4c18b71bda669a39b90ae7db41362",
+    "the_revision_of_the_receipt": "1e806309e6b4c18b71bda669a39b90ae7db41362",
+    "the_sources_of_the_core_are_unchanged_since_the_receipt": true,
+    "the_property_holds_for_the_release": true,
     "the_note": "the binary names the revision it was built from, so the bytes of a later revision differ; the property of the release is that the same revision yields the same bytes \u2014 it is measured by the rehearsal and it carries over as long as the sources of the Core are unchanged",
-    "the_revision_the_rehearsal_built": "6036ef9118d94900929cf44aef209840c9dee2b0"
+    "the_revision_the_rehearsal_built": "1e806309e6b4c18b71bda669a39b90ae7db41362"
   },
   "the_visual_acceptance": {
     "the_state": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
