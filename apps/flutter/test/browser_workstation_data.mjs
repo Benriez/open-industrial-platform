@@ -194,6 +194,14 @@ for (const station of WORKSTATIONS) {
     await clickText('History Limits');
     await page.waitForTimeout(3000);
   }
+  // The nodes of the source arrive from the Core: the gate waits for them
+  // instead of reading a surface that may still be empty on a loaded
+  // machine. The check below then reports what the surface really carries.
+  if (station.slug === 'opcua') {
+    await page.waitForFunction(
+      () => /bulk\.|motor_running|alarm_active|operating_mode|units_produced|temperature/.test(document.body.innerText),
+      null, { timeout: 45000 }).catch(() => {});
+  }
   const surface = await readSurface();
   surfaces[station.slug] = surface;
   await page.screenshot({ path: `${outDir}/workstation-${station.slug}.png` });
