@@ -3788,6 +3788,77 @@ one-time code minted on the instance itself.
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
 
+### Iteration 82 — the export recipe of the App Store listing, and the name of the app
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the listing is
+upload-ready; the upload itself is the operator's action, and the gates that need the operator
+(G5, G10, G12) stay open.
+
+* **The upload had no recipe.** The package of the client was built and measured, but the
+  repository held no `xcodebuild -exportArchive`, no `ExportOptions.plist` and no way to hand the
+  archive to the store. There is now a **template**
+  (`docs/release/mac-app-store/ExportOptions.plist.template`) in which **every identity of the
+  operator is a placeholder** — the team, the profile of the bundle identifier, the certificate,
+  the method and the destination — and a **tool** (`tools/oip_mas_export.py`) that renders it into
+  `target/`, proves the rendered file and prints the command. The tool **invents no credential**:
+  while the identity is incomplete it refuses and names what is missing.
+* **The recipe is measured, not asserted** (`tests/oip_mas_export.py`,
+  `docs/evidence/oip-mas-export/mas-export.json`): the template carries every key that the tool
+  needs and every identity as a placeholder; the tool **refuses** an incomplete identity (the
+  missing values are named); with a **fake** identity the rendered file parses, carries every key,
+  carries **no placeholder** any more and lies **outside** the checkout; the printed command names
+  the archive and the options file; and the tool leaves the tree of the checkout **untouched**. The
+  rehearsal never exports, never signs and never uploads.
+* **The app now carries the name of the listing.** The bundle shipped on disk as `oip_dashboard`
+  without a display name, so the operator saw the technical name in the Dock and in the window.
+  The bundle now carries `CFBundleDisplayName = Open Industrial Platform`
+  (`apps/flutter/macos/Runner/Configs/AppInfo.xcconfig`,
+  `apps/flutter/macos/Runner/Info.plist`), while the name **on the disk** stays the technical one
+  — the paths of the release name it. The packaging tool measures the display name, the name on
+  the disk and the copyright, and the **copyright of the bundle now names the same holder as the
+  listing**.
+* **The load-bearing assumption of the hardened runtime is now measured, not asserted.** The
+  record claimed that the hardened runtime "refuses the ad-hoc Flutter framework inside it" — a
+  claim of the prose. The packaging tool now **starts the hardened archive** and records what
+  happens: the process **dies** with `SIGABRT` and the library validation names the reason
+  ("mapping process and mapped file (non-platform) have different Team IDs"). The hardened runtime
+  therefore belongs to the **distribution** build and not to the shared Release configuration of
+  the project — the local bundle has to stay launchable — and that is now a measured fact
+  (`the_launch_of_the_hardened_bundle`).
+* **The metadata names every field that is the operator's.** The listing claimed to be "localised
+  in both" English and German; the client has **no** localisation framework — the strings are
+  hard-coded German, and the claim is corrected. The table now names the fields that are the
+  operator's (the three URLs, the contact, the age rating, the privacy answers, the secondary
+  category, the pricing, the licensing, the localised metadata, the review access, the Apple
+  identity, the upload), and the **notes for the reviewer** are prepared: the client has **no
+  account and no password** — it asks for a **one-time code** that the Core mints on the instance
+  itself — so the reviewer needs a running instance of the Core, and the notes say exactly that.
+* **The checklist of the requirements is corrected against the measurements** (R2, R3, R6, R9 are
+  now **MET** or **PARTIAL** with the receipt that proves them; R4 names the measured reason why
+  the project carries no hardened runtime), and two rows are new: **R14** the export with
+  `xcodebuild -exportArchive` and **R15** the access of the reviewer.
+* **The refresh of this iteration found a defect of the previous one — and the record names it
+  instead of hiding it behind a quiet second run.** The rehearsal `oip_scope_persistence` failed
+  **twice** with the same failure: the journey could not find the control that names the type of
+  the device in the administration. The cause was **not** a flake: iteration 81 had given the
+  **type filter** of the inventory the vocabulary of the types, and the entry that keeps every
+  type (`all`) is **not** a type — the surface painted it as `Unbekannter Gerätetyp · all`. The
+  name of that choice collided with the name of the administration's dropdown, so the journey
+  opened the **filter** instead of the **administration**. The defect was invisible until the web
+  bundle of the new product had been built (the journey drives the bundle in
+  `apps/flutter/build/web`), and the acceptance of iteration 81 does not drive that journey — so
+  the refresh of this iteration was the first run that saw it. The correction is **iteration 83**:
+  the choice that keeps every type is named as the choice it is, the vocabulary of the types has
+  **one** owner everywhere (the administration included), and the journey names the control it
+  drives exactly.
+
+The release cycle of this revision therefore continues in **iteration 83**, which carries the
+correction: the receipts of this iteration measured the tree of `dd4bb3e`, and a receipt that
+measures an older product than the one that ships would be a false statement.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
+
 ## 5. Evidence index
 
 | Artifact | Content |

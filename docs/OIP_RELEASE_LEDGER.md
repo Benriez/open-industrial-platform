@@ -131,14 +131,18 @@ An **independent verification** of that change (a delegated, read-only audit of 
    keep the identifier as the value; the grouping stays on the identifier. The test closes a gap
    of zero coverage (`apps/flutter/test/device_kind_test.dart`).
 
-9. **N28 (the export recipe of the App Store listing)**: the **next READY task**. The package of
-   the client is measured and the store assets exist, but the **upload step** has no recipe in
-   the repository: there is no `xcodebuild -exportArchive`, no `ExportOptions.plist`, and the
-   bundle still ships on disk as `oip_dashboard` without a `CFBundleDisplayName`. The change is
-   a template with **placeholders** (the team, the profile and the certificate are the
-   operator's), a tool that renders it and runs the export, the display name of the app and the
-   **App Review notes** of a client whose access is a one-time code minted on the instance
-   itself. Nothing of it invents a credential and nothing of it uploads.
+9. **N28 (the export recipe of the App Store listing)**: **measured**. The **upload step** has a
+   recipe in the repository now: a template with **placeholders** (the team, the profile and the
+   certificate are the operator's), a tool that renders it into the build tree of the machine,
+   prints the command and **refuses** while the identity of the operator is incomplete, the **display name** of the app
+   (`CFBundleDisplayName = Open Industrial Platform`, while the name on the disk stays the
+   technical one, because the paths of the release name it) and the **App Review notes** of a
+   client whose access is a one-time code minted on the instance itself
+   (`docs/release/mac-app-store/ExportOptions.plist.template`, `tools/oip_mas_export.py`,
+   `tests/oip_mas_export.py`, `docs/evidence/oip-mas-export/mas-export.json`). The recipe is
+   measured, not asserted: the rendered file carries every key and no placeholder any more, lies
+   outside the checkout and leaves the checkout untouched. Nothing of it invents a credential and
+   nothing of it uploads.
 
 10. **N23 (the secure update of the deployed software)**: the **update path of the Core** is
    implemented and **measured** (`tools/oip_update.py`, `tests/oip_update.py`,
@@ -341,6 +345,7 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-pi-instance/pi-instance.json` | the disposable instance of the Core on the Raspberry Pi: the cross build for the target of the host, the bundle, the **start by hand**, the Core answering through a tunnel of the loopback, the session of the operator minted on the host, the authorized projection (the address space of the simulation of the host and the organization of the instance), **no published port** and the **services of the operator unchanged** before and after |
 | `docs/evidence/oip-update/update.json` | the secure update of the Core of an instance: a signed bundle is verified (the Ed25519 signature over the exact bytes of the manifest), the digests are verified before the activation and again after the write, the switch is atomic, the new version is health checked as a disposable instance, a version that does not become ready is rolled back, and the durable journal of the instance names every attempt — the changed artefact, the forged manifest, the foreign target and the repeated revision are refused |
 | `docs/evidence/oip-mas-package/mas-package.json` | the package of the macOS client for the Mac App Store: the release build, the entitlements of the bundle (the app sandbox and the network client, without the debug entitlement of the entitlements file), the hardened runtime in the signature, the privacy manifest in the bundle, the absence of the quarantine attribute on every file, the category and the transport security of the Info.plist, the icon and the signature of every executable |
+| `docs/evidence/oip-mas-export/mas-export.json` | the **export recipe** of the Mac App Store listing: the template carries every key that the export needs and every identity of the operator as a placeholder, the tool **refuses** while that identity is incomplete and names the missing values, the rendered file carries every key and **no placeholder** any more and lies **outside** the checkout, the printed command names the archive and the options file, and the checkout stays **untouched** — the rehearsal never exports, never signs and never uploads |
 | `docs/evidence/oip-deployment-discovery/deployment-discovery.json` | the deployed hosts and the two device classes of the operator, measured read-only: the identity, the architecture, the memory, the disk, the toolchain, the services of the operator (unchanged before and after) and the listeners of `bodi-pi` and `bodi-pc`; the SSH banner and the host keys of the OpenWrt router; the public configuration of the Hue Bridge and the refusal of its lights without a token |
 | `docs/evidence/oip-pi-bundle/pi-bundle.json` | the bundle of a disposable instance for a foreign host: the whole procedure measured with stubs — the files of the instance are absolute and inside the instance, the procedure writes nothing outside it, the code of the operator session is minted over the local IPC, the instance stops without a forced signal, and the bundle installs no service and names no path of the machine it was built on |
 | `docs/evidence/oip-operations/operations.json` | the local operations: the backup, the refused restore, the clean shutdown, the three refusals of the personal installation |
