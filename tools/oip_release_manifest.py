@@ -30,6 +30,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -110,22 +111,6 @@ LATE_RECEIPTS = {
 }
 
 
-def the_reproducible_measurement():
-    """The measurement of the rehearsal of the reproducible builds.
-
-    The rehearsal reads the revision out of the binary it built; the manifest
-    names that revision when the tree carries a documentation commit on top of
-    the measurement.
-    """
-    path = ROOT / "docs/evidence/oip-reproducible-build/reproducible-build.json"
-    if not path.is_file():
-        return {}
-    try:
-        return json.loads(path.read_text())
-    except ValueError:
-        return {}
-
-
 def the_receipts_of_the_release():
     """Every receipt of the release, with a name of its own.
 
@@ -194,6 +179,32 @@ def tool_version(command):
 def git(*arguments):
     result = subprocess.run(["git", *arguments], cwd=ROOT, capture_output=True, text=True)
     return result.stdout.strip()
+
+
+def the_revision_the_binary_names(path):
+    """The revision that the binary of the Core names.
+
+    The build script of the Core embeds `git describe --always --abbrev=40
+    --dirty` into the binary, so the revision is **in** the artefact. The
+    manifest reads it out of the binary that it digests and never substitutes
+    the revision of the file the manifest is written in: the receipts of a run
+    are committed with the record, so the tree carries a documentation commit
+    on top of the measurement.
+    """
+    if not path.is_file():
+        return None
+    payload = path.read_bytes()
+    revision = git("rev-parse", "HEAD")
+    for candidate in (revision, revision + "-dirty"):
+        if candidate and candidate.encode() in payload:
+            return candidate
+    for match in sorted(set(re.findall(rb"[0-9a-f]{40}", payload))):
+        candidate = match.decode()
+        exists = subprocess.run(["git", "cat-file", "-e", candidate + "^{commit}"],
+                                cwd=ROOT, capture_output=True)
+        if exists.returncode == 0:
+            return candidate
+    return None
 
 
 def source_revision():
@@ -285,6 +296,14 @@ def build_manifest():
                 "present": True, "path": str(path.relative_to(ROOT)),
                 "bytes": path.stat().st_size, "sha256": sha256_file(path),
             }
+            if name == "the_core":
+                # The Core names the revision it was built from in its own
+                # binary. The manifest reads that revision **out of the
+                # artefact** that it digests and names it.
+                named = the_revision_the_binary_names(path)
+                if named:
+                    manifest["the_artifacts"][name]["the_revision_the_binary_names"] = named
+                    manifest["the_artifacts"][name]["the_revision_was_read_out_of_the_binary"] = True
             continue
         digest, entries = digest_tree(path)
         entry = {
@@ -301,30 +320,6 @@ def build_manifest():
             manifest["the_artifacts"][name]["the_executable_sha256"] = next(
                 (item["sha256"] for item in entries
                  if item["path"] == "Contents/MacOS/oip_dashboard"), None)
-        if name == "the_core":
-            # The Core names the revision it was built from in its own binary.
-            # The rehearsal of the reproducible builds reads that revision out
-            # of the binary; the manifest states the revision of the binary
-            # that it digests.
-            payload = path.read_bytes()
-            revision = git("rev-parse", "HEAD")
-            for candidate in (revision, revision + "-dirty"):
-                if candidate and candidate.encode() in payload:
-                    manifest["the_artifacts"][name]["the_revision_the_binary_names"] = candidate
-                    break
-            else:
-                # The binary was built at an earlier revision than the one the
-                # manifest is written at: the receipts of a run are committed
-                # with the record, so the tree carries a documentation commit
-                # on top of the measurement. The revision is then the one the
-                # rehearsal of the reproducible builds read **out of the
-                # binary** — the manifest names what the binary names and not
-                # the revision of the file it was written in.
-                measured = the_reproducible_measurement()
-                named = (measured.get("the_core") or {}).get("the_revision_the_binary_names")
-                if named:
-                    manifest["the_artifacts"][name]["the_revision_the_binary_names"] = named
-                    manifest["the_artifacts"][name]["the_revision_was_read_out_of_the_binary"] = True
     # The receipts of the acceptance are **tracked** files; the receipts of a
     # run in the build tree are named by the run, not by the manifest, because
     # a manifest must be verifiable against the files of the checkout.
@@ -377,8 +372,12 @@ def build_manifest():
                          "revision yields the same bytes — it is measured by the rehearsal and "
                          "it carries over as long as the sources of the Core are unchanged"),
         }
-        manifest["the_artifacts"]["the_core"]["the_revision_the_binary_names"] = \
-            measured.get("the_revision_the_binary_names")
+        # The artefact keeps the revision that was read **out of the binary**
+        # that the manifest digests. The revision of the receipt is named in
+        # the section above; it is the revision of the rehearsal, not of the
+        # artefact.
+        manifest["the_core_is_the_reproducible_one"][
+            "the_revision_the_rehearsal_built"] = measured.get("the_revision_the_binary_names")
     # The state of the visual acceptance of the operator. It is recorded by the
     # gate itself and it is never a claim of this tool. The tracked receipt of
     # the acceptance is the source of the state, so the handoff does not
