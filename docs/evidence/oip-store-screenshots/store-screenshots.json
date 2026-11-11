@@ -11,15 +11,15 @@
   "the_core": {
     "the_binary": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
     "the_sha256_of_the_binary": "9d34267d64d647159f25c4e790be63ce74d1066bb8822ee2765a8d7a16ad0763",
-    "the_port": 64928,
-    "the_source_port": 64929,
+    "the_port": 50516,
+    "the_source_port": 50517,
     "the_web_release": "apps/flutter/build/web",
     "the_bundle_sha256": "486ffa1e0e16635f1f780374616bf7cc6b69d22c11fb6324b84bdb0901c03489"
   },
   "the_browser": {
     "schema": "oip-store-screenshots-browser-v1",
-    "the_revision": "56106c112c15b23176d67aae9dcdb852cba4c920",
-    "the_base": "http://127.0.0.1:64928",
+    "the_revision": "8effcbb5831d0710231bde9b75c25a6dabba5ed7",
+    "the_base": "http://127.0.0.1:50516",
     "the_size": {
       "the_width": 1440,
       "the_height": 900
@@ -59,7 +59,7 @@
         "the_height": 900,
         "the_colour_type": 2,
         "the_carries_an_alpha_channel": false,
-        "the_bytes": 148099
+        "the_bytes": 148213
       },
       {
         "the_workstation": "Ger\u00e4te & Dienste",
@@ -69,7 +69,7 @@
         "the_height": 900,
         "the_colour_type": 2,
         "the_carries_an_alpha_channel": false,
-        "the_bytes": 115892
+        "the_bytes": 115919
       },
       {
         "the_workstation": "Netzwerk & VPN",
@@ -557,7 +557,7 @@
     "the_errors": [],
     "the_fatal": null,
     "the_verdict": "PASS",
-    "the_finished_utc": "2026-11-11T14:17:47.814Z"
+    "the_finished_utc": "2026-11-11T14:19:40.106Z"
   },
   "the_captures": [
     {
@@ -567,8 +567,8 @@
       "the_height": 900,
       "the_colour_type": 2,
       "the_carries_an_alpha_channel": false,
-      "the_bytes": 115892,
-      "the_sha256": "0cda7a714c6e89aafdcd1aae214e85aab74bb5573dc923629c971a27e8e32347"
+      "the_bytes": 115919,
+      "the_sha256": "1eec33b287f715d5914d9933d3156f9220967e72a6626e745efcf6337f448657"
     },
     {
       "the_file": "store-diagnostics-1440x900.png",
@@ -607,8 +607,8 @@
       "the_height": 900,
       "the_colour_type": 2,
       "the_carries_an_alpha_channel": false,
-      "the_bytes": 148099,
-      "the_sha256": "4580a51bba66c495191850cda99a122a009e5e3a3b5e7fbe43770bd19139653b"
+      "the_bytes": 148213,
+      "the_sha256": "0a691af040d53eff87f77ccd89ada3ffb0cf9868b7aebcbd493c772d1d5452b6"
     },
     {
       "the_file": "store-settings-1440x900.png",
@@ -641,9 +641,9 @@
   ],
   "the_orphaned_processes": [],
   "the_status": "PASS",
-  "the_revision": "56106c112c15b23176d67aae9dcdb852cba4c920",
-  "the_tree": "37470f638884192767ab135537ac97b1fb6ce42c",
-  "the_working_tree_is_clean": false,
+  "the_revision": "8effcbb5831d0710231bde9b75c25a6dabba5ed7",
+  "the_tree": "f26f2d246972bf40d05683bc00064e2f0ca3b013",
+  "the_working_tree_is_clean": true,
   "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-  "finished_utc": "2026-11-11T14:17:48Z"
+  "finished_utc": "2026-11-11T14:19:40Z"
 }
