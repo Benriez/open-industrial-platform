@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "1b60dc2b7abb949a15de7acc0ebf3153d483d0b8",
+      "the_revision": "6ceca37b56f131f287144c35905d5cd16ca0ae39",
       "the_revision_of_the_source": {
         "the_revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
         "the_subject": "feat(g4): the Devices workspace names the identity that the Core holds"
@@ -12,7 +12,7 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 732,
-        "the_sha256": "dd7e818e42991e1a4e0c70d3ca7980f79bf89fd6dba42ba5a82ad71e4ffc33da"
+        "the_sha256": "51ab7a893fdb32effafa57f35093b068d3c23b93255d9c39c6357698e3f4113e"
       },
       "the_artifacts": {
         "the_core": "1bf6a47d7bde6d2a347c9952a9adb0b3ebda46a2aea89f57a1f9b2cef14b15e8",
@@ -61,7 +61,7 @@
       "the_product_is_committed": true
     },
     "the_numbers_of_the_record": {
-      "the_rows": 108,
+      "the_rows": 109,
       "the_measurements": 26
     },
     "the_acceptance": {
@@ -153,8 +153,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "b77c1b473723e4409e9f1a38c67067e92bab5957",
-  "the_tree": "b3342bc5eedf87af424f8b7b9dddb0b7fd2f15fa",
+  "the_revision": "e63eccaf73e1a3d60818dd1853a443358fd07a0d",
+  "the_tree": "6404818db207d4d8c35533e715c2c76fb94960c4",
   "the_working_tree_is_clean": true,
   "status": "PASS"
 }
