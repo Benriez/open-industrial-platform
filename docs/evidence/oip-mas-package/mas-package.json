@@ -18,7 +18,7 @@
       "--dart-define=OIP_API_URL=http://127.0.0.1:18808"
     ],
     "the_code": 0,
-    "the_error": "framework/Versions/A/Resources/flutter_assets/shaders/ink_sparkle.frag' is located outside of the allowed root paths.\n\nwarning: Stale file '/Users/benny/Library/Developer/Xcode/DerivedData/Runner-fjqieohbiptgqggswwdygknokurx/Build/Intermediates.noindex/ArchiveIntermediates/Runner/BuildProductsPath/Release/FlutterMacOS.framework/Versions/A/FlutterMacOS' is located outside of the allowed root paths."
+    "the_error": "--- xcodebuild: WARNING: Using the first of multiple matching destinations:\n{ platform:macOS, arch:arm64, id:00006000-001208642121801E, name:My Mac }\n{ platform:macOS, arch:x86_64, id:00006000-001208642121801E, name:My Mac }"
   },
   "the_quarantine_strip": {
     "the_code": 0
@@ -121,8 +121,8 @@
     }
   },
   "the_status": "PASS",
-  "the_revision": "46c0fcf1de49eac5c132d6d54c37aef9622bbfb7",
-  "the_tree": "d910d1cd031c5b39e704974a4d2633f8554eb6e1",
+  "the_revision": "8c8447189bcdb44360c0bd012850fabd9fba7327",
+  "the_tree": "4e9a0c0996bc5b8ee89d90fd202242cca487479f",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T07:26:13Z"
+  "finished_utc": "2026-11-11T09:21:21Z"
 }

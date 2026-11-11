@@ -262,17 +262,24 @@ def main():
     # built from an older revision would measure an older product: the
     # workspace is therefore built before the first rehearsal, and a build
     # that fails stops the refresh instead of measuring something else.
-    built = subprocess.run(
+    for command in (
+        # The rehearsals of the release drive the binaries of the tree: the
+        # development profile and the release profile.
         ["cargo", "build", "--workspace", "--bin", "oip-server",
          "--bin", "oip-simulated-server"],
-        cwd=ROOT, capture_output=True, text=True, timeout=7200,
-    )
-    if built.returncode != 0:
-        print("the workspace did not build — the rehearsals would measure an "
-              "older binary:")
-        print((built.stderr or built.stdout)[-800:])
-        return 2
-    print("BUILD the workspace of the tree", flush=True)
+        ["cargo", "build", "--locked", "--release", "--workspace",
+         "--bin", "oip-server", "--bin", "oip-simulated-server",
+         "--example", "mcp_probe"],
+    ):
+        built = subprocess.run(command, cwd=ROOT, capture_output=True, text=True,
+                               timeout=7200)
+        if built.returncode != 0:
+            print("the workspace did not build — the rehearsals would measure an "
+                  "older binary:")
+            print((built.stderr or built.stdout)[-800:])
+            return 2
+    print("BUILD the workspace of the tree (the development and the release "
+          "profile)", flush=True)
 
     report = {"schema": "oip-refresh-evidence-v1", "the_rehearsals": []}
     for name, script, receipts in REHEARSALS:

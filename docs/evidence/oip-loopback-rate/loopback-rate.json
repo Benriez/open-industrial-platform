@@ -7,50 +7,50 @@
   ],
   "the_one_connection": {
     "the_bytes": 3145728,
-    "the_seconds": 20.11,
-    "the_kib_per_second": 152.7
+    "the_seconds": 22.31,
+    "the_kib_per_second": 137.7
   },
   "the_one_http_request": {
     "the_bytes": 3145728,
-    "the_seconds": 23.65,
-    "the_kib_per_second": 129.9
+    "the_seconds": 25.39,
+    "the_kib_per_second": 121.0
   },
   "the_two_connections": {
     "the_bytes": 6291456,
-    "the_seconds": 22.96,
-    "the_kib_per_second": 267.6
+    "the_seconds": 23.66,
+    "the_kib_per_second": 259.7
   },
   "the_limit_grows_with_the_connections": true,
   "the_unix_socket": {
     "the_bytes": 3145728,
-    "the_seconds": 0.002,
-    "the_mib_per_second": 1563.7
+    "the_seconds": 0.003,
+    "the_mib_per_second": 1040.5
   },
   "the_baseline": {
     "the_runs": 3,
     "the_requests": 38,
     "the_transferred_bytes": [
-      18247946,
+      18247241,
       18252893,
       18258557
     ],
     "the_first_paint_ms": [
-      49362,
-      48435,
-      51114
+      43515,
+      49113,
+      52024
     ],
     "the_bundle_bytes": 3033963
   },
   "the_interpretation": {
     "the_transferred_bytes": 18258557,
-    "the_measured_first_paint_ms": 51114,
-    "the_seconds_the_transfer_needs_at_the_measured_rate": 116.8,
-    "the_rate_of_the_machine_without_the_network_path": 1563.7,
+    "the_measured_first_paint_ms": 52024,
+    "the_seconds_the_transfer_needs_at_the_measured_rate": 129.5,
+    "the_rate_of_the_machine_without_the_network_path": 1040.5,
     "the_note": "the first paint of the baseline is the transfer of the delivery at the rate of the loopback of this machine. The rate is a property of the path, not of the release: the machine itself is far faster without the TCP path."
   },
   "status": "PASS",
-  "the_revision": "2f22e9cf559279e6660e1794e3ba983c65372a97",
-  "the_tree": "f86cbf38a3954f5b64d607e1b6f38426ed7bd5ca",
+  "the_revision": "8c8447189bcdb44360c0bd012850fabd9fba7327",
+  "the_tree": "4e9a0c0996bc5b8ee89d90fd202242cca487479f",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T06:53:15Z"
+  "finished_utc": "2026-11-11T09:18:52Z"
 }
