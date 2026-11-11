@@ -1,13 +1,13 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "2063c0d9feea04094f17ebeb42d00d88cbada21b",
-  "the_tree": "30d37a95c63eb1fdfff4744ca1644b287bde100e",
+  "the_revision": "c417d2f26eab9504b53d182471b82c6570968808",
+  "the_tree": "2d68ad6690151a2577de98a13f7bfa5884f6b48a",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
     "the_subject": "fix(g11): the tests name the entity of their source"
   },
-  "the_working_tree_is_clean": false,
+  "the_working_tree_is_clean": true,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 715,
-    "the_sha256": "8281aa631f986f14c23a3f9e2669da67b175e81f799ab6a85c1260c58ccb2633"
+    "the_sha256": "cc50b886b69f8e6d0c09d099ecb28460a9596d3988780b72382a84703090a66c"
   },
   "the_artifacts": {
     "the_core": {
@@ -333,10 +333,7 @@
   },
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-release",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
-  "the_working_tree_without_the_manifest": [
-    "M docs/release/SHA256SUMS",
-    " M tools/oip_release_manifest.py"
-  ],
+  "the_working_tree_without_the_manifest": [],
   "the_revision_of_the_acceptance": "0aa1595cc46f019075eff0a313ba126824106981",
   "the_tree_of_the_acceptance": "617bc48f731aa5a3ad72a656784cfa8e8aeaefe9",
   "the_acceptance_was_run_on_a_clean_tree": true,
