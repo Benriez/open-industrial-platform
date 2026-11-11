@@ -11,24 +11,24 @@
   ],
   "planned_minutes": 20.0,
   "sample_seconds": 30.0,
-  "core_pid": 76144,
+  "core_pid": 54383,
   "core_binary": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
   "sources_visible_to_the_operator": [
     "source-a",
     "source-b",
     "source-c"
   ],
-  "outage_detected_after_seconds": 0.0,
+  "outage_detected_after_seconds": 1.0,
   "collection_resumed_after_seconds": 1.0,
   "samples": [
     {
       "at_seconds": 0.0,
-      "rss_kib": 23840,
-      "cpu_percent": 1.3,
-      "observations": 145,
+      "rss_kib": 22912,
+      "cpu_percent": 3.1,
+      "observations": 102,
       "data_gaps": 4,
-      "store_bytes": 684032,
-      "log_bytes": 19880,
+      "store_bytes": 536576,
+      "log_bytes": 19424,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -38,12 +38,12 @@
     },
     {
       "at_seconds": 30.1,
-      "rss_kib": 19824,
-      "cpu_percent": 1.5,
-      "observations": 940,
+      "rss_kib": 20048,
+      "cpu_percent": 1.0,
+      "observations": 895,
       "data_gaps": 4,
-      "store_bytes": 2199552,
-      "log_bytes": 20336,
+      "store_bytes": 2084864,
+      "log_bytes": 19880,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -53,12 +53,12 @@
     },
     {
       "at_seconds": 60.1,
-      "rss_kib": 19984,
-      "cpu_percent": 1.4,
-      "observations": 1734,
+      "rss_kib": 20064,
+      "cpu_percent": 1.0,
+      "observations": 1690,
       "data_gaps": 4,
-      "store_bytes": 3690496,
-      "log_bytes": 20792,
+      "store_bytes": 3588096,
+      "log_bytes": 20336,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -68,12 +68,12 @@
     },
     {
       "at_seconds": 90.1,
-      "rss_kib": 20000,
-      "cpu_percent": 1.4,
-      "observations": 2530,
+      "rss_kib": 17392,
+      "cpu_percent": 1.3,
+      "observations": 2485,
       "data_gaps": 4,
-      "store_bytes": 5197824,
-      "log_bytes": 21248,
+      "store_bytes": 5079040,
+      "log_bytes": 20792,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -83,12 +83,12 @@
     },
     {
       "at_seconds": 120.2,
-      "rss_kib": 20016,
-      "cpu_percent": 1.8,
-      "observations": 3312,
+      "rss_kib": 17536,
+      "cpu_percent": 1.6,
+      "observations": 3271,
       "data_gaps": 4,
-      "store_bytes": 6823936,
-      "log_bytes": 21704,
+      "store_bytes": 6725632,
+      "log_bytes": 21248,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -98,12 +98,12 @@
     },
     {
       "at_seconds": 150.2,
-      "rss_kib": 19888,
-      "cpu_percent": 1.0,
-      "observations": 4099,
+      "rss_kib": 17392,
+      "cpu_percent": 1.3,
+      "observations": 4048,
       "data_gaps": 4,
-      "store_bytes": 8359936,
-      "log_bytes": 22160,
+      "store_bytes": 8208384,
+      "log_bytes": 21704,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -113,12 +113,12 @@
     },
     {
       "at_seconds": 180.3,
-      "rss_kib": 20048,
-      "cpu_percent": 1.4,
-      "observations": 4892,
+      "rss_kib": 17472,
+      "cpu_percent": 1.3,
+      "observations": 4842,
       "data_gaps": 4,
-      "store_bytes": 9830400,
-      "log_bytes": 22616,
+      "store_bytes": 9715712,
+      "log_bytes": 22160,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -128,12 +128,12 @@
     },
     {
       "at_seconds": 210.3,
-      "rss_kib": 20176,
-      "cpu_percent": 1.7,
-      "observations": 5709,
+      "rss_kib": 17328,
+      "cpu_percent": 0.8,
+      "observations": 5654,
       "data_gaps": 4,
-      "store_bytes": 11452416,
-      "log_bytes": 23072,
+      "store_bytes": 11333632,
+      "log_bytes": 22616,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -143,12 +143,12 @@
     },
     {
       "at_seconds": 240.4,
-      "rss_kib": 20080,
-      "cpu_percent": 2.0,
-      "observations": 6505,
+      "rss_kib": 17472,
+      "cpu_percent": 1.8,
+      "observations": 6457,
       "data_gaps": 4,
-      "store_bytes": 12935168,
-      "log_bytes": 23528,
+      "store_bytes": 12939264,
+      "log_bytes": 23491,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -158,12 +158,12 @@
     },
     {
       "at_seconds": 270.4,
-      "rss_kib": 20048,
-      "cpu_percent": 1.4,
-      "observations": 7302,
+      "rss_kib": 17376,
+      "cpu_percent": 2.0,
+      "observations": 7252,
       "data_gaps": 4,
-      "store_bytes": 14544896,
-      "log_bytes": 23984,
+      "store_bytes": 14442496,
+      "log_bytes": 24366,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -172,13 +172,13 @@
       "api_status": 200
     },
     {
-      "at_seconds": 300.4,
-      "rss_kib": 20032,
-      "cpu_percent": 1.8,
-      "observations": 8097,
+      "at_seconds": 300.5,
+      "rss_kib": 17552,
+      "cpu_percent": 2.0,
+      "observations": 8041,
       "data_gaps": 4,
-      "store_bytes": 16130048,
-      "log_bytes": 24440,
+      "store_bytes": 16023552,
+      "log_bytes": 25241,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -188,12 +188,12 @@
     },
     {
       "at_seconds": 330.5,
-      "rss_kib": 20160,
-      "cpu_percent": 1.7,
-      "observations": 8905,
+      "rss_kib": 17552,
+      "cpu_percent": 1.8,
+      "observations": 8855,
       "data_gaps": 4,
-      "store_bytes": 17637376,
-      "log_bytes": 24896,
+      "store_bytes": 17653760,
+      "log_bytes": 28196,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -203,12 +203,12 @@
     },
     {
       "at_seconds": 360.6,
-      "rss_kib": 20288,
-      "cpu_percent": 1.6,
-      "observations": 9704,
+      "rss_kib": 17520,
+      "cpu_percent": 1.4,
+      "observations": 9657,
       "data_gaps": 4,
-      "store_bytes": 19263488,
-      "log_bytes": 45344,
+      "store_bytes": 19144704,
+      "log_bytes": 29071,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -218,12 +218,12 @@
     },
     {
       "at_seconds": 390.6,
-      "rss_kib": 19168,
-      "cpu_percent": 1.7,
-      "observations": 10488,
+      "rss_kib": 17664,
+      "cpu_percent": 1.6,
+      "observations": 10440,
       "data_gaps": 4,
       "store_bytes": 20738048,
-      "log_bytes": 54549,
+      "log_bytes": 29527,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -233,12 +233,12 @@
     },
     {
       "at_seconds": 420.7,
-      "rss_kib": 19824,
-      "cpu_percent": 1.5,
-      "observations": 11301,
+      "rss_kib": 17568,
+      "cpu_percent": 2.6,
+      "observations": 11248,
       "data_gaps": 4,
-      "store_bytes": 22351872,
-      "log_bytes": 55005,
+      "store_bytes": 22360064,
+      "log_bytes": 29983,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -248,12 +248,12 @@
     },
     {
       "at_seconds": 450.7,
-      "rss_kib": 19968,
+      "rss_kib": 17904,
       "cpu_percent": 1.1,
-      "observations": 12110,
+      "observations": 12057,
       "data_gaps": 4,
-      "store_bytes": 23982080,
-      "log_bytes": 55880,
+      "store_bytes": 23879680,
+      "log_bytes": 30439,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -263,12 +263,12 @@
     },
     {
       "at_seconds": 480.8,
-      "rss_kib": 19952,
-      "cpu_percent": 1.8,
-      "observations": 12903,
+      "rss_kib": 17808,
+      "cpu_percent": 1.2,
+      "observations": 12854,
       "data_gaps": 4,
-      "store_bytes": 25452544,
-      "log_bytes": 57174,
+      "store_bytes": 25497600,
+      "log_bytes": 30895,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -278,12 +278,12 @@
     },
     {
       "at_seconds": 510.8,
-      "rss_kib": 19936,
-      "cpu_percent": 2.2,
-      "observations": 13711,
+      "rss_kib": 18080,
+      "cpu_percent": 2.6,
+      "observations": 13658,
       "data_gaps": 4,
-      "store_bytes": 27041792,
-      "log_bytes": 57630,
+      "store_bytes": 27058176,
+      "log_bytes": 32189,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -293,12 +293,12 @@
     },
     {
       "at_seconds": 540.9,
-      "rss_kib": 19408,
-      "cpu_percent": 1.7,
-      "observations": 14521,
+      "rss_kib": 17792,
+      "cpu_percent": 3.6,
+      "observations": 14471,
       "data_gaps": 4,
-      "store_bytes": 28622848,
-      "log_bytes": 58086,
+      "store_bytes": 28663808,
+      "log_bytes": 33483,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -307,13 +307,13 @@
       "api_status": 200
     },
     {
-      "at_seconds": 570.9,
-      "rss_kib": 19888,
-      "cpu_percent": 2.4,
-      "observations": 15307,
+      "at_seconds": 571.0,
+      "rss_kib": 18048,
+      "cpu_percent": 1.6,
+      "observations": 15260,
       "data_gaps": 4,
-      "store_bytes": 30277632,
-      "log_bytes": 58961,
+      "store_bytes": 30134272,
+      "log_bytes": 33939,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -323,117 +323,117 @@
     },
     {
       "at_seconds": 601.0,
-      "rss_kib": 19504,
-      "cpu_percent": 1.4,
-      "observations": 16094,
-      "data_gaps": 4,
-      "store_bytes": 31727616,
-      "log_bytes": 59417,
-      "fresh_sources": [
-        "source-a",
-        "source-b",
-        "source-c"
-      ],
-      "api_status": 200
-    },
-    {
-      "at_seconds": 632.0,
-      "rss_kib": 20624,
-      "cpu_percent": 1.5,
-      "observations": 16799,
-      "data_gaps": 5,
-      "store_bytes": 33079296,
-      "log_bytes": 64245,
-      "fresh_sources": [
-        "source-a",
-        "source-b",
-        "source-c"
-      ],
-      "api_status": 200
-    },
-    {
-      "at_seconds": 662.1,
-      "rss_kib": 19744,
-      "cpu_percent": 2.2,
-      "observations": 17402,
-      "data_gaps": 5,
-      "store_bytes": 34353152,
-      "log_bytes": 64701,
-      "fresh_sources": [
-        "source-a",
-        "source-b",
-        "source-c"
-      ],
-      "api_status": 200
-    },
-    {
-      "at_seconds": 692.2,
-      "rss_kib": 19712,
-      "cpu_percent": 1.3,
-      "observations": 17989,
-      "data_gaps": 5,
-      "store_bytes": 35393536,
-      "log_bytes": 65576,
-      "fresh_sources": [
-        "source-a",
-        "source-b",
-        "source-c"
-      ],
-      "api_status": 200
-    },
-    {
-      "at_seconds": 722.2,
-      "rss_kib": 18544,
-      "cpu_percent": 2.0,
-      "observations": 18594,
-      "data_gaps": 5,
-      "store_bytes": 36671488,
-      "log_bytes": 66032,
-      "fresh_sources": [
-        "source-a",
-        "source-b",
-        "source-c"
-      ],
-      "api_status": 200
-    },
-    {
-      "at_seconds": 752.3,
-      "rss_kib": 19152,
-      "cpu_percent": 1.4,
-      "observations": 19201,
-      "data_gaps": 5,
-      "store_bytes": 37859328,
-      "log_bytes": 66488,
-      "fresh_sources": [
-        "source-a",
-        "source-b",
-        "source-c"
-      ],
-      "api_status": 200
-    },
-    {
-      "at_seconds": 782.3,
-      "rss_kib": 18976,
-      "cpu_percent": 1.9,
-      "observations": 19815,
-      "data_gaps": 5,
-      "store_bytes": 39034880,
-      "log_bytes": 66944,
-      "fresh_sources": [
-        "source-a",
-        "source-b",
-        "source-c"
-      ],
-      "api_status": 200
-    },
-    {
-      "at_seconds": 812.4,
-      "rss_kib": 19104,
+      "rss_kib": 17712,
       "cpu_percent": 1.6,
-      "observations": 20407,
+      "observations": 16042,
+      "data_gaps": 4,
+      "store_bytes": 31657984,
+      "log_bytes": 34395,
+      "fresh_sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "api_status": 200
+    },
+    {
+      "at_seconds": 633.2,
+      "rss_kib": 16208,
+      "cpu_percent": 2.0,
+      "observations": 16744,
+      "data_gaps": 5,
+      "store_bytes": 33087488,
+      "log_bytes": 61992,
+      "fresh_sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "api_status": 200
+    },
+    {
+      "at_seconds": 663.3,
+      "rss_kib": 16608,
+      "cpu_percent": 1.7,
+      "observations": 17349,
+      "data_gaps": 5,
+      "store_bytes": 34271232,
+      "log_bytes": 63282,
+      "fresh_sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "api_status": 200
+    },
+    {
+      "at_seconds": 693.3,
+      "rss_kib": 18080,
+      "cpu_percent": 0.9,
+      "observations": 17939,
+      "data_gaps": 5,
+      "store_bytes": 35454976,
+      "log_bytes": 74580,
+      "fresh_sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "api_status": 200
+    },
+    {
+      "at_seconds": 723.4,
+      "rss_kib": 17888,
+      "cpu_percent": 1.6,
+      "observations": 18544,
+      "data_gaps": 5,
+      "store_bytes": 36605952,
+      "log_bytes": 75036,
+      "fresh_sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "api_status": 200
+    },
+    {
+      "at_seconds": 753.5,
+      "rss_kib": 18160,
+      "cpu_percent": 2.0,
+      "observations": 19147,
+      "data_gaps": 5,
+      "store_bytes": 37773312,
+      "log_bytes": 86334,
+      "fresh_sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "api_status": 200
+    },
+    {
+      "at_seconds": 783.5,
+      "rss_kib": 18048,
+      "cpu_percent": 1.4,
+      "observations": 19760,
+      "data_gaps": 5,
+      "store_bytes": 39051264,
+      "log_bytes": 87209,
+      "fresh_sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "api_status": 200
+    },
+    {
+      "at_seconds": 813.6,
+      "rss_kib": 18048,
+      "cpu_percent": 2.1,
+      "observations": 20356,
       "data_gaps": 5,
       "store_bytes": 40198144,
-      "log_bytes": 67400,
+      "log_bytes": 87665,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -442,13 +442,13 @@
       "api_status": 200
     },
     {
-      "at_seconds": 842.5,
-      "rss_kib": 18608,
-      "cpu_percent": 1.5,
-      "observations": 21018,
+      "at_seconds": 843.7,
+      "rss_kib": 17968,
+      "cpu_percent": 2.0,
+      "observations": 20965,
       "data_gaps": 5,
-      "store_bytes": 41422848,
-      "log_bytes": 68275,
+      "store_bytes": 41336832,
+      "log_bytes": 88121,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -457,13 +457,13 @@
       "api_status": 200
     },
     {
-      "at_seconds": 872.5,
-      "rss_kib": 18592,
-      "cpu_percent": 1.4,
-      "observations": 21593,
+      "at_seconds": 873.8,
+      "rss_kib": 17936,
+      "cpu_percent": 2.1,
+      "observations": 21538,
       "data_gaps": 5,
-      "store_bytes": 42590208,
-      "log_bytes": 68731,
+      "store_bytes": 42516480,
+      "log_bytes": 88577,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -472,58 +472,13 @@
       "api_status": 200
     },
     {
-      "at_seconds": 902.6,
-      "rss_kib": 18368,
-      "cpu_percent": 2.5,
-      "observations": 22187,
-      "data_gaps": 5,
-      "store_bytes": 43765760,
-      "log_bytes": 69187,
-      "fresh_sources": [
-        "source-a",
-        "source-b",
-        "source-c"
-      ],
-      "api_status": 200
-    },
-    {
-      "at_seconds": 932.6,
-      "rss_kib": 18656,
-      "cpu_percent": 2.4,
-      "observations": 22778,
-      "data_gaps": 5,
-      "store_bytes": 44961792,
-      "log_bytes": 70062,
-      "fresh_sources": [
-        "source-a",
-        "source-b",
-        "source-c"
-      ],
-      "api_status": 200
-    },
-    {
-      "at_seconds": 962.7,
-      "rss_kib": 18960,
-      "cpu_percent": 1.5,
-      "observations": 23398,
-      "data_gaps": 5,
-      "store_bytes": 46112768,
-      "log_bytes": 70518,
-      "fresh_sources": [
-        "source-a",
-        "source-b",
-        "source-c"
-      ],
-      "api_status": 200
-    },
-    {
-      "at_seconds": 992.8,
-      "rss_kib": 18528,
+      "at_seconds": 903.8,
+      "rss_kib": 18016,
       "cpu_percent": 1.2,
-      "observations": 24008,
+      "observations": 22141,
       "data_gaps": 5,
-      "store_bytes": 47251456,
-      "log_bytes": 70974,
+      "store_bytes": 43675648,
+      "log_bytes": 89033,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -532,13 +487,13 @@
       "api_status": 200
     },
     {
-      "at_seconds": 1022.8,
-      "rss_kib": 19264,
+      "at_seconds": 933.9,
+      "rss_kib": 18160,
       "cpu_percent": 1.5,
-      "observations": 24613,
+      "observations": 22730,
       "data_gaps": 5,
-      "store_bytes": 48451584,
-      "log_bytes": 71430,
+      "store_bytes": 44855296,
+      "log_bytes": 89908,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -547,13 +502,13 @@
       "api_status": 200
     },
     {
-      "at_seconds": 1052.9,
-      "rss_kib": 18688,
-      "cpu_percent": 1.7,
-      "observations": 25213,
+      "at_seconds": 963.9,
+      "rss_kib": 18736,
+      "cpu_percent": 2.7,
+      "observations": 23347,
       "data_gaps": 5,
-      "store_bytes": 49573888,
-      "log_bytes": 71886,
+      "store_bytes": 46030848,
+      "log_bytes": 90364,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -562,13 +517,13 @@
       "api_status": 200
     },
     {
-      "at_seconds": 1082.9,
-      "rss_kib": 18496,
-      "cpu_percent": 1.0,
-      "observations": 25809,
+      "at_seconds": 994.0,
+      "rss_kib": 18048,
+      "cpu_percent": 1.3,
+      "observations": 23953,
       "data_gaps": 5,
-      "store_bytes": 50765824,
-      "log_bytes": 72342,
+      "store_bytes": 47304704,
+      "log_bytes": 91239,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -577,13 +532,13 @@
       "api_status": 200
     },
     {
-      "at_seconds": 1113.0,
-      "rss_kib": 18464,
-      "cpu_percent": 1.8,
-      "observations": 26414,
+      "at_seconds": 1024.1,
+      "rss_kib": 17936,
+      "cpu_percent": 2.7,
+      "observations": 24561,
       "data_gaps": 5,
-      "store_bytes": 51929088,
-      "log_bytes": 72798,
+      "store_bytes": 48476160,
+      "log_bytes": 91695,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -592,28 +547,73 @@
       "api_status": 200
     },
     {
-      "at_seconds": 1143.0,
-      "rss_kib": 18528,
+      "at_seconds": 1054.2,
+      "rss_kib": 18064,
+      "cpu_percent": 2.0,
+      "observations": 25163,
+      "data_gaps": 5,
+      "store_bytes": 49639424,
+      "log_bytes": 92151,
+      "fresh_sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "api_status": 200
+    },
+    {
+      "at_seconds": 1084.3,
+      "rss_kib": 18048,
+      "cpu_percent": 3.4,
+      "observations": 25760,
+      "data_gaps": 5,
+      "store_bytes": 50769920,
+      "log_bytes": 93026,
+      "fresh_sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "api_status": 200
+    },
+    {
+      "at_seconds": 1114.3,
+      "rss_kib": 17952,
+      "cpu_percent": 2.3,
+      "observations": 26362,
+      "data_gaps": 5,
+      "store_bytes": 51982336,
+      "log_bytes": 93482,
+      "fresh_sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "api_status": 200
+    },
+    {
+      "at_seconds": 1144.4,
+      "rss_kib": 17856,
+      "cpu_percent": 2.1,
+      "observations": 26950,
+      "data_gaps": 5,
+      "store_bytes": 53133312,
+      "log_bytes": 93938,
+      "fresh_sources": [
+        "source-a",
+        "source-b",
+        "source-c"
+      ],
+      "api_status": 200
+    },
+    {
+      "at_seconds": 1174.5,
+      "rss_kib": 18016,
       "cpu_percent": 1.6,
-      "observations": 27000,
+      "observations": 27551,
       "data_gaps": 5,
-      "store_bytes": 53129216,
-      "log_bytes": 73254,
-      "fresh_sources": [
-        "source-a",
-        "source-b",
-        "source-c"
-      ],
-      "api_status": 200
-    },
-    {
-      "at_seconds": 1173.1,
-      "rss_kib": 18720,
-      "cpu_percent": 1.6,
-      "observations": 27601,
-      "data_gaps": 5,
-      "store_bytes": 54267904,
-      "log_bytes": 73710,
+      "store_bytes": 54280192,
+      "log_bytes": 94394,
       "fresh_sources": [
         "source-a",
         "source-b",
@@ -624,29 +624,29 @@
   ],
   "sample_count": 40,
   "resident_memory_kib": {
-    "min": 18368,
-    "max": 23840,
-    "first": 23840,
-    "last": 18720,
-    "growth": -5120
+    "min": 16208,
+    "max": 22912,
+    "first": 22912,
+    "last": 18016,
+    "growth": -4896
   },
   "cpu_percent": {
-    "mean": 1.63,
-    "max": 2.5
+    "mean": 1.82,
+    "max": 3.6
   },
   "observations": {
-    "first": 145,
-    "last": 27601,
-    "rate_per_minute": 1404.3
+    "first": 102,
+    "last": 27551,
+    "rate_per_minute": 1402.2
   },
   "store_bytes": {
-    "first": 684032,
-    "last": 54267904,
-    "growth": 53583872
+    "first": 536576,
+    "last": 54280192,
+    "growth": 53743616
   },
   "log_bytes": {
-    "first": 19880,
-    "last": 73710
+    "first": 19424,
+    "last": 94394
   },
   "data_gaps": {
     "first": 4,
@@ -660,16 +660,16 @@
   ],
   "shutdown": {
     "status": "stopped",
-    "pid": 76144
+    "pid": 54383
   },
   "integrity": "ok",
   "status": "PASS",
   "the_core_binary": {
     "the_path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
-    "the_sha256": "87a56a2e5c7f4717605cac7288a3636edb1645be697565dabb3d6a66d47a652c"
+    "the_sha256": "f22a56d507b6ac81b4b5f4a4bdde5d5f58ec65a43e706897b770bae668f95033"
   },
-  "the_revision": "2f22e9cf559279e6660e1794e3ba983c65372a97",
-  "the_tree": "f86cbf38a3954f5b64d607e1b6f38426ed7bd5ca",
+  "the_revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
+  "the_tree": "80c3487f78abe6dcc38cb0c9f22c4a1743a87849",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T07:13:32Z"
+  "finished_utc": "2026-11-11T12:45:51Z"
 }
