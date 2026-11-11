@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../models/contracts.dart';
+import '../../widgets/device_kind.dart';
 
 /// Stable presentation identity for the legacy Link DTO, which has no link ID.
 /// The ordinal only disambiguates duplicate endpoint/transport tuples.
@@ -130,28 +131,23 @@ String networkLinkLoss(NetworkLink link) {
 }
 
 /// Device kind comes directly from the registry DTO. No name-based guessing.
-IconData networkKindIcon(String kind) => switch (kind) {
-      'Gateway' || 'Bridge' => Icons.router_outlined,
-      'Sensor' || 'Industrial' => Icons.sensors,
-      'Mobile' => Icons.smartphone_outlined,
-      'Laptop' || 'Desktop' => Icons.computer_outlined,
-      'Server' || 'Compute' || 'Edge' => Icons.dns_outlined,
-      _ => Icons.device_unknown_outlined,
-    };
+///
+/// The **word** of the type and its icon have one owner
+/// (`widgets/device_kind.dart`): the Core paints the type of a device as the
+/// identifier of its own enum, and the surface names it.
+IconData networkKindIcon(String kind) => deviceKindIcon(kind);
 
-String networkDeviceCategory(String kind) => switch (kind) {
-      'Gateway' => 'Router / Gateway · Registry-Angabe',
-      'Bridge' => 'Bridge · Registry-Angabe',
-      'Sensor' || 'Industrial' => 'Industrial / Sensor · Registry-Angabe',
-      'Mobile' => 'Mobile Device · Registry-Angabe',
-      'Laptop' => 'Laptop · Registry-Angabe',
-      'Desktop' => 'Desktop · Registry-Angabe',
-      'Server' => 'Server · Registry-Angabe',
-      'Compute' || 'Edge' => 'Compute / Edge · Registry-Angabe',
-      'Media' => 'Media · Registry-Angabe',
-      'Service' => 'Service · Registry-Angabe',
-      _ => 'Unknown Device · Registry-Angabe: $kind',
-    };
+/// The category of a device in the Network workspace.
+///
+/// The word of the type comes from the vocabulary of the Core; a type that
+/// the client does not know is named as unknown and carries the identifier
+/// of the Core with it.
+String networkDeviceCategory(String kind) {
+  final label = deviceKindLabel(kind);
+  return label == null
+      ? 'Unbekannter Gerätetyp · Registry-Angabe: $kind'
+      : '$label · Registry-Angabe';
+}
 
 bool networkDeviceMatches(Device device, String query, String? kind,
     String? status, bool transportLive) {

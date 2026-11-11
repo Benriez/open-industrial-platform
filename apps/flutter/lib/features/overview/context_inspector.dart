@@ -4,6 +4,7 @@ import '../../models/contracts.dart';
 import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
 import 'overview_selection.dart';
+import '../../widgets/device_kind.dart';
 
 class OverviewAttentionEntry {
   final String title, detail, tone;
@@ -136,7 +137,7 @@ class OverviewContextInspector extends StatelessWidget {
           OipTokens.violet),
       KeyValue('SOURCE', device.sourceId ?? 'Nicht zugeordnet'),
       KeyValue('REGISTRY',
-          '${device.kind} · ${device.location} · ${device.connection}'),
+          '${deviceKindName(device.kind)} · ${device.location} · ${device.connection}'),
       KeyValue(
           'OBSERVED TELEMETRY',
           signals.isEmpty

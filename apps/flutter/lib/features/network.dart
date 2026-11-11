@@ -12,6 +12,7 @@ import 'network/network_compare.dart';
 import 'network/network_explorer.dart';
 import 'network/network_graph.dart';
 import 'network/network_model.dart';
+import '../widgets/device_kind.dart';
 
 enum _NetworkMode { topology, connections, vpn, diagnostics, compare }
 
@@ -1274,7 +1275,7 @@ class _NetworkPageState extends State<NetworkPage> {
                   ?.siteId)),
         ],
         NetworkKeyValue('Source-ID', device.sourceId ?? 'Nicht geliefert'),
-        NetworkKeyValue('Device Type · Registry', device.kind),
+        NetworkKeyValue('Device Type · Registry', deviceKindName(device.kind)),
         NetworkKeyValue('Standort / Kontext · Registry', device.location),
         NetworkKeyValue('Verbindung · Registry', device.connection),
         NetworkKeyValue(

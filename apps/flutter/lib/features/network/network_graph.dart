@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../design_system/theme.dart';
 import '../../models/contracts.dart';
 import 'network_model.dart';
+import '../../widgets/device_kind.dart';
 
 /// Geometry for the *known* logical topology. Only devices that occur in a
 /// delivered link belong here; relation-unknown devices are rendered by the
@@ -532,7 +533,7 @@ class NetworkTopologyNode extends StatelessWidget {
         ),
         child: Tooltip(
           message:
-              '${device.name}\n${device.kind} · ${device.location}\nErreichbarkeit: ${OipTokens.statusLabel(status)}\nTelemetrie: ${OipTokens.statusLabel(transportLive ? device.health.freshness : 'stale')}\n${device.simulated ? 'Demo-Inventar' : 'API-Inventar'}',
+              '${device.name}\n${deviceKindName(device.kind)} · ${device.location}\nErreichbarkeit: ${OipTokens.statusLabel(status)}\nTelemetrie: ${OipTokens.statusLabel(transportLive ? device.health.freshness : 'stale')}\n${device.simulated ? 'Demo-Inventar' : 'API-Inventar'}',
           child: InkWell(
             key: Key('topology-${device.id}'),
             onTap: onTap,
@@ -566,7 +567,7 @@ class NetworkTopologyNode extends StatelessWidget {
                               ?.copyWith(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 3),
                       Text(
-                        '${device.kind} · ${OipTokens.statusLabel(status)} · ${device.simulated ? 'Demo' : 'API'}',
+                        '${deviceKindName(device.kind)} · ${OipTokens.statusLabel(status)} · ${device.simulated ? 'Demo' : 'API'}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context)

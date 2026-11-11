@@ -7,6 +7,7 @@ import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
 import 'device_session.dart';
 import 'devices_layout.dart';
+import '../../widgets/device_kind.dart';
 
 List<Observation> deviceSnapshotObservations(
         Snapshot snapshot, Device device) =>
@@ -190,7 +191,10 @@ class DeviceFilterBar extends StatelessWidget {
               session.type,
               ['all', ...types],
               width(145),
-              (value) => session.type = value),
+              (value) => session.type = value,
+              // The word of the type, not the identifier of the enum of the
+              // Core; the value stays the identifier.
+              itemLabel: deviceKindName),
           _filter(
               context,
               'device-source-filter',
@@ -351,14 +355,17 @@ class DeviceFilterBar extends StatelessWidget {
   }
 
   Widget _filter(BuildContext context, String key, String label, String value,
-      List<String> values, double width, ValueChanged<String> set) {
+      List<String> values, double width, ValueChanged<String> set,
+      {String Function(String)? itemLabel}) {
     final current = values.contains(value) ? value : 'all';
+    String shown(String item) {
+      final word = itemLabel?.call(item) ?? _filterValue(item);
+      return label == 'STANDORT' ? 'Standort: $word' : word;
+    }
+
     final items = values
         .map((item) => DropdownMenuItem(
-            value: item,
-            child: Text(label == 'STANDORT'
-                ? 'Standort: ${_filterValue(item)}'
-                : _filterValue(item))))
+            value: item, child: Text(shown(item))))
         .toList();
     return SizedBox(
       width: width,
@@ -366,7 +373,7 @@ class DeviceFilterBar extends StatelessWidget {
         controlKey: Key(key),
         label: label,
         value: current,
-        display: _filterValue(current),
+        display: shown(current),
         items: items,
         onChanged: (next) {
           if (next == null) return;
@@ -618,7 +625,7 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
       final next = _group(device);
       if (widget.session.group != 'none' && next != group) {
         group = next;
-        entries.add(_InventoryEntry.header(next));
+        entries.add(_InventoryEntry.header(_groupLabel(next)));
       }
       entries.add(_InventoryEntry.device(device));
     }
@@ -857,6 +864,14 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
     );
   }
 
+  /// The word of a group header.
+  ///
+  /// A group by the **type** of a device shows the word of the type and not
+  /// the identifier of the enum of the Core; the grouping itself stays on
+  /// the identifier.
+  String _groupLabel(String key) =>
+      widget.session.group == 'type' ? deviceKindName(key) : key;
+
   String _group(Device device) {
     final placement = widget.infrastructure?.devicePlacement(device);
     return switch (widget.session.group) {
@@ -893,7 +908,7 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
       child: Semantics(
         button: true,
         selected: selected,
-        label: 'Gerät ${device.name} ${device.id} auswählen · ${device.kind} · '
+        label: 'Gerät ${device.name} ${device.id} auswählen · ${deviceKindName(device.kind)} · '
             '${device.sourceId ?? 'keine Source'} · '
             '${observed.isEmpty ? 'keine aktuelle Observation' : '${observed.length} Observations'} · '
             'Reachability $reachability reported${device.simulated ? ' · simuliert' : ''}',
@@ -932,7 +947,7 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
                                   fontSize: 11.5, fontWeight: FontWeight.w600)),
                         ),
                         Text(
-                            '${device.kind} · ${device.sourceId ?? 'keine Source'} · '
+                            '${deviceKindName(device.kind)} · ${device.sourceId ?? 'keine Source'} · '
                             '${observed.isEmpty ? 'keine Observation' : known(freshness)} · '
                             '$reachability reported${device.simulated ? ' · SIM' : ''}',
                             maxLines: 1,

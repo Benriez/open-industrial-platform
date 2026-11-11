@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/device_kind.dart';
 
 /// Visual variants share the same layout and semantics. Spectrum is the default.
 enum OipThemeVariant { spectrum, graphite, daylight }
@@ -92,13 +93,14 @@ abstract final class OipTokens {
     };
   }
 
+  /// The tint of a device follows its **type**.
+  ///
+  /// The category of a type has one owner (`widgets/device_kind.dart`): the
+  /// Core paints the type of a device as the identifier of its own enum, and
+  /// a real device gets the tint of its kind instead of the tint of the
+  /// fallback.
   static Color deviceCategoryColor(BuildContext context, String kind) =>
-      switch (kind) {
-        'Sensor' || 'Industrial' => categoryColor(context, 'industrial'),
-        'Gateway' || 'Bridge' || 'Mobile' => categoryColor(context, 'network'),
-        'Media' => categoryColor(context, 'observability'),
-        _ => categoryColor(context, 'compute'),
-      };
+      categoryColor(context, deviceKindCategory(kind));
 
   static Color statusColor(BuildContext context, String? status) {
     final dark = Theme.of(context).brightness == Brightness.dark;

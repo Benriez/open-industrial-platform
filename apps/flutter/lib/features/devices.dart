@@ -5,6 +5,7 @@ import '../models/contracts.dart';
 import '../widgets/components.dart';
 import 'device_connection_panel.dart';
 import 'device_history.dart';
+import '../widgets/device_kind.dart';
 
 export 'devices/devices_workstation.dart' show DevicesPage;
 export 'devices/device_session.dart' show DevicesWorkspaceSession;
@@ -96,7 +97,7 @@ class _DeviceDetailDialogState extends State<DeviceDetailDialog> {
                   style: Theme.of(context).textTheme.headlineMedium),
               const SizedBox(height: OipTokens.s1),
               Text(
-                  '${device.kind} · ${device.location} · ${device.connection}'),
+                  '${deviceKindName(device.kind)} · ${device.location} · ${device.connection}'),
               const SizedBox(height: OipTokens.s4),
               InlineNotice(
                 widget.controller.managed

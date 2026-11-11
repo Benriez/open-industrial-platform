@@ -6,6 +6,7 @@ import '../../models/infrastructure.dart';
 import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
 import 'network_model.dart';
+import '../../widgets/device_kind.dart';
 
 /// Dense, keyboard-accessible inventory explorer. Every row is backed by a
 /// registered Device; relation counts come only from delivered logical links.
@@ -156,6 +157,9 @@ class NetworkDeviceExplorer extends StatelessWidget {
                     label: 'Typ',
                     value: kindFilter,
                     values: kinds,
+                    // The word of the type, not the identifier of the enum of
+                    // the Core; the value stays the identifier.
+                    itemLabel: deviceKindName,
                     nullable: true,
                     onChanged: onKind,
                   ),

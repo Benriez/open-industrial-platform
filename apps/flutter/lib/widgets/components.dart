@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../design_system/theme.dart';
+import 'device_kind.dart';
 
 /// A dark surface with a subtle category tint. No blur or perpetual animation.
 class SpectrumSurface extends StatelessWidget {
@@ -720,15 +721,13 @@ class DataTimeline extends StatelessWidget {
   }
 }
 
-IconData deviceIcon(String kind) => switch (kind) {
-      'Mobile' => Icons.phone_android_outlined,
-      'Sensor' || 'Industrial' => Icons.sensors,
-      'Gateway' || 'Bridge' => Icons.router_outlined,
-      'Media' => Icons.tv,
-      'Laptop' => Icons.laptop_mac,
-      'Desktop' => Icons.desktop_windows_outlined,
-      _ => Icons.dns_outlined,
-    };
+/// The icon of a device.
+///
+/// The vocabulary of the type of a device has **one** owner
+/// (`widgets/device_kind.dart`): the Core paints the type of a device as the
+/// identifier of its own enum, and every type that the Core can really
+/// deliver gets an icon of its own.
+IconData deviceIcon(String kind) => deviceKindIcon(kind);
 
 String known(String? value) => OipTokens.statusLabel(value);
 

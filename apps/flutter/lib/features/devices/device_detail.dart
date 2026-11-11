@@ -5,6 +5,7 @@ import '../../models/contracts.dart';
 import '../../models/infrastructure.dart';
 import '../../services/api.dart';
 import '../../widgets/components.dart';
+import '../../widgets/device_kind.dart';
 import '../../widgets/workstation.dart';
 import '../device_connection_panel.dart';
 import '../device_history.dart';
@@ -165,7 +166,7 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
         KeyValueGrid(children: [
           KeyValue('DEVICE ID', device.id),
           KeyValue('DISPLAY NAME', device.name),
-          KeyValue('DEVICE TYPE', device.kind),
+          KeyValue('DEVICE TYPE', deviceKindName(device.kind)),
           KeyValue('SOURCE ID', device.sourceId ?? 'Nicht verfügbar'),
           KeyValue('REGISTRY LOCATION', device.location),
           KeyValue('REGISTRY CONNECTION TYPE', device.connection),
@@ -537,7 +538,7 @@ class DeviceContextInspector extends StatelessWidget {
       const Hairline(vertical: 5),
       const PanelLabel('Identification'),
       _kv('TYPE / SOURCE',
-          '${device.kind} · ${device.sourceId ?? 'Nicht zugeordnet'}'),
+          '${deviceKindName(device.kind)} · ${device.sourceId ?? 'Nicht zugeordnet'}'),
       if (infrastructure?.ready == true) ...[
         _kv('ORGANIZATION',
             infrastructure!.hierarchy.organizationName(infrastructure!.devicePlacement(device)?.organizationId)),

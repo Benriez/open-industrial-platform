@@ -5,6 +5,7 @@ import '../../models/contracts.dart';
 import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
 import 'overview_selection.dart';
+import '../../widgets/device_kind.dart';
 
 class InfrastructureExplorer extends StatefulWidget {
   final Snapshot snapshot;
@@ -174,7 +175,7 @@ class _InfrastructureExplorerState extends State<InfrastructureExplorer> {
           selected: selected,
           excludeSemantics: true,
           label:
-              'Gerät ${device.name} ${device.id} auswählen · ${device.kind} · '
+              'Gerät ${device.name} ${device.id} auswählen · ${deviceKindName(device.kind)} · '
               '$source · Daten ${_telemetryLabel(telemetry)} · Reachability ${known(device.health.reachability)} reported',
           child: ListTile(
             key: Key('overview-explorer-device-${device.id}'),
@@ -191,7 +192,7 @@ class _InfrastructureExplorerState extends State<InfrastructureExplorer> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 12.5)),
             subtitle: Text(
-                '${device.kind} · $source\n'
+                '${deviceKindName(device.kind)} · $source\n'
                 'Daten: ${_telemetryLabel(telemetry)} · Reachability: ${known(device.health.reachability)} (reported)',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

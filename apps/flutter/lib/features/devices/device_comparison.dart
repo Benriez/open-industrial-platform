@@ -7,6 +7,7 @@ import '../../widgets/workstation.dart';
 import 'device_inventory.dart';
 import 'device_session.dart';
 import 'devices_layout.dart';
+import '../../widgets/device_kind.dart';
 
 class DeviceComparisonWorkspace extends StatefulWidget {
   final Snapshot snapshot;
@@ -143,7 +144,7 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
     }
     final fields = <String, String Function(Device)>{
       'Name / ID': (device) => '${device.name}\n${device.id}',
-      'Device Type': (device) => device.kind,
+      'Device Type': (device) => deviceKindName(device.kind),
       'Source': (device) => device.sourceId ?? 'Nicht zugeordnet',
       'Organization': (device) => widget.infrastructure?.ready == true
           ? widget.infrastructure!.hierarchy.organizationName(

@@ -5,6 +5,7 @@ import '../../models/contracts.dart';
 import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
 import 'network_model.dart';
+import '../../widgets/device_kind.dart';
 
 /// Session-local engineering comparison. Device and link semantics are kept in
 /// separate tables; no timestamps, samples or measurements are synthesized.
@@ -146,7 +147,7 @@ class NetworkCompareWorkspace extends StatelessWidget {
         final related = networkDeviceEdges(device.id, networkEdges(snapshot));
         return switch (attribute) {
           'Device-ID' => device.id,
-          'Kategorie · Registry' => device.kind,
+          'Kategorie · Registry' => deviceKindName(device.kind),
           'Source' => device.sourceId ?? 'Nicht geliefert',
           'Status · gemeldet' => known(device.health.reachability),
           'Freshness · geliefert' => known(device.health.freshness),
