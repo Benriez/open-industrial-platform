@@ -1,11 +1,11 @@
 {
   "schema": "oip-reconnect-recovery-v1",
-  "revision": "164c8214cea087329aac4c0b5634f96d8dddc9b7",
+  "revision": "53b9ef8081f800b588960841c64cc05b678d8d50",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "the reconnect and the recovery of the application against the real Core",
-  "base": "http://127.0.0.1:63349",
-  "the_moment_before_the_restart": "2026-11-10 19:40:55.452 UTC",
-  "the_moment_after_the_restart": "2026-11-10 19:41:01.769 UTC",
+  "base": "http://127.0.0.1:58404",
+  "the_moment_before_the_restart": "2026-11-10 23:26:04.367 UTC",
+  "the_moment_after_the_restart": "2026-11-10 23:26:12.584 UTC",
   "findings": [
     {
       "check": "the first code is issued",
@@ -55,7 +55,7 @@
     {
       "check": "the projection carries a fresh moment",
       "ok": true,
-      "the_detail": "2026-11-10 19:40:55.452 UTC -> 2026-11-10 19:41:01.769 UTC"
+      "the_detail": "2026-11-10 23:26:04.367 UTC -> 2026-11-10 23:26:12.584 UTC"
     },
     {
       "check": "no browser JavaScript errors",

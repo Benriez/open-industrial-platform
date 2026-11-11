@@ -35,12 +35,17 @@ if ! command -v zig >/dev/null 2>&1; then
 fi
 
 MANGLED="$(printf '%s' "$TARGET" | tr '-' '_')"
+UPPER="$(printf '%s' "$MANGLED" | tr '[:lower:]' '[:upper:]')"
 OUT="$ROOT/target/pi/$TARGET"
 
 echo "== the cross build of the workspace for $TARGET (zig $ZIG_TARGET)"
-export "CC_${MANGLED}=zig cc -target $ZIG_TARGET"
+# The compiler of the build system adds the Rust target triple; the wrapper
+# rewrites it into the target of zig (tools/oip_pi_cc.sh).
+export "OIP_PI_RUST_TARGET=$TARGET"
+export "OIP_PI_ZIG_TARGET=$ZIG_TARGET"
+export "CC_${MANGLED}=$ROOT/tools/oip_pi_cc.sh"
 export "AR_${MANGLED}=zig ar"
-export "CARGO_TARGET_${MANGLED}_LINKER=zig cc -target $ZIG_TARGET"
+export "CARGO_TARGET_${UPPER}_LINKER=zig cc -target $ZIG_TARGET"
 
 rustup target add "$TARGET"
 cargo build --locked --release --workspace \

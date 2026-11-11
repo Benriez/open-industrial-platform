@@ -21,10 +21,10 @@
   },
   "browser_receipt": {
     "schema": "oip-scope-persistence-v1",
-    "revision": "164c8214cea087329aac4c0b5634f96d8dddc9b7",
+    "revision": "53b9ef8081f800b588960841c64cc05b678d8d50",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the scope of the operator across a refresh of the authorized projection",
-    "base": "http://127.0.0.1:60465",
+    "base": "http://127.0.0.1:63842",
     "the_selected_scope": "site-a1",
     "the_scope_after_the_refresh": "site-a1",
     "the_scope_of_the_new_session": "Alle berechtigten Infrastrukturen",
@@ -111,10 +111,10 @@
   "status": "PASS",
   "the_core_binary": {
     "the_path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
-    "the_sha256": "a96a74e244aaf5847d247fc607a7fc6a0678cf3ec018a90af822c313053e5ae1"
+    "the_sha256": "18cee1117e48b410005f9a9417536c9a1d442be3b62e1b67cda7ee1a3256d1de"
   },
-  "the_revision": "164c8214cea087329aac4c0b5634f96d8dddc9b7",
-  "the_tree": "f12265cf5bc9ab689fd61abe2c5786c6dff19b4c",
-  "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-10T19:29:11Z"
+  "the_revision": "53b9ef8081f800b588960841c64cc05b678d8d50",
+  "the_tree": "8b66641e4083032e6fd20636e025809bd27fe021",
+  "the_working_tree_is_clean": false,
+  "finished_utc": "2026-11-10T23:13:12Z"
 }
