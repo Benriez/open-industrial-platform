@@ -9,11 +9,11 @@
   ],
   "the_witness": {
     "the_port": 18808,
-    "the_core_of_the_rehearsal": 54038,
+    "the_core_of_the_rehearsal": 54898,
     "the_note": "the witness stands on the documented port of the instance; the bundle therefore carries the URL that the operator uses"
   },
   "build_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18808",
-  "build_seconds": 36.0,
+  "build_seconds": 8.7,
   "bundle": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
   "bundle_bytes": 96995965,
   "bundle_executable_sha256": "da79124a0adb49d073979bf36d8badfc514e9fe86fe7f315b39d97184ee9e208",
@@ -34,12 +34,6 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/devices",
-        "the_status": 403,
-        "the_code": "PERMISSION_DENIED"
-      },
-      {
-        "the_method": "GET",
         "the_path": "/api/v1/system/status",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
@@ -47,6 +41,12 @@
       {
         "the_method": "GET",
         "the_path": "/api/v1/metrics/current",
+        "the_status": 403,
+        "the_code": "PERMISSION_DENIED"
+      },
+      {
+        "the_method": "GET",
+        "the_path": "/api/v1/devices",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       },
@@ -74,12 +74,6 @@
     },
     {
       "the_method": "GET",
-      "the_path": "/api/v1/devices",
-      "the_status": 403,
-      "the_code": "PERMISSION_DENIED"
-    },
-    {
-      "the_method": "GET",
       "the_path": "/api/v1/system/status",
       "the_status": 403,
       "the_code": "PERMISSION_DENIED"
@@ -87,6 +81,12 @@
     {
       "the_method": "GET",
       "the_path": "/api/v1/metrics/current",
+      "the_status": 403,
+      "the_code": "PERMISSION_DENIED"
+    },
+    {
+      "the_method": "GET",
+      "the_path": "/api/v1/devices",
       "the_status": 403,
       "the_code": "PERMISSION_DENIED"
     },
@@ -128,12 +128,6 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/system/status",
-        "the_status": 403,
-        "the_code": "PERMISSION_DENIED"
-      },
-      {
-        "the_method": "GET",
         "the_path": "/api/v1/metrics/current",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
@@ -146,13 +140,19 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/devices",
+        "the_path": "/api/v1/system/status",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       },
       {
         "the_method": "GET",
         "the_path": "/api/v1/sources",
+        "the_status": 403,
+        "the_code": "PERMISSION_DENIED"
+      },
+      {
+        "the_method": "GET",
+        "the_path": "/api/v1/devices",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       }
@@ -169,10 +169,10 @@
   "status": "PASS",
   "the_core_binary": {
     "the_path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
-    "the_sha256": "47b506d1c7575d1397a6e0f0983e15182ac3fef004b5771e4436543e8eead537"
+    "the_sha256": "5dd068bb73a94d55067ce904019de87876968eed7c0b43547827a68a80e55e8e"
   },
-  "the_revision": "005940c58c208b0af7adbed9fcaf71cc389fa6ba",
-  "the_tree": "0a55a0b6efaa2d04b4212ba5c714e055345d6e95",
+  "the_revision": "0593497cfc5a8f315a40511695cf02b1a035fe41",
+  "the_tree": "3f191d2a050ee51c800c36a0c66eede05b244a09",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T03:08:44Z"
+  "finished_utc": "2026-11-11T04:49:25Z"
 }

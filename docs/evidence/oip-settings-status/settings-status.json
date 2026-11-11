@@ -1,9 +1,9 @@
 {
   "schema": "oip-settings-status-v1",
-  "revision": "61c1531fa9f205c8a6f3db68350904f1642256d9",
+  "revision": "0593497cfc5a8f315a40511695cf02b1a035fe41",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "the status of the settings categories in the approved surface against the real Core",
-  "base": "http://127.0.0.1:50486",
+  "base": "http://127.0.0.1:63881",
   "the_categories_of_the_core": [
     {
       "the_category": "general",

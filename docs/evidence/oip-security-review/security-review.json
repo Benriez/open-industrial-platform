@@ -16,7 +16,7 @@
     {
       "finding": "the secret scan of the tree",
       "status": "resolved",
-      "detail": "gitleaks 8.30.1 over the 700 files that ship: 28 candidates, all of them the SHA-256 of a source file inside a measurement receipt of docs/evidence \u2014 the known false positives, classified one by one in the receipt; no secret found",
+      "detail": "gitleaks 8.30.1 over the 703 files that ship: 28 candidates, all of them the SHA-256 of a source file inside a measurement receipt of docs/evidence \u2014 the known false positives, classified one by one in the receipt; no secret found",
       "evidence": null
     },
     {
@@ -119,8 +119,29 @@
     "report": "/Users/benny/Code/open-industrial-platform/target/oip-security-review/gitleaks.json",
     "candidates": [
       {
+        "file": "docs/evidence/oip004/final-integrity.json",
+        "line": 138,
+        "rule": "generic-api-key",
+        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip004/final-integrity.json",
+        "line": 148,
+        "rule": "generic-api-key",
+        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
+        "false_positive": true
+      },
+      {
         "file": "docs/evidence/oip008/reviews.json",
         "line": 43,
+        "rule": "generic-api-key",
+        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
+        "false_positive": true
+      },
+      {
+        "file": "docs/recovery/oip-loop-20261108-evidence.json",
+        "line": 590,
         "rule": "generic-api-key",
         "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
         "false_positive": true
@@ -168,15 +189,43 @@
         "false_positive": true
       },
       {
-        "file": "docs/evidence/oip004/final-integrity.json",
-        "line": 138,
+        "file": "docs/evidence/oip008/mcp-legacy.json",
+        "line": 3073,
         "rule": "generic-api-key",
         "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
         "false_positive": true
       },
       {
-        "file": "docs/evidence/oip004/final-integrity.json",
-        "line": 148,
+        "file": "docs/evidence/oip008/mcp-legacy.json",
+        "line": 3082,
+        "rule": "generic-api-key",
+        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip008/mcp-legacy.json",
+        "line": 3091,
+        "rule": "generic-api-key",
+        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip007/mcp/report.json",
+        "line": 2850,
+        "rule": "generic-api-key",
+        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip007/mcp/report.json",
+        "line": 2859,
+        "rule": "generic-api-key",
+        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
+        "false_positive": true
+      },
+      {
+        "file": "docs/evidence/oip007/mcp/report.json",
+        "line": 2868,
         "rule": "generic-api-key",
         "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
         "false_positive": true
@@ -224,27 +273,6 @@
         "false_positive": true
       },
       {
-        "file": "docs/evidence/oip008/mcp-legacy.json",
-        "line": 3073,
-        "rule": "generic-api-key",
-        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip008/mcp-legacy.json",
-        "line": 3082,
-        "rule": "generic-api-key",
-        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip008/mcp-legacy.json",
-        "line": 3091,
-        "rule": "generic-api-key",
-        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
-        "false_positive": true
-      },
-      {
         "file": "docs/evidence/oip005/final-source-hashes.json",
         "line": 30,
         "rule": "generic-api-key",
@@ -285,43 +313,15 @@
         "rule": "generic-api-key",
         "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
         "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip007/mcp/report.json",
-        "line": 2850,
-        "rule": "generic-api-key",
-        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip007/mcp/report.json",
-        "line": 2859,
-        "rule": "generic-api-key",
-        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
-        "false_positive": true
-      },
-      {
-        "file": "docs/evidence/oip007/mcp/report.json",
-        "line": 2868,
-        "rule": "generic-api-key",
-        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
-        "false_positive": true
-      },
-      {
-        "file": "docs/recovery/oip-loop-20261108-evidence.json",
-        "line": 590,
-        "rule": "generic-api-key",
-        "classification": "the digest of a file of the repository or an opaque key of the Core that this receipt names",
-        "false_positive": true
       }
     ],
     "exit_code": 1,
-    "files_scanned": 700,
+    "files_scanned": 703,
     "findings": 28,
     "unclassified": 0
   },
   "browser_session": {
-    "set_cookie": "oip_session=ff3e1cec7ce7e0aac7c0dcaab4becc0f1916b44717655e822a8f78b8a860552e; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800",
+    "set_cookie": "oip_session=024754463bdb48bc02ea5afd2602200bcfd1233a1f9e1bb9dd86104bd38f9051; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800",
     "cache_control": "no-store",
     "x_frame_options": "DENY",
     "content_security_policy": "frame-ancestors 'none'",
@@ -334,7 +334,7 @@
   "write_with_a_foreign_origin": 403,
   "listening_sockets": [
     "COMMAND     PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME",
-    "oip-serve 68345 benny    9u  IPv4 0xa1968ffcfdd78758      0t0  TCP 127.0.0.1:59063 (LISTEN)"
+    "oip-serve 34442 benny    9u  IPv4 0xcbd2d8f8ccaaaacc      0t0  TCP 127.0.0.1:62974 (LISTEN)"
   ],
   "the_core_binds_to_the_loopback_only": true,
   "local_ipc": {
@@ -377,13 +377,13 @@
     "the_sink_is_the_local_log": true
   },
   "status": "PASS",
-  "finished_utc": "2026-11-11T02:49:34Z",
+  "finished_utc": "2026-11-11T05:20:04Z",
   "summary": {
     "resolved": 9,
     "mitigated": 2,
     "escalated": 1
   },
-  "the_revision": "61c1531fa9f205c8a6f3db68350904f1642256d9",
-  "the_tree": "b41a207d3878cef0e0640a68c16a47a4e08e2c7f",
+  "the_revision": "0593497cfc5a8f315a40511695cf02b1a035fe41",
+  "the_tree": "3f191d2a050ee51c800c36a0c66eede05b244a09",
   "the_working_tree_is_clean": true
 }

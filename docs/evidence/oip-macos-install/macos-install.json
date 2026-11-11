@@ -8,7 +8,7 @@
     "the installed bundle starts again from the installation directory"
   ],
   "the_installation": {
-    "the_directory_of_the_rehearsal": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-install-6q0iz95y/Applications",
+    "the_directory_of_the_rehearsal": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-install-dfsgdny0/Applications",
     "the_bundle": "oip_dashboard.app",
     "the_files": 43,
     "the_tree_sha256": "f9e63179022bdc9ea50c8a47244297c848d6c56d93c78684d31cc4a477f4d10a",
@@ -19,18 +19,18 @@
   "the_installed_bundle": {
     "the_bundle_identifier": "org.openindustrial.oipDashboard",
     "the_version": "0.3.0",
-    "the_executable": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-install-6q0iz95y/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard",
+    "the_executable": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-install-dfsgdny0/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard",
     "the_executable_exists": true,
     "the_executable_sha256": "da79124a0adb49d073979bf36d8badfc514e9fe86fe7f315b39d97184ee9e208"
   },
   "the_witness": {
     "the_port": 18808,
-    "the_core_of_the_rehearsal": 55194,
+    "the_core_of_the_rehearsal": 55553,
     "the_note": "the witness stands on the documented port of the instance; the installed bundle therefore carries the URL that the operator uses"
   },
   "the_start": {
     "label": "the installed bundle",
-    "the_seconds_until_the_first_request": 0.5,
+    "the_seconds_until_the_first_request": 0.4,
     "the_requests": [
       {
         "the_method": "GET",
@@ -52,12 +52,6 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/sources",
-        "the_status": 403,
-        "the_code": "PERMISSION_DENIED"
-      },
-      {
-        "the_method": "GET",
         "the_path": "/api/v1/metrics/current",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
@@ -65,6 +59,12 @@
       {
         "the_method": "GET",
         "the_path": "/api/v1/events",
+        "the_status": 403,
+        "the_code": "PERMISSION_DENIED"
+      },
+      {
+        "the_method": "GET",
+        "the_path": "/api/v1/sources",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       }
@@ -94,12 +94,6 @@
     },
     {
       "the_method": "GET",
-      "the_path": "/api/v1/sources",
-      "the_status": 403,
-      "the_code": "PERMISSION_DENIED"
-    },
-    {
-      "the_method": "GET",
       "the_path": "/api/v1/metrics/current",
       "the_status": 403,
       "the_code": "PERMISSION_DENIED"
@@ -107,6 +101,12 @@
     {
       "the_method": "GET",
       "the_path": "/api/v1/events",
+      "the_status": 403,
+      "the_code": "PERMISSION_DENIED"
+    },
+    {
+      "the_method": "GET",
+      "the_path": "/api/v1/sources",
       "the_status": 403,
       "the_code": "PERMISSION_DENIED"
     }
@@ -139,13 +139,13 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/system/status",
+        "the_path": "/api/v1/metrics/current",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/metrics/current",
+        "the_path": "/api/v1/sources",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       },
@@ -157,7 +157,7 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/sources",
+        "the_path": "/api/v1/system/status",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       }
@@ -172,8 +172,8 @@
     "the_output": "[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1451.0, 950.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
   },
   "status": "PASS",
-  "the_revision": "005940c58c208b0af7adbed9fcaf71cc389fa6ba",
-  "the_tree": "0a55a0b6efaa2d04b4212ba5c714e055345d6e95",
+  "the_revision": "0593497cfc5a8f315a40511695cf02b1a035fe41",
+  "the_tree": "3f191d2a050ee51c800c36a0c66eede05b244a09",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T03:09:09Z"
+  "finished_utc": "2026-11-11T04:49:50Z"
 }

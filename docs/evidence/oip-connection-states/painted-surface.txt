@@ -37,7 +37,7 @@ SOURCES
 REGISTRY  
 1 Geräte
 EMPFANG  
-2026-11-11 02:13:58.113 UTC
+2026-11-11 04:38:16.269 UTC
 PROVENIENZ  
 REPORTED / OBSERVED
 ORG / SITE  
@@ -64,11 +64,11 @@ Comfortable-Dichte
 GRUPPIERUNG
 Source
 1/1
-739EB00F-83E2-47E7-844F-DFBFBDE70DFB
+B602DFCE-6AAF-4909-B460-499F31384D26
 State device · state-device
-Gerät State device state-device auswählen · SingleBoardComputer · 739eb00f-83e2-47e7-844f-dfbfbde70dfb · 10 Observations · Reachability Unbekannt reported
+Gerät State device state-device auswählen · SingleBoardComputer · b602dfce-6aaf-4909-b460-499f31384d26 · 10 Observations · Reachability Unbekannt reported
 State device · state-device
-SingleBoardComputer · 739eb00f-83e2-47e7-844f-dfbfbde70dfb · Veraltet · Unbekannt reported
+SingleBoardComputer · b602dfce-6aaf-4909-b460-499f31384d26 · Veraltet · Unbekannt reported
 Gerät pinnen
 Vergleich hinzufügen
 Vorherige Geräte
@@ -93,7 +93,7 @@ State device
 DEVICE TYPE
 SOURCE ID
 SingleBoardComputer
-739eb00f-83e2-47e7-844f-dfbfbde70dfb
+b602dfce-6aaf-4909-b460-499f31384d26
 REGISTRY LOCATION
 REGISTRY CONNECTION TYPE
 site-a1
@@ -116,10 +116,10 @@ DeviceDetail enthält keine Observations. Kein Ersatzwert, kein 0 % und kein kü
 CONNECTION & MONITORING
 Verbindung & Monitoring
 Host-Key geändert · Verbindung blockiert
-SSH · benny@127.0.0.1:64606
-Host-Key: SHA256:5TOtnqd6OZc6imgM3nLdGgeXhrP4YerTyMfP5XyNXhI
-Letzter Prüfversuch: 2026-11-11 02:14:28.145 UTC
-Letzte erfolgreiche Erfassung: 2026-11-11 02:13:58.111 UTC
+SSH · benny@127.0.0.1:61589
+Host-Key: SHA256:DqXX6i2+5AJmMNJrecclFPuUVPq0xM07zaasCCGtRGc
+Letzter Prüfversuch: 2026-11-11 04:38:46.316 UTC
+Letzte erfolgreiche Erfassung: 2026-11-11 04:38:16.266 UTC
 SSH_HOST_KEY_CHANGED: SSH host key differs from the trusted binding; connection blocked
 Tatsächlich verifizierte Identität Collapsed
  double tap to expand
@@ -128,90 +128,90 @@ Polling: 30 s · Revision 2
 Aktuelle Messwerte
 Vom autorisierten Gerät tatsächlich gelesene Werte · keine Ersatzwerte
 host.architecture
-arm64 · Gut · Veraltet · 2026-11-11 02:13:58.111 UTC
+arm64 · Gut · Veraltet · 2026-11-11 04:38:16.266 UTC
 host.cpu_info
-Apple M1 Pro · Gut · Veraltet · 2026-11-11 02:13:58.111 UTC
+Apple M1 Pro · Gut · Veraltet · 2026-11-11 04:38:16.266 UTC
 host.disks
-[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":447313… · Gut · Veraltet · 2026-11-11 02:13:58.111 UTC Collapsed
+[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":465071… · Gut · Veraltet · 2026-11-11 04:38:16.266 UTC Collapsed
  double tap to expand
 host.hostname
-MacBookPro.fritz.box · Gut · Veraltet · 2026-11-11 02:13:58.111 UTC
+MacBookPro.fritz.box · Gut · Veraltet · 2026-11-11 04:38:16.266 UTC
 host.interfaces
-[{"name":"lo0","addresses":["127.0.0.1","::1","fe80::1%lo0"]},{"name":"gif0","addresses":[]},{"name":"stf0","addresses":… · Gut · Veraltet · 2026-11-11 02:13:58.111 UTC Collapsed
+[{"name":"lo0","addresses":["127.0.0.1","::1","fe80::1%lo0"]},{"name":"gif0","addresses":[]},{"name":"stf0","addresses":… · Gut · Veraltet · 2026-11-11 04:38:16.266 UTC Collapsed
  double tap to expand
 host.memory_total_bytes
-17179869184.0 bytes · Gut · Veraltet · 2026-11-11 02:13:58.111 UTC
+17179869184.0 bytes · Gut · Veraltet · 2026-11-11 04:38:16.266 UTC
 host.memory_used_bytes
-13433405440.0 bytes · Gut · Veraltet · 2026-11-11 02:13:58.111 UTC
+12652445696.0 bytes · Gut · Veraltet · 2026-11-11 04:38:16.266 UTC
 host.model
-MacBookPro18,3 · Gut · Veraltet · 2026-11-11 02:13:58.111 UTC
+MacBookPro18,3 · Gut · Veraltet · 2026-11-11 04:38:16.266 UTC
 host.os
-Darwin · Gut · Veraltet · 2026-11-11 02:13:58.111 UTC
+Darwin · Gut · Veraltet · 2026-11-11 04:38:16.266 UTC
 host.uptime_seconds
-988145.0 seconds · Gut · Veraltet · 2026-11-11 02:13:58.111 UTC
+996803.0 seconds · Gut · Veraltet · 2026-11-11 04:38:16.266 UTC
 PERSISTIERTE MESSHISTORIE
 Persistierte Messhistorie
 Aus der Core-Datenbank · gespeicherte Werte, kein Live-Zustand
-host.disks · Historie
-[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":4735033344},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":11813146624,"available_bytes":4735033344},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806669312,"available_bytes":4735033344},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":7831552,"available_bytes":4735033344},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503582720},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503582720},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3526656,"available_bytes":503582720},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":951911485440,"available_bytes":4735033344},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}] · Gut · Veraltet
-Empfangen 2026-11-11 02:12:27.824 UTC
 host.memory_total_bytes · Historie
 17179869184.0 bytes · Gut · Veraltet
-Empfangen 2026-11-11 02:12:27.824 UTC
-host.cpu_info · Historie
-Apple M1 Pro · Gut · Veraltet
-Empfangen 2026-11-11 02:12:27.824 UTC
-host.model · Historie
-MacBookPro18,3 · Gut · Veraltet
-Empfangen 2026-11-11 02:12:27.824 UTC
-host.interfaces · Historie
-[{"name":"lo0","addresses":["127.0.0.1","::1","fe80::1%lo0"]},{"name":"gif0","addresses":[]},{"name":"stf0","addresses":[]},{"name":"anpi1","addresses":[]},{"name":"anpi2","addresses":[]},{"name":"anpi0","addresses":[]},{"name":"en4","addresses":[]},{"name":"en5","addresses":[]},{"name":"en6","addresses":[]},{"name":"en1","addresses":[]},{"name":"en2","addresses":[]},{"name":"en3","addresses":[]},{"name":"bridge0","addresses":[]},{"name":"utun0","addresses":["fe80::c521:1aac:ad72:d54f%utun0"]},{"name":"ap1","addresses":[]},{"name":"en0","addresses":["fe80::1878:bbf6:2742:a111%en0","fd14:75ec:3e81:0:ea:ed57:96b6:2113","192.168.1.219"]},{"name":"utun1","addresses":["fe80::39ff:4771:b6c:63be%utun1"]},{"name":"awdl0","addresses":["fe80::701c:4aff:fec2:902e%awdl0"]},{"name":"llw0","addresses":["fe80::701c:4aff:fec2:902e%llw0"]},{"name":"utun3","addresses":["fe80::378a:3e38:7093:eadb%utun3"]},{"name":"utun4","addresses":["fe80::ce81:b1c:bd2c:69e%utun4"]},{"name":"utun2","addresses":["fe80::7ceb:d263:d038:12f%utun2","100.72.167.42","fd7a:115c:a1e0::1234:a72a"]}] · Gut · Veraltet
-Empfangen 2026-11-11 02:12:27.824 UTC
+Empfangen 2026-11-11 04:36:45.869 UTC
 host.os · Historie
 Darwin · Gut · Veraltet
-Empfangen 2026-11-11 02:12:27.824 UTC
-host.memory_used_bytes · Historie
-13153320960.0 bytes · Gut · Veraltet
-Empfangen 2026-11-11 02:12:27.824 UTC
-host.uptime_seconds · Historie
-988054.0 seconds · Gut · Veraltet
-Empfangen 2026-11-11 02:12:27.824 UTC
+Empfangen 2026-11-11 04:36:45.869 UTC
 host.hostname · Historie
 MacBookPro.fritz.box · Gut · Veraltet
-Empfangen 2026-11-11 02:12:27.824 UTC
-host.architecture · Historie
-arm64 · Gut · Veraltet
-Empfangen 2026-11-11 02:12:27.824 UTC
+Empfangen 2026-11-11 04:36:45.869 UTC
 host.model · Historie
 MacBookPro18,3 · Gut · Veraltet
-Empfangen 2026-11-11 02:13:58.111 UTC
-host.os · Historie
-Darwin · Gut · Veraltet
-Empfangen 2026-11-11 02:13:58.111 UTC
+Empfangen 2026-11-11 04:36:45.869 UTC
+host.architecture · Historie
+arm64 · Gut · Veraltet
+Empfangen 2026-11-11 04:36:45.869 UTC
+host.uptime_seconds · Historie
+996712.0 seconds · Gut · Veraltet
+Empfangen 2026-11-11 04:36:45.869 UTC
 host.interfaces · Historie
 [{"name":"lo0","addresses":["127.0.0.1","::1","fe80::1%lo0"]},{"name":"gif0","addresses":[]},{"name":"stf0","addresses":[]},{"name":"anpi1","addresses":[]},{"name":"anpi2","addresses":[]},{"name":"anpi0","addresses":[]},{"name":"en4","addresses":[]},{"name":"en5","addresses":[]},{"name":"en6","addresses":[]},{"name":"en1","addresses":[]},{"name":"en2","addresses":[]},{"name":"en3","addresses":[]},{"name":"bridge0","addresses":[]},{"name":"utun0","addresses":["fe80::c521:1aac:ad72:d54f%utun0"]},{"name":"ap1","addresses":[]},{"name":"en0","addresses":["fe80::1878:bbf6:2742:a111%en0","fd14:75ec:3e81:0:ea:ed57:96b6:2113","192.168.1.219"]},{"name":"utun1","addresses":["fe80::39ff:4771:b6c:63be%utun1"]},{"name":"awdl0","addresses":["fe80::701c:4aff:fec2:902e%awdl0"]},{"name":"llw0","addresses":["fe80::701c:4aff:fec2:902e%llw0"]},{"name":"utun3","addresses":["fe80::378a:3e38:7093:eadb%utun3"]},{"name":"utun4","addresses":["fe80::ce81:b1c:bd2c:69e%utun4"]},{"name":"utun2","addresses":["fe80::7ceb:d263:d038:12f%utun2","100.72.167.42","fd7a:115c:a1e0::1234:a72a"]}] · Gut · Veraltet
-Empfangen 2026-11-11 02:13:58.111 UTC
-host.memory_used_bytes · Historie
-13433405440.0 bytes · Gut · Veraltet
-Empfangen 2026-11-11 02:13:58.111 UTC
-host.cpu_info · Historie
-Apple M1 Pro · Gut · Veraltet
-Empfangen 2026-11-11 02:13:58.111 UTC
+Empfangen 2026-11-11 04:36:45.869 UTC
 host.disks · Historie
-[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":4473139200},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":11813146624,"available_bytes":4473139200},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806669312,"available_bytes":4473139200},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":7831552,"available_bytes":4473139200},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503582720},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503582720},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3526656,"available_bytes":503582720},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":952173379584,"available_bytes":4473139200},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}] · Gut · Veraltet
-Empfangen 2026-11-11 02:13:58.111 UTC
-host.uptime_seconds · Historie
-988145.0 seconds · Gut · Veraltet
-Empfangen 2026-11-11 02:13:58.111 UTC
+[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":4569108480},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":11813158912,"available_bytes":4569108480},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806669312,"available_bytes":4569108480},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":7938048,"available_bytes":4569108480},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503578624},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503578624},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3530752,"available_bytes":503578624},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":952077291520,"available_bytes":4569108480},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}] · Gut · Veraltet
+Empfangen 2026-11-11 04:36:45.869 UTC
+host.cpu_info · Historie
+Apple M1 Pro · Gut · Veraltet
+Empfangen 2026-11-11 04:36:45.869 UTC
+host.memory_used_bytes · Historie
+12997787648.0 bytes · Gut · Veraltet
+Empfangen 2026-11-11 04:36:45.869 UTC
 host.architecture · Historie
 arm64 · Gut · Veraltet
-Empfangen 2026-11-11 02:13:58.111 UTC
+Empfangen 2026-11-11 04:38:16.266 UTC
+host.cpu_info · Historie
+Apple M1 Pro · Gut · Veraltet
+Empfangen 2026-11-11 04:38:16.266 UTC
+host.memory_used_bytes · Historie
+12652445696.0 bytes · Gut · Veraltet
+Empfangen 2026-11-11 04:38:16.266 UTC
+host.uptime_seconds · Historie
+996803.0 seconds · Gut · Veraltet
+Empfangen 2026-11-11 04:38:16.266 UTC
 host.hostname · Historie
 MacBookPro.fritz.box · Gut · Veraltet
-Empfangen 2026-11-11 02:13:58.111 UTC
+Empfangen 2026-11-11 04:38:16.266 UTC
+host.os · Historie
+Darwin · Gut · Veraltet
+Empfangen 2026-11-11 04:38:16.266 UTC
+host.model · Historie
+MacBookPro18,3 · Gut · Veraltet
+Empfangen 2026-11-11 04:38:16.266 UTC
 host.memory_total_bytes · Historie
 17179869184.0 bytes · Gut · Veraltet
-Empfangen 2026-11-11 02:13:58.111 UTC
+Empfangen 2026-11-11 04:38:16.266 UTC
+host.disks · Historie
+[{"filesystem":"/dev/disk3s1s1","mount":"/","total_bytes":994662584320,"used_bytes":12577067008,"available_bytes":4650713088},{"filesystem":"/dev/disk3s6","mount":"/System/Volumes/VM","total_bytes":994662584320,"used_bytes":11813158912,"available_bytes":4650713088},{"filesystem":"/dev/disk3s2","mount":"/System/Volumes/Preboot","total_bytes":994662584320,"used_bytes":10806669312,"available_bytes":4650713088},{"filesystem":"/dev/disk3s4","mount":"/System/Volumes/Update","total_bytes":994662584320,"used_bytes":7938048,"available_bytes":4650713088},{"filesystem":"/dev/disk1s2","mount":"/System/Volumes/xarts","total_bytes":524288000,"used_bytes":6311936,"available_bytes":503578624},{"filesystem":"/dev/disk1s1","mount":"/System/Volumes/iSCPreboot","total_bytes":524288000,"used_bytes":5890048,"available_bytes":503578624},{"filesystem":"/dev/disk1s3","mount":"/System/Volumes/Hardware","total_bytes":524288000,"used_bytes":3530752,"available_bytes":503578624},{"filesystem":"/dev/disk3s5","mount":"/System/Volumes/Data","total_bytes":994662584320,"used_bytes":951995686912,"available_bytes":4650713088},{"filesystem":"/dev/disk5s1","mount":"/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-quota-probe-gh_57lcg/volume","total_bytes":25124864,"used_bytes":24702976,"available_bytes":421888}] · Gut · Veraltet
+Empfangen 2026-11-11 04:38:16.266 UTC
+host.interfaces · Historie
+[{"name":"lo0","addresses":["127.0.0.1","::1","fe80::1%lo0"]},{"name":"gif0","addresses":[]},{"name":"stf0","addresses":[]},{"name":"anpi1","addresses":[]},{"name":"anpi2","addresses":[]},{"name":"anpi0","addresses":[]},{"name":"en4","addresses":[]},{"name":"en5","addresses":[]},{"name":"en6","addresses":[]},{"name":"en1","addresses":[]},{"name":"en2","addresses":[]},{"name":"en3","addresses":[]},{"name":"bridge0","addresses":[]},{"name":"utun0","addresses":["fe80::c521:1aac:ad72:d54f%utun0"]},{"name":"ap1","addresses":[]},{"name":"en0","addresses":["fe80::1878:bbf6:2742:a111%en0","fd14:75ec:3e81:0:ea:ed57:96b6:2113","192.168.1.219"]},{"name":"utun1","addresses":["fe80::39ff:4771:b6c:63be%utun1"]},{"name":"awdl0","addresses":["fe80::701c:4aff:fec2:902e%awdl0"]},{"name":"llw0","addresses":["fe80::701c:4aff:fec2:902e%llw0"]},{"name":"utun3","addresses":["fe80::378a:3e38:7093:eadb%utun3"]},{"name":"utun4","addresses":["fe80::ce81:b1c:bd2c:69e%utun4"]},{"name":"utun2","addresses":["fe80::7ceb:d263:d038:12f%utun2","100.72.167.42","fd7a:115c:a1e0::1234:a72a"]}] · Gut · Veraltet
+Empfangen 2026-11-11 04:38:16.266 UTC
 Grenzen dieser Historie: Samples without receive time are excluded; source/server clocks may not match the runtime clock
 Zeit- und Herkunftssemantik Collapsed
  double tap to expand
@@ -258,7 +258,7 @@ State device
 state-device
 IDENTIFICATION
 TYPE / SOURCE
-SingleBoardComputer · 739eb00f-83e2-47e7-844f-dfbfbde70dfb
+SingleBoardComputer · b602dfce-6aaf-4909-b460-499f31384d26
 ORGANIZATION
 Organization A
 INFRASTRUCTURE
@@ -285,7 +285,7 @@ QUALITÄT / EMPFANG
 Unbekannt
 RELATIONSHIPS
 SOURCE
-SSH host state-device · 739eb00f-83e2-47e7-844f-dfbfbde70dfb
+SSH host state-device · b602dfce-6aaf-4909-b460-499f31384d26
 DEVICE / SERVICE RELATION
 Unbekannt · kein autorisiertes Service-Inventar
 NETZWERKBEZIEHUNG
