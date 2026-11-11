@@ -110,6 +110,22 @@ LATE_RECEIPTS = {
 }
 
 
+def the_reproducible_measurement():
+    """The measurement of the rehearsal of the reproducible builds.
+
+    The rehearsal reads the revision out of the binary it built; the manifest
+    names that revision when the tree carries a documentation commit on top of
+    the measurement.
+    """
+    path = ROOT / "docs/evidence/oip-reproducible-build/reproducible-build.json"
+    if not path.is_file():
+        return {}
+    try:
+        return json.loads(path.read_text())
+    except ValueError:
+        return {}
+
+
 def the_receipts_of_the_release():
     """Every receipt of the release, with a name of its own.
 
@@ -296,6 +312,19 @@ def build_manifest():
                 if candidate and candidate.encode() in payload:
                     manifest["the_artifacts"][name]["the_revision_the_binary_names"] = candidate
                     break
+            else:
+                # The binary was built at an earlier revision than the one the
+                # manifest is written at: the receipts of a run are committed
+                # with the record, so the tree carries a documentation commit
+                # on top of the measurement. The revision is then the one the
+                # rehearsal of the reproducible builds read **out of the
+                # binary** — the manifest names what the binary names and not
+                # the revision of the file it was written in.
+                measured = the_reproducible_measurement()
+                named = (measured.get("the_core") or {}).get("the_revision_the_binary_names")
+                if named:
+                    manifest["the_artifacts"][name]["the_revision_the_binary_names"] = named
+                    manifest["the_artifacts"][name]["the_revision_was_read_out_of_the_binary"] = True
     # The receipts of the acceptance are **tracked** files; the receipts of a
     # run in the build tree are named by the run, not by the manifest, because
     # a manifest must be verifiable against the files of the checkout.
