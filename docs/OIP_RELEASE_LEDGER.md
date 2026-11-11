@@ -77,10 +77,11 @@ An **independent verification** of that change (a delegated, read-only audit of 
    and the `Info.plist` names the category and the exception of the transport security for the
    local networking (the Core of OIP answers on the loopback). The **metadata** of the listing and
    the **privacy policy** are prepared (`docs/release/mac-app-store/metadata.md`,
-   `docs/release/mac-app-store/privacy-policy.md`). The **remaining gap of the listing** is the
-   **store assets**: the screenshots in the sizes that Apple accepts for a Mac app are the
-   **next READY task** (N25). The upload itself, the identity, the certificate, the profile and
-   the two public URLs are the operator's.
+   `docs/release/mac-app-store/privacy-policy.md`). The **store assets** of the listing are
+   **measured** as well (N25): the six workstations of the client in a size that Apple accepts
+   for a Mac app, without an alpha channel, checked against the prohibited regressions
+   (`docs/evidence/oip-store-screenshots/`). The upload itself, the identity, the certificate,
+   the profile and the two public URLs are the operator's.
 
 5. **N24 (the Core on the Raspberry Pi)**: the **deployment is measured** now
    (`tests/oip_pi_instance.py`, `docs/evidence/oip-pi-instance/pi-instance.json`): the cross build for
@@ -91,14 +92,20 @@ An **independent verification** of that change (a delegated, read-only audit of 
    with the services of the operator the **same list** before and after. The host discovery that
    decided the target is measured too (`docs/evidence/oip-deployment-discovery/deployment-discovery.json`).
 
-6. **N25 (the store assets of the Mac App Store listing)**: the **sizes that Apple accepts for
-   a Mac app** are read from the official source (`docs/release/mac-app-store/screenshots.md`:
-   1280 x 800, 1440 x 900, 2560 x 1600, 2880 x 1800, each with a 16:10 aspect ratio; no alpha
-   channel), and the **six workstations of the client are captured in those sizes** by the
-   release build of the client through the managed Core
-   (`tests/oip_store_screenshots.py`, `docs/evidence/oip-store-screenshots/store-screenshots.json`).
-   The captures are the **store assets**; the acceptance of the operator of the visible result
-   stays **pending** (G12) and is never claimed by the capture.
+6. **N25 (the store assets of the Mac App Store listing)**: **measured**. The **sizes that Apple
+   accepts for a Mac app** are read from the official source and recorded with the date
+   (`docs/release/mac-app-store/screenshots.md`: 1280 x 800, 1440 x 900, 2560 x 1600,
+   2880 x 1800, each with a 16:10 aspect ratio; **no alpha channel**). The **six workstations
+   of the client are captured in 1440 x 900** by the release build of the client through the
+   managed Core (`tests/oip_store_screenshots.py`,
+   `apps/flutter/test/browser_store_screenshots.mjs`,
+   `docs/evidence/oip-store-screenshots/store-screenshots.json`,
+   `docs/evidence/oip-store-screenshots/captures/`): every capture is the **viewport** (never
+   the full page), its **exact pixel size and the absence of an alpha channel are read out of
+   the file itself**, the captures carry **none** of the prohibited regressions R1-R10 (every
+   marker of the contract is checked on every workstation), and the rehearsal leaves **no
+   process** behind. The captures are the **store assets**; the acceptance of the operator of
+   the visible result stays **pending** (G12) and is never claimed by the capture.
 
 7. **N23 (the secure update of the deployed software)**: the **update path of the Core** is
    implemented and **measured** (`tools/oip_update.py`, `tests/oip_update.py`,
@@ -296,6 +303,7 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-transport-parity/transport-parity.json` | the parity of REST, SSE and MCP and the scope of the projection |
 | `docs/evidence/oip-security-review/security-review.json` | the security release review: 12 findings, 9 resolved, 2 mitigated, 1 escalated |
 | `docs/evidence/oip-rust-regression/rust-regression.json` | the Rust regression of the workspace: 185 tests in 29 suites |
+| `docs/evidence/oip-store-screenshots/store-screenshots.json` | the **store assets** of the Mac App Store listing: the six workstations of the client captured in 1440 x 900 — a size that Apple accepts for a Mac app — by the release build of the client through the managed Core; every capture is measured out of the file itself (the exact pixel size, the absence of an alpha channel), the captures carry none of the prohibited regressions of the UI contract, and the acceptance of the operator of the visible result stays **pending** (`docs/evidence/oip-store-screenshots/captures/`) |
 | `docs/evidence/oip-pi-instance/pi-instance.json` | the disposable instance of the Core on the Raspberry Pi: the cross build for the target of the host, the bundle, the **start by hand**, the Core answering through a tunnel of the loopback, the session of the operator minted on the host, the authorized projection (the address space of the simulation of the host and the organization of the instance), **no published port** and the **services of the operator unchanged** before and after |
 | `docs/evidence/oip-update/update.json` | the secure update of the Core of an instance: a signed bundle is verified (the Ed25519 signature over the exact bytes of the manifest), the digests are verified before the activation and again after the write, the switch is atomic, the new version is health checked as a disposable instance, a version that does not become ready is rolled back, and the durable journal of the instance names every attempt — the changed artefact, the forged manifest, the foreign target and the repeated revision are refused |
 | `docs/evidence/oip-mas-package/mas-package.json` | the package of the macOS client for the Mac App Store: the release build, the entitlements of the bundle (the app sandbox and the network client, without the debug entitlement of the entitlements file), the hardened runtime in the signature, the privacy manifest in the bundle, the absence of the quarantine attribute on every file, the category and the transport security of the Info.plist, the icon and the signature of every executable |

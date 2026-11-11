@@ -3595,6 +3595,45 @@ source today.
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
 
+### Iteration 78 — the store assets of the Mac App Store listing are measured
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the
+listing is upload-ready, the upload itself is the operator's action.
+
+* **The requirement was read at the official source, with the date.** The sizes that Apple
+  accepts for a Mac app are **1280 x 800, 1440 x 900, 2560 x 1600 and 2880 x 1800**, each with a
+  16:10 aspect ratio, and **an image with an alpha channel is refused** (App Store Connect Help,
+  "Screenshot specifications", read on 2026-11-11). The requirement of the listing previously
+  cited the submitting page of Apple, which names **no pixel sizes**; the citation is corrected
+  and the rule is recorded in `docs/release/mac-app-store/screenshots.md`.
+* **The assets are measured, not asserted.** The six workstations of the client are captured in
+  **1440 x 900** by the release build of the client through the managed Core
+  (`tests/oip_store_screenshots.py`, `apps/flutter/test/browser_store_screenshots.mjs`,
+  `docs/evidence/oip-store-screenshots/`): every capture is the **viewport** — never the full
+  page, whose height would be whatever the content happens to be — and **the exact pixel size
+  and the absence of an alpha channel are read out of the header of the file itself**. The
+  captures carry **none** of the prohibited regressions R1-R10: the rehearsal checks every
+  marker of the binding UI contract on every workstation, with the same exemptions that the
+  canonical gate applies.
+* **The first captures were empty, and the rehearsal found it.** The marker of a workstation
+  appears **before** its data is rendered: the first run captured the OPC-UA workspace with an
+  empty address space (0 of 1020 nodes) and the rehearsal would have published a listing that
+  misrepresents the product. The browser now waits for the **delivered** catalogue and for the
+  surface to **settle** (two consecutive equal readings) before every capture. The published
+  captures show the full address space (1020 nodes, five folders, a live value).
+* **The package measures the listing.** `tools/oip_mas_package.py` reads the store assets and
+  checks every rule of the store against the files themselves: the size is one of the four that
+  Apple accepts, the format is a PNG, and **no capture carries an alpha channel**.
+* **The acceptance of the operator stays pending.** A capture is a measurement of the surface,
+  never an acceptance of it: the receipt names
+  `VISUAL_PENDING_OPERATOR_ACCEPTANCE` (G12). The captures show the managed Core of the
+  release — whose source is the local OPC-UA simulation of the release, and the surface states
+  that origin — and the listing with the **own infrastructure of the operator** is the
+  operator's decision.
+
+The upload itself, the Apple identity, the certificate, the profile, the two public URLs and
+the App Review answers remain the operator's actions.
+
 ## 5. Evidence index
 
 | Artifact | Content |
