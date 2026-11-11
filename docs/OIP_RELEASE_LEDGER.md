@@ -53,6 +53,19 @@ An **independent verification** of that change (a delegated, read-only audit of 
    operator runs). The **bundle of the instance** is READY and measured: the operator's part
    is one copy and one command (`tools/oip_pi_bundle.sh`, `docs/evidence/oip-pi-bundle/pi-bundle.json`).
 
+3. **N21 (the deployed hosts and the device classes of the operator)**: the **discovery** of
+   `bodi-pi` and `bodi-pc` and of the two new devices is **measured** read-only
+   (`tests/oip_deployment_discovery.py`,
+   `docs/evidence/oip-deployment-discovery/deployment-discovery.json`): the architecture of the Pi
+   answers the target of the cross build, the ports of the plan are free, the services of the
+   operator are unchanged before and after the measurement, the router answers with **dropbear**
+   (the JSON form of `ip` does not exist there — the collector of the Core reads the one-line
+   form now), and the bridge answers its public configuration while it **refuses** its lights
+   without a token. The **Core needs no change for the router** (the SSH onboarding applies); the
+   bridge has **no onboarding transport in the Core** and is therefore an inventory device with
+   its measured identity — its monitoring and its control are **not** implemented and are not
+   simulated (`docs/architecture/oip-capability-inventory.md`).
+
 The independent tasks of this list are closed. What remains are the operator actions: the
 product decision on the delivery of the web release, the physical device of G5, the
 production-security scope of G10, the operator acceptance of G12 and the discovery of the
@@ -121,6 +134,17 @@ host of the Core.
   the **principal mode** of the local IPC (the generator writes it), and the **Core needs no
   change** — the trust of the simulation origin is bound to the origin id and not to a host, so
   the simulation of the Pi is trusted exactly like the simulation of the Mac.
+* **The OpenWrt router**: the operator onboards it over SSH like every other device: the
+  credentials and the **confirmation of the host key** are the operator's step
+  (`tests/oip_deployment_discovery.py` names the banner and the host keys of the router). The
+  Core reads the host report of a router — the BusyBox form of `ip` included — and states every
+  measurement it could not take.
+* **The Philips Hue Bridge**: the Core has **no onboarding transport for a device with an HTTP
+  API**, so the bridge is an inventory device with its measured identity (model `BSB002`, the
+  software version, the bridge id, the MAC and the IP). Its lights are **refused without a
+  token** (measured), and a token is a **write on the device** (the button of the bridge and
+  `POST /api`). A monitoring or control capability for the bridge is a **new capability** with
+  its own permission, its own audit and its own scope — it is named here and **not** simulated.
 * Decide the delivery of the web release: the measured baseline
   (`docs/evidence/oip-performance/performance.json`) shows that the first paint of the delivered
   web release is bound to the transfer over the loopback and not to the application — the shell
@@ -205,6 +229,7 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-transport-parity/transport-parity.json` | the parity of REST, SSE and MCP and the scope of the projection |
 | `docs/evidence/oip-security-review/security-review.json` | the security release review: 12 findings, 9 resolved, 2 mitigated, 1 escalated |
 | `docs/evidence/oip-rust-regression/rust-regression.json` | the Rust regression of the workspace: 183 tests in 29 suites |
+| `docs/evidence/oip-deployment-discovery/deployment-discovery.json` | the deployed hosts and the two device classes of the operator, measured read-only: the identity, the architecture, the memory, the disk, the toolchain, the services of the operator (unchanged before and after) and the listeners of `bodi-pi` and `bodi-pc`; the SSH banner and the host keys of the OpenWrt router; the public configuration of the Hue Bridge and the refusal of its lights without a token |
 | `docs/evidence/oip-pi-bundle/pi-bundle.json` | the bundle of a disposable instance for a foreign host: the whole procedure measured with stubs — the files of the instance are absolute and inside the instance, the procedure writes nothing outside it, the code of the operator session is minted over the local IPC, the instance stops without a forced signal, and the bundle installs no service and names no path of the machine it was built on |
 | `docs/evidence/oip-operations/operations.json` | the local operations: the backup, the refused restore, the clean shutdown, the three refusals of the personal installation |
 | `docs/evidence/oip-documented-plan/documented-plan.json` | the documented plan of an instance and the session route of the Core |

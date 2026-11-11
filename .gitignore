@@ -165,6 +165,9 @@ secrets/
 # The bundle of a disposable instance for a foreign host: the whole
 # procedure measured, nothing written outside the instance.
 !/docs/evidence/oip-pi-bundle/pi-bundle.json
+# The discovery of the deployed hosts and of the two device classes of the
+# operator, measured read-only over the network of the operator.
+!/docs/evidence/oip-deployment-discovery/deployment-discovery.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json

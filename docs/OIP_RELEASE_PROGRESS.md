@@ -3332,6 +3332,57 @@ session cannot ask the operator — so the discovery and the start remain the op
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
 
+### Iteration 73 — the deployed hosts, the two device classes and the BusyBox router
+
+**Status: PROVED on canonical `main`.**
+The loop had the SSH session to the hosts of the operator, so the discovery that was an
+operator action in iteration 71 became a **measured receipt**. Two real device classes joined
+the scope: an **OpenWrt router** and a **Philips Hue Bridge**. Their actual interfaces were
+measured read-only, and one product defect that the router would have exposed is closed.
+
+* **The host of the Core answers the target of the cross build.** `bodi-pi` is an rpi4 with
+  `aarch64` — the target of the cross build (`aarch64-unknown-linux-gnu`) is therefore the right
+  one, and the ports of the plan (`18808`, `18809`) are **free**. The home of the operator
+  (`/home/flashback`) is a real directory without a symlink, so the path of the local IPC of the
+  instance satisfies the rule of the Core, and `/usr/bin/sqlite3` exists, so the backup and the
+  restore of the instance use the tool of the machine. The services of the operator
+  (`bodi-nas-health`, `bodi-nas-verify`) are the **same list before and after** the measurement:
+  the discovery changed nothing (`docs/evidence/oip-deployment-discovery/deployment-discovery.json`).
+* **The second host is what it is.** `bodi-pc` is a NucBox-EVO-X2 (x86_64, Ubuntu) with
+  `node_exporter`, `nginx` and the `bodi-inference-gateway`. It carries **no** `sqlite3`
+  command: the tool of the instance would fall back to the `sqlite3` module of Python there.
+  The host is **not** part of the runtime of the release.
+* **The router would have lost its network measurement.** The router answers SSH with
+  **dropbear**, and BusyBox has no JSON form of `ip` — the query of the Core asked for
+  `ip -j address show`, which fails there, so the interfaces of the router would have been
+  reported as *unavailable*. The query now falls back to the one-line form (`ip -o address
+  show`) and then to `ifconfig`, and the parser reads that form
+  (`crates/oip-server/src/ssh.rs`); the unit test proves that a BusyBox report names its
+  interfaces, its addresses, its filesystems, its memory and its uptime, and that the network
+  is **measured**, not missing.
+* **The bridge is what it is.** The Philips Hue Bridge (model `BSB002`, API 1.78.0) answers its
+  **public** configuration without a token and **refuses** its lights with
+  `unauthorized user`. The Core has **no onboarding transport for a device with an HTTP API**:
+  the bridge can therefore be an inventory device with its measured identity — model, software
+  version, bridge id, MAC and IP — and nothing more. Its monitoring and its control are **not**
+  implemented by the Core and are **not** simulated; the capability inventory names the limit,
+  and the operator's token (a write on the device) is named as the operator's step.
+* **The router is onboarded like every other device.** The SSH onboarding of the Core applies
+  unchanged; the credentials and the **confirmation of the host key** are the operator's step,
+  and the receipt names the banner and the host keys that the operator confirms.
+
+The next work of the three extensions of the operator is named and not started here: the
+**Hue-Bridge capability** (a new capability with its own permission, audit and scope), the
+**secure update of the deployed software** (authenticated delivery, signature and digest
+verification, safe activation, health check, rollback) and the **Mac App Store readiness** of the
+macOS client (the current official requirements, the compliant build, the signing and the
+entitlements, the privacy disclosures, the metadata and the store assets — upload-ready, not
+the permission to submit).
+
+No personal database change, no schema-7 activation of the personal installation, no write on
+any host or device of the operator, no service installed, no port published, no push, no
+deployment.
+
 ## 5. Evidence index
 
 | Artifact | Content |

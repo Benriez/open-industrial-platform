@@ -647,7 +647,7 @@ case "$(uname -s)" in
  printf '\n__OIP_MEMORY__\n'; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo
  printf '\n__OIP_UPTIME__\n'; cat /proc/uptime
  printf '\n__OIP_HOSTID__\n'; if [ -r /etc/machine-id ]; then cat /etc/machine-id; fi
- printf '\n__OIP_NETWORK__\n'; if command -v ip >/dev/null 2>&1; then ip -j address show; elif command -v ifconfig >/dev/null 2>&1; then ifconfig -a; fi
+ printf '\n__OIP_NETWORK__\n'; _oip_net=''; if command -v ip >/dev/null 2>&1; then _oip_net="$(ip -j address show 2>/dev/null)"; if [ -z "$_oip_net" ]; then _oip_net="$(ip -o address show 2>/dev/null)"; fi; fi; if [ -z "$_oip_net" ] && command -v ifconfig >/dev/null 2>&1; then _oip_net="$(ifconfig -a 2>/dev/null)"; fi; printf '%s\n' "$_oip_net"
  ;;
  Darwin)
  printf '\n__OIP_CPU__\n'; sysctl -n machdep.cpu.brand_string
@@ -671,6 +671,17 @@ pub async fn collect(
     let bytes = execute(endpoint, profile, key, dir, QUERY.as_bytes(), cancel).await?;
     parse(&bytes, crate::state::now_ms())
 }
+/// True when the line is the one-line form of `ip`:
+/// `<index>: <name> <inet|inet6> <address> ...`.
+fn is_ip_oneline(line: &str) -> bool {
+    let p: Vec<&str> = line.split_whitespace().collect();
+    p.len() >= 4
+        && p[0].ends_with(':')
+        && p[0].trim_end_matches(':').chars().all(|c| c.is_ascii_digit())
+        && !p[0].trim_end_matches(':').is_empty()
+        && matches!(p[2], "inet" | "inet6")
+}
+
 fn number(text: &str) -> Option<u64> {
     text.split_whitespace()
         .next()?
@@ -835,6 +846,41 @@ pub fn parse(bytes: &[u8], at: i64) -> Result<HostInformation, ConnectionFault> 
                     return Err(fault("SSH_OUTPUT_LIMIT"));
                 }
                 interfaces.push(NetworkInterfaceInformation { name, addresses });
+            }
+        }
+    } else if network.lines().any(is_ip_oneline) {
+        // The one-line form of `ip` — the form that a BusyBox host answers,
+        // because the JSON form (`ip -j`) does not exist there:
+        //   `2: eth0    inet 192.168.1.1/24 brd 192.168.1.255 scope global eth0`
+        for line in network.lines() {
+            let p: Vec<&str> = line.split_whitespace().collect();
+            if p.len() < 4 || !is_ip_oneline(line) {
+                continue;
+            }
+            let name = p[1].chars().take(128).collect::<String>();
+            let address = p[3]
+                .split('/')
+                .next()
+                .unwrap_or(p[3])
+                .chars()
+                .take(128)
+                .collect::<String>();
+            budget = budget.saturating_sub(name.len() + address.len());
+            if budget == 0 {
+                return Err(fault("SSH_OUTPUT_LIMIT"));
+            }
+            let entry = match interfaces.iter_mut().find(|item| item.name == name) {
+                Some(found) => found,
+                None => {
+                    interfaces.push(NetworkInterfaceInformation {
+                        name: name.clone(),
+                        addresses: vec![],
+                    });
+                    interfaces.last_mut().expect("the interface was just pushed")
+                }
+            };
+            if entry.addresses.len() < 32 && !entry.addresses.contains(&address) {
+                entry.addresses.push(address);
             }
         }
     } else {
@@ -1054,6 +1100,85 @@ mod tests {
         assert!(SshSettings::validate_profile_paths(&profile).is_err());
         std::fs::remove_dir_all(path).unwrap();
     }
+    /// The report of a **BusyBox** host — the shape of an OpenWrt router.
+    /// The JSON form of `ip` does not exist there; the one-line form is the
+    /// only one that answers.
+    const BUSYBOX_REPORT: &str = r#"
+__OIP_OS__
+Linux
+__OIP_HOSTNAME__
+OpenWrt
+__OIP_ARCH__
+armv7l
+__OIP_CPU__
+BCM2711
+__OIP_MODEL__
+
+__OIP_MEMORY__
+MemTotal:        126218496 kB
+MemAvailable:     91287552 kB
+__OIP_UPTIME__
+12345.67 98765.43
+__OIP_HOSTID__
+5f3a1c9e0b2d4a6f8c0e1d3b5a7c9e01
+__OIP_NETWORK__
+1: lo    inet 127.0.0.1/8 scope host lo\       valid_lft forever preferred_lft forever
+1: lo    inet6 ::1/128 scope host \       valid_lft forever preferred_lft forever
+2: eth0    inet 192.168.1.1/24 brd 192.168.1.255 scope global eth0\       valid_lft forever preferred_lft forever
+3: wlan0    inet 192.168.1.131/24 brd 192.168.1.255 scope global wlan0\       valid_lft forever preferred_lft forever
+__OIP_DISKS__
+Filesystem 1024-blocks Used Available Capacity Mounted on
+/dev/root 61440 24576 32768 43% /
+tmpfs 61440 1024 60416 2% /tmp
+/dev/mmcblk0p1 102400 51200 51200 50% /boot
+__OIP_END__
+"#;
+
+    #[test]
+    fn the_report_of_a_busybox_host_names_its_interfaces_and_its_measures() {
+        // The shape of a BusyBox host: the one-line form of `ip`, the
+        // POSIX form of `df`, the fields of /proc. Nothing here is a
+        // measurement of a real device: it is the shape that the Core must
+        // read without losing a measurement.
+        let report = parse(BUSYBOX_REPORT.as_bytes(), 1).expect("the report is read");
+        assert_eq!(report.hostname, "OpenWrt");
+        assert_eq!(report.architecture, "armv7l");
+        assert_eq!(report.cpu_info.as_deref(), Some("BCM2711"));
+        assert_eq!(report.memory_total_bytes, Some(126_218_496 * 1024));
+        assert!(report.uptime_seconds.is_some());
+        assert_eq!(report.disks.len(), 3, "every filesystem of the host is named");
+        // The network of the host is measured: the interfaces and their
+        // addresses, in the order the host answers them.
+        let names: Vec<&str> = report
+            .interfaces
+            .iter()
+            .map(|item| item.name.as_str())
+            .collect();
+        assert_eq!(names, vec!["lo", "eth0", "wlan0"]);
+        assert_eq!(report.interfaces[1].addresses, vec!["192.168.1.1"]);
+        assert_eq!(report.interfaces[0].addresses, vec!["127.0.0.1", "::1"]);
+        assert!(
+            !report.unavailable.iter().any(|item| item == "network_interfaces"),
+            "the network of a BusyBox host is measured, not missing: {:?}",
+            report.unavailable
+        );
+        assert!(!report.unavailable.iter().any(|item| item == "disks"));
+    }
+
+    #[test]
+    fn the_one_line_form_of_ip_is_recognised_and_nothing_else_is() {
+        assert!(is_ip_oneline(
+            "2: eth0    inet 192.168.1.1/24 brd 192.168.1.255 scope global eth0"
+        ));
+        assert!(is_ip_oneline("3: wlan0    inet6 fe80::1/64 scope link"));
+        assert!(!is_ip_oneline("eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500"));
+        assert!(!is_ip_oneline("        inet 192.168.1.1  netmask 255.255.255.0"));
+        // The address alone is enough for one entry.
+        assert!(is_ip_oneline("1: lo    inet 127.0.0.1/8"));
+        // The header of `df` and a line of `ifconfig` are not entries.
+        assert!(!is_ip_oneline("Filesystem 1024-blocks Used Available Capacity Mounted on"));
+    }
+
     #[test]
     fn privilege_guard_stops_before_queries_for_zero_or_unverifiable_uid() {
         for uid in ["0", "", "not-a-uid"] {

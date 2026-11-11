@@ -79,4 +79,20 @@ Diese IDs beschreiben das vollständige Funktionsinventar, sind **keine** zusät
 | `opcua.write`, `machines.control`, `security.bypass` | keine erlaubte Bedienfähigkeit | kein Dispatch-Schema; unbekannte Operation wird abgelehnt | kritische Wirkung nicht autorisiert; keine Grant-Variante hierfür | kein REST/Flutter/MCP | NOT_SUPPORTED |
 | `mcp.runtime` | absichtlich nicht in OIP-005 implementiert | geplanter Adapter auf CapabilityService; noch kein Transport | jede Operation einzeln prüfen; kein Vollzugriffs-Principal | keine MCP-Listener, Tools oder externen Agentenverbindungen | PLANNED |
 
+## Die eingesetzten Hosts und die Geräteklassen des Betreibers
+
+Die Release läuft nicht auf dem Rechner des Betreibers. Der Core soll auf `bodi-pi`
+(Raspberry Pi) laufen und der Mac trägt nur den Flutter-Client; zwei weitere echte
+Geräte sind in_scope: ein **OpenWrt-Router** und eine **Philips Hue Bridge**. Die
+*tatsächliche* Schnittstelle beider Geräte wurde read-only gemessen
+(`tests/oip_deployment_discovery.py`, `docs/evidence/oip-deployment-discovery/deployment-discovery.json`).
+Was der Core **nicht** liefert, steht hier explizit — es wird nicht simuliert.
+
+| Host / Gerät | Gemessene Schnittstelle | Vom Core unterstützt | Ausdrücklich **nicht** unterstützt |
+|---|---|---|---|
+| `bodi-pi` (rpi4, aarch64, Debian 13) | SSH (OpenSSH), `systemd`, `/usr/bin/sqlite3` vorhanden, keine Rust-Toolchain; `18808`/`18809` frei; die Dienste des Betreibers (`bodi-nas-health`, `bodi-nas-verify`) unverändert vor und nach der Messung | Der Core läuft dort als **disponibles Exemplar**: eigener Store, eigener Zustand, eigene Simulation auf dem Loopback des Hosts, Bindung auf `127.0.0.1`; der Zugriff erfolgt über einen Forward des Loopbacks des Clients | Kein Systemdienst, kein veröffentlichter Port, keine Änderung an den BODI-Diensten des Hosts; keine dauerhafte Aufgabenverwaltung des Betreibers |
+| `bodi-pc` (NucBox-EVO-X2, x86_64, Ubuntu) | SSH, `systemd`, `node_exporter`, `nginx`, `bodi-inference-gateway`; **kein** `sqlite3`-Kommando | Kein Teil der Release-Runtime; der Host ist eine eigenständige Infrastruktur des Betreibers | Der Core installiert dort nichts; ohne `sqlite3`-Kommando nutzt das Werkzeug das `sqlite3`-Modul von Python (Backup/Restore) |
+| **OpenWrt-Router** (192.168.1.1) | SSH mit **dropbear** (kein OpenSSH), Host-Key curve25519/RSA, HTTP → HTTPS (307), Luci antwortet 200, nennt aber ohne Zugangsdaten keine Version | Das **SSH-Onboarding des Core** gilt unverändert: der Hostbericht (CPU, RAM, Speicher, Uptime, Netzwerk) wird über dieselbe read-only Abfrage gelesen. Die BusyBox-Form von `ip` (`ip -o`) wird gelesen, weil die JSON-Form (`ip -j`) dort nicht existiert (`crates/oip-server/src/ssh.rs`) | Ohne Zugangsdaten des Betreibers **keine** Identität über die Luci-Oberfläche; die Bestätigung des Host-Keys und die Zugangsdaten sind **Betreiber-Aktion** |
+| **Philips Hue Bridge** (192.168.1.131, BSB002, API 1.78.0) | HTTPS auf dem Loopback des LAN; die **öffentliche** Konfiguration ist ohne Token lesbar; die Lichter werden ohne Token mit `unauthorized user` abgelehnt | Die Bridge kann als **Inventar-Gerät** mit den gemessenen Identitätsfakten (Modell, Softwareversion, Bridge-ID, MAC, IP) geführt werden; sie erscheint in der autorisierten Sicht des Betreibers | Der Core hat **keinen Onboarding-Transport für eine HTTP-API**: kein Monitoring der Bridge, **keine** Lichtsteuerung, keine Simulation davon. Ein Token ist eine **Schreiboperation auf dem Gerät** (Taste + `POST /api`) und damit Betreiber-Aktion; eine solche Fähigkeit wäre eine neue Capability mit eigener Berechtigung, eigenem Audit und eigenem Scope |
+
 Navigation, Theme, Zoom/Pan, Clipboard, Lade-/Fehlerdarstellung und Chart-Rendering sind reine Frontend-Bedienung. Sie besitzen keine zusätzlichen fachlichen Daten oder Privilegien. Fachliche Alarm-/Fault-Entscheidungen kommen aus Rust; Chart-Gap-Regeln sind sichtbare Unterbrechungsdarstellung, keine Sensorvalidierung. API-/SSE-Reconnect ist ein Transportmechanismus, kein administrativer Adapter-Neustart.
