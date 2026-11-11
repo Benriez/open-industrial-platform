@@ -5,6 +5,7 @@ import {existsSync} from 'node:fs';
 import {resolve} from 'node:path';
 
 const base = process.env.OIP_URL ?? 'http://127.0.0.1:18768';
+function escapeRegExp(value){return String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
 const bootTimeout = Number(process.env.OIP_BOOT_TIMEOUT ?? 60000);
 const out = resolve(process.env.OIP_EVIDENCE_DIR ?? '../artifacts/browser-phase2');
 await mkdir(out, {recursive: true});
@@ -111,20 +112,37 @@ try {
   await pass('Original copy and localized/scientific/engineering value modes');
   await capture('value-engineering');
 
+  // The folders of the address space are the ones that the **Core** names;
+  // the gate names no folder of a demo.
+  const catalogue = await (await context.request.get(`${base}/api/v1/opcua/nodes?q=&folder=all&offset=0&limit=40`)).json();
+  const folders = [];
+  for (const folder of catalogue.folders) {
+    const one = await (await context.request.get(`${base}/api/v1/opcua/nodes?q=&folder=${encodeURIComponent(folder)}&offset=0&limit=40`)).json();
+    folders.push({folder, total: one.total, items: one.items});
+  }
+  const biggest = folders.slice().sort((a, b) => b.total - a.total)[0];
+  const last = await (await context.request.get(`${base}/api/v1/opcua/nodes?q=&folder=${encodeURIComponent(biggest.folder)}&offset=${Math.max(0, biggest.total - 1)}&limit=1`)).json();
+  const searchName = last.items[0].name;
   await page.keyboard.press('Control+k');
-  await page.keyboard.type('bulk.0999', {delay: 35});
-  await page.getByRole('button', {name: /^Bulk /}).click();
-  await page.getByText('1 Nodes · Seite 1', {exact: true}).waitFor({timeout: 15000});
-  await selectNode('bulk.0999');
+  await page.keyboard.type(searchName, {delay: 35});
+  await page.getByRole('button', {name: new RegExp('^' + escapeRegExp(biggest.folder) + '(\\s|$)')}).first().click();
+  const hit = await (await context.request.get(`${base}/api/v1/opcua/nodes?q=${encodeURIComponent(searchName)}&folder=${encodeURIComponent(biggest.folder)}&offset=0&limit=40`)).json();
+  await page.getByText(`${hit.total} Nodes · Seite 1`, {exact: true}).waitFor({timeout: 15000});
+  await selectNode(searchName);
   await page.getByText('Einzelabfrage', {exact: true}).first().waitFor();
-  await pass('Keyboard-focused server search reaches bulk.0999 before pagination');
+  await pass(`Keyboard-focused server search reaches ${searchName} before pagination`);
   await capture('server-search');
 
   await page.getByRole('button', {name: 'Suche löschen', exact: true}).click();
-  await page.getByRole('button', {name: /^M-01/}).first().click();
+  // The folder of the type filter is the smallest folder that carries a
+  // boolean node: the gate names no folder of a demo.
+  const withBooleans = folders.slice().sort((a, b) => a.total - b.total)
+    .filter((entry) => entry.items.some((node) => node.data_type === 'Boolean'));
+  const smallest = withBooleans[0] ?? folders.slice().sort((a, b) => a.total - b.total)[0];
+  await page.getByRole('button', {name: new RegExp('^' + escapeRegExp(smallest.folder) + '(\\s|$)')}).first().click();
   // The count of the folder is the count that the **Core** delivers; the
   // gate names no number of a demo.
-  const machine = await (await context.request.get(`${base}/api/v1/opcua/nodes?q=&folder=M-01&offset=0&limit=40`)).json();
+  const machine = await (await context.request.get(`${base}/api/v1/opcua/nodes?q=&folder=${encodeURIComponent(smallest.folder)}&offset=0&limit=40`)).json();
   await page.getByText(`${machine.total} Nodes · Seite 1`, {exact: true}).waitFor();
   await page.getByRole('button', {name: 'Seitenfilter für Typ und Quality', exact: true}).click();
   await page.getByText('Typ: alle', {exact: true}).click();

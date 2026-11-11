@@ -122,6 +122,10 @@ class _OpcuaPageState extends State<OpcuaPage> {
       recent.clear();
       totals.clear();
       sessionHistory.clear();
+      // The scope of the operator changed: the folders of the previous
+      // scope belong to a source that is no longer shown.
+      theFolders = const [];
+      folder = 'all';
       _reloadContext();
     }
     scopeSignature = nextScope;
@@ -250,11 +254,10 @@ class _OpcuaPageState extends State<OpcuaPage> {
           source: requestSource);
       if (!mounted || gen != generation) return;
       // The Core names the folders of its address space. A requested folder
-      // that the Core does not deliver does not exist: the whole catalogue
-      // is shown instead, and the scope of the operator is named.
-      if (result.folders.isNotEmpty &&
-          requestFolder != 'all' &&
-          !result.folders.contains(requestFolder)) {
+      // that the Core does not name does not exist — also when the Core
+      // names no folder at all: the whole catalogue is shown instead, and
+      // the scope of the operator is named.
+      if (requestFolder != 'all' && !result.folders.contains(requestFolder)) {
         if (mounted && gen == generation) {
           setState(() {
             folder = 'all';
@@ -274,7 +277,9 @@ class _OpcuaPageState extends State<OpcuaPage> {
       if (changedWindow && listScroll.hasClients) listScroll.jumpTo(0);
       setState(() {
         page = result;
-        if (result.folders.isNotEmpty) theFolders = result.folders;
+        // The folders are the ones of **this** page: the folders of a
+        // previous source never survive a change of the source.
+        theFolders = result.folders;
         if (requestSearch.trim().isEmpty) {
           totals['$requestSource|$requestFolder'] = result.total;
         }
@@ -367,6 +372,10 @@ class _OpcuaPageState extends State<OpcuaPage> {
       offset = 0;
       typeFilter = null;
       qualityFilter = null;
+      // The folders belong to the source that delivered them: the chips of
+      // a previous source are not shown next to the catalogue of this one.
+      theFolders = const [];
+      folder = 'all';
     });
     _load();
   }
@@ -1021,7 +1030,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
         const Hairline(),
         const WorkstationNote(
           'Keine Referenzhierarchie verfügbar',
-          'Scopes werden vom Core aus Namen abgeleitet. Parent, Children und BrowseReferences werden nicht geliefert; deshalb zeigt OIP keinen erfundenen Baum.',
+          'Ordner sind die Parent-Namen des Adressraums des Servers. Parent, Children und BrowseReferences werden nicht geliefert; deshalb zeigt OIP keinen erfundenen Baum.',
           icon: Icons.account_tree_outlined,
           color: OipTokens.violet,
         ),
@@ -1940,8 +1949,8 @@ class _OpcuaPageState extends State<OpcuaPage> {
         _section(context, 'Identität', [
           KeyValue('NodeId', node.id),
           KeyValue('Namespace', 'ns=${node.namespace}'),
-          KeyValue('Name · aus NodeId abgeleitet', node.name),
-          KeyValue('Ordner · synthetischer Core-Scope', node.folder,
+          KeyValue('Name · BrowseName des Servers', node.name),
+          KeyValue('Ordner · Parent im Adressraum des Servers', node.folder,
               mono: false),
           KeyValue('Datenquelle', nodeSource),
           const KeyValue('Parent / References',

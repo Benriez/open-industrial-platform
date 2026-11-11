@@ -81,6 +81,15 @@ def read_config(path: pathlib.Path) -> dict:
 
 
 def database_of(config: dict, config_path: pathlib.Path) -> pathlib.Path:
+    """The data store of the instance.
+
+    A relative path in the configuration is resolved against the directory of
+    the configuration. The Core resolves a relative path against the working
+    directory of its process — a working directory is not a contract — so the
+    tool hands the resolved path to the Core explicitly (see
+    `the_database_argument`). The tool and the Core therefore always address
+    the same file.
+    """
     raw = config.get("database")
     if not raw:
         fail("the configuration names no database")
@@ -88,6 +97,16 @@ def database_of(config: dict, config_path: pathlib.Path) -> pathlib.Path:
     if not candidate.is_absolute():
         candidate = (config_path.parent / candidate).resolve()
     return candidate
+
+
+def the_database_argument(database: pathlib.Path) -> list[str]:
+    """The argument that names the data store to the Core.
+
+    The daemon of the Core refuses a relative database path, and the
+    provisioning step writes to the path that the configuration names. Both
+    must be the same file, so the resolved path is passed explicitly.
+    """
+    return ["--database", str(database)]
 
 
 def port_of(config: dict) -> int:
@@ -155,6 +174,7 @@ def command_provision_plan(args, config_path, paths, config) -> int:
     if alive(read_pid(paths)):
         fail("the instance is running; stop it before the provisioning step")
     result = subprocess.run([args.binary, "--config", str(config_path),
+                              *the_database_argument(database),
                               "--provision", str(plan)],
                              capture_output=True, text=True, timeout=300)
     if result.returncode != 0:
@@ -222,7 +242,8 @@ def command_start(args, config_path, paths, config) -> int:
     ipc_path = pathlib.Path(args.ipc_config).resolve() if args.ipc_config else None
     if not ipc_path:
         fail("start needs --ipc-config: the daemon always runs with its protected local IPC")
-    command = [args.binary, "--daemon", "--config", str(config_path)]
+    command = [args.binary, "--daemon", "--config", str(config_path),
+               *the_database_argument(database)]
     provisioned = provision_ipc(ipc_path)
     command += ["--ipc-config", str(ipc_path)]
     log = paths["log"].open("ab")

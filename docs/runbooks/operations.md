@@ -863,45 +863,64 @@ another revision names another revision and yields other bytes.
 The instance is started **by hand over SSH** — no systemd unit, no service
 installation, no change of the BODI services of the host.
 
-First the artefacts of phase 1 and the tool of the instance go to the Pi (on
-the Mac):
+The **bundle** of the instance is assembled on the Mac and copied to the Pi
+as **one directory**. The bundle carries the two binaries of phase 1, the
+tool of the instance, the generator of the files of the instance, the scripts
+and the digest of every file:
 
 ```sh
-PI_BIN="target/pi/aarch64-unknown-linux-gnu/aarch64-unknown-linux-gnu/release"
-ssh bodi-pi 'mkdir -p ~/oip-instance && chmod 700 ~/oip-instance'
-scp "$PI_BIN/oip-server" "$PI_BIN/oip-simulated-server" bodi-pi:~/oip-instance/
-scp -r tools examples bodi-pi:~/oip-instance/
+sh tools/oip_pi_bundle.sh aarch64-unknown-linux-gnu
+# -> target/pi-bundle/aarch64-unknown-linux-gnu/
+scp -r target/pi-bundle/aarch64-unknown-linux-gnu bodi-pi:~/oip-bundle
 ```
 
-Then the instance is provisioned and started on the Pi:
+On the Pi the instance is then started **by hand** — one command, no service,
+no published port, nothing written outside the directory of the instance:
 
 ```sh
 ssh bodi-pi
 # on the Pi, as the user of the operator:
-cd ~/oip-instance
-export OIP_HOME="$HOME/oip-instance"
-export CORE_CONFIG="$OIP_HOME/core.json"
-export IPC_CONFIG="$OIP_HOME/ipc.json"
-export STATE="$OIP_HOME/state"
-mkdir -p "$STATE" && chmod 700 "$STATE"
-# the configuration of the instance: its own store, the loopback of the Pi,
-# the source of the Pi, the simulator of the Pi on the loopback
-# (examples/multi-infrastructure-core.json is the template)
-# ./oip-simulated-server --port <the port of the source> &
-python3 tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" \
-    --ipc-config "$IPC_CONFIG" --binary ./oip-server provision-plan \
-    --plan examples/multi-infrastructure-plan.json
-python3 tools/oip_ops.py --state-dir "$STATE" --config "$CORE_CONFIG" \
-    --ipc-config "$IPC_CONFIG" --binary ./oip-server start
+cd ~/oip-bundle
+./bin/start.sh     # prepare, provision, start the simulation and the Core
+./bin/status.sh    # the state of the instance and the listeners of the host
+./bin/login-code.sh # the one-time code of the operator session
+./bin/stop.sh      # the Core and the simulation of the host
 ```
 
-The simulator of the Pi is started **by hand** and belongs to the instance: it
-is the source that the Pi can reach. It is not a service either, and it is
-stopped with the instance.
+What `start.sh` does, and what it deliberately does not do:
+
+* it writes the **files of the instance** (`instance/etc/core.json`,
+  `instance/etc/plan.json`, `instance/etc/ipc.json`) with **absolute** paths
+  inside the directory of the instance — the Core resolves a relative data
+  store against the working directory of its process, and a working directory
+  is not a contract;
+* it starts the **simulation of the host** on the loopback of the host: the
+  Core needs a source that the host can reach, and the simulation of the Mac
+  is not reachable from the Pi. The simulation is **by hand**, it is not a
+  service, and it is stopped with the instance;
+* it **provisions** the data store of the instance from the plan of the
+  instance and **starts** the Core with the protected local IPC;
+* it installs **no service**, registers **no unit** with the init of the host,
+  publishes **no port** and touches **no data of the operator**.
+
+The **IPC configuration of the instance is in the principal mode**: every
+client of the local IPC names the principal it acts as, and the configuration
+carries no legacy actor and no legacy grant. The mode is not a choice of
+taste — the code of the operator session (`--browser-login`) is only minted
+for a client of the principal mode; a configuration with an actor cannot mint
+a session at all.
 
 The verification of the instance on the Pi is the same one the local instance
-has (`python3 tools/oip_ops.py … status`, the log, the backup) — the receipts
-of the local instance are in `docs/evidence/oip-operations/`.
+has (`./bin/status.sh`, the log, the backup) — the receipts of the local
+instance are in `docs/evidence/oip-operations/`.
+
+**The bundle is measured.** The rehearsal `tests/oip_pi_bundle.py`
+(`docs/evidence/oip-pi-bundle/pi-bundle.json`) assembles the bundle with
+stubs, runs the whole procedure — prepare, provision, start, mint the code,
+stop — and proves that the procedure calls the Core with the paths of the
+instance, that it writes **nothing outside** the directory of the instance,
+that the files of the instance name the loopback of the host only, that the
+bundle installs no service and names no path of the machine it was built on.
 
 **Phase 3 — the tunnel and the client (operator, on the Mac).**
 
@@ -909,8 +928,7 @@ of the local instance are in `docs/evidence/oip-operations/`.
 # the forward: the loopback of the Mac carries the port of the Core of the Pi
 ssh -N -L 127.0.0.1:18808:127.0.0.1:18808 bodi-pi
 # in a second terminal: the code of the session, minted on the Pi
-ssh bodi-pi 'cd ~/oip-instance && ./oip-server --browser-login \
-    --ipc-socket "$STATE/s" --ipc-credential "$STATE/platform.credential"'
+ssh bodi-pi 'cd ~/oip-bundle && ./bin/login-code.sh'
 # the client of the Mac (the bundle of the release, built for the port 18808)
 open apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app
 ```
@@ -963,6 +981,32 @@ services of the Pi were never part of the instance.
   server that speaks the profile of the local simulation (the adapter reads
   the five metadata nodes of the simulation when it connects). A real device
   is collected over the SSH onboarding, not over OPC-UA.
+* The **bind address of the Core is the loopback** and is not configurable:
+  the Core listens on `127.0.0.1` of the host it runs on, and the rule of the
+  origin of the session refuses a request whose `Host` is anything else. The
+  tunnel is therefore not a convenience but the **only** way in — that is a
+  deliberate gate, and the plan does not weaken it.
+* The **trust of the simulation origin is not bound to a host**: the Core
+  accepts a source as a simulation when it claims the origin
+  `oip-local-simulation-v1`. The simulation of the Pi is therefore trusted
+  exactly like the simulation of the Mac — **no change of the product** is
+  needed for the host.
+* The **path of the instance must not contain a symlink**: the Core refuses a
+  socket or a credential whose path contains one. The generator of the files
+  of the instance checks that before it prepares anything, so the operator
+  gets a message that names the cause.
+* The **path of the socket** of the local IPC may not be longer than 100
+  bytes, and the directory that carries it must be private (mode `0700`) and
+  belong to the user of the instance. The generator writes both.
+* The **backup and the restore** of the instance use the `sqlite3` of the
+  machine when it is installed (`/usr/bin/sqlite3`); without it the tool
+  falls back to the `sqlite3` module of Python, which on some distributions
+  is too old for the schema of the Core. The rehearsal of the backup of the
+  local instance is in `docs/evidence/oip-operations/`.
+* The tool of the instance and the Core now name the **same data store**: the
+  tool resolves a relative path against the configuration and hands the
+  resolved path to the Core explicitly (`--database`), because the Core
+  resolves a relative path against the working directory of its process.
 
 ### 15.6 The operator action that is outstanding
 

@@ -4,6 +4,7 @@ import {existsSync} from 'node:fs';
 import {resolve} from 'node:path';
 
 const base = process.env.OIP_URL ?? 'http://127.0.0.1:18768';
+function escapeRegExp(value){return String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
 const out = resolve(process.env.OIP_EVIDENCE_DIR ?? '../artifacts/performance');
 await mkdir(out, {recursive: true});
 const systemChrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -24,27 +25,32 @@ try {
   await page.getByRole('button', {name: 'Navigation OPC-UA-Browser', exact: true}).click();
   await page.getByText('Namespace 2', {exact: true}).waitFor();
 
+  // The identity of a node is the one that the **Core** delivers: the
+  // namespace of its node id, the folder of its parent and its node id.
+  const catalogue = await (await context.request.get(`${base}/api/v1/opcua/nodes?q=&folder=all&offset=0&limit=40`)).json();
   const selectionMs = [];
   for (const name of ['temperature', 'pressure', 'operating_mode', 'temperature']) {
     const start = Date.now();
     await page.getByRole('button', {name: new RegExp(`^Node ${name},`)}).click();
-    await page.getByText(new RegExp(`ns=2 · M-01 · ns=2;s=${name}`)).waitFor();
+    const delivered = await (await context.request.get(`${base}/api/v1/opcua/nodes?q=${encodeURIComponent(name)}&folder=all&offset=0&limit=40`)).json();
+    const node = delivered.items.find((item) => item.name === name) ?? delivered.items[0];
+    await page.getByText(`ns=${node.namespace} · ${node.folder} · ${node.node_id}`, {exact: true}).waitFor();
     selectionMs.push(Date.now() - start);
   }
 
-  await page.getByRole('button', {name: /^Alle Gesamter/}).click();
+  await page.getByRole('button', {name: /^Alle/}).click();
   // The count of the catalogue is the count that the **Core** delivers.
-  const catalogue = await (await context.request.get(`${base}/api/v1/opcua/nodes?q=&folder=all&offset=0&limit=40`)).json();
   await page.getByText(`${catalogue.total} Nodes · Seite 1`, {exact: true}).waitFor();
   await page.getByRole('button', {name: 'Dichte Liste', exact: true}).click();
   const searchStart = Date.now();
   await page.keyboard.press('Control+k');
-  await page.keyboard.type('bulk.0999', {delay: 35});
-  await page.getByText('1 Nodes · Seite 1', {exact: true}).waitFor({timeout: 15000});
+  await page.keyboard.type(catalogue.items[0].name, {delay: 35});
+  const hit = await (await context.request.get(`${base}/api/v1/opcua/nodes?q=${encodeURIComponent(catalogue.items[0].name)}&folder=all&offset=0&limit=40`)).json();
+  await page.getByText(`${hit.total} Nodes · Seite 1`, {exact: true}).waitFor({timeout: 15000});
   const searchMs = Date.now() - searchStart;
   await page.getByRole('button', {name: 'Suche löschen', exact: true}).click();
   await page.getByText(`${catalogue.total} Nodes · Seite 1`, {exact: true}).waitFor();
-  await page.getByRole('button', {name: /^Node bulk\.0000,/}).click();
+  await page.getByRole('button', {name: new RegExp('^Node ' + escapeRegExp(catalogue.items[0].name) + ',')}).click();
 
   await page.evaluate(() => {
     window.__oipPhase2 = {deltas: [], longTasks: [], stop: false};

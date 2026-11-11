@@ -118,6 +118,8 @@ REHEARSALS = [
      {"security-review.json": "oip-security-review/security-review.json"}),
     ("oip_rust_regression", "tests/oip_rust_regression.py",
      {"rust-regression.json": "oip-rust-regression/rust-regression.json"}),
+    ("oip_pi_bundle", "tests/oip_pi_bundle.py",
+     {"pi-bundle.json": "oip-pi-bundle/pi-bundle.json"}),
     ("oip_reproducible_build", "tests/oip_reproducible_build.py",
      {"reproducible-build.json": "oip-reproducible-build/reproducible-build.json"}),
 ]

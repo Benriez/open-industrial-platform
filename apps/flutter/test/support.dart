@@ -95,6 +95,14 @@ class FakeApi extends OipApi {
   /// (plus the six M-01 process variables on the first page) so list density,
   /// grouping and keyboard navigation can be exercised with real pagination.
   int? generatedBulkNodes;
+
+  /// The folders that the Core delivers with every page. `null` is the
+  /// default of the fixture; an empty list is a Core that names no folder.
+  List<String>? deliveredFolders;
+
+  /// The folders that the Core delivers for one source. A folder of a
+  /// previous source never survives the switch to another one.
+  Map<String, List<String>>? deliveredFoldersBySource;
   Object? scenarioFailure;
   String? chosen;
   Json data = fixture();
@@ -254,11 +262,15 @@ class FakeApi extends OipApi {
         'offset': offset,
         'limit': nodeLimit,
         // The Core delivers the folders of the address space with every page.
-        'folders': const ['Bulk', 'M-01']
+        'folders': deliveredFoldersBySource?[source ?? ''] ??
+            deliveredFolders ??
+            const ['Bulk', 'M-01']
       });
     }
     return NodePage.fromJson({
-      'folders': const ['M-01'],
+      'folders': deliveredFoldersBySource?[source ?? ''] ??
+          deliveredFolders ??
+          const ['M-01'],
       'items': [
         {
           'node_id': 'ns=2;s=temperature',

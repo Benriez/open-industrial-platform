@@ -8,6 +8,7 @@ import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 const execFileAsync = promisify(execFile);
 const base = process.env.OIP_URL ?? 'http://127.0.0.1:28080';
+function escapeRegExp(value){return String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
 const testDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(testDir,'../../..');
 const out = resolve(process.env.OIP_EVIDENCE_DIR ?? resolve(repoRoot,'docs/evidence/oip0061/browser'));
@@ -134,9 +135,17 @@ try {
   await page.getByRole('button',{name:'Node anheften',exact:true}).click();
   await page.getByRole('button',{name:/^Angeheftet temperature/}).waitFor();
   await capture('opcua-process');
-  await page.getByRole('button',{name:/^Bulk /}).click();
-  const bulkPage=await api('/api/v1/opcua/nodes?q=&folder=Bulk&offset=0&limit=40');
-  const bulkTotal=bulkPage.total;
+  // The folder of the pagination is the biggest folder of the address space
+  // that the **Core** names: the gate names no folder of a demo.
+  const catalogue=await api('/api/v1/opcua/nodes?q=&folder=all&offset=0&limit=40');
+  const folders=[];
+  for (const folder of catalogue.folders) {
+    const one=await api(`/api/v1/opcua/nodes?q=&folder=${encodeURIComponent(folder)}&offset=0&limit=40`);
+    folders.push({folder,total:one.total});
+  }
+  const biggest=folders.sort((a,b)=>b.total-a.total)[0];
+  await page.getByRole('button',{name:new RegExp('^'+escapeRegExp(biggest.folder)+'(\\s|$)')}).first().click();
+  const bulkTotal=biggest.total;
   await page.getByText(`${bulkTotal} Nodes · Seite 1`,{exact:true}).waitFor();
   const nodeStart=Date.now();
   await page.getByRole('button',{name:'Nächste Nodes',exact:true}).click();
@@ -145,9 +154,13 @@ try {
   await page.getByRole('button',{name:'Dichte Liste',exact:true}).click();
   await page.getByRole('button',{name:'Nach Datentyp gruppieren',exact:true}).click();
   await page.getByText(/^NUMERISCH/).first().waitFor();
-  await typeInto(page.getByRole('textbox',{name:'Nodes durchsuchen'}),'bulk.0999');
-  await page.getByText('1 Nodes · Seite 1',{exact:true}).waitFor();
-  await page.getByRole('button',{name:/^Node bulk\.0999, Double,/}).click();
+  // The search reaches a node of the address space that the **Core** names.
+  const last=await api(`/api/v1/opcua/nodes?q=&folder=${encodeURIComponent(biggest.folder)}&offset=${Math.max(0,biggest.total-1)}&limit=1`);
+  const searchName=last.items[0].name;
+  const hit=await api(`/api/v1/opcua/nodes?q=${encodeURIComponent(searchName)}&folder=${encodeURIComponent(biggest.folder)}&offset=0&limit=40`);
+  await typeInto(page.getByRole('textbox',{name:'Nodes durchsuchen'}),searchName);
+  await page.getByText(`${hit.total} Nodes · Seite 1`,{exact:true}).waitFor();
+  await page.getByRole('button',{name:new RegExp('^Node '+escapeRegExp(hit.items[0].name)+', '+escapeRegExp(hit.items[0].data_type)+',')}).click();
   await page.getByText('Kein Verlauf · Einzelabfrage. Die API liefert für diese Node keine History.',{exact:true}).waitFor();
   await page.getByRole('button',{name:/^Angeheftet temperature/}).waitFor();
   await capture('opcua-bulk');

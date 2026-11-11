@@ -115,6 +115,46 @@ void main() {
     });
   });
 
+  group('The folders of the Core', () {
+    testWidgets('A Core that names no folder leaves the whole catalogue visible',
+        (tester) async {
+      await _bootstrap(tester, const Size(1440, 1000), configure: (api) {
+        api.generatedBulkNodes = 6;
+        // A Core that names no folder at all: the client must not be stuck
+        // on a folder that does not exist.
+        api.deliveredFolders = const [];
+      });
+      await _navigate(tester, 1440);
+      expect(find.byKey(const Key('folder-all')), findsOneWidget);
+      expect(find.byKey(const Key('folder-Bulk')), findsNothing);
+      expect(find.byKey(const Key('folder-M-01')), findsNothing);
+      // The whole catalogue of the Core is visible.
+      expect(find.text('12 Nodes · Seite 1'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('The folders of a source do not survive the switch to another one',
+        (tester) async {
+      await _bootstrap(tester, const Size(1440, 1000), configure: (api) {
+        api.generatedBulkNodes = 6;
+        api.availableSources = [_source('source-a'), _source('source-b')];
+        api.deliveredFoldersBySource = {
+          'source-a': const ['M-01'],
+          'source-b': const ['Fremder Ordner'],
+        };
+      });
+      await _navigate(tester, 1440);
+      expect(find.byKey(const Key('folder-M-01')), findsOneWidget);
+      await _selectSource(tester, 'source-b');
+      // The folder of the previous source is gone: the chips are the
+      // folders that the Core delivered for the source in view.
+      expect(find.byKey(const Key('folder-M-01')), findsNothing);
+      expect(find.byKey(const Key('folder-Fremder Ordner')), findsOneWidget);
+      expect(find.text('12 Nodes · Seite 1'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('Source, search and compare workflows', () {
     testWidgets('Source switch scopes requests, pins and observations',
         (tester) async {
