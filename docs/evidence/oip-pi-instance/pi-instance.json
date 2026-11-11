@@ -10,14 +10,14 @@
   ],
   "the_problems": [],
   "the_artefacts": {
-    "oip-server": "d3f17a7cf0a62093f18956aa75719f21e13b115decc4b6c9f23ca4f2b5132eb7",
+    "oip-server": "fdef8f0eca6e5bafb50953dfc41d07b2a61ef6d659c7c5a707af70ac296c209a",
     "oip-simulated-server": "8c3265ef4458ba313c716b530e5ba9da8ba4ecab523a23552b493285a57586fe"
   },
   "the_bundle": {
     "the_code": 0,
     "the_output": "0c9ff89ea695922f1483e27c2ef315029d76d5ea2f5bab72dd36d25e75879405  ./bin/start.sh\n51d365198b4fab3765e2030567ca0ca1c737b6a3658f06955a0ee8b8307358e2  ./bin/status.sh\n40b00ec39102f3262d7d145078059ef13dc74c232f0c4db76fa978a3ba63d529  ./bin/stop.sh\n3b5adba98de9ab2fa02ecb3f9d3cc4e09b70e5d54ee4c7340c9db87359c454cc  ./README.md\n515e0d0172a57806d68112bd97d62e2c3d94ec19f6c5534d85b46548ee35927d  ./tools/oip_ops.py\n640f07d7bedb1f574e8e35ea358e4efb91a58008da3edeb2a226a6dd2b7cbb92  ./tools/oip_pi_instance.py\n\nthe next step (the operator, on the host):\n  copy this directory to the host and run: ./bin/start.sh"
   },
-  "the_bundle_digest": "6011eefd257b91812b321570aa4c0dd203bc51e4b2bf7b791ded5805a8529c89",
+  "the_bundle_digest": "bd8407ba68542cafb96a243f2d6ccedba918309ab682e930151f300e4cf92496",
   "the_services_before": [
     "accounts-daemon.service",
     "avahi-daemon.service",
@@ -56,7 +56,7 @@
   },
   "the_start": {
     "the_code": 0,
-    "the_output": "e/etc/plan.json\",\n  \"the_ipc_configuration\": \"/home/flashback/oip-bundle/instance/etc/ipc.json\",\n  \"the_database\": \"/home/flashback/oip-bundle/instance/state/oip-core.sqlite\",\n  \"the_socket\": \"/home/flashback/oip-bundle/instance/state/ipc.sock\",\n  \"the_credential_of_the_operator\": \"/home/flashback/oip-bundle/instance/state/platform-reader.credential\",\n  \"the_http_port\": 18808,\n  \"the_source_port\": 18809,\n  \"the_source_id\": \"pi-simulation\",\n  \"the_uid\": 1000,\n  \"the_host\": \"rpi4\"\n}\nthe simulation of the host listens on 127.0.0.1:18809 (pid 202285)\n{\"status\": \"provisioned\", \"plan\": \"/home/flashback/oip-bundle/instance/etc/plan.json\", \"database\": \"/home/flashback/oip-bundle/instance/state/oip-core.sqlite\", \"result\": \"{\\\"schema_version\\\":3,\\\"organizations\\\":1,\\\"sources\\\":1,\\\"idempotent\\\":false,\\\"legacy_migrated\\\":false}\"}\n{\"status\": \"started\", \"pid\": 202300, \"http_port\": 18808, \"database\": \"/home/flashback/oip-bundle/instance/state/oip-core.sqlite\", \"log\": \"/home/flashback/oip-bundle/instance/state/oip.log\", \"ipc_credentials_provisioned\": 2}\n\nthe Core of the instance answers on http://127.0.0.1:18808 of this host\nthe session of the operator: /home/flashback/oip-bundle/bin/login-code.sh",
+    "the_output": "e/etc/plan.json\",\n  \"the_ipc_configuration\": \"/home/flashback/oip-bundle/instance/etc/ipc.json\",\n  \"the_database\": \"/home/flashback/oip-bundle/instance/state/oip-core.sqlite\",\n  \"the_socket\": \"/home/flashback/oip-bundle/instance/state/ipc.sock\",\n  \"the_credential_of_the_operator\": \"/home/flashback/oip-bundle/instance/state/platform-reader.credential\",\n  \"the_http_port\": 18808,\n  \"the_source_port\": 18809,\n  \"the_source_id\": \"pi-simulation\",\n  \"the_uid\": 1000,\n  \"the_host\": \"rpi4\"\n}\nthe simulation of the host listens on 127.0.0.1:18809 (pid 236872)\n{\"status\": \"provisioned\", \"plan\": \"/home/flashback/oip-bundle/instance/etc/plan.json\", \"database\": \"/home/flashback/oip-bundle/instance/state/oip-core.sqlite\", \"result\": \"{\\\"schema_version\\\":3,\\\"organizations\\\":1,\\\"sources\\\":1,\\\"idempotent\\\":false,\\\"legacy_migrated\\\":false}\"}\n{\"status\": \"started\", \"pid\": 236887, \"http_port\": 18808, \"database\": \"/home/flashback/oip-bundle/instance/state/oip-core.sqlite\", \"log\": \"/home/flashback/oip-bundle/instance/state/oip.log\", \"ipc_credentials_provisioned\": 2}\n\nthe Core of the instance answers on http://127.0.0.1:18808 of this host\nthe session of the operator: /home/flashback/oip-bundle/bin/login-code.sh",
     "the_error": ""
   },
   "the_code_of_the_session": {
@@ -97,7 +97,7 @@
   "the_published_listeners_of_the_instance": [],
   "the_stop": {
     "the_code": 0,
-    "the_output": "{\"status\": \"stopped\", \"pid\": 202300}\nthe simulation of the host was stopped (pid 202285)\nthe instance is stopped; the data of the instance stays in /home/flashback/oip-bundle/instance/state"
+    "the_output": "{\"status\": \"stopped\", \"pid\": 236887}\nthe simulation of the host was stopped (pid 236872)\nthe instance is stopped; the data of the instance stays in /home/flashback/oip-bundle/instance/state"
   },
   "the_services_after": [
     "accounts-daemon.service",
@@ -130,8 +130,8 @@
   "the_services_are_unchanged": true,
   "the_listeners_of_the_instance_after_the_stop": [],
   "the_status": "PASS",
-  "the_revision": "563d259b2ef5c690ba38ff28dfadbba7a1eb6f1f",
-  "the_tree": "639229e6a4ebb5975f7d6f2292858b6a902f5b08",
-  "the_working_tree_is_clean": false,
-  "finished_utc": "2026-11-11T09:13:41Z"
+  "the_revision": "b006e08f6a133e549e5fc973b6734aecc54a9816",
+  "the_tree": "c92d2803eabfa30e2876e977b06a5c1faa09c7ca",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-11T13:56:34Z"
 }
