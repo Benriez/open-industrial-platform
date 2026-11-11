@@ -13,8 +13,8 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `53b9ef8` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `6b8eb7f` (tree `9b71fc0`) — the tree the canonical gate passed on |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `61c1531` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
+| The revision of the final acceptance | `6036ef9` (tree `a2add7d`) — the tree the canonical gate passed on |
 | The revision of the Core binary of the release | `6b8eb7f` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
@@ -3261,6 +3261,76 @@ answer (the architecture and the free port) fixes the target of the cross build.
 
 No personal database change, no schema-7 activation of the personal installation, no private
 SSH, no push, no deployment, no system service.
+
+### Iteration 72 — two independent audits, the honest address space, and the instance of the Pi as one bundle
+
+**Status: PROVED on canonical `main`.**
+Two delegated, read-only audits of the **product** and of the **host-locality** of the Core, and
+the bundle that makes the operator's part of the Raspberry Pi one command.
+
+* **The verification of the eight defects of the address space confirmed them closed** — the value
+  belongs to the node id of the server, the entity is the one that the source declares, the
+  namespace and the access come from the node id and the node class, the catalogue is a set of
+  nodes, the browser reads without measuring, the client assumes no folder of a demo, the gates
+  read the counts from the Core, and the tests prove the properties. It found **three residuals**,
+  and every one of them is closed here:
+  * **The surface named a derivation that no longer exists.** The inspector said „Name · aus
+    NodeId abgeleitet“ and „Ordner · synthetischer Core-Scope“ — the name is the **BrowseName of
+    the server** and the folder is the **parent in the address space of the server**
+    (`apps/flutter/lib/features/opcua.dart`).
+  * **The fallback only worked when the Core named at least one folder.** A Core that names no
+    folder left the client on a scope that does not exist; the whole catalogue is shown now — also
+    when the list of the folders is empty.
+  * **The folders of a source survived the switch to another source.** They belong to the source
+    that delivered them; the chips of the previous source are gone
+    (`apps/flutter/test/opcua_phase2_test.dart` proves both).
+* **The gates named the folders and the node ids of the demo.** The counts came from the Core, the
+  names did not: the three browser gates derive the folder, the node and the identity of the node
+  from the API now (`apps/flutter/test/browser_oip004.mjs`,
+  `apps/flutter/test/browser_opcua_phase2.mjs`, `apps/flutter/test/performance_opcua_phase2.mjs`).
+* **The Rust suite encoded the size of the simulation.** The total of a folder is a relation to the
+  total of the catalogue now, not the number of a demo (`crates/oip-server/tests/api.rs`).
+* **The capability inventory still described the profile of the demo.** It names the address space
+  of the server, the two bounds of the browse (the namespace of the client, 5 000 nodes) and the
+  provenance of a source that is not the simulation
+  (`docs/architecture/oip-capability-inventory.md`).
+* **The audit of the host-locality found two things that would have broken the Pi.** The code of
+  the operator session can only be minted in the **principal mode** of the local IPC — a
+  configuration with an actor cannot mint a session at all; the generator of the instance writes the
+  principal mode now. And the tool of the instance resolved a relative data store against the
+  configuration while the Core resolves it against the working directory of its process: the tool
+  hands the resolved path to the Core explicitly (`tools/oip_ops.py`).
+* **The Core needs no change for the Pi.** The trust of the simulation origin is bound to the origin
+  `oip-local-simulation-v1`, not to a host: the simulation of the Pi is trusted exactly like the
+  simulation of the Mac. The bind address of the Core is the loopback, and the rule of the origin
+  refuses every other `Host` — the tunnel is the only way in, and that is a deliberate gate.
+* **The operator's part is one bundle and one command.** The bundle carries the two binaries of the
+  cross build, the tool of the instance, the generator of the files of the instance, the scripts and
+  the digest of every file. The rehearsal `tests/oip_pi_bundle.py` runs the whole procedure with
+  stubs and **measures** it: the files of the instance are absolute and inside the instance, the
+  procedure writes nothing outside it, the code of the session is minted over the local IPC, the
+  instance stops without a forced signal, and the bundle installs no service and names no path of
+  the machine it was built on (`docs/evidence/oip-pi-bundle/pi-bundle.json`,
+  0 measured steps).
+
+The whole evidence of the release was re-measured on a clean tree: the canonical acceptance passed
+on the clean tree `a2add7d` with the release binary
+`1a4e7870` (365 of 365 Flutter tests,
+187 browser findings with 0 failures, 13 captures, the visual comparison
+PASS, 8 of 8 phases — `docs/evidence/oip-canonical-acceptance/acceptance.json`), the Rust suite
+delivered 183 tests in 29 suites with
+0 failed (`docs/evidence/oip-rust-regression/rust-regression.json`), and
+the bundle of the instance of the Pi is measured in
+`docs/evidence/oip-pi-bundle/pi-bundle.json`.
+
+The **operator action** of this iteration is unchanged and smaller: the read-only discovery of
+`bodi-pi` (`tools/oip_pi_discovery.sh`) decides the target of the cross build; the bundle of the
+instance (`tools/oip_pi_bundle.sh`) is then copied to the host and started by hand with
+`./bin/start.sh`. The SSH session of this loop is not permitted — the permission layer of the
+session cannot ask the operator — so the discovery and the start remain the operator's steps.
+
+No personal database change, no schema-7 activation of the personal installation, no private SSH,
+no push, no deployment, no system service.
 
 ## 5. Evidence index
 
