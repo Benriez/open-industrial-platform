@@ -52,9 +52,22 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
       TextEditingController(text: widget.device.name);
   late final TextEditingController _site =
       TextEditingController(text: widget.device.siteId);
-  late String _type = deviceTypes.contains(widget.device.type)
-      ? widget.device.type
-      : 'other';
+  late String _type = widget.device.type.isEmpty
+      ? 'other'
+      : widget.device.type;
+
+  /// The types that the administration offers.
+  ///
+  /// A type that the client does not know is **not** rewritten into another
+  /// type: it stays an entry of the list and is named honestly, so that a
+  /// write never changes the type of the device behind the back of the
+  /// operator.
+  List<String> get _types {
+    final types = deviceTypes.toList();
+    final current = widget.device.type;
+    if (current.isNotEmpty && !types.contains(current)) types.add(current);
+    return types;
+  }
   bool _busy = false;
   String? _error;
 
@@ -72,9 +85,7 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
         oldWidget.device.revision != widget.device.revision) {
       _name.text = widget.device.name;
       _site.text = widget.device.siteId;
-      _type = deviceTypes.contains(widget.device.type)
-          ? widget.device.type
-          : 'other';
+      _type = widget.device.type.isEmpty ? 'other' : widget.device.type;
       _error = null;
     }
   }
@@ -148,7 +159,7 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
                 isExpanded: true,
                 decoration: const InputDecoration(labelText: 'Gerätetyp'),
                 items: [
-                  for (final type in deviceTypes)
+                  for (final type in _types)
                     DropdownMenuItem(
                         value: type, child: Text(deviceKindName(type))),
                 ],

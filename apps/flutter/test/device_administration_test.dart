@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oip_dashboard/app/app.dart';
 import 'package:oip_dashboard/app/controller.dart';
+import 'package:oip_dashboard/features/devices/device_administration.dart';
 import 'package:oip_dashboard/models/history.dart';
+import 'package:oip_dashboard/models/infrastructure.dart';
 import 'package:oip_dashboard/models/onboarding.dart';
 import 'package:oip_dashboard/models/contracts.dart';
 import 'package:oip_dashboard/services/api.dart';
@@ -156,6 +159,55 @@ void main() {
     expect(find.text('Einzelplatine'), findsWidgets);
     expect(find.text('Netzwerkgerät'), findsWidgets);
     expect(find.text('Single board'), findsNothing);
+  });
+
+  testWidgets('A type that the client does not know is not rewritten',
+      (tester) async {
+    final device = InventoryDevice(
+      id: 'device-a1',
+      name: 'Pump A1',
+      // A type that the Core of today does not deliver: the administration
+      // must not turn it into another type behind the back of the operator.
+      type: 'quantum_processor',
+      siteId: 'site-a1-1',
+      organizationId: 'org-a',
+      infrastructureId: 'infra-a1',
+      registration: 'registered',
+      origin: 'manual_operator',
+      connectivity: 'unknown',
+      telemetry: 'no_collector',
+      health: 'not_evaluated',
+      sourceIds: const [],
+      revision: 1,
+      metadata: const {},
+    );
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: DeviceAdministration(
+              device: device, api: api, onChanged: () {}),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    // The type that the client does not know is shown honestly.
+    expect(find.text('Unbekannter Gerätetyp · quantum_processor'),
+        findsWidgets);
+    await tester.ensureVisible(
+        find.byKey(const Key('device-administration-type')));
+    await tester.tap(find.byKey(const Key('device-administration-type')));
+    await tester.pumpAndSettle();
+    // The type stays an entry of the list and is named honestly.
+    expect(find.text('Unbekannter Gerätetyp · quantum_processor'),
+        findsWidgets);
+    // The menu is closed again, so that the write can be driven.
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+        find.byKey(const Key('device-administration-update')));
+    await tester.tap(find.byKey(const Key('device-administration-update')));
+    await tester.pumpAndSettle();
+    expect(api.updates.single['device_type'], 'quantum_processor');
   });
 
   testWidgets('The archive is named as the offline operation it is',
