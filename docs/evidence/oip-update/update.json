@@ -1,0 +1,125 @@
+{
+  "schema": "oip-update-v1",
+  "steps": [
+    "a signed bundle is verified, activated and health checked",
+    "the switch is atomic and the previous version stays",
+    "a bundle whose artefact was changed is refused",
+    "a bundle whose manifest was changed is refused",
+    "a bundle of another target is refused",
+    "the version that is already there is not installed again",
+    "a version that does not become ready is rolled back",
+    "the durable journal names every attempt and the rollback"
+  ],
+  "the_problems": [],
+  "the_first_update": {
+    "the_code": 0,
+    "the_output": "PDATED\",\n  \"the_moment_utc\": \"2026-11-11T08:22:07Z\",\n  \"the_target_of_the_instance\": \"aarch64-unknown-linux-gnu\",\n  \"the_revision\": \"revision-one\",\n  \"the_version\": \"1.0.0\",\n  \"the_target\": \"aarch64-unknown-linux-gnu\",\n  \"the_artefacts\": {\n    \"oip-server\": \"933704bfafb59bb4d87f119c4ff97cb7015315acce1535c48032c3420a29236a\"\n  },\n  \"the_verification\": \"the signature and every digest are verified\",\n  \"the_activation\": \"the version revision-one is active\",\n  \"the_previous_revision\": null,\n  \"the_health_check\": \"the new version became ready\",\n  \"the_result\": \"the new version is active and ready\"\n}\n",
+    "the_error": ""
+  },
+  "the_second_update": {
+    "the_code": 0,
+    "the_output": "ux-gnu\",\n  \"the_artefacts\": {\n    \"oip-server\": \"933704bfafb59bb4d87f119c4ff97cb7015315acce1535c48032c3420a29236a\"\n  },\n  \"the_verification\": \"the signature and every digest are verified\",\n  \"the_activation\": \"the version revision-two is active\",\n  \"the_previous_revision\": \"revision-one\",\n  \"the_health_check\": \"the new version became ready\",\n  \"the_result\": \"the new version is active and ready\"\n}\n"
+  },
+  "the_tampered_artefact": {
+    "the_code": 2,
+    "the_error": "933704bfafb59bb4d87f119c4ff97cb7015315acce1535c48032c3420a29236a: the bundle is refused\nerror: the digest of oip-server is e9d67797be91a80afcd889cd78c2f51f709afd3d8c8ee134a710ed994edb8499, but the manifest names 933704bfafb59bb4d87f119c4ff97cb7015315acce1535c48032c3420a29236a: the bundle is refused\n"
+  },
+  "the_forged_manifest": {
+    "the_code": 2,
+    "the_error": "error: the signature of the manifest is not valid for the public key of the instance: the bundle is refused\nerror: the signature of the manifest is not valid for the public key of the instance: the bundle is refused\n"
+  },
+  "the_foreign_target": {
+    "the_code": 2,
+    "the_error": "error: the bundle is built for x86_64-unknown-linux-gnu, but the instance is aarch64-unknown-linux-gnu\nerror: the bundle is built for x86_64-unknown-linux-gnu, but the instance is aarch64-unknown-linux-gnu\n"
+  },
+  "the_same_revision": {
+    "the_code": 2,
+    "the_error": "error: the revision revision-two is already the version of the instance\nerror: the revision revision-two is already the version of the instance\n"
+  },
+  "the_broken_version": {
+    "the_code": 1,
+    "the_output": "nux-gnu\",\n  \"the_revision\": \"revision-broken\",\n  \"the_version\": \"1.0.0\",\n  \"the_target\": \"aarch64-unknown-linux-gnu\",\n  \"the_artefacts\": {\n    \"oip-server\": \"8ec5a6a1b12b7997a2aad76bae5d266360a0db76560b7cd348687f5a2933c9fa\"\n  },\n  \"the_verification\": \"the signature and every digest are verified\",\n  \"the_activation\": \"the version revision-broken is active\",\n  \"the_previous_revision\": \"revision-two\",\n  \"the_health_check\": \"the new version did not become ready\",\n  \"the_rollback\": \"the instance keeps the previous version\",\n  \"the_result\": \"REFUSED: the new version did not pass the health check\"\n}\n"
+  },
+  "the_journal": [
+    {
+      "the_activation": "the version revision-one is active",
+      "the_artefacts": {
+        "oip-server": "933704bfafb59bb4d87f119c4ff97cb7015315acce1535c48032c3420a29236a"
+      },
+      "the_health_check": "the new version became ready",
+      "the_moment_utc": "2026-11-11T08:22:07Z",
+      "the_previous_revision": null,
+      "the_result": "the new version is active and ready",
+      "the_revision": "revision-one",
+      "the_target": "aarch64-unknown-linux-gnu",
+      "the_target_of_the_instance": "aarch64-unknown-linux-gnu",
+      "the_verification": "the signature and every digest are verified",
+      "the_version": "1.0.0"
+    },
+    {
+      "the_activation": "the version revision-two is active",
+      "the_artefacts": {
+        "oip-server": "933704bfafb59bb4d87f119c4ff97cb7015315acce1535c48032c3420a29236a"
+      },
+      "the_health_check": "the new version became ready",
+      "the_moment_utc": "2026-11-11T08:22:07Z",
+      "the_previous_revision": "revision-one",
+      "the_result": "the new version is active and ready",
+      "the_revision": "revision-two",
+      "the_target": "aarch64-unknown-linux-gnu",
+      "the_target_of_the_instance": "aarch64-unknown-linux-gnu",
+      "the_verification": "the signature and every digest are verified",
+      "the_version": "1.0.0"
+    },
+    {
+      "the_bundle": "/private/tmp/oip-update-0ec435pr/bundle-tampered",
+      "the_detail": "the digest of oip-server is e9d67797be91a80afcd889cd78c2f51f709afd3d8c8ee134a710ed994edb8499, but the manifest names 933704bfafb59bb4d87f119c4ff97cb7015315acce1535c48032c3420a29236a: the bundle is refused",
+      "the_moment_utc": "2026-11-11T08:22:08Z",
+      "the_result": "REFUSED: the verification failed",
+      "the_target_of_the_instance": "aarch64-unknown-linux-gnu"
+    },
+    {
+      "the_bundle": "/private/tmp/oip-update-0ec435pr/bundle-forged",
+      "the_detail": "the signature of the manifest is not valid for the public key of the instance: the bundle is refused",
+      "the_moment_utc": "2026-11-11T08:22:08Z",
+      "the_result": "REFUSED: the verification failed",
+      "the_target_of_the_instance": "aarch64-unknown-linux-gnu"
+    },
+    {
+      "the_bundle": "/private/tmp/oip-update-0ec435pr/bundle-foreign",
+      "the_detail": "the bundle is built for x86_64-unknown-linux-gnu, but the instance is aarch64-unknown-linux-gnu",
+      "the_moment_utc": "2026-11-11T08:22:08Z",
+      "the_result": "REFUSED: the verification failed",
+      "the_target_of_the_instance": "aarch64-unknown-linux-gnu"
+    },
+    {
+      "the_bundle": "/private/tmp/oip-update-0ec435pr/bundle-2",
+      "the_detail": "the revision revision-two is already the version of the instance",
+      "the_moment_utc": "2026-11-11T08:22:08Z",
+      "the_result": "REFUSED: the verification failed",
+      "the_target_of_the_instance": "aarch64-unknown-linux-gnu"
+    },
+    {
+      "the_activation": "the version revision-broken is active",
+      "the_artefacts": {
+        "oip-server": "8ec5a6a1b12b7997a2aad76bae5d266360a0db76560b7cd348687f5a2933c9fa"
+      },
+      "the_health_check": "the new version did not become ready",
+      "the_moment_utc": "2026-11-11T08:22:08Z",
+      "the_previous_revision": "revision-two",
+      "the_result": "REFUSED: the new version did not pass the health check",
+      "the_revision": "revision-broken",
+      "the_rollback": "the instance keeps the previous version",
+      "the_target": "aarch64-unknown-linux-gnu",
+      "the_target_of_the_instance": "aarch64-unknown-linux-gnu",
+      "the_verification": "the signature and every digest are verified",
+      "the_version": "1.0.0"
+    }
+  ],
+  "the_journal_entries": 7,
+  "the_status": "PASS",
+  "the_revision": "b6377729628f7343ff6639c9259627181fc64088",
+  "the_tree": "f02d5371e061bc80cbca78d784277a65780e5d9c",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-11T08:22:08Z"
+}
