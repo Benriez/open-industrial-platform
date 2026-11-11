@@ -1,13 +1,13 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "6b6b2c1c4999e10e975894352866a90fdffc15c9",
-  "the_tree": "07440b017a9fdcc58494c6fa26a28ef086dae359",
+  "the_revision": "80ac49cb86267185a12991bc1d90dce2df541461",
+  "the_tree": "e8648105a48ba9e02f9d736c8ddb9e5736ae3ce8",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "24fe932242686a8fb9cf9db630079b46194e3d0b",
     "the_subject": "fix(g9): the receipt of the store assets names the revision"
   },
-  "the_working_tree_is_clean": true,
+  "the_working_tree_is_clean": false,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 726,
-    "the_sha256": "8beeaa07cde369d0753941dff37a1509e7a462b60ec113526ca38cf86bafb307"
+    "the_sha256": "938d8d5834534ebaa842062de687c3b17f7d805f71da1b22b02728b64d3659c8"
   },
   "the_artifacts": {
     "the_core": {
@@ -320,11 +320,11 @@
     },
     "the_oip-store-screenshots_captures_browser-store-screenshots_json": {
       "path": "docs/evidence/oip-store-screenshots/captures/browser-store-screenshots.json",
-      "sha256": "b40db041e7be3123ce5faaa198660aabbe12a3a9270095a35065d55bc15b864b"
+      "sha256": "f259f3fad01300cd08b7de63fb29a1ab241230a6e18002cbaeb270f7ba3b91e0"
     },
     "the_oip-store-screenshots_captures_store-devices-1440x900_png": {
       "path": "docs/evidence/oip-store-screenshots/captures/store-devices-1440x900.png",
-      "sha256": "7add9319ee56842e9cf23004f5b05f5cb5153a3f3df4ca80831bae48640869a1"
+      "sha256": "1eec33b287f715d5914d9933d3156f9220967e72a6626e745efcf6337f448657"
     },
     "the_oip-store-screenshots_captures_store-diagnostics-1440x900_png": {
       "path": "docs/evidence/oip-store-screenshots/captures/store-diagnostics-1440x900.png",
@@ -340,7 +340,7 @@
     },
     "the_oip-store-screenshots_captures_store-overview-1440x900_png": {
       "path": "docs/evidence/oip-store-screenshots/captures/store-overview-1440x900.png",
-      "sha256": "19cdb2a16e18db7d28a494374d6f52d7a1c35c0c25df7bcaf0a709a0c33a727a"
+      "sha256": "0a691af040d53eff87f77ccd89ada3ffb0cf9868b7aebcbd493c772d1d5452b6"
     },
     "the_oip-store-screenshots_captures_store-settings-1440x900_png": {
       "path": "docs/evidence/oip-store-screenshots/captures/store-settings-1440x900.png",
@@ -348,7 +348,7 @@
     },
     "the_oip-store-screenshots_store-screenshots_json": {
       "path": "docs/evidence/oip-store-screenshots/store-screenshots.json",
-      "sha256": "a3977aee5d0daced6b4c3559ae753f072077e7a22713683770c9bc047cbf8814"
+      "sha256": "22b493c554b2e69b389a0dfd6e44d6d3d1f8c36318d365e57825b3c33a071a70"
     },
     "the_oip-update_update_json": {
       "path": "docs/evidence/oip-update/update.json",
@@ -365,7 +365,9 @@
   },
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-release2",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
-  "the_working_tree_without_the_manifest": [],
+  "the_working_tree_without_the_manifest": [
+    "M docs/evidence/oip-release-verification/release-verification.json"
+  ],
   "the_revision_of_the_acceptance": "8f30732f78309a558d1d1cbe124f955cb61caa73",
   "the_tree_of_the_acceptance": "c24a285be4db4ebf00ac86f848fe831a7058419c",
   "the_acceptance_was_run_on_a_clean_tree": true,

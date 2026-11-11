@@ -4,18 +4,18 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "f417ba0e52165cbdf6eeead29c49b5051bdfa860",
+      "the_revision": "6b6b2c1c4999e10e975894352866a90fdffc15c9",
       "the_revision_of_the_source": {
-        "the_revision": "a941d2f63c91d28af3886a7070cc61240708c236",
-        "the_subject": "feat(g9): the store assets of the App Store listing are measured"
+        "the_revision": "24fe932242686a8fb9cf9db630079b46194e3d0b",
+        "the_subject": "fix(g9): the receipt of the store assets names the revision"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 726,
-        "the_sha256": "8f69af571c43b4c7e8cc1523ac0f65f8ae4588e85a1a0e87b74c77c454ce0647"
+        "the_sha256": "8beeaa07cde369d0753941dff37a1509e7a462b60ec113526ca38cf86bafb307"
       },
       "the_artifacts": {
-        "the_core": "ce8d5102942eeb2e3d2cfc53ed6310ffecc9ed151517da882cf66daadab2bceb",
+        "the_core": "9d34267d64d647159f25c4e790be63ce74d1066bb8822ee2765a8d7a16ad0763",
         "the_official_mcp_probe": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
         "the_macos_application_bundle": "dd20a7eb983b88d4864d8ca3325a6a6146751444bddf000b202af5d403a276e1",
         "the_web_release": "7e4662330efdf8de81cce6c7cdb9cdc076d2f4b1fec52bb3a27506fdb96a711f"
@@ -26,11 +26,11 @@
         "docs/evidence/oip-record-integrity/record-integrity.json",
         "docs/evidence/oip-release-verification/release-verification.json"
       ],
-      "the_core_the_acceptance_executed": "88b9b6f5eaee273145557a8098bd464ecf79142bf9fbb504ae9fddb6a281589e",
-      "the_acceptance_executed_the_core_that_the_manifest_names": false,
+      "the_core_the_acceptance_executed": "9d34267d64d647159f25c4e790be63ce74d1066bb8822ee2765a8d7a16ad0763",
+      "the_acceptance_executed_the_core_that_the_manifest_names": true,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
       "the_core_is_the_reproducible_one": true,
-      "the_manifest_names_the_reproducible_binary": true,
+      "the_manifest_names_the_reproducible_binary": false,
       "the_sources_of_the_core_are_unchanged_since_the_receipt": true
     },
     "the_freshness": {
@@ -40,8 +40,8 @@
       },
       "the_revision_of_the_source": "24f09015a1c6",
       "the_receipts": 54,
-      "the_receipts_measured_on_a_tree_that_carries_the_source": 49,
-      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 2,
+      "the_receipts_measured_on_a_tree_that_carries_the_source": 52,
+      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 0,
       "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
     "the_record": {
@@ -55,8 +55,8 @@
     },
     "the_canonical_state": {
       "the_source_revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
-      "the_acceptance_revision": "0aa1595cc46f019075eff0a313ba126824106981",
-      "the_core_binary_revision": "f8519292fa324ce6a2a74f6b8d605dfa84fbf235",
+      "the_acceptance_revision": "8f30732f78309a558d1d1cbe124f955cb61caa73",
+      "the_core_binary_revision": "8f30732f78309a558d1d1cbe124f955cb61caa73",
       "the_tracked_files": 726,
       "the_product_is_committed": true
     },
@@ -72,7 +72,7 @@
       "the_flutter_tests_passed": 365,
       "the_flutter_tests_failed": 0,
       "the_screenshots": 13,
-      "the_revision_of_the_acceptance": "0aa1595cc46f019075eff0a313ba126824106981",
+      "the_revision_of_the_acceptance": "8f30732f78309a558d1d1cbe124f955cb61caa73",
       "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
     },
     "the_boundaries": {
@@ -153,13 +153,13 @@
     "G12"
   ],
   "the_problems": [
-    "the acceptance executed a Core that the manifest does not name: 88b9b6f5eaee against ce8d5102942e",
-    "the receipt docs/evidence/oip-deployment-discovery/deployment-discovery.json names the revision d264f8a70fde, which predates the last change of crates (24f09015a1c6)",
-    "the receipt docs/evidence/oip-pi-instance/pi-instance.json names the revision 563d259b2ef5, which predates the last change of crates (24f09015a1c6)",
-    "the receipt docs/evidence/oip-store-screenshots/captures/browser-store-screenshots.json names no revision"
+    "the receipt the_oip-store-screenshots_captures_browser-store-screenshots_json does not match its digest",
+    "the receipt the_oip-store-screenshots_captures_store-devices-1440x900_png does not match its digest",
+    "the receipt the_oip-store-screenshots_captures_store-overview-1440x900_png does not match its digest",
+    "the receipt the_oip-store-screenshots_store-screenshots_json does not match its digest"
   ],
-  "the_revision": "b10ec2847581aad9c28df73f5e533186cccf0b15",
-  "the_tree": "481cef9dfa82b3394d42261d9dc08f3feb6945af",
-  "the_working_tree_is_clean": false,
+  "the_revision": "80ac49cb86267185a12991bc1d90dce2df541461",
+  "the_tree": "e8648105a48ba9e02f9d736c8ddb9e5736ae3ce8",
+  "the_working_tree_is_clean": true,
   "status": "FAIL"
 }
