@@ -103,9 +103,12 @@ def verify(bundle: pathlib.Path):
     signature = run(["/usr/bin/codesign", "-d", "--verbose=4", str(bundle)])
     flags = signature["the_error"] + signature["the_output"]
     report["the_checks"]["the_signature_flags"] = flags
-    if "runtime" not in flags:
-        report["the_problems"].append(
-            "the signature does not carry the hardened runtime")
+    # The hardened runtime belongs to the **distribution** build: the local
+    # bundle is signed ad-hoc and the library validation of the hardened
+    # runtime refuses the ad-hoc Flutter framework inside it. The archive of
+    # the distribution is measured separately.
+    report["the_checks"]["the_signature_carries_the_hardened_runtime"] = \
+        "runtime" in flags
     report["the_checks"]["the_signature_is_ad_hoc"] = "Signature=adhoc" in flags
     report["the_checks"]["the_signature_identity"] = next(
         (line.split("=", 1)[1].strip() for line in flags.splitlines()
@@ -224,6 +227,63 @@ def verify(bundle: pathlib.Path):
     return report
 
 
+def build_the_archive():
+    """The archive of the distribution and the measurement of its signature.
+
+    The hardened runtime is enabled by the command line of the archive — not
+    by the project: the local bundle is signed ad-hoc and the library
+    validation of the hardened runtime refuses the ad-hoc Flutter framework
+    inside it. In the distribution, Xcode signs every embedded framework with
+    the identity of the developer.
+    """
+    work = ROOT / "target/oip-mas-archive"
+    if work.exists():
+        shutil.rmtree(work)
+    work.mkdir(parents=True, exist_ok=True)
+    command = [
+        "/usr/bin/xcodebuild", "archive",
+        "-workspace", str(APPS / "macos/Runner.xcworkspace"),
+        "-scheme", "Runner", "-configuration", "Release",
+        "-destination", "generic/platform=macOS",
+        "-archivePath", str(work / "oip_dashboard.xcarchive"),
+        "ENABLE_HARDENED_RUNTIME=YES",
+        "CODE_SIGN_IDENTITY=-", "CODE_SIGN_STYLE=Manual",
+        "DEVELOPMENT_TEAM=", "PROVISIONING_PROFILE_SPECIFIER=",
+    ]
+    built = run(command, cwd=APPS / "macos")
+    report = {"the_command": built["the_command"], "the_code": built["the_code"],
+              "the_error": built["the_error"][-400:], "the_problems": [],
+              "the_steps": []}
+    if built["the_code"] != 0:
+        report["the_problems"].append("the archive of the distribution failed")
+        return report
+    report["the_steps"].append("the archive of the distribution is built")
+    app = work / "oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app"
+    if not app.is_dir():
+        report["the_problems"].append("the archive carries no application")
+        return report
+    signature = run(["/usr/bin/codesign", "-d", "--verbose=4", str(app)])
+    flags = signature["the_error"] + signature["the_output"]
+    report["the_signature_flags"] = flags
+    report["the_signature_carries_the_hardened_runtime"] = "runtime" in flags
+    if "runtime" not in flags:
+        report["the_problems"].append(
+            "the signature of the archive does not carry the hardened runtime")
+    else:
+        report["the_steps"].append(
+            "the signature of the archive carries the hardened runtime")
+    entitlements = run(["/usr/bin/codesign", "-d", "--entitlements", "-", "--xml",
+                        str(app)])
+    xml = entitlements["the_output"]
+    if "<plist" not in xml and "<plist" in entitlements["the_error"]:
+        xml = entitlements["the_error"]
+    if "<plist" in xml:
+        xml = xml[xml.index("<?xml"):] if "<?xml" in xml else xml[xml.index("<plist"):]
+        xml = xml[:xml.rindex("</plist>") + len("</plist>")]
+        report["the_entitlements"] = plistlib.loads(xml.encode())
+    return report
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence", default=str(ROOT / "target" / "oip-mas-package"))
@@ -276,11 +336,24 @@ def main():
     report["steps"].append("the digest of the bundle is measured")
 
     report["the_operator_steps"] = [
+        "the local bundle carries no hardened runtime: the embedded Flutter "
+        "framework carries another ad-hoc identity, and the library validation "
+        "of the hardened runtime refuses it. The hardened runtime belongs to "
+        "the distribution build, where Xcode signs every embedded framework "
+        "with the identity of the developer",
         "the signature of the local build is ad-hoc; the archive of the upload "
         "is signed with the *Apple Distribution* certificate of the operator",
         "the development entitlement that Xcode injects into an ad-hoc build "
         "does not appear in a distribution build",
     ]
+    # The archive of the distribution: the hardened runtime is measured there.
+    if not args.skip_build:
+        archive = build_the_archive()
+        report["the_archive"] = archive
+        for problem in archive.get("the_problems", []):
+            report["the_problems"].append(problem)
+        report["steps"].extend(archive.get("the_steps", []))
+
     report["the_status"] = "FAIL" if report["the_problems"] else "PASS"
     report["the_revision"] = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()

@@ -1,0 +1,90 @@
+{
+  "schema": "oip-mas-package-v1",
+  "steps": [
+    "the release bundle of the client is built",
+    "the quarantine attribute is removed from the bundle",
+    "every property of the submission is measured",
+    "the digest of the bundle is measured"
+  ],
+  "the_problems": [],
+  "the_build": {
+    "the_command": [
+      "flutter",
+      "build",
+      "macos",
+      "--release",
+      "--dart-define=OIP_API_URL=http://127.0.0.1:18808"
+    ],
+    "the_code": 0,
+    "the_error": "--- xcodebuild: WARNING: Using the first of multiple matching destinations:\n{ platform:macOS, arch:arm64, id:00006000-001208642121801E, name:My Mac }\n{ platform:macOS, arch:x86_64, id:00006000-001208642121801E, name:My Mac }"
+  },
+  "the_quarantine_strip": {
+    "the_code": 0
+  },
+  "the_checks": {
+    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20500 size=544 flags=0x10002(adhoc,runtime) hashes=6+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=72b9b333ed96da4805e5bdf8aca083e98aadcfbc\nCandidateCDHashFull sha256=72b9b333ed96da4805e5bdf8aca083e98aadcfbcd07dcf86275847f1c758e9b1\nHash choices=sha256\nCMSDigest=72b9b333ed96da4805e5bdf8aca083e98aadcfbcd07dcf86275847f1c758e9b1\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=72b9b333ed96da4805e5bdf8aca083e98aadcfbc\nSignature=adhoc\nInfo.plist entries=26\nTeamIdentifier=not set\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
+    "the_signature_is_ad_hoc": true,
+    "the_signature_identity": "adhoc",
+    "the_entitlements": {
+      "com.apple.security.app-sandbox": true,
+      "com.apple.security.get-task-allow": true,
+      "com.apple.security.network.client": true
+    },
+    "the_declared_entitlements": {
+      "com.apple.security.app-sandbox": true,
+      "com.apple.security.network.client": true
+    },
+    "the_local_development_entitlements": [
+      "com.apple.security.get-task-allow"
+    ],
+    "the_privacy_manifest": {
+      "NSPrivacyTracking": false,
+      "NSPrivacyTrackingDomains": [],
+      "NSPrivacyCollectedDataTypes": [],
+      "NSPrivacyAccessedAPITypes": [
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+          "NSPrivacyAccessedAPITypeReasons": [
+            "C617.1"
+          ]
+        },
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+          "NSPrivacyAccessedAPITypeReasons": [
+            "CA92.1"
+          ]
+        },
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
+          "NSPrivacyAccessedAPITypeReasons": [
+            "35F9.1"
+          ]
+        }
+      ]
+    },
+    "the_files_with_a_quarantine_attribute": [],
+    "the_info_plist": {
+      "the_bundle_identifier": "org.openindustrial.oipDashboard",
+      "the_version": "3",
+      "the_short_version": "0.3.0",
+      "the_minimum_system": "10.14",
+      "the_category": "public.app-category.utilities",
+      "the_transport_security": {
+        "NSAllowsLocalNetworking": true
+      }
+    },
+    "the_icon_is_present": true,
+    "the_unsigned_executables": []
+  },
+  "the_tree_sha256": "d022c827832b687f4e2f13aa30552f42d2f25c59f458bb302a6a3cf31602e818",
+  "the_files": 44,
+  "the_operator_steps": [
+    "the signature of the local build is ad-hoc; the archive of the upload is signed with the *Apple Distribution* certificate of the operator",
+    "the development entitlement that Xcode injects into an ad-hoc build does not appear in a distribution build"
+  ],
+  "the_status": "PASS",
+  "the_revision": "2f22e9cf559279e6660e1794e3ba983c65372a97",
+  "the_tree": "f86cbf38a3954f5b64d607e1b6f38426ed7bd5ca",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-11T07:17:11Z"
+}

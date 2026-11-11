@@ -11,10 +11,10 @@
   ],
   "the_volume": {
     "the_megabytes": 64,
-    "the_mount": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-storage-failure-tuaq4xvl/volume",
+    "the_mount": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-storage-failure-xpylt913/volume",
     "the_free_bytes_at_the_start": 65499136
   },
-  "core_pid": 20506,
+  "core_pid": 73004,
   "the_health_before": {
     "the_status": 200,
     "the_core": {
@@ -24,18 +24,18 @@
       "persistence_healthy": true,
       "persistence_errors": 0,
       "last_persistence_error": null,
-      "revision": 48,
+      "revision": 103,
       "run_id": 1,
-      "persisted_observations": 32
+      "persisted_observations": 82
     }
   },
-  "the_observations_before": 34,
+  "the_observations_before": 82,
   "the_fill": {
-    "the_bytes_written": 62652416,
+    "the_bytes_written": 60751872,
     "the_refusal": "[Errno 28] No space left on device",
-    "the_free_bytes": 61440
+    "the_free_bytes": 49152
   },
-  "the_free_bytes_when_full": 61440,
+  "the_free_bytes_when_full": 49152,
   "the_health_when_the_store_cannot_be_written": {
     "the_status": 200,
     "the_core": {
@@ -43,47 +43,47 @@
       "live": true,
       "ready": false,
       "persistence_healthy": false,
-      "persistence_errors": 16,
+      "persistence_errors": 1,
       "last_persistence_error": "commit_failed_retry_pending",
-      "revision": 51,
+      "revision": 165,
       "run_id": 1,
-      "persisted_observations": 35
+      "persisted_observations": 144
     }
   },
-  "the_observations_when_the_store_cannot_be_written": 35,
+  "the_observations_when_the_store_cannot_be_written": 144,
   "the_status_of_the_instance_during_the_failure": 200,
   "the_log_names_the_failure": true,
   "the_release": {
-    "the_free_bytes": 62652416
+    "the_free_bytes": 60579840
   },
   "the_health_after_the_recovery": {
     "the_status": 200,
     "the_core": {
-      "lifecycle": "ready",
+      "lifecycle": "degraded",
       "live": true,
       "ready": true,
       "persistence_healthy": true,
-      "persistence_errors": 16,
+      "persistence_errors": 1,
       "last_persistence_error": null,
-      "revision": 112,
+      "revision": 166,
       "run_id": 1,
-      "persisted_observations": 91
+      "persisted_observations": 145
     }
   },
-  "the_observations_before_the_recovery": 91,
-  "the_observations_after_the_recovery": 149,
+  "the_observations_before_the_recovery": 145,
+  "the_observations_after_the_recovery": 189,
   "the_integrity": "ok",
   "the_shutdown": {
     "the_exit_code": 0,
-    "the_output": "{\"status\": \"stopped\", \"pid\": 20506}"
+    "the_output": "{\"status\": \"stopped\", \"pid\": 73004}"
   },
   "status": "PASS",
   "the_core_binary": {
     "the_path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
-    "the_sha256": "5dd068bb73a94d55067ce904019de87876968eed7c0b43547827a68a80e55e8e"
+    "the_sha256": "87a56a2e5c7f4717605cac7288a3636edb1645be697565dabb3d6a66d47a652c"
   },
-  "the_revision": "0593497cfc5a8f315a40511695cf02b1a035fe41",
-  "the_tree": "3f191d2a050ee51c800c36a0c66eede05b244a09",
+  "the_revision": "2f22e9cf559279e6660e1794e3ba983c65372a97",
+  "the_tree": "f86cbf38a3954f5b64d607e1b6f38426ed7bd5ca",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T04:47:52Z"
+  "finished_utc": "2026-11-11T06:47:09Z"
 }

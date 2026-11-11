@@ -6,21 +6,21 @@
     "the surface shows the truth in every state of the Core"
   ],
   "ssh_fixture": {
-    "port": 61589,
+    "port": 62463,
     "user": "benny",
     "loopback_only": true
   },
   "the_control": {
-    "the_port": 61626,
+    "the_port": 62505,
     "the_note": "the journey asks the control to change the state of the host; the Core is never touched"
   },
-  "the_host_key_fingerprint": "SHA256:DqXX6i2+5AJmMNJrecclFPuUVPq0xM07zaasCCGtRGc",
+  "the_host_key_fingerprint": "SHA256:oNhmVTD3LBkH4CTary6JlhPACwjLEin2ePFCwI4F0Ik",
   "browser_receipt": {
     "schema": "oip-connection-states-v1",
-    "revision": "0593497cfc5a8f315a40511695cf02b1a035fe41",
+    "revision": "2f22e9cf559279e6660e1794e3ba983c65372a97",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the honest connection states of the surface against the real Core",
-    "base": "http://127.0.0.1:61592",
+    "base": "http://127.0.0.1:62466",
     "device": "state-device",
     "the_states": [
       {
@@ -93,7 +93,7 @@
       {
         "check": "the inventory of the scope lists the device",
         "ok": true,
-        "the_detail": "State device \u00b7 state-device\nGer\u00e4t State device state-device ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 b602dfce-6aaf-4909-b460-499f31384d26 \u00b7 keine aktuelle Observation \u00b7 Reachability Unbekannt reported\nState "
+        "the_detail": "State device \u00b7 state-device\nGer\u00e4t State device state-device ausw\u00e4hlen \u00b7 SingleBoardComputer \u00b7 2d7405a9-2de3-4049-adf2-123148b3899d \u00b7 keine aktuelle Observation \u00b7 Reachability Unbekannt reported\nState "
       },
       {
         "check": "the surface shows the verified state of the Core",
@@ -233,8 +233,8 @@
   ],
   "checks": 12,
   "status": "PASS",
-  "the_revision": "0593497cfc5a8f315a40511695cf02b1a035fe41",
-  "the_tree": "3f191d2a050ee51c800c36a0c66eede05b244a09",
+  "the_revision": "2f22e9cf559279e6660e1794e3ba983c65372a97",
+  "the_tree": "f86cbf38a3954f5b64d607e1b6f38426ed7bd5ca",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T04:38:52Z"
+  "finished_utc": "2026-11-11T06:37:52Z"
 }
