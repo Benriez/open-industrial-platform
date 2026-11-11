@@ -77,8 +77,10 @@ An **independent verification** of that change (a delegated, read-only audit of 
    and the `Info.plist` names the category and the exception of the transport security for the
    local networking (the Core of OIP answers on the loopback). The **metadata** of the listing and
    the **privacy policy** are prepared (`docs/release/mac-app-store/metadata.md`,
-   `docs/release/mac-app-store/privacy-policy.md`). The package is **upload-ready**; the upload
-   itself, the identity, the certificate, the profile and the two public URLs are the operator's.
+   `docs/release/mac-app-store/privacy-policy.md`). The **remaining gap of the listing** is the
+   **store assets**: the screenshots in the sizes that Apple accepts for a Mac app are the
+   **next READY task** (N25). The upload itself, the identity, the certificate, the profile and
+   the two public URLs are the operator's.
 
 5. **N24 (the Core on the Raspberry Pi)**: the **deployment is measured** now
    (`tests/oip_pi_instance.py`, `docs/evidence/oip-pi-instance/pi-instance.json`): the cross build for
@@ -89,7 +91,16 @@ An **independent verification** of that change (a delegated, read-only audit of 
    with the services of the operator the **same list** before and after. The host discovery that
    decided the target is measured too (`docs/evidence/oip-deployment-discovery/deployment-discovery.json`).
 
-6. **N23 (the secure update of the deployed software)**: the **update path of the Core** is
+6. **N25 (the store assets of the Mac App Store listing)**: the **sizes that Apple accepts for
+   a Mac app** are read from the official source (`docs/release/mac-app-store/screenshots.md`:
+   1280 x 800, 1440 x 900, 2560 x 1600, 2880 x 1800, each with a 16:10 aspect ratio; no alpha
+   channel), and the **six workstations of the client are captured in those sizes** by the
+   release build of the client through the managed Core
+   (`tests/oip_store_screenshots.py`, `docs/evidence/oip-store-screenshots/store-screenshots.json`).
+   The captures are the **store assets**; the acceptance of the operator of the visible result
+   stays **pending** (G12) and is never claimed by the capture.
+
+7. **N23 (the secure update of the deployed software)**: the **update path of the Core** is
    implemented and **measured** (`tools/oip_update.py`, `tests/oip_update.py`,
    `docs/evidence/oip-update/update.json`, `docs/runbooks/operations.md` §16): the bundle is
    **authenticated** with an Ed25519 signature over the exact bytes of the manifest, the

@@ -13,13 +13,13 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `0593497` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `58f6c82` (tree `a1fc365`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `58f6c82` — the binary names its own revision; the same revision yields the same bytes |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `24f0901` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
+| The revision of the final acceptance | `0aa1595` (tree `617bc48`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `f851929` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 713 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 715 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -3548,6 +3548,53 @@ operator's.
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
 
+### Iteration 77 — the release of the current product, measured with its own binaries
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates
+that need the operator (G5, G10, G12) are open, and nothing in this iteration changes them.
+
+* **The evidence of the release was measured against the binaries of the tree for the first
+  time.** The refresh builds the workspace — the development profile and the release profile —
+  before the first rehearsal and refuses to run when a build fails
+  (`tools/oip_refresh_evidence.py`): a receipt that measures a binary of an older revision is
+  worse than no receipt, because it names a revision it did not measure. The run at the product
+  revision `24f0901` measured **33 of the 34 rehearsals PASS**; the one failure was the record
+  itself — the canonical state named an older release — and this iteration closes it.
+* **The refresh exposed a regression of my own change, and it is closed.** The entity of a
+  source became part of the configuration of a source (`crates/oip-server/src/config.rs`), and
+  the test fixtures of the Core built that configuration without the new field: four
+  constructions in `crates/oip-server/tests/` did not compile. The regression is fixed
+  (`24f0901`), the whole Rust suite passes again (**185 tests in 29 suites, 0 failed** —
+  `docs/evidence/oip-rust-regression/rust-regression.json`), and the fix is a *test* change: the
+  product itself was not touched.
+* **The acceptance of the release ran against the release binary** (`0aa1595`, tree
+  `617bc48`): the eight functional phases **8 of 8 PASS**, the browser gate **PASS** with
+  **187 findings and zero failures**, **13 captures**, the visual comparison **PASS**, the served
+  web bundle byte-identical with the local build of the same revision
+  (`docs/evidence/oip-canonical-acceptance/acceptance.json`).
+* **The builds of the release are reproducible** (`docs/evidence/oip-reproducible-build/reproducible-build.json`):
+  the web release and the macOS application bundle are byte-identical when they are built
+  twice, and the **Core of the release is byte-identical over two builds**. The Core in the
+  build tree names the revision it was built from (`f851929`); the record states the revision of
+  the product, the revision of the acceptance and the revision of the binary as three separate
+  facts, because they are three different measurements.
+* **The publication of a receipt needs no build.** The refresh built the workspace even when it
+  was asked only to publish a receipt that had been measured before — on a machine whose disk
+  is nearly full, that build was a failure of the publication. The build is now skipped when
+  nothing is measured (`13c3636`).
+
+The instance on the Raspberry Pi stays **stopped** after its measurement and its files stay on
+the host; the decision to keep it running and the client that is built for the port of the
+instance are the operator's.
+
+The next independent READY task is **N25**: the **store assets** of the Mac App Store listing —
+the screenshots of the six workstations in the sizes that Apple accepts for a Mac app
+(1280 x 800, 1440 x 900, 2560 x 1600, 2880 x 1800; no alpha channel), read from the official
+source today.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
+
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -3635,8 +3682,13 @@ service of the operator, no published port, no firewall change, no push, no depl
   No schema 7 activation was performed.
 * All harnesses used their own isolated databases, ports and credentials under `/private/tmp`;
   the acceptance harness reports `own_processes_stopped: true`.
-* The only SSH target was an owned loopback OpenSSH fixture with keys generated for that test.
-  No private endpoint, host or user was contacted.
+* The SSH targets of the rehearsals are the owned loopback OpenSSH fixtures with keys generated
+  for that test, and — since iteration 76 — the **host of the operator** `bodi-pi`, which was
+  contacted **read-only** (the discovery of the host, the copy of the bundle, the start of a
+  disposable instance by hand and the stop of it) **with the consent of the operator** and
+  **without** a change to a service, a port or a firewall of that host. The receipt names the
+  services of the host before and after: the same list. No private endpoint of another party
+  was contacted; the Philips Hue Bridge was read on its public configuration route only.
 * Foreign processes from the independent UI workstreams were observed but never signalled.
 * No demo data is presented as real evidence. Inventory registration is still not a
   connection, and device connectivity stays `Unknown` / `NoCollector` until a real, confirmed
