@@ -154,6 +154,21 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
     return parts.isEmpty ? 'Nicht verfügbar' : parts.join(' / ');
   }
 
+  /// The note of the device as the Core holds it.
+  ///
+  /// The inventory carries an optional note: the free text that the operator
+  /// wrote about the device — for example the honest limit of its capability
+  /// (a bridge that is read-only without an application token). The note
+  /// belongs where the operator looks at the device; a note that the Core does
+  /// not hold is named as unavailable, and the panel never invents one.
+  String _note(InventoryDevice? record) {
+    final metadata = record?.metadata;
+    if (metadata == null) return 'Nicht verfügbar';
+    final value = metadata['notes'];
+    if (value is! String || value.trim().isEmpty) return 'Nicht verfügbar';
+    return value.trim();
+  }
+
   Widget _engineering(BuildContext context, Device device) {
     final source =
         sources.where((item) => item.id == device.sourceId).firstOrNull;
@@ -191,6 +206,10 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
           const KeyValue('INTERFACE TYPE',
               'Nicht separat verfügbar; Registry Connection Type oben'),
         ]),
+        // The note of the device is a free text, so it stands under the grid
+        // and takes the whole width of the panel.
+        KeyValue('NOTE', _note(inventoryDevice),
+            key: const Key('device-identity-note'), mono: false),
         const Hairline(vertical: 4),
         const PanelLabel('Observation & Telemetry'),
         if (loading)

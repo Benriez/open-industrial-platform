@@ -358,8 +358,16 @@ class DeviceFilterBar extends StatelessWidget {
       List<String> values, double width, ValueChanged<String> set,
       {String Function(String)? itemLabel}) {
     final current = values.contains(value) ? value : 'all';
+    /// The word of the entry of the filter.
+    ///
+    /// The entry "all" is **not** a type of a device: it is the choice that
+    /// keeps every type. The vocabulary of the types must not paint it as an
+    /// unknown type — the choice that shows everything is not a thing that the
+    /// client failed to know.
     String shown(String item) {
-      final word = itemLabel?.call(item) ?? _filterValue(item);
+      final word = item == 'all'
+          ? _filterValue(item)
+          : itemLabel?.call(item) ?? _filterValue(item);
       return label == 'STANDORT' ? 'Standort: $word' : word;
     }
 

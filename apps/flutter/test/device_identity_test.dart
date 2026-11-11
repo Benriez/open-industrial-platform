@@ -95,4 +95,31 @@ void main() {
     expect(find.text('Nicht verfügbar'), findsWidgets);
     expect(find.text('Philips Hue / BSB002'), findsNothing);
   });
+
+  testWidgets('the note of the device comes from the inventory of the Core',
+      (tester) async {
+    await _pump(tester, record: _record(metadata: const {
+      'manufacturer': 'Philips Hue',
+      'notes': 'Nur lesbar: die Lichter brauchen ein Anwendungs-Token des '
+          'Betreibers.',
+    }));
+    // The note belongs where the operator looks at the device.
+    expect(find.text('NOTE'), findsOneWidget);
+    expect(
+        find.text('Nur lesbar: die Lichter brauchen ein Anwendungs-Token des '
+            'Betreibers.'),
+        findsOneWidget);
+  });
+
+  testWidgets('a device without a note names no note', (tester) async {
+    await _pump(tester, record: _record(metadata: const {
+      'manufacturer': 'Philips Hue',
+    }));
+    // The Core holds no note here: the panel says so and invents none.
+    final note = find.byKey(const Key('device-identity-note'));
+    expect(note, findsOneWidget);
+    expect(find.descendant(of: note, matching: find.text('Nicht verfügbar')),
+        findsOneWidget);
+    expect(find.textContaining('Anwendungs-Token'), findsNothing);
+  });
 }

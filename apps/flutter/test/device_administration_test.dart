@@ -141,9 +141,25 @@ void main() {
     expect(api.updates.single['expected_revision'], 1);
   });
 
-  testWidgets('The archive is named as the offline operation it is',
+  testWidgets('The administration names the type with the shared word',
       (tester) async {
     await openDevice(tester);
+    await tester.ensureVisible(
+        find.byKey(const Key('device-administration-type')));
+    await tester.tap(find.byKey(const Key('device-administration-type')));
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 120));
+    }
+    // The word of a type has one owner: the administration offers the same
+    // word as the identity panel and the filter, and never a second
+    // vocabulary of its own.
+    expect(find.text('Einzelplatine'), findsWidgets);
+    expect(find.text('Netzwerkgerät'), findsWidgets);
+    expect(find.text('Single board'), findsNothing);
+  });
+
+  testWidgets('The archive is named as the offline operation it is',
+      (tester) async {    await openDevice(tester);
     // The managed session of the Core refuses an archive with
     // OFFLINE_ARCHIVE_REQUIRED: the archive is an offline operation. The
     // surface therefore states the procedure and never offers a write that

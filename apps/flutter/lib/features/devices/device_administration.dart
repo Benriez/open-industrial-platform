@@ -4,6 +4,7 @@ import '../../design_system/theme.dart';
 import '../../models/infrastructure.dart';
 import '../../services/api.dart';
 import '../../widgets/components.dart';
+import '../../widgets/device_kind.dart';
 import '../../widgets/workstation.dart';
 
 /// The administration of a registered device.
@@ -30,23 +31,28 @@ class DeviceAdministration extends StatefulWidget {
 }
 
 class _DeviceAdministrationState extends State<DeviceAdministration> {
-  /// The device types of the Core, with a short label for the workstation.
-  static const deviceTypes = <String, String>{
-    'server': 'Server',
-    'desktop': 'Desktop',
-    'laptop': 'Laptop',
-    'single_board_computer': 'Single board',
-    'network_device': 'Network',
-    'industrial_device': 'Industrial',
-    'sensor': 'Sensor',
-    'other': 'Other',
-  };
+  /// The device types of the Core that the administration can write.
+  ///
+  /// The **word** of a type has one owner (`widgets/device_kind.dart`): the
+  /// administration names a type the same way as the identity panel, the
+  /// filter and the inventory do, and the **value** stays the identifier that
+  /// the Core knows.
+  static const deviceTypes = <String>[
+    'server',
+    'desktop',
+    'laptop',
+    'single_board_computer',
+    'network_device',
+    'industrial_device',
+    'sensor',
+    'other',
+  ];
 
   late final TextEditingController _name =
       TextEditingController(text: widget.device.name);
   late final TextEditingController _site =
       TextEditingController(text: widget.device.siteId);
-  late String _type = deviceTypes.containsKey(widget.device.type)
+  late String _type = deviceTypes.contains(widget.device.type)
       ? widget.device.type
       : 'other';
   bool _busy = false;
@@ -66,7 +72,7 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
         oldWidget.device.revision != widget.device.revision) {
       _name.text = widget.device.name;
       _site.text = widget.device.siteId;
-      _type = deviceTypes.containsKey(widget.device.type)
+      _type = deviceTypes.contains(widget.device.type)
           ? widget.device.type
           : 'other';
       _error = null;
@@ -142,9 +148,9 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
                 isExpanded: true,
                 decoration: const InputDecoration(labelText: 'Gerätetyp'),
                 items: [
-                  for (final type in deviceTypes.keys)
+                  for (final type in deviceTypes)
                     DropdownMenuItem(
-                        value: type, child: Text(deviceTypes[type] ?? type)),
+                        value: type, child: Text(deviceKindName(type))),
                 ],
                 onChanged: _busy
                     ? null
