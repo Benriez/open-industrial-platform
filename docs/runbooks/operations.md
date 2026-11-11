@@ -1015,3 +1015,71 @@ session is not permitted** (`ssh bodi-pi …` is refused by the permission layer
 of the session, which cannot ask the operator). The operator runs the script of
 phase 0 and reports its answer; the loop then fixes the target of the cross
 build of phase 1 and continues with the receipts of the release.
+
+## 16. The secure update of the Core of an instance
+
+The Core of OIP runs on a host of the operator. A deployed service that cannot be
+updated safely stays on the version it was built with. This section is the update
+path of the Core; the rehearsal `tests/oip_update.py`
+(`docs/evidence/oip-update/update.json`) measures it.
+
+### 16.1 The three properties of the update path
+
+| Property | How it is delivered | How it is measured |
+|---|---|---|
+| **Authenticity** | the manifest of the bundle is signed with **Ed25519** by the private key of the operator; the tool verifies the signature over the **exact bytes** of the manifest with the **public key of the instance** | a bundle whose manifest was changed after the signing is **refused** (`the signature of the manifest is not valid`) |
+| **Integrity** | the manifest names the **sha256** of every artefact; the tool verifies the digests **before** the activation and **again after the write** | a bundle whose artefact was changed on the way is **refused** (`the digest of … is …, but the manifest names …`) |
+| **Safe activation** | the artefact is written into a **version directory** of the instance; the switch is a **symlink that is renamed**; the previous version stays on the host | the instance runs the new version and the previous version is still there |
+
+### 16.2 The health check and the rollback
+
+After the switch, the new binary is started as a **disposable instance** — its own
+port, its own store, its own IPC — and asked for `/health/ready`. A version that
+does not become ready is **not** activated: the instance keeps the version it had
+(the switch back is a rename) and the journal names the rollback. The rehearsal
+drives exactly that case with a binary that leaves immediately.
+
+### 16.3 The journal
+
+Every attempt is written into `<instance>/state/updates.jsonl`: the moment, the
+revision, the version, the target, the digests, the verification, the activation,
+the health check, the rollback and the reason of a refusal. The file is
+append-only and flushed to the disk. It is the only **durable** audit of the
+update path of an instance — the execution log of the Core is not durable.
+
+### 16.4 The procedure of the operator
+
+```sh
+# 1. the bundle arrives on the host (a copy, a tunnel, a pull of the
+#    operator): the bundle is a directory with manifest.json, the artefacts
+#    and the signature.
+# 2. the public key of the instance is in the instance (never the private
+#    key of the operator):
+#      instance/etc/update-public.pem
+# 3. the update is verified, activated, health checked and rolled back if
+#    it has to be:
+python3 tools/oip_update.py --instance <the instance> \
+    --bundle <the bundle> --public-key <the public key> \
+    --target aarch64-unknown-linux-gnu
+# 4. the result:
+#      {"the_status": "UPDATED", …}   the new version is active and ready
+#      {"the_status": "REFUSED", …}    the instance keeps its version
+```
+
+The tool writes nothing outside the directory of the instance, installs no
+service, publishes no port and does not touch the personal store of the
+operator. The **private key never leaves the machine of the operator**: the
+public key of the instance is the only thing the host ever sees.
+
+### 16.5 What is not done by this path
+
+* The **client** of the operator is not updated by this path: an app of the
+  **Mac App Store** is updated by the store, and the direct distribution uses the
+  path of its own signature (the notarisation of G9/N17).
+* The tool does **not** fetch a bundle by itself: the delivery channel is the
+  operator's, and the **signature** is what carries the trust. A bundle that is
+  fetched over an unauthenticated channel is still refused when its signature
+  does not match the public key of the instance.
+* The tool does not manage the **data store** of the instance: a schema change
+  is a separate operator step with its own rehearsal (the activation of schema
+  7 on a copy of the store).

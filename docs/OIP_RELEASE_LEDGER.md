@@ -80,6 +80,19 @@ An **independent verification** of that change (a delegated, read-only audit of 
    `docs/release/mac-app-store/privacy-policy.md`). The package is **upload-ready**; the upload
    itself, the identity, the certificate, the profile and the two public URLs are the operator's.
 
+5. **N23 (the secure update of the deployed software)**: the **update path of the Core** is
+   implemented and **measured** (`tools/oip_update.py`, `tests/oip_update.py`,
+   `docs/evidence/oip-update/update.json`, `docs/runbooks/operations.md` §16): the bundle is
+   **authenticated** with an Ed25519 signature over the exact bytes of the manifest, the
+   **integrity** of every artefact is verified before the activation and again after the
+   write, the activation is **atomic** (a renamed symlink), the new version is **health
+   checked** as a disposable instance, a version that does not become ready is **rolled
+   back**, and every attempt — the successful ones and the refused ones — is written into a
+   **durable journal** of the instance. The **private key of the operator never reaches a
+   host**; the public key of the instance is the only thing the host sees. The **client**
+   of the operator is **not** updated by this path: an app of the Mac App Store is updated
+   by the store.
+
 The independent tasks of this list are closed. What remains are the operator actions: the
 product decision on the delivery of the web release, the physical device of G5, the
 production-security scope of G10, the operator acceptance of G12 and the discovery of the
@@ -159,6 +172,11 @@ host of the Core.
   token** (measured), and a token is a **write on the device** (the button of the bridge and
   `POST /api`). A monitoring or control capability for the bridge is a **new capability** with
   its own permission, its own audit and its own scope — it is named here and **not** simulated.
+* **The secure update**: the update path of the Core is implemented and measured. The
+  operator still owns the **private key** (it never reaches a host) and the **public key of
+  the instance** (`instance/etc/update-public.pem`); the first signed bundle of a release
+  needs that key pair. The path updates the **Core**; the **client** of the operator is
+  updated by the store (Mac App Store) or by the notarised path of the direct distribution.
 * **The Mac App Store**: the package of the client is **upload-ready** and measured
   (`docs/evidence/oip-mas-package/mas-package.json`), and the requirements of the store are read
   with their sources (`docs/release/mac-app-store/requirements.md`). The operator still has to:
@@ -252,6 +270,7 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-transport-parity/transport-parity.json` | the parity of REST, SSE and MCP and the scope of the projection |
 | `docs/evidence/oip-security-review/security-review.json` | the security release review: 12 findings, 9 resolved, 2 mitigated, 1 escalated |
 | `docs/evidence/oip-rust-regression/rust-regression.json` | the Rust regression of the workspace: 185 tests in 29 suites |
+| `docs/evidence/oip-update/update.json` | the secure update of the Core of an instance: a signed bundle is verified (the Ed25519 signature over the exact bytes of the manifest), the digests are verified before the activation and again after the write, the switch is atomic, the new version is health checked as a disposable instance, a version that does not become ready is rolled back, and the durable journal of the instance names every attempt — the changed artefact, the forged manifest, the foreign target and the repeated revision are refused |
 | `docs/evidence/oip-mas-package/mas-package.json` | the package of the macOS client for the Mac App Store: the release build, the entitlements of the bundle (the app sandbox and the network client, without the debug entitlement of the entitlements file), the hardened runtime in the signature, the privacy manifest in the bundle, the absence of the quarantine attribute on every file, the category and the transport security of the Info.plist, the icon and the signature of every executable |
 | `docs/evidence/oip-deployment-discovery/deployment-discovery.json` | the deployed hosts and the two device classes of the operator, measured read-only: the identity, the architecture, the memory, the disk, the toolchain, the services of the operator (unchanged before and after) and the listeners of `bodi-pi` and `bodi-pc`; the SSH banner and the host keys of the OpenWrt router; the public configuration of the Hue Bridge and the refusal of its lights without a token |
 | `docs/evidence/oip-pi-bundle/pi-bundle.json` | the bundle of a disposable instance for a foreign host: the whole procedure measured with stubs — the files of the instance are absolute and inside the instance, the procedure writes nothing outside it, the code of the operator session is minted over the local IPC, the instance stops without a forced signal, and the bundle installs no service and names no path of the machine it was built on |

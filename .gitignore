@@ -171,6 +171,9 @@ secrets/
 # The package of the macOS client for the Mac App Store: the build and every
 # property that the submission checks.
 !/docs/evidence/oip-mas-package/mas-package.json
+# The secure update of the Core of an instance: what it does and what it
+# refuses.
+!/docs/evidence/oip-update/update.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json

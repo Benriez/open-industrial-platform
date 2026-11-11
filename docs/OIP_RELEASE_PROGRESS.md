@@ -3457,6 +3457,51 @@ No personal database change, no schema-7 activation of the personal installation
 host or device of the operator, no service installed, no port published, no push, no deployment,
 no submission.
 
+### Iteration 75 — the deployed Core can be updated safely
+
+**Status: PROVED on canonical `main`.**
+The operator extended the mission with the third piece: the deployed software must be
+updateable over the air — authenticated delivery, integrity and authenticity verification, a
+safe activation, health checks and a rollback. This iteration delivers the update path of the
+**Core**, the component that is really deployed on a host of the operator.
+
+* **The bundle carries the trust, not the channel.** An update arrives as a bundle: a
+  manifest, the artefacts and a signature. The manifest is signed with **Ed25519** by the
+  private key of the operator; the tool verifies the signature over the **exact bytes** of the
+  manifest with the **public key of the instance**. The channel may be anything — a copy, a
+  tunnel, a pull — because a bundle that was changed on the way does not verify. The **private
+  key never reaches a host**: the public key of the instance is the only thing the host sees.
+* **The integrity is verified twice.** Before the activation, the tool verifies the sha256 of
+  every artefact against the manifest; after the write, it verifies the digest of the written
+  file again. A bundle whose artefact was changed on the way is refused, and so is a bundle
+  whose manifest was changed after the signing.
+* **The activation is atomic and reversible.** The artefact is written into a **version
+  directory** of the instance, and the switch is a symlink that is **renamed** — never a
+  half-written state. The previous version stays on the host: the rollback is one rename.
+* **The new version is health checked before it counts.** The new binary is started as a
+  **disposable instance** — its own port, its own store, its own protected IPC — and asked for
+  `/health/ready`. A version that does not become ready is **not** activated: the instance
+  keeps the version it had. The rehearsal drives exactly that case with a binary that leaves
+  immediately, and the instance still runs the old version afterwards.
+* **Every attempt is durable.** The journal `<instance>/state/updates.jsonl` names the moment,
+  the revision, the version, the target, the digests, the verification, the activation, the
+  health check, the rollback — and the reason of a **refusal**. A refused bundle is a security
+  relevant event and it is written down like every other attempt. The journal is the only
+  **durable** audit of the update path of an instance (the execution log of the Core is not
+  durable — G10).
+* **What the path refuses** (measured): a changed artefact, a forged manifest, a bundle of
+  another target, a revision that is already installed, and a version that does not become
+  ready — the last one is rolled back, the others leave the instance untouched.
+
+The **client** of the operator is deliberately **not** in this path: an app of the Mac App
+Store is updated by the store, and the direct distribution uses the path of its own signature
+(the notarisation of G9/N17). The **operator's action** is the key pair: the private key stays
+with the operator, the public key of the instance is placed in
+`instance/etc/update-public.pem`.
+
+No personal database change, no schema-7 activation of the personal installation, no write on any
+host or device of the operator, no service installed, no port published, no push, no deployment.
+
 ## 5. Evidence index
 
 | Artifact | Content |

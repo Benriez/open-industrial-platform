@@ -125,6 +125,10 @@ REHEARSALS = [
     # attribute and the metadata of the bundle.
     ("oip_mas_package", "tools/oip_mas_package.py",
      {"mas-package.json": "oip-mas-package/mas-package.json"}),
+    # The secure update of the Core of an instance: the signature, the
+    # digests, the atomic switch, the health check and the rollback.
+    ("oip_update", "tests/oip_update.py",
+     {"update.json": "oip-update/update.json"}),
     ("oip_reproducible_build", "tests/oip_reproducible_build.py",
      {"reproducible-build.json": "oip-reproducible-build/reproducible-build.json"}),
 ]
