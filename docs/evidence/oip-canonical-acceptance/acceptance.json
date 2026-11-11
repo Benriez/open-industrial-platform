@@ -53,8 +53,8 @@
       "phase": "no_clients_ingestion_progress",
       "status": "PASS",
       "details": {
-        "before": 420,
-        "after": 430,
+        "before": 410,
+        "after": 420,
         "no_browser_or_mcp_sessions": true
       }
     },
@@ -87,15 +87,15 @@
       }
     }
   ],
-  "runtime_directory": "/private/tmp/oip82-79375-1794366659864739000",
+  "runtime_directory": "/private/tmp/oip82-38315-1794375033888857000",
   "model_used": false,
-  "server_binary_sha256": "1a4e7870968863bf96de80bbb58efca4510fccf1e6e61da18574b33f2955b00c",
+  "server_binary_sha256": "87a56a2e5c7f4717605cac7288a3636edb1645be697565dabb3d6a66d47a652c",
   "mcp_probe_binary_sha256": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
   "canonical_ui_precheck": {
     "schema": "oip-canonical-ui-gate-v2",
-    "started_utc": "2026-11-11T03:11:00Z",
-    "source_revision": "6036ef9118d94900929cf44aef209840c9dee2b0",
-    "source_tree": "a2add7dc67ec2e94558617a892709aadaf342e2b",
+    "started_utc": "2026-11-11T05:31:06Z",
+    "source_revision": "1e806309e6b4c18b71bda669a39b90ae7db41362",
+    "source_tree": "09050a9bc9cc67bcf6a5eba3604e9a97b2cadcf7",
     "source_worktree": "/Users/benny/Code/open-industrial-platform",
     "source_dirty": false,
     "baseline_document": "docs/design/OIP_CANONICAL_UI_BASELINE.md",
@@ -178,15 +178,15 @@
     "flutter_tests_skipped": 1,
     "browser_gate_executed": false,
     "complete": false,
-    "finished_utc": "2026-11-11T03:12:19Z"
+    "finished_utc": "2026-11-11T05:32:03Z"
   },
   "physical_raspberry_pi_tested": false,
   "ssh_fixture": "owned loopback OpenSSH, actual host facts",
   "canonical_ui_browser": {
     "verdict": "PASS",
-    "revision": "6036ef9118d94900929cf44aef209840c9dee2b0",
+    "revision": "1e806309e6b4c18b71bda669a39b90ae7db41362",
     "the_detail_is": "the observed value of the check",
-    "base": "http://127.0.0.1:56790",
+    "base": "http://127.0.0.1:53181",
     "browser_version": "157.0.8103.50",
     "bundle_sha256": "486ffa1e0e16635f1f780374616bf7cc6b69d22c11fb6324b84bdb0901c03489",
     "bundle_matches_local_build": true,
@@ -1159,41 +1159,41 @@
     "external_requests": [],
     "core_denials": [
       {
-        "url": "http://127.0.0.1:56790/api/v2/organizations?offset=0&limit=100",
+        "url": "http://127.0.0.1:53181/api/v2/organizations?offset=0&limit=100",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:56790/api/v1/system/status",
+        "url": "http://127.0.0.1:53181/api/v1/system/status",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:56790/api/v1/devices",
+        "url": "http://127.0.0.1:53181/api/v1/devices",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:56790/api/v1/metrics/current",
+        "url": "http://127.0.0.1:53181/api/v1/metrics/current",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:56790/api/v1/sources",
+        "url": "http://127.0.0.1:53181/api/v1/events",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:56790/api/v1/events",
+        "url": "http://127.0.0.1:53181/api/v1/sources",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:56790/api/v2/settings?scope=platform",
+        "url": "http://127.0.0.1:53181/api/v2/settings?scope=platform",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:56790/api/v2/settings?scope=platform",
+        "url": "http://127.0.0.1:53181/api/v2/settings?scope=platform",
         "status": 403
       }
     ],
     "fatal": null,
     "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-    "duration_ms": 86991
+    "duration_ms": 86702
   },
   "canonical_ui_visual": {
     "schema": "oip-canonical-ui-visual-comparison-v2",
@@ -1211,7 +1211,7 @@
         "baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
         "expected_baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
         "actual": "target/oip-canonical-acceptance/oip_canonical_ui_gate/browser/canonical-ui-1440.png",
-        "actual_sha256": "87116b3fc11b1b0870bf3a97b63759a3e06ed0f0b43f34b260edd714deff39ae",
+        "actual_sha256": "627614af14a8ea6cfed5e765024d1a8b754ddd723c15f3ce7727626d6283a14b",
         "crop": [
           0,
           0,
@@ -1230,9 +1230,9 @@
         },
         "dynamic_data_policy": "Only the manifest-cropped stable left shell is compared; workspace values and the historical footer are excluded. Semantic shell/workstation and geometry checks are separate mandatory gates.",
         "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-        "mean_absolute_difference": 0.00042431787529826747,
+        "mean_absolute_difference": 0.0010913800705467372,
         "mean_absolute_difference_limit": 0.01,
-        "antialias_tolerant_mean_absolute_difference": 0.00042381860151467993,
+        "antialias_tolerant_mean_absolute_difference": 0.0010917885672787632,
         "antialias_tolerant_limit": 0.02,
         "changed_pixel_ratio": 0.0,
         "changed_pixel_ratio_limit": 0.01,
@@ -1246,7 +1246,7 @@
         "baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
         "expected_baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
         "actual": "target/oip-canonical-acceptance/oip_canonical_ui_gate/browser/canonical-ui-1920.png",
-        "actual_sha256": "248b0bb22148791ae98725b482d9d414c321e8277ef428d0c15097dd61173ca0",
+        "actual_sha256": "98ec1c0e6696f7117cc2ae47b5322d09d67e039fbb2de08d3d9e8a74ae114ee6",
         "crop": [
           0,
           0,
@@ -1323,9 +1323,9 @@
   },
   "canonical_ui_global_context": {
     "schema": "oip-global-context-receipt-v1",
-    "revision": "6036ef9118d94900929cf44aef209840c9dee2b0",
+    "revision": "1e806309e6b4c18b71bda669a39b90ae7db41362",
     "the_detail_is": "the message that describes the failure of the check",
-    "base": "http://127.0.0.1:56790",
+    "base": "http://127.0.0.1:53181",
     "options_offered": 4,
     "scope_per_workstation": [
       {
@@ -1453,10 +1453,10 @@
   },
   "canonical_ui_accessibility": {
     "schema": "oip-accessibility-receipt-v1",
-    "revision": "6036ef9118d94900929cf44aef209840c9dee2b0",
+    "revision": "1e806309e6b4c18b71bda669a39b90ae7db41362",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "name and role coverage of the rendered surface of the six workstations; not a full WCAG audit",
-    "base": "http://127.0.0.1:56790",
+    "base": "http://127.0.0.1:53181",
     "stations": [
       {
         "workstation": "overview",
@@ -1646,18 +1646,18 @@
       "rendered_samples": 6,
       "all_stale": true,
       "receive_times_shown": 1,
-      "first_receive_time": "2026-11-11 03:18:53.259 UTC",
+      "first_receive_time": "2026-11-11 05:38:27.051 UTC",
       "metrics": [
-        "host.interfaces",
+        "host.hostname",
         "host.architecture",
-        "host.memory_used_bytes",
-        "host.disks",
-        "host.cpu_info",
-        "host.model"
+        "host.interfaces",
+        "host.model",
+        "host.os",
+        "host.memory_total_bytes"
       ]
     },
     "rendered_administration": {
-      "device_id": "d6c52b2c-940b-4df0-8288-ca1d40c4871e",
+      "device_id": "0760c1b0-3765-45a3-be21-8c1aec716d35",
       "revision_before": 1,
       "revision_after": 2,
       "display_name_updated": true,
@@ -1699,9 +1699,9 @@
     "precheck_path": "target/oip-canonical-acceptance/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
     "browser_path": "target/oip-canonical-acceptance/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
     "visual_path": "target/oip-canonical-acceptance/oip_canonical_ui_gate/canonical-ui/visual-comparison.json",
-    "precheck_receipt_sha256": "0bee1ec29983cae0ce847b15a6f6ed9596b730356dd9210170e51da300e11dbb",
-    "browser_receipt_sha256": "0f523d3f7c753ae9595e3f0c5f2403eecab89b6edc1d4fcb3662c8a871856b64",
-    "visual_receipt_sha256": "eed15f8baa58816e40aee26a1aeafeef22406d04e427b3b06ed1554e4ba5bccb",
+    "precheck_receipt_sha256": "6570f68ef1dcd42356841394d8c52fe6d233b6df8600ea4e8a28accc0a9b7787",
+    "browser_receipt_sha256": "c8009c70cfdb3158ec1456a6fa53c1189aa495bf2f51b8a5669268502424d026",
+    "visual_receipt_sha256": "4bf6d0165359e798a5a19949d060657f140ab0437fb35a90b7e450e318b216aa",
     "flutter_tests_passed": 365,
     "flutter_tests_failed": 0,
     "browser_findings": 187,
@@ -1712,16 +1712,16 @@
   "performance": {
     "connection_read_official_mcp": {
       "samples": 20,
-      "p50_ms": 0.7791250245645642,
-      "p95_ms": 0.917250057682395
+      "p50_ms": 0.9413330117240548,
+      "p95_ms": 1.083957962691784
     },
-    "core_rss_kib_cpu_percent": "20816   0.7",
+    "core_rss_kib_cpu_percent": "18176   0.8",
     "short_local_measurement_not_sla": true
   },
   "status": "PASS",
   "own_processes_stopped": true,
-  "the_revision": "6036ef9118d94900929cf44aef209840c9dee2b0",
-  "the_tree": "a2add7dc67ec2e94558617a892709aadaf342e2b",
+  "the_revision": "1e806309e6b4c18b71bda669a39b90ae7db41362",
+  "the_tree": "09050a9bc9cc67bcf6a5eba3604e9a97b2cadcf7",
   "the_working_tree_is_clean": true,
-  "the_revision_of_the_acceptance": "6036ef9118d94900929cf44aef209840c9dee2b0"
+  "the_revision_of_the_acceptance": "1e806309e6b4c18b71bda669a39b90ae7db41362"
 }
