@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "3e7fdf037621b3195ed17edc382918137a799d97",
-  "the_tree": "cbede922e71765a9ba12f0c539696cef70d5f5e7",
+  "the_revision": "04b916c5c9e1552fcf84fbd9b58e8b9fbcb30076",
+  "the_tree": "6d93ba37cb922ed6d8fbcdec716eb709e24e7315",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "24fe932242686a8fb9cf9db630079b46194e3d0b",
@@ -21,8 +21,8 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 726,
-    "the_sha256": "a5facb03832f334ba96997fa1c959865abcfdbe58eeea3b239813109234ac7cf"
+    "the_files": 731,
+    "the_sha256": "7f5bb9f90568dad339ff7f47383374a887fa0de545088915ec0cccc35618a1fe"
   },
   "the_artifacts": {
     "the_core": {
@@ -249,6 +249,14 @@
     "the_oip-diagnostic-continuation_rehearsal_json": {
       "path": "docs/evidence/oip-diagnostic-continuation/rehearsal.json",
       "sha256": "bc93e459c4872a8626368938f98d5c6f5abdf2915d041ebfa9349b8d2e16784c"
+    },
+    "the_oip-hue-device_bridge-certificate_pem": {
+      "path": "docs/evidence/oip-hue-device/bridge-certificate.pem",
+      "sha256": "39abc2d119d41f0bd27dab5d73bf7cb1d1b1f679111f3779a0cc2dd818bf3857"
+    },
+    "the_oip-hue-device_hue-device_json": {
+      "path": "docs/evidence/oip-hue-device/hue-device.json",
+      "sha256": "4ba7c384b54645d9eca80b0b95dcbfdde39399189bb9ef2ae3154ed40924a1da"
     },
     "the_oip-loopback-rate_loopback-rate_json": {
       "path": "docs/evidence/oip-loopback-rate/loopback-rate.json",
