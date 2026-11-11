@@ -10,6 +10,13 @@ pub struct SourceConfig {
     pub endpoint: String,
     #[serde(default = "namespace")]
     pub namespace: u16,
+    /// The entity of the source: the machine the measurements belong to.
+    /// The default is the legacy demo entity; an instance of the operator
+    /// names its own. The plan of the instance and this configuration must
+    /// name the same entity — the provisioning refuses a source whose
+    /// entity differs.
+    #[serde(default)]
+    pub entity_id: Option<String>,
 }
 fn namespace() -> u16 {
     2
@@ -21,6 +28,7 @@ impl SourceConfig {
             name: "Local OPC-UA Simulation".into(),
             endpoint: format!("opc.tcp://127.0.0.1:{port}"),
             namespace: 2,
+            entity_id: None,
         }
     }
     pub fn definition(&self) -> Result<SourceDefinition, String> {
@@ -47,7 +55,10 @@ impl SourceConfig {
         Ok(SourceDefinition {
             id: DataSourceId::new(&self.id).map_err(|_| "source id")?,
             name: self.name.clone(),
-            entity_id: EntityId::new("M-01").map_err(|_| "entity")?,
+            entity_id: EntityId::new(
+                self.entity_id.as_deref().unwrap_or("M-01"),
+            )
+            .map_err(|_| "entity")?,
             binding: self.endpoint.clone(),
             origin_class: oip_core::OriginClass::Simulation,
             simulation_origin_id: oip_simulator::SIMULATION_ORIGIN_ID.into(),
@@ -59,6 +70,27 @@ impl SourceConfig {
         })
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_entity_of_a_source_is_part_of_its_definition() {
+        let mut source = SourceConfig::primary(4840);
+        // The legacy default: the entity of the demo machine.
+        assert_eq!(
+            source.definition().expect("the definition").entity_id.as_str(),
+            "M-01"
+        );
+        // An instance of the operator names its own entity.
+        source.entity_id = Some("pi-simulation".to_owned());
+        assert_eq!(
+            source.definition().expect("the definition").entity_id.as_str(),
+            "pi-simulation"
+        );
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct CoreConfig {

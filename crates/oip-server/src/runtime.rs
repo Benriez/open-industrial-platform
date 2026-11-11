@@ -47,9 +47,16 @@ impl CollectionAdapter for OpcUaAdapter {
     fn connect(&self) -> BoxFuture<'_, Result<Box<dyn CollectionSession>, RuntimeError>> {
         Box::pin(async move {
             let client = Arc::new(
-                AsyncOpcUaClient::connect(&ClientOptions::local_simulation(
+                AsyncOpcUaClient::connect(&ClientOptions::local_simulation_of(
                     &self.config.endpoint,
                     self.config.namespace,
+                    // The measurements of the source belong to the entity that
+                    // the source declares — not to the machine id of the
+                    // simulation behind it.
+                    oip_core::EntityId::new(
+                        self.config.entity_id.as_deref().unwrap_or("M-01"),
+                    )
+                    .map_err(|_| RuntimeError::Configuration("entity".into()))?,
                 ))
                 .await?,
             );
@@ -203,7 +210,15 @@ pub async fn source_worker(
             Err(RuntimeError::Ingestion(_)) => "ingestion_error",
             _ => "adapter_disconnected",
         };
-        tracing::warn!(source_id=%id,code,run_id=state.view().health.run_id,"source isolated; retry pending");
+        // The reason of the isolation belongs in the log: without it, a
+        // source that is isolated every second is indistinguishable from a
+        // source that is merely unreachable.
+        let detail = match &result {
+            Err(RuntimeError::Ingestion(message)) => message.clone(),
+            Err(RuntimeError::AdapterPanic) => "the adapter panicked".to_owned(),
+            _ => "the adapter disconnected".to_owned(),
+        };
+        tracing::warn!(source_id=%id,code,run_id=state.view().health.run_id,detail=%detail,"source isolated; retry pending");
         let _ = state
             .ingest_for(
                 &id,

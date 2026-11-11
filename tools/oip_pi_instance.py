@@ -241,6 +241,10 @@ def prepare(instance: pathlib.Path, http_port: int, source_port: int,
         "name": "The simulation of this host",
         "endpoint": f"opc.tcp://127.0.0.1:{source_port}",
         "namespace": 2,
+        # The entity of the source: the machine the measurements belong to.
+        # The plan of the instance names the same entity — the provisioning
+        # of the Core refuses a source whose entity differs.
+        "entity_id": "pi-simulation",
     }
     write_json(instance / "etc" / "core.json",
                the_core_config(instance, http_port, source))

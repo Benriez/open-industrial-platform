@@ -140,9 +140,25 @@ pub struct ClientOptions {
     pub freshness: FreshnessPolicy,
     /// Maximum number of nodes the adapter traverses while browsing.
     pub max_browse_nodes: usize,
+    /// The entity of the source: the machine the measurements of the source
+    /// belong to. The adapter delivers the observations with **this** entity
+    /// — the machine id of a simulation is a property of the simulation, not
+    /// of the source that collects it.
+    pub entity_id: Option<oip_core::EntityId>,
 }
 
 impl ClientOptions {
+    /// The options of a source whose measurements belong to a named entity.
+    pub fn local_simulation_of(
+        endpoint: impl Into<String>,
+        namespace: u16,
+        entity_id: oip_core::EntityId,
+    ) -> Self {
+        let mut options = Self::local_simulation(endpoint, namespace);
+        options.entity_id = Some(entity_id);
+        options
+    }
+
     pub fn local_simulation(endpoint: impl Into<String>, namespace: u16) -> Self {
         Self {
             endpoint: endpoint.into(),
@@ -152,6 +168,7 @@ impl ClientOptions {
             session_retry_limit: 20,
             freshness: FreshnessPolicy::default(),
             max_browse_nodes: 5_000,
+            entity_id: None,
         }
     }
 }

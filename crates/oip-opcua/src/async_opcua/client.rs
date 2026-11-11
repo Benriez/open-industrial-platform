@@ -149,7 +149,12 @@ impl AsyncOpcUaClient {
             .map_err(|error| AdapterError::Connection(error.to_string()))?;
         let (event_sender, event_receiver) = mpsc::channel(EVENT_CHANNEL_CAPACITY);
         let state =
-            CollectionState::new(options.namespace, event_sender, options.freshness.clone());
+            CollectionState::new(
+                options.namespace,
+                options.entity_id.clone(),
+                event_sender,
+                options.freshness.clone(),
+            );
         let subscribed_metrics = Arc::new(Mutex::new(Vec::new()));
         let event_task = OwnedEventTask(spawn_event_loop(
             event_loop,
@@ -261,6 +266,10 @@ impl AsyncOpcUaClient {
         };
         let mut observation =
             data_value_to_observation(name, &value, &metadata, latest, &self.state.freshness)?;
+        // The measurements of the source belong to the entity of the source.
+        if let Some(source_entity) = self.state.entity_id.clone() {
+            observation.entity_id = source_entity;
+        }
         if let Some(entity) = entity {
             // The value of a node belongs to the entity that the **source**
             // declares — not to the machine of a simulator profile.
@@ -557,6 +566,9 @@ fn signed_value(value: MetricValue) -> Option<i64> {
 #[derive(Clone)]
 struct CollectionState {
     namespace: u16,
+    /// The entity of the source: the measurements of the source belong to it,
+    /// whatever the machine id of the simulation is.
+    entity_id: Option<oip_core::EntityId>,
     event_sender: mpsc::Sender<ClientEvent>,
     metadata: Arc<Mutex<SimulationMetadata>>,
     active_subscriptions: Arc<Mutex<Vec<u32>>>,
@@ -570,11 +582,13 @@ struct CollectionState {
 impl CollectionState {
     fn new(
         namespace: u16,
+        entity_id: Option<oip_core::EntityId>,
         event_sender: mpsc::Sender<ClientEvent>,
         freshness: FreshnessPolicy,
     ) -> Self {
         Self {
             namespace,
+            entity_id,
             event_sender,
             metadata: Arc::new(Mutex::new(SimulationMetadata::default())),
             active_subscriptions: Arc::new(Mutex::new(Vec::new())),
@@ -651,6 +665,14 @@ async fn subscribe_session(
                             data_value_to_observation(
                                 &metric, &value, &metadata, latest, &freshness,
                             )
+                            .map(|mut observation| {
+                                // The measurements of the source belong to
+                                // the entity of the source.
+                                if let Some(entity) = collection_state.entity_id.clone() {
+                                    observation.entity_id = entity;
+                                }
+                                observation
+                            })
                             .map_err(|error| error.to_string())
                         });
                 match mapped {

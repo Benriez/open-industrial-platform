@@ -182,6 +182,34 @@ async fn browse_reports_the_folder_of_every_node() {
     server.stop().await.expect("stop server");
 }
 
+/// The measurements of a source belong to the entity that the source
+/// declares — not to the machine id of the simulation behind it.
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn the_observations_of_a_source_carry_the_entity_of_the_source() {
+    let port = free_port();
+    let server = RunningAsyncOpcUaServer::start(test_config(port, Scenario::Normal, 4))
+        .await
+        .expect("start server");
+    let entity = EntityId::new("the-entity-of-the-source").expect("valid entity id");
+    let client = AsyncOpcUaClient::connect(&ClientOptions::local_simulation_of(
+        server.endpoint(),
+        2,
+        entity.clone(),
+    ))
+    .await
+    .expect("connect");
+    let observation = client
+        .read(&MetricId::new("temperature").expect("valid metric id"))
+        .await
+        .expect("read the metric");
+    assert_eq!(
+        observation.entity_id, entity,
+        "the measurement belongs to the entity of the source"
+    );
+    client.disconnect().await.expect("disconnect");
+    server.stop().await.expect("stop server");
+}
+
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn read_node_reads_the_node_id_and_not_the_name() {
     let port = free_port();

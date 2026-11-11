@@ -229,6 +229,12 @@ def main():
             assert source["endpoint"].startswith("opc.tcp://127.0.0.1:"), \
                 "a source of the instance is not on the loopback of the host"
             assert source["namespace"] == 2
+            assert source["entity_id"], "the source of the instance names no entity"
+        # The plan and the configuration name the same entity: the
+        # provisioning of the Core refuses a source whose entity differs.
+        assert {source["entity_id"] for source in core["sources"]} == \
+            {source["entity_id"] for source in plan["sources"]}, \
+            "the plan and the configuration name different entities"
         assert {source["id"] for source in core["sources"]} == \
             {source["source_id"] for source in plan["sources"]}, \
             "the plan and the configuration name different sources"

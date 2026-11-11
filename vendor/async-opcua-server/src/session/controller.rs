@@ -144,7 +144,9 @@ impl<T: Connector> SessionStarter<T> {
                     Err(e) => {
                         on_connect(e);
                         span.in_scope(|| {
-                            tracing::error!("Connection failed while waiting for channel to be established: {e}");
+                            tracing::error!(
+                                "Connection failed while waiting for channel to be established: {e}"
+                            );
                         });
                         return;
                     }

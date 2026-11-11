@@ -235,6 +235,15 @@ impl Connector for TcpConnector {
             }
         };
 
+        // The reason of the refusal is the diagnosis of the handshake: the
+        // status code alone does not say whether the hello, the buffer sizes
+        // or the endpoint url was refused.
+        tracing::error!(
+            "the OPC-UA handshake of the connection failed: {} ({})",
+            err.error,
+            err.reason
+        );
+
         // We want to send an error if connection failed for whatever reason, but
         // there's a good chance the channel is closed, so just ignore any errors.
         let mut buf = Vec::with_capacity(opcua_types::SimpleBinaryEncodable::byte_len(&err));
