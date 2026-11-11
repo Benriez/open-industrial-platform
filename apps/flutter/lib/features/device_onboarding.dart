@@ -5,6 +5,7 @@ import '../app/controller.dart';
 import '../models/contracts.dart';
 import '../models/onboarding.dart';
 import '../services/api.dart';
+import '../widgets/device_kind.dart';
 
 Future<void> showDeviceOnboarding(
         BuildContext context, OipController controller, {String? deviceId}) =>
@@ -380,6 +381,7 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                 field('Anzeigename', name, 'device-name', locked: existing),
                 if (!existing)
                   DropdownButtonFormField<String>(
+                      key: const Key('onboarding-type'),
                       isExpanded: true,
                       value: kind,
                       decoration: const InputDecoration(labelText: 'Gerätetyp'),
@@ -393,8 +395,8 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                         'sensor',
                         'other'
                       ]
-                          .map(
-                              (v) => DropdownMenuItem(value: v, child: Text(v)))
+                          .map((v) => DropdownMenuItem(
+                              value: v, child: Text(deviceKindName(v))))
                           .toList(),
                       onChanged: (v) => setState(() => kind = v!)),
                 const SizedBox(height: 12),

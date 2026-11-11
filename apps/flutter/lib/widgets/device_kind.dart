@@ -67,10 +67,14 @@ String deviceKindName(String kind) =>
 /// A type that the client does not know gets the icon of an unknown device:
 /// the surface says that it does not know the type instead of showing a
 /// device of a different kind.
+///
+/// The two spellings of a type — the enum of the Core and the spelling of
+/// the inventory route — carry the **same** icon: the vocabulary knows one
+/// type, not two.
 IconData deviceKindIcon(String kind) => switch (kind) {
-      'Server' || 'Compute' || 'Edge' => Icons.dns_outlined,
-      'Desktop' => Icons.desktop_windows_outlined,
-      'Laptop' => Icons.laptop_mac,
+      'Server' || 'server' || 'Compute' || 'Edge' => Icons.dns_outlined,
+      'Desktop' || 'desktop' => Icons.desktop_windows_outlined,
+      'Laptop' || 'laptop' => Icons.laptop_mac,
       'SingleBoardComputer' || 'single_board_computer' => Icons.memory,
       'NetworkDevice' || 'network_device' || 'Gateway' || 'Bridge' =>
         Icons.router_outlined,

@@ -69,6 +69,25 @@ class InventoryOnlyApi extends FakeApi implements DeviceManagementApi {
 }
 
 void main() {
+  testWidgets('The type of the device is named with the shared vocabulary',
+      (tester) async {
+    final api = InventoryOnlyApi();
+    final controller = OipController(api);
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(body: DeviceOnboarding(controller: controller))));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('onboarding-type')));
+    await tester.tap(find.byKey(const Key('onboarding-type')));
+    await tester.pumpAndSettle();
+    // The word of the type has one owner: the onboarding dialog does not
+    // paint the identifier of the Core as if it were a word of the surface.
+    expect(find.text('Einzelplatine'), findsWidgets);
+    expect(find.text('Netzwerkgerät'), findsWidgets);
+    expect(find.text('single_board_computer'), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+  });
+
   testWidgets(
       'Manual inventory registration preserves entered identity and requires consent, without SSH',
       (tester) async {

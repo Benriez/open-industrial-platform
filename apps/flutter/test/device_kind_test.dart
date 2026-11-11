@@ -87,4 +87,26 @@ void main() {
     // An unknown type never borrows the identity of another type.
     expect(deviceKindIcon('SomethingNew'), isNot(deviceKindIcon('Server')));
   });
+
+  test('both spellings of a type carry the same word, icon and category', () {
+    // The enum of the Core and the spelling of the inventory route name the
+    // **same** type: the vocabulary knows one type, not two.
+    for (final pair in [
+      ['Server', 'server'],
+      ['Desktop', 'desktop'],
+      ['Laptop', 'laptop'],
+      ['SingleBoardComputer', 'single_board_computer'],
+      ['NetworkDevice', 'network_device'],
+      ['IndustrialDevice', 'industrial_device'],
+      ['Sensor', 'sensor'],
+      ['Other', 'other'],
+    ]) {
+      expect(deviceKindLabel(pair[0]), deviceKindLabel(pair[1]),
+          reason: pair[1]);
+      expect(deviceKindIcon(pair[0]), deviceKindIcon(pair[1]),
+          reason: pair[1]);
+      expect(deviceKindCategory(pair[0]), deviceKindCategory(pair[1]),
+          reason: pair[1]);
+    }
+  });
 }
