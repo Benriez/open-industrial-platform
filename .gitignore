@@ -174,6 +174,10 @@ secrets/
 # The secure update of the Core of an instance: what it does and what it
 # refuses.
 !/docs/evidence/oip-update/update.json
+# The disposable instance of the Core on the Raspberry Pi: the cross build,
+# the bundle, the start by hand, the tunnel, the authorized session and the
+# stop — with the services of the operator unchanged.
+!/docs/evidence/oip-pi-instance/pi-instance.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json

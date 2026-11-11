@@ -192,29 +192,29 @@ def main():
              "-L", f"127.0.0.1:{local_port}:127.0.0.1:{CORE_PORT}", args.host],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         base = f"http://127.0.0.1:{local_port}"
-        deadline = time.monotonic() + 60
-        answered = False
-        while time.monotonic() < deadline:
-            try:
-                with urllib.request.urlopen(base + "/api/v1/system/status", timeout=3):
-                    answered = True
-                    break
-            except (urllib.error.URLError, OSError):
-                time.sleep(0.3)
-        assert answered, "the Core of the host does not answer through the tunnel"
-        report["steps"].append("the Core of the host answers through the loopback of the client")
 
-        # the session: the code is minted on the host, over its local IPC
+        # the session: the code is minted on the host, over its local IPC, and
+        # the session is opened through the tunnel. Every route of an instance
+        # with a session needs one — the health routes included — so the
+        # session is the proof that the Core of the host answers.
         minted = ssh(args.host, f"cd {REMOTE_DIRECTORY} && ./bin/login-code.sh", timeout=300)
         report["the_code_of_the_session"] = {"the_code": minted["the_code"]}
         assert minted["the_code"] == 0, minted["the_error"]
         code = json.loads(minted["the_output"])["login_code"]
         jar = http.cookiejar.CookieJar()
         opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
-        status, session = request(base, "/api/v2/browser/login", "POST", {"code": code},
-                                  opener=opener)
-        report["the_login"] = {"the_status": status}
+        deadline = time.monotonic() + 60
+        session = {"the_status": 0}
+        while time.monotonic() < deadline:
+            status, session = request(base, "/api/v2/browser/login", "POST",
+                                      {"code": code}, opener=opener)
+            if status == 200:
+                break
+            time.sleep(0.5)
+        report["the_login"] = {"the_status": session.get("the_status", status)}
         assert status == 200, session
+        report["steps"].append(
+            "the Core of the host answers through the loopback of the client")
         status, answer = request(base, "/api/v2/browser/session", opener=opener)
         report["the_session"] = {"the_status": status,
                                  "the_authenticated": answer.get("authenticated")}

@@ -3502,6 +3502,52 @@ with the operator, the public key of the instance is placed in
 No personal database change, no schema-7 activation of the personal installation, no write on any
 host or device of the operator, no service installed, no port published, no push, no deployment.
 
+### Iteration 76 — the Core runs on the Raspberry Pi, and the deployment is measured
+
+**Status: PROVED on canonical `main`.**
+The operator's primary architectural wish — the Rust OIP Core on `bodi-pi`, the Flutter client on
+the Mac — was a plan and a bundle. This iteration runs it and measures it, and it finds a defect
+that the plan could not see.
+
+* **The deployment is measured, not planned.** The rehearsal (`tests/oip_pi_instance.py`,
+  `docs/evidence/oip-pi-instance/pi-instance.json`) crosses the workspace for the target of the
+  host, assembles the bundle, copies it to the Pi, **starts the instance by hand** and proves:
+  the Core of the host answers **through a tunnel of the loopback**; the session of the operator is
+  minted **on the host** over its local IPC and opens the authorized projection (the address space of
+  the simulation of the host: 1020 nodes in five folders; the organization of the instance); the
+  instance **publishes no port** of the host; the instance stops; and the **services of the operator
+  are the same list before and after** — nothing of the BODI installation of the host was touched.
+* **The deployment found a defect that the local rehearsals had hidden.** The measurements of a
+  source carried the **machine id of the simulation** ("M-01") instead of the **entity that the
+  source declares**. The Core refused them ("the observation does not match registered source,
+  entity or provenance") and isolated the source every second — on the Pi *and* on the Mac, as soon
+  as the binaries were current. Two things were wrong: the **entity of a source was a hardcoded
+  demo default** in the configuration, and the **adapter** stamped the machine of the simulation on
+  every measurement. The configuration names the entity of its source now
+  (`crates/oip-server/src/config.rs`), the adapter delivers the measurements **with the entity of
+  the source** (`crates/oip-opcua/src/async_opcua/client.rs`), and the Core hands the entity of the
+  source to the adapter (`crates/oip-server/src/runtime.rs`). The unit test proves that a
+  measurement belongs to the entity of its source.
+* **The evidence had a hole, and it is closed.** The rehearsals of the release drive the binaries
+  of the build tree — and the tree held binaries of an **older revision** (the debug build of the
+  Core was a day old), so the rehearsals measured an older product while the receipts said
+  "PASS". The refresh now **builds the workspace before the first rehearsal** and refuses to run
+  when the build fails (`tools/oip_refresh_evidence.py`). A receipt that measures stale binaries is
+  worse than no receipt.
+* **Two diagnoses became part of the product.** The isolation of a source now names its **reason**
+  in the log (`crates/oip-server/src/runtime.rs`) — a source that is isolated every second was
+  indistinguishable from a source that is merely unreachable; and the vendored OPC-UA server names
+  the **reason of a refused handshake** (`vendor/async-opcua-server/src/transport/tcp.rs`) — the
+  status code alone did not say whether the hello, the buffer sizes or the endpoint url had been
+  refused. Both were written while the deployment was failing.
+
+The instance on the Pi is **stopped** after the measurement and its files stay on the host; the
+**decision to keep it running** and the client that is built for the port of the instance are the
+operator's.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
+
 ## 5. Evidence index
 
 | Artifact | Content |

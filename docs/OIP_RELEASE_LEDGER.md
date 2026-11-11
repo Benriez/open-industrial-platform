@@ -80,7 +80,16 @@ An **independent verification** of that change (a delegated, read-only audit of 
    `docs/release/mac-app-store/privacy-policy.md`). The package is **upload-ready**; the upload
    itself, the identity, the certificate, the profile and the two public URLs are the operator's.
 
-5. **N23 (the secure update of the deployed software)**: the **update path of the Core** is
+5. **N24 (the Core on the Raspberry Pi)**: the **deployment is measured** now
+   (`tests/oip_pi_instance.py`, `docs/evidence/oip-pi-instance/pi-instance.json`): the cross build for
+   the target of the host, the bundle, the **start by hand** (no service, no published port, nothing
+   outside the directory of the instance), the Core answering **through a tunnel of the loopback**,
+   the session of the operator minted **on the host** over its local IPC, the authorized projection
+   (the address space of the simulation of the host: 1020 nodes in five folders) and the **stop** —
+   with the services of the operator the **same list** before and after. The host discovery that
+   decided the target is measured too (`docs/evidence/oip-deployment-discovery/deployment-discovery.json`).
+
+6. **N23 (the secure update of the deployed software)**: the **update path of the Core** is
    implemented and **measured** (`tools/oip_update.py`, `tests/oip_update.py`,
    `docs/evidence/oip-update/update.json`, `docs/runbooks/operations.md` §16): the bundle is
    **authenticated** with an Ed25519 signature over the exact bytes of the manifest, the
@@ -133,7 +142,13 @@ host of the Core.
   the Core — the diagnostic pages, the observation history — uses an opaque cursor and is
   therefore stable. Giving the address space the same cursor changes the query of the REST and
   MCP surface of the Core and is a contract decision of the operator, not of the loop.
-* **The Core on `bodi-pi`**: the operator intends the Core to run on the Raspberry Pi and
+* **The Core on `bodi-pi`**: the **deployment is measured** — the Core really runs on the
+  Raspberry Pi, it answers through a tunnel of the loopback, the session of the operator is minted on
+  the host, and the services of the operator are unchanged
+  (`docs/evidence/oip-pi-instance/pi-instance.json`). What remains for the operator is the
+  **decision to keep it running** (the rehearsal stops the instance and leaves its files on the host)
+  and the **client** that is built for the port of the instance. The operator intends the Core to run
+  on the Raspberry Pi and
   the Mac to run **only** the Flutter client. The reconciliation and the smallest safe step
   are in `docs/runbooks/operations.md` §15; the plan installs no service, publishes no port,
   changes no BODI service of the host and touches no personal data. The **outstanding
@@ -270,6 +285,7 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-transport-parity/transport-parity.json` | the parity of REST, SSE and MCP and the scope of the projection |
 | `docs/evidence/oip-security-review/security-review.json` | the security release review: 12 findings, 9 resolved, 2 mitigated, 1 escalated |
 | `docs/evidence/oip-rust-regression/rust-regression.json` | the Rust regression of the workspace: 185 tests in 29 suites |
+| `docs/evidence/oip-pi-instance/pi-instance.json` | the disposable instance of the Core on the Raspberry Pi: the cross build for the target of the host, the bundle, the **start by hand**, the Core answering through a tunnel of the loopback, the session of the operator minted on the host, the authorized projection (the address space of the simulation of the host and the organization of the instance), **no published port** and the **services of the operator unchanged** before and after |
 | `docs/evidence/oip-update/update.json` | the secure update of the Core of an instance: a signed bundle is verified (the Ed25519 signature over the exact bytes of the manifest), the digests are verified before the activation and again after the write, the switch is atomic, the new version is health checked as a disposable instance, a version that does not become ready is rolled back, and the durable journal of the instance names every attempt — the changed artefact, the forged manifest, the foreign target and the repeated revision are refused |
 | `docs/evidence/oip-mas-package/mas-package.json` | the package of the macOS client for the Mac App Store: the release build, the entitlements of the bundle (the app sandbox and the network client, without the debug entitlement of the entitlements file), the hardened runtime in the signature, the privacy manifest in the bundle, the absence of the quarantine attribute on every file, the category and the transport security of the Info.plist, the icon and the signature of every executable |
 | `docs/evidence/oip-deployment-discovery/deployment-discovery.json` | the deployed hosts and the two device classes of the operator, measured read-only: the identity, the architecture, the memory, the disk, the toolchain, the services of the operator (unchanged before and after) and the listeners of `bodi-pi` and `bodi-pc`; the SSH banner and the host keys of the OpenWrt router; the public configuration of the Hue Bridge and the refusal of its lights without a token |
