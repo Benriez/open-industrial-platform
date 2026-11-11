@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "abd9a2d3d29aa312e6673505a4ccc5ada49348d9",
+      "the_revision": "163e7a3e64289e1f1fdbff6d1457b6bcd4928a6b",
       "the_revision_of_the_source": {
         "the_revision": "61c1531fa9f205c8a6f3db68350904f1642256d9",
         "the_subject": "feat(g8,g10): the address space is honest; the instance of the Pi is one bundle"
@@ -12,7 +12,7 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 701,
-        "the_sha256": "b0bbb336915cdfd09d5692222c36b342fb6d33c7d0eecc55b94f5d56e1d5cd20"
+        "the_sha256": "600578a50e0d769e947156962a534d7b154e39b6471a2bf4a60e7bdd239c1435"
       },
       "the_artifacts": {
         "the_core": "1a4e7870968863bf96de80bbb58efca4510fccf1e6e61da18574b33f2955b00c",
@@ -29,9 +29,9 @@
       "the_core_the_acceptance_executed": "1a4e7870968863bf96de80bbb58efca4510fccf1e6e61da18574b33f2955b00c",
       "the_acceptance_executed_the_core_that_the_manifest_names": true,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-      "the_core_is_the_reproducible_one": false,
-      "the_manifest_names_the_reproducible_binary": false,
-      "the_sources_of_the_core_are_unchanged_since_the_receipt": false
+      "the_core_is_the_reproducible_one": true,
+      "the_manifest_names_the_reproducible_binary": true,
+      "the_sources_of_the_core_are_unchanged_since_the_receipt": true
     },
     "the_freshness": {
       "the_last_change_of_the_product": {
@@ -152,11 +152,9 @@
     "G10",
     "G12"
   ],
-  "the_problems": [
-    "the receipt the_reproducible_build does not match its digest"
-  ],
-  "the_revision": "163e7a3e64289e1f1fdbff6d1457b6bcd4928a6b",
-  "the_tree": "724dd9883442bfa75d51cd65aed30affefe9f885",
-  "the_working_tree_is_clean": false,
-  "status": "FAIL"
+  "the_problems": [],
+  "the_revision": "a3a36a81082e1874bdf868647b76b1ae4f18e168",
+  "the_tree": "7e3a571e062e4f63d28c8fbd32a8892b8143d501",
+  "the_working_tree_is_clean": true,
+  "status": "PASS"
 }
