@@ -50,6 +50,9 @@ STORE_ASSETS = ROOT / "docs/evidence/oip-store-screenshots/captures"
 # "Screenshot specifications", read on 2026-11-11).
 ACCEPTED_SIZES = [(1280, 800), (1440, 900), (2560, 1600), (2880, 1800)]
 ACCEPTED_FORMATS = (".png", ".jpg", ".jpeg")
+# The name of the app in the listing of the App Store
+# (`docs/release/mac-app-store/metadata.md`).
+LISTING_NAME = "Open Industrial Platform"
 
 # The entitlements that the release build must carry, and the ones it must
 # not carry.
@@ -206,9 +209,25 @@ def verify(bundle: pathlib.Path):
         "the_minimum_system": info.get("LSMinimumSystemVersion"),
         "the_category": info.get("LSApplicationCategoryType"),
         "the_transport_security": info.get("NSAppTransportSecurity"),
+        "the_display_name": info.get("CFBundleDisplayName"),
+        "the_name": info.get("CFBundleName"),
+        "the_copyright": info.get("NSHumanReadableCopyright"),
     }
     if info.get("LSApplicationCategoryType") != "public.app-category.utilities":
         report["the_problems"].append("the bundle names no category")
+    # The name that the operator sees is the name of the listing; the name on
+    # the disk stays the technical one.
+    display = info.get("CFBundleDisplayName")
+    if not display:
+        report["the_problems"].append("the bundle carries no display name")
+    elif display != LISTING_NAME:
+        report["the_problems"].append(
+            f"the display name of the bundle is {display!r}, the listing names "
+            f"{LISTING_NAME!r}")
+    if info.get("CFBundleName") != "oip_dashboard":
+        report["the_problems"].append(
+            "the name of the bundle on the disk changed; the paths of the "
+            "release name it")
     transport = info.get("NSAppTransportSecurity") or {}
     if transport.get("NSAllowsLocalNetworking") is not True:
         report["the_problems"].append(
@@ -340,7 +359,57 @@ def build_the_archive():
         xml = xml[xml.index("<?xml"):] if "<?xml" in xml else xml[xml.index("<plist"):]
         xml = xml[:xml.rindex("</plist>") + len("</plist>")]
         report["the_entitlements"] = plistlib.loads(xml.encode())
+    report["the_launch_of_the_hardened_bundle"] = the_launch(app)
     return report
+
+
+def the_launch(app: pathlib.Path, seconds: float = 12.0):
+    """Does the **hardened** bundle start?
+
+    The library validation of the hardened runtime refuses an ad-hoc signed
+    framework. The archive of the measurement is signed ad-hoc, so this is
+    the measurement of the fact that decides the shape of the distribution
+    build: a hardened bundle that does not start under an ad-hoc signature
+    needs a distribution-only configuration, because the local bundle has to
+    stay launchable.
+
+    The measurement starts the bundle, waits and records whether the process
+    is still alive. It never leaves a process behind.
+    """
+    executable = app / "Contents/MacOS/oip_dashboard"
+    if not executable.is_file():
+        return {"the_executable": str(executable), "the_present": False}
+    process = subprocess.Popen([str(executable)], stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT, text=True)
+    alive = False
+    try:
+        deadline = time.monotonic() + seconds
+        while time.monotonic() < deadline:
+            if process.poll() is not None:
+                break
+            time.sleep(0.2)
+        alive = process.poll() is None
+    finally:
+        if process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                process.kill()
+    output = ""
+    try:
+        output = (process.stdout.read() if process.stdout else "")[-600:]
+    except Exception:
+        output = ""
+    return {
+        "the_executable": str(executable),
+        "the_present": True,
+        "the_process_starts": alive,
+        "the_exit_code": process.returncode,
+        "the_output": output,
+        "the_note": "a hardened bundle that does not start under an ad-hoc "
+                    "signature needs a distribution-only build configuration",
+    }
 
 
 def main():

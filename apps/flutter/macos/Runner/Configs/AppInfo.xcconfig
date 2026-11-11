@@ -7,8 +7,17 @@
 // The application's name. By default this is also the title of the Flutter window.
 PRODUCT_NAME = oip_dashboard
 
+// The name that the operator sees: in the Dock, in the menu bar and in the
+// window of the app. The name of the listing is "Open Industrial Platform";
+// the name on the disk stays the technical one, so the paths of the bundle
+// and of the archive do not change.
+PRODUCT_DISPLAY_NAME = Open Industrial Platform
+
 // The application's bundle identifier
 PRODUCT_BUNDLE_IDENTIFIER = org.openindustrial.oipDashboard
 
-// The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 org.openindustrial. All rights reserved.
+// The copyright displayed in application information.
+//
+// It names the same holder as the listing of the App Store
+// (`docs/release/mac-app-store/metadata.md`).
+PRODUCT_COPYRIGHT = Copyright © 2026 Open Industrial Platform. All rights reserved.

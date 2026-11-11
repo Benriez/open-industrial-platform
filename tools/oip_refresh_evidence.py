@@ -148,6 +148,11 @@ REHEARSALS = [
     # digests, the atomic switch, the health check and the rollback.
     ("oip_update", "tests/oip_update.py",
      {"update.json": "oip-update/update.json"}),
+    # The export recipe of the App Store listing: the template with its
+    # placeholders, the tool that renders it and the refusal without the
+    # identity of the operator.
+    ("oip_mas_export", "tests/oip_mas_export.py",
+     {"mas-export.json": "oip-mas-export/mas-export.json"}),
     # The store assets of the Mac App Store listing: the six workstations of
     # the client in the size that Apple accepts for a Mac app, without an
     # alpha channel.

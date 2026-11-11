@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+	The export options of the App Store listing.
+
+	This file is a **template**: the placeholders below are the identity of
+	the operator and are never part of the repository. `tools/oip_mas_export.py`
+	renders it into `target/` and refuses to render it while a placeholder is
+	left.
+
+	* `method` — the export method of `xcodebuild -exportArchive`
+	  (`app-store-connect`; the older `app-store` is deprecated).
+	* `teamID` — the Apple Developer team of the operator.
+	* `signingStyle` — `automatic` lets Xcode resolve the profile.
+	* `signingCertificate` — the identity that signs the export
+	  (`Apple Distribution`).
+	* `provisioningProfiles` — the profile of the **bundle identifier** of the
+	  client; the key is the bundle identifier, the value is the name of the
+	  profile.
+	* `destination` — `export` writes the product into the export path; `upload`
+	  hands it to the App Store (that step needs the session of the operator).
+-->
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>__METHOD__</string>
+	<key>teamID</key>
+	<string>__TEAM_ID__</string>
+	<key>signingStyle</key>
+	<string>__SIGNING_STYLE__</string>
+	<key>signingCertificate</key>
+	<string>__SIGNING_CERTIFICATE__</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>org.openindustrial.oipDashboard</key>
+		<string>__PROFILE_NAME__</string>
+	</dict>
+	<key>destination</key>
+	<string>__DESTINATION__</string>
+</dict>
+</plist>
