@@ -28,6 +28,7 @@ import sys
 import time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+APPS = ROOT / "apps" / "flutter"
 EVIDENCE = ROOT / "docs" / "evidence"
 
 # The rehearsals of the release, in the order they are run, with the receipt
@@ -299,22 +300,32 @@ def main():
     # workspace is therefore built before the first rehearsal, and a build
     # that fails stops the refresh instead of measuring something else.
     #
+    # The browser rehearsals drive the **web bundle** of the tree, and the
+    # bundle is a binary like any other: a bundle that was built from an
+    # older revision measures an older product. The release bundle is
+    # therefore built with the command that the canonical gate and the
+    # reproducible build use — the same bytes, so the bundle that the
+    # rehearsals measure is the bundle that the acceptance delivers.
+    #
     # The publication of a receipt that was measured before does **not**
     # measure anything: it only copies a receipt into the checkout. It
     # therefore needs no binary and must not build one — on a machine whose
     # disk is full, a build that is not needed is a failure of the
     # publication.
-    for command in (() if args.publish_only else (
+    for command, directory in (() if args.publish_only else (
         # The rehearsals of the release drive the binaries of the tree: the
         # development profile and the release profile.
-        ["cargo", "build", "--workspace", "--bin", "oip-server",
-         "--bin", "oip-simulated-server"],
-        ["cargo", "build", "--locked", "--release", "--workspace",
-         "--bin", "oip-server", "--bin", "oip-simulated-server",
-         "--example", "mcp_probe"],
+        (["cargo", "build", "--workspace", "--bin", "oip-server",
+          "--bin", "oip-simulated-server"], ROOT),
+        (["cargo", "build", "--locked", "--release", "--workspace",
+          "--bin", "oip-server", "--bin", "oip-simulated-server",
+          "--example", "mcp_probe"], ROOT),
+        # The web bundle that the browser rehearsals drive.
+        (["flutter", "build", "web", "--release", "--web-renderer", "canvaskit",
+          "--no-web-resources-cdn", "--pwa-strategy=none"], APPS),
     )):
-        built = subprocess.run(command, cwd=ROOT, capture_output=True, text=True,
-                               timeout=7200)
+        built = subprocess.run(command, cwd=directory, capture_output=True,
+                               text=True, timeout=7200)
         if built.returncode != 0:
             print("the workspace did not build — the rehearsals would measure an "
                   "older binary:")
@@ -322,7 +333,8 @@ def main():
             return 2
     if not args.publish_only:
         print("BUILD the workspace of the tree (the development and the release "
-              "profile)", flush=True)
+              "profile) and the web bundle that the browser rehearsals drive",
+              flush=True)
 
     report = {"schema": "oip-refresh-evidence-v1", "the_rehearsals": []}
     for name, script, receipts in REHEARSALS:
