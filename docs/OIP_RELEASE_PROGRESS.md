@@ -3689,6 +3689,52 @@ The next independent READY work is the **client**: the Devices workspace names t
 a device as `Nicht verfügbar`, although the Core holds it — the verified facts of the bridge
 should be visible where the operator looks at a device.
 
+### Iteration 80 — the Devices workspace names the identity that the Core holds
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates
+that need the operator (G5, G10, G12) stay open, and nothing in this iteration changes them.
+
+* **The client showed `Nicht verfügbar` where the Core holds the fact.** The identity of a device
+  lives in the **inventory** of the Core (manufacturer, model, firmware, serial number, address);
+  the summary of a device carries none of it, and the Devices workspace painted
+  `MANUFACTURER / MODEL: Nicht verfügbar` and `FIRMWARE / OS: Nicht verfügbar` next to the
+  **device id** of a device the Core knows. The workspace now asks the inventory for the record
+  of the selected device and names the facts the Core holds; **a fact that the Core does not hold
+  is named as unavailable and never invented** (`7ce11fd`,
+  `apps/flutter/test/device_identity_test.dart` — the record of the Core and the case without one).
+* **The refresh of the release was measured with the binaries of the tree** (`tools/oip_refresh_evidence.py`):
+  **34 of the 35 rehearsals PASS** at the product revision `7ce11fd`; the one failure was the
+  record itself — the canonical state named the older release — and this iteration closes it.
+* **The acceptance ran with the release binary, and the reproducible build ran at the same
+  revision** (`646e072`): the eight functional phases **8 of 8 PASS**, the browser gate **PASS**
+  with **187 findings** and **13 captures**, the visual comparison **PASS**, and the **Core is
+  byte-identical over two builds**. The binary that the gate executed is the binary that the
+  manifest names (`1bf6a47d…`), and the release verifies with **one command**
+  (`docs/evidence/oip-release-verification/release-verification.json`: **PASS**, verdict
+  `OIP_PRODUCTION_NOT_READY`, the gates that need the operator **G5**, **G10**, **G12**).
+* **Three receipts of the release were measured outside the refresh, and they went stale without
+  a notice.** The discovery of the deployed hosts, the deployment on the Raspberry Pi and the
+  onboarding of the Hue Bridge were measured by hand, so a change of the product left them
+  behind — the verification caught it every time. They are now **part of the refresh**
+  (`oip_deployment_discovery`, `oip_pi_instance`, `oip_hue_device`) and are measured with it. The
+  check that found them stays as strict as it was: a receipt that predates the last change of the
+  product is still refused.
+* **The numbers of the record were corrected.** The check of the numbers found two drifts that
+  the refresh had made true: the Rust suite now delivers **187 tests in 29 suites** (the record
+  quoted 185) and the client **367 Flutter tests** (the record quoted 365). The record names the
+  numbers that the receipts carry (`docs/OIP_RELEASE_LEDGER.md`,
+  `tests/oip_record_numbers.py`: 108 rows, 26 measurements, no problem).
+
+The next independent READY task is **N27**: the **type** of a device is painted as the raw
+identifier of the enum of the Core (`SingleBoardComputer`, `NetworkDevice`) in the Devices and
+the Network workstations, and the icon maps of the client fall back silently for every type that
+the Core can really produce. The defect is visible in the **own painted-surface evidence** of the
+record — the honest fix is **one** owner of the vocabulary in the client.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment. Every
+request to the Hue Bridge of the operator was a `GET`.
+
 ## 5. Evidence index
 
 | Artifact | Content |
