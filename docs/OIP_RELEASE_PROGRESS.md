@@ -14,12 +14,12 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 |---|---|
 | Canonical branch | `main` |
 | Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `0593497` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `1e80630` (tree `09050a9`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `1e80630` — the binary names its own revision; the same revision yields the same bytes |
+| The revision of the final acceptance | `58f6c82` (tree `a1fc365`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `58f6c82` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 703 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 710 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -3433,6 +3433,25 @@ and the privacy policy prepared.
 The **secure update of the deployed software** (authenticated delivery, the verification of the
 authenticity and the integrity, the safe activation, the health check and the rollback) is the
 next named piece of work of the operator's extension; it is not started here.
+
+The evidence of this iteration: the package of the client is measured
+(`docs/evidence/oip-mas-package/mas-package.json`), the **archive** of the distribution carries the
+hardened runtime and the entitlements of the release (the app sandbox and the network client,
+without the development entitlement that Xcode injects into an ad-hoc build), the canonical
+acceptance passed on the clean tree `a1fc365` with the release binary
+`b9ce4334` (365 of
+365 Flutter tests, 187 browser findings
+with 0 failures, 13 captures, the visual
+comparison PASS, 8 of 8 phases — `docs/evidence/oip-canonical-acceptance/acceptance.json`), the
+Rust suite delivered 185 tests in 29 suites with
+0 failed, and the web release and the macOS bundle are byte-identical
+with the artefacts of the acceptance (`docs/evidence/oip-reproducible-build/reproducible-build.json`).
+
+One rehearsal failed once in the long refresh of this tree — the functional depth of the six
+workstations read a surface before the nodes of the source had arrived — and passed on the
+immediate re-run. The gate now **waits** for the nodes instead of reading a surface that may
+still be empty (`apps/flutter/test/browser_workstation_data.mjs`); the receipt names the revision
+it was measured on.
 
 No personal database change, no schema-7 activation of the personal installation, no write on any
 host or device of the operator, no service installed, no port published, no push, no deployment,
