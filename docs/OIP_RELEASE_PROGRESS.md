@@ -13,13 +13,13 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `164c821` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `e857902` (tree `22e26fd5`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `e857902` — the binary names its own revision; the same revision yields the same bytes |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `53b9ef8` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
+| The revision of the final acceptance | `29f2557` (tree `81f9214`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `29f2557` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 689 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 692 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -3191,6 +3191,71 @@ below belong to.
 
 No personal database change, no schema-7 activation of the personal installation, no private SSH,
 no push, no deployment, no system service.
+
+### Iteration 71 — the address space of the server is read as it is, and the Core may run on the Pi
+
+**Status: PROVED on canonical `main`.**
+The fourth delegated audit of the **product** (the change that made the Core browse the real
+address space of the server) found eight places where the change was honest in its name and not
+in its behaviour. Every one of them is closed here, and the operator's steering — the Core on
+the Raspberry Pi — is reconciled with the contracts in `docs/runbooks/operations.md` §15.
+
+* **The value of a node came from the wrong node.** The Core took the *browse name* of a node,
+  turned it into a metric id and read `ns=2;s=<name>` — a node that a server with other names
+  does not have. The value belongs to the node with the **node id of the server**: the adapter
+  reads that id now (`crates/oip-opcua/src/adapter.rs`, `crates/oip-opcua/src/async_opcua/client.rs`),
+  and the test proves that a name which names no node still delivers the value of the node id
+  (`crates/oip-opcua/src/async_opcua/client/tests.rs`).
+* **The observation carried the machine of the simulator.** Every node of every source carried
+  the entity `M-01` of the simulator profile. The node is bound to the **entity that the source
+  declares** now (`crates/oip-server/src/application_services.rs`).
+* **The namespace and the access were constants.** The namespace of a node is the namespace of
+  its node id and its access is the access of the **class** of the node; the API test checks
+  both for every node of the page (`crates/oip-server/tests/api.rs`).
+* **A node with several parents was delivered twice.** The catalogue is a **set of nodes** now:
+  every node belongs to exactly one folder, the sum of the totals of the folders is the total
+  of the catalogue, and the pages stay disjoint (the same test).
+* **The browser read and measured.** The single read of a node was ingested; it is not any more:
+  a measurement belongs to the collector that subscribes to the registered metrics of the
+  source. The four statements that claimed the persistence — the API contract, the capability
+  inventory, the description of the MCP tool and the note of the surface — are corrected
+  (`docs/architecture/oip-003-flutter-api.md`, `docs/architecture/oip-capability-inventory.md`,
+  `crates/oip-server/src/mcp.rs`, `apps/flutter/lib/features/opcua.dart`).
+* **The client assumed a folder of the demo.** It asked for `folder=M-01` before it knew the
+  address space of the Core. It asks for the whole catalogue now and falls back to it when the
+  Core names other folders; the chips are the folders that the **Core** delivered
+  (`apps/flutter/lib/features/opcua.dart`, `apps/flutter/test/opcua_workstation_test.dart`).
+* **The gates counted the nodes of the demo.** The browser gates asserted `6 Nodes` and
+  `1006 Nodes`; they read the count from the **Core** now, and the folder captions of the
+  client no longer name the folders of a demo (`apps/flutter/test/browser_opcua_phase2.mjs`,
+  `apps/flutter/test/performance_opcua_phase2.mjs`, `apps/flutter/test/browser_oip004.mjs`).
+* **The Core may not run anywhere but on the Mac.** The operator intends the Core on
+  `bodi-pi`. The reconciliation is in `docs/runbooks/operations.md` §15: a forward of the
+  loopback of the Mac (an SSH tunnel) keeps the **identical origin** of the session, so the
+  session contract, the origin rule and the security scope of G10 stay unchanged, and nothing
+  is exposed. The smallest safe step is split into four phases, each of them measured and
+  undoable on its own; phase 0 is the **read-only discovery** of the host
+  (`tools/oip_pi_discovery.sh`), phase 1 the cross build of the workspace for the target of
+  the Pi (`tools/oip_pi_build.sh`). No service is installed, no port is published, no BODI
+  service of the host is touched and no personal data changes.
+
+The whole evidence of the release was re-measured on a clean tree at the revision of the
+product change: 30 rehearsals, 0 failed, 43 receipts published
+(`target/oip-refresh-evidence.json`), the canonical acceptance passed on the clean tree
+`81f92148` with the release binary `9b50fb17` (363 of 363 Flutter tests, 187 browser findings
+with zero failures, 13 captures, the visual comparison PASS, 8 of 8 phases —
+`docs/evidence/oip-canonical-acceptance/acceptance.json`), the web release and the macOS bundle
+are byte-identical with the artefacts of the acceptance, and the Core is byte-reproducible for
+its revision (`docs/evidence/oip-reproducible-build/reproducible-build.json`,
+`docs/release/oip-release-manifest.json`).
+
+The **operator action** of this iteration: the read-only discovery of `bodi-pi`
+(`tools/oip_pi_discovery.sh`). The SSH session of this loop is not permitted — the permission
+layer of the session cannot ask the operator — so the discovery is the operator's step; its
+answer (the architecture and the free port) fixes the target of the cross build.
+
+No personal database change, no schema-7 activation of the personal installation, no private
+SSH, no push, no deployment, no system service.
 
 ## 5. Evidence index
 

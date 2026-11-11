@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "b1f0a115441ad5ad27d9fc83cda9ba41ca8471b2",
-  "the_tree": "f25502df1f451f1bbf980dc24ebbb53d8d64b8e9",
+  "the_revision": "1a632230269fd550174f62bfb0ca8cbffddae459",
+  "the_tree": "3013872c9f12cc73fc681e72ea29ec64c48c8e9c",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "53b9ef8081f800b588960841c64cc05b678d8d50",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 692,
-    "the_sha256": "9dc563195a85fd1ac2343825352ffa35d3a18be792958da18cfb9632867c84fa"
+    "the_sha256": "caac67193c68abb50750408af4042d41cb7c58b7876dee65cc7ec1152af3944b"
   },
   "the_artifacts": {
     "the_core": {
@@ -30,7 +30,7 @@
       "path": "target/release/oip-server",
       "bytes": 36396224,
       "sha256": "9b50fb170f1307e6c604ec948a12565702bce02d4c694cf6b5dbbe256ac914ab",
-      "the_revision_the_binary_names": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17"
+      "the_revision_the_binary_names": "29f25573fb1a14689178203bbd21e4ae22520172"
     },
     "the_official_mcp_probe": {
       "present": true,
@@ -107,7 +107,7 @@
     },
     "the_reproducible_build": {
       "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-      "sha256": "64d9e89f10f435eaafe08e01ab2cfd8a2448116be1a861bb6b3f2c61bb2acfa5"
+      "sha256": "96bdac9ecd281cf703bf985c2169ba6721201492a1f6cb1fd894941823eb6237"
     },
     "the_upgrade_rollback": {
       "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
@@ -313,18 +313,17 @@
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-final10",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/release/SHA256SUMS",
-    " M tools/oip_release_manifest.py"
+    "M docs/evidence/oip-reproducible-build/reproducible-build.json"
   ],
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-    "the_digest_of_the_reproducible_build": "16e9526eb4b02ce4afdb20770586aab04fd285905575f6ea42e1530844f85647",
+    "the_digest_of_the_reproducible_build": "9b50fb170f1307e6c604ec948a12565702bce02d4c694cf6b5dbbe256ac914ab",
     "the_core_is_identical_across_the_two_builds": true,
-    "the_manifest_names_the_reproducible_binary": false,
-    "the_revision_the_binary_names": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
-    "the_revision_of_the_receipt": "e857902ea8c39dd6c423a0c5e5863bc2c5e28c17",
-    "the_sources_of_the_core_are_unchanged_since_the_receipt": false,
-    "the_property_holds_for_the_release": false,
+    "the_manifest_names_the_reproducible_binary": true,
+    "the_revision_the_binary_names": "29f25573fb1a14689178203bbd21e4ae22520172",
+    "the_revision_of_the_receipt": "29f25573fb1a14689178203bbd21e4ae22520172",
+    "the_sources_of_the_core_are_unchanged_since_the_receipt": true,
+    "the_property_holds_for_the_release": true,
     "the_note": "the binary names the revision it was built from, so the bytes of a later revision differ; the property of the release is that the same revision yields the same bytes \u2014 it is measured by the rehearsal and it carries over as long as the sources of the Core are unchanged"
   },
   "the_visual_acceptance": {
