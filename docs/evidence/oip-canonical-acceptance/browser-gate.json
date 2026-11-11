@@ -1,10 +1,10 @@
 {
   "verdict": "PASS",
-  "revision": "6b8eb7f3f473138220c46a31d7b4e5cf56391cb7",
+  "revision": "6036ef9118d94900929cf44aef209840c9dee2b0",
   "the_detail_is": "the observed value of the check",
-  "base": "http://127.0.0.1:57455",
+  "base": "http://127.0.0.1:56790",
   "browser_version": "157.0.8103.50",
-  "bundle_sha256": "aed8a17f5dcdadcb7d9af1bfcef7a49a5c46cc48138c6a8d7a90b5f2fc638887",
+  "bundle_sha256": "486ffa1e0e16635f1f780374616bf7cc6b69d22c11fb6324b84bdb0901c03489",
   "bundle_matches_local_build": true,
   "workstations": [
     "\u00dcbersicht",
@@ -975,43 +975,43 @@
   "external_requests": [],
   "core_denials": [
     {
-      "url": "http://127.0.0.1:57455/api/v2/organizations?offset=0&limit=100",
+      "url": "http://127.0.0.1:56790/api/v2/organizations?offset=0&limit=100",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57455/api/v1/system/status",
+      "url": "http://127.0.0.1:56790/api/v1/system/status",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57455/api/v1/devices",
+      "url": "http://127.0.0.1:56790/api/v1/devices",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57455/api/v1/metrics/current",
+      "url": "http://127.0.0.1:56790/api/v1/metrics/current",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57455/api/v1/events",
+      "url": "http://127.0.0.1:56790/api/v1/sources",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57455/api/v1/sources",
+      "url": "http://127.0.0.1:56790/api/v1/events",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57455/api/v2/settings?scope=platform",
+      "url": "http://127.0.0.1:56790/api/v2/settings?scope=platform",
       "status": 403
     },
     {
-      "url": "http://127.0.0.1:57455/api/v2/settings?scope=platform",
+      "url": "http://127.0.0.1:56790/api/v2/settings?scope=platform",
       "status": 403
     }
   ],
   "fatal": null,
   "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-  "duration_ms": 95022,
-  "the_revision": "6b8eb7f3f473138220c46a31d7b4e5cf56391cb7",
-  "the_tree": "9b71fc0b8455c8c7586a65e5b84cff7ac26fe53d",
+  "duration_ms": 86991,
+  "the_revision": "6036ef9118d94900929cf44aef209840c9dee2b0",
+  "the_tree": "a2add7dc67ec2e94558617a892709aadaf342e2b",
   "the_working_tree_is_clean": true,
-  "the_revision_of_the_acceptance": "6b8eb7f3f473138220c46a31d7b4e5cf56391cb7"
+  "the_revision_of_the_acceptance": "6036ef9118d94900929cf44aef209840c9dee2b0"
 }
