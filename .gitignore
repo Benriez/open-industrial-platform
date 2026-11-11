@@ -178,6 +178,13 @@ secrets/
 # the bundle, the start by hand, the tunnel, the authorized session and the
 # stop — with the services of the operator unchanged.
 !/docs/evidence/oip-pi-instance/pi-instance.json
+# The store assets of the Mac App Store listing: the six workstations of the
+# client in a size that Apple accepts for a Mac app, and the receipt that
+# measures every one of them.
+!/docs/evidence/oip-store-screenshots/store-screenshots.json
+!/docs/evidence/oip-store-screenshots/captures/
+!/docs/evidence/oip-store-screenshots/captures/*.png
+!/docs/evidence/oip-store-screenshots/captures/browser-store-screenshots.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json

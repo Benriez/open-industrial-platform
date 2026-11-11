@@ -1,0 +1,648 @@
+{
+  "schema": "oip-store-screenshots-v1",
+  "steps": [
+    "the managed Core of the release serves the release build of the client",
+    "the six workstations are captured in the size that Apple accepts",
+    "every capture has the accepted size and no alpha channel",
+    "the Core stops and no process of the rehearsal stays behind"
+  ],
+  "the_problems": [],
+  "the_provisioning": "the plan is provisioned",
+  "the_core": {
+    "the_binary": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
+    "the_sha256_of_the_binary": "ce8d5102942eeb2e3d2cfc53ed6310ffecc9ed151517da882cf66daadab2bceb",
+    "the_port": 55291,
+    "the_source_port": 55292,
+    "the_web_release": "apps/flutter/build/web",
+    "the_bundle_sha256": "486ffa1e0e16635f1f780374616bf7cc6b69d22c11fb6324b84bdb0901c03489"
+  },
+  "the_browser": {
+    "schema": "oip-store-screenshots-browser-v1",
+    "the_base": "http://127.0.0.1:55291",
+    "the_size": {
+      "the_width": 1440,
+      "the_height": 900
+    },
+    "the_sizes_that_apple_accepts": [
+      [
+        1280,
+        800
+      ],
+      [
+        1440,
+        900
+      ],
+      [
+        2560,
+        1600
+      ],
+      [
+        2880,
+        1800
+      ]
+    ],
+    "the_workstations": [
+      "\u00dcbersicht",
+      "Ger\u00e4te & Dienste",
+      "Netzwerk & VPN",
+      "OPC-UA-Browser",
+      "Diagnose & Ereignisse",
+      "Einstellungen"
+    ],
+    "the_captures": [
+      {
+        "the_workstation": "\u00dcbersicht",
+        "the_slug": "overview",
+        "the_file": "store-overview-1440x900.png",
+        "the_width": 1440,
+        "the_height": 900,
+        "the_colour_type": 2,
+        "the_carries_an_alpha_channel": false,
+        "the_bytes": 148414
+      },
+      {
+        "the_workstation": "Ger\u00e4te & Dienste",
+        "the_slug": "devices",
+        "the_file": "store-devices-1440x900.png",
+        "the_width": 1440,
+        "the_height": 900,
+        "the_colour_type": 2,
+        "the_carries_an_alpha_channel": false,
+        "the_bytes": 115895
+      },
+      {
+        "the_workstation": "Netzwerk & VPN",
+        "the_slug": "network",
+        "the_file": "store-network-1440x900.png",
+        "the_width": 1440,
+        "the_height": 900,
+        "the_colour_type": 2,
+        "the_carries_an_alpha_channel": false,
+        "the_bytes": 123066
+      },
+      {
+        "the_workstation": "OPC-UA-Browser",
+        "the_slug": "opcua",
+        "the_file": "store-opcua-1440x900.png",
+        "the_width": 1440,
+        "the_height": 900,
+        "the_colour_type": 2,
+        "the_carries_an_alpha_channel": false,
+        "the_bytes": 139881
+      },
+      {
+        "the_workstation": "Diagnose & Ereignisse",
+        "the_slug": "diagnostics",
+        "the_file": "store-diagnostics-1440x900.png",
+        "the_width": 1440,
+        "the_height": 900,
+        "the_colour_type": 2,
+        "the_carries_an_alpha_channel": false,
+        "the_bytes": 159027
+      },
+      {
+        "the_workstation": "Einstellungen",
+        "the_slug": "settings",
+        "the_file": "store-settings-1440x900.png",
+        "the_width": 1440,
+        "the_height": 900,
+        "the_colour_type": 2,
+        "the_carries_an_alpha_channel": false,
+        "the_bytes": 116235
+      }
+    ],
+    "the_findings": [
+      {
+        "check": "the application answers",
+        "ok": true,
+        "the_detail": 200
+      },
+      {
+        "check": "the one-use login code is available",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "the catalogue of the source is delivered",
+        "ok": true,
+        "the_detail": 1020
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on overview",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on overview",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on overview",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on overview",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on overview",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on overview",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on overview",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on overview",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on overview",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "the workstation overview has no horizontal overflow",
+        "ok": true,
+        "the_detail": 0
+      },
+      {
+        "check": "the capture of overview is a PNG",
+        "ok": true,
+        "the_detail": "/Users/benny/Code/open-industrial-platform/target/oip-store-screenshots/captures/store-overview-1440x900.png"
+      },
+      {
+        "check": "the capture of overview has the accepted size",
+        "ok": true,
+        "the_detail": "1440x900"
+      },
+      {
+        "check": "the capture of overview carries no alpha channel",
+        "ok": true,
+        "the_detail": 2
+      },
+      {
+        "check": "capture overview",
+        "ok": true,
+        "the_detail": "/Users/benny/Code/open-industrial-platform/target/oip-store-screenshots/captures/store-overview-1440x900.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on devices",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on devices",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on devices",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on devices",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on devices",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on devices",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on devices",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on devices",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on devices",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "the workstation devices has no horizontal overflow",
+        "ok": true,
+        "the_detail": 0
+      },
+      {
+        "check": "the capture of devices is a PNG",
+        "ok": true,
+        "the_detail": "/Users/benny/Code/open-industrial-platform/target/oip-store-screenshots/captures/store-devices-1440x900.png"
+      },
+      {
+        "check": "the capture of devices has the accepted size",
+        "ok": true,
+        "the_detail": "1440x900"
+      },
+      {
+        "check": "the capture of devices carries no alpha channel",
+        "ok": true,
+        "the_detail": 2
+      },
+      {
+        "check": "capture devices",
+        "ok": true,
+        "the_detail": "/Users/benny/Code/open-industrial-platform/target/oip-store-screenshots/captures/store-devices-1440x900.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on network",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on network",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on network",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on network",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on network",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on network",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on network",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on network",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on network",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "the workstation network has no horizontal overflow",
+        "ok": true,
+        "the_detail": 0
+      },
+      {
+        "check": "the capture of network is a PNG",
+        "ok": true,
+        "the_detail": "/Users/benny/Code/open-industrial-platform/target/oip-store-screenshots/captures/store-network-1440x900.png"
+      },
+      {
+        "check": "the capture of network has the accepted size",
+        "ok": true,
+        "the_detail": "1440x900"
+      },
+      {
+        "check": "the capture of network carries no alpha channel",
+        "ok": true,
+        "the_detail": 2
+      },
+      {
+        "check": "capture network",
+        "ok": true,
+        "the_detail": "/Users/benny/Code/open-industrial-platform/target/oip-store-screenshots/captures/store-network-1440x900.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on opcua",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on opcua",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on opcua",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on opcua",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on opcua",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on opcua",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on opcua",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on opcua",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on opcua",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "the workstation opcua has no horizontal overflow",
+        "ok": true,
+        "the_detail": 0
+      },
+      {
+        "check": "the capture of opcua is a PNG",
+        "ok": true,
+        "the_detail": "/Users/benny/Code/open-industrial-platform/target/oip-store-screenshots/captures/store-opcua-1440x900.png"
+      },
+      {
+        "check": "the capture of opcua has the accepted size",
+        "ok": true,
+        "the_detail": "1440x900"
+      },
+      {
+        "check": "the capture of opcua carries no alpha channel",
+        "ok": true,
+        "the_detail": 2
+      },
+      {
+        "check": "capture opcua",
+        "ok": true,
+        "the_detail": "/Users/benny/Code/open-industrial-platform/target/oip-store-screenshots/captures/store-opcua-1440x900.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on diagnostics",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on diagnostics",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on diagnostics",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on diagnostics",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on diagnostics",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on diagnostics",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on diagnostics",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on diagnostics",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker AGENT-FIRST on diagnostics",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "the workstation diagnostics has no horizontal overflow",
+        "ok": true,
+        "the_detail": 0
+      },
+      {
+        "check": "the capture of diagnostics is a PNG",
+        "ok": true,
+        "the_detail": "/Users/benny/Code/open-industrial-platform/target/oip-store-screenshots/captures/store-diagnostics-1440x900.png"
+      },
+      {
+        "check": "the capture of diagnostics has the accepted size",
+        "ok": true,
+        "the_detail": "1440x900"
+      },
+      {
+        "check": "the capture of diagnostics carries no alpha channel",
+        "ok": true,
+        "the_detail": 2
+      },
+      {
+        "check": "capture diagnostics",
+        "ok": true,
+        "the_detail": "/Users/benny/Code/open-industrial-platform/target/oip-store-screenshots/captures/store-diagnostics-1440x900.png"
+      },
+      {
+        "check": "no legacy marker Deine Infrastruktur. Ein Bild. on settings",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Erfasste Ger\u00e4te on settings",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Erreichbare Ger\u00e4te on settings",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur M-01 on settings",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Temperatur \u00b7 M-01 on settings",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Tailnet on settings",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker Remote Site on settings",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "no legacy marker OIP / 005 on settings",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "the agent-first principle is named in the technical context of the settings",
+        "ok": true,
+        "the_detail": null
+      },
+      {
+        "check": "the workstation settings has no horizontal overflow",
+        "ok": true,
+        "the_detail": 0
+      },
+      {
+        "check": "the capture of settings is a PNG",
+        "ok": true,
+        "the_detail": "/Users/benny/Code/open-industrial-platform/target/oip-store-screenshots/captures/store-settings-1440x900.png"
+      },
+      {
+        "check": "the capture of settings has the accepted size",
+        "ok": true,
+        "the_detail": "1440x900"
+      },
+      {
+        "check": "the capture of settings carries no alpha channel",
+        "ok": true,
+        "the_detail": 2
+      },
+      {
+        "check": "capture settings",
+        "ok": true,
+        "the_detail": "/Users/benny/Code/open-industrial-platform/target/oip-store-screenshots/captures/store-settings-1440x900.png"
+      },
+      {
+        "check": "no browser JavaScript error",
+        "ok": true,
+        "the_detail": ""
+      }
+    ],
+    "the_errors": [],
+    "the_fatal": null,
+    "the_verdict": "PASS",
+    "the_finished_utc": "2026-11-11T13:50:36.631Z"
+  },
+  "the_captures": [
+    {
+      "the_file": "store-devices-1440x900.png",
+      "is_a_png": true,
+      "the_width": 1440,
+      "the_height": 900,
+      "the_colour_type": 2,
+      "the_carries_an_alpha_channel": false,
+      "the_bytes": 115895,
+      "the_sha256": "7add9319ee56842e9cf23004f5b05f5cb5153a3f3df4ca80831bae48640869a1"
+    },
+    {
+      "the_file": "store-diagnostics-1440x900.png",
+      "is_a_png": true,
+      "the_width": 1440,
+      "the_height": 900,
+      "the_colour_type": 2,
+      "the_carries_an_alpha_channel": false,
+      "the_bytes": 159027,
+      "the_sha256": "195b6898528818f565d208959ff976c6b3f62c746f4b39e5500c9367c145752b"
+    },
+    {
+      "the_file": "store-network-1440x900.png",
+      "is_a_png": true,
+      "the_width": 1440,
+      "the_height": 900,
+      "the_colour_type": 2,
+      "the_carries_an_alpha_channel": false,
+      "the_bytes": 123066,
+      "the_sha256": "d89e6f50d08ed03e997d5596f27f243ac2d4028b24a28e2bc29365dfd72efd9b"
+    },
+    {
+      "the_file": "store-opcua-1440x900.png",
+      "is_a_png": true,
+      "the_width": 1440,
+      "the_height": 900,
+      "the_colour_type": 2,
+      "the_carries_an_alpha_channel": false,
+      "the_bytes": 139881,
+      "the_sha256": "53875bfb18b5c30c87ea0e559ee92588ecffa08cf7ce085a5a1e65b7aed17c1b"
+    },
+    {
+      "the_file": "store-overview-1440x900.png",
+      "is_a_png": true,
+      "the_width": 1440,
+      "the_height": 900,
+      "the_colour_type": 2,
+      "the_carries_an_alpha_channel": false,
+      "the_bytes": 148414,
+      "the_sha256": "19cdb2a16e18db7d28a494374d6f52d7a1c35c0c25df7bcaf0a709a0c33a727a"
+    },
+    {
+      "the_file": "store-settings-1440x900.png",
+      "is_a_png": true,
+      "the_width": 1440,
+      "the_height": 900,
+      "the_colour_type": 2,
+      "the_carries_an_alpha_channel": false,
+      "the_bytes": 116235,
+      "the_sha256": "c5a86e31e3aaeb1a8c03bd931758e7e7948aabb1382401ed171d0c1863e42668"
+    }
+  ],
+  "the_sizes_that_apple_accepts": [
+    [
+      1280,
+      800
+    ],
+    [
+      1440,
+      900
+    ],
+    [
+      2560,
+      1600
+    ],
+    [
+      2880,
+      1800
+    ]
+  ],
+  "the_orphaned_processes": [],
+  "the_status": "PASS",
+  "the_revision": "a941d2f63c91d28af3886a7070cc61240708c236",
+  "the_tree": "e6e0bdc516eb82a86ad9e5f7985855cf771d44bc",
+  "the_working_tree_is_clean": true,
+  "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
+  "finished_utc": "2026-11-11T13:50:37Z"
+}
