@@ -4,15 +4,15 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "acc30e1ce4868f75d99fd33fd883e3eaff2dd205",
+      "the_revision": "8f5d92e705294a47a1f65dbf783c12cb41dec466",
       "the_revision_of_the_source": {
         "the_revision": "53b9ef8081f800b588960841c64cc05b678d8d50",
         "the_subject": "feat(g8,g10): the address space of the server is read as it is; the Pi architecture is reconciled"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
-        "the_files": 692,
-        "the_sha256": "8ded97de35aaf78441d425f08efa05ce1779c5bf5a1b8c8b3e4405d2840b2006"
+        "the_files": 693,
+        "the_sha256": "0ed10ca48d6bb2a02a5dd5bbf99d21a01032b09451518e3aeb08c2f4b9d0c81d"
       },
       "the_artifacts": {
         "the_core": "dc4a932aa72c6c51a913d276b73c1e1446bd462750dbd91f05ce33d37515969a",
@@ -57,7 +57,7 @@
       "the_source_revision": "53b9ef8081f800b588960841c64cc05b678d8d50",
       "the_acceptance_revision": "6b8eb7f3f473138220c46a31d7b4e5cf56391cb7",
       "the_core_binary_revision": "6b8eb7f3f473138220c46a31d7b4e5cf56391cb7",
-      "the_tracked_files": 692,
+      "the_tracked_files": 693,
       "the_product_is_committed": true
     },
     "the_numbers_of_the_record": {
@@ -153,8 +153,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "dadea669a6a307b32050f6aa60196d54959c8eef",
-  "the_tree": "954493f8ee755edefbee88f71e65f9de1ebe9509",
+  "the_revision": "dc2d81ddf4a3c5d5735c51bc2e014376c99002f6",
+  "the_tree": "dfdb0bfaa18625bfeeb5d6a26646c73b85988dba",
   "the_working_tree_is_clean": false,
   "status": "PASS"
 }
