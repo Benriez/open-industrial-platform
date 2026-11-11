@@ -5,6 +5,7 @@
     "the quarantine attribute is removed from the bundle",
     "every property of the submission is measured",
     "the digest of the bundle is measured",
+    "the screenshots of the listing are measured",
     "the archive of the distribution is built",
     "the signature of the archive carries the hardened runtime"
   ],
@@ -18,7 +19,7 @@
       "--dart-define=OIP_API_URL=http://127.0.0.1:18808"
     ],
     "the_code": 0,
-    "the_error": "framework/Versions/A/Resources/flutter_assets/shaders/ink_sparkle.frag' is located outside of the allowed root paths.\n\nwarning: Stale file '/Users/benny/Library/Developer/Xcode/DerivedData/Runner-fjqieohbiptgqggswwdygknokurx/Build/Intermediates.noindex/ArchiveIntermediates/Runner/BuildProductsPath/Release/FlutterMacOS.framework/Versions/A/FlutterMacOS' is located outside of the allowed root paths."
+    "the_error": "--- xcodebuild: WARNING: Using the first of multiple matching destinations:\n{ platform:macOS, arch:arm64, id:00006000-001208642121801E, name:My Mac }\n{ platform:macOS, arch:x86_64, id:00006000-001208642121801E, name:My Mac }"
   },
   "the_quarantine_strip": {
     "the_code": 0
@@ -81,6 +82,84 @@
   },
   "the_tree_sha256": "dd20a7eb983b88d4864d8ca3325a6a6146751444bddf000b202af5d403a276e1",
   "the_files": 44,
+  "the_store_assets": {
+    "the_assets_are_present": true,
+    "the_number_of_the_assets": 6,
+    "the_assets": [
+      {
+        "the_file": "store-devices-1440x900.png",
+        "the_bytes": 115919,
+        "the_sha256": "1eec33b287f715d5914d9933d3156f9220967e72a6626e745efcf6337f448657",
+        "the_width": 1440,
+        "the_height": 900,
+        "the_colour_type": 2,
+        "the_carries_an_alpha_channel": false
+      },
+      {
+        "the_file": "store-diagnostics-1440x900.png",
+        "the_bytes": 159027,
+        "the_sha256": "195b6898528818f565d208959ff976c6b3f62c746f4b39e5500c9367c145752b",
+        "the_width": 1440,
+        "the_height": 900,
+        "the_colour_type": 2,
+        "the_carries_an_alpha_channel": false
+      },
+      {
+        "the_file": "store-network-1440x900.png",
+        "the_bytes": 123066,
+        "the_sha256": "d89e6f50d08ed03e997d5596f27f243ac2d4028b24a28e2bc29365dfd72efd9b",
+        "the_width": 1440,
+        "the_height": 900,
+        "the_colour_type": 2,
+        "the_carries_an_alpha_channel": false
+      },
+      {
+        "the_file": "store-opcua-1440x900.png",
+        "the_bytes": 139881,
+        "the_sha256": "53875bfb18b5c30c87ea0e559ee92588ecffa08cf7ce085a5a1e65b7aed17c1b",
+        "the_width": 1440,
+        "the_height": 900,
+        "the_colour_type": 2,
+        "the_carries_an_alpha_channel": false
+      },
+      {
+        "the_file": "store-overview-1440x900.png",
+        "the_bytes": 148213,
+        "the_sha256": "0a691af040d53eff87f77ccd89ada3ffb0cf9868b7aebcbd493c772d1d5452b6",
+        "the_width": 1440,
+        "the_height": 900,
+        "the_colour_type": 2,
+        "the_carries_an_alpha_channel": false
+      },
+      {
+        "the_file": "store-settings-1440x900.png",
+        "the_bytes": 116235,
+        "the_sha256": "c5a86e31e3aaeb1a8c03bd931758e7e7948aabb1382401ed171d0c1863e42668",
+        "the_width": 1440,
+        "the_height": 900,
+        "the_colour_type": 2,
+        "the_carries_an_alpha_channel": false
+      }
+    ],
+    "the_sizes_that_the_store_accepts": [
+      [
+        1280,
+        800
+      ],
+      [
+        1440,
+        900
+      ],
+      [
+        2560,
+        1600
+      ],
+      [
+        2880,
+        1800
+      ]
+    ]
+  },
   "the_operator_steps": [
     "the local bundle carries no hardened runtime: the embedded Flutter framework carries another ad-hoc identity, and the library validation of the hardened runtime refuses it. The hardened runtime belongs to the distribution build, where Xcode signs every embedded framework with the identity of the developer",
     "the signature of the local build is ad-hoc; the archive of the upload is signed with the *Apple Distribution* certificate of the operator",
@@ -121,8 +200,8 @@
     }
   },
   "the_status": "PASS",
-  "the_revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
-  "the_tree": "80c3487f78abe6dcc38cb0c9f22c4a1743a87849",
+  "the_revision": "2334a384c76d5ef021c5e774dcd13b16d8ee4244",
+  "the_tree": "cbb13ad8d4123baf55c81e0767a157b0f0400dc5",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T12:49:38Z"
+  "finished_utc": "2026-11-11T14:20:53Z"
 }
