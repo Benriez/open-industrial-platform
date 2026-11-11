@@ -228,8 +228,13 @@ check('the Core holds the device of the scope before the write',
   typeof the_device_before.the_revision === 'number', JSON.stringify(the_device_before));
 // The type of the device is changed in the administration: a choice needs
 // no typing, and the write of the operator is the same write.
-const newType = 'Single board';
-const typeField = page.getByRole('button', { name: /Gerätetyp/ }).first();
+// The word of the type has one owner in the client, so the administration
+// offers the same word as the identity panel and the filter.
+const newType = 'Einzelplatine';
+// The control is named **exactly**: the filter of the inventory is another
+// control, and the evidence must not depend on the coincidence that another
+// control does not contain the word.
+const typeField = page.getByRole('button', { name: /^Gerätetyp/ }).first();
 check('the type of the device can be chosen', await typeField.count() > 0,
   'the type of the device is not shown');
 await typeField.click({ force: true });
