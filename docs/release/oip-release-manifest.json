@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "01d9d50498da4edd346065428073f072f1c3e3d4",
-  "the_tree": "903b3d34484693fea848bf0e8cdadcf440284e18",
+  "the_revision": "fd7caff1b18fdee688c0774d61549e582af8e7d0",
+  "the_tree": "c1055e215b38e2ea20064a58d607202fd3d3705a",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "c6b4953d5da5a4d43ab4d162d04ad17c8373a07a",
@@ -21,8 +21,8 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 710,
-    "the_sha256": "b7360e9913405590e17e6cc5fdc7a6c901e387da28ab30199e8c23f30428edc7"
+    "the_files": 713,
+    "the_sha256": "61a2cdcf085b8e489a8e73c47a053bf15df0bf8b36ca83a80f91210c40b306fd"
   },
   "the_artifacts": {
     "the_core": {
@@ -313,6 +313,10 @@
     "the_oip-settings-status_settings-status_json": {
       "path": "docs/evidence/oip-settings-status/settings-status.json",
       "sha256": "208abf575b98c097a544aeee0a904beec70a555443f05e640a766815cec320ea"
+    },
+    "the_oip-update_update_json": {
+      "path": "docs/evidence/oip-update/update.json",
+      "sha256": "33fd0764bcb7b34425f09b74cb4b6b0653797b9317c0dc6a94533b9f6a0cc955"
     },
     "the_oip-workstation-data_rehearsal_json": {
       "path": "docs/evidence/oip-workstation-data/rehearsal.json",
