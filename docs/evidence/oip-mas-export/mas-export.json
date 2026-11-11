@@ -1,0 +1,62 @@
+{
+  "schema": "oip-mas-export-rehearsal-v1",
+  "the_steps": [
+    "the template carries every key and every identity as a placeholder",
+    "the tool invents no credential and names what is missing",
+    "the rendered options are proven and lie outside the checkout",
+    "the command names the archive and the options file",
+    "the tool leaves the checkout untouched"
+  ],
+  "the_problems": [],
+  "the_template": {
+    "the_path": "/Users/benny/Code/open-industrial-platform/docs/release/mac-app-store/ExportOptions.plist.template",
+    "the_placeholders": [
+      "METHOD",
+      "TEAM_ID",
+      "SIGNING_STYLE",
+      "SIGNING_CERTIFICATE",
+      "PROFILE_NAME",
+      "DESTINATION"
+    ]
+  },
+  "the_refusal": {
+    "the_code": 2,
+    "the_missing": [
+      "TEAM_ID",
+      "SIGNING_CERTIFICATE",
+      "PROFILE_NAME"
+    ],
+    "the_problems": [
+      "the identity of the operator is incomplete: TEAM_ID, SIGNING_CERTIFICATE, PROFILE_NAME"
+    ]
+  },
+  "the_render": {
+    "the_code": 0,
+    "the_options": {
+      "the_path": "/Users/benny/Code/open-industrial-platform/target/oip-mas-export/ExportOptions.plist",
+      "the_outside_of_the_checkout": true,
+      "the_keys": [
+        "destination",
+        "method",
+        "provisioningProfiles",
+        "signingCertificate",
+        "signingStyle",
+        "teamID"
+      ],
+      "the_method": "app-store-connect",
+      "the_destination": "export",
+      "the_signing_style": "automatic",
+      "the_profile_of_the_bundle": "Mac App Distribution: Open Industrial Platform (fake)"
+    },
+    "the_command": "/usr/bin/xcodebuild -exportArchive -archivePath /Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive -exportPath /Users/benny/Code/open-industrial-platform/target/oip-mas-export/export -exportOptionsPlist /Users/benny/Code/open-industrial-platform/target/oip-mas-export/ExportOptions.plist",
+    "the_problems": []
+  },
+  "the_working_tree_before_the_run": "",
+  "the_working_tree_after_the_run": "",
+  "the_status": "PASS",
+  "the_revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
+  "the_tree": "9acef728e1567435fdae2600d0b2e31f54ebfc79",
+  "the_working_tree_is_clean": true,
+  "the_upload": "not done: the export and the upload are the operator's action",
+  "finished_utc": "2026-11-11T20:55:18Z"
+}

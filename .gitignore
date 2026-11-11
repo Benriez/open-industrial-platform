@@ -171,6 +171,10 @@ secrets/
 # The package of the macOS client for the Mac App Store: the build and every
 # property that the submission checks.
 !/docs/evidence/oip-mas-package/mas-package.json
+# The export recipe of the Mac App Store listing: the proof that the tool
+# invents no credential, refuses an incomplete identity and writes the
+# rendered options outside the checkout.
+!/docs/evidence/oip-mas-export/mas-export.json
 # The secure update of the Core of an instance: what it does and what it
 # refuses.
 !/docs/evidence/oip-update/update.json
