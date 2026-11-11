@@ -21,13 +21,13 @@
           "value": "Meine Instanz"
         },
         "revision": 1,
-        "updated_ms": 1794351921736,
+        "updated_ms": 1794362615906,
         "actor": "reader-org-a"
       },
       "apply_status": "persisted_requires_restart",
       "effective_runtime_value": null
     },
-    "output": "{\"record\":{\"scope\":{\"kind\":\"platform\"},\"key\":\"instance_name\",\"value\":{\"type\":\"text\",\"value\":\"Meine Instanz\"},\"revision\":1,\"updated_ms\":1794351921736,\"actor\":\"reader-org-a\"},\"apply_status\":\"persisted_requires_restart\",\"effective_runtime_value\":null}"
+    "output": "{\"record\":{\"scope\":{\"kind\":\"platform\"},\"key\":\"instance_name\",\"value\":{\"type\":\"text\",\"value\":\"Meine Instanz\"},\"revision\":1,\"updated_ms\":1794362615906,\"actor\":\"reader-org-a\"},\"apply_status\":\"persisted_requires_restart\",\"effective_runtime_value\":null}"
   },
   "the_revision_of_the_setting": 1,
   "the_value_of_the_setting": {
@@ -61,7 +61,7 @@
         "value": "Meine Instanz"
       },
       "revision": 1,
-      "updated_ms": 1794351921736,
+      "updated_ms": 1794362615906,
       "actor": null
     },
     "effective": {
@@ -76,8 +76,8 @@
   },
   "the_value_is_effective": true,
   "status": "PASS",
-  "the_revision": "53b9ef8081f800b588960841c64cc05b678d8d50",
-  "the_tree": "8b66641e4083032e6fd20636e025809bd27fe021",
-  "the_working_tree_is_clean": false,
-  "finished_utc": "2026-11-10T23:05:25Z"
+  "the_revision": "61c1531fa9f205c8a6f3db68350904f1642256d9",
+  "the_tree": "b41a207d3878cef0e0640a68c16a47a4e08e2c7f",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-11T02:03:39Z"
 }

@@ -61,11 +61,11 @@
     "expanded",
     "expanded"
   ],
-  "revision": "53b9ef8081f800b588960841c64cc05b678d8d50",
+  "revision": "61c1531fa9f205c8a6f3db68350904f1642256d9",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "the verified connection of a device in the approved surface against the real Core",
-  "base": "http://127.0.0.1:62083",
-  "expected_fingerprint": "SHA256:H5Wazx0KNQ7b59ZjfizS9zcEhuwG2bbhJIYYunvVJEA",
+  "base": "http://127.0.0.1:61144",
+  "expected_fingerprint": "SHA256:J+dXaWF47IcUtG3amMhetuaOZ87v0TtEoRNFJe5Wty4",
   "findings": [
     {
       "check": "browser-login accepted",
@@ -75,7 +75,7 @@
     {
       "check": "the inventory of the scope lists the device",
       "ok": true,
-      "the_detail": "Coverage device · coverage-device\nGerät Coverage device coverage-device auswählen · SingleBoardComputer · b4f7930e-27be-4d5e-97ee-a2e85ee901ab · 10 Observations · Reachability Erreichbar reported\nCove"
+      "the_detail": "Coverage device · coverage-device\nGerät Coverage device coverage-device auswählen · SingleBoardComputer · 616fecde-e44c-458a-8712-2b32a64ad4c8 · 10 Observations · Reachability Erreichbar reported\nCove"
     },
     {
       "check": "the connection panel of the device is shown",

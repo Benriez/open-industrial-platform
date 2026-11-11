@@ -6,10 +6,10 @@
   ],
   "browser_receipt": {
     "schema": "oip-settings-status-v1",
-    "revision": "53b9ef8081f800b588960841c64cc05b678d8d50",
+    "revision": "61c1531fa9f205c8a6f3db68350904f1642256d9",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the status of the settings categories in the approved surface against the real Core",
-    "base": "http://127.0.0.1:51648",
+    "base": "http://127.0.0.1:50486",
     "the_categories_of_the_core": [
       {
         "the_category": "general",
@@ -96,10 +96,10 @@
     "the_refusals_of_the_core": [
       "/api/v2/organizations?offset=0&limit=100",
       "/api/v1/system/status",
-      "/api/v1/metrics/current",
-      "/api/v1/sources",
       "/api/v1/devices",
+      "/api/v1/metrics/current",
       "/api/v1/events",
+      "/api/v1/sources",
       "/api/v2/management?section=server",
       "/api/v2/management?section=storage",
       "/api/v2/management?section=diagnostic_rules",
@@ -530,7 +530,7 @@
       {
         "check": "the Core does not refuse the read of the settings in the scope of the platform",
         "ok": true,
-        "the_detail": "[\"/api/v2/organizations?offset=0&limit=100\",\"/api/v1/system/status\",\"/api/v1/metrics/current\",\"/api/v1/sources\",\"/api/v1/devices\",\"/api/v1/events\",\"/api/v2/management?section=server\",\"/api/v2/management?section=storage\",\"/api/v2/management?section=diagnostic_rules\",\"/api/v2/management?section=securi"
+        "the_detail": "[\"/api/v2/organizations?offset=0&limit=100\",\"/api/v1/system/status\",\"/api/v1/devices\",\"/api/v1/metrics/current\",\"/api/v1/events\",\"/api/v1/sources\",\"/api/v2/management?section=server\",\"/api/v2/management?section=storage\",\"/api/v2/management?section=diagnostic_rules\",\"/api/v2/management?section=securi"
       }
     ],
     "errors": []
@@ -591,10 +591,10 @@
   "the_refusals_of_the_core": [
     "/api/v2/organizations?offset=0&limit=100",
     "/api/v1/system/status",
-    "/api/v1/metrics/current",
-    "/api/v1/sources",
     "/api/v1/devices",
+    "/api/v1/metrics/current",
     "/api/v1/events",
+    "/api/v1/sources",
     "/api/v2/management?section=server",
     "/api/v2/management?section=storage",
     "/api/v2/management?section=diagnostic_rules",
@@ -603,8 +603,8 @@
   ],
   "checks": 85,
   "status": "PASS",
-  "the_revision": "53b9ef8081f800b588960841c64cc05b678d8d50",
-  "the_tree": "8b66641e4083032e6fd20636e025809bd27fe021",
-  "the_working_tree_is_clean": false,
-  "finished_utc": "2026-11-10T23:18:05Z"
+  "the_revision": "61c1531fa9f205c8a6f3db68350904f1642256d9",
+  "the_tree": "b41a207d3878cef0e0640a68c16a47a4e08e2c7f",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-11T02:15:57Z"
 }
