@@ -116,6 +116,10 @@ MANUFACTURER / MODEL
 FIRMWARE / OS
 Nicht verfügbar
 Nicht verfügbar
+SERIAL / BRIDGE-ID
+MAC / IP-ADRESSE
+Nicht verfügbar
+Nicht verfügbar
 ORGANIZATION
 INFRASTRUCTURE
 Organization A

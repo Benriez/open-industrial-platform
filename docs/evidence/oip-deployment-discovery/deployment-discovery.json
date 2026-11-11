@@ -45,7 +45,7 @@
             "free -m 2>/dev/null | head -3; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo"
           ],
           "the_code": 0,
-          "the_output": "total        used        free      shared  buff/cache   available\nMem:            1844        1171          31          10         735         673\nSwap:          32767        1877       30890\nMemTotal:        1888848 kB\nMemAvailable:     689932 kB",
+          "the_output": "total        used        free      shared  buff/cache   available\nMem:            1844         857         191          10         874         986\nSwap:          32767        1974       30793\nMemTotal:        1888848 kB\nMemAvailable:    1010856 kB",
           "the_error": ""
         },
         "the_disk": {
@@ -101,7 +101,7 @@
             "ss -ltn 2>/dev/null | tail -n +2 | awk '{print $4}' | sort"
           ],
           "the_code": 0,
-          "the_output": "0.0.0.0:22\n0.0.0.0:445\n100.127.113.104:18700\n100.127.113.104:18780\n100.127.113.104:18782\n100.127.113.104%tailscale0:10000\n100.127.113.104%tailscale0:443\n100.127.113.104%tailscale0:55202\n100.127.113.104%tailscale0:8443\n[::1]:18700\n127.0.0.1:18700\n127.0.0.1:18780\n127.0.0.1:18781\n127.0.0.1:18783\n127.0.0.1:18790\n127.0.0.1:18795\n127.0.0.1:42771\n127.0.0.1:631\n127.0.0.1:8384\n127.0.0.1:9119\n[::1]:631\n[::]:22\n[::]:445\n[fd7a:115c:a1e0::b734:7168]%tailscale0:10000\n[fd7a:115c:a1e0::b734:7168]%tailscale0:443\n[fd7a:115c:a1e0::b734:7168]%tailscale0:46467\n[fd7a:115c:a1e0::b734:7168]%tailscale0:8443",
+          "the_output": "0.0.0.0:22\n0.0.0.0:445\n100.127.113.104:18700\n100.127.113.104:18780\n100.127.113.104:18782\n100.127.113.104%tailscale0:10000\n100.127.113.104%tailscale0:443\n100.127.113.104%tailscale0:55202\n100.127.113.104%tailscale0:8443\n[::1]:18700\n127.0.0.1:18700\n127.0.0.1:18780\n127.0.0.1:18781\n127.0.0.1:18783\n127.0.0.1:18790\n127.0.0.1:18795\n127.0.0.1:631\n127.0.0.1:8384\n127.0.0.1:9119\n[::1]:631\n[::]:22\n[::]:445\n[fd7a:115c:a1e0::b734:7168]%tailscale0:10000\n[fd7a:115c:a1e0::b734:7168]%tailscale0:443\n[fd7a:115c:a1e0::b734:7168]%tailscale0:46467\n[fd7a:115c:a1e0::b734:7168]%tailscale0:8443",
           "the_error": ""
         },
         "the_home": {
@@ -115,7 +115,7 @@
             "printf '%s\\n' \"$HOME\"; ls -ld \"$HOME\" 2>/dev/null"
           ],
           "the_code": 0,
-          "the_output": "/home/flashback\ndrwx------ 82 flashback flashback 12288 Nov 11 09:27 /home/flashback",
+          "the_output": "/home/flashback\ndrwx------ 82 flashback flashback 12288 Nov 11 19:20 /home/flashback",
           "the_error": ""
         },
         "the_services_around_the_measurement": {
@@ -238,7 +238,7 @@
             "free -m 2>/dev/null | head -3; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo"
           ],
           "the_code": 0,
-          "the_output": "gesamt       benutzt     frei      gemns.  Puffer/Cache verf\u00fcgbar\nSpeicher:      31724       17516         907         130       13889       14208\nAuslager:     131071        2507      128564\nMemTotal:       32486132 kB\nMemAvailable:   14549720 kB",
+          "the_output": "gesamt       benutzt     frei      gemns.  Puffer/Cache verf\u00fcgbar\nSpeicher:      31724       14688        5011         130       12612       17036\nAuslager:     131071        2507      128564\nMemTotal:       32486132 kB\nMemAvailable:   17445464 kB",
           "the_error": ""
         },
         "the_disk": {
@@ -406,11 +406,11 @@
     "the_router": {
       "the_device": "the OpenWrt router",
       "the_host": "192.168.1.1",
-      "the_ssh_banner": "SSH-2.0-dropbear\r\n\u0000\u0000\u0001\ufffd\u0007\u0014\u0000/\ufffd\u001d\ufffd\ufffd)\ufffd\u001aL3\ufffd\ufffdo\ufffd&\u0000\u0000\u0000\ufffdcurve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256",
+      "the_ssh_banner": "SSH-2.0-dropbear\r\n\u0000\u0000\u0001\ufffd\u0007\u0014\ufffd\u061a&j\ufffd\u0000\ufffd\ufffd \ufffd\ufffd#\ufffd\ufffd\ufffd\u0000\u0000\u0000\ufffdcurve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256",
       "the_ssh_banner_names_dropbear": true,
       "the_host_keys": [
-        "192.168.1.1 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMhaGfQYJysHIUZsPeBDPlehUzdoowXCv9GJUPzQH53",
-        "192.168.1.1 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCTFkEPVyYh8Ng4+7ob7ecvUwShZ+fWQHOe3Xbq9Gp+uYXT6wQsPUB1b8WuHn404aqhf2Rg4bgKlMxleOeuFUOg5Zsbz1401Bge0J2r3opnPr5qbHE5aAQMXsaNxIIyCiVYcODqjId6OT8m5bQHhnxmboOxwVEifJ+4wUz6ve/08BRAFLCqrHbLb0k34+hED8tUx8kuTB98l7AdDfAyI0OGMP3FLulOF2ez5EGT+sVkHjgZO9jA/ElyuP8hupUV3LDnNuXhCVIuhP+JykeAZ+sh+Pfvghpkq2eFeRCcwB0omNlLD3Vg8udK2J4F1vKoUF7RZzNDNTudSALihzlQfShp"
+        "192.168.1.1 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCTFkEPVyYh8Ng4+7ob7ecvUwShZ+fWQHOe3Xbq9Gp+uYXT6wQsPUB1b8WuHn404aqhf2Rg4bgKlMxleOeuFUOg5Zsbz1401Bge0J2r3opnPr5qbHE5aAQMXsaNxIIyCiVYcODqjId6OT8m5bQHhnxmboOxwVEifJ+4wUz6ve/08BRAFLCqrHbLb0k34+hED8tUx8kuTB98l7AdDfAyI0OGMP3FLulOF2ez5EGT+sVkHjgZO9jA/ElyuP8hupUV3LDnNuXhCVIuhP+JykeAZ+sh+Pfvghpkq2eFeRCcwB0omNlLD3Vg8udK2J4F1vKoUF7RZzNDNTudSALihzlQfShp",
+        "192.168.1.1 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMhaGfQYJysHIUZsPeBDPlehUzdoowXCv9GJUPzQH53"
       ],
       "the_http_status": "307",
       "the_read_only": true
@@ -441,7 +441,7 @@
   },
   "the_read_only": true,
   "the_status": "PASS",
-  "the_revision": "94bd030ac062d941c8239be57cb6e7adbb221a93",
-  "the_tree": "7c3a7395658d5b3c455830e9bb21edb4d14c38cd",
-  "finished_utc": "2026-11-11T16:35:13Z"
+  "the_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
+  "the_tree": "bb601b98108a2e8abe34475a3f8e27eb42afaa89",
+  "finished_utc": "2026-11-11T18:30:57Z"
 }

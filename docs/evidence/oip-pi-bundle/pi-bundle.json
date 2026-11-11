@@ -25,32 +25,32 @@
     "tools/oip_pi_instance.py"
   ],
   "the_ports_of_the_rehearsal": {
-    "the_core": 60523,
-    "the_source": 60524
+    "the_core": 62021,
+    "the_source": 62022
   },
   "the_preparation": {
     "status": "prepared",
-    "the_instance": "/private/tmp/oip-pi-bundle-2jcczvtn/instance",
-    "the_core_configuration": "/private/tmp/oip-pi-bundle-2jcczvtn/instance/etc/core.json",
-    "the_plan": "/private/tmp/oip-pi-bundle-2jcczvtn/instance/etc/plan.json",
-    "the_ipc_configuration": "/private/tmp/oip-pi-bundle-2jcczvtn/instance/etc/ipc.json",
-    "the_database": "/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/oip-core.sqlite",
-    "the_socket": "/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/ipc.sock",
-    "the_credential_of_the_operator": "/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/platform-reader.credential",
-    "the_http_port": 60523,
-    "the_source_port": 60524,
+    "the_instance": "/private/tmp/oip-pi-bundle-wijbtdtw/instance",
+    "the_core_configuration": "/private/tmp/oip-pi-bundle-wijbtdtw/instance/etc/core.json",
+    "the_plan": "/private/tmp/oip-pi-bundle-wijbtdtw/instance/etc/plan.json",
+    "the_ipc_configuration": "/private/tmp/oip-pi-bundle-wijbtdtw/instance/etc/ipc.json",
+    "the_database": "/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/oip-core.sqlite",
+    "the_socket": "/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/ipc.sock",
+    "the_credential_of_the_operator": "/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/platform-reader.credential",
+    "the_http_port": 62021,
+    "the_source_port": 62022,
     "the_source_id": "pi-simulation",
     "the_uid": 501,
     "the_host": "MacBookPro.fritz.box"
   },
   "the_core_configuration": {
-    "database": "/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/oip-core.sqlite",
-    "http_port": 60523,
+    "database": "/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/oip-core.sqlite",
+    "http_port": 62021,
     "sources": [
       {
         "id": "pi-simulation",
         "name": "The simulation of this host",
-        "endpoint": "opc.tcp://127.0.0.1:60524",
+        "endpoint": "opc.tcp://127.0.0.1:62022",
         "namespace": 2,
         "entity_id": "pi-simulation"
       }
@@ -62,19 +62,19 @@
     "legacy_single_infrastructure": false
   },
   "the_ipc_configuration": {
-    "socket": "/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/ipc.sock",
+    "socket": "/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/ipc.sock",
     "max_sessions": 16,
     "clients": [
       {
         "uid": 501,
-        "credential_file": "/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/platform-reader.credential",
+        "credential_file": "/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/platform-reader.credential",
         "policy": {
           "principal": "platform-reader"
         }
       },
       {
         "uid": 501,
-        "credential_file": "/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/reader-org-a.credential",
+        "credential_file": "/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/reader-org-a.credential",
         "policy": {
           "principal": "reader-org-a"
         }
@@ -88,30 +88,30 @@
   },
   "the_start": {
     "the_code": 0,
-    "the_output": "-pi-bundle-2jcczvtn/instance is already prepared\nthe simulation of the host listens on 127.0.0.1:60524 (pid 55243)\n{\"status\": \"provisioned\", \"plan\": \"/private/tmp/oip-pi-bundle-2jcczvtn/instance/etc/plan.json\", \"database\": \"/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/oip-core.sqlite\", \"result\": \"{\\\"provisioned\\\": \\\"/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/oip-core.sqlite\\\"}\"}\n{\"status\": \"started\", \"pid\": 55248, \"http_port\": 60523, \"database\": \"/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/oip-core.sqlite\", \"log\": \"/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/oip.log\", \"ipc_credentials_provisioned\": 2}\n\nthe Core of the instance answers on http://127.0.0.1:60523 of this host\nthe session of the operator: /private/tmp/oip-pi-bundle-2jcczvtn/bundle/bin/login-code.sh\n",
+    "the_output": "-pi-bundle-wijbtdtw/instance is already prepared\nthe simulation of the host listens on 127.0.0.1:62022 (pid 40614)\n{\"status\": \"provisioned\", \"plan\": \"/private/tmp/oip-pi-bundle-wijbtdtw/instance/etc/plan.json\", \"database\": \"/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/oip-core.sqlite\", \"result\": \"{\\\"provisioned\\\": \\\"/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/oip-core.sqlite\\\"}\"}\n{\"status\": \"started\", \"pid\": 40619, \"http_port\": 62021, \"database\": \"/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/oip-core.sqlite\", \"log\": \"/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/oip.log\", \"ipc_credentials_provisioned\": 2}\n\nthe Core of the instance answers on http://127.0.0.1:62021 of this host\nthe session of the operator: /private/tmp/oip-pi-bundle-wijbtdtw/bundle/bin/login-code.sh\n",
     "the_error": ""
   },
   "the_calls_of_the_core": [
     [
       "--port",
-      "60524"
+      "62022"
     ],
     [
       "--config",
-      "/private/tmp/oip-pi-bundle-2jcczvtn/instance/etc/core.json",
+      "/private/tmp/oip-pi-bundle-wijbtdtw/instance/etc/core.json",
       "--database",
-      "/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/oip-core.sqlite",
+      "/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/oip-core.sqlite",
       "--provision",
-      "/private/tmp/oip-pi-bundle-2jcczvtn/instance/etc/plan.json"
+      "/private/tmp/oip-pi-bundle-wijbtdtw/instance/etc/plan.json"
     ],
     [
       "--daemon",
       "--config",
-      "/private/tmp/oip-pi-bundle-2jcczvtn/instance/etc/core.json",
+      "/private/tmp/oip-pi-bundle-wijbtdtw/instance/etc/core.json",
       "--database",
-      "/private/tmp/oip-pi-bundle-2jcczvtn/instance/state/oip-core.sqlite",
+      "/private/tmp/oip-pi-bundle-wijbtdtw/instance/state/oip-core.sqlite",
       "--ipc-config",
-      "/private/tmp/oip-pi-bundle-2jcczvtn/instance/etc/ipc.json"
+      "/private/tmp/oip-pi-bundle-wijbtdtw/instance/etc/ipc.json"
     ]
   ],
   "the_files_written_outside_the_instance": [],
@@ -121,12 +121,12 @@
   },
   "the_stop": {
     "the_code": 0,
-    "the_output": "{\"status\": \"stopped\", \"pid\": 55248}\nthe simulation of the host was stopped (pid 55243)\nthe instance is stopped; the data of the instance stays in /private/tmp/oip-pi-bundle-2jcczvtn/instance/state\n"
+    "the_output": "{\"status\": \"stopped\", \"pid\": 40619}\nthe simulation of the host was stopped (pid 40614)\nthe instance is stopped; the data of the instance stays in /private/tmp/oip-pi-bundle-wijbtdtw/instance/state\n"
   },
   "the_core_binds_the_loopback": true,
   "status": "PASS",
-  "the_revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
-  "the_tree": "ef70307ae925041cbb899118095089c89135624b",
+  "the_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
+  "the_tree": "bb601b98108a2e8abe34475a3f8e27eb42afaa89",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T16:12:35Z"
+  "finished_utc": "2026-11-11T18:30:53Z"
 }

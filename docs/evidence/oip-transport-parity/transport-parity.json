@@ -72,10 +72,10 @@
   "status": "PASS",
   "the_core_binary": {
     "the_path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
-    "the_sha256": "5ed7348fe6bb9ba1129fe3b89537669235d00292be36ef4019941019c6db17a7"
+    "the_sha256": "1a650f970ce8906d4926eb44d0fff5647b21fbf90ff01d76cff4f3db200c74b9"
   },
-  "the_revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
-  "the_tree": "ef70307ae925041cbb899118095089c89135624b",
+  "the_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
+  "the_tree": "bb601b98108a2e8abe34475a3f8e27eb42afaa89",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T15:19:58Z"
+  "finished_utc": "2026-11-11T17:39:50Z"
 }

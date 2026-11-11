@@ -6,10 +6,10 @@
   ],
   "browser_receipt": {
     "schema": "oip-settings-status-v1",
-    "revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
+    "revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the status of the settings categories in the approved surface against the real Core",
-    "base": "http://127.0.0.1:54025",
+    "base": "http://127.0.0.1:56187",
     "the_categories_of_the_core": [
       {
         "the_category": "general",
@@ -95,9 +95,9 @@
     ],
     "the_refusals_of_the_core": [
       "/api/v2/organizations?offset=0&limit=100",
-      "/api/v1/sources",
-      "/api/v1/metrics/current",
       "/api/v1/events",
+      "/api/v1/metrics/current",
+      "/api/v1/sources",
       "/api/v1/system/status",
       "/api/v1/devices",
       "/api/v2/management?section=server",
@@ -530,7 +530,7 @@
       {
         "check": "the Core does not refuse the read of the settings in the scope of the platform",
         "ok": true,
-        "the_detail": "[\"/api/v2/organizations?offset=0&limit=100\",\"/api/v1/sources\",\"/api/v1/metrics/current\",\"/api/v1/events\",\"/api/v1/system/status\",\"/api/v1/devices\",\"/api/v2/management?section=server\",\"/api/v2/management?section=storage\",\"/api/v2/management?section=diagnostic_rules\",\"/api/v2/management?section=securi"
+        "the_detail": "[\"/api/v2/organizations?offset=0&limit=100\",\"/api/v1/events\",\"/api/v1/metrics/current\",\"/api/v1/sources\",\"/api/v1/system/status\",\"/api/v1/devices\",\"/api/v2/management?section=server\",\"/api/v2/management?section=storage\",\"/api/v2/management?section=diagnostic_rules\",\"/api/v2/management?section=securi"
       }
     ],
     "errors": []
@@ -590,9 +590,9 @@
   ],
   "the_refusals_of_the_core": [
     "/api/v2/organizations?offset=0&limit=100",
-    "/api/v1/sources",
-    "/api/v1/metrics/current",
     "/api/v1/events",
+    "/api/v1/metrics/current",
+    "/api/v1/sources",
     "/api/v1/system/status",
     "/api/v1/devices",
     "/api/v2/management?section=server",
@@ -603,8 +603,8 @@
   ],
   "checks": 85,
   "status": "PASS",
-  "the_revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
-  "the_tree": "ef70307ae925041cbb899118095089c89135624b",
+  "the_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
+  "the_tree": "bb601b98108a2e8abe34475a3f8e27eb42afaa89",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T15:33:13Z"
+  "finished_utc": "2026-11-11T17:52:08Z"
 }
