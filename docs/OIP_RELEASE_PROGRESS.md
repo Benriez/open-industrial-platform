@@ -14,8 +14,8 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 |---|---|
 | Canonical branch | `main` |
 | Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `53b9ef8` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `29f2557` (tree `81f9214`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `29f2557` — the binary names its own revision; the same revision yields the same bytes |
+| The revision of the final acceptance | `6b8eb7f` (tree `9b71fc0`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `6b8eb7f` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
@@ -3242,7 +3242,7 @@ the Raspberry Pi — is reconciled with the contracts in `docs/runbooks/operatio
 The whole evidence of the release was re-measured on a clean tree at the revision of the
 product change: 30 rehearsals, 0 failed, 43 receipts published
 (`target/oip-refresh-evidence.json`), the canonical acceptance passed on the clean tree
-`81f92148` with the release binary `9b50fb17` (363 of 363 Flutter tests, 187 browser findings
+`9b71fc0b` with the release binary `dc4a932a` (363 of 363 Flutter tests, 187 browser findings
 with zero failures, 13 captures, the visual comparison PASS, 8 of 8 phases —
 `docs/evidence/oip-canonical-acceptance/acceptance.json`), the web release and the macOS bundle
 are byte-identical with the artefacts of the acceptance, and the Core is byte-reproducible for
