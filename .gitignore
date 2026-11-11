@@ -168,6 +168,9 @@ secrets/
 # The discovery of the deployed hosts and of the two device classes of the
 # operator, measured read-only over the network of the operator.
 !/docs/evidence/oip-deployment-discovery/deployment-discovery.json
+# The package of the macOS client for the Mac App Store: the build and every
+# property that the submission checks.
+!/docs/evidence/oip-mas-package/mas-package.json
 !/docs/evidence/oip0061/handoff-verification.json
 !/docs/evidence/oip0061/reconciliation.json
 !/docs/evidence/oip0061/test-summary.json

@@ -66,6 +66,20 @@ An **independent verification** of that change (a delegated, read-only audit of 
    its measured identity — its monitoring and its control are **not** implemented and are not
    simulated (`docs/architecture/oip-capability-inventory.md`).
 
+4. **N22 (the Mac App Store readiness of the client)**: the **requirements of the store are
+   read** (`docs/release/mac-app-store/requirements.md`, with the sources and the date), and the
+   **package is measured** (`tools/oip_mas_package.py`,
+   `docs/evidence/oip-mas-package/mas-package.json`): the release build carries the **hardened
+   runtime**, the entitlements of the release are the **app sandbox** and the **network client**
+   (the entitlements file carries no debug entitlement), the bundle carries the **privacy
+   manifest** (`PrivacyInfo.xcprivacy`: no tracking, no collected data, the three required-reason
+   categories with their reason codes), **no file** carries the `com.apple.quarantine` attribute,
+   and the `Info.plist` names the category and the exception of the transport security for the
+   local networking (the Core of OIP answers on the loopback). The **metadata** of the listing and
+   the **privacy policy** are prepared (`docs/release/mac-app-store/metadata.md`,
+   `docs/release/mac-app-store/privacy-policy.md`). The package is **upload-ready**; the upload
+   itself, the identity, the certificate, the profile and the two public URLs are the operator's.
+
 The independent tasks of this list are closed. What remains are the operator actions: the
 product decision on the delivery of the web release, the physical device of G5, the
 production-security scope of G10, the operator acceptance of G12 and the discovery of the
@@ -145,6 +159,15 @@ host of the Core.
   token** (measured), and a token is a **write on the device** (the button of the bridge and
   `POST /api`). A monitoring or control capability for the bridge is a **new capability** with
   its own permission, its own audit and its own scope — it is named here and **not** simulated.
+* **The Mac App Store**: the package of the client is **upload-ready** and measured
+  (`docs/evidence/oip-mas-package/mas-package.json`), and the requirements of the store are read
+  with their sources (`docs/release/mac-app-store/requirements.md`). The operator still has to:
+  build the **archive** with the *Apple Distribution* certificate and the *Mac App Distribution*
+  profile of the account (the local build is signed ad-hoc, and Xcode injects a development
+  entitlement into an ad-hoc build that a distribution build does not carry); publish the
+  **privacy policy** and the **support URL**; answer the **app privacy details** (the client
+  collects nothing) and the **age rating**; and then **upload** the archive. The loop does not
+  submit and does not publish.
 * Decide the delivery of the web release: the measured baseline
   (`docs/evidence/oip-performance/performance.json`) shows that the first paint of the delivered
   web release is bound to the transfer over the loopback and not to the application — the shell
@@ -229,6 +252,7 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-transport-parity/transport-parity.json` | the parity of REST, SSE and MCP and the scope of the projection |
 | `docs/evidence/oip-security-review/security-review.json` | the security release review: 12 findings, 9 resolved, 2 mitigated, 1 escalated |
 | `docs/evidence/oip-rust-regression/rust-regression.json` | the Rust regression of the workspace: 185 tests in 29 suites |
+| `docs/evidence/oip-mas-package/mas-package.json` | the package of the macOS client for the Mac App Store: the release build, the entitlements of the bundle (the app sandbox and the network client, without the debug entitlement of the entitlements file), the hardened runtime in the signature, the privacy manifest in the bundle, the absence of the quarantine attribute on every file, the category and the transport security of the Info.plist, the icon and the signature of every executable |
 | `docs/evidence/oip-deployment-discovery/deployment-discovery.json` | the deployed hosts and the two device classes of the operator, measured read-only: the identity, the architecture, the memory, the disk, the toolchain, the services of the operator (unchanged before and after) and the listeners of `bodi-pi` and `bodi-pc`; the SSH banner and the host keys of the OpenWrt router; the public configuration of the Hue Bridge and the refusal of its lights without a token |
 | `docs/evidence/oip-pi-bundle/pi-bundle.json` | the bundle of a disposable instance for a foreign host: the whole procedure measured with stubs — the files of the instance are absolute and inside the instance, the procedure writes nothing outside it, the code of the operator session is minted over the local IPC, the instance stops without a forced signal, and the bundle installs no service and names no path of the machine it was built on |
 | `docs/evidence/oip-operations/operations.json` | the local operations: the backup, the refused restore, the clean shutdown, the three refusals of the personal installation |

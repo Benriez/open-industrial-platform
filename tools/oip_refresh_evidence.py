@@ -120,6 +120,11 @@ REHEARSALS = [
      {"rust-regression.json": "oip-rust-regression/rust-regression.json"}),
     ("oip_pi_bundle", "tests/oip_pi_bundle.py",
      {"pi-bundle.json": "oip-pi-bundle/pi-bundle.json"}),
+    # The package of the macOS client for the Mac App Store: the build, the
+    # entitlements, the hardened runtime, the privacy manifest, the quarantine
+    # attribute and the metadata of the bundle.
+    ("oip_mas_package", "tools/oip_mas_package.py",
+     {"mas-package.json": "oip-mas-package/mas-package.json"}),
     ("oip_reproducible_build", "tests/oip_reproducible_build.py",
      {"reproducible-build.json": "oip-reproducible-build/reproducible-build.json"}),
 ]

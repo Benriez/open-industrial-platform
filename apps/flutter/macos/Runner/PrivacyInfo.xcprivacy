@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The privacy manifest of the OIP client (macOS).
+
+  The client of OIP is a presentation client: it shows the state that the Core of OIP
+  delivers, it collects nothing off the device and it tracks nothing.
+
+  The declared API categories are the ones that the application and its bundled
+  Flutter engine use, with the reason code of Apple that matches the use:
+
+    * FileTimestamp (C617.1): the application and its engine access the timestamps
+      of the files inside their own container — the settings of the engine and the
+      registration of the plugins.
+    * UserDefaults (CA92.1): the engine keeps its own settings in the user defaults
+      of this application; the application reads no user default of the system.
+    * SystemBootTime (35F9.1): the application measures the elapsed time between the
+      events of a session (the age of a receipt, the freshness of a sample).
+
+  The verification of the declaration is Apple's own privacy report of the archive
+  (the operator's step); this file is the declaration of the application.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>35F9.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

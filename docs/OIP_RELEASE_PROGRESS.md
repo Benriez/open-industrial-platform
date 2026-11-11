@@ -3383,6 +3383,61 @@ No personal database change, no schema-7 activation of the personal installation
 any host or device of the operator, no service installed, no port published, no push, no
 deployment.
 
+### Iteration 74 — the macOS client is upload-ready for the Mac App Store
+
+**Status: PROVED on canonical `main`.**
+The operator extended the mission: the deployed software must be updateable over the air, and
+the macOS client must be ready for the Mac App Store. This iteration delivers the **Mac App Store
+readiness** — the requirements read from the official sources, the package measured, the metadata
+and the privacy policy prepared.
+
+* **The requirements are read, not remembered.** The official pages of Apple were read on
+  2026-11-11 and every row of the checklist carries its source
+  (`docs/release/mac-app-store/requirements.md`): the apps uploaded to App Store Connect must be
+  built with **Xcode 26** or later (the machine of the release builds with **26.6** ✓); the
+  **approved reasons for the required-reason APIs** must be declared; the macOS apps of the store
+  must not carry the extended attribute `com.apple.quarantine` (since 2025-02-18); the **hardened
+  runtime** must be enabled; the notarisation uses `notarytool` (not `altool`) and the store
+  submission already contains the equivalent security checks, so the notarisation belongs to the
+  **direct** distribution of G9/N17, not to the upload.
+* **The package is measured, property by property** (`tools/oip_mas_package.py`,
+  `docs/evidence/oip-mas-package/mas-package.json`): the signature of the bundle carries the
+  **hardened runtime** (`flags=…(adhoc,runtime)`), the entitlements are the **app sandbox** and
+  the **network client**, the entitlements *file* of the release carries **no** debug
+  entitlement, the bundle carries the **privacy manifest**, **no file** of the bundle carries the
+  quarantine attribute, the `Info.plist` names the category (`public.app-category.utilities`) and
+  the exception of the transport security for the **local networking** — the Core of OIP answers
+  on the loopback, and the exception opens the local networking only — the icon is in the bundle
+  and **every executable** of it is signed.
+* **Three things were added to the product.** The **hardened runtime** in the release and the
+  profile configuration of the Xcode project; the **privacy manifest** `PrivacyInfo.xcprivacy`
+  (no tracking, no collected data type, and the three required-reason categories with the reason
+  codes of Apple: the file timestamp and the user defaults of the own container, and the elapsed
+  time of a session) as a resource of the Runner target; and the **category** and the **local
+  networking exception** in the `Info.plist`.
+* **The difference between the local build and the upload is named, not hidden.** The local build
+  is signed **ad-hoc**, and Xcode injects the development entitlement `get-task-allow` into an
+  ad-hoc build — a **distribution** build with the *Apple Distribution* certificate does not carry
+  it. The receipt states that difference as an operator step instead of passing it silently.
+* **The listing is prepared.** The name, the subtitle, the category, the description, the
+  keywords, the promotional text, the age rating, the copyright and the answers of the app
+  privacy details (**data not collected** — the client talks to the Core on the loopback and
+  transmits nothing off the machine) are in `docs/release/mac-app-store/metadata.md`; the privacy
+  policy is in `docs/release/mac-app-store/privacy-policy.md`.
+* **What is still the operator's**: the archive with the *Apple Distribution* certificate and the
+  *Mac App Distribution* profile of the account, the two public URLs (the privacy policy and the
+  support), the answers of the app privacy details and the age rating, the trader status of the
+  account and the **upload** itself. The package is upload-ready; the loop does not submit and
+  does not publish.
+
+The **secure update of the deployed software** (authenticated delivery, the verification of the
+authenticity and the integrity, the safe activation, the health check and the rollback) is the
+next named piece of work of the operator's extension; it is not started here.
+
+No personal database change, no schema-7 activation of the personal installation, no write on any
+host or device of the operator, no service installed, no port published, no push, no deployment,
+no submission.
+
 ## 5. Evidence index
 
 | Artifact | Content |
