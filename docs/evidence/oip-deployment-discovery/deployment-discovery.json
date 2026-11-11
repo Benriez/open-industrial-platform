@@ -45,7 +45,7 @@
             "free -m 2>/dev/null | head -3; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo"
           ],
           "the_code": 0,
-          "the_output": "total        used        free      shared  buff/cache   available\nMem:            1844        1077         166          18         687         767\nSwap:          32767        1564       31203\nMemTotal:        1888848 kB\nMemAvailable:     785852 kB",
+          "the_output": "total        used        free      shared  buff/cache   available\nMem:            1844         889         187          10         845         954\nSwap:          32767        1702       31065\nMemTotal:        1888848 kB\nMemAvailable:     977896 kB",
           "the_error": ""
         },
         "the_disk": {
@@ -238,7 +238,7 @@
             "free -m 2>/dev/null | head -3; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo"
           ],
           "the_code": 0,
-          "the_output": "gesamt       benutzt     frei      gemns.  Puffer/Cache verf\u00fcgbar\nSpeicher:      31724       14855        1708         133       15752       16869\nAuslager:     131071        2323      128748\nMemTotal:       32486132 kB\nMemAvailable:   17274528 kB",
+          "the_output": "gesamt       benutzt     frei      gemns.  Puffer/Cache verf\u00fcgbar\nSpeicher:      31724       14544        1808         133       15961       17180\nAuslager:     131071        2322      128749\nMemTotal:       32486132 kB\nMemAvailable:   17592504 kB",
           "the_error": ""
         },
         "the_disk": {
@@ -406,7 +406,7 @@
     "the_router": {
       "the_device": "the OpenWrt router",
       "the_host": "192.168.1.1",
-      "the_ssh_banner": "SSH-2.0-dropbear\r\n\u0000\u0000\u0001\ufffd\u0007\u0014Q\ufffd\u072d^e\ufffd#S\ufffd`k\ufffd\ufffd\u001a\ufffd\u0000\u0000\u0000\ufffdcurve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256",
+      "the_ssh_banner": "SSH-2.0-dropbear\r\n\u0000\u0000\u0001\ufffd\u0007\u00147\ufffd\u00194\ufffd\ufffd\"\ufffd\ufffdV\u0010\ufffd\ufffd\ufffd\ufffdN\u0000\u0000\u0000\ufffdcurve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256",
       "the_ssh_banner_names_dropbear": true,
       "the_host_keys": [
         "192.168.1.1 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCTFkEPVyYh8Ng4+7ob7ecvUwShZ+fWQHOe3Xbq9Gp+uYXT6wQsPUB1b8WuHn404aqhf2Rg4bgKlMxleOeuFUOg5Zsbz1401Bge0J2r3opnPr5qbHE5aAQMXsaNxIIyCiVYcODqjId6OT8m5bQHhnxmboOxwVEifJ+4wUz6ve/08BRAFLCqrHbLb0k34+hED8tUx8kuTB98l7AdDfAyI0OGMP3FLulOF2ez5EGT+sVkHjgZO9jA/ElyuP8hupUV3LDnNuXhCVIuhP+JykeAZ+sh+Pfvghpkq2eFeRCcwB0omNlLD3Vg8udK2J4F1vKoUF7RZzNDNTudSALihzlQfShp",
@@ -441,7 +441,7 @@
   },
   "the_read_only": true,
   "the_status": "PASS",
-  "the_revision": "ff106b3d1e4febd85ef46835a6e3ff07abaa2a70",
-  "the_tree": "dcef648e2230cec5999c22dfaf8282bbd55edf57",
-  "finished_utc": "2026-11-11T03:50:16Z"
+  "the_revision": "d264f8a70fde5c2998a52ff0f417a80a4a389889",
+  "the_tree": "f32296518b7ad2def557618584c327def79fd89e",
+  "finished_utc": "2026-11-11T05:29:54Z"
 }
