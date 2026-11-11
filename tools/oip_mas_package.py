@@ -43,6 +43,13 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 APPS = ROOT / "apps" / "flutter"
 BUNDLE = APPS / "build/macos/Build/Products/Release/oip_dashboard.app"
 RELEASE_PORT = 18808
+# The store assets of the listing: the captures that the rehearsal of the
+# store assets measured.
+STORE_ASSETS = ROOT / "docs/evidence/oip-store-screenshots/captures"
+# The sizes that Apple accepts for a Mac app (App Store Connect Help,
+# "Screenshot specifications", read on 2026-11-11).
+ACCEPTED_SIZES = [(1280, 800), (1440, 900), (2560, 1600), (2880, 1800)]
+ACCEPTED_FORMATS = (".png", ".jpg", ".jpeg")
 
 # The entitlements that the release build must carry, and the ones it must
 # not carry.
@@ -227,6 +234,58 @@ def verify(bundle: pathlib.Path):
     return report
 
 
+def verify_the_store_assets():
+    """The screenshots of the listing, measured against the rule of the store.
+
+    Apple accepts the screenshot of a Mac app in one of four sizes with a 16:10
+    aspect ratio, in the format `.jpeg`, `.jpg` or `.png`, and **without an
+    alpha channel**. Every property is read out of the file itself: the size
+    and the colour type come from the header of the PNG.
+    """
+    checks = {}
+    problems = []
+    if not STORE_ASSETS.is_dir():
+        checks["the_assets_are_present"] = False
+        problems.append(f"the store assets are missing: {STORE_ASSETS}")
+        return checks, problems
+    captures = sorted(path for path in STORE_ASSETS.iterdir()
+                      if path.is_file() and path.suffix.lower() in ACCEPTED_FORMATS)
+    checks["the_assets_are_present"] = bool(captures)
+    checks["the_number_of_the_assets"] = len(captures)
+    if not captures:
+        problems.append("the listing carries no screenshot")
+        return checks, problems
+    if len(captures) > 10:
+        problems.append(f"the listing carries {len(captures)} screenshots; the store accepts ten")
+    measured = []
+    for path in captures:
+        data = path.read_bytes()
+        entry = {"the_file": path.name, "the_bytes": path.stat().st_size,
+                 "the_sha256": hashlib.sha256(data).hexdigest()}
+        if data[:8].hex() != "89504e470d0a1a0a":
+            entry["the_problem"] = "the file is not a PNG"
+            problems.append(f"{path.name} is not a PNG")
+            measured.append(entry)
+            continue
+        width = int.from_bytes(data[16:20], "big")
+        height = int.from_bytes(data[20:24], "big")
+        colour = data[25]
+        entry.update({"the_width": width, "the_height": height,
+                      "the_colour_type": colour,
+                      "the_carries_an_alpha_channel": colour in (4, 6)})
+        if (width, height) not in ACCEPTED_SIZES:
+            entry["the_problem"] = "the size is not a size that the store accepts"
+            problems.append(f"{path.name} has the size {width}x{height}, which the store "
+                            f"does not accept for a Mac app")
+        if entry["the_carries_an_alpha_channel"]:
+            entry["the_problem"] = "the capture carries an alpha channel"
+            problems.append(f"{path.name} carries an alpha channel")
+        measured.append(entry)
+    checks["the_assets"] = measured
+    checks["the_sizes_that_the_store_accepts"] = [list(size) for size in ACCEPTED_SIZES]
+    return checks, problems
+
+
 def build_the_archive():
     """The archive of the distribution and the measurement of its signature.
 
@@ -334,6 +393,13 @@ def main():
     report["the_tree_sha256"] = digest
     report["the_files"] = len(entries)
     report["steps"].append("the digest of the bundle is measured")
+
+    # The screenshots of the listing are part of the submission: they are
+    # measured against the rule of the store, not asserted.
+    assets, asset_problems = verify_the_store_assets()
+    report["the_store_assets"] = assets
+    report["the_problems"].extend(asset_problems)
+    report["steps"].append("the screenshots of the listing are measured")
 
     report["the_operator_steps"] = [
         "the local bundle carries no hardened runtime: the embedded Flutter "

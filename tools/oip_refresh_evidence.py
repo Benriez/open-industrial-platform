@@ -129,6 +129,12 @@ REHEARSALS = [
     # digests, the atomic switch, the health check and the rollback.
     ("oip_update", "tests/oip_update.py",
      {"update.json": "oip-update/update.json"}),
+    # The store assets of the Mac App Store listing: the six workstations of
+    # the client in the size that Apple accepts for a Mac app, without an
+    # alpha channel.
+    ("oip_store_screenshots", "tests/oip_store_screenshots.py",
+     {"store-screenshots.json": "oip-store-screenshots/store-screenshots.json",
+      "captures/": "oip-store-screenshots/captures/"}),
     ("oip_reproducible_build", "tests/oip_reproducible_build.py",
      {"reproducible-build.json": "oip-reproducible-build/reproducible-build.json"}),
 ]
@@ -158,11 +164,11 @@ def run(name, script, receipts):
     payloads = []
     for produced, published in receipts.items():
         source = area / produced
-        if not source.is_file():
+        if not source.exists():
             missing.append(published)
             continue
         sources[published] = str(source.relative_to(ROOT))
-        if produced.endswith(".json"):
+        if source.is_file() and produced.endswith(".json"):
             payloads.append(json.loads(source.read_text()))
     if result.returncode != 0 or missing:
         detail = (result.stderr.strip() or result.stdout.strip())[-400:]
@@ -202,8 +208,14 @@ def publish(outcomes):
             continue
         for place, source in item["the_sources"].items():
             target = EVIDENCE / place
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(ROOT / source, target)
+            if place.endswith("/"):
+                # A directory of receipts: the captures of a browser journey
+                # are evidence as well and are published as a whole.
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copytree(ROOT / source, target, dirs_exist_ok=True)
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / source, target)
             published.append(place)
     return published
 
