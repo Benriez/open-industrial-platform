@@ -828,8 +828,8 @@ names the free port of the instance.
 
 ```sh
 sh tools/oip_pi_build.sh aarch64-unknown-linux-gnu
-# -> target/pi/aarch64-unknown-linux-gnu/release/oip-server
-# -> target/pi/aarch64-unknown-linux-gnu/release/oip-simulated-server
+# -> target/pi/aarch64-unknown-linux-gnu/aarch64-unknown-linux-gnu/release/oip-server
+# -> target/pi/aarch64-unknown-linux-gnu/aarch64-unknown-linux-gnu/release/oip-simulated-server
 ```
 
 The script builds the **same workspace** with the **same flags** as the
@@ -838,6 +838,25 @@ release (`--locked --release --workspace`) for the target of the Pi, uses
 (the ELF machine, the digest). It writes **only** into `target/pi/` and it
 changes nothing of the release: the release binary of the manifest is the
 macOS binary and stays the artefact of the release.
+
+**The build of this revision is measured.** The workspace builds for
+`aarch64-unknown-linux-gnu` without a Rust toolchain on the Pi: the only
+native dependency of the Core is the bundled SQLite, and the cross compiler
+`zig cc` builds it. The two artefacts are ELF binaries for ARM aarch64
+(`file`: `ELF 64-bit LSB pie executable, ARM aarch64 … for GNU/Linux 2.0.0`):
+
+| Artefact | sha256 |
+|---|---|
+| `oip-server` | `d21986a0da19da7390dc599156424d368249bfa1d3ce8e38b096ab37769d686b` |
+| `oip-simulated-server` | `61e8e70993ef5af3c5e4026b3c84b1145c60c1a54473af24e6d87ec49b6f7e42` |
+
+Two limits belong to this fact: the **target** depends on the answer of the
+discovery (a Pi with a 64-bit system is `aarch64`, a Pi with a 32-bit system
+is `armv7l` — the script knows that target as well), and the artefacts were
+**never started on the Pi**: a binary that was not run on the target host is
+not a proven artefact. The proof of the runtime is the operator's phase 2 and
+phase 4. The digests belong to the revision they were built from; a build of
+another revision names another revision and yields other bytes.
 
 **Phase 2 — a disposable instance on the Pi, started by hand (operator).**
 

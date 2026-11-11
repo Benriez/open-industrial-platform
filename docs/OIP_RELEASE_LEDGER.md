@@ -99,7 +99,13 @@ host of the Core.
   not permitted, so the operator runs `tools/oip_pi_discovery.sh` on `bodi-pi` and reports
   the architecture (`aarch64` or `armv7l`) and the free port; the loop then fixes the
   target of the cross build (`tools/oip_pi_build.sh`) and the operator starts a disposable
-  instance **by hand** over SSH and reaches it through a tunnel of the loopback.
+  instance **by hand** over SSH and reaches it through a tunnel of the loopback. The **cross
+  build itself is measured**: the workspace builds for `aarch64-unknown-linux-gnu` without a
+  Rust toolchain on the Pi — the Core and the simulator are ELF binaries for ARM aarch64, and
+  the digests are named in `docs/runbooks/operations.md` §15.3. The target depends on the answer
+  of the discovery, and the artefacts were **never started on the Pi**: a binary that was not run
+  on the target host is not a proven artefact. The runtime proof is the operator's phase 2 and
+  phase 4.
 * Decide the delivery of the web release: the measured baseline
   (`docs/evidence/oip-performance/performance.json`) shows that the first paint of the delivered
   web release is bound to the transfer over the loopback and not to the application — the shell

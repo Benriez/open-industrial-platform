@@ -3236,8 +3236,13 @@ the Raspberry Pi — is reconciled with the contracts in `docs/runbooks/operatio
   is exposed. The smallest safe step is split into four phases, each of them measured and
   undoable on its own; phase 0 is the **read-only discovery** of the host
   (`tools/oip_pi_discovery.sh`), phase 1 the cross build of the workspace for the target of
-  the Pi (`tools/oip_pi_build.sh`). No service is installed, no port is published, no BODI
-  service of the host is touched and no personal data changes.
+  the Pi (`tools/oip_pi_build.sh`). The **cross build is measured**: the workspace builds for
+  `aarch64-unknown-linux-gnu` without a Rust toolchain on the Pi — the Core and the simulator
+  are ELF binaries for ARM aarch64, and the digests are named in `docs/runbooks/operations.md`
+  §15.3. The target depends on the answer of the discovery, and the artefacts were never
+  started on the Pi: the runtime proof is the operator's phase 2 and phase 4. No service is
+  installed, no port is published, no BODI service of the host is touched and no personal data
+  changes.
 
 The whole evidence of the release was re-measured on a clean tree at the revision of the
 product change: 30 rehearsals, 0 failed, 43 receipts published

@@ -45,7 +45,7 @@ export "OIP_PI_RUST_TARGET=$TARGET"
 export "OIP_PI_ZIG_TARGET=$ZIG_TARGET"
 export "CC_${MANGLED}=$ROOT/tools/oip_pi_cc.sh"
 export "AR_${MANGLED}=zig ar"
-export "CARGO_TARGET_${UPPER}_LINKER=zig cc -target $ZIG_TARGET"
+export "CARGO_TARGET_${UPPER}_LINKER=$ROOT/tools/oip_pi_ld.sh"
 
 rustup target add "$TARGET"
 cargo build --locked --release --workspace \
@@ -54,7 +54,9 @@ cargo build --locked --release --workspace \
 
 echo
 echo "== the artefacts"
-for artefact in "$OUT/release/oip-server" "$OUT/release/oip-simulated-server"; do
+# cargo puts the artefacts of a foreign target below the triple inside the
+# target directory of the build.
+for artefact in "$OUT/$TARGET/release/oip-server" "$OUT/$TARGET/release/oip-simulated-server"; do
   [ -f "$artefact" ] || { echo "missing: $artefact" >&2; exit 1; }
   ls -l "$artefact"
   file "$artefact" 2>/dev/null || true
@@ -63,6 +65,7 @@ done
 
 echo
 echo "== the next step (the operator, on the Pi)"
+echo "the artefacts are in $OUT/$TARGET/release"
 echo "copy oip-server and oip-simulated-server to the Pi, start a disposable"
 echo "instance by hand over SSH and reach it through a tunnel of the loopback"
 echo "(docs/runbooks/operations.md §15.3)."
