@@ -38,7 +38,7 @@
     "6"
   ],
   "the_start_exit_code": 0,
-  "the_start_output": "{\"status\": \"started\", \"pid\": 29523, \"http_port\": 55498, \"database\": \"/private/tmp/oip-activation-4_p0shol/core.sqlite\", \"log\": \"/private/tmp/oip-activation-4_p0shol/state/oip.log\", \"ipc_credentials_provisioned\": 0}",
+  "the_start_output": "{\"status\": \"started\", \"pid\": 9627, \"http_port\": 57848, \"database\": \"/private/tmp/oip-activation-z422zdp6/core.sqlite\", \"log\": \"/private/tmp/oip-activation-z422zdp6/state/oip.log\", \"ipc_credentials_provisioned\": 0}",
   "the_schema_after": "7",
   "the_inventory_after": {
     "organizations": "1",
@@ -71,8 +71,8 @@
   "the_sha256_after": "9f988c01c7115631db3b5bfd2b9228ecc24255b8b9905932a987a89c78e6a24e",
   "the_personal_installation_is_unchanged": true,
   "the_schema_of_the_personal_installation_after": "6",
-  "the_revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
-  "the_tree": "80c3487f78abe6dcc38cb0c9f22c4a1743a87849",
+  "the_revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
+  "the_tree": "ef70307ae925041cbb899118095089c89135624b",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T11:57:10Z"
+  "finished_utc": "2026-11-11T15:19:48Z"
 }

@@ -1,9 +1,9 @@
 {
   "schema": "oip-scope-persistence-v1",
-  "revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
+  "revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "the scope of the operator across a refresh of the authorized projection",
-  "base": "http://127.0.0.1:60090",
+  "base": "http://127.0.0.1:64223",
   "the_selected_scope": "site-a1",
   "the_scope_after_the_refresh": "site-a1",
   "the_scope_of_the_new_session": "Alle berechtigten Infrastrukturen",

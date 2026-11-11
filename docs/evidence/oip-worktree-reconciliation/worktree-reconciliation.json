@@ -2,7 +2,7 @@
   "schema": "oip-worktree-reconciliation-v1",
   "steps": [],
   "the_canonical_branch": "main",
-  "the_canonical_revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
+  "the_canonical_revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
   "the_worktrees": [
     {
       "the_path": "/Users/benny/Code/open-industrial-platform",
@@ -203,11 +203,11 @@
   "the_canonical_branch_carries_the_capability": true,
   "the_proof_of_the_capability": {
     "the_receipt": "docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json",
-    "the_revision": "2f22e9cf559279e6660e1794e3ba983c65372a97",
-    "the_documented_gaps": 52,
-    "the_distinct_rows": 52,
+    "the_revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
+    "the_documented_gaps": 51,
+    "the_distinct_rows": 51,
     "the_first_page_items": 50,
-    "the_continuation_items": 2,
+    "the_continuation_items": 1,
     "the_note": "the browser journey of the canonical branch walks the documented gaps and the health history over the opaque cursor of the Core"
   },
   "the_implementations": {
@@ -259,8 +259,8 @@
   },
   "the_reconciliation_is_complete": true,
   "status": "PASS",
-  "the_revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
-  "the_tree": "80c3487f78abe6dcc38cb0c9f22c4a1743a87849",
+  "the_revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
+  "the_tree": "ef70307ae925041cbb899118095089c89135624b",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T12:45:52Z"
+  "finished_utc": "2026-11-11T16:09:36Z"
 }

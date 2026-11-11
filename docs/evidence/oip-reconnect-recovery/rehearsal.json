@@ -5,12 +5,12 @@
   ],
   "browser_receipt": {
     "schema": "oip-reconnect-recovery-v1",
-    "revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
+    "revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the reconnect and the recovery of the application against the real Core",
-    "base": "http://127.0.0.1:56581",
-    "the_moment_before_the_restart": "2026-11-11 12:17:21.629 UTC",
-    "the_moment_after_the_restart": "2026-11-11 12:17:27.970 UTC",
+    "base": "http://127.0.0.1:63005",
+    "the_moment_before_the_restart": "2026-11-11 15:40:57.256 UTC",
+    "the_moment_after_the_restart": "2026-11-11 15:41:03.756 UTC",
     "findings": [
       {
         "check": "the first code is issued",
@@ -60,7 +60,7 @@
       {
         "check": "the projection carries a fresh moment",
         "ok": true,
-        "the_detail": "2026-11-11 12:17:21.629 UTC -> 2026-11-11 12:17:27.970 UTC"
+        "the_detail": "2026-11-11 15:40:57.256 UTC -> 2026-11-11 15:41:03.756 UTC"
       },
       {
         "check": "no browser JavaScript errors",
@@ -73,8 +73,8 @@
   "checks": 11,
   "the_restarts": 1,
   "status": "PASS",
-  "the_revision": "24f09015a1c6cc709e8a2dacf5ef2cca29d0faf5",
-  "the_tree": "80c3487f78abe6dcc38cb0c9f22c4a1743a87849",
+  "the_revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
+  "the_tree": "ef70307ae925041cbb899118095089c89135624b",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T12:17:31Z"
+  "finished_utc": "2026-11-11T15:41:07Z"
 }

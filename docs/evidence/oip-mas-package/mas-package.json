@@ -19,13 +19,13 @@
       "--dart-define=OIP_API_URL=http://127.0.0.1:18808"
     ],
     "the_code": 0,
-    "the_error": "--- xcodebuild: WARNING: Using the first of multiple matching destinations:\n{ platform:macOS, arch:arm64, id:00006000-001208642121801E, name:My Mac }\n{ platform:macOS, arch:x86_64, id:00006000-001208642121801E, name:My Mac }"
+    "the_error": "framework/Versions/A/Resources/flutter_assets/shaders/ink_sparkle.frag' is located outside of the allowed root paths.\n\nwarning: Stale file '/Users/benny/Library/Developer/Xcode/DerivedData/Runner-fjqieohbiptgqggswwdygknokurx/Build/Intermediates.noindex/ArchiveIntermediates/Runner/BuildProductsPath/Release/FlutterMacOS.framework/Versions/A/FlutterMacOS' is located outside of the allowed root paths."
   },
   "the_quarantine_strip": {
     "the_code": 0
   },
   "the_checks": {
-    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20400 size=536 flags=0x2(adhoc) hashes=6+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=ec1212c59edbe3c5e34ff2c201b27b3174b01479\nCandidateCDHashFull sha256=ec1212c59edbe3c5e34ff2c201b27b3174b01479062320823bb4d7be244b7f2d\nHash choices=sha256\nCMSDigest=ec1212c59edbe3c5e34ff2c201b27b3174b01479062320823bb4d7be244b7f2d\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=ec1212c59edbe3c5e34ff2c201b27b3174b01479\nSignature=adhoc\nInfo.plist entries=26\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
+    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20400 size=536 flags=0x2(adhoc) hashes=6+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=cc8d78482e4b3ee7ddc33abfc8bf1be3bee327b8\nCandidateCDHashFull sha256=cc8d78482e4b3ee7ddc33abfc8bf1be3bee327b88cc59d27f8c32d1f3e21b0ed\nHash choices=sha256\nCMSDigest=cc8d78482e4b3ee7ddc33abfc8bf1be3bee327b88cc59d27f8c32d1f3e21b0ed\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=cc8d78482e4b3ee7ddc33abfc8bf1be3bee327b8\nSignature=adhoc\nInfo.plist entries=26\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
     "the_signature_carries_the_hardened_runtime": false,
     "the_signature_is_ad_hoc": true,
     "the_signature_identity": "adhoc",
@@ -80,7 +80,7 @@
     "the_icon_is_present": true,
     "the_unsigned_executables": []
   },
-  "the_tree_sha256": "dd20a7eb983b88d4864d8ca3325a6a6146751444bddf000b202af5d403a276e1",
+  "the_tree_sha256": "23966211860d1969724906ba1e31ed451e6603251b47283ed874d9eb4c0dd5fe",
   "the_files": 44,
   "the_store_assets": {
     "the_assets_are_present": true,
@@ -192,7 +192,7 @@
       "the archive of the distribution is built",
       "the signature of the archive carries the hardened runtime"
     ],
-    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20500 size=512 flags=0x10002(adhoc,runtime) hashes=5+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=9d73e2e23785566f0262a7cc5e04acc554e23136\nCandidateCDHashFull sha256=9d73e2e23785566f0262a7cc5e04acc554e231364524c067677ef51e20945147\nHash choices=sha256\nCMSDigest=9d73e2e23785566f0262a7cc5e04acc554e231364524c067677ef51e20945147\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=9d73e2e23785566f0262a7cc5e04acc554e23136\nSignature=adhoc\nInfo.plist entries=26\nTeamIdentifier=not set\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
+    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20500 size=512 flags=0x10002(adhoc,runtime) hashes=5+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=791cb26fd60aedfa5da8e42a8e4660bba4b33b2e\nCandidateCDHashFull sha256=791cb26fd60aedfa5da8e42a8e4660bba4b33b2ed1067d655b3c8ac1f507ddde\nHash choices=sha256\nCMSDigest=791cb26fd60aedfa5da8e42a8e4660bba4b33b2ed1067d655b3c8ac1f507ddde\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=791cb26fd60aedfa5da8e42a8e4660bba4b33b2e\nSignature=adhoc\nInfo.plist entries=26\nTeamIdentifier=not set\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
     "the_signature_carries_the_hardened_runtime": true,
     "the_entitlements": {
       "com.apple.security.app-sandbox": true,
@@ -200,8 +200,8 @@
     }
   },
   "the_status": "PASS",
-  "the_revision": "2334a384c76d5ef021c5e774dcd13b16d8ee4244",
-  "the_tree": "cbb13ad8d4123baf55c81e0767a157b0f0400dc5",
+  "the_revision": "7ce11fdf107367efe3bbd2472ea72650c3df06a0",
+  "the_tree": "ef70307ae925041cbb899118095089c89135624b",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T14:20:53Z"
+  "finished_utc": "2026-11-11T16:13:15Z"
 }
