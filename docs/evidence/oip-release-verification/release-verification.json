@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "80ac49cb86267185a12991bc1d90dce2df541461",
+      "the_revision": "3e7fdf037621b3195ed17edc382918137a799d97",
       "the_revision_of_the_source": {
         "the_revision": "24fe932242686a8fb9cf9db630079b46194e3d0b",
         "the_subject": "fix(g9): the receipt of the store assets names the revision"
@@ -12,7 +12,7 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 726,
-        "the_sha256": "938d8d5834534ebaa842062de687c3b17f7d805f71da1b22b02728b64d3659c8"
+        "the_sha256": "a5facb03832f334ba96997fa1c959865abcfdbe58eeea3b239813109234ac7cf"
       },
       "the_artifacts": {
         "the_core": "9d34267d64d647159f25c4e790be63ce74d1066bb8822ee2765a8d7a16ad0763",
@@ -153,8 +153,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "fb150c39815b0207eedb8297dfff113423bc6526",
-  "the_tree": "0773f4a92fbbec9d8e92637bf9c5e027d07e7cdb",
+  "the_revision": "d427b0775a3b91aa7b275e49d5e8999b7ede26d8",
+  "the_tree": "7f6ac9833ab1be4b7f1d1b8dd6eb16a0cc1c50aa",
   "the_working_tree_is_clean": true,
   "status": "PASS"
 }
