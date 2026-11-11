@@ -1,0 +1,140 @@
+{
+  "schema": "oip-hue-device-v1",
+  "steps": [
+    "the identity of the bridge is verified against the pin",
+    "the limit of the capability is measured: no control without a token",
+    "a bridge with another certificate is refused",
+    "the bridge is onboarded and its verified identity is readable",
+    "a principal of another organization does not see the bridge",
+    "the Core stops and no process of the rehearsal stays behind"
+  ],
+  "the_problems": [],
+  "the_bridge": {
+    "schema": "oip-hue-v1",
+    "the_host": "192.168.1.131",
+    "the_port": 443,
+    "the_certificate_of_the_host": {
+      "the_fingerprint": "sha256 Fingerprint=95:D7:5C:4C:57:03:71:C1:1D:71:7E:25:BE:3C:16:2D:7B:EA:44:74:22:20:AB:2C:27:B9:3F:F8:44:C8:6E:3A",
+      "the_subject": "subject=C=NL, O=Philips Hue, CN=001788FFFE48E917\nissuer=C=NL, O=Philips Hue, CN=root-bridge\nnotBefore=Apr  8 12:33:33 2025 GMT\nnotAfter=Jan 19 03:14:07 2038 GMT"
+    },
+    "the_pin": {
+      "the_path": "/Users/benny/Code/open-industrial-platform/docs/release/hue/bridge-certificate.pem",
+      "the_fingerprint": "sha256 Fingerprint=95:D7:5C:4C:57:03:71:C1:1D:71:7E:25:BE:3C:16:2D:7B:EA:44:74:22:20:AB:2C:27:B9:3F:F8:44:C8:6E:3A",
+      "the_sha256_of_the_pin": "39abc2d119d41f0bd27dab5d73bf7cb1d1b1f679111f3779a0cc2dd818bf3857"
+    },
+    "the_configuration": {
+      "the_code": 0,
+      "the_verification_succeeded": true,
+      "the_verification": [
+        "verify return:1"
+      ],
+      "the_status": 200,
+      "the_body": "{\"name\":\"Hue Bridge\",\"datastoreversion\":\"198\",\"swversion\":\"1978545030\",\"apiversion\":\"1.78.0\",\"mac\":\"00:17:88:48:e9:17\",\"bridgeid\":\"001788FFFE48E917\",\"factorynew\":false,\"replacesbridgeid\":null,\"modelid\":\"BSB002\",\"starterkitid\":\"\"}"
+    },
+    "the_identity": {
+      "the_name": "Hue Bridge",
+      "the_bridge_id": "001788FFFE48E917",
+      "the_model_id": "BSB002",
+      "the_software_version": "1978545030",
+      "the_api_version": "1.78.0",
+      "the_mac": "00:17:88:48:e9:17",
+      "the_datastore_version": "198"
+    },
+    "the_lights_without_a_token": {
+      "the_path": "/api/oip-probe/lights",
+      "the_status": 200,
+      "the_body": "[{\"error\":{\"type\":1,\"address\":\"/lights\",\"description\":\"unauthorized user\"}}]",
+      "the_verification_succeeded": true,
+      "the_refused": true
+    },
+    "the_problems": [],
+    "the_status": "PASS",
+    "the_capability": {
+      "the_read": "the public configuration of the bridge",
+      "the_control": "not supported: the application token is a write on the device and belongs to the operator"
+    }
+  },
+  "the_capability": {
+    "the_read": "the public configuration of the bridge",
+    "the_control": "not supported: the application token is a write on the device and belongs to the operator"
+  },
+  "the_certificate": {
+    "the_file": "bridge-certificate.pem",
+    "the_sha256": "39abc2d119d41f0bd27dab5d73bf7cb1d1b1f679111f3779a0cc2dd818bf3857",
+    "the_fingerprint": "sha256 Fingerprint=95:D7:5C:4C:57:03:71:C1:1D:71:7E:25:BE:3C:16:2D:7B:EA:44:74:22:20:AB:2C:27:B9:3F:F8:44:C8:6E:3A"
+  },
+  "the_negative_control": {
+    "the_status": "FAIL",
+    "the_problems": [
+      "the identity of the bridge changed: the host presents a certificate that is not the pinned one"
+    ],
+    "the_tls_exit_code": 1,
+    "the_tls_answer": "",
+    "the_tls_error": [
+      "verify error:num=20:unable to get local issuer certificate",
+      "805EF8F801000000:error:0A000086:SSL routines:tls_post_process_server_certificate:certificate verify failed:ssl/statem/statem_clnt.c:2126:"
+    ]
+  },
+  "the_registration": {
+    "the_status": 200
+  },
+  "the_record": {
+    "the_status": 200,
+    "the_device": {
+      "record": {
+        "device": {
+          "id": "hue-bridge",
+          "display_name": "Philips Hue Bridge BSB002",
+          "device_type": "network_device",
+          "site_id": "site-a1",
+          "metadata": {
+            "manufacturer": "Philips Hue",
+            "model": "BSB002",
+            "operating_system": "Hue firmware 1978545030, API 1.78.0",
+            "hostname": "hue-bridge",
+            "ip_address": "192.168.1.131",
+            "mac_address": "00:17:88:48:e9:17",
+            "serial_number": "001788FFFE48E917",
+            "description": "Die Identit\u00e4t der Bridge ist gegen das gepinnte Zertifikat gepr\u00fcft (sha256 Fingerprint=95:D7:5C:4C:57:03:71:C1:1D:71:7E:25:BE:3C:16:2D:7B:EA:44:74:22:20:AB:2C:27:B9:3F:F8:44:C8:6E:3A).",
+            "tags": [
+              "hue-bridge",
+              "read-only"
+            ],
+            "physical_location": null,
+            "notes": "Die Lichter, Gruppen und Szenen brauchen ein Applikationstoken. Das Token ist ein Schreibzugriff auf dem Ger\u00e4t und geh\u00f6rt dem Betreiber. Die F\u00e4higkeit ist lesend; es wird nichts simuliert."
+          }
+        },
+        "registration": "registered",
+        "origin": "manual_operator",
+        "created_ms": 1794407905653,
+        "updated_ms": 1794407905653,
+        "registered_by": null,
+        "revision": 1
+      },
+      "organization_id": "org-a",
+      "infrastructure_id": "infra-a1",
+      "sources": [],
+      "connectivity": "unknown",
+      "telemetry": "no_collector",
+      "health": "not_evaluated",
+      "monitoring_simulated": false
+    }
+  },
+  "the_scope": {
+    "the_status": 404,
+    "the_items": 0,
+    "the_answer": {
+      "code": "RESOURCE_NOT_ACCESSIBLE",
+      "kind": "resource_not_found",
+      "message": "Resource is not accessible",
+      "ok": false
+    }
+  },
+  "the_orphaned_processes": [],
+  "the_status": "PASS",
+  "the_revision": "d43c22fd02f5981691b397faa156b826065f1e21",
+  "the_tree": "c694ae7b6e82d78965bcc0bfbb5fad341a65acfc",
+  "the_working_tree_is_clean": true,
+  "the_read_only": "every request of the rehearsal is a GET; the bridge was not modified",
+  "finished_utc": "2026-11-11T14:38:31Z"
+}

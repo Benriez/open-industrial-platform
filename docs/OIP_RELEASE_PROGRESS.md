@@ -3651,6 +3651,44 @@ change of the product. All of them are measured again on the revision of the rel
 acceptance and the reproducible build now run at **one** revision, so the binary that the gate
 executed is byte-identical with the binary that the manifest names.
 
+### Iteration 79 — the Philips Hue Bridge is onboarded with a verified identity
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates
+that need the operator (G5, G10, G12) stay open; the control of the bridge needs one of them.
+
+* **The identity of the bridge can only be verified by a pin, and the pin is measured.** The
+  bridge presents a certificate that it issued itself (`CN=001788FFFE48E917`, issued by
+  `CN=root-bridge`) and **does not present the root**: the chain is incomplete and no ordinary
+  trust store can verify it. The pin is the certificate of the device itself — the same
+  principle as the host key of an SSH host (`docs/release/hue/bridge-certificate.pem`, the
+  fingerprint and the digest of the file are recorded there).
+* **The read is verified, never insecure.** `curl` of this machine cannot build a chain for
+  such a pin (its LibreSSL build has no `--partial-chain`), but `openssl s_client` can:
+  `-partial_chain` with `-verify_return_error` verifies the presented certificate against the
+  pin and **refuses the connection itself** when it does not match. The bridge is therefore read
+  in **one** verified TLS session (`tools/oip_hue.py`) — there is no insecure path in the tool.
+* **The onboarding is measured end to end** (`tests/oip_hue_device.py`,
+  `docs/evidence/oip-hue-device/hue-device.json`): the identity is verified against the pin,
+  the bridge is written into the inventory of a disposable Core **through the authorized
+  session** (the origin and the CSRF token of the session, exactly as the application sends
+  them), the record is read back with the verified facts (model `BSB002`, software `1978545030`,
+  API `1.78.0`, bridge id `001788FFFE48E917`, MAC `00:17:88:48:e9:17`), and a principal of
+  **another organization** does not see the device — the answer is `404
+  RESOURCE_NOT_ACCESSIBLE`, exactly like a device that does not exist.
+* **The negative control is measured twice.** A bridge that presents another certificate is
+  refused **at the pin** (the tool refuses before it reads anything) **and in the TLS session**
+  (the exit code is non-zero and **no answer is delivered**).
+* **The limit is named, not simulated.** The bridge refuses the lights without an application
+  token (`unauthorized user`), and the creation of a token is a **write on the device** that
+  belongs to the operator. The capability is therefore **read-only**: the identity of the bridge
+  is a **device fact**, not a measurement, and nothing about the lights is simulated anywhere.
+
+Every request of the rehearsal is a `GET`: the bridge of the operator was **not** modified.
+
+The next independent READY work is the **client**: the Devices workspace names the identity of
+a device as `Nicht verfügbar`, although the Core holds it — the verified facts of the bridge
+should be visible where the operator looks at a device.
+
 ## 5. Evidence index
 
 | Artifact | Content |

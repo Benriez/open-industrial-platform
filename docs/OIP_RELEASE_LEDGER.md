@@ -107,7 +107,20 @@ An **independent verification** of that change (a delegated, read-only audit of 
    process** behind. The captures are the **store assets**; the acceptance of the operator of
    the visible result stays **pending** (G12) and is never claimed by the capture.
 
-7. **N23 (the secure update of the deployed software)**: the **update path of the Core** is
+7. **N26 (the Philips Hue Bridge as a real device)**: the **onboarding is implemented and
+   measured** (`tools/oip_hue.py`, `tests/oip_hue_device.py`,
+   `docs/evidence/oip-hue-device/hue-device.json`): the identity of the bridge is verified
+   against the **pin** of its own certificate (`docs/release/hue/bridge-certificate.pem` — the
+   bridge does not present the root of its chain, so the certificate of the device is the only
+   trust anchor, exactly like the host key of an SSH host), the **public configuration** is read
+   in **one** verified TLS session, the device is written into the inventory of the Core through
+   the **authorized session** and its verified facts (model, software, API, bridge id, MAC) are
+   readable there. A bridge with **another** certificate is refused — at the pin **and** in the
+   TLS session. The **lights stay unsupported**: the bridge refuses them without an application
+   token, and the token is a **write on the device** that belongs to the operator. Nothing is
+   simulated.
+
+8. **N23 (the secure update of the deployed software)**: the **update path of the Core** is
    implemented and **measured** (`tools/oip_update.py`, `tests/oip_update.py`,
    `docs/evidence/oip-update/update.json`, `docs/runbooks/operations.md` §16): the bundle is
    **authenticated** with an Ed25519 signature over the exact bytes of the manifest, the
@@ -303,6 +316,7 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-transport-parity/transport-parity.json` | the parity of REST, SSE and MCP and the scope of the projection |
 | `docs/evidence/oip-security-review/security-review.json` | the security release review: 12 findings, 9 resolved, 2 mitigated, 1 escalated |
 | `docs/evidence/oip-rust-regression/rust-regression.json` | the Rust regression of the workspace: 185 tests in 29 suites |
+| `docs/evidence/oip-hue-device/hue-device.json` | the **Philips Hue Bridge of the operator** as a real device: the identity verified against the **pin** of the certificate of the bridge (the bridge does not present the root of its chain), the public configuration read in **one** verified TLS session, the onboarding into the inventory of the Core through the **authorized session**, the read-back of the verified facts, the refusal of a bridge with another certificate (at the pin **and** in the TLS session) and the refusal of a principal of another organization (`docs/evidence/oip-hue-device/bridge-certificate.pem` is the verified certificate) |
 | `docs/evidence/oip-store-screenshots/store-screenshots.json` | the **store assets** of the Mac App Store listing: the six workstations of the client captured in 1440 x 900 — a size that Apple accepts for a Mac app — by the release build of the client through the managed Core; every capture is measured out of the file itself (the exact pixel size, the absence of an alpha channel), the captures carry none of the prohibited regressions of the UI contract, and the acceptance of the operator of the visible result stays **pending** (`docs/evidence/oip-store-screenshots/captures/`) |
 | `docs/evidence/oip-pi-instance/pi-instance.json` | the disposable instance of the Core on the Raspberry Pi: the cross build for the target of the host, the bundle, the **start by hand**, the Core answering through a tunnel of the loopback, the session of the operator minted on the host, the authorized projection (the address space of the simulation of the host and the organization of the instance), **no published port** and the **services of the operator unchanged** before and after |
 | `docs/evidence/oip-update/update.json` | the secure update of the Core of an instance: a signed bundle is verified (the Ed25519 signature over the exact bytes of the manifest), the digests are verified before the activation and again after the write, the switch is atomic, the new version is health checked as a disposable instance, a version that does not become ready is rolled back, and the durable journal of the instance names every attempt — the changed artefact, the forged manifest, the foreign target and the repeated revision are refused |

@@ -181,6 +181,10 @@ secrets/
 # The store assets of the Mac App Store listing: the six workstations of the
 # client in a size that Apple accepts for a Mac app, and the receipt that
 # measures every one of them.
+# The Philips Hue Bridge of the operator: the identity that was verified against
+# the pin, the limits of the capability and the onboarding of the device.
+!/docs/evidence/oip-hue-device/hue-device.json
+!/docs/evidence/oip-hue-device/bridge-certificate.pem
 !/docs/evidence/oip-store-screenshots/store-screenshots.json
 !/docs/evidence/oip-store-screenshots/captures/
 !/docs/evidence/oip-store-screenshots/captures/*.png
