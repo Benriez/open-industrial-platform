@@ -120,17 +120,27 @@ An **independent verification** of that change (a delegated, read-only audit of 
    token, and the token is a **write on the device** that belongs to the operator. Nothing is
    simulated.
 
-8. **N27 (the type of a device is named honestly)**: the **next READY task**. The Core paints the
-   type of a device as the **raw identifier of its own enum** — `SingleBoardComputer`,
-   `NetworkDevice`, `IndustrialDevice` — in the Devices and the Network workstations, and the
-   icon maps of the client know only the vocabulary of the demo (`Gateway`, `Bridge`, `Compute`),
-   so a real device gets a **silent** fallback. The defect is visible in the **own painted-surface
-   evidence** of the record (`docs/evidence/oip-device-connection/painted-surface.txt`). The
-   change is **one** owner of the vocabulary in the client (a normalisation map that covers the
-   types the Core can really produce and keeps the demo strings), and the sites that paint the
-   type use it; a type that is genuinely unknown stays honestly named as unknown.
+8. **N27 (the type of a device is named honestly)**: **measured**. The Core paints the type of a
+   device as the **raw identifier of its own enum** — `SingleBoardComputer`, `NetworkDevice`,
+   `IndustrialDevice` — and the client painted that identifier as if it were a word of the
+   surface; the defect was visible in the **own painted-surface evidence** of the record
+   (`docs/evidence/oip-device-connection/painted-surface.txt`). The vocabulary now has **one**
+   owner (`apps/flutter/lib/widgets/device_kind.dart`): every type that the Core can really
+   deliver gets a word, an icon of its own and a category, and a type that the client does not
+   know stays honestly named with the icon of an unknown device. The filters show the word and
+   keep the identifier as the value; the grouping stays on the identifier. The test closes a gap
+   of zero coverage (`apps/flutter/test/device_kind_test.dart`).
 
-9. **N23 (the secure update of the deployed software)**: the **update path of the Core** is
+9. **N28 (the export recipe of the App Store listing)**: the **next READY task**. The package of
+   the client is measured and the store assets exist, but the **upload step** has no recipe in
+   the repository: there is no `xcodebuild -exportArchive`, no `ExportOptions.plist`, and the
+   bundle still ships on disk as `oip_dashboard` without a `CFBundleDisplayName`. The change is
+   a template with **placeholders** (the team, the profile and the certificate are the
+   operator's), a tool that renders it and runs the export, the display name of the app and the
+   **App Review notes** of a client whose access is a one-time code minted on the instance
+   itself. Nothing of it invents a credential and nothing of it uploads.
+
+10. **N23 (the secure update of the deployed software)**: the **update path of the Core** is
    implemented and **measured** (`tools/oip_update.py`, `tests/oip_update.py`,
    `docs/evidence/oip-update/update.json`, `docs/runbooks/operations.md` §16): the bundle is
    **authenticated** with an Ed25519 signature over the exact bytes of the manifest, the

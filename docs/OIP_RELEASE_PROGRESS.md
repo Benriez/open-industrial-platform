@@ -3735,6 +3735,59 @@ No personal database change, no schema-7 activation of the personal installation
 service of the operator, no published port, no firewall change, no push, no deployment. Every
 request to the Hue Bridge of the operator was a `GET`.
 
+### Iteration 81 — the type of a device is named as the surface names it
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates
+that need the operator (G5, G10, G12) stay open, and nothing in this iteration changes them.
+
+* **The Core paints the type of a device as the identifier of its own enum**, and the client
+  painted that identifier as if it were a word of the surface: `SingleBoardComputer`,
+  `NetworkDevice`, `IndustrialDevice` appeared in the Devices and the Network workstations, in
+  the overview and in the topology. The defect is visible in the **own painted-surface evidence**
+  of the record (`docs/evidence/oip-device-connection/painted-surface.txt`) — the evidence of the
+  release showed the raw identifier while the record claimed a finished surface.
+* **The vocabulary now has one owner** (`apps/flutter/lib/widgets/device_kind.dart`): every type
+  that the Core can really deliver gets a **word** (`Einzelplatine`, `Netzwerkgerät`,
+  `Industriegerät`), an **icon** of its own and a **category** for the tint of the surface — and a
+  type that the client does not know stays **honestly named** (`Unbekannter Gerätetyp · …`) with
+  the icon of an unknown device instead of borrowing the identity of another type. The four sites
+  that mapped a type (the icon of the devices, the icon and the category of the Network
+  workspace, the tint of the design system) now read that one owner instead of four parallel
+  vocabularies.
+* **The places that show a type show the word** — the identity panel, the rows and the semantics
+  of the inventory, the comparison, the node inspector of the Network, the topology, the inspector
+  and the explorer of the overview and the tile of a device. The **filters** show the word and
+  keep the identifier as the **value** (the type filter of the Devices, the kind filter of the
+  Network), and the **grouping** stays on the identifier, so what is filtered and what is grouped
+  remain exact.
+* **The test closes a gap of zero coverage** (`apps/flutter/test/device_kind_test.dart`): every
+  type that the Core can deliver has a word, an icon and a category; a type whose identifier is
+  no word is never painted as itself; the spelling of the inventory route
+  (`network_device`) names the same type as the enum (`NetworkDevice`); the vocabulary of the
+  demo of the Core stays known; an unknown type stays honestly named. The **375 Flutter tests**
+  pass (367 before this change, plus the eight new ones).
+* **Two rehearsals failed once under the load of the machine, and both pass on a re-run with the
+  same binaries and the same revision** (`oip_extend_registry`: "the new source collected
+  nothing"; `oip_stability`: "a source was not fresh during the run" in the sample at 330 s of a
+  20-minute run). The **Core did not change in this iteration** — the change is in the client
+  alone — and the disk of the machine was nearly full while the refresh was building. The record
+  names the fact instead of hiding it behind a quiet second run.
+* **The release of this revision verifies with one command**
+  (`docs/evidence/oip-release-verification/release-verification.json`: **PASS**, verdict
+  `OIP_PRODUCTION_NOT_READY`, the gates that need the operator **G5**, **G10**, **G12**): the
+  acceptance ran with the release binary (`fba6898`), the eight functional phases **8 of 8 PASS**,
+  the browser gate **PASS** with **187 findings** and **13 captures**, and the reproducible build
+  at the **same** revision produced the byte-identical Core.
+
+The next independent READY task is **N28**: the **export recipe** of the App Store listing — the
+`xcodebuild -exportArchive` step with an `ExportOptions.plist` template that carries the
+operator's own identity as placeholders, the **display name** of the app on disk (the bundle
+still ships as `oip_dashboard`), and the **App Review notes** of a client whose access is a
+one-time code minted on the instance itself.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
+
 ## 5. Evidence index
 
 | Artifact | Content |
