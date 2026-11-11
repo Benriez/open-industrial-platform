@@ -120,6 +120,25 @@ REHEARSALS = [
      {"rust-regression.json": "oip-rust-regression/rust-regression.json"}),
     ("oip_pi_bundle", "tests/oip_pi_bundle.py",
      {"pi-bundle.json": "oip-pi-bundle/pi-bundle.json"}),
+    # The **real devices** of the operator, measured read-only over the
+    # network of the operator: the hosts that are reachable and the two
+    # device classes that are not SSH hosts (the router and the Hue Bridge).
+    # A rehearsal that is measured outside the refresh goes stale without a
+    # notice; these two belong into it.
+    ("oip_deployment_discovery", "tests/oip_deployment_discovery.py",
+     {"deployment-discovery.json":
+      "oip-deployment-discovery/deployment-discovery.json"}),
+    ("oip_hue_device", "tests/oip_hue_device.py",
+     {"hue-device.json": "oip-hue-device/hue-device.json",
+      "bridge-certificate.pem": "oip-hue-device/bridge-certificate.pem"}),
+    # The deployment of the Core on the host of the operator: the cross build
+    # for the target of the host, the start by hand, the tunnel, the
+    # authorized session and the stop. It needs the cross compiler and the
+    # host of the operator, so it is the slowest rehearsal of the list — but
+    # a receipt that is measured outside the refresh goes stale without a
+    # notice, and the deployment is a claim of the release.
+    ("oip_pi_instance", "tests/oip_pi_instance.py",
+     {"pi-instance.json": "oip-pi-instance/pi-instance.json"}),
     # The package of the macOS client for the Mac App Store: the build, the
     # entitlements, the hardened runtime, the privacy manifest, the quarantine
     # attribute and the metadata of the bundle.
