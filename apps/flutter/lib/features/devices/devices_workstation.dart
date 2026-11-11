@@ -552,6 +552,7 @@ class _DevicesPageState extends State<DevicesPage> {
           onClose: _closeDetails,
           navigate: widget.navigate,
           infrastructure: widget.controller.infrastructure,
+          inventoryDevice: _inventoryRecord,
           controller: widget.controller,
         );
         final inspector = AdaptiveInspector(

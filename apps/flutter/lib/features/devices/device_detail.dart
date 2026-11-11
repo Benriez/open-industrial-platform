@@ -25,6 +25,15 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
   final void Function(int) navigate;
   final InfrastructureContext? infrastructure;
 
+  /// The inventory record of the selected device.
+  ///
+  /// The Core holds the identity of a device in its inventory: the
+  /// manufacturer, the model, the firmware and the serial number. The
+  /// summary of a device does not carry them, so the workspace asks the
+  /// inventory for them — and names them as unavailable when the Core holds
+  /// no record.
+  final InventoryDevice? inventoryDevice;
+
   /// The controller is only needed for the authorized management surfaces:
   /// the monitoring measurements and the persisted observation history.
   final OipController? controller;
@@ -41,6 +50,7 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
     required this.onClose,
     required this.navigate,
     this.infrastructure,
+    this.inventoryDevice,
     this.controller,
   });
 
@@ -127,6 +137,22 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
     );
   }
 
+  /// The identity facts of the device as the Core holds them.
+  ///
+  /// A fact that the Core does not hold is named as unavailable: the panel
+  /// never invents an identity and never shows a placeholder as a fact.
+  String _identity(InventoryDevice? record, String first, [String? second]) {
+    final metadata = record?.metadata;
+    if (metadata == null) return 'Nicht verfügbar';
+    final parts = [first, second]
+        .whereType<String>()
+        .map((key) => metadata[key])
+        .whereType<String>()
+        .where((value) => value.trim().isNotEmpty)
+        .toList();
+    return parts.isEmpty ? 'Nicht verfügbar' : parts.join(' / ');
+  }
+
   Widget _engineering(BuildContext context, Device device) {
     final source =
         sources.where((item) => item.id == device.sourceId).firstOrNull;
@@ -143,8 +169,14 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
           KeyValue('SOURCE ID', device.sourceId ?? 'Nicht verfügbar'),
           KeyValue('REGISTRY LOCATION', device.location),
           KeyValue('REGISTRY CONNECTION TYPE', device.connection),
-          const KeyValue('MANUFACTURER / MODEL', 'Nicht verfügbar'),
-          const KeyValue('FIRMWARE / OS', 'Nicht verfügbar'),
+          KeyValue('MANUFACTURER / MODEL', _identity(inventoryDevice, 'manufacturer',
+              'model')),
+          KeyValue('FIRMWARE / OS',
+              _identity(inventoryDevice, 'operating_system')),
+          KeyValue('SERIAL / BRIDGE-ID',
+              _identity(inventoryDevice, 'serial_number')),
+          KeyValue('MAC / IP-ADRESSE', _identity(inventoryDevice, 'mac_address',
+              'ip_address')),
           if (infrastructure?.ready == true) ...[
             KeyValue('ORGANIZATION',
                 infrastructure!.hierarchy.organizationName(infrastructure!.devicePlacement(device)?.organizationId)),
