@@ -3634,6 +3634,23 @@ listing is upload-ready, the upload itself is the operator's action.
 The upload itself, the Apple identity, the certificate, the profile, the two public URLs and
 the App Review answers remain the operator's actions.
 
+### The release of this revision verifies with one command
+
+`python3 tools/oip_verify_release.py` — the verdict is **`OIP_PRODUCTION_NOT_READY`**, the
+verification itself is **PASS** (`docs/evidence/oip-release-verification/release-verification.json`):
+the manifest verifies, **every receipt is fresh**, the record is intact, the acceptance passed
+and the safety boundaries held. The three gates that need the operator — **G5** (an approved
+physical device and its credentials), **G10** (the acceptance of the production-security scope)
+and **G12** (the acceptance of the operator) — are open, and the verification names them.
+
+The staleness that the verification found in this iteration was real and is closed: the
+acceptance had executed a Core of an **earlier revision** than the one the manifest names (the
+binary names the revision it was built from), and three receipts — the discovery of the
+deployed hosts, the deployment on the Raspberry Pi and the store assets — predated the last
+change of the product. All of them are measured again on the revision of the release, and the
+acceptance and the reproducible build now run at **one** revision, so the binary that the gate
+executed is byte-identical with the binary that the manifest names.
+
 ## 5. Evidence index
 
 | Artifact | Content |
