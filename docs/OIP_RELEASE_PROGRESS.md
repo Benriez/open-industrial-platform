@@ -19,7 +19,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 726 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 731 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
