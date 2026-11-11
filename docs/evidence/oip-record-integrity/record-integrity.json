@@ -6,9 +6,9 @@
     "the canonical state names the release",
     "every file of the evidence tree is cited"
   ],
-  "the_cited_paths": 76,
+  "the_cited_paths": 78,
   "the_citations": {
-    "the_cited": 76,
+    "the_cited": 78,
     "the_missing_on_disk": [],
     "the_present_but_untracked": []
   },
@@ -43,8 +43,8 @@
     "the_product_is_committed": true
   },
   "the_files_of_the_release": {
-    "the_present": 78,
-    "the_cited": 78,
+    "the_present": 80,
+    "the_cited": 80,
     "the_orphaned": [],
     "the_files_of_the_eras": 1271,
     "the_areas_of_the_eras_that_the_record_does_not_name": [],
@@ -52,8 +52,8 @@
   },
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "dae4b162ba32fda4bd20ccb80e8927695ee0c794",
-  "the_tree": "1d470dc9539c93f349361cb624ee1d6ccd1c1b49",
+  "the_revision": "d21dad06fb1267d09eafbfb538352d361144d292",
+  "the_tree": "1f7c3367d9a673bbe7112d16123c8302b8b1f20e",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T14:21:12Z"
+  "finished_utc": "2026-11-11T14:39:33Z"
 }
