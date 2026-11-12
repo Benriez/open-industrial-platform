@@ -4044,7 +4044,12 @@ the operator (G5, G10, G12) stay open, and this iteration adds the machine block
   owned by the system, and the loop may not restart it: the repair is the operator's action (below).
   The receipt of the packaging rehearsal therefore names the revision **before** the change of the
   product, and the verification of the release reports exactly that — a stale receipt is reported,
-  never hidden.
+  never hidden. The verification of this revision therefore names **two** problems, and both come
+  from the daemon: `the artefact the_macos_application_bundle is absent` and `the receipt
+  docs/evidence/oip-mas-package/mas-package.json names the revision d350bb0, which predates the
+  last change of apps/flutter/lib (e57d39c)`. Every other receipt of the release is fresh, the
+  acceptance passed with the release binary of this revision, and the manifest names every artefact
+  that exists.
 * **The release of this revision is measured with the binaries of the tree.** The acceptance ran
   with the release binary (`0b2a938`), the eight functional phases **8 of 8 PASS**, the browser
   gate **PASS** with **187 findings** and **13 captures**, the **382 of 382 Flutter tests**, and the
