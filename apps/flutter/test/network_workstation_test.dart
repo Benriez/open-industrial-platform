@@ -302,7 +302,7 @@ void main() {
     await tester.tap(find.byKey(const Key('network-tab-vpn')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('network-vpn-empty')), findsOneWidget);
-    expect(find.text('Keine VPN-Telemetrie verbunden'), findsOneWidget);
+    expect(find.text('Keine VPN-Telemetrie geliefert'), findsOneWidget);
     expect(find.text('PEERS · NICHT VERFÜGBAR'), findsOneWidget);
     expect(find.text('Keine VPN-Peer-Telemetrie verfügbar'), findsOneWidget);
     expect(tester.takeException(), isNull);

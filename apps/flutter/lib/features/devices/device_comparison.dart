@@ -334,7 +334,7 @@ class ServiceInventoryMissing extends StatelessWidget {
             const SizedBox(height: 10),
             const WorkstationNote(
               'Agent-first Backend-Anforderung',
-              'Benötigt werden autorisierte, scoped und paginierte ServiceDefinition-/ServiceInstance-/Endpoint-DTOs mit Provenance, Freshness und Device-ID-Beziehung. Details: OIP_DEVICES_SERVICES_2027_CORE_REQUIREMENTS.md.',
+              'Benötigt werden autorisierte, scoped und paginierte ServiceDefinition-/ServiceInstance-/Endpoint-DTOs mit Provenance, Freshness und Device-ID-Beziehung. Details: docs/architecture/OIP_DEVICES_SERVICES_2027_CORE_REQUIREMENTS.md.',
               icon: Icons.account_tree_outlined,
             ),
           ],

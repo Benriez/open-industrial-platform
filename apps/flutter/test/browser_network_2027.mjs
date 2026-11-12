@@ -260,7 +260,7 @@ async function workflow(width, height) {
   pass(`${suffix}: all five logical paths and transport filtering remain available`);
 
   await tab(page, 'VPN');
-  await page.getByText(/Keine VPN-Telemetrie verbunden/).waitFor({state: 'attached'});
+  await page.getByText(/Keine VPN-Telemetrie geliefert/).waitFor({state: 'attached'});
   await capture(page, `network-vpn-${suffix}`);
   await page.mouse.move(width * .57, height * .72);
   await page.mouse.wheel(0, 650);

@@ -715,8 +715,12 @@ class _NetworkPageState extends State<NetworkPage> {
             status: 'unknown'),
         NetworkSummaryItem('DEMO-PFADE', '$demoLinks', Icons.science_outlined,
             status: demoLinks > 0 ? 'info' : 'unknown'),
+        // The Core delivers **no** VPN telemetry: no peer, no endpoint, no
+        // handshake, no route and no tunnel health. The summary says that,
+        // and it does not claim a state of the connection that the Core never
+        // measured.
         const NetworkSummaryItem(
-            'VPN-TELEMETRIE', 'Nicht verbunden', Icons.vpn_lock_outlined,
+            'VPN-TELEMETRIE', 'NICHT GELIEFERT', Icons.vpn_lock_outlined,
             status: 'unknown'),
       ]),
     );
@@ -1643,8 +1647,8 @@ class _NetworkPageState extends State<NetworkPage> {
                 'Datenquelle', 'Snapshot.system + Device Health'),
             NetworkKeyValue(
                 'Snapshot erzeugt', timestamp(snapshot.system.generatedMs)),
-            const NetworkKeyValue('Telemetrieverfügbarkeit', 'Nicht verfügbar'),
-            const NetworkHint('Keine VPN-Telemetrie verbunden',
+            const NetworkKeyValue('Telemetrieverfügbarkeit', 'NICHT GELIEFERT'),
+            const NetworkHint('Keine VPN-Telemetrie geliefert',
                 'Der Core liefert keine Peer-, Endpoint-, Handshake-, Route- oder Tunnel-Health-Datensätze. Vorhandene Transport-Strings sind keine Peer-Telemetrie.'),
           ]),
         ),
