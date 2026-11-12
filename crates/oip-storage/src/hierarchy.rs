@@ -2,6 +2,15 @@ use super::*;
 use oip_core::*;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
+/// The table of the services that the operator declared.
+///
+/// The provisioning of an instance creates the table of the hierarchy before
+/// the schema of the registry exists, so the DDL is written to be idempotent:
+/// the migration and the provisioning apply the same statement.
+pub(super) const SERVICES_SQL: &str = r#"
+CREATE TABLE IF NOT EXISTS services(id TEXT PRIMARY KEY,site_id TEXT NOT NULL REFERENCES sites(id),device_id TEXT,name TEXT NOT NULL,kind TEXT NOT NULL,endpoint TEXT,port INTEGER,state TEXT NOT NULL CHECK(state IN('running','stopped'))) STRICT;
+CREATE INDEX IF NOT EXISTS services_site ON services(site_id,id);
+"#;
 pub(super) const HIERARCHY_SQL: &str = r#"
 CREATE TABLE organizations(id TEXT PRIMARY KEY,name TEXT NOT NULL) STRICT;
 CREATE TABLE infrastructures(id TEXT PRIMARY KEY,organization_id TEXT NOT NULL REFERENCES organizations(id),name TEXT NOT NULL) STRICT;
@@ -412,12 +421,11 @@ impl SqliteStore {
                 ],
             )?;
         }
-        // The declared services need the table of the schema 8. A store that is
-        // older cannot hold them: a plan that declares services is refused
-        // instead of losing them silently.
-        if !plan.services.is_empty() && old_version < 8 {
-            return Err(bad());
-        }
+        // The declared services live in the table of the registry. The
+        // provisioning of an instance runs before the schema of the registry
+        // exists, so the table is created here with the same statement that
+        // the migration applies.
+        tx.execute_batch(SERVICES_SQL)?;
         for s in &plan.services {
             tx.execute(
                 "INSERT INTO services VALUES(?1,?2,?3,?4,?5,?6,?7,?8) ON CONFLICT DO NOTHING",
@@ -633,10 +641,14 @@ fn load(c: &Connection) -> Result<Option<HierarchyRegistry>, StorageError> {
         },
     )?;
     let bindings=rows(c,"SELECT principal_id,role_id,scope_kind,scope_id FROM role_bindings ORDER BY principal_id,role_id,scope_kind,scope_id",512,|r|Ok(RoleBinding{principal_id:PrincipalId::new(r.get::<_,String>(0)?).map_err(|_|bad())?,role_id:RoleId::new(r.get::<_,String>(1)?).map_err(|_|bad())?,scope:decode_scope(r.get(2)?,r.get(3)?)?}))?;
-    // The services of the registry live in the table of the schema 8: a store
-    // that is older holds no declared service.
-    let holds_services: i64 = c.query_row("PRAGMA user_version", [], |r| r.get(0))?;
-    let services = if holds_services < 8 {
+    // The services of the registry live in their own table. A store that never
+    // held the table declares no service — the registry is empty, not unknown.
+    let holds_services: bool = c.query_row(
+        "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name='services')",
+        [],
+        |r| r.get(0),
+    )?;
+    let services = if !holds_services {
         Vec::new()
     } else {
         rows(

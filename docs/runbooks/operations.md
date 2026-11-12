@@ -116,10 +116,21 @@ organizations; the smallest useful plan for an operator looks like this:
     { "principal_id": "operator", "role_id": "reader",
       "scope": { "kind": "organization", "id": "org-1" } }
   ],
+  "services": [
+    { "id": "svc-1", "name": "OPC-UA des Standorts", "site_id": "site-1",
+      "device_id": "device-1", "kind": "opcua",
+      "endpoint": "opc.tcp://127.0.0.1:4840", "port": 4840,
+      "state": "running" }
+  ],
   "legacy_single_infrastructure": false
 }
 ```
 
+* The **services** of the plan are the services the operator **declares** for
+  the sites of the instance. The Core measures no service: every record of the
+  registry carries the provenance `declared`, and a service of a site that the
+  plan does not name is refused. The section is optional — a plan without
+  services is a plan without a service registry.
 * The **sources** of the plan must exactly match the sources of the
   configuration of the instance — the same identifiers. The Core refuses the
   start otherwise with `runtime sources must exactly match provisioned

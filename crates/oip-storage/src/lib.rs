@@ -129,10 +129,7 @@ const MIGRATIONS: &[Migration] = &[
     Migration {
         version: 8,
         name: "declared_service_inventory",
-        sql: r#"
- CREATE TABLE services(id TEXT PRIMARY KEY,site_id TEXT NOT NULL REFERENCES sites(id),device_id TEXT,name TEXT NOT NULL,kind TEXT NOT NULL,endpoint TEXT,port INTEGER,state TEXT NOT NULL CHECK(state IN('running','stopped'))) STRICT;
- CREATE INDEX services_site ON services(site_id,id);
-"#,
+        sql: hierarchy::SERVICES_SQL,
     },
 ];
 

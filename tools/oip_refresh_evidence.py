@@ -153,6 +153,11 @@ REHEARSALS = [
     # digests, the atomic switch, the health check and the rollback.
     ("oip_update", "tests/oip_update.py",
      {"update.json": "oip-update/update.json"}),
+    # The **service registry** that the operator declared: the scope of the
+    # read, the isolation of the organizations, the refusal of a foreign
+    # identifier and the parity of the route and the MCP tool.
+    ("oip_service_registry", "tests/oip_service_registry.py",
+     {"service-registry.json": "oip-service-registry/service-registry.json"}),
     # The export recipe of the App Store listing: the template with its
     # placeholders, the tool that renders it and the refusal without the
     # identity of the operator.
