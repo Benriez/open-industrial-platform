@@ -13,13 +13,13 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `0e7f52d` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `98af46b` (tree `c901c785`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `98af46b` — the binary names its own revision; the same revision yields the same bytes |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `8a30c00` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
+| The revision of the final acceptance | `7a2da6a` (tree `db2f8566`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `7a2da6a` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 747 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 749 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -4063,7 +4063,6 @@ and the implementation (the plan, the storage, the capability, the route and the
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
 
-Draft: iteration 86 (to be applied after the cycle).
 
 ### Iteration 86 — the Core delivers the service registry that the operator declared
 
@@ -4130,6 +4129,68 @@ into the metadata it sends back.
 
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
+### Iteration 87 — the note of a device is writable where the device is, and the macOS evidence of the release is measured again
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates that
+need the operator (G5, G10, G12) stay open, and this iteration closes the gap of the macOS evidence
+that the machine caused.
+
+* **The note of a device was shown but not writable.** The Core holds an optional free text `notes`
+  in its inventory and the client showed it (N29 ✓), but the operator could not write it: the Core
+  replaces the metadata of a device as a whole, so a client that sends only the fields that the
+  operator changed **drops** the note. The administration of the inspector had no field for it.
+* **The note is writable where the device is.** The administration carries the field of the note,
+  and the client **merges** the note into the metadata that it sends back: a write of the name
+  never drops the note, and an emptied note is removed from the record instead of being written as
+  an empty text (`apps/flutter/lib/features/devices/device_administration.dart`). The controller of
+  the field is released with the widget — the change itself carried that leak, and the fix is in
+  the same commit. The field is **one line**: the Core refuses a control character in the note, so
+  the surface must not offer what the Core rejects.
+* **The journey of the real surface proves the merge against the real Core.** The operator writes
+  the note in the inspector, the Core keeps it and the revision of the record advances from 2 to 3
+  (`apps/flutter/test/browser_onboarding.mjs`,
+  `docs/evidence/oip-device-administration/device-administration.json`). The same journey writes the
+  device **without** the note in its metadata and measures that the Core **drops** it — the
+  contract of the Core is measured, not asserted.
+* **A defect of the client was found by that journey, and it was real.** The shortcuts of a
+  workstation (the pin `p`, the comparison `c`, the search `/`) are the keys of the **page**, but
+  the handler of the page only spared the **search** field: while a field of the inspector was
+  edited, the page swallowed the keys of the field — the operator lost **every "c"** of the note
+  and every "c" toggled the comparison instead. The four workstations now ask whether a text field
+  owns the keyboard (`apps/flutter/lib/core/keyboard.dart`).
+* **The same defect was in the search of the address space, and the probe of the laboratory
+  measured it.** The OPC-UA page bound its plain characters as **shortcuts**, and a shortcut that
+  matches a character swallows it: the search of the address space lost every "c" (the laboratory
+  measured "ab" for the typed "abc"). The plain characters are handled by the page again, below the
+  shortcuts — and the **canonical gate** proves it now in the browser: the search keeps every
+  character (`apps/flutter/test/browser_canonical_ui_gate.mjs`).
+* **The regression test is meaningful.** The test of the guard of the devices workstation fails
+  without the guard (measured) and carries a **positive control**: the comparison of the page still
+  works, so the check proves the guard and not a broken comparison
+  (`apps/flutter/test/devices_workstation_test.dart`).
+* **Two defects of the harness were found and fixed.** The journey activated the button of the save
+  with a painted mouse click, and the panel of the administration grew with the field of the note:
+  the buttons of the inspector are drawn over the panel that scrolled under them, so the click was
+  **swallowed** and the write of the name never reached the Core. The journey now activates the
+  controls of the surface with the event of their semantics node (the way the accessibility tree
+  activates them) and proves every way with the state of the Core. The fields are written with a
+  painted click and **read back**, because a field that carries a different text is a defect of the
+  surface and not a fact of the journey.
+* **The machine answers again.** The daemon of the keychain of the machine (`securityd`) wedged
+  ~5 hours and blocked every enumeration of the signing certificates; it answers again now, so the
+  macOS evidence of the release is measured again in this iteration and the operator's action is
+  done.
+* **The tests close the gaps**: the Rust suite (**191 tests in 30 suites**), the **387 Flutter
+  tests** (the write of the note, the merge of the metadata, the lifecycle of the controller of the
+  field and the keys of the page ✓) and the eight functional phases of the canonical acceptance.
+
+The next independent READY task is **none**: the list of the independent tasks is closed. What
+remains are the operator actions: the product decision on the delivery of the web release, the
+physical device of G5, the production-security scope of G10, the operator acceptance of G12 and the
+discovery of the host of the Core.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -4160,7 +4221,7 @@ service of the operator, no published port, no firewall change, no push, no depl
 | `docs/evidence/oip-canonical-acceptance/browser-gate.json` | the browser gate of the acceptance: the findings, the captures and the state of the visual acceptance of the operator (tracked) |
 | `docs/evidence/oip-canonical-acceptance/ui-gate.json` | the build provenance and the served bundle of the gate (tracked) |
 | `docs/evidence/oip-canonical-acceptance/captures/*.png` | the 13 captures of the acceptance of the release: the six workstations at 1440 px and 1920 px and the state of the anonymous session (tracked) |
-| `docs/evidence/oip-device-administration/device-administration.json` | the administration of a device through the approved surface: the revision of the device advances from 1 to 2, the archive of an online device is refused with `OFFLINE_ARCHIVE_REQUIRED` (tracked) |
+| `docs/evidence/oip-device-administration/device-administration.json` | the administration of a device through the approved surface: the revision of the device advances from 1 to 2, the **note of the device** is written through the surface and kept by the Core (the revision advances from 2 to 3), a write whose metadata does not carry the note drops it, the archive of an online device is refused with `OFFLINE_ARCHIVE_REQUIRED` (tracked) |
 | `docs/evidence/oip-diagnostic-continuation/rehearsal.json`, `docs/evidence/oip-workstation-data/rehearsal.json`, `docs/evidence/oip-device-connection/rehearsal.json`, `docs/evidence/oip-reconnect-recovery/rehearsal.json` | the rehearsals that produced the four browser receipts above: the instances they own, their steps and their results (the browser receipt of each journey is the primary evidence) |
 | `docs/evidence/oip-rust-regression/rust-regression.json` | the measured Rust regression of the Core of the current release: 187 tests in 29 suites, 0 failed, with the unit, the integration and the doc tests |
 | `docs/evidence/oip-reproducible-build/reproducible-build.json` | the measured reproducibility of the builds of the release: the web release and the macOS application bundle are byte-identical when they are built twice (iteration 42) |
