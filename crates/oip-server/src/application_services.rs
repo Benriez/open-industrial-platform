@@ -184,6 +184,7 @@ impl ApplicationServices {
             DeviceConnectionRead(_)
             | DeviceConnectionConfigure(_)
             | InventoryRead(_)
+            | ServiceRegistryRead(_)
             | InventoryPlanRead(_)
             | InventoryChange(_)
             | SettingsRead(_)

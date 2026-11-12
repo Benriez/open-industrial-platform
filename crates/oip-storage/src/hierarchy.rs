@@ -412,6 +412,30 @@ impl SqliteStore {
                 ],
             )?;
         }
+        // The declared services need the table of the schema 8. A store that is
+        // older cannot hold them: a plan that declares services is refused
+        // instead of losing them silently.
+        if !plan.services.is_empty() && old_version < 8 {
+            return Err(bad());
+        }
+        for s in &plan.services {
+            tx.execute(
+                "INSERT INTO services VALUES(?1,?2,?3,?4,?5,?6,?7,?8) ON CONFLICT DO NOTHING",
+                params![
+                    s.id.as_str(),
+                    s.site_id.as_str(),
+                    s.device_id.as_ref().map(|d| d.as_str()),
+                    s.name,
+                    s.kind,
+                    s.endpoint,
+                    s.port,
+                    match s.state {
+                        ServiceState::Running => "running",
+                        ServiceState::Stopped => "stopped",
+                    }
+                ],
+            )?;
+        }
         tx.execute("DELETE FROM role_bindings", [])?;
         for b in &plan.bindings {
             let (k, id) = scope_parts(&b.scope);
@@ -609,6 +633,41 @@ fn load(c: &Connection) -> Result<Option<HierarchyRegistry>, StorageError> {
         },
     )?;
     let bindings=rows(c,"SELECT principal_id,role_id,scope_kind,scope_id FROM role_bindings ORDER BY principal_id,role_id,scope_kind,scope_id",512,|r|Ok(RoleBinding{principal_id:PrincipalId::new(r.get::<_,String>(0)?).map_err(|_|bad())?,role_id:RoleId::new(r.get::<_,String>(1)?).map_err(|_|bad())?,scope:decode_scope(r.get(2)?,r.get(3)?)?}))?;
+    // The services of the registry live in the table of the schema 8: a store
+    // that is older holds no declared service.
+    let holds_services: i64 = c.query_row("PRAGMA user_version", [], |r| r.get(0))?;
+    let services = if holds_services < 8 {
+        Vec::new()
+    } else {
+        rows(
+            c,
+            "SELECT id,site_id,device_id,name,kind,endpoint,port,state FROM services ORDER BY id",
+            256,
+        |r| {
+            let device: Option<String> = r.get(2)?;
+            let endpoint: Option<String> = r.get(5)?;
+            let port: Option<i64> = r.get(6)?;
+            let state: String = r.get(7)?;
+            Ok(ServiceDeclaration {
+                id: ServiceId::new(r.get::<_, String>(0)?).map_err(|_| bad())?,
+                site_id: SiteId::new(r.get::<_, String>(1)?).map_err(|_| bad())?,
+                device_id: device
+                    .map(|v| DeviceId::new(v))
+                    .transpose()
+                    .map_err(|_| bad())?,
+                name: r.get(3)?,
+                kind: r.get(4)?,
+                endpoint,
+                port: port.map(|v| u16::try_from(v).map_err(|_| bad())).transpose()?,
+                    state: match state.as_str() {
+                        "running" => ServiceState::Running,
+                        "stopped" => ServiceState::Stopped,
+                        _ => return Err(bad()),
+                    },
+                })
+            },
+        )?
+    };
     Ok(Some(
         HierarchyRegistry::new(ProvisioningPlan {
             organizations,
@@ -618,6 +677,7 @@ fn load(c: &Connection) -> Result<Option<HierarchyRegistry>, StorageError> {
             principals,
             roles,
             bindings,
+            services,
             legacy_single_infrastructure: legacy,
         })
         .map_err(|_| bad())?,
@@ -627,10 +687,14 @@ fn load(c: &Connection) -> Result<Option<HierarchyRegistry>, StorageError> {
 mod tests {
     use super::*;
     fn plan() -> ProvisioningPlan {
-        serde_json::from_str(include_str!(
+        let mut plan: ProvisioningPlan = serde_json::from_str(include_str!(
             "../../../examples/multi-infrastructure-plan.json"
         ))
-        .unwrap()
+        .unwrap();
+        // The declared services need the table of the schema 8: the tests of
+        // the older schemas provision a plan without them.
+        plan.services.clear();
+        plan
     }
     fn definitions() -> Vec<SourceDefinition> {
         plan()

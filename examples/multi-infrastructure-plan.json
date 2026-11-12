@@ -74,6 +74,33 @@
       "entity_id": "M-01"
     }
   ],
+  "services": [
+    {
+      "id": "svc-a1-opcua",
+      "name": "OPC-UA server of the plant",
+      "site_id": "site-a1",
+      "device_id": "device-a",
+      "kind": "opcua",
+      "endpoint": "opc.tcp://127.0.0.1:4840",
+      "port": 4840,
+      "state": "running"
+    },
+    {
+      "id": "svc-a1-https",
+      "name": "HTTPS interface of the plant",
+      "site_id": "site-a1",
+      "kind": "https",
+      "state": "stopped"
+    },
+    {
+      "id": "svc-b1-ssh",
+      "name": "SSH interface of the second organization",
+      "site_id": "site-b1",
+      "device_id": "device-d",
+      "kind": "ssh",
+      "state": "running"
+    }
+  ],
   "principals": [
     {
       "id": "reader-org-a",

@@ -134,7 +134,7 @@ impl SqliteStore {
                 rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
             )?,
         };
-        if !matches!(db.schema_version()?, 6 | 7) {
+        if !matches!(db.schema_version()?, 6 | 7 | 8) {
             return Err(StorageError::Hierarchy(
                 "INVENTORY_MIGRATION_REQUIRED; run controlled runtime migration separately",
             ));
@@ -272,7 +272,7 @@ impl SqliteStore {
                 rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
             )?,
         };
-        if !matches!(db.schema_version()?, 6 | 7) {
+        if !matches!(db.schema_version()?, 6 | 7 | 8) {
             return Err(StorageError::Hierarchy("INVENTORY_MIGRATION_REQUIRED"));
         }
         Ok((db.hierarchy()?.ok_or_else(bad)?, db.inventory_records()?))
@@ -319,6 +319,7 @@ mod tests {
         ))
         .unwrap();
         p.sources.clear();
+        p.services.clear();
         p.bindings
             .retain(|b| !matches!(b.scope, AccessScope::Source(_)));
         p.roles.push(ReadRole {
@@ -515,12 +516,12 @@ mod tests {
         d.connection
             .execute_batch("DROP TABLE inventory_devices")
             .unwrap();
-        assert_eq!(d.migrate().unwrap(), 7);
+        assert_eq!(d.migrate().unwrap(), 8);
         assert_eq!(
             d.settings_records().unwrap()[0].value,
             SettingValue::Integer(7)
         );
-        assert_eq!(d.migrate().unwrap(), 7);
+        assert_eq!(d.migrate().unwrap(), 8);
         assert_eq!(
             d.hierarchy().unwrap().unwrap().plan,
             HierarchyRegistry::new(plan()).unwrap().plan

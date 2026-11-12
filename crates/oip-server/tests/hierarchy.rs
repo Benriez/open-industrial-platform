@@ -203,7 +203,7 @@ async fn nine_tools_use_same_capability_output_and_no_global_resources() {
         tokio::spawn(async move { adapter.serve(a).await.unwrap().waiting().await.unwrap() });
     let client = ().serve(b).await.unwrap();
     let tools = client.peer().list_all_tools().await.unwrap();
-    assert_eq!(tools.len(), 18);
+    assert_eq!(tools.len(), 19);
     let resources = client.peer().list_all_resources().await.unwrap();
     assert!(!resources
         .iter()

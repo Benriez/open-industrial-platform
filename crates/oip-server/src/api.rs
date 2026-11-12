@@ -186,6 +186,7 @@ pub fn router_with_identity(
         )
         .route("/api/v2/installation/status", get(installation_status))
         .route("/api/v2/inventory/devices", get(inventory_read))
+        .route("/api/v2/services", get(services_read))
         .route("/api/v2/inventory/apply", post(inventory_apply))
         .route(
             "/api/v2/device-connections",
@@ -669,6 +670,16 @@ async fn inventory_read(
     let Query(q) = q.map_err(|_| CapabilityErrorResponse(inventory_invalid()))?;
     match call(s, CapabilityRequest::InventoryRead(q)).await? {
         CapabilityOutput::Inventory(v) => Ok(Json(v)),
+        _ => Err(mismatch()),
+    }
+}
+async fn services_read(
+    Authorized(s): Authorized,
+    q: Result<Query<ServiceQuery>, axum::extract::rejection::QueryRejection>,
+) -> Result<Json<ServicePage>, CapabilityErrorResponse> {
+    let Query(q) = q.map_err(|_| CapabilityErrorResponse(service_invalid()))?;
+    match call(s, CapabilityRequest::ServiceRegistryRead(q)).await? {
+        CapabilityOutput::ServiceRegistry(v) => Ok(Json(v)),
         _ => Err(mismatch()),
     }
 }

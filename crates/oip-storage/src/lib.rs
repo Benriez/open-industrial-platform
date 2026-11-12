@@ -126,6 +126,14 @@ const MIGRATIONS: &[Migration] = &[
         name: "verified_device_connections",
         sql: connection::CONNECTION_SQL,
     },
+    Migration {
+        version: 8,
+        name: "declared_service_inventory",
+        sql: r#"
+ CREATE TABLE services(id TEXT PRIMARY KEY,site_id TEXT NOT NULL REFERENCES sites(id),device_id TEXT,name TEXT NOT NULL,kind TEXT NOT NULL,endpoint TEXT,port INTEGER,state TEXT NOT NULL CHECK(state IN('running','stopped'))) STRICT;
+ CREATE INDEX services_site ON services(site_id,id);
+"#,
+    },
 ];
 
 #[derive(Debug, Error)]
@@ -192,7 +200,7 @@ impl SqliteStore {
     }
 
     pub fn migrate(&mut self) -> Result<u32, StorageError> {
-        self.migrate_to(7)
+        self.migrate_to(8)
     }
     fn migrate_to(&mut self, maximum: u32) -> Result<u32, StorageError> {
         // Validate history BEFORE any DDL. A corrupt migration ledger must never
@@ -917,8 +925,8 @@ mod tests {
         let path = test_path("migration");
         std::fs::create_dir_all(path.parent().expect("parent")).expect("create test dir");
         let mut store = SqliteStore::open(&path).expect("open");
-        assert_eq!(store.schema_version().expect("version"), 7);
-        assert_eq!(store.migrate().expect("second migration"), 7);
+        assert_eq!(store.schema_version().expect("version"), 8);
+        assert_eq!(store.migrate().expect("second migration"), 8);
         store
             .connection
             .execute("PRAGMA user_version = 0", [])
@@ -929,7 +937,7 @@ mod tests {
         ));
         store
             .connection
-            .execute("PRAGMA user_version = 7", [])
+            .execute("PRAGMA user_version = 8", [])
             .expect("restore version");
         store
             .connection

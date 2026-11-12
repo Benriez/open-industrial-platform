@@ -154,7 +154,7 @@ async fn three_real_sdk_sessions_have_independent_scopes_and_disconnect_does_not
     }
     // Modern Discover must survive legitimate idle before first tool.
     tokio::time::sleep(Duration::from_millis(5200)).await;
-    assert_eq!(clients[0].list_tools(None).await.unwrap().tools.len(), 13);
+    assert_eq!(clients[0].list_tools(None).await.unwrap().tools.len(), 14);
     let allowed = clients[1]
         .call_tool(
             CallToolRequestParams::new("oip_sources_read")
@@ -178,7 +178,7 @@ async fn three_real_sdk_sessions_have_independent_scopes_and_disconnect_does_not
     clients.remove(0).close().await.unwrap();
     assert!(!task.is_finished());
     assert!(state.view().health.live);
-    assert_eq!(clients[0].list_tools(None).await.unwrap().tools.len(), 13);
+    assert_eq!(clients[0].list_tools(None).await.unwrap().tools.len(), 14);
     for mut c in clients {
         c.close().await.unwrap();
     }
@@ -328,7 +328,7 @@ async fn active_uncooperative_socket_is_never_unlinked_and_legacy_initialize_wor
         ().serve_with_lifecycle(auth(&f, 1).await, ClientLifecycleMode::Initialize)
             .await
             .unwrap();
-    assert_eq!(client.list_tools(None).await.unwrap().tools.len(), 13);
+    assert_eq!(client.list_tools(None).await.unwrap().tools.len(), 14);
     client.close().await.unwrap();
     stop.cancel();
     t.await.unwrap().unwrap();

@@ -20,6 +20,8 @@ pub mod settings_services;
 
 pub mod inventory_services;
 
+pub mod service_services;
+
 pub mod browser_session;
 
 pub mod ssh;

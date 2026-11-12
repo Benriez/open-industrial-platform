@@ -40,6 +40,7 @@ pub enum CapabilityId {
     InventoryChange,
     DeviceConnectionRead,
     DeviceConnectionConfigure,
+    ServiceRegistryRead,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
@@ -69,7 +70,7 @@ pub struct CapabilityDescriptor {
     pub audit: String,
 }
 impl CapabilityId {
-    pub const ALL: [Self; 32] = [
+    pub const ALL: [Self; 33] = [
         Self::CoreHealthRead,
         Self::CoreLivenessRead,
         Self::CoreReadinessRead,
@@ -102,6 +103,7 @@ impl CapabilityId {
         Self::InventoryChange,
         Self::DeviceConnectionRead,
         Self::DeviceConnectionConfigure,
+        Self::ServiceRegistryRead,
     ];
     pub fn descriptor(self) -> CapabilityDescriptor {
         use CapabilityId::*;
@@ -124,6 +126,14 @@ impl CapabilityId {
                 vec![Permission::DevicesRead],
                 "InventoryQuery",
                 "InventoryPage",
+            ),
+            // The service registry is a **read** of what the operator declared: the same
+            // permission that the inventory read carries, so the readers of the inventory
+            // read the services of the same scope.
+            ServiceRegistryRead => (
+                vec![Permission::DevicesRead],
+                "ServiceQuery",
+                "ServicePage",
             ),
             InventoryPlanRead => (
                 vec![Permission::InventoryManage],
@@ -361,6 +371,7 @@ pub enum CapabilityRequest {
     InventoryChange(InventoryAdministration),
     DeviceConnectionRead(ConnectionQuery),
     DeviceConnectionConfigure(ConnectionAction),
+    ServiceRegistryRead(ServiceQuery),
 }
 impl CapabilityRequest {
     pub fn id(&self) -> CapabilityId {
@@ -373,6 +384,7 @@ impl CapabilityRequest {
             Self::InventoryChange(_) => CapabilityId::InventoryChange,
             Self::DeviceConnectionRead(_) => CapabilityId::DeviceConnectionRead,
             Self::DeviceConnectionConfigure(_) => CapabilityId::DeviceConnectionConfigure,
+            Self::ServiceRegistryRead(_) => CapabilityId::ServiceRegistryRead,
             Self::EventHistoryRead(_) => CapabilityId::EventHistoryRead,
             Self::EventDetailRead(_) => CapabilityId::EventDetailRead,
             Self::DataGapsRead(_) => CapabilityId::DataGapsRead,
@@ -407,6 +419,7 @@ pub enum CapabilityOutput {
     Connection(Box<ConnectionResult>),
     Inventory(InventoryPage),
     InventoryPlan(InventoryPlan),
+    ServiceRegistry(ServicePage),
     Settings(SettingsSnapshot),
     Management(ManagementReport),
     SettingsChanged(SettingsChangeResult),

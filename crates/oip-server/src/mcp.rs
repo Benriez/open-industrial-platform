@@ -93,9 +93,10 @@ struct ToolSpec {
     id: CapabilityId,
     description: &'static str,
 }
-const TOOLS: [ToolSpec; 21] = [
+const TOOLS: [ToolSpec; 22] = [
     ToolSpec{name:"oip_device_connection_read",id:CapabilityId::DeviceConnectionRead,description:"Read the authorized device SSH identity, monitoring state, last attempts and actual observations. Registration never implies connectivity. No mutation or private key data."},
     ToolSpec{name:"oip_inventory_read",id:CapabilityId::InventoryRead,description:"Read authorized persistent device inventory, metadata and collector availability. No collector does not mean offline; bounded pagination."},
+    ToolSpec{name:"oip_services_read",id:CapabilityId::ServiceRegistryRead,description:"Read the authorized service registry that the operator declared for the infrastructure. Every record is declared, never measured: the Core runs no probe for a service. Bounded pagination; a foreign identifier is refused like an unknown one."},
     ToolSpec{name:"oip_inventory_plan_read",id:CapabilityId::InventoryPlanRead,description:"Validate a bounded inventory change plan against current permissions and revisions. Read-only; never applies changes or grants permissions."},
     ToolSpec{name:"oip_settings_read",id:CapabilityId::SettingsRead,description:"Read authorized typed setting definitions or effective startup values at an explicit scope; no mutation or credential access."},
     ToolSpec{name:"oip_mcp_management_read",id:CapabilityId::McpManagementRead,description:"Platform-authorized MCP/system management information. Read-only; missing session telemetry and unsupported controls are explicit."},
@@ -134,6 +135,9 @@ fn input_schema(id: CapabilityId) -> Value {
             serde_json::to_value(schemars::schema_for!(ConnectionQuery))
         }
         CapabilityId::InventoryRead => serde_json::to_value(schemars::schema_for!(InventoryQuery)),
+        CapabilityId::ServiceRegistryRead => {
+            serde_json::to_value(schemars::schema_for!(ServiceQuery))
+        }
         CapabilityId::InventoryPlanRead => {
             serde_json::to_value(schemars::schema_for!(InventoryPlanQuery))
         }
@@ -272,6 +276,7 @@ fn output_schema(id: CapabilityId) -> Value {
             "connection"
         }
         CapabilityId::InventoryRead => "inventory",
+        CapabilityId::ServiceRegistryRead => "service_registry",
         CapabilityId::InventoryPlanRead | CapabilityId::InventoryChange => "inventory_plan",
         CapabilityId::SettingsRead => "settings",
         CapabilityId::McpManagementRead => "management",

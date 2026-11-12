@@ -63,6 +63,7 @@ pub fn legacy_plan(c: &CoreConfig) -> Result<ProvisioningPlan, String> {
             role_id: RoleId::new("legacy-read").unwrap(),
             scope: AccessScope::Platform,
         }],
+        services: vec![],
         legacy_single_infrastructure: true,
     })
 }

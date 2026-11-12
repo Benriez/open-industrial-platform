@@ -49,6 +49,7 @@ hierarchy_id!(SiteId, 128);
 hierarchy_id!(DeviceId, 256);
 hierarchy_id!(PrincipalId, 128);
 hierarchy_id!(RoleId, 128);
+hierarchy_id!(ServiceId, 128);
 /// Source identity retains the existing canonical registry type, never a tenant prefix.
 pub type SourceId = DataSourceId;
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -130,6 +131,13 @@ pub struct ProvisioningPlan {
     pub principals: Vec<Principal>,
     pub roles: Vec<ReadRole>,
     pub bindings: Vec<RoleBinding>,
+    /// The services that the operator declares for the infrastructure.
+    ///
+    /// The Core measures no service: every record of the registry carries the provenance
+    /// `declared`. A plan without this section is a plan without services — the section is
+    /// optional, so every plan of an earlier era stays valid.
+    #[serde(default)]
+    pub services: Vec<ServiceDeclaration>,
     #[serde(default)]
     pub legacy_single_infrastructure: bool,
 }
@@ -172,6 +180,7 @@ impl HierarchyRegistry {
             || plan.principals.len() > 64
             || plan.roles.len() > 64
             || plan.bindings.len() > 512
+            || plan.services.len() > 256
         {
             return Err("invalid bounded hierarchy");
         }
@@ -186,6 +195,7 @@ impl HierarchyRegistry {
             || !unique(plan.sources.iter().map(|v| &v.device_id))
             || !unique(plan.principals.iter().map(|v| &v.id))
             || !unique(plan.roles.iter().map(|v| &v.id))
+            || !unique(plan.services.iter().map(|v| &v.id))
         {
             return Err("duplicate hierarchy identity");
         }
@@ -215,6 +225,9 @@ impl HierarchyRegistry {
             {
                 return Err("site parent missing");
             }
+        }
+        for service in &plan.services {
+            validate_service_declaration(service, &plan.sites)?;
         }
         let mut locations = BTreeMap::new();
         let mut devices = BTreeMap::new();
@@ -261,6 +274,7 @@ impl HierarchyRegistry {
         plan.bindings.sort_by(|a, b| {
             (&a.principal_id, &a.role_id, &a.scope).cmp(&(&b.principal_id, &b.role_id, &b.scope))
         });
+        plan.services.sort_by(|a, b| a.id.cmp(&b.id));
         let registry = Self {
             plan,
             locations,

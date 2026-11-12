@@ -113,7 +113,7 @@ async fn all_six_tools_have_real_sdk_direct_and_rest_parity_and_generated_schema
         ProtocolVersion::V_2026_07_28
     );
     let tools = client.peer().list_all_tools().await.unwrap();
-    assert_eq!(tools.len(), 13);
+    assert_eq!(tools.len(), 14);
     let cases = [
         (
             "oip_devices_read",
@@ -681,7 +681,7 @@ async fn resource_models_match_direct_service_and_rest_including_sse_projections
         assert_eq!(direct["value"], http, "{uri}");
     }
     let mapping = oip_server::mcp::capability_mapping();
-    assert_eq!(mapping["capabilities"].as_array().unwrap().len(), 32);
+    assert_eq!(mapping["capabilities"].as_array().unwrap().len(), 33);
     assert_eq!(
         mapping["capabilities"]
             .as_array()

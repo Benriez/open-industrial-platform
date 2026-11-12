@@ -427,8 +427,8 @@ mod tests {
         db.connection
             .execute_batch("DROP TABLE source_health_history")
             .unwrap();
-        assert_eq!(db.migrate().unwrap(), 7);
-        assert_eq!(db.migrate().unwrap(), 7);
+        assert_eq!(db.migrate().unwrap(), 8);
+        assert_eq!(db.migrate().unwrap(), 8);
         assert_eq!(
             db.connection
                 .query_row("select event_key from collection_events", [], |r| r

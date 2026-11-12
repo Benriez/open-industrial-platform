@@ -32,3 +32,6 @@ pub use inventory::*;
 
 mod connection;
 pub use connection::*;
+
+mod services;
+pub use services::*;

@@ -320,6 +320,9 @@ impl ApplicationServices {
         if let InventoryRead(q) = &request {
             return self.inventory_read(context, q.clone());
         }
+        if let ServiceRegistryRead(q) = &request {
+            return self.service_registry_read(context, q.clone());
+        }
         if let InventoryPlanRead(q) = &request {
             return self.inventory_plan_read(context, q.clone());
         }
