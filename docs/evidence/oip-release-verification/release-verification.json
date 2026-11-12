@@ -40,7 +40,7 @@
       },
       "the_revision_of_the_source": "fc18ce29954a",
       "the_receipts": 59,
-      "the_receipts_measured_on_a_tree_that_carries_the_source": 54,
+      "the_receipts_measured_on_a_tree_that_carries_the_source": 55,
       "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 2,
       "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
@@ -153,12 +153,14 @@
     "G12"
   ],
   "the_problems": [
+    "the artefact the_core does not match its digest",
+    "the receipt the_oip-opcua-browser_address-space_json does not match its digest",
+    "the receipt the_oip-opcua-browser_opcua-browser_json does not match its digest",
     "the receipt docs/evidence/oip-deployment-discovery/deployment-discovery.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)",
-    "the receipt docs/evidence/oip-hue-device/hue-device.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)",
-    "the receipt docs/evidence/oip-opcua-browser/address-space.json names no revision"
+    "the receipt docs/evidence/oip-hue-device/hue-device.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)"
   ],
-  "the_revision": "023b48e097a09deefdab176ecfb258e7e6d44360",
-  "the_tree": "f1295bdae5473d1d4ea567354419f0a6802dee6b",
+  "the_revision": "1e1e025bd4089772c0dd805afb6730e966e24f57",
+  "the_tree": "7cce326d9375920f88b8a4c527608a91aa351499",
   "the_working_tree_is_clean": true,
   "status": "FAIL"
 }
