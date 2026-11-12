@@ -574,11 +574,64 @@ class ContextEventPage {
   });
 }
 
+/// A service of the registry that the **operator declared**.
+///
+/// The Core measures no service: every record carries the provenance
+/// `declared`, and the device of a record is resolved against the inventory —
+/// a device that the Core does not hold leaves the relation unknown.
+class ServiceRecord {
+  final String id,
+      name,
+      kind,
+      siteId,
+      organizationId,
+      infrastructureId,
+      origin;
+  final String? deviceId, endpoint;
+  final int? port;
+  final String state;
+
+  const ServiceRecord({
+    required this.id,
+    required this.name,
+    required this.kind,
+    required this.siteId,
+    required this.organizationId,
+    required this.infrastructureId,
+    required this.origin,
+    required this.state,
+    this.deviceId,
+    this.endpoint,
+    this.port,
+  });
+
+  factory ServiceRecord.fromJson(Json json) {
+    final service = (json['service'] as Json?) ?? const {};
+    return ServiceRecord(
+      id: '${service['id'] ?? ''}',
+      name: '${service['name'] ?? ''}',
+      kind: '${service['kind'] ?? ''}',
+      siteId: '${service['site_id'] ?? ''}',
+      organizationId: '${json['organization_id'] ?? ''}',
+      infrastructureId: '${json['infrastructure_id'] ?? ''}',
+      origin: '${json['origin'] ?? 'unknown'}',
+      state: '${service['state'] ?? 'unknown'}',
+      deviceId: json['device_id'] as String?,
+      endpoint: service['endpoint'] as String?,
+      port: (service['port'] as num?)?.toInt(),
+    );
+  }
+
+  /// Whether the Core could resolve the device of the declaration.
+  bool get deviceIsResolved => deviceId != null && deviceId!.isNotEmpty;
+}
+
 class InfrastructureBootstrap {
   final String? principalIdentity;
   final AuthorizedHierarchy hierarchy;
   final AuthorizedSnapshot snapshot;
   final List<InventoryDevice>? inventory;
+  final List<ServiceRecord>? services;
   final List<DeterministicFinding>? findings;
   final InfrastructureDataOrigin origin;
 
@@ -587,6 +640,7 @@ class InfrastructureBootstrap {
     required this.hierarchy,
     required this.snapshot,
     required this.inventory,
+    this.services,
     this.findings,
     required this.origin,
   });
@@ -605,6 +659,12 @@ class InfrastructureContext extends ChangeNotifier {
   int contextRevision = 0;
   int sessionGeneration = 0;
   List<InventoryDevice>? inventory = const [];
+  /// The services of the authorized scope.
+  ///
+  /// `null` means that the Core does not deliver the registry at all: the
+  /// surface names the absence instead of showing an empty registry that
+  /// looks like a measurement.
+  List<ServiceRecord>? services;
   List<DeterministicFinding>? findings = const [];
 
   bool get ready => status == InfrastructureContextStatus.ready;
@@ -646,6 +706,7 @@ class InfrastructureContext extends ChangeNotifier {
     principalIdentity = identity;
     origin = bootstrap.origin;
     inventory = bootstrap.inventory;
+    services = bootstrap.services;
     findings = bootstrap.findings;
     if (!hierarchy.isValid(selection)) {
       // Authorization revocation invalidates the selected UI context. No old
@@ -688,6 +749,7 @@ class InfrastructureContext extends ChangeNotifier {
     error = cause;
     hierarchy = AuthorizedHierarchy.empty;
     inventory = null;
+    services = null;
     findings = null;
     origin = null;
     selection = const InfrastructureSelection.unified();
@@ -704,6 +766,7 @@ class InfrastructureContext extends ChangeNotifier {
     reloading = false;
     hierarchy = AuthorizedHierarchy.empty;
     inventory = null;
+    services = null;
     findings = null;
     origin = null;
     principalIdentity = null;

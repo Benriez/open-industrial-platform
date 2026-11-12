@@ -609,8 +609,7 @@ class DeviceContextInspector extends StatelessWidget {
           source == null
               ? 'Keine Source-Zuordnung'
               : '${source.name} · ${source.id}'),
-      _kv('DEVICE / SERVICE RELATION',
-          'Unbekannt · kein autorisiertes Service-Inventar'),
+      _kv('DEVICE / SERVICE RELATION', _servicesOf(device)),
       _kv(
           'NETZWERKBEZIEHUNG',
           links.isEmpty
@@ -633,6 +632,20 @@ class DeviceContextInspector extends StatelessWidget {
       _kv('UNKNOWN',
           'Organization, Site, Firmware, OS, Services, aktive Probes und physische Beziehungen'),
     ]);
+  }
+
+  /// The services that the **operator declared** for the device.
+  ///
+  /// The registry is a declaration, not a measurement: a Core that does not
+  /// deliver the registry has no service inventory at all, and the surface
+  /// names that instead of deriving a service from the device.
+  String _servicesOf(Device device) {
+    final registry = infrastructure?.services;
+    if (registry == null) return 'Unbekannt · kein autorisiertes Service-Register';
+    final services = registry.where((s) => s.deviceId == device.id).toList();
+    if (services.isEmpty) return 'Keine Dienste deklariert';
+    return '${services.length} deklariert · '
+        '${services.map((s) => s.name).join(' · ')}';
   }
 
   /// Dense key/value row for the narrow inspector column.

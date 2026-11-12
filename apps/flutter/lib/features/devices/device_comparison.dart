@@ -184,13 +184,24 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
             .length;
         return '$findings Device-Findings · $sourceEvents Source-Events';
       },
-      'Known Services': (_) => 'Unbekannt · Service Registry fehlt',
+      'Known Services': (device) {
+        // The registry holds what the **operator declared**. A Core that does
+        // not deliver the registry has no service inventory at all: that is
+        // unknown, and the surface says so.
+        final registry = widget.infrastructure?.services;
+        if (registry == null) {
+          return 'Unbekannt · kein autorisiertes Service-Register';
+        }
+        final services = registry.where((s) => s.deviceId == device.id).toList();
+        if (services.isEmpty) return 'Keine Dienste deklariert';
+        return services.map((s) => s.name).join(' · ');
+      },
       'Missing Data': (device) => [
             if (device.sourceId == null) 'Source',
             if (deviceSnapshotObservations(widget.snapshot, device).isEmpty)
               'Telemetry',
             if (widget.infrastructure?.ready != true) 'Org/Site',
-            'Services',
+            if (widget.infrastructure?.services == null) 'Services',
             'Probe'
           ].join(', '),
     };
@@ -299,47 +310,6 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
           )),
     ]);
   }
-}
-
-class ServiceInventoryMissing extends StatelessWidget {
-  const ServiceInventoryMissing({super.key});
-
-  @override
-  Widget build(BuildContext context) => WorkstationPanel(
-        key: const Key('service-inventory-missing'),
-        accent: OipTokens.violet,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('SERVICE INVENTORY · AUTHORIZED DATA REQUIRED',
-                style: WorkstationTokens.eyebrow(context,
-                    color: OipTokens.violet)),
-            const SizedBox(height: 10),
-            Text('Kein autorisiertes Service-Inventar verfügbar.',
-                style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            const Text(
-                'Der aktuelle Core besitzt keine Service-/Service-Instance-/Endpoint-/Protocol-Registry und keine Service-Read-Capability. Gerätenamen, Device.kind und Registry Connection Type werden nicht als Dienste ausgegeben.'),
-            const SizedBox(height: 14),
-            const KeyValueGrid(children: [
-              KeyValue('SERVICE REGISTRY QUERY',
-                  'Fehlt · Typed Rust Capability erforderlich'),
-              KeyValue('DEVICE → SERVICE RELATION',
-                  'Fehlt · keine IDs im Device-DTO'),
-              KeyValue('ENDPOINT / PROTOCOL', 'Nicht autorisiert geliefert'),
-              KeyValue('REST / MCP',
-                  'Keine Service-Route bzw. kein Service-Tool vorhanden'),
-            ]),
-            const SizedBox(height: 10),
-            const WorkstationNote(
-              'Agent-first Backend-Anforderung',
-              'Benötigt werden autorisierte, scoped und paginierte ServiceDefinition-/ServiceInstance-/Endpoint-DTOs mit Provenance, Freshness und Device-ID-Beziehung. Details: docs/architecture/OIP_DEVICES_SERVICES_2027_CORE_REQUIREMENTS.md.',
-              icon: Icons.account_tree_outlined,
-            ),
-          ],
-        ),
-      );
 }
 
 class DeviceInventoryHealth extends StatelessWidget {

@@ -9,6 +9,7 @@ import '../../widgets/adaptive_workspace.dart';
 import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
 import 'device_comparison.dart';
+import 'service_registry.dart';
 import 'device_detail.dart';
 import 'device_inventory.dart';
 import 'device_session.dart';
@@ -316,8 +317,10 @@ class _DevicesPageState extends State<DevicesPage> {
                       color: OipTokens.statusColor(context, 'degraded'))),
             ),
           switch (mode) {
-            DevicesWorkspaceMode.services =>
-              const SizedBox(height: 520, child: ServiceInventoryMissing()),
+            DevicesWorkspaceMode.services => SizedBox(
+                height: 520,
+                child: ServiceRegistryPanel(
+                    services: widget.controller.infrastructure.services)),
             DevicesWorkspaceMode.health => SizedBox(
                 height: 560,
                 child: DeviceInventoryHealth(

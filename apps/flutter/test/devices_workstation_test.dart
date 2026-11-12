@@ -483,13 +483,13 @@ void main() {
 
       expect(
           find.byKey(const Key('service-inventory-missing')), findsOneWidget);
-      expect(find.text('SERVICE INVENTORY · AUTHORIZED DATA REQUIRED'),
-          findsOneWidget);
+      expect(find.text('SERVICE REGISTRY · AUTHORIZED DATA REQUIRED'),
+          findsWidgets);
       expect(find.text('Kein autorisiertes Service-Inventar verfügbar.'),
           findsOneWidget);
       expect(
           find.text(
-              'Der aktuelle Core besitzt keine Service-/Service-Instance-/Endpoint-/Protocol-Registry und keine Service-Read-Capability. Gerätenamen, Device.kind und Registry Connection Type werden nicht als Dienste ausgegeben.'),
+              'Dieser Core liefert kein autorisiertes Service-Register. Gerätenamen, Device.kind und Registry Connection Type werden nicht als Dienste ausgegeben.'),
           findsOneWidget);
       expect(find.text('Fehlt · Typed Rust Capability erforderlich'),
           findsOneWidget);
@@ -564,7 +564,10 @@ void main() {
           matching: find.byType(Scrollable),
         ),
       );
-      expect(find.text('Unbekannt · Service Registry fehlt'), findsWidgets);
+      // The Core of this fixture does not deliver the registry: the
+      // comparison names that instead of inventing a service.
+      expect(find.text('Unbekannt · kein autorisiertes Service-Register'),
+          findsWidgets);
       expect(tester.takeException(), isNull);
     });
 

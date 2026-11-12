@@ -79,6 +79,31 @@ void main() {
             'status': 'Devices registered · Telemetry unavailable',
             'management_channel': 'offline_requires_restart',
           },
+          '/api/v2/services' => {
+            'items': [
+              {
+                'service': {
+                  'id': 'svc-a1-opcua',
+                  'name': 'OPC-UA server of the plant',
+                  'site_id': 'site-a1-2',
+                  'device_id': 'device-a1-manual',
+                  'kind': 'opcua',
+                  'endpoint': 'opc.tcp://127.0.0.1:4840',
+                  'port': 4840,
+                  'state': 'running',
+                },
+                'organization_id': 'org-a',
+                'infrastructure_id': 'infra-a1',
+                'device_id': 'device-a1-manual',
+                'origin': 'declared',
+              },
+            ],
+            'offset': 0,
+            'limit': 100,
+            'has_more': false,
+            'status': 'Services declared · Measured by the operator',
+            'management_channel': 'authenticated_local_operator',
+          },
           '/api/v2/diagnostics/findings' => {
             'items': <dynamic>[],
             'truncated': false,
@@ -103,6 +128,13 @@ void main() {
     expect(result.snapshot.devices, hasLength(5));
     expect(result.inventory!.single.telemetry, 'no_collector');
     expect(result.inventory!.single.monitoringSimulated, isFalse);
+    // The registry of the services that the operator declared: every record
+    // carries the provenance `declared`, and the device of the record is the
+    // device of the inventory.
+    expect(result.services!.single.id, 'svc-a1-opcua');
+    expect(result.services!.single.origin, 'declared');
+    expect(result.services!.single.deviceId, 'device-a1-manual');
+    expect(result.services!.single.deviceIsResolved, isTrue);
     expect(result.snapshot.toSnapshot().system.generatedMs, isNull);
     expect(result.snapshot.toSnapshot().system.persisted, isNull);
     expect(result.snapshot.toSnapshot().system.demoControls, isFalse);

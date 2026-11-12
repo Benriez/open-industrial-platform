@@ -842,6 +842,49 @@ class RestApi implements OipApi, DeviceManagementApi {
       if (!unsupported) rethrow;
       inventory = null;
     }
+    // The registry of the services that the operator declared. A Core that does
+    // not deliver the route has **no** registry: that is unknown, not an empty
+    // registry that would look like a measurement.
+    List<ServiceRecord>? services;
+    try {
+      final result = await _settingsGet('/api/v2/services', const {
+        'limit': '100',
+      });
+      if (result.$2 != snapshot.$2) {
+        throw const ApiFailure('Service-Provenienz weicht vom Snapshot ab.',
+            code: 'CONTRACT_ERROR', path: '/api/v2/services');
+      }
+      services = (result.$1['items'] as List)
+          .map((item) => ServiceRecord.fromJson(item as Json))
+          .toList();
+      var offset = services.length;
+      while (result.$1['has_more'] == true) {
+        final next = await _settingsGet('/api/v2/services', {
+          'offset': '$offset',
+          'limit': '100',
+        });
+        final batch = (next.$1['items'] as List)
+            .map((item) => ServiceRecord.fromJson(item as Json))
+            .toList();
+        if (batch.isEmpty) {
+          throw const ApiFailure('Service-Paginierung ist inkonsistent.',
+              code: 'CONTRACT_ERROR', path: '/api/v2/services');
+        }
+        services.addAll(batch);
+        offset += batch.length;
+        if (next.$1['has_more'] != true) break;
+        if (services.length > 2048) {
+          throw const ApiFailure('Service-Registry überschreitet den Core-Bound.',
+              code: 'CONTEXT_PAGE_LIMIT', path: '/api/v2/services');
+        }
+      }
+    } on ApiFailure catch (error) {
+      final unsupported = error.statusCode == 404 ||
+          error.statusCode == 409 ||
+          error.code == 'UNSUPPORTED';
+      if (!unsupported) rethrow;
+      services = null;
+    }
     List<DeterministicFinding>? findings;
     try {
       final loaded = <DeterministicFinding>[];
@@ -898,6 +941,7 @@ class RestApi implements OipApi, DeviceManagementApi {
       ),
       snapshot: authorized,
       inventory: inventory,
+      services: services,
       findings: findings,
       origin: snapshot.$2 == SettingsDataOrigin.contractFixture
           ? InfrastructureDataOrigin.contractFixture
