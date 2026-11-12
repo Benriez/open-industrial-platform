@@ -4,29 +4,29 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "9c99eba76009f5d87350e4845f0e2d26927a36bd",
+      "the_revision": "b578e10d7bc2cfb4dfdefd3f9d1c8dff1cf65efe",
       "the_revision_of_the_source": {
-        "the_revision": "e57d39c7581fb074d0248b403e24ee3f999f0599",
-        "the_subject": "fix(g8): the VPN state of the surface is what the Core delivers"
+        "the_revision": "0e7f52df86840545722ffce4d2715c43b3d52e9d",
+        "the_subject": "fix(g8): a declared service is stable like every other identity of the plan"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
-        "the_files": 741,
-        "the_sha256": "389c42e153ab8291de390512f8d198fa070443f9036bd367d83798925c6b3bb7"
+        "the_files": 747,
+        "the_sha256": "212ce07ad2f250b4d0c2dbf5151a36175f2bfe2d9066444ab6c38a3818b673a5"
       },
       "the_artifacts": {
-        "the_core": "f42a268f13a24884f232edab1457f03c189b328b948cd9d5ded85478969a933e",
+        "the_core": "a3251a68866d724988ec99bbfc18a7917b559f839e13d09e8e612d208682d3c2",
         "the_official_mcp_probe": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
         "the_macos_application_bundle": null,
-        "the_web_release": "2a7be2ad031bb8efd8675708fc0f27d3905626e6bfe837d15207c1f3abce6f35"
+        "the_web_release": "a8abaf5e3d95074c78ee8caded97929045c337507fb1d7ada79a83c896f54a0c"
       },
-      "the_receipts": 79,
+      "the_receipts": 80,
       "the_receipts_that_the_manifest_does_not_name": 0,
       "the_receipts_that_are_measured_after_the_manifest": [
         "docs/evidence/oip-record-integrity/record-integrity.json",
         "docs/evidence/oip-release-verification/release-verification.json"
       ],
-      "the_core_the_acceptance_executed": "f42a268f13a24884f232edab1457f03c189b328b948cd9d5ded85478969a933e",
+      "the_core_the_acceptance_executed": "a3251a68866d724988ec99bbfc18a7917b559f839e13d09e8e612d208682d3c2",
       "the_acceptance_executed_the_core_that_the_manifest_names": true,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
       "the_core_is_the_reproducible_one": true,
@@ -35,18 +35,18 @@
     },
     "the_freshness": {
       "the_last_change_of_the_product": {
-        "crates": "24f09015a1c6",
-        "apps/flutter/lib": "e57d39c7581f"
+        "crates": "0e7f52df8684",
+        "apps/flutter/lib": "ae47267d1494"
       },
-      "the_revision_of_the_source": "e57d39c7581f",
-      "the_receipts": 56,
-      "the_receipts_measured_on_a_tree_that_carries_the_source": 53,
-      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 1,
+      "the_revision_of_the_source": "0e7f52df8684",
+      "the_receipts": 57,
+      "the_receipts_measured_on_a_tree_that_carries_the_source": 52,
+      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 3,
       "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
     "the_record": {
-      "the_citations": 79,
-      "the_receipts_of_the_release": 56,
+      "the_citations": 80,
+      "the_receipts_of_the_release": 57,
       "the_missing": [],
       "the_untracked": [],
       "the_orphaned": [],
@@ -54,14 +54,14 @@
       "the_paths_of_the_build_tree_in_the_ledger": []
     },
     "the_canonical_state": {
-      "the_source_revision": "e57d39c7581fb074d0248b403e24ee3f999f0599",
-      "the_acceptance_revision": "0b2a938d19898c140f9ba057630d1ecb7fd22b0d",
-      "the_core_binary_revision": "0b2a938d19898c140f9ba057630d1ecb7fd22b0d",
-      "the_tracked_files": 741,
+      "the_source_revision": "0e7f52df86840545722ffce4d2715c43b3d52e9d",
+      "the_acceptance_revision": "98af46bc6fabe18d42cc675c796aa561baa6d8d1",
+      "the_core_binary_revision": "98af46bc6fabe18d42cc675c796aa561baa6d8d1",
+      "the_tracked_files": 747,
       "the_product_is_committed": true
     },
     "the_numbers_of_the_record": {
-      "the_rows": 111,
+      "the_rows": 114,
       "the_measurements": 26
     },
     "the_acceptance": {
@@ -69,10 +69,10 @@
       "the_phases": "8 of 8",
       "the_browser_findings": 187,
       "the_browser_failures": 0,
-      "the_flutter_tests_passed": 382,
+      "the_flutter_tests_passed": 385,
       "the_flutter_tests_failed": 0,
       "the_screenshots": 13,
-      "the_revision_of_the_acceptance": "0b2a938d19898c140f9ba057630d1ecb7fd22b0d",
+      "the_revision_of_the_acceptance": "98af46bc6fabe18d42cc675c796aa561baa6d8d1",
       "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
     },
     "the_boundaries": {
@@ -154,10 +154,15 @@
   ],
   "the_problems": [
     "the artefact the_macos_application_bundle is absent",
-    "the receipt docs/evidence/oip-mas-package/mas-package.json names the revision d350bb0e66c5, which predates the last change of apps/flutter/lib (e57d39c7581f)"
+    "the receipt docs/evidence/oip-macos-app/macos-app.json names the revision 77d58d82c9db, which predates the last change of crates (0e7f52df8684)",
+    "the receipt docs/evidence/oip-macos-app/macos-app.json names the revision 77d58d82c9db, which predates the last change of apps/flutter/lib (ae47267d1494)",
+    "the receipt docs/evidence/oip-macos-install/macos-install.json names the revision 77d58d82c9db, which predates the last change of crates (0e7f52df8684)",
+    "the receipt docs/evidence/oip-macos-install/macos-install.json names the revision 77d58d82c9db, which predates the last change of apps/flutter/lib (ae47267d1494)",
+    "the receipt docs/evidence/oip-mas-package/mas-package.json names the revision d350bb0e66c5, which predates the last change of crates (0e7f52df8684)",
+    "the receipt docs/evidence/oip-mas-package/mas-package.json names the revision d350bb0e66c5, which predates the last change of apps/flutter/lib (ae47267d1494)"
   ],
-  "the_revision": "69a855040720f6a68fe402e2a5e3cb93e7d485fc",
-  "the_tree": "da0eabd11333edbdc269c0aba104bf0fdf6cef19",
+  "the_revision": "6860957b8c10f8d739c34cf4b92d4bb2c0f6414a",
+  "the_tree": "a59c4f9e86fe792eb03a7bf744cece7674180605",
   "the_working_tree_is_clean": true,
   "status": "FAIL"
 }

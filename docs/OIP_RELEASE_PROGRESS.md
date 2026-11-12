@@ -4116,7 +4116,13 @@ need the operator (G5, G10, G12) stay open, and this iteration adds the machine 
 * **The machine still blocks the macOS evidence.** The daemon of the keychain of the machine does
   not answer, so the macOS bundle of the release cannot be built and the rehearsals that build it
   (the packaging, the macOS application and the local installation) were **skipped** in the refresh
-  of this iteration — the record names the gap and the operator's action instead of hiding it.
+  of this iteration — the record names the gap and the operator's action instead of hiding it. The
+  verification of this revision therefore names **seven** problems, and every one of them comes
+  from that daemon: the artefact of the macOS bundle is absent, and the receipts of the packaging,
+  of the macOS application and of the local installation name the revision before the change of the
+  product. Every other receipt of the release is fresh, the acceptance passed with the release
+  binary of this revision, and the reproducible build at the **same** revision produced the
+  byte-identical Core and the byte-identical web release.
 
 The next independent READY task is **N33**: the **note of a device is writable in the surface** —
 the Core replaces the metadata of a device as a whole, so the client must merge the edited note
