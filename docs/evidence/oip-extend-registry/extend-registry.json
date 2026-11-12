@@ -13,7 +13,7 @@
     "source-c",
     "source-d"
   ],
-  "the_second_provisioning": "{\"schema_version\":7,\"organizations\":2,\"sources\":5,\"idempotent\":false,\"legacy_migrated\":false}",
+  "the_second_provisioning": "{\"schema_version\":8,\"organizations\":2,\"sources\":5,\"idempotent\":false,\"legacy_migrated\":false}",
   "the_sources_after_the_extension": [
     "source-a",
     "source-b",
@@ -22,7 +22,7 @@
     "source-e"
   ],
   "the_four_sources_survived": true,
-  "the_observations_of_the_new_source": "44",
+  "the_observations_of_the_new_source": "46",
   "the_new_source_collects": true,
   "the_reduced_plan": {
     "exit_code": 2,
@@ -36,8 +36,8 @@
     "source-e"
   ],
   "status": "PASS",
-  "the_revision": "77d58d82c9db0e04e0e566cbe44a1df2d6b7d3b5",
-  "the_tree": "a7d3a7028bd9b5c3a7f11cd2dfd05280a2f70095",
+  "the_revision": "0e7f52df86840545722ffce4d2715c43b3d52e9d",
+  "the_tree": "7f570d53cab642fad7f150de34de5c0ffd2d298e",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-12T02:34:02Z"
+  "finished_utc": "2026-11-12T08:15:21Z"
 }

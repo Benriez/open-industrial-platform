@@ -214,7 +214,7 @@ RELATIONSHIPS
 SOURCE
 Keine Source-Zuordnung
 DEVICE / SERVICE RELATION
-Unbekannt · kein autorisiertes Service-Inventar
+Keine Dienste deklariert
 NETZWERKBEZIEHUNG
 Keine belegte Relation im Snapshot
 OPC-UA REFERENZ

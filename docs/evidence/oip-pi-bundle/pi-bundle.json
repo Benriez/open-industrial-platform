@@ -25,32 +25,32 @@
     "tools/oip_pi_instance.py"
   ],
   "the_ports_of_the_rehearsal": {
-    "the_core": 49421,
-    "the_source": 49422
+    "the_core": 49664,
+    "the_source": 49665
   },
   "the_preparation": {
     "status": "prepared",
-    "the_instance": "/private/tmp/oip-pi-bundle-ons8ysx_/instance",
-    "the_core_configuration": "/private/tmp/oip-pi-bundle-ons8ysx_/instance/etc/core.json",
-    "the_plan": "/private/tmp/oip-pi-bundle-ons8ysx_/instance/etc/plan.json",
-    "the_ipc_configuration": "/private/tmp/oip-pi-bundle-ons8ysx_/instance/etc/ipc.json",
-    "the_database": "/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/oip-core.sqlite",
-    "the_socket": "/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/ipc.sock",
-    "the_credential_of_the_operator": "/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/platform-reader.credential",
-    "the_http_port": 49421,
-    "the_source_port": 49422,
+    "the_instance": "/private/tmp/oip-pi-bundle-ypzj4bns/instance",
+    "the_core_configuration": "/private/tmp/oip-pi-bundle-ypzj4bns/instance/etc/core.json",
+    "the_plan": "/private/tmp/oip-pi-bundle-ypzj4bns/instance/etc/plan.json",
+    "the_ipc_configuration": "/private/tmp/oip-pi-bundle-ypzj4bns/instance/etc/ipc.json",
+    "the_database": "/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/oip-core.sqlite",
+    "the_socket": "/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/ipc.sock",
+    "the_credential_of_the_operator": "/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/platform-reader.credential",
+    "the_http_port": 49664,
+    "the_source_port": 49665,
     "the_source_id": "pi-simulation",
     "the_uid": 501,
     "the_host": "MacBookPro.fritz.box"
   },
   "the_core_configuration": {
-    "database": "/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/oip-core.sqlite",
-    "http_port": 49421,
+    "database": "/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/oip-core.sqlite",
+    "http_port": 49664,
     "sources": [
       {
         "id": "pi-simulation",
         "name": "The simulation of this host",
-        "endpoint": "opc.tcp://127.0.0.1:49422",
+        "endpoint": "opc.tcp://127.0.0.1:49665",
         "namespace": 2,
         "entity_id": "pi-simulation"
       }
@@ -62,19 +62,19 @@
     "legacy_single_infrastructure": false
   },
   "the_ipc_configuration": {
-    "socket": "/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/ipc.sock",
+    "socket": "/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/ipc.sock",
     "max_sessions": 16,
     "clients": [
       {
         "uid": 501,
-        "credential_file": "/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/platform-reader.credential",
+        "credential_file": "/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/platform-reader.credential",
         "policy": {
           "principal": "platform-reader"
         }
       },
       {
         "uid": 501,
-        "credential_file": "/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/reader-org-a.credential",
+        "credential_file": "/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/reader-org-a.credential",
         "policy": {
           "principal": "reader-org-a"
         }
@@ -88,30 +88,30 @@
   },
   "the_start": {
     "the_code": 0,
-    "the_output": "-pi-bundle-ons8ysx_/instance is already prepared\nthe simulation of the host listens on 127.0.0.1:49422 (pid 90278)\n{\"status\": \"provisioned\", \"plan\": \"/private/tmp/oip-pi-bundle-ons8ysx_/instance/etc/plan.json\", \"database\": \"/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/oip-core.sqlite\", \"result\": \"{\\\"provisioned\\\": \\\"/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/oip-core.sqlite\\\"}\"}\n{\"status\": \"started\", \"pid\": 90284, \"http_port\": 49421, \"database\": \"/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/oip-core.sqlite\", \"log\": \"/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/oip.log\", \"ipc_credentials_provisioned\": 2}\n\nthe Core of the instance answers on http://127.0.0.1:49421 of this host\nthe session of the operator: /private/tmp/oip-pi-bundle-ons8ysx_/bundle/bin/login-code.sh\n",
+    "the_output": "ip-pi-bundle-ypzj4bns/instance is already prepared\nthe simulation of the host listens on 127.0.0.1:49665 (pid 3466)\n{\"status\": \"provisioned\", \"plan\": \"/private/tmp/oip-pi-bundle-ypzj4bns/instance/etc/plan.json\", \"database\": \"/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/oip-core.sqlite\", \"result\": \"{\\\"provisioned\\\": \\\"/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/oip-core.sqlite\\\"}\"}\n{\"status\": \"started\", \"pid\": 3471, \"http_port\": 49664, \"database\": \"/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/oip-core.sqlite\", \"log\": \"/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/oip.log\", \"ipc_credentials_provisioned\": 2}\n\nthe Core of the instance answers on http://127.0.0.1:49664 of this host\nthe session of the operator: /private/tmp/oip-pi-bundle-ypzj4bns/bundle/bin/login-code.sh\n",
     "the_error": ""
   },
   "the_calls_of_the_core": [
     [
       "--port",
-      "49422"
+      "49665"
     ],
     [
       "--config",
-      "/private/tmp/oip-pi-bundle-ons8ysx_/instance/etc/core.json",
+      "/private/tmp/oip-pi-bundle-ypzj4bns/instance/etc/core.json",
       "--database",
-      "/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/oip-core.sqlite",
+      "/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/oip-core.sqlite",
       "--provision",
-      "/private/tmp/oip-pi-bundle-ons8ysx_/instance/etc/plan.json"
+      "/private/tmp/oip-pi-bundle-ypzj4bns/instance/etc/plan.json"
     ],
     [
       "--daemon",
       "--config",
-      "/private/tmp/oip-pi-bundle-ons8ysx_/instance/etc/core.json",
+      "/private/tmp/oip-pi-bundle-ypzj4bns/instance/etc/core.json",
       "--database",
-      "/private/tmp/oip-pi-bundle-ons8ysx_/instance/state/oip-core.sqlite",
+      "/private/tmp/oip-pi-bundle-ypzj4bns/instance/state/oip-core.sqlite",
       "--ipc-config",
-      "/private/tmp/oip-pi-bundle-ons8ysx_/instance/etc/ipc.json"
+      "/private/tmp/oip-pi-bundle-ypzj4bns/instance/etc/ipc.json"
     ]
   ],
   "the_files_written_outside_the_instance": [],
@@ -121,12 +121,12 @@
   },
   "the_stop": {
     "the_code": 0,
-    "the_output": "{\"status\": \"stopped\", \"pid\": 90284}\nthe simulation of the host was stopped (pid 90278)\nthe instance is stopped; the data of the instance stays in /private/tmp/oip-pi-bundle-ons8ysx_/instance/state\n"
+    "the_output": "{\"status\": \"stopped\", \"pid\": 3471}\nthe simulation of the host was stopped (pid 3466)\nthe instance is stopped; the data of the instance stays in /private/tmp/oip-pi-bundle-ypzj4bns/instance/state\n"
   },
   "the_core_binds_the_loopback": true,
   "status": "PASS",
-  "the_revision": "77d58d82c9db0e04e0e566cbe44a1df2d6b7d3b5",
-  "the_tree": "a7d3a7028bd9b5c3a7f11cd2dfd05280a2f70095",
+  "the_revision": "0e7f52df86840545722ffce4d2715c43b3d52e9d",
+  "the_tree": "7f570d53cab642fad7f150de34de5c0ffd2d298e",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-12T03:43:47Z"
+  "finished_utc": "2026-11-12T09:03:00Z"
 }

@@ -152,6 +152,9 @@ def main():
         source_ports = [free_port() for _ in range(4)]
         http_port = free_port()
         plan = json.loads((ROOT / "examples/multi-infrastructure-plan.json").read_text())
+        # The services of the plan are a feature of this era: the binary of the
+        # era does not know them, and the handover proves exactly that.
+        plan.pop("services", None)
         (work / "plan.json").write_text(json.dumps(plan, indent=2))
         sources = [{"id": f"source-{letter}", "name": f"Local simulation {letter}",
                     "endpoint": f"opc.tcp://127.0.0.1:{source_ports[index]}", "namespace": 2}

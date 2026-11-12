@@ -219,10 +219,16 @@ def main():
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
         time.sleep(2)
 
-        # 1. the historical binary provisions the data store
+        # 1. the historical binary provisions the data store. The services of
+        # the plan are a feature of this era: the binary of the era does not
+        # know them, and the handover proves exactly that.
+        plan_of_the_era = json.loads(
+            (ROOT / "examples/multi-infrastructure-plan.json").read_text())
+        plan_of_the_era.pop("services", None)
+        (work / "plan-of-the-era.json").write_text(json.dumps(plan_of_the_era, indent=2))
         step = tool(str(BASELINE), "core-historical.json", "ipc-historical.json",
                     state_h, "provision-plan", "--plan",
-                    str(ROOT / "examples/multi-infrastructure-plan.json"))
+                    str(work / "plan-of-the-era.json"))
         report["steps"].append(step)
         report["schema_after_provisioning"] = sqlite_value(database, "pragma user_version;")
 
@@ -335,7 +341,7 @@ def main():
         # leaves an instance the previous release can serve.
         step = tool(str(BASELINE), "core-historical.json", "ipc-historical.json",
                     state_h, "provision-plan", "--plan",
-                    str(ROOT / "examples/multi-infrastructure-plan.json"))
+                    str(work / "plan-of-the-era.json"))
         report["steps"].append(step)
         report["historical_adopts_the_restored_store"] = \
             step["stdout"].get("status") == "provisioned"
