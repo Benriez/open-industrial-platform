@@ -4,21 +4,21 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "b578e10d7bc2cfb4dfdefd3f9d1c8dff1cf65efe",
+      "the_revision": "a7572b8084cf5885538ec153c1581dabe4754f12",
       "the_revision_of_the_source": {
-        "the_revision": "0e7f52df86840545722ffce4d2715c43b3d52e9d",
-        "the_subject": "fix(g8): a declared service is stable like every other identity of the plan"
+        "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
+        "the_subject": "fix(g4): every field of the surface keeps the characters of the keyboard"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
-        "the_files": 747,
-        "the_sha256": "212ce07ad2f250b4d0c2dbf5151a36175f2bfe2d9066444ab6c38a3818b673a5"
+        "the_files": 749,
+        "the_sha256": "0cedbe95b45d0c1d7f2258868451a26d1092bbe4efb9e90ef81fd1e924b91fea"
       },
       "the_artifacts": {
-        "the_core": "a3251a68866d724988ec99bbfc18a7917b559f839e13d09e8e612d208682d3c2",
+        "the_core": "7fa611c45db1a21ae018bf2bad7855c6f77222369f49f51d9a618dbddcc67123",
         "the_official_mcp_probe": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
-        "the_macos_application_bundle": null,
-        "the_web_release": "a8abaf5e3d95074c78ee8caded97929045c337507fb1d7ada79a83c896f54a0c"
+        "the_macos_application_bundle": "b391de2d378acc63e41d2ba910eadbab62e508162545b1bd4a2049c172983eef",
+        "the_web_release": "9c9ed2153676e3244c3a8a24c485229d0c92adb00750c3eb48afd0cdf55272a0"
       },
       "the_receipts": 80,
       "the_receipts_that_the_manifest_does_not_name": 0,
@@ -26,7 +26,7 @@
         "docs/evidence/oip-record-integrity/record-integrity.json",
         "docs/evidence/oip-release-verification/release-verification.json"
       ],
-      "the_core_the_acceptance_executed": "a3251a68866d724988ec99bbfc18a7917b559f839e13d09e8e612d208682d3c2",
+      "the_core_the_acceptance_executed": "7fa611c45db1a21ae018bf2bad7855c6f77222369f49f51d9a618dbddcc67123",
       "the_acceptance_executed_the_core_that_the_manifest_names": true,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
       "the_core_is_the_reproducible_one": true,
@@ -36,12 +36,12 @@
     "the_freshness": {
       "the_last_change_of_the_product": {
         "crates": "0e7f52df8684",
-        "apps/flutter/lib": "ae47267d1494"
+        "apps/flutter/lib": "fc18ce29954a"
       },
-      "the_revision_of_the_source": "0e7f52df8684",
+      "the_revision_of_the_source": "fc18ce29954a",
       "the_receipts": 57,
-      "the_receipts_measured_on_a_tree_that_carries_the_source": 52,
-      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 3,
+      "the_receipts_measured_on_a_tree_that_carries_the_source": 53,
+      "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 2,
       "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
     "the_record": {
@@ -54,25 +54,25 @@
       "the_paths_of_the_build_tree_in_the_ledger": []
     },
     "the_canonical_state": {
-      "the_source_revision": "0e7f52df86840545722ffce4d2715c43b3d52e9d",
-      "the_acceptance_revision": "98af46bc6fabe18d42cc675c796aa561baa6d8d1",
-      "the_core_binary_revision": "98af46bc6fabe18d42cc675c796aa561baa6d8d1",
-      "the_tracked_files": 747,
+      "the_source_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
+      "the_acceptance_revision": "7a2da6a6c2cbc7ae6df808bce4c08e17f404e0e7",
+      "the_core_binary_revision": "7a2da6a6c2cbc7ae6df808bce4c08e17f404e0e7",
+      "the_tracked_files": 749,
       "the_product_is_committed": true
     },
     "the_numbers_of_the_record": {
-      "the_rows": 114,
+      "the_rows": 115,
       "the_measurements": 26
     },
     "the_acceptance": {
       "the_verdict": "PASS",
       "the_phases": "8 of 8",
-      "the_browser_findings": 187,
+      "the_browser_findings": 189,
       "the_browser_failures": 0,
-      "the_flutter_tests_passed": 385,
+      "the_flutter_tests_passed": 387,
       "the_flutter_tests_failed": 0,
       "the_screenshots": 13,
-      "the_revision_of_the_acceptance": "98af46bc6fabe18d42cc675c796aa561baa6d8d1",
+      "the_revision_of_the_acceptance": "7a2da6a6c2cbc7ae6df808bce4c08e17f404e0e7",
       "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
     },
     "the_boundaries": {
@@ -153,16 +153,11 @@
     "G12"
   ],
   "the_problems": [
-    "the artefact the_macos_application_bundle is absent",
-    "the receipt docs/evidence/oip-macos-app/macos-app.json names the revision 77d58d82c9db, which predates the last change of crates (0e7f52df8684)",
-    "the receipt docs/evidence/oip-macos-app/macos-app.json names the revision 77d58d82c9db, which predates the last change of apps/flutter/lib (ae47267d1494)",
-    "the receipt docs/evidence/oip-macos-install/macos-install.json names the revision 77d58d82c9db, which predates the last change of crates (0e7f52df8684)",
-    "the receipt docs/evidence/oip-macos-install/macos-install.json names the revision 77d58d82c9db, which predates the last change of apps/flutter/lib (ae47267d1494)",
-    "the receipt docs/evidence/oip-mas-package/mas-package.json names the revision d350bb0e66c5, which predates the last change of crates (0e7f52df8684)",
-    "the receipt docs/evidence/oip-mas-package/mas-package.json names the revision d350bb0e66c5, which predates the last change of apps/flutter/lib (ae47267d1494)"
+    "the receipt docs/evidence/oip-deployment-discovery/deployment-discovery.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)",
+    "the receipt docs/evidence/oip-hue-device/hue-device.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)"
   ],
-  "the_revision": "a553c4eb80a0feace4bf6c1c65dde80200afeb71",
-  "the_tree": "6b194df3410ac6eee370e8a9de63e579415f926c",
+  "the_revision": "a2475c1a484130b1e48ffee40d2e2fb31abd33a4",
+  "the_tree": "a5eb7b88a31bb824978778d5a963c0783c928ca2",
   "the_working_tree_is_clean": true,
   "status": "FAIL"
 }
