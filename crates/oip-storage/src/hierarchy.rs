@@ -163,6 +163,14 @@ impl SqliteStore {
                     return Err(bad());
                 }
             }
+            // A declared service is stable as well: a declaration that the
+            // plan changes silently would rewrite the record of the operator
+            // behind his back.
+            for o in &old.plan.services {
+                if !plan.services.contains(o) {
+                    return Err(bad());
+                }
+            }
             // Identities remain stable; offline operator can revoke policies/disable principals.
             for o in &old.plan.principals {
                 if !plan.principals.iter().any(|p| p.id == o.id) {
