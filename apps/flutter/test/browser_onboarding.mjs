@@ -55,14 +55,67 @@ async function scrollToControl(name){
 // A control of the Flutter view is activated with a real mouse event on its
 // painted position. The scroll of the view moves the control into the
 // viewport first; only then its position is known.
-async function clickControl(locator){
+/// A predicate of the surface waits for the effect of an action.
+async function waitFor(predicate,seconds=10){
+  const deadline=Date.now()+seconds*1000;
+  for(;;){
+    if(await predicate())return true;
+    if(Date.now()>=deadline)return false;
+    await page.waitForTimeout(250);
+  }
+}
+
+/// A **button** of the Flutter view is activated in the order of the
+/// directness of the ways, and every way is proven with the state of the
+/// surface.
+///
+/// A painted click can be **swallowed**: a control that is drawn over the
+/// control that is clicked receives the event instead — the buttons of the
+/// inspector are drawn over the panel that scrolled under them, and a panel
+/// that grew (the note of the device) moves its own buttons under them. The
+/// keyboard activates the focused control of the Flutter view, the event of
+/// the semantics node activates the control itself, and the painted position
+/// is the fallback.
+async function activateControl(locator,predicate){
   const view=page.viewportSize();
   for(let i=0;i<16;i++){
     if(await locator.count()){
       const box=await locator.boundingBox();
       if(box&&box.y>70&&box.y+box.height<view.height-20){
+        try{
+          await locator.focus({timeout:2000});
+          await page.keyboard.press('Enter');
+          await page.waitForTimeout(600);
+          if(await waitFor(predicate,8))return true;
+        }catch{}
+        try{
+          await locator.dispatchEvent('click');
+          await page.waitForTimeout(600);
+          if(await waitFor(predicate,8))return true;
+        }catch{}
         await page.mouse.click(box.x+Math.min(box.width/2,60),box.y+box.height/2);
-        await page.waitForTimeout(400);
+        await page.waitForTimeout(600);
+        return await waitFor(predicate,8);
+      }
+    }
+    await page.mouse.move(1150,700);
+    await page.mouse.wheel(0,300);
+    await page.waitForTimeout(220);
+  }
+  return false;
+}
+
+/// A **text field** of the Flutter view is focused through its own input
+/// element; the keyboard of the journey then writes into the field of the
+/// view.
+async function focusField(locator){
+  const view=page.viewportSize();
+  for(let i=0;i<16;i++){
+    if(await locator.count()){
+      const box=await locator.boundingBox();
+      if(box&&box.y>70&&box.y+box.height<view.height-20){
+        await locator.focus({timeout:2000});
+        await page.waitForTimeout(250);
         return true;
       }
     }
@@ -127,7 +180,7 @@ try {
   assert(administration.includes('VERWALTUNG · REVISION '+manualRevision),
     'the administration of the device does not name the revision it works on');
   const nameField=page.getByRole('textbox',{name:'Anzeigename'}).last();
-  assert(await clickControl(nameField),
+  assert(await focusField(nameField),
     'the name of the device is not reachable in the inspector');
   await page.waitForTimeout(250);
   await page.keyboard.press('Meta+A');
@@ -135,9 +188,12 @@ try {
   await page.keyboard.type('Manual inventory fixture renamed',{delay:60});
   await page.waitForTimeout(300);
   const save=page.getByRole('button',{name:'Änderungen speichern',exact:true});
-  assert(await clickControl(save),
+  const renamed=async()=>{
+    const page2=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
+    return page2.items.length===1;
+  };
+  assert(await activateControl(save,renamed),
     'the update of the device is not reachable in the inspector');
-  await page.waitForTimeout(2500);
   const updated=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
   assert.equal(updated.items.length,1,'the Core did not accept the update of the device');
   assert.equal(updated.items[0].record.device.display_name,'Manual inventory fixture renamed');
@@ -196,16 +252,19 @@ try {
   // note — the journey proves that against the real Core, so the merge of
   // the client is not a claim but a measured difference.
   const noteField=page.getByRole('textbox',{name:/Notiz/}).last();
-  assert(await clickControl(noteField),
+  assert(await focusField(noteField),
     'the note of the device is not reachable in the inspector');
   await page.waitForTimeout(250);
   await page.keyboard.press('Meta+A');
   await page.keyboard.press('Backspace');
   await page.keyboard.type(NOTE,{delay:25});
   await page.waitForTimeout(300);
-  assert(await clickControl(save),
+  const noted0=async()=>{
+    const page2=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
+    return page2.items.length===1&&(page2.items[0].record.device.metadata||{}).notes===NOTE;
+  };
+  assert(await activateControl(save,noted0),
     'the note of the device is not writable in the inspector');
-  await page.waitForTimeout(2500);
   const noted=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
   assert.equal(noted.items.length,1,'the Core did not accept the note of the device');
   const notedDevice=noted.items[0].record.device;
