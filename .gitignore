@@ -126,6 +126,10 @@ secrets/
 !/docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json
 !/docs/evidence/oip-diagnostic-continuation/rehearsal.json
 !/docs/evidence/oip-opcua-parity/opcua-parity.json
+# The address space of the operator in the browser: the nodes, their folders
+# and their identity are the ones that the Core delivers.
+!/docs/evidence/oip-opcua-browser/opcua-browser.json
+!/docs/evidence/oip-opcua-browser/address-space.json
 !/docs/evidence/oip-workstation-data/workstation-data.json
 !/docs/evidence/oip-workstation-data/rehearsal.json
 !/docs/evidence/oip-device-connection/device-connection.json

@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "the_address_space": {
+    "the_nodes_of_the_core": 1020,
+    "the_folders_of_the_core": [
+      "Objects",
+      "OIP",
+      "M-01",
+      "Bulk"
+    ],
+    "the_rows_of_the_surface": 15,
+    "the_identity_of_the_first_node": {
+      "the_id": "i=23470",
+      "the_name": "Aliases",
+      "the_namespace": 0,
+      "the_folder": "Objects"
+    },
+    "the_search_reaches": "Bulk"
+  },
+  "the_checks": [
+    "the authorized session of the operator opens the address space",
+    "the Core names 4 folders and 1020 nodes",
+    "the surface renders the nodes of the Core (15 rows in the viewport)",
+    "the identity of the node is the identity that the Core delivered",
+    "the attributes that the Core does not deliver are named",
+    "the history and the hierarchy of the address space are named as absent",
+    "the keyboard search reaches the node Bulk of the Core"
+  ],
+  "the_captures": [
+    "address-space.png",
+    "node-identity.png",
+    "node-limits.png",
+    "keyboard-search.png"
+  ],
+  "errors": [],
+  "external": []
+}
