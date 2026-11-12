@@ -172,6 +172,7 @@ try {
   assert.deepEqual(failedResources,[]);
   await writeFile(resolve(out,'address-space.json'),JSON.stringify({
     status:'PASS',
+    the_revision:process.env.OIP_REVISION,
     the_address_space:{
       the_nodes_of_the_core:catalogue.total,
       the_folders_of_the_core:folders,
