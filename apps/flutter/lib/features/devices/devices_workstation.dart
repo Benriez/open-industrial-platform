@@ -172,19 +172,21 @@ class _DevicesPageState extends State<DevicesPage> {
       }
       return KeyEventResult.ignored;
     }
-    // A field of the inspector is a field of the page too: while it is
-    // edited, every key belongs to the field.
-    if (aTextFieldHasTheFocus()) return KeyEventResult.ignored;
-    if (key == LogicalKeyboardKey.slash) {
-      searchFocus.requestFocus();
-      return KeyEventResult.handled;
-    }
+    // The escape closes the details of the device — also while a field of
+    // the inspector is edited: the field of the view has no meaning for it.
     if (key == LogicalKeyboardKey.escape) {
       if (session.selectedId != null) {
         _closeDetails();
         return KeyEventResult.handled;
       }
       return KeyEventResult.ignored;
+    }
+    // A field of the inspector is a field of the page too: while it is
+    // edited, every other key belongs to the field.
+    if (aTextFieldHasTheFocus()) return KeyEventResult.ignored;
+    if (key == LogicalKeyboardKey.slash) {
+      searchFocus.requestFocus();
+      return KeyEventResult.handled;
     }
     final device = selectedDevice;
     if (device == null) return KeyEventResult.ignored;

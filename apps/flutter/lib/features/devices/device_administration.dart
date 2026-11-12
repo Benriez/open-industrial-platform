@@ -192,12 +192,15 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
             decoration: const InputDecoration(labelText: 'Anzeigename'),
           ),
           const SizedBox(height: 6),
+          // The Core refuses a control character in the note, so the field
+          // is **one line**: the surface must not offer what the Core
+          // rejects. The limit of the Core is 1024 bytes.
           TextField(
             key: const Key('device-administration-note'),
             controller: _note,
             enabled: !_busy,
-            maxLines: 3,
-            minLines: 1,
+            maxLines: 1,
+            maxLength: 1024,
             decoration: const InputDecoration(
               labelText: 'Notiz',
               helperText: 'Freier Text des Betreibers zu diesem Gerät',

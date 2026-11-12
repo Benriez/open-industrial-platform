@@ -1060,6 +1060,17 @@ void main() {
       expect(find.text('Comparison 0/4'), findsOneWidget);
       expect(find.text('Comparison 1/4'), findsNothing);
       expect(find.byTooltip('Pin entfernen'), findsNothing);
+
+      // The positive control: the comparison of the page still works, so the
+      // check above is the guard and not a broken comparison.
+      final list = tester.widget<Focus>(find.byWidgetPredicate((widget) =>
+          widget is Focus &&
+          widget.focusNode?.debugLabel == 'device-inventory-list'));
+      list.focusNode!.requestFocus();
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
+      await tester.pumpAndSettle();
+      expect(find.text('Comparison 1/4'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

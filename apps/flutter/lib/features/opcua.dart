@@ -554,26 +554,6 @@ class _OpcuaPageState extends State<OpcuaPage> {
             _focusSearch,
         const SingleActivator(LogicalKeyboardKey.keyK, meta: true):
             _focusSearch,
-        const SingleActivator(LogicalKeyboardKey.slash): () {
-          if (!searchFocus.hasFocus && !aTextFieldHasTheFocus()) _focusSearch();
-        },
-        const SingleActivator(LogicalKeyboardKey.slash, shift: true): () {
-          if (!searchFocus.hasFocus && !aTextFieldHasTheFocus()) _focusSearch();
-        },
-        const SingleActivator(LogicalKeyboardKey.keyP): () {
-          if (!searchFocus.hasFocus &&
-              !aTextFieldHasTheFocus() &&
-              selected != null) {
-            _togglePin(selected!);
-          }
-        },
-        const SingleActivator(LogicalKeyboardKey.keyC): () {
-          if (!searchFocus.hasFocus &&
-              !aTextFieldHasTheFocus() &&
-              selected != null) {
-            _toggleCompare(selected!);
-          }
-        },
         const SingleActivator(LogicalKeyboardKey.f6): () {
           if (searchFocus.hasFocus) {
             listFocus.requestFocus();
@@ -597,7 +577,12 @@ class _OpcuaPageState extends State<OpcuaPage> {
       },
       // The shortcut wrapper owns a Focus node; keep page texts as separate
       // semantics nodes instead of merging them into that node.
-      child: Semantics(
+      // The plain characters of the page are handled **below** the shortcuts:
+      // a shortcut that matches a character swallows it, and the operator
+      // would lose every "c" of the search field.
+      child: Focus(
+        onKeyEvent: _pageKey,
+        child: Semantics(
         container: true,
         explicitChildNodes: true,
         child: Column(
@@ -681,8 +666,35 @@ class _OpcuaPageState extends State<OpcuaPage> {
             }),
           ],
         ),
+        ),
       ),
     );
+  }
+
+  /// The plain characters of the page: the search, the pin and the
+  /// comparison.
+  ///
+  /// They belong to the page — and to no field that is edited. A shortcut
+  /// that matches a character swallows it (the browser does not write it
+  /// into the field any more), so the characters are handled here, below the
+  /// shortcuts of the page.
+  KeyEventResult _pageKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (aTextFieldHasTheFocus()) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.slash) {
+      _focusSearch();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyP) {
+      if (selected != null) _togglePin(selected!);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyC) {
+      if (selected != null) _toggleCompare(selected!);
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   // ---------------------------------------------------------------- header

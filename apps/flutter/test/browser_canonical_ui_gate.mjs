@@ -184,6 +184,23 @@ try {
       // asserted and not assumed: the principle is named there, and it is
       // nowhere else — the shell and the five other workstations carry no
       // trace of it.
+      if (workstation.slug === 'opcua') {
+        // The search of the address space belongs to the operator: every
+        // character that is typed into it must arrive. A shortcut of the page
+        // that matches a character swallows it — the operator lost every "c"
+        // of the search.
+        await page.keyboard.press('Control+k');
+        await page.waitForTimeout(650);
+        await page.keyboard.type('abc', { delay: 40 });
+        await page.waitForTimeout(400);
+        const search = page.locator('input[aria-label="Nodes durchsuchen"], textarea[aria-label="Nodes durchsuchen"]').first();
+        const typed = await search.inputValue().catch(() => '');
+        check('the search of the address space keeps every character', typed === 'abc', typed);
+        await search.click({ force: true });
+        await page.keyboard.press('Meta+A');
+        await page.keyboard.press('Backspace');
+        await page.waitForTimeout(300);
+      }
       if (workstation.slug === 'settings') {
         check('the agent-first principle is named in the technical context of the settings',
           workstationSnapshot.includes('AGENT-FIRST'));

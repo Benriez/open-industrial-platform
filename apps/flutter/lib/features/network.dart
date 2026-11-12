@@ -445,10 +445,9 @@ class _NetworkPageState extends State<NetworkPage> {
 
   KeyEventResult _pageKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final focus = FocusManager.instance.primaryFocus;
-    final editing =
-        focus?.context?.findAncestorWidgetOfExactType<EditableText>() != null;
-    if (editing) return KeyEventResult.ignored;
+    // A field of the explorer is a field of the page too: while it is
+    // edited, every key of the page belongs to the field.
+    if (aTextFieldHasTheFocus()) return KeyEventResult.ignored;
     final key = event.logicalKey;
     if (key == LogicalKeyboardKey.f6) {
       if (searchFocus.hasFocus) {
@@ -460,9 +459,6 @@ class _NetworkPageState extends State<NetworkPage> {
       }
       return KeyEventResult.handled;
     }
-    // A field of the explorer is a field of the page too: while it is
-    // edited, every key belongs to the field. The navigation key (F6) stays.
-    if (aTextFieldHasTheFocus()) return KeyEventResult.ignored;
     if (key == LogicalKeyboardKey.slash) {
       _focusSearch();
       return KeyEventResult.handled;
@@ -601,7 +597,11 @@ class _NetworkPageState extends State<NetworkPage> {
         const SingleActivator(LogicalKeyboardKey.escape): () {
           if (searchFocus.hasFocus && query.isNotEmpty) {
             _clearSearch();
-          } else if (mode == _NetworkMode.compare) {
+            return;
+          }
+          // A field of the explorer is edited: the key belongs to the field.
+          if (aTextFieldHasTheFocus()) return;
+          if (mode == _NetworkMode.compare) {
             _setMode(_NetworkMode.topology);
           } else {
             _clearSelection();
