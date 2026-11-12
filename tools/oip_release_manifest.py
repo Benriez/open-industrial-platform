@@ -215,8 +215,12 @@ def source_revision():
     revision of the product separately from the revision of the branch: the
     artefacts of the release belong to the former.
     """
+    # The product of the release is the Core and the client — the same paths
+    # that the checker of the record and the verification of the release use.
+    # A commit that changes only the **tests** of the client does not change
+    # the product, and the three must never disagree.
     result = subprocess.run(
-        ["git", "log", "-1", "--format=%H %s", "--", "apps", "crates"],
+        ["git", "log", "-1", "--format=%H %s", "--", "crates", "apps/flutter/lib"],
         cwd=ROOT, capture_output=True, text=True)
     line = result.stdout.strip()
     if not line:

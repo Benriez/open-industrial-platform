@@ -13,7 +13,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `8a30c00` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `fc18ce2` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
 | The revision of the final acceptance | `7a2da6a` (tree `db2f8566`) — the tree the canonical gate passed on |
 | The revision of the Core binary of the release | `7a2da6a` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |

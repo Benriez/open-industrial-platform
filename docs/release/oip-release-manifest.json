@@ -1,11 +1,11 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "8d030ecf9def218c6a4f9be7983f33f1d3f38a6e",
-  "the_tree": "bb5f5f5c64250815752d2104ccfb15d72ac5067a",
+  "the_revision": "a7572b8084cf5885538ec153c1581dabe4754f12",
+  "the_tree": "0a6c0c73a0cec8c4bd3952062e32be4de46a89e0",
   "the_branch": "main",
   "the_revision_of_the_source": {
-    "the_revision": "8a30c001652be9df5b3fac3d2cd3648b2be97b2e",
-    "the_subject": "fix(g11): the gate reads the rendered field of the address space"
+    "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
+    "the_subject": "fix(g4): every field of the surface keeps the characters of the keyboard"
   },
   "the_working_tree_is_clean": false,
   "the_toolchain": {
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 749,
-    "the_sha256": "61f2a7a2d7a8b8dcdad86da3cb4a5171d75158da885e0f71db9c900d2a021833"
+    "the_sha256": "0cedbe95b45d0c1d7f2258868451a26d1092bbe4efb9e90ef81fd1e924b91fea"
   },
   "the_artifacts": {
     "the_core": {
@@ -382,7 +382,7 @@
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-release16",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/OIP_RELEASE_LEDGER.md"
+    "M tools/oip_release_manifest.py"
   ],
   "the_revision_of_the_acceptance": "7a2da6a6c2cbc7ae6df808bce4c08e17f404e0e7",
   "the_tree_of_the_acceptance": "db2f8566a01acf0e040ee7d0914102b0f7675659",
