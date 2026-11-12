@@ -210,6 +210,29 @@ void main() {
     expect(api.updates.single['device_type'], 'quantum_processor');
   });
 
+  testWidgets('The note of the device is written and the metadata survives',
+      (tester) async {
+    await openDevice(tester);
+    await tester.ensureVisible(
+        find.byKey(const Key('device-administration-note')));
+    await tester.enterText(
+        find.byKey(const Key('device-administration-note')),
+        'Nur lesbar: die Lichter brauchen ein Anwendungs-Token des Betreibers.');
+    await tester.ensureVisible(
+        find.byKey(const Key('device-administration-update')));
+    await tester.tap(find.byKey(const Key('device-administration-update')));
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 120));
+    }
+    expect(api.updates, hasLength(1));
+    final metadata = api.updates.single['metadata'] as Map<String, dynamic>;
+    expect(metadata['notes'],
+        'Nur lesbar: die Lichter brauchen ein Anwendungs-Token des Betreibers.');
+    // The Core replaces the metadata as a whole: the merge of the client keeps
+    // the fields that the operator did not touch.
+    expect(metadata.keys, containsAll(['physical_location']));
+  });
+
   testWidgets('The archive is named as the offline operation it is',
       (tester) async {    await openDevice(tester);
     // The managed session of the Core refuses an archive with

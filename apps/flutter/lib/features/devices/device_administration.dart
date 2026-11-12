@@ -52,6 +52,14 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
       TextEditingController(text: widget.device.name);
   late final TextEditingController _site =
       TextEditingController(text: widget.device.siteId);
+
+  /// The note of the device, as the operator wrote it.
+  ///
+  /// The Core replaces the metadata of a device as a whole, so the note is
+  /// **merged** into the metadata that the client sends back: a write of the
+  /// name never drops the note.
+  late final TextEditingController _note = TextEditingController(
+      text: _theNoteOf(widget.device));
   late String _type = widget.device.type.isEmpty
       ? 'other'
       : widget.device.type;
@@ -85,9 +93,41 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
         oldWidget.device.revision != widget.device.revision) {
       _name.text = widget.device.name;
       _site.text = widget.device.siteId;
+      _note.text = _theNoteOf(widget.device);
       _type = widget.device.type.isEmpty ? 'other' : widget.device.type;
       _error = null;
     }
+  }
+
+  /// The note of the device, as the Core holds it.
+  static String _theNoteOf(InventoryDevice device) {
+    final metadata = device.metadata;
+    if (metadata == null) return '';
+    final note = metadata['notes'];
+    return note is String ? note : '';
+  }
+
+  /// The metadata of the device, as the Core holds it.
+  static Map<String, dynamic> _theMetadataOf(InventoryDevice device) {
+    final metadata = device.metadata;
+    if (metadata == null) return <String, dynamic>{};
+    return Map<String, dynamic>.from(metadata);
+  }
+
+  /// The metadata of the write: the metadata of the Core with the note that
+  /// the operator wrote.
+  ///
+  /// The Core replaces the metadata as a whole — a partial metadata would
+  /// drop the fields that the client did not send.
+  Map<String, dynamic> _theMetadataOfTheWrite() {
+    final merged = _theMetadataOf(widget.device);
+    final note = _note.text.trim();
+    if (note.isEmpty) {
+      merged.remove('notes');
+    } else {
+      merged['notes'] = note;
+    }
+    return merged;
   }
 
   Future<void> _update() async {
@@ -106,7 +146,7 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
         'display_name': _name.text.trim(),
         'device_type': _type,
         'site_id': _site.text.trim(),
-        'metadata': widget.device.metadata ?? const <String, dynamic>{},
+        'metadata': _theMetadataOfTheWrite(),
       }, expectedRevision: widget.device.revision);
       if (!mounted) return;
       setState(() => _busy = false);
@@ -149,6 +189,18 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
             controller: _name,
             enabled: !_busy,
             decoration: const InputDecoration(labelText: 'Anzeigename'),
+          ),
+          const SizedBox(height: 6),
+          TextField(
+            key: const Key('device-administration-note'),
+            controller: _note,
+            enabled: !_busy,
+            maxLines: 3,
+            minLines: 1,
+            decoration: const InputDecoration(
+              labelText: 'Notiz',
+              helperText: 'Freier Text des Betreibers zu diesem Gerät',
+            ),
           ),
           const SizedBox(height: 6),
           Row(children: [
