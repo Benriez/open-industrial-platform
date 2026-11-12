@@ -39,6 +39,9 @@ import subprocess
 import sys
 import time
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from oip_build import run as build_run
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 APPS = ROOT / "apps" / "flutter"
 BUNDLE = APPS / "build/macos/Build/Products/Release/oip_dashboard.app"
@@ -69,10 +72,13 @@ FORBIDDEN_ENTITLEMENTS = [
 
 
 def run(command, cwd=None, timeout=3600):
-    result = subprocess.run(command, cwd=cwd, capture_output=True, text=True,
-                            timeout=timeout)
-    return {"the_command": command, "the_code": result.returncode,
-            "the_output": result.stdout.strip(), "the_error": result.stderr.strip()}
+    """A command with its whole process group.
+
+    A build that times out must not leave an orphaned `xcodebuild` behind: the
+    orphan holds the lock of the build directory and the next build waits for
+    it — for hours, without a word (`tools/oip_build.py`).
+    """
+    return build_run(command, cwd=cwd, timeout=timeout)
 
 
 def the_tree_digest(root: pathlib.Path):

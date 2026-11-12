@@ -25,6 +25,10 @@ import pathlib
 import shutil
 import subprocess
 import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from oip_build import run as build_run
+import sys
 import time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -324,12 +328,11 @@ def main():
         (["flutter", "build", "web", "--release", "--web-renderer", "canvaskit",
           "--no-web-resources-cdn", "--pwa-strategy=none"], APPS),
     )):
-        built = subprocess.run(command, cwd=directory, capture_output=True,
-                               text=True, timeout=7200)
-        if built.returncode != 0:
+        built = build_run(command, cwd=directory, timeout=7200)
+        if built["the_code"] != 0:
             print("the workspace did not build — the rehearsals would measure an "
                   "older binary:")
-            print((built.stderr or built.stdout)[-800:])
+            print((built["the_error"] or built["the_output"])[-800:])
             return 2
     if not args.publish_only:
         print("BUILD the workspace of the tree (the development and the release "

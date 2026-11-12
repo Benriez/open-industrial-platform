@@ -16,6 +16,9 @@ import sys
 import tempfile
 import time
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / 'tools'))
+from oip_build import run as build_run
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 APPS = ROOT / 'apps/flutter'
 BUILD_COMMAND = [
@@ -96,11 +99,13 @@ def main():
 
     # 1. Build the exact current source. An old build is never accepted silently.
     if not a.skip_build:
-        result = subprocess.run(BUILD_COMMAND, cwd=str(APPS), capture_output=True,
-                                text=True, timeout=1800)
-        (out / 'build.log').write_text(result.stdout + result.stderr)
+        # The build runs in its own process group: a build that is stopped
+        # must not leave an orphan behind that holds the lock of the next
+        # build (`tools/oip_build.py`).
+        result = build_run(BUILD_COMMAND, cwd=str(APPS), timeout=1800)
+        (out / 'build.log').write_text(result['the_output'] + result['the_error'])
         receipt['build_command'] = BUILD_COMMAND
-        record('current source web release build', result.returncode == 0,
+        record('current source web release build', result['the_code'] == 0,
                ' '.join(BUILD_COMMAND))
 
     # 2. Bundle provenance and legacy markers.

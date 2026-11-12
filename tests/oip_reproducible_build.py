@@ -26,7 +26,11 @@ import json
 import pathlib
 import shutil
 import subprocess
+import sys
 import time
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / 'tools'))
+from oip_build import run as build_run
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 APPS = ROOT / "apps/flutter"
@@ -59,11 +63,17 @@ def digest_tree(root):
 
 
 def build(command, timeout=3600, cwd=None):
+    """A build that does not leave its children behind.
+
+    A build that times out must not leave an orphaned `xcodebuild` behind: the
+    orphan holds the lock of the build directory and the next build waits for
+    it — for hours, without a word (`tools/oip_build.py`).
+    """
     began = time.monotonic()
-    result = subprocess.run(command, cwd=cwd or APPS, capture_output=True, text=True,
-                            timeout=timeout)
-    if result.returncode != 0:
-        raise AssertionError(f"the build failed: {result.stderr[-400:] or result.stdout[-400:]}")
+    result = build_run(command, cwd=cwd or APPS, timeout=timeout)
+    if result["the_code"] != 0:
+        raise AssertionError(f"the build failed: "
+                             f"{result['the_error'][-400:] or result['the_output'][-400:]}")
     return round(time.monotonic() - began, 1)
 
 
