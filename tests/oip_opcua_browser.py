@@ -157,10 +157,10 @@ def main():
         ["git", "status", "--porcelain"], cwd=ROOT, text=True).strip()
     report["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     (evidence / "opcua-browser.json").write_text(json.dumps(report, indent=2) + "\n")
-    print(json.dumps({"the_status": report.get("the_status"),
+    print(json.dumps({"the_status": report.get("status"),
                       "the_checks": report.get("checks"),
                       "the_error": report.get("error")}, indent=2))
-    return 0 if report.get("the_status") == "PASS" else 1
+    return 0 if report.get("status") == "PASS" else 1
 
 
 if __name__ == "__main__":
