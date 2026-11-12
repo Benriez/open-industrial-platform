@@ -13,13 +13,13 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `7552596` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `fba6898` (tree `9832b30`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `fba6898` — the binary names its own revision; the same revision yields the same bytes |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `66136a0` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
+| The revision of the final acceptance | `44d1d3b` (tree `95f8f60a`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `44d1d3b` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 734 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 739 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -3855,6 +3855,85 @@ upload-ready; the upload itself is the operator's action, and the gates that nee
 The release cycle of this revision therefore continues in **iteration 83**, which carries the
 correction: the receipts of this iteration measured the tree of `dd4bb3e`, and a receipt that
 measures an older product than the one that ships would be a false statement.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
+
+### Iteration 83 — the vocabulary of the type of a device has one owner, and the note of a device is shown
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates that
+need the operator (G5, G10, G12) stay open, and nothing in this iteration changes them.
+
+* **The refresh of iteration 82 found a defect of iteration 81, and this iteration closes it.** The
+  rehearsal `oip_scope_persistence` failed **twice** with the same failure: the journey could not
+  find the control that names the type of the device in the administration. The cause was **not** a
+  flake. Iteration 81 had given the **type filter** of the inventory the vocabulary of the types,
+  and the entry that keeps every type (`all`) is **not** a type — the surface painted it as
+  `Unbekannter Gerätetyp · all`. That name collided with the name of the administration's dropdown,
+  so the journey opened the **filter** instead of the **administration**. The defect was invisible
+  until the web bundle of the new product had been built (the journey drives the bundle in
+  `apps/flutter/build/web`), and the acceptance does not drive that journey — so the refresh of
+  iteration 82 was the first run that saw it.
+* **The refresh now builds the web bundle that the browser rehearsals drive.** The rehearsals drove
+  the **binaries of the tree** — the Core in both profiles — but the **bundle** of the client was
+  whatever the last build had left in the build tree: a bundle of an older revision measures an
+  older product. The build step of the refresh builds the release bundle with the command that the
+  canonical gate and the reproducible build use (`tools/oip_refresh_evidence.py`), so the bundle
+  that the rehearsals measure is the bundle that the acceptance delivers. The defect above was
+  invisible for exactly this reason: the refresh of iteration 81 measured a bundle that predated
+  the vocabulary of that iteration.
+* **The choice that keeps every type is named as the choice it is.** The entry `all` of the filter
+  shows `Alle` again, and the vocabulary of the types never sees it
+  (`apps/flutter/lib/features/devices/device_inventory.dart`). The filter still shows the **word**
+  of every type the Core holds, and the **value** stays the identifier.
+* **The administration names the type with the same word.** The dropdown of the type carried a
+  **second** vocabulary of its own (`Single board`, `Network`, `Industrial`, `Other`) next to the
+  vocabulary of the Core (`apps/flutter/lib/features/devices/device_administration.dart`). It now
+  uses the one owner (`apps/flutter/lib/widgets/device_kind.dart`), so the operator sees
+  `Einzelplatine` in the administration, in the filter and in the identity panel — and the **value**
+  that the administration writes is still the identifier of the inventory route
+  (`single_board_computer`), which is what the Core accepts.
+* **The onboarding dialog does not paint the identifier of the Core as a word.** It offered
+  `server`, `single_board_computer`, `network_device` … as the words of its dropdown — the last
+  place where a raw identifier of the Core reached the operator
+  (`apps/flutter/lib/features/device_onboarding.dart`). It names the types with the shared
+  vocabulary now; the **value** it registers stays the identifier of the Core.
+* **A type that the client does not know is not rewritten into another type.** The administration
+  fell back to `other` for a type it does not know, and a write would have changed the type of the
+  device behind the back of the operator. The unknown type stays an entry of the list, named
+  honestly (`Unbekannter Gerätetyp · …`), and the write keeps it.
+* **Both spellings of a type carry the same word, icon and category.** The enum of the Core
+  (`SingleBoardComputer`) and the spelling of the inventory route (`single_board_computer`) name the
+  **same** type; the icon of the lowercase spelling of `server`, `desktop` and `laptop` was still
+  the icon of an unknown device, and the vocabulary now knows one type, not two.
+* **The note of a device is shown where the operator looks at the device (N29).** The Core holds an
+  optional free text `notes` in its inventory (`crates/oip-core/src/inventory.rs`), and the client
+  read the inventory but **never showed** the note — so the honest limit of a capability (the
+  Philips Hue Bridge: a read-only identity, no control without an application token) was in the
+  record of the Core and nowhere in the surface. The Devices workspace now shows the note under the
+  identity grid (`apps/flutter/lib/features/devices/device_detail.dart`); a note that the Core does
+  not hold is named as unavailable, and the panel never invents one.
+* **The journey names the control it drives exactly.** The locator of the administration is
+  anchored (`/^Gerätetyp/`), so the evidence no longer depends on the coincidence that no other
+  control contains the word (`apps/flutter/test/browser_scope_persistence.mjs`).
+* **The tests close the gaps**: the choice `all` is not an unknown type
+  (`apps/flutter/test/device_type_filter_test.dart`), the note of the Core is shown and a device
+  without a note names none (`apps/flutter/test/device_identity_test.dart`), the administration
+  names the type with the shared word and does not rewrite an unknown type
+  (`apps/flutter/test/device_administration_test.dart`), the onboarding dialog names the type with
+  the shared word (`apps/flutter/test/onboarding_dialog_test.dart`) and both spellings of a type
+  carry the same icon (`apps/flutter/test/device_kind_test.dart`). The **382 of 382 Flutter tests**
+  pass (375 before this change, plus the seven new ones).
+* **The release of this revision verifies with one command**
+  (`docs/evidence/oip-release-verification/release-verification.json`: **PASS**, verdict
+  `OIP_PRODUCTION_NOT_READY`, the gates that need the operator **G5**, **G10**, **G12**): the
+  acceptance ran with the release binary (`44d1d3b`), the eight functional phases **8 of 8 PASS**,
+  the browser gate **PASS** with **187 findings** and **13 captures**, and the reproducible build
+  at the **same** revision produced the byte-identical Core, the byte-identical web bundle and the
+  byte-identical macOS bundle.
+
+The next independent READY task is **N30**: the **export recipe** of the App Store listing writes
+wherever it is told to write and names a signing style that the operator did not choose.
 
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
