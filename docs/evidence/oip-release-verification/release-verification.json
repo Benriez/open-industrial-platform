@@ -156,8 +156,8 @@
     "the artefact the_macos_application_bundle is absent",
     "the receipt docs/evidence/oip-mas-package/mas-package.json names the revision d350bb0e66c5, which predates the last change of apps/flutter/lib (e57d39c7581f)"
   ],
-  "the_revision": "d160961fb176365aaa87ef78b2eaf1b81ac8c584",
-  "the_tree": "e36551ed7dea7d89e2ed81d080246027b0ffd727",
+  "the_revision": "69a855040720f6a68fe402e2a5e3cb93e7d485fc",
+  "the_tree": "da0eabd11333edbdc269c0aba104bf0fdf6cef19",
   "the_working_tree_is_clean": true,
   "status": "FAIL"
 }
