@@ -19,7 +19,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 749 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 730 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -3227,8 +3227,9 @@ the Raspberry Pi — is reconciled with the contracts in `docs/runbooks/operatio
   (`apps/flutter/lib/features/opcua.dart`, `apps/flutter/test/opcua_workstation_test.dart`).
 * **The gates counted the nodes of the demo.** The browser gates asserted `6 Nodes` and
   `1006 Nodes`; they read the count from the **Core** now, and the folder captions of the
-  client no longer name the folders of a demo (`apps/flutter/test/browser_opcua_phase2.mjs`,
-  `apps/flutter/test/performance_opcua_phase2.mjs`, `apps/flutter/test/browser_oip004.mjs`).
+  client no longer name the folders of a demo (the journey of the phase 2 was retired in
+  iteration 88 — the proof of the claim is the receipt of the address space of the browser,
+  `docs/evidence/oip-opcua-browser/address-space.json` — and `apps/flutter/test/browser_oip004.mjs`).
 * **The Core may not run anywhere but on the Mac.** The operator intends the Core on
   `bodi-pi`. The reconciliation is in `docs/runbooks/operations.md` §15: a forward of the
   loopback of the Mac (an SSH tunnel) keeps the **identical origin** of the session, so the
@@ -3287,7 +3288,8 @@ the bundle that makes the operator's part of the Raspberry Pi one command.
 * **The gates named the folders and the node ids of the demo.** The counts came from the Core, the
   names did not: the three browser gates derive the folder, the node and the identity of the node
   from the API now (`apps/flutter/test/browser_oip004.mjs`,
-  `apps/flutter/test/browser_opcua_phase2.mjs`, `apps/flutter/test/performance_opcua_phase2.mjs`).
+  the receipt of the address space of the browser,
+  `docs/evidence/oip-opcua-browser/address-space.json`).
 * **The Rust suite encoded the size of the simulation.** The total of a folder is a relation to the
   total of the catalogue now, not the number of a demo (`crates/oip-server/tests/api.rs`).
 * **The capability inventory still described the profile of the demo.** It names the address space
@@ -4191,6 +4193,43 @@ discovery of the host of the Core.
 
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
+### Iteration 88 — the address space of the operator is measured in the browser, and the journeys of the old surface are retired
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates that
+need the operator (G5, G10, G12) stay open, and the two real devices of the operator are still out
+of reach of this machine.
+
+* **Twenty-two browser journeys and performance scripts proved nothing, and two of them proved the
+  wrong thing.** Under `apps/flutter/test/` they were named by **no** harness: no rehearsal of the
+  refresh, no case of the canonical regression, no script of the tools. Their proofs were therefore
+  **no receipts** — and every one of them waited for the surface of the OIP/005 demo
+  (`Operations Workstation`), one of them for its slogan (`Deine Infrastruktur. Ein Bild.`). A file
+  that asserts the prohibited surface is a trap for the next reader: the journeys are **retired**
+  (they stay in the history of the repository).
+* **The claim of the address space was unbacked, and it is measured now.** The record named the
+  browser journey of the phase 2 as the proof that the surface derives the folder, the node and the
+  identity of a node from the API — and that journey was never run by a harness. The **rehearsal of
+  the address space** (`tests/oip_opcua_browser.py`) starts a disposable Core with **live
+  collectors** and drives the real surface in the browser
+  (`apps/flutter/test/browser_opcua_address_space.mjs`): the journey reads the address space from
+  the API and names **no** node and **no** folder of its own, so every name it looks for is the
+  name the Core delivered — the rows of the surface are the nodes of the Core, the identity of a
+  node carries the namespace, the folder and the node id that the Core delivered, the attributes
+  that the Core does not deliver are **named** instead of invented, the limits of the address space
+  (no history, no hierarchy) are named, and the keyboard search reaches a node of the Core before
+  the pagination (`docs/evidence/oip-opcua-browser/opcua-browser.json`).
+* **The numbers of the release are unchanged**: the product of the release (`crates/` and
+  `apps/flutter/lib/`) was not touched by this iteration, so every receipt of the release stays
+  fresh, the acceptance of iteration 87 and the reproducible build at the same revision remain the
+  proof of this release, and the product boundary (`fc18ce2`) is the one of the record.
+
+The next independent READY task is **none**: the list of the independent tasks is closed — the last
+one (N34) is measured. What remains are the operator actions: the product decision on the delivery
+of the web release, the physical device of G5, the production-security scope of G10, the operator
+acceptance of G12 and the discovery of the host of the Core.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -4240,6 +4279,8 @@ service of the operator, no published port, no firewall change, no push, no depl
 | `docs/evidence/oip-security-review/security-review.json` | the measured security review of the current release: 12 findings — 9 resolved, 2 mitigated, 1 escalated (the durability of the execution audit) (iteration 29) |
 | `docs/evidence/oip-device-connection/device-connection.json` | the measured verified connection of a device in the approved surface against the real Core and an owned loopback SSH fixture (iteration 28) |
 | `docs/evidence/oip-workstation-data/workstation-data.json` | the measured functional depth of the six workstations against the real Core: the real hierarchy, device, placement, nodes, events and settings, and no identifier of the other organization (iteration 27) |
+| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named (tracked) |
+| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches (tracked) |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the measured parity of the OPC-UA address space between the official MCP tool and the REST routes against the real backend (iteration 25) |
 | `docs/evidence/oip-stability/stability.json` | the measured extended stability run of the release binary: 30 minutes, 60 samples, the resource use, the collection rate, the death of a collector and the clean shutdown (iteration 23) |
 | `docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json` | the measured browser receipt of the continuation of a truncated diagnostic page against the real Core (iteration 24) |
