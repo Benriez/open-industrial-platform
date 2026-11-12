@@ -110,6 +110,8 @@ try {
   assert.equal(manualPage.items.length,1);assert.equal(manualPage.items[0].telemetry,'no_collector');assert.equal(manualPage.items[0].connectivity,'unknown');assert.equal(manualPage.items[0].health,'not_evaluated');
   // The inventory read returns the projection of the Core: the record of the
   // device carries its identity and its revision.
+  // The note that the operator writes in the administration of the device.
+  const NOTE='Nur lesbar: die Lichter brauchen ein Anwendungs-Token des Betreibers.';
   const manualId=manualPage.items[0].record.device.id;
   const manualRevision=manualPage.items[0].record.revision;
   // The administration of a registered device: the update and the archive are
@@ -185,6 +187,47 @@ try {
   assert(administrationLabels.includes('Archivierung ist ein Offline-Vorgang'),
     'the surface does not name the offline archive');
   await capture('01d-device-administration');
+  // The **note** of a device is writable where the device is: the operator
+  // writes it in the administration of the inspector, the Core keeps it, and
+  // the revision of the record advances.
+  //
+  // The Core replaces the metadata of a device as a whole. A client that
+  // sends only the fields that the operator changed therefore **drops** the
+  // note — the journey proves that against the real Core, so the merge of
+  // the client is not a claim but a measured difference.
+  const noteField=page.getByRole('textbox',{name:/Notiz/}).last();
+  assert(await clickControl(noteField),
+    'the note of the device is not reachable in the inspector');
+  await page.waitForTimeout(250);
+  await page.keyboard.press('Meta+A');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.type(NOTE,{delay:25});
+  await page.waitForTimeout(300);
+  assert(await clickControl(save),
+    'the note of the device is not writable in the inspector');
+  await page.waitForTimeout(2500);
+  const noted=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
+  assert.equal(noted.items.length,1,'the Core did not accept the note of the device');
+  const notedDevice=noted.items[0].record.device;
+  const notedRevision=noted.items[0].record.revision;
+  assert.equal((notedDevice.metadata||{}).notes,NOTE,
+    'the Core did not keep the note of the device');
+  assert(notedRevision>revision,'the revision of the device did not advance with the note');
+  // The write **without** the merge: the metadata of the device is replaced
+  // as a whole, so the note is gone. The client merges the note into the
+  // metadata that it sends back; the Core does not merge for it.
+  const withoutNote=await context.request.post(base+'/api/v2/inventory/apply',{
+    headers:writeHeaders,timeout:60000,
+    data:{changes:[{operation:'update',expected_revision:notedRevision,device:{
+      id:notedDevice.id,display_name:notedDevice.display_name,
+      device_type:notedDevice.device_type,site_id:notedDevice.site_id,
+      metadata:{}}}]}});
+  assert.equal(withoutNote.status(),200,
+    'the Core refused the write of the device without the merge');
+  const dropped=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
+  assert.equal((dropped.items[0].record.device.metadata||{}).notes,null,
+    'the Core kept the note although the write of the metadata did not carry it');
+  await capture('01e-device-note');
   // The search of the inventory is a presentation filter. The journey clears
   // it, so the following steps see the whole inventory again.
   const search=page.getByRole('textbox',{name:/Name, ID, Typ, Source/});
@@ -392,7 +435,7 @@ try {
   await page.getByRole('button',{name:'Operator abmelden',exact:true}).click();
   await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_administration:{device_id:manualId,revision_before:manualRevision,revision_after:updated.items[0].record.revision,display_name_updated:true,online_archive_refused:'OFFLINE_ARCHIVE_REQUIRED',archive_is_offline_operation:true},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[1]+'/'+sources[2],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'device engineering workspace of the approved UI',demo_coordinates_absent:true},rendered_diagnostics:{approved_surface:'persisted_evidence',persisted_evidence_section:true,diagnosis_history_status:status,health_transitions:healthPage.items.length,documented_gaps:gapsPage.items.length},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
+  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_administration:{device_id:manualId,revision_before:manualRevision,revision_after:updated.items[0].record.revision,display_name_updated:true,online_archive_refused:'OFFLINE_ARCHIVE_REQUIRED',archive_is_offline_operation:true,note_written:true,the_note:NOTE,the_note_is_dropped_by_a_write_without_the_merge:true},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[1]+'/'+sources[2],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'device engineering workspace of the approved UI',demo_coordinates_absent:true},rendered_diagnostics:{approved_surface:'persisted_evidence',persisted_evidence_section:true,diagnosis_history_status:status,health_transitions:healthPage.items.length,documented_gaps:gapsPage.items.length},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
 } catch(e) {
   await writeFile(resolve(out,'ssh-requests.json'),JSON.stringify(sshRequests,null,2));
   await capture('failure');

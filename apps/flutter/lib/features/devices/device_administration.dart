@@ -83,6 +83,7 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
   void dispose() {
     _name.dispose();
     _site.dispose();
+    _note.dispose();
     super.dispose();
   }
 
