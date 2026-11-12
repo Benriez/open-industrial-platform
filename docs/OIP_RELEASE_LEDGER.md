@@ -167,18 +167,24 @@ An **independent verification** of that change (a delegated, read-only audit of 
     named as unavailable, and the panel never invents one
     (`apps/flutter/test/device_identity_test.dart`).
 
-12. **N30 (the export recipe of the App Store listing)**: **measured**. The recipe wrote wherever
-    it was told to write: the directory of the rendered options (`--out`) was not validated, and
-    the tool **removes** that directory before it writes into it — a directory that the operator
-    names by mistake would have been removed. The tool now **refuses** every directory outside the
-    build tree of the machine, and it checks the directory **before** it writes anything. The
-    recipe also named a signing style that the operator did not choose: the profile and the
-    certificate are required, while `xcodebuild` honours them only under the **manual** style — the
-    tool now exports with that style and refuses another one with that reason. The refusal names
-    the flag and the environment variable of every missing value, and the rehearsal reads the
-    **rendered file** itself instead of the report of the tool
-    (`tools/oip_mas_export.py`, `tests/oip_mas_export.py`,
-    `docs/evidence/oip-mas-export/mas-export.json`).
+13. **N31 (the state of the VPN on the surface, and the contract of the service inventory)**:
+    **measured**. The summary of the Network workstation showed `VPN-TELEMETRIE · Nicht verbunden`
+    — a hard-coded string, while the Core delivers **no** VPN telemetry (no peer, no endpoint, no
+    handshake, no route, no tunnel health); in the demo the Core delivers `connected` for the
+    remote devices, and the chip contradicted it. The chip says **`NICHT GELIEFERT`** now — the
+    word that the logical paths use when the Core delivers no topology — and the hint of the VPN
+    workspace says `Keine VPN-Telemetrie geliefert` (`apps/flutter/lib/features/network.dart`).
+    The **contract** of the capability that is missing exists now
+    (`docs/architecture/OIP_DEVICES_SERVICES_2027_CORE_REQUIREMENTS.md`): the Services workspace
+    pointed at a document that the repository did not hold.
+
+14. **N32 (the authorized service inventory of the Core)**: the **next READY task**. The contract
+    of the capability is written
+    (`docs/architecture/OIP_DEVICES_SERVICES_2027_CORE_REQUIREMENTS.md`): the declaration is
+    **operator-declared** (the Core measures no service), the **plan** is the source of truth, the
+    read is scoped like the inventory read, and the capability is **read-only**. The implementation
+    — the plan, the storage, the capability, the route and the tool — follows.
+
 
 The independent tasks of this list are closed. What remains are the operator actions: the
 product decision on the delivery of the web release, the physical device of G5, the
@@ -187,6 +193,13 @@ host of the Core.
 
 ## Operator actions required (nothing here is executed by the loop)
 
+* The daemon of the keychain of the machine (`securityd`) does not answer any more: every
+  enumeration of the signing certificates hangs, and so does every `security` command of the
+  keychain. The **macOS bundle** of the release therefore cannot be built, and the packaging
+  rehearsal and the reproducible build of that bundle cannot be measured. The daemon is owned by
+  the system and the loop may not restart it: `sudo killall securityd` (or a logout of the
+  session) is the operator's action. The receipt of the packaging rehearsal names the revision
+  **before** the change of the product, and the verification of the release reports exactly that.
 * Decide F5 permission rule (N1b) and protected schema-7 activation with a fresh schema-6 backup (N4).
   The activation itself is **rehearsed on a copy** of the store of the operator: the migration is
   accepted (schema 6 to 7), the inventory of the instance survives it unchanged, the integrity

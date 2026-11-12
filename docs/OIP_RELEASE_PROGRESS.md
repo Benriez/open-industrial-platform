@@ -13,13 +13,13 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `66136a0` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `44d1d3b` (tree `95f8f60a`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `44d1d3b` — the binary names its own revision; the same revision yields the same bytes |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `e57d39c` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
+| The revision of the final acceptance | `0b2a938` (tree `70667824`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `0b2a938` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 739 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 741 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -3988,6 +3988,72 @@ need the operator (G5, G10, G12) stay open, and nothing in this iteration change
 The next independent READY task is **N31**: the **service inventory** of the Core — the Core owns
 no service registry and no VPN read route, and the two workstations that would show them name the
 absence instead of showing a placeholder as a working feature.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
+
+### Iteration 85 — the state of the VPN on the surface is what the Core delivers, and the contract of the service inventory exists
+
+**Status: PROVED on canonical `main`, with one part BLOCKED by the machine.** The gates that need
+the operator (G5, G10, G12) stay open, and this iteration adds the machine blocker below.
+
+* **The surface claimed a connection state that the Core never measured.** The summary of the
+  Network workstation showed `VPN-TELEMETRIE · Nicht verbunden` — a hard-coded string, while the
+  Core delivers **no** VPN telemetry at all: no peer, no endpoint, no handshake, no route and no
+  tunnel health. In the demo the Core delivers `connected` for the remote devices, and the chip
+  contradicted it. The chip now says **`NICHT GELIEFERT`** — the same word that the logical paths
+  use when the Core delivers no topology — and the hint of the VPN workspace says `Keine
+  VPN-Telemetrie geliefert` instead of `Keine VPN-Telemetrie verbunden`. The surface states what
+  the Core delivers, and not a state of the world that the Core never measured
+  (`apps/flutter/lib/features/network.dart`).
+* **The availability row named a state that was not the truth.** `Telemetrieverfügbarkeit · Nicht
+  verfügbar` became `NICHT GELIEFERT`: the Core does not deliver the telemetry, and the surface
+  says that instead of a soft "not available".
+* **The reference to the contract of the service inventory pointed at a document that did not
+  exist.** The Services workspace names the contract of the capability that is missing
+  (`OIP_DEVICES_SERVICES_2027_CORE_REQUIREMENTS.md`), and the repository held no such file — a
+  surface that points at a missing document is the same class of defect as the one the G8 row was
+  corrected for. The contract now exists
+  (`docs/architecture/OIP_DEVICES_SERVICES_2027_CORE_REQUIREMENTS.md`), and the surface names its
+  path. The contract states the rules that the next step must satisfy: **declared, never measured**
+  (the Core runs no probe for a service, so every record carries the provenance
+  `origin: declared`), the **plan** as the source of truth, the scope of the inventory read,
+  **read-only** (no write path, because the durable audit that a remote write would need does not
+  exist), and the evidence that the step must produce.
+* **Two rehearsals failed in the refresh, and both causes are closed.**
+  * The **discovery of the deployed hosts** read the Philips Hue Bridge with an **insecure**
+    `curl` (`-k`, no verification of the identity) — and the TLS stack of the bridge does not
+    always answer that client: the handshake stalls after the certificate of the bridge, and the
+    rehearsal measured a timeout instead of the device. The read is now the **verified** one of the
+    hue rehearsal (`tools/oip_hue.py`: the certificate of the bridge is verified against the pin,
+    and a bridge that presents another certificate is refused before a byte of the answer is read).
+    The rehearsal passes again, and the measurement it takes is stronger than the one it took
+    before.
+  * The **package of the macOS client** timed out after 3600 seconds: an orphaned `xcodebuild` of
+    an earlier build held the lock of the build directory, and the next build waits for it — for
+    hours, without a word. Every long build of the repository now runs in its **own process
+    group**, and the whole group dies with the build (`tools/oip_build.py`).
+  * The **integrity of the record** failed inside the refresh, as it does in every iteration that
+    changes the product: the rehearsal measures the record, and the canonical state of the record
+    is written at the **end** of the cycle. It passes there.
+* **The machine blocks the rest of the cycle — and the record names it.** The daemon of the
+  keychain of the machine (`securityd`) does not answer any more: every enumeration of the signing
+  certificates hangs, and so does every `security` command of the keychain. The **macOS bundle**
+  of the release therefore cannot be built, and with it the packaging rehearsal (`oip_mas_package`)
+  and the reproducible build of the macOS bundle cannot be measured in this cycle. The daemon is
+  owned by the system, and the loop may not restart it: the repair is the operator's action (below).
+  The receipt of the packaging rehearsal therefore names the revision **before** the change of the
+  product, and the verification of the release reports exactly that — a stale receipt is reported,
+  never hidden.
+* **The release of this revision is measured with the binaries of the tree.** The acceptance ran
+  with the release binary (`0b2a938`), the eight functional phases **8 of 8 PASS**, the browser
+  gate **PASS** with **187 findings** and **13 captures**, the **382 of 382 Flutter tests**, and the
+  reproducible build at the **same** revision produced the byte-identical Core and the
+  byte-identical web release.
+
+The next independent READY task is **N32**: the **authorized service inventory** of the Core — the
+contract of the capability exists (`docs/architecture/OIP_DEVICES_SERVICES_2027_CORE_REQUIREMENTS.md`),
+and the implementation (the plan, the storage, the capability, the route and the tool) follows.
 
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
