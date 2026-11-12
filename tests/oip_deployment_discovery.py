@@ -31,9 +31,12 @@ import json
 import pathlib
 import re
 import subprocess
+import sys
 import time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "tools"))
+from oip_hue import the_verified_read
 
 # The hosts of the operator.
 HOSTS = {
@@ -169,27 +172,37 @@ def probe_router(host):
 
 
 def probe_bridge(host):
-    """The actual interface of the Philips Hue Bridge — read-only."""
-    config = run(["curl", "-sk", "--max-time", "10", f"https://{host}/api/config"],
-                 timeout=30)
-    lights = run(["curl", "-sk", "--max-time", "10",
-                  f"https://{host}/api/001788FFFE48E917/lights"], timeout=30)
+    """The actual interface of the Philips Hue Bridge — read-only.
+
+    The read is the **verified** one of the hue rehearsal (`tools/oip_hue.py`):
+    the certificate that the bridge presents is verified against the pin, and
+    a bridge that presents another certificate is refused before a byte of the
+    answer is read. The insecure `curl` of an earlier version of this
+    rehearsal is gone — it did not verify the identity of the device, and the
+    TLS stack of the bridge does not always answer it: the handshake stalls
+    after the certificate of the bridge, and the rehearsal then measured a
+    timeout instead of the device.
+    """
+    pin = ROOT / "docs/release/hue/bridge-certificate.pem"
+    config = the_verified_read(host, 443, "/api/config", pin)
+    lights = the_verified_read(host, 443, "/api/oip-probe/lights", pin)
     payload = {}
     try:
-        payload = json.loads(config["the_output"])
+        payload = json.loads(config["the_body"])
     except ValueError:
         payload = {}
     return {
         "the_device": "the Philips Hue Bridge",
         "the_host": host,
+        "the_identity_is_verified": config["the_verification_succeeded"],
         "the_public_configuration": payload,
         "the_model": payload.get("modelid"),
         "the_software_version": payload.get("swversion"),
         "the_api_version": payload.get("apiversion"),
         "the_bridge_id": payload.get("bridgeid"),
-        "the_lights_without_a_token": lights["the_output"][:200],
+        "the_lights_without_a_token": lights["the_body"][:200],
         "the_lights_are_refused_without_a_token":
-            "unauthorized" in lights["the_output"].lower(),
+            "unauthorized" in lights["the_body"].lower(),
         "the_read_only": True,
     }
 
