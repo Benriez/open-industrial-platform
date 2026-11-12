@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "2cc194ff8598bd9724dc291fc4b008926d67c67c",
+      "the_revision": "7971fba602e39660c0399b0f0dfa6df109761945",
       "the_revision_of_the_source": {
         "the_revision": "66136a095587b727ca52d8fd6f585f80dff231a1",
         "the_subject": "fix(g4): a type that the client does not know is not rewritten into another type"
@@ -12,7 +12,7 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 739,
-        "the_sha256": "c1b04025b9659bbae8a23c448e0668adde50605a5f2f9407900ea8783f802811"
+        "the_sha256": "b82b4aa81df240fbc50f800b0c82f9062117be1cf39ee215510f0fff9989824e"
       },
       "the_artifacts": {
         "the_core": "308f26bdfa83c73a992e00cff858291c4be4323082714cb488ff82fb297e8fa2",
@@ -153,8 +153,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "92dba44a15a203d866a8f3e6c4a23aacbc103a89",
-  "the_tree": "19c2c88be9f58697325b976ea97aabfef8149bf3",
+  "the_revision": "4c78a16dfd0fcc3fc76e058dd45368c728f6b661",
+  "the_tree": "55edbf69ecacc6744ada9f92fcda61de5540c5aa",
   "the_working_tree_is_clean": true,
   "status": "PASS"
 }
