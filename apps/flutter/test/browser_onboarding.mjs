@@ -65,29 +65,23 @@ async function waitFor(predicate,seconds=10){
   }
 }
 
-/// A **button** of the Flutter view is activated in the order of the
-/// directness of the ways, and every way is proven with the state of the
-/// surface.
+/// A **button** of the Flutter view is activated with the event of its
+/// semantics node, and every way is proven with the state of the Core.
 ///
 /// A painted click can be **swallowed**: a control that is drawn over the
 /// control that is clicked receives the event instead — the buttons of the
 /// inspector are drawn over the panel that scrolled under them, and a panel
 /// that grew (the note of the device) moves its own buttons under them. The
-/// keyboard activates the focused control of the Flutter view, the event of
-/// the semantics node activates the control itself, and the painted position
-/// is the fallback.
+/// focus with the keyboard does not activate a control of this build of the
+/// Flutter view either (the journey of the verified identity measured the
+/// same). The event of the semantics node activates the control itself; the
+/// painted position is the fallback.
 async function activateControl(locator,predicate){
   const view=page.viewportSize();
   for(let i=0;i<16;i++){
     if(await locator.count()){
       const box=await locator.boundingBox();
       if(box&&box.y>70&&box.y+box.height<view.height-20){
-        try{
-          await locator.focus({timeout:2000});
-          await page.keyboard.press('Enter');
-          await page.waitForTimeout(600);
-          if(await waitFor(predicate,8))return true;
-        }catch{}
         try{
           await locator.dispatchEvent('click');
           await page.waitForTimeout(600);
@@ -105,25 +99,25 @@ async function activateControl(locator,predicate){
   return false;
 }
 
-/// A **text field** of the Flutter view is focused through its own input
-/// element; the keyboard of the journey then writes into the field of the
-/// view.
-async function focusField(locator){
-  const view=page.viewportSize();
-  for(let i=0;i<16;i++){
-    if(await locator.count()){
-      const box=await locator.boundingBox();
-      if(box&&box.y>70&&box.y+box.height<view.height-20){
-        await locator.focus({timeout:2000});
-        await page.waitForTimeout(250);
-        return true;
-      }
-    }
-    await page.mouse.move(1150,700);
-    await page.mouse.wheel(0,300);
-    await page.waitForTimeout(220);
+/// A **text field** of the Flutter view is written through its own input
+/// element: the click of the input gives the field of the view its focus,
+/// and the keyboard of the journey then writes into it. The focus of the
+/// element alone does not open the editing of the view — the engine of the
+/// Flutter view needs the click.
+async function fillField(locator,text){
+  for(let n=0;!(await locator.isEditable());n++){
+    if(n===100)throw Error('the field of the surface did not become editable');
+    await page.waitForTimeout(100);
   }
-  return false;
+  await locator.click({force:true});
+  await page.waitForTimeout(250);
+  await page.keyboard.press('Meta+A');
+  await page.waitForTimeout(80);
+  await page.keyboard.press('Backspace');
+  await page.waitForTimeout(120);
+  await page.keyboard.type(text,{delay:60});
+  await page.waitForTimeout(150);
+  return true;
 }
 
 async function typeInto(locator, text) { for(let n=0;!(await locator.isEditable());n++){if(n===100)throw Error('Field did not become editable');await page.waitForTimeout(100);} await locator.click({force:true}); await page.waitForTimeout(250); await page.keyboard.press('Meta+A'); await page.waitForTimeout(80); await page.keyboard.press('Backspace'); await page.waitForTimeout(120); await page.keyboard.type(text,{delay:100}); await page.waitForTimeout(150); await page.keyboard.press('Tab'); await page.waitForTimeout(100); }
@@ -180,13 +174,8 @@ try {
   assert(administration.includes('VERWALTUNG · REVISION '+manualRevision),
     'the administration of the device does not name the revision it works on');
   const nameField=page.getByRole('textbox',{name:'Anzeigename'}).last();
-  assert(await focusField(nameField),
+  assert(await fillField(nameField,'Manual inventory fixture renamed'),
     'the name of the device is not reachable in the inspector');
-  await page.waitForTimeout(250);
-  await page.keyboard.press('Meta+A');
-  await page.keyboard.press('Backspace');
-  await page.keyboard.type('Manual inventory fixture renamed',{delay:60});
-  await page.waitForTimeout(300);
   const save=page.getByRole('button',{name:'Änderungen speichern',exact:true});
   const renamed=async()=>{
     const page2=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
@@ -252,13 +241,8 @@ try {
   // note — the journey proves that against the real Core, so the merge of
   // the client is not a claim but a measured difference.
   const noteField=page.getByRole('textbox',{name:/Notiz/}).last();
-  assert(await focusField(noteField),
+  assert(await fillField(noteField,NOTE),
     'the note of the device is not reachable in the inspector');
-  await page.waitForTimeout(250);
-  await page.keyboard.press('Meta+A');
-  await page.keyboard.press('Backspace');
-  await page.keyboard.type(NOTE,{delay:25});
-  await page.waitForTimeout(300);
   const noted0=async()=>{
     const page2=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
     return page2.items.length===1&&(page2.items[0].record.device.metadata||{}).notes===NOTE;
@@ -500,5 +484,10 @@ try {
   await capture('failure');
   await writeFile(resolve(out,'failure-dom.html'),(await page.content()).replace(/[a-f0-9]{64}/gi,'REDACTED'));
   await writeFile(resolve(out,'failure-ax.txt'),(await page.locator('body').ariaSnapshot()).replace(/[a-f0-9]{64}/gi,'REDACTED'));
-  await writeFile(resolve(out,'failure.json'),JSON.stringify({status:'FAIL',error:String(e),errors,external},null,2));throw e;
+  let the_state_of_the_core=null;
+  try{
+    const page2=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture',{timeout:60000})).json();
+    the_state_of_the_core=(page2.items||[]).map(i=>({the_id:i.record.device.id,the_name:i.record.device.display_name,the_revision:i.record.revision,the_notes:(i.record.device.metadata||{}).notes}));
+  }catch{}
+  await writeFile(resolve(out,'failure.json'),JSON.stringify({status:'FAIL',error:String(e),errors,external,the_state_of_the_core},null,2));throw e;
 } finally {await browser.close();}
