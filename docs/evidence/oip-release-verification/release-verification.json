@@ -4,29 +4,29 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "b021d4da29eeea2ec358b2b3618f2ea1c95cd244",
+      "the_revision": "2cc194ff8598bd9724dc291fc4b008926d67c67c",
       "the_revision_of_the_source": {
-        "the_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
-        "the_subject": "feat(g4): the type of a device is named as the surface names it"
+        "the_revision": "66136a095587b727ca52d8fd6f585f80dff231a1",
+        "the_subject": "fix(g4): a type that the client does not know is not rewritten into another type"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
-        "the_files": 734,
-        "the_sha256": "19fe51c38777e87b1b431bcde2c721f163973cd314008cf497ffe2b45d45cdeb"
+        "the_files": 739,
+        "the_sha256": "c1b04025b9659bbae8a23c448e0668adde50605a5f2f9407900ea8783f802811"
       },
       "the_artifacts": {
-        "the_core": "82f18271b169637b3298e2dcca64fb5181f3ab3b6d3a22714f7ba0a3078de63a",
+        "the_core": "308f26bdfa83c73a992e00cff858291c4be4323082714cb488ff82fb297e8fa2",
         "the_official_mcp_probe": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
-        "the_macos_application_bundle": "09ea9ad5eb69a1e6520ddc04b5bf63a43a065a446f9612bb46ec6c7f60ae2cc3",
-        "the_web_release": "cc580a12728c92370f34965e27768f0cd2774db5007fc498703f628fad24a05a"
+        "the_macos_application_bundle": "096fd977671d4511acc2f64bb0e5c0490948aad94023fb8f56a149731ea5b78e",
+        "the_web_release": "4793a3a43e7941117f2b4c2797c4bc05f4c8f54f7480c9c7f0ec52d2aeca4ad2"
       },
-      "the_receipts": 78,
+      "the_receipts": 79,
       "the_receipts_that_the_manifest_does_not_name": 0,
       "the_receipts_that_are_measured_after_the_manifest": [
         "docs/evidence/oip-record-integrity/record-integrity.json",
         "docs/evidence/oip-release-verification/release-verification.json"
       ],
-      "the_core_the_acceptance_executed": "82f18271b169637b3298e2dcca64fb5181f3ab3b6d3a22714f7ba0a3078de63a",
+      "the_core_the_acceptance_executed": "308f26bdfa83c73a992e00cff858291c4be4323082714cb488ff82fb297e8fa2",
       "the_acceptance_executed_the_core_that_the_manifest_names": true,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
       "the_core_is_the_reproducible_one": true,
@@ -36,17 +36,17 @@
     "the_freshness": {
       "the_last_change_of_the_product": {
         "crates": "24f09015a1c6",
-        "apps/flutter/lib": "7552596bea4f"
+        "apps/flutter/lib": "66136a095587"
       },
-      "the_revision_of_the_source": "7552596bea4f",
-      "the_receipts": 55,
-      "the_receipts_measured_on_a_tree_that_carries_the_source": 53,
+      "the_revision_of_the_source": "66136a095587",
+      "the_receipts": 56,
+      "the_receipts_measured_on_a_tree_that_carries_the_source": 54,
       "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 0,
       "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
     "the_record": {
-      "the_citations": 78,
-      "the_receipts_of_the_release": 55,
+      "the_citations": 79,
+      "the_receipts_of_the_release": 56,
       "the_missing": [],
       "the_untracked": [],
       "the_orphaned": [],
@@ -54,14 +54,14 @@
       "the_paths_of_the_build_tree_in_the_ledger": []
     },
     "the_canonical_state": {
-      "the_source_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
-      "the_acceptance_revision": "fba6898a5b6c85ab88c92a3a15f9cec6da344cb3",
-      "the_core_binary_revision": "fba6898a5b6c85ab88c92a3a15f9cec6da344cb3",
-      "the_tracked_files": 734,
+      "the_source_revision": "66136a095587b727ca52d8fd6f585f80dff231a1",
+      "the_acceptance_revision": "44d1d3ba4a3a8815883ede721a5ba93acdee2284",
+      "the_core_binary_revision": "44d1d3ba4a3a8815883ede721a5ba93acdee2284",
+      "the_tracked_files": 739,
       "the_product_is_committed": true
     },
     "the_numbers_of_the_record": {
-      "the_rows": 109,
+      "the_rows": 112,
       "the_measurements": 26
     },
     "the_acceptance": {
@@ -69,10 +69,10 @@
       "the_phases": "8 of 8",
       "the_browser_findings": 187,
       "the_browser_failures": 0,
-      "the_flutter_tests_passed": 375,
+      "the_flutter_tests_passed": 382,
       "the_flutter_tests_failed": 0,
       "the_screenshots": 13,
-      "the_revision_of_the_acceptance": "fba6898a5b6c85ab88c92a3a15f9cec6da344cb3",
+      "the_revision_of_the_acceptance": "44d1d3ba4a3a8815883ede721a5ba93acdee2284",
       "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
     },
     "the_boundaries": {
@@ -153,8 +153,8 @@
     "G12"
   ],
   "the_problems": [],
-  "the_revision": "6030d1b50419eb513741f956f8d6cefafd0d04ae",
-  "the_tree": "5db23e7dacb400b390d3a181903ab12f51c0d702",
+  "the_revision": "92dba44a15a203d866a8f3e6c4a23aacbc103a89",
+  "the_tree": "19c2c88be9f58697325b976ea97aabfef8149bf3",
   "the_working_tree_is_clean": true,
   "status": "PASS"
 }
