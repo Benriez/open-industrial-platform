@@ -44,6 +44,26 @@ Core does not deliver are **named** instead of invented, the limits of the addre
 history, no hierarchy) are named, and the keyboard search reaches a node of the Core before the
 pagination (`docs/evidence/oip-opcua-browser/opcua-browser.json`,
 `docs/evidence/oip-opcua-browser/address-space.json`).
+The **address space of the operator is measured in the browser**: the rehearsal
+`tests/oip_opcua_browser.py` starts a disposable Core with live collectors and drives the real
+surface (`apps/flutter/test/browser_opcua_address_space.mjs`); the journey reads the address space
+from the API and names **no** node and **no** folder of its own, so every name it looks for is the
+name the Core delivered — the rows of the surface are the nodes of the Core, the identity of a node
+carries the namespace, the folder and the node id that the Core delivered, the attributes that the
+Core does not deliver are **named** instead of invented, the limits of the address space (no
+history, no hierarchy) are named, and the keyboard search reaches a node of the Core before the
+pagination (`docs/evidence/oip-opcua-browser/opcua-browser.json`,
+`docs/evidence/oip-opcua-browser/address-space.json`).
+The **address space of the operator is measured in the browser**: the rehearsal
+`tests/oip_opcua_browser.py` starts a disposable Core with live collectors and drives the real
+surface (`apps/flutter/test/browser_opcua_address_space.mjs`); the journey reads the address space
+from the API and names **no** node and **no** folder of its own, so every name it looks for is the
+name the Core delivered — the rows of the surface are the nodes of the Core, the identity of a node
+carries the namespace, the folder and the node id that the Core delivered, the attributes that the
+Core does not deliver are **named** instead of invented, the limits of the address space (no
+history, no hierarchy) are named, and the keyboard search reaches a node of the Core before the
+pagination (`docs/evidence/oip-opcua-browser/opcua-browser.json`,
+`docs/evidence/oip-opcua-browser/address-space.json`).
 The **search of the address space keeps every character**: the plain
 characters of the page are handled by the page and not by a shortcut — a shortcut that matches a
 character swallows it, and the operator lost every `c` of the search (the laboratory of the loop
@@ -265,10 +285,32 @@ An **independent verification** of that change (a delegated, read-only audit of 
     (`tests/oip_opcua_browser.py`, `apps/flutter/test/browser_opcua_address_space.mjs`,
     `docs/evidence/oip-opcua-browser/opcua-browser.json`).
 
-The independent tasks of this list are closed: the last one (N34) is measured. What remains are
-the operator actions: the product decision on the delivery of the web release, the physical
-device of G5, the production-security scope of G10, the operator acceptance of G12 and the
-discovery of the host of the Core.
+16. **N34 (the journeys of the client that no harness names)**: **measured**. Twenty-two browser
+    journeys and performance scripts under `apps/flutter/test/` were named by **no** harness: no
+    rehearsal of the refresh, no case of the canonical regression, no script of the tools. Their
+    proofs were therefore **no receipts** — and every one of them waited for the surface of the
+    OIP/005 demo (`Operations Workstation`), one of them for its slogan (`Deine Infrastruktur. Ein
+    Bild.`): a file that asserts the prohibited surface is a trap for the next reader. The journeys
+    are **retired** (they stay in the history of the repository). The claim of the address space,
+    which the record had backed with one of them, is measured again by a **rehearsal**
+    (`tests/oip_opcua_browser.py`, `apps/flutter/test/browser_opcua_address_space.mjs`,
+    `docs/evidence/oip-opcua-browser/opcua-browser.json`).
+
+17. **N35 (the live claims of the retired journeys)**: the **next READY task**. Ten of the retired
+    journeys still prove **live** claims of the surface — the density and the geometry of the
+    Devices workstation, the geometry, the comparison and the transport of the Network workspace, the
+    value modes, the page filter and the performance of the address space, the timeline and the
+    stale marking of the Diagnostics workspace, the depth and the performance of the settings, and
+    the performance of the Overview. Each group needs its own rehearsal — a disposable Core with the
+    collectors that it needs, the journey, and the receipt that the refresh publishes. The journeys
+    that need the **fixture servers** of the old contract need those servers taught the current
+    contract first (the session, the hierarchy and the snapshot of the managed mode), or the claim
+    is withdrawn. The files stay in the history of the repository until then.
+
+The independent tasks of this list are open again: the last one that was measured is N34, and the
+next one is N35. Beside it remain the operator actions: the product decision on the delivery of the
+web release, the physical device of G5, the production-security scope of G10, the operator
+acceptance of G12 and the discovery of the host of the Core.
 
 ## Operator actions required (nothing here is executed by the loop)
 
@@ -475,6 +517,10 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-extend-registry/extend-registry.json` | the extension of the registry of an instance and the refused plan that drops a source |
 | `docs/evidence/oip-settings-offline/settings-offline.json` | the offline change of a setting and its refusal on a conflict |
 | `docs/evidence/oip-offline-archive/offline-archive.json` | the offline archive of a device and the refused archive of an online device |
+| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
+| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches |
+| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
+| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches |
 | `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
 | `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the pagination and the scope of the OPC-UA address space |
