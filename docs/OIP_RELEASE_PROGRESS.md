@@ -3931,9 +3931,63 @@ need the operator (G5, G10, G12) stay open, and nothing in this iteration change
   the browser gate **PASS** with **187 findings** and **13 captures**, and the reproducible build
   at the **same** revision produced the byte-identical Core, the byte-identical web bundle and the
   byte-identical macOS bundle.
+* **The rehearsal of the integrity of the record failed inside the refresh, and the record names
+  why.** The rehearsal `oip_record_integrity` measures the **record** — and the canonical state of
+  the record is written at the **end** of the cycle, when the acceptance and the manifest of this
+  revision exist. The refresh of this iteration therefore measured the record of the **previous**
+  revision and reported it as a failure (`the canonical state names 7552596 … the release names
+  66136a0`). It is measured again where it belongs — at the end of the cycle — and it passes
+  there (`docs/evidence/oip-record-integrity/record-integrity.json`: **PASS**, the tree clean).
+  The refresh reports the failure instead of hiding it behind a quiet second run.
 
 The next independent READY task is **N30**: the **export recipe** of the App Store listing writes
 wherever it is told to write and names a signing style that the operator did not choose.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
+
+### Iteration 84 — the export recipe writes only into the build tree and names the signing style
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates that
+need the operator (G5, G10, G12) stay open, and nothing in this iteration changes them.
+
+* **The recipe wrote wherever it was told to write.** The directory of the rendered options
+  (`--out`) was not validated, and the tool **removes** that directory before it writes into it: a
+  directory that the operator names by mistake — a directory of the release, a directory of the
+  machine — would have been removed. The tool now **refuses** every directory outside the build
+  tree of the machine, and it checks the directory **before** it writes anything
+  (`tools/oip_mas_export.py`).
+* **The recipe named a signing style that the operator did not choose.** The profile and the
+  certificate of the operator are required, while `xcodebuild` honours them only under the
+  **manual** style: a file that carries both and names `automatic` would look signed with the
+  profile of the operator while the export ignores it. The tool now exports with the manual style
+  and refuses another one with that reason.
+* **The refusal names where the value belongs.** Every missing value names the **flag** and the
+  **environment variable** that carry it (`--team-id` / `OIP_APPLE_TEAM_ID`, `--profile` /
+  `OIP_APPLE_PROFILE`, `--certificate` / `OIP_APPLE_CERTIFICATE`), so the operator knows where to
+  put it.
+* **The rehearsal reads the rendered file itself** and not the report of the tool: the file
+  **parses**, it carries every key and **no placeholder** any more, and it lies outside the
+  release. It also proves the two refusals — a directory outside the build tree and a signing
+  style that `xcodebuild` would ignore the profile with — and that the **command** names the
+  archive, the export path and the options file themselves
+  (`tests/oip_mas_export.py`, `docs/evidence/oip-mas-export/mas-export.json`).
+* **The template names the optional keys of the format.** The format accepts more keys than the six
+  that the recipe sets (`uploadSymbols`, `manageAppVersionAndBuildNumber`, `stripSwiftSymbols`,
+  `testFlightInternalTestingOnly`); the template says so, so that the claim of the recipe is not
+  that it sets every key of the format.
+* **The metadata no longer contradicts itself.** The listing named German (Deutschland) as the
+  primary language while the only set of texts is English: the primary language is **English
+  (U.S.)**, and the note says that the **client itself** shows German texts because it has no
+  localisation framework (`docs/release/mac-app-store/metadata.md`).
+* **The product of the release did not change in this iteration.** The acceptance of the release
+  (`44d1d3b`, 8 of 8 phases, 187 browser findings, 382 of 382 Flutter tests) therefore still
+  describes the product that ships; the rehearsal of the export recipe was measured again at the
+  revision of this iteration.
+
+The next independent READY task is **N31**: the **service inventory** of the Core — the Core owns
+no service registry and no VPN read route, and the two workstations that would show them name the
+absence instead of showing a placeholder as a working feature.
 
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.

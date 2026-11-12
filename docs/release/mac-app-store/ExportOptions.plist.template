@@ -5,13 +5,14 @@
 
 	This file is a **template**: the placeholders below are the identity of
 	the operator and are never part of the repository. `tools/oip_mas_export.py`
-	renders it into `target/` and refuses to render it while a placeholder is
-	left.
+	renders it into the build tree of the machine and refuses to render it
+	while a placeholder is left.
 
 	* `method` — the export method of `xcodebuild -exportArchive`
 	  (`app-store-connect`; the older `app-store` is deprecated).
 	* `teamID` — the Apple Developer team of the operator.
-	* `signingStyle` — `automatic` lets Xcode resolve the profile.
+	* `signingStyle` — `manual`: `xcodebuild` honours the profile and the
+	  certificate only under that style, and this file carries both.
 	* `signingCertificate` — the identity that signs the export
 	  (`Apple Distribution`).
 	* `provisioningProfiles` — the profile of the **bundle identifier** of the
@@ -19,6 +20,11 @@
 	  profile.
 	* `destination` — `export` writes the product into the export path; `upload`
 	  hands it to the App Store (that step needs the session of the operator).
+
+	The format accepts more keys than these six (`uploadSymbols`,
+	`manageAppVersionAndBuildNumber`, `stripSwiftSymbols`,
+	`testFlightInternalTestingOnly`). The recipe sets the six that the export
+	of the listing needs; the others are the operator's choice.
 -->
 <plist version="1.0">
 <dict>

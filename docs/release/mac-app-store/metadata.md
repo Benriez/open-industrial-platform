@@ -9,7 +9,7 @@ App Store Connect; the two URLs and the answers that are personal stay the opera
 | Subtitle (≤ 30 characters) | `Operations Workstation` | 22 characters |
 | Bundle identifier | `org.openindustrial.oipDashboard` | the identifier of the release build |
 | Category | Utilities | the Mac App Store category `public.app-category.utilities` |
-| Primary language | German (Deutschland) | the client has **no** localisation framework: its strings are hard-coded German. A second language would need a translation of the surface — the operator's decision |
+| Primary language | English (U.S.) | the texts of the listing are written in English; the **client itself** shows German texts, because it has **no** localisation framework. A second language would need a translation of the surface — the operator's decision |
 | Copyright | `© 2026 Open Industrial Platform` | the operator confirms the holder; the bundle carries the same holder (`NSHumanReadableCopyright`) |
 | Version | the `CFBundleShortVersionString` of the release build | the manifest of the release names it |
 | Build | the `CFBundleVersion` of the release build | the manifest of the release names it |

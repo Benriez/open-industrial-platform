@@ -9,14 +9,20 @@ recipe in the repository: no `xcodebuild -exportArchive`, no
   1. the **template** carries every key that an export options file of the
      App Store needs, and every identity of the operator is a **placeholder**;
   2. the tool **refuses** while the identity of the operator is incomplete —
-     it invents no credential and names what is missing;
+     it invents no credential and names what is missing, with the flag and
+     the variable that carry it;
   3. with a **fake** identity the tool renders the options: the file parses,
      it carries every key, it carries **no placeholder** any more, and it
-     lies **outside** the checkout (the rendered file is not part of the
+     lies **outside** the release (the rendered file is not part of the
      release);
   4. the command that the tool prints names the archive, the export path and
      the options file, and the default export **uploads nothing**;
-  5. the tool leaves the **checkout** untouched: the tree stays clean.
+  5. the tool writes only into the **build tree** and refuses any other
+     directory — it removes the directory it writes into, so a path that the
+     operator names by mistake must never be a directory of the release;
+  6. the tool refuses a signing style that `xcodebuild` would ignore the
+     profile and the certificate of the operator with;
+  7. the tool leaves the **checkout** untouched: the tree stays clean.
 
 The rehearsal never exports, never signs and never uploads: the export and
 the upload are the operator's action.
@@ -27,6 +33,7 @@ Usage:
 import argparse
 import json
 import pathlib
+import plistlib
 import subprocess
 import sys
 import time
@@ -95,6 +102,14 @@ def main() -> int:
         missing = refused.get("the_missing_values") or []
         assert set(missing) == {"TEAM_ID", "PROFILE_NAME", "SIGNING_CERTIFICATE"}, missing
         assert refused.get("the_status") == "FAIL", refused
+        # The refusal names the flag and the variable that carry every missing
+        # value: the operator must know where to put it.
+        problems = " ".join(refused.get("the_problems") or [])
+        for flag, variable in (("--team-id", "OIP_APPLE_TEAM_ID"),
+                               ("--profile", "OIP_APPLE_PROFILE"),
+                               ("--certificate", "OIP_APPLE_CERTIFICATE")):
+            assert flag in problems, f"the refusal names no {flag}: {problems}"
+            assert variable in problems, f"the refusal names no {variable}: {problems}"
         report["the_steps"].append("the tool invents no credential and names what is missing")
 
         # 3. the rendered options with a fake identity
@@ -107,21 +122,52 @@ def main() -> int:
         keys = options.get("the_keys") or []
         for key in REQUIRED_KEYS:
             assert key in keys, f"the rendered options carry no {key}"
-        assert options.get("the_outside_of_the_checkout") is True, options
+        assert options.get("the_outside_of_the_release") is True, options
         assert options.get("the_method"), options
         assert options.get("the_destination") == "export", options
-        report["the_steps"].append("the rendered options are proven and lie outside the checkout")
+        # The **file** is read, not the report of the tool: it parses and it
+        # carries no placeholder any more.
+        rendered_path = pathlib.Path(options.get("the_path") or "")
+        assert rendered_path.is_file(), options
+        text = rendered_path.read_text()
+        payload = plistlib.loads(rendered_path.read_bytes())
+        assert set(REQUIRED_KEYS) <= set(payload), payload
+        assert "__" not in text, f"the rendered options carry a placeholder: {text[:400]}"
+        report["the_steps"].append("the rendered options are proven and lie outside the release")
 
         # 4. the command that the tool prints
         command = rendered.get("the_command") or ""
         assert "-exportArchive" in command, command
         assert "-exportOptionsPlist" in command, command
         assert "oip_dashboard.xcarchive" in command, command
+        # The command names the export path and the options file themselves.
+        assert "-exportPath" in command, command
+        assert str(rendered_path) in command, command
+        assert "export" in command, command
         # The default export writes the product; it does not upload it.
         assert "upload" not in command.lower() or options.get("the_destination") == "export"
-        report["the_steps"].append("the command names the archive and the options file")
+        report["the_steps"].append("the command names the archive, the export path and the options file")
 
-        # 5. the checkout is untouched
+        # 5. the tool writes only into the build tree
+        outside = ROOT / "docs" / "oip-mas-export-refused"
+        code, refused_outside = the_tool(*FAKE, "--out", str(outside))
+        report["the_refusal_of_a_directory_outside_the_build_tree"] = {
+            "the_code": code, "the_problems": refused_outside.get("the_problems")}
+        assert code == 2, f"the tool wrote outside the build tree: {refused_outside}"
+        assert refused_outside.get("the_status") == "FAIL", refused_outside
+        assert not outside.exists(), "the tool created a directory outside the build tree"
+        report["the_steps"].append("the tool writes only into the build tree")
+
+        # 6. the signing style that xcodebuild would ignore the profile with
+        code, refused_style = the_tool(*FAKE, "--signing-style", "automatic")
+        report["the_refusal_of_the_signing_style"] = {
+            "the_code": code, "the_problems": refused_style.get("the_problems")}
+        assert code == 2, f"the tool accepted a signing style it does not honour: {refused_style}"
+        assert refused_style.get("the_status") == "FAIL", refused_style
+        assert "manual" in " ".join(refused_style.get("the_problems") or []), refused_style
+        report["the_steps"].append("the tool names the signing style of the export")
+
+        # 7. the checkout is untouched
         after = the_tree_is_clean()
         report["the_working_tree_before_the_run"] = before
         report["the_working_tree_after_the_run"] = after

@@ -134,14 +134,15 @@ An **independent verification** of that change (a delegated, read-only audit of 
 9. **N28 (the export recipe of the App Store listing)**: **measured**. The **upload step** has a
    recipe in the repository now: a template with **placeholders** (the team, the profile and the
    certificate are the operator's), a tool that renders it into the build tree of the machine,
-   prints the command and **refuses** while the identity of the operator is incomplete, the **display name** of the app
+   prints the command and **refuses** while the identity of the operator is incomplete — naming the
+   flag and the environment variable of every missing value — the **display name** of the app
    (`CFBundleDisplayName = Open Industrial Platform`, while the name on the disk stays the
    technical one, because the paths of the release name it) and the **App Review notes** of a
    client whose access is a one-time code minted on the instance itself
    (`docs/release/mac-app-store/ExportOptions.plist.template`, `tools/oip_mas_export.py`,
    `tests/oip_mas_export.py`, `docs/evidence/oip-mas-export/mas-export.json`). The recipe is
    measured, not asserted: the rendered file carries every key and no placeholder any more, lies
-   outside the checkout and leaves the checkout untouched. Nothing of it invents a credential and
+   outside the release and leaves the checkout untouched. Nothing of it invents a credential and
    nothing of it uploads.
 
 10. **N23 (the secure update of the deployed software)**: the **update path of the Core** is
@@ -166,12 +167,18 @@ An **independent verification** of that change (a delegated, read-only audit of 
     named as unavailable, and the panel never invents one
     (`apps/flutter/test/device_identity_test.dart`).
 
-12. **N30 (the export recipe of the App Store listing)**: the **next READY task**. The recipe is
-    measured (`docs/evidence/oip-mas-export/mas-export.json`), but it writes wherever it is told to
-    write: the directory of the rendered options (`--out`) is not validated, and the tool removes
-    that directory before it writes into it. The recipe also names a signing style that the
-    operator did not choose: the profile and the certificate are required, while `xcodebuild`
-    honours them only under the **manual** signing style.
+12. **N30 (the export recipe of the App Store listing)**: **measured**. The recipe wrote wherever
+    it was told to write: the directory of the rendered options (`--out`) was not validated, and
+    the tool **removes** that directory before it writes into it — a directory that the operator
+    names by mistake would have been removed. The tool now **refuses** every directory outside the
+    build tree of the machine, and it checks the directory **before** it writes anything. The
+    recipe also named a signing style that the operator did not choose: the profile and the
+    certificate are required, while `xcodebuild` honours them only under the **manual** style — the
+    tool now exports with that style and refuses another one with that reason. The refusal names
+    the flag and the environment variable of every missing value, and the rehearsal reads the
+    **rendered file** itself instead of the report of the tool
+    (`tools/oip_mas_export.py`, `tests/oip_mas_export.py`,
+    `docs/evidence/oip-mas-export/mas-export.json`).
 
 The independent tasks of this list are closed. What remains are the operator actions: the
 product decision on the delivery of the web release, the physical device of G5, the

@@ -12,15 +12,23 @@ Three rules bind it:
      certificate are the operator's; they come from the command line or from
      the environment, and the tool **refuses** while one of them is missing —
      it never guesses a value and never writes a placeholder into a file that
-     is meant to be used.
-  2. **The rendered file never enters the checkout.** The options are written
-     into `target/`, which is not part of the release; the template with its
-     placeholders stays the tracked artefact.
+     is meant to be used. Every missing value names the flag and the
+     environment variable that carry it.
+  2. **The rendered file never enters the release.** The options are written
+     into the build tree of the machine, which is not part of the release;
+     the template with its placeholders stays the tracked artefact. The
+     directory that the tool writes into is **checked before** anything is
+     written: the tool removes it, so a directory that the operator names by
+     mistake must never be a directory of the release or of the machine.
   3. **The upload is the operator's action.** Without `--execute` the tool
      renders the options, proves them and prints the command that would run;
      with `--execute` it runs the export. The upload itself
      (`destination: upload`) needs the session of the operator and is never
      done by this repository.
+
+The signing style of the export is the **manual** one: `xcodebuild` honours
+the profile and the certificate of the operator only under that style, and
+the recipe renders both. Another style is refused with that reason.
 
 Usage:
   python3 tools/oip_mas_export.py --team-id TEAMID1234 \
@@ -42,7 +50,9 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "docs/release/mac-app-store/ExportOptions.plist.template"
-WORK = ROOT / "target/oip-mas-export"
+# The build tree of the machine: the rendered options never leave it.
+BUILD_TREE = (ROOT / "target").resolve()
+WORK = BUILD_TREE / "oip-mas-export"
 DEFAULT_ARCHIVE = ROOT / "target/oip-mas-archive/oip_dashboard.xcarchive"
 BUNDLE_IDENTIFIER = "org.openindustrial.oipDashboard"
 
@@ -51,8 +61,29 @@ BUNDLE_IDENTIFIER = "org.openindustrial.oipDashboard"
 REQUIRED_KEYS = ["method", "teamID", "signingStyle", "signingCertificate",
                  "provisioningProfiles", "destination"]
 # The values that are the identity of the operator. The tool never supplies
-# one of them itself.
-OPERATOR_VALUES = ["teamID", "profile", "certificate"]
+# one of them itself. Every missing value names the flag and the environment
+# variable that carry it: the operator must know where to put it.
+OPERATOR_VALUES = {
+    "TEAM_ID": ("--team-id", "OIP_APPLE_TEAM_ID"),
+    "PROFILE_NAME": ("--profile", "OIP_APPLE_PROFILE"),
+    "SIGNING_CERTIFICATE": ("--certificate", "OIP_APPLE_CERTIFICATE"),
+}
+# The signing style of the export. `xcodebuild` honours the profile and the
+# certificate of the operator only under the **manual** style: a file that
+# carries both and names `automatic` would look signed with the profile of
+# the operator while the export ignores it. The recipe is therefore the
+# manual one, and the tool refuses another style with that reason.
+SIGNING_STYLE = "manual"
+
+
+def the_inside_of_the_build_tree(path: pathlib.Path) -> bool:
+    """Whether a path lies inside the build tree of the machine.
+
+    The rendered options never leave the build tree: the tool removes the
+    directory that it writes into, and a directory that the operator names by
+    mistake must never be a directory of the release or of the machine.
+    """
+    return path == BUILD_TREE or BUILD_TREE in path.parents
 
 
 def the_placeholders(template: pathlib.Path):
@@ -82,14 +113,22 @@ def the_missing(values: dict, template: pathlib.Path):
     the placeholders that carry no identity of the operator (`METHOD`,
     `SIGNING_STYLE`, `DESTINATION`) have a default and are never missing.
     """
-    operator = {"TEAM_ID", "PROFILE_NAME", "SIGNING_CERTIFICATE"}
     missing = []
     for name in the_placeholders(template):
-        if name not in operator:
+        if name not in OPERATOR_VALUES:
             continue
         if not (values.get(name) or "").strip():
             missing.append(name)
     return missing
+
+
+def the_named(values: dict, missing: list):
+    """The missing values with the flag and the variable that carry them."""
+    named = []
+    for name in missing:
+        flag, variable = OPERATOR_VALUES[name]
+        named.append(f"{name} ({flag} or {variable})")
+    return named
 
 
 def the_command(archive: pathlib.Path, options: pathlib.Path,
@@ -107,7 +146,7 @@ def main() -> int:
     parser.add_argument("--certificate",
                         default=os.environ.get("OIP_APPLE_CERTIFICATE"))
     parser.add_argument("--method", default="app-store-connect")
-    parser.add_argument("--signing-style", default="automatic")
+    parser.add_argument("--signing-style", default=SIGNING_STYLE)
     parser.add_argument("--destination", default="export",
                         choices=["export", "upload"])
     parser.add_argument("--archive", default=str(DEFAULT_ARCHIVE))
@@ -122,6 +161,18 @@ def main() -> int:
         print(json.dumps(report, indent=2))
         return 2
 
+    # The signing style of the export is the one that the recipe renders: the
+    # profile and the certificate of the operator are honoured by `xcodebuild`
+    # only under the manual style.
+    if args.signing_style != SIGNING_STYLE:
+        report["the_problems"].append(
+            f"the signing style of the export is {SIGNING_STYLE}: xcodebuild honours "
+            f"the profile and the certificate of the operator only under the manual "
+            f"style, and the recipe renders both")
+        report["the_status"] = "FAIL"
+        print(json.dumps(report, indent=2))
+        return 2
+
     values = {"TEAM_ID": args.team_id, "PROFILE_NAME": args.profile,
               "SIGNING_CERTIFICATE": args.certificate,
               "METHOD": args.method, "SIGNING_STYLE": args.signing_style,
@@ -132,12 +183,24 @@ def main() -> int:
         # The tool invents no credential: it names what the operator has to
         # supply and stops.
         report["the_problems"].append(
-            "the identity of the operator is incomplete: " + ", ".join(missing))
+            "the identity of the operator is incomplete: "
+            + ", ".join(the_named(values, missing)))
         report["the_status"] = "FAIL"
         print(json.dumps(report, indent=2))
         return 2
 
+    # The rendered options never leave the build tree. The tool removes the
+    # directory that it writes into, so the directory is checked **before**
+    # anything is written: a path that the operator names by mistake must
+    # never be a directory of the release or of the machine.
     work = pathlib.Path(args.out).resolve()
+    if not the_inside_of_the_build_tree(work):
+        report["the_problems"].append(
+            f"the directory of the rendered options must lie inside the build tree "
+            f"of the machine ({BUILD_TREE}): {work}")
+        report["the_status"] = "FAIL"
+        print(json.dumps(report, indent=2))
+        return 2
     if work.exists():
         shutil.rmtree(work)
     work.mkdir(parents=True, exist_ok=True)
@@ -149,8 +212,7 @@ def main() -> int:
     payload = plistlib.loads(options.read_bytes())
     report["the_options"] = {
         "the_path": str(options),
-        "the_outside_of_the_checkout": not str(options).startswith(
-            str(ROOT / "docs")),
+        "the_outside_of_the_release": the_inside_of_the_build_tree(options.parent),
         "the_keys": sorted(payload.keys()),
         "the_method": payload.get("method"),
         "the_destination": payload.get("destination"),
