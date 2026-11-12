@@ -158,6 +158,11 @@ REHEARSALS = [
     # identifier and the parity of the route and the MCP tool.
     ("oip_service_registry", "tests/oip_service_registry.py",
      {"service-registry.json": "oip-service-registry/service-registry.json"}),
+    # The **address space** of the operator in the browser: the nodes, their
+    # folders and their identity are the ones that the Core delivers.
+    ("oip_opcua_browser", "tests/oip_opcua_browser.py",
+     {"opcua-browser.json": "oip-opcua-browser/opcua-browser.json",
+      "address-space.json": "oip-opcua-browser/address-space.json"}),
     # The export recipe of the App Store listing: the template with its
     # placeholders, the tool that renders it and the refusal without the
     # identity of the operator.
