@@ -13,13 +13,13 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `e57d39c` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `0b2a938` (tree `70667824`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `0b2a938` — the binary names its own revision; the same revision yields the same bytes |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `0e7f52d` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
+| The revision of the final acceptance | `98af46b` (tree `c901c785`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `98af46b` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 741 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 747 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -4063,6 +4063,67 @@ and the implementation (the plan, the storage, the capability, the route and the
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
 
+Draft: iteration 86 (to be applied after the cycle).
+
+### Iteration 86 — the Core delivers the service registry that the operator declared
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates that
+need the operator (G5, G10, G12) stay open, and this iteration adds the machine blocker below.
+
+* **The Core had no service registry at all.** The inventory of the Core is a registry of
+  **devices** — the manufacturer, the model, the firmware, the serial number and the address — and
+  nothing about the **services** that a device offers. The plan had no section for them, the Core
+  had no capability, no route and no MCP tool, and the two workstations that would show them named
+  the absence honestly. The product could not answer the question an operator asks first about a
+  device: *what does this thing actually run?*
+* **The registry is what the operator declared.** The Core measures no service — it runs no probe
+  and holds no credential for one — so the declaration lives in the **plan** of the instance
+  (offline, authorized, versioned) and every record of the registry carries the provenance
+  `declared`. The declaration is stable like every other identity of the plan: a plan that changes
+  a declaration is refused instead of rewriting the record of the operator behind his back, and a
+  declaration for a site that the plan does not name is refused.
+* **The Core delivers it like the inventory.** The capability `service_registry_read` carries the
+  permission of the inventory read (the readers of the inventory read the services of the same
+  scope), the route `GET /api/v2/services` and the MCP tool `oip_services_read` answer the same
+  page, the scope of the read is the scope of the hierarchy, and a foreign identifier is refused
+  **identically** to an identifier that does not exist (the answer discloses neither).
+* **The store holds the declarations.** The table of the services is the migration 8, and the
+  provisioning of an operator — which runs before the schema of the registry exists — creates the
+  same table with the same statement, so a declaration is never lost between the provisioning and
+  the start of the instance.
+* **The client shows the registry.** The Services workspace of the Devices shows the services of
+  the authorized scope with their kind, their endpoint, their declared state and the device they
+  belong to; the comparison and the device detail name the services of the device. An **empty**
+  registry is the statement of the operator ("no service declared"), and a Core that does not
+  deliver the registry is named as the absence — an empty list would look like a measurement.
+* **The tests close the gaps**: the Rust suite (**191 tests in 30 suites**, the new suite
+  `services` ✓), the rehearsal of the registry against the real Core
+  (`tests/oip_service_registry.py`: the scope, the isolation of the organizations, the refusal of a
+  foreign identifier, the parity of the route and the MCP tool, and the refusal of a plan with a
+  service of an unknown site ✓) and the **385 Flutter tests** (the panel of the registry, the empty
+  registry, the absence, the comparison and the device detail ✓).
+* **Two rehearsals had to be corrected, and the corrections are honest.**
+  * The **handover to the era** (the protected binary of an earlier
+    release) provisioned the plan of this era — and the binary of the era
+    does not know the section `services`. The handover now gives the binary of
+    the era the plan it knows, and the release binary takes over the store.
+  * The **instance on the host** (the Raspberry Pi of the operator) delivered
+    an empty address space: the rehearsal asked the Core for the address
+    space of the source before the collector of the instance had connected to
+    the simulation of the host and scanned its namespace. The rehearsal waits
+    for that now — bounded, and it still fails when the Core does not deliver
+    the projection.
+* **The machine still blocks the macOS evidence.** The daemon of the keychain of the machine does
+  not answer, so the macOS bundle of the release cannot be built and the rehearsals that build it
+  (the packaging, the macOS application and the local installation) were **skipped** in the refresh
+  of this iteration — the record names the gap and the operator's action instead of hiding it.
+
+The next independent READY task is **N33**: the **note of a device is writable in the surface** —
+the Core replaces the metadata of a device as a whole, so the client must merge the edited note
+into the metadata it sends back.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
 ## 5. Evidence index
 
 | Artifact | Content |
