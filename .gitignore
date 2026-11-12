@@ -175,6 +175,9 @@ secrets/
 # invents no credential, refuses an incomplete identity and writes the
 # rendered options outside the checkout.
 !/docs/evidence/oip-mas-export/mas-export.json
+# The service registry that the operator declared: the scope, the isolation of
+# the organizations and the refusal of a foreign identifier.
+!/docs/evidence/oip-service-registry/service-registry.json
 # The secure update of the Core of an instance: what it does and what it
 # refuses.
 !/docs/evidence/oip-update/update.json

@@ -1,0 +1,80 @@
+{
+  "schema": "oip-service-registry-rehearsal-v1",
+  "steps": [
+    "the instance runs with the declared services",
+    "the registry holds the declared services of the scope",
+    "a foreign service is refused like an unknown one",
+    "the MCP tool answers the same registry as the route",
+    "a plan with a service of an unknown site is refused"
+  ],
+  "the_session": {
+    "the_principal": "reader-org-a"
+  },
+  "the_registry": {
+    "items": [
+      {
+        "service": {
+          "id": "svc-a1-https",
+          "name": "HTTPS interface of the plant",
+          "site_id": "site-a1",
+          "device_id": null,
+          "kind": "https",
+          "endpoint": null,
+          "port": null,
+          "state": "stopped"
+        },
+        "organization_id": "org-a",
+        "infrastructure_id": "infra-a1",
+        "device_id": null,
+        "origin": "declared"
+      },
+      {
+        "service": {
+          "id": "svc-a1-opcua",
+          "name": "OPC-UA server of the plant",
+          "site_id": "site-a1",
+          "device_id": "device-a",
+          "kind": "opcua",
+          "endpoint": "opc.tcp://127.0.0.1:4840",
+          "port": 4840,
+          "state": "running"
+        },
+        "organization_id": "org-a",
+        "infrastructure_id": "infra-a1",
+        "device_id": "device-a",
+        "origin": "declared"
+      }
+    ],
+    "offset": 0,
+    "limit": 100,
+    "has_more": false,
+    "status": "Services declared \u00b7 Measured by the operator",
+    "management_channel": "authenticated_local_operator; declared_by_the_operator; read_only"
+  },
+  "the_service_ids": [
+    "svc-a1-https",
+    "svc-a1-opcua"
+  ],
+  "the_refusal_of_a_foreign_service": {
+    "the_code": 404,
+    "the_body": {
+      "code": "RESOURCE_NOT_ACCESSIBLE",
+      "kind": "resource_not_found",
+      "message": "Resource is not accessible",
+      "ok": false
+    }
+  },
+  "the_mcp_ids": [
+    "svc-a1-https",
+    "svc-a1-opcua"
+  ],
+  "the_refusal_of_a_broken_plan": {
+    "the_code": 2,
+    "the_error": "error: the instance is running; stop it before the provisioning step"
+  },
+  "the_status": "PASS",
+  "the_revision": "0e7f52df86840545722ffce4d2715c43b3d52e9d",
+  "the_tree": "7f570d53cab642fad7f150de34de5c0ffd2d298e",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-12T09:03:59Z"
+}
