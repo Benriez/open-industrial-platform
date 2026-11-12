@@ -6,15 +6,16 @@
     "the canonical state names the release",
     "every file of the evidence tree is cited"
   ],
-  "the_cited_paths": 78,
+  "the_cited_paths": 79,
   "the_citations": {
-    "the_cited": 78,
+    "the_cited": 79,
     "the_missing_on_disk": [],
     "the_present_but_untracked": []
   },
   "the_paths": {
     "the_dangling": [],
     "the_paths_of_the_build_tree": [
+      "target/",
       "target/conformance",
       "target/oip-canonical-e2e/browser/report.json",
       "target/oip-canonical-e2e/report.json",
@@ -36,15 +37,15 @@
     "the_note": "a path of the build tree is not a receipt: the ledger must not present a directory of a build as the evidence of a claim. The artefacts of the release live in the build tree by nature and are named by the manifest."
   },
   "the_canonical_state": {
-    "the_source_revision": "7552596bea4fe1188388f09d9fdd60e9ef7d6e84",
-    "the_acceptance_revision": "fba6898a5b6c85ab88c92a3a15f9cec6da344cb3",
-    "the_core_binary_revision": "fba6898a5b6c85ab88c92a3a15f9cec6da344cb3",
-    "the_tracked_files": 734,
+    "the_source_revision": "66136a095587b727ca52d8fd6f585f80dff231a1",
+    "the_acceptance_revision": "44d1d3ba4a3a8815883ede721a5ba93acdee2284",
+    "the_core_binary_revision": "44d1d3ba4a3a8815883ede721a5ba93acdee2284",
+    "the_tracked_files": 739,
     "the_product_is_committed": true
   },
   "the_files_of_the_release": {
-    "the_present": 80,
-    "the_cited": 80,
+    "the_present": 81,
+    "the_cited": 81,
     "the_orphaned": [],
     "the_files_of_the_eras": 1271,
     "the_areas_of_the_eras_that_the_record_does_not_name": [],
@@ -52,8 +53,8 @@
   },
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
-  "the_tree": "9acef728e1567435fdae2600d0b2e31f54ebfc79",
+  "the_revision": "4616f0fe6146db7db306821503bf9673d1b10d4f",
+  "the_tree": "9385241e4e76988b0ebf1be7188dad4605684e49",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T19:28:21Z"
+  "finished_utc": "2026-11-12T01:47:04Z"
 }
