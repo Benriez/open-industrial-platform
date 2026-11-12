@@ -223,8 +223,19 @@ def main():
         report["the_organizations"] = {"the_status": status,
                                        "the_answer": organizations}
         assert status == 200, organizations
-        status, nodes = request(base, "/api/v1/opcua/nodes?q=&folder=all&offset=0&limit=40",
-                                 opener=opener)
+        # The address space of the source is delivered when the collector of
+        # the instance has connected to the simulation of the host and has
+        # scanned its namespace. The rehearsal waits for that — bounded, and
+        # it still fails when the Core does not deliver the projection.
+        deadline = time.monotonic() + 90
+        status, nodes = 0, {}
+        while time.monotonic() < deadline:
+            status, nodes = request(
+                base, "/api/v1/opcua/nodes?q=&folder=all&offset=0&limit=40",
+                opener=opener)
+            if status == 200 and nodes.get("total"):
+                break
+            time.sleep(1.0)
         report["the_address_space"] = {"the_status": status,
                                        "the_total": nodes.get("total"),
                                        "the_folders": nodes.get("folders")}
