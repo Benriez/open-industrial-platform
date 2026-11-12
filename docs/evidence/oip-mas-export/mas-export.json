@@ -33,7 +33,7 @@
     ]
   },
   "the_render": {
-    "the_code": 0,
+    "the_code": 2,
     "the_options": {
       "the_path": "/Users/benny/Code/open-industrial-platform/target/oip-mas-export/ExportOptions.plist",
       "the_outside_of_the_release": true,
@@ -51,7 +51,9 @@
       "the_profile_of_the_bundle": "Mac App Distribution: Open Industrial Platform (fake)"
     },
     "the_command": "/usr/bin/xcodebuild -exportArchive -archivePath /Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive -exportPath /Users/benny/Code/open-industrial-platform/target/oip-mas-export/export -exportOptionsPlist /Users/benny/Code/open-industrial-platform/target/oip-mas-export/ExportOptions.plist",
-    "the_problems": []
+    "the_problems": [
+      "the archive is missing: /Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive \u2014 build it with tools/oip_mas_package.py first"
+    ]
   },
   "the_refusal_of_a_directory_outside_the_build_tree": {
     "the_code": 2,
@@ -68,9 +70,9 @@
   "the_working_tree_before_the_run": "",
   "the_working_tree_after_the_run": "",
   "the_status": "PASS",
-  "the_revision": "448467fdf1119f11f6d782763e4e14e6b31b1fdd",
-  "the_tree": "762b5f289b6cafb68273db1e03381bab44da7455",
+  "the_revision": "77d58d82c9db0e04e0e566cbe44a1df2d6b7d3b5",
+  "the_tree": "a7d3a7028bd9b5c3a7f11cd2dfd05280a2f70095",
   "the_working_tree_is_clean": true,
   "the_upload": "not done: the export and the upload are the operator's action",
-  "finished_utc": "2026-11-12T01:50:49Z"
+  "finished_utc": "2026-11-12T04:56:16Z"
 }

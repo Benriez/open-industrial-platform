@@ -1,9 +1,9 @@
 {
   "schema": "oip-settings-status-v1",
-  "revision": "d350bb0e66c52cd9f671f09c67ad72d7fa21a9ab",
+  "revision": "77d58d82c9db0e04e0e566cbe44a1df2d6b7d3b5",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "the status of the settings categories in the approved surface against the real Core",
-  "base": "http://127.0.0.1:49311",
+  "base": "http://127.0.0.1:57305",
   "the_categories_of_the_core": [
     {
       "the_category": "general",
@@ -89,10 +89,10 @@
   ],
   "the_refusals_of_the_core": [
     "/api/v2/organizations?offset=0&limit=100",
-    "/api/v1/system/status",
-    "/api/v1/devices",
-    "/api/v1/metrics/current",
     "/api/v1/events",
+    "/api/v1/system/status",
+    "/api/v1/metrics/current",
+    "/api/v1/devices",
     "/api/v1/sources",
     "/api/v2/management?section=server",
     "/api/v2/management?section=storage",
@@ -524,7 +524,7 @@
     {
       "check": "the Core does not refuse the read of the settings in the scope of the platform",
       "ok": true,
-      "the_detail": "[\"/api/v2/organizations?offset=0&limit=100\",\"/api/v1/system/status\",\"/api/v1/devices\",\"/api/v1/metrics/current\",\"/api/v1/events\",\"/api/v1/sources\",\"/api/v2/management?section=server\",\"/api/v2/management?section=storage\",\"/api/v2/management?section=diagnostic_rules\",\"/api/v2/management?section=securi"
+      "the_detail": "[\"/api/v2/organizations?offset=0&limit=100\",\"/api/v1/events\",\"/api/v1/system/status\",\"/api/v1/metrics/current\",\"/api/v1/devices\",\"/api/v1/sources\",\"/api/v2/management?section=server\",\"/api/v2/management?section=storage\",\"/api/v2/management?section=diagnostic_rules\",\"/api/v2/management?section=securi"
     }
   ],
   "errors": []

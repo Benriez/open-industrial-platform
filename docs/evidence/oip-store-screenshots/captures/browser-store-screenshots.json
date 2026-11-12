@@ -1,7 +1,7 @@
 {
   "schema": "oip-store-screenshots-browser-v1",
-  "the_revision": "d350bb0e66c52cd9f671f09c67ad72d7fa21a9ab",
-  "the_base": "http://127.0.0.1:56305",
+  "the_revision": "77d58d82c9db0e04e0e566cbe44a1df2d6b7d3b5",
+  "the_base": "http://127.0.0.1:52086",
   "the_size": {
     "the_width": 1440,
     "the_height": 900
@@ -41,7 +41,7 @@
       "the_height": 900,
       "the_colour_type": 2,
       "the_carries_an_alpha_channel": false,
-      "the_bytes": 149620
+      "the_bytes": 147838
     },
     {
       "the_workstation": "Geräte & Dienste",
@@ -51,7 +51,7 @@
       "the_height": 900,
       "the_colour_type": 2,
       "the_carries_an_alpha_channel": false,
-      "the_bytes": 117120
+      "the_bytes": 117050
     },
     {
       "the_workstation": "Netzwerk & VPN",
@@ -61,7 +61,7 @@
       "the_height": 900,
       "the_colour_type": 2,
       "the_carries_an_alpha_channel": false,
-      "the_bytes": 123050
+      "the_bytes": 122592
     },
     {
       "the_workstation": "OPC-UA-Browser",
@@ -539,5 +539,5 @@
   "the_errors": [],
   "the_fatal": null,
   "the_verdict": "PASS",
-  "the_finished_utc": "2026-11-12T00:58:43.468Z"
+  "the_finished_utc": "2026-11-12T04:57:41.987Z"
 }
