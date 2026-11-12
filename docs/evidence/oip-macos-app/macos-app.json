@@ -9,22 +9,22 @@
   ],
   "the_witness": {
     "the_port": 18808,
-    "the_core_of_the_rehearsal": 60861,
+    "the_core_of_the_rehearsal": 59175,
     "the_note": "the witness stands on the documented port of the instance; the bundle therefore carries the URL that the operator uses"
   },
   "build_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18808",
-  "build_seconds": 12.2,
+  "build_seconds": 35.1,
   "bundle": "/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app",
   "bundle_bytes": 97031519,
-  "bundle_executable_sha256": "5904bcfae5f9205f338f95f95ca6bd839e2848db283b9d69d9c19cc4ac640c86",
-  "bundle_tree_sha256": "3c734f8344541a1b931aaac82fd864467a89c3e9266db50beb1c88422656cc6d",
+  "bundle_executable_sha256": "aa33388a36b199845edfdef987e6efa8ee8ff6b90a5f1208ca2eb0afb14b9cc3",
+  "bundle_tree_sha256": "096fd977671d4511acc2f64bb0e5c0490948aad94023fb8f56a149731ea5b78e",
   "bundle_files": 44,
   "cfbundleidentifier": "org.openindustrial.oipDashboard",
   "cfbundleshortversionstring": "0.3.0",
   "cfbundleversion": "3",
   "start": {
     "label": "start",
-    "the_seconds_until_the_first_request": 1.0,
+    "the_seconds_until_the_first_request": 0.4,
     "the_requests": [
       {
         "the_method": "GET",
@@ -35,12 +35,6 @@
       {
         "the_method": "GET",
         "the_path": "/api/v1/system/status",
-        "the_status": 403,
-        "the_code": "PERMISSION_DENIED"
-      },
-      {
-        "the_method": "GET",
-        "the_path": "/api/v1/devices",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       },
@@ -58,13 +52,13 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/sources",
+        "the_path": "/api/v1/devices",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       },
       {
-        "the_method": "POST",
-        "the_path": "/api/v2/browser/login",
+        "the_method": "GET",
+        "the_path": "/api/v1/sources",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       }
@@ -86,12 +80,6 @@
     },
     {
       "the_method": "GET",
-      "the_path": "/api/v1/devices",
-      "the_status": 403,
-      "the_code": "PERMISSION_DENIED"
-    },
-    {
-      "the_method": "GET",
       "the_path": "/api/v1/events",
       "the_status": 403,
       "the_code": "PERMISSION_DENIED"
@@ -104,13 +92,13 @@
     },
     {
       "the_method": "GET",
-      "the_path": "/api/v1/sources",
+      "the_path": "/api/v1/devices",
       "the_status": 403,
       "the_code": "PERMISSION_DENIED"
     },
     {
-      "the_method": "POST",
-      "the_path": "/api/v2/browser/login",
+      "the_method": "GET",
+      "the_path": "/api/v1/sources",
       "the_status": 403,
       "the_code": "PERMISSION_DENIED"
     }
@@ -130,7 +118,7 @@
   "orphaned_processes": [],
   "restart": {
     "label": "restart",
-    "the_seconds_until_the_first_request": 0.5,
+    "the_seconds_until_the_first_request": 0.3,
     "the_requests": [
       {
         "the_method": "GET",
@@ -146,13 +134,13 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/metrics/current",
+        "the_path": "/api/v1/devices",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/devices",
+        "the_path": "/api/v1/metrics/current",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       },
@@ -181,10 +169,10 @@
   "status": "PASS",
   "the_core_binary": {
     "the_path": "/Users/benny/Code/open-industrial-platform/target/release/oip-server",
-    "the_sha256": "3e84db0b57726294f6f721b77efc6e679521f6fe739175c2f17d1b18b8a75855"
+    "the_sha256": "938a3dcf2c0b28d956303a82e4f3ab3264ef8907c18d1eec14ac2992b2762c9c"
   },
-  "the_revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
-  "the_tree": "9acef728e1567435fdae2600d0b2e31f54ebfc79",
+  "the_revision": "d350bb0e66c52cd9f671f09c67ad72d7fa21a9ab",
+  "the_tree": "479398a890dc5924eb4fc0a09316dd72049923c5",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T20:24:20Z"
+  "finished_utc": "2026-11-12T00:26:02Z"
 }

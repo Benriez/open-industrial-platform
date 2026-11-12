@@ -19,13 +19,13 @@
       "--dart-define=OIP_API_URL=http://127.0.0.1:18808"
     ],
     "the_code": 0,
-    "the_error": "framework/Versions/A/Resources/flutter_assets/shaders/ink_sparkle.frag' is located outside of the allowed root paths.\n\nwarning: Stale file '/Users/benny/Library/Developer/Xcode/DerivedData/Runner-fjqieohbiptgqggswwdygknokurx/Build/Intermediates.noindex/ArchiveIntermediates/Runner/BuildProductsPath/Release/FlutterMacOS.framework/Versions/A/FlutterMacOS' is located outside of the allowed root paths."
+    "the_error": "--- xcodebuild: WARNING: Using the first of multiple matching destinations:\n{ platform:macOS, arch:arm64, id:00006000-001208642121801E, name:My Mac }\n{ platform:macOS, arch:x86_64, id:00006000-001208642121801E, name:My Mac }"
   },
   "the_quarantine_strip": {
     "the_code": 0
   },
   "the_checks": {
-    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20400 size=536 flags=0x2(adhoc) hashes=6+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=60e47785ca76f542000d956aed172cf3b358caa0\nCandidateCDHashFull sha256=60e47785ca76f542000d956aed172cf3b358caa02eed090c7e9bfae0eaf1d299\nHash choices=sha256\nCMSDigest=60e47785ca76f542000d956aed172cf3b358caa02eed090c7e9bfae0eaf1d299\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=60e47785ca76f542000d956aed172cf3b358caa0\nSignature=adhoc\nInfo.plist entries=27\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
+    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20400 size=536 flags=0x2(adhoc) hashes=6+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=d13d621cd15a8caee3eb98487a9a969d79da6480\nCandidateCDHashFull sha256=d13d621cd15a8caee3eb98487a9a969d79da6480647787ee7a7900e5f6f126f8\nHash choices=sha256\nCMSDigest=d13d621cd15a8caee3eb98487a9a969d79da6480647787ee7a7900e5f6f126f8\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=d13d621cd15a8caee3eb98487a9a969d79da6480\nSignature=adhoc\nInfo.plist entries=27\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
     "the_signature_carries_the_hardened_runtime": false,
     "the_signature_is_ad_hoc": true,
     "the_signature_identity": "adhoc",
@@ -83,7 +83,7 @@
     "the_icon_is_present": true,
     "the_unsigned_executables": []
   },
-  "the_tree_sha256": "3c734f8344541a1b931aaac82fd864467a89c3e9266db50beb1c88422656cc6d",
+  "the_tree_sha256": "096fd977671d4511acc2f64bb0e5c0490948aad94023fb8f56a149731ea5b78e",
   "the_files": 44,
   "the_store_assets": {
     "the_assets_are_present": true,
@@ -91,8 +91,8 @@
     "the_assets": [
       {
         "the_file": "store-devices-1440x900.png",
-        "the_bytes": 115997,
-        "the_sha256": "bd5434da79cfa6b7fda83efd188ec91694f03fc7a64e920ecf6a77fffb875c16",
+        "the_bytes": 117191,
+        "the_sha256": "b0d179b63bb9991e72c6a4c2aba366f9d652c2cdce1f670e5a1b6ff3a08ec700",
         "the_width": 1440,
         "the_height": 900,
         "the_colour_type": 2,
@@ -109,8 +109,8 @@
       },
       {
         "the_file": "store-network-1440x900.png",
-        "the_bytes": 123066,
-        "the_sha256": "d89e6f50d08ed03e997d5596f27f243ac2d4028b24a28e2bc29365dfd72efd9b",
+        "the_bytes": 123050,
+        "the_sha256": "3a2e65c0d9166426918f8f798da917edfe4c5cf035e9fba027de9f5427df61da",
         "the_width": 1440,
         "the_height": 900,
         "the_colour_type": 2,
@@ -127,8 +127,8 @@
       },
       {
         "the_file": "store-overview-1440x900.png",
-        "the_bytes": 148783,
-        "the_sha256": "366f0c35aff6cc98f0a849f73a137222b0f41d9ede6c7748136e9ca631890db8",
+        "the_bytes": 148295,
+        "the_sha256": "0f6d5ebfff94406e0f1655a6cdaf890c372915993d01bc504a5581e99345fa81",
         "the_width": 1440,
         "the_height": 900,
         "the_colour_type": 2,
@@ -195,7 +195,7 @@
       "the archive of the distribution is built",
       "the signature of the archive carries the hardened runtime"
     ],
-    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20500 size=512 flags=0x10002(adhoc,runtime) hashes=5+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=fdaf6828a865c07c4d142150c4c454cfd7945916\nCandidateCDHashFull sha256=fdaf6828a865c07c4d142150c4c454cfd79459167af99d0fafb0e34504d10508\nHash choices=sha256\nCMSDigest=fdaf6828a865c07c4d142150c4c454cfd79459167af99d0fafb0e34504d10508\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=fdaf6828a865c07c4d142150c4c454cfd7945916\nSignature=adhoc\nInfo.plist entries=27\nTeamIdentifier=not set\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
+    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20500 size=512 flags=0x10002(adhoc,runtime) hashes=5+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=9c4f2a738ee13fc530d6cae4cf45bc129426861e\nCandidateCDHashFull sha256=9c4f2a738ee13fc530d6cae4cf45bc129426861e295daaa54650333f6f64cf43\nHash choices=sha256\nCMSDigest=9c4f2a738ee13fc530d6cae4cf45bc129426861e295daaa54650333f6f64cf43\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=9c4f2a738ee13fc530d6cae4cf45bc129426861e\nSignature=adhoc\nInfo.plist entries=27\nTeamIdentifier=not set\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
     "the_signature_carries_the_hardened_runtime": true,
     "the_entitlements": {
       "com.apple.security.app-sandbox": true,
@@ -211,8 +211,8 @@
     }
   },
   "the_status": "PASS",
-  "the_revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
-  "the_tree": "9acef728e1567435fdae2600d0b2e31f54ebfc79",
+  "the_revision": "d350bb0e66c52cd9f671f09c67ad72d7fa21a9ab",
+  "the_tree": "479398a890dc5924eb4fc0a09316dd72049923c5",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T20:55:16Z"
+  "finished_utc": "2026-11-12T00:57:19Z"
 }

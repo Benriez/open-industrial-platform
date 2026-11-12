@@ -50,7 +50,7 @@ Alle
 SOURCE
 Alle
 STANDORT
-Alle
+Standort: Alle
 SORTIERUNG
 Name
 Weitere Filter
@@ -66,23 +66,23 @@ Source
 3/3
 SOURCE-A
 Local simulation a · device-a
-Gerät Local simulation a device-a auswählen · Other · source-a · keine aktuelle Observation · Reachability Unbekannt reported · simuliert
+Gerät Local simulation a device-a auswählen · Sonstiges Gerät · source-a · keine aktuelle Observation · Reachability Unbekannt reported · simuliert
 Local simulation a · device-a
-Other · source-a · keine Observation · Unbekannt reported · SIM
+Sonstiges Gerät · source-a · keine Observation · Unbekannt reported · SIM
 Gerät pinnen
 Vergleich hinzufügen
 SOURCE-B
 Local simulation b · device-b
-Gerät Local simulation b device-b auswählen · Other · source-b · keine aktuelle Observation · Reachability Unbekannt reported · simuliert
+Gerät Local simulation b device-b auswählen · Sonstiges Gerät · source-b · keine aktuelle Observation · Reachability Unbekannt reported · simuliert
 Local simulation b · device-b
-Other · source-b · keine Observation · Unbekannt reported · SIM
+Sonstiges Gerät · source-b · keine Observation · Unbekannt reported · SIM
 Gerät pinnen
 Vergleich hinzufügen
 KEINE SOURCE-ZUORDNUNG
 Scope device · scope-device
-Gerät Scope device scope-device auswählen · SingleBoardComputer · keine Source · keine aktuelle Observation · Reachability Unbekannt reported
+Gerät Scope device scope-device auswählen · Einzelplatine · keine Source · keine aktuelle Observation · Reachability Unbekannt reported
 Scope device · scope-device
-SingleBoardComputer · keine Source · keine Observation · Unbekannt reported
+Einzelplatine · keine Source · keine Observation · Unbekannt reported
 Gerät pinnen
 Vergleich hinzufügen
 Vorherige Geräte
@@ -106,7 +106,7 @@ scope-device
 Scope device
 DEVICE TYPE
 SOURCE ID
-SingleBoardComputer
+Einzelplatine
 Nicht verfügbar
 REGISTRY LOCATION
 REGISTRY CONNECTION TYPE
@@ -128,6 +128,8 @@ SITE
 INTERFACE TYPE
 site-a1
 Nicht separat verfügbar; Registry Connection Type oben
+NOTE
+Nicht verfügbar
 OBSERVATION & TELEMETRY
 Keine Telemetrie für dieses Gerät verfügbar
 DeviceDetail enthält keine Observations. Kein Ersatzwert, kein 0 % und kein künstlicher Chart.
@@ -183,7 +185,7 @@ Scope device
 scope-device
 IDENTIFICATION
 TYPE / SOURCE
-SingleBoardComputer · Nicht zugeordnet
+Einzelplatine · Nicht zugeordnet
 ORGANIZATION
 Organization A
 INFRASTRUCTURE
@@ -228,7 +230,7 @@ UNKNOWN
 Organization, Site, Firmware, OS, Services, aktive Probes und physische Beziehungen
 VERWALTUNG · REVISION 2
 Gerätetyp
-Single board
+Einzelplatine
 Änderungen speichern
 Archivierung ist ein Offline-Vorgang
 Der Core archiviert nur mit gestopptem Betrieb. Der Datensatz und seine Historie bleiben erhalten, das Gerät sammelt keine Messwerte mehr. Der Vorgang läuft mit dem Offline-Plan des Core: oip-server --config <core.json> --inventory-plan <plan.json>.

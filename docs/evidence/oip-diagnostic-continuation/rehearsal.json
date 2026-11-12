@@ -5,7 +5,7 @@
     "the operator session is authorized",
     "the Core has more gaps than a page holds"
   ],
-  "collector_cycles": 39,
+  "collector_cycles": 41,
   "gap_page": {
     "items": 50,
     "truncated": true,
@@ -13,10 +13,10 @@
   },
   "browser_receipt": {
     "schema": "oip-diagnostic-continuation-v1",
-    "revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
+    "revision": "d350bb0e66c52cd9f671f09c67ad72d7fa21a9ab",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "the diagnostic continuation of the approved surface against the real Core",
-    "base": "http://127.0.0.1:51602",
+    "base": "http://127.0.0.1:50654",
     "gaps": {
       "first_page_items": 50,
       "first_page_truncated": true,
@@ -33,17 +33,17 @@
           "truncated": true
         },
         {
-          "cursor_asked": "4293271d1dd25eff9f74f984713b9cd402c506be0105102dedb36212141d2df4",
+          "cursor_asked": "a03eb1b097ff1ded8bc6d9c878b27eb5510dfd88e84643ea5aef43ef7de54ad1",
           "items": 50,
           "truncated": true
         },
         {
-          "cursor_asked": "0cccd6dd87f482816c5edefa1acec0defeb63ecf62037627b44bb3fd3ff76cf8",
+          "cursor_asked": "3a91258a08b1e25aeef28e67b2c2b8365323504cab51ef67652a743366db59d4",
           "items": 50,
           "truncated": true
         },
         {
-          "cursor_asked": "b4435e69f6f6e747ce97870497487050d0d9635929d1a1b640e519ddb5cbe81c",
+          "cursor_asked": "9d906782a232fec1bc5a2404f1c476b5148b68e7d3bd08211547a09204d2ac2a",
           "items": 5,
           "truncated": false
         }
@@ -67,7 +67,7 @@
         "status": 200,
         "items": 50,
         "truncated": true,
-        "next_cursor": "e6c8469590ed36cb050dd54f8128674176a7befe519f7b95092472e15ff404c0",
+        "next_cursor": "b359788ba9def1b5e58ef0e89da1b8e10e9ca3164e74c626a2bdc098ee530750",
         "missing_evidence": [],
         "time_semantics": 281,
         "ids": 50
@@ -79,7 +79,7 @@
         "status": 200,
         "items": 50,
         "truncated": true,
-        "next_cursor": "4293271d1dd25eff9f74f984713b9cd402c506be0105102dedb36212141d2df4",
+        "next_cursor": "a03eb1b097ff1ded8bc6d9c878b27eb5510dfd88e84643ea5aef43ef7de54ad1",
         "missing_evidence": [
           "No historical state transitions are reconstructed before schema4 or across process boundaries"
         ],
@@ -88,7 +88,7 @@
       },
       {
         "route": "gaps",
-        "cursor_asked": "e6c8469590ed36cb050dd54f8128674176a7befe519f7b95092472e15ff404c0",
+        "cursor_asked": "b359788ba9def1b5e58ef0e89da1b8e10e9ca3164e74c626a2bdc098ee530750",
         "limit": "50",
         "status": 200,
         "items": 1,
@@ -100,12 +100,12 @@
       },
       {
         "route": "health-history",
-        "cursor_asked": "4293271d1dd25eff9f74f984713b9cd402c506be0105102dedb36212141d2df4",
+        "cursor_asked": "a03eb1b097ff1ded8bc6d9c878b27eb5510dfd88e84643ea5aef43ef7de54ad1",
         "limit": "50",
         "status": 200,
         "items": 50,
         "truncated": true,
-        "next_cursor": "0cccd6dd87f482816c5edefa1acec0defeb63ecf62037627b44bb3fd3ff76cf8",
+        "next_cursor": "3a91258a08b1e25aeef28e67b2c2b8365323504cab51ef67652a743366db59d4",
         "missing_evidence": [
           "No historical state transitions are reconstructed before schema4 or across process boundaries"
         ],
@@ -114,12 +114,12 @@
       },
       {
         "route": "health-history",
-        "cursor_asked": "0cccd6dd87f482816c5edefa1acec0defeb63ecf62037627b44bb3fd3ff76cf8",
+        "cursor_asked": "3a91258a08b1e25aeef28e67b2c2b8365323504cab51ef67652a743366db59d4",
         "limit": "50",
         "status": 200,
         "items": 50,
         "truncated": true,
-        "next_cursor": "b4435e69f6f6e747ce97870497487050d0d9635929d1a1b640e519ddb5cbe81c",
+        "next_cursor": "9d906782a232fec1bc5a2404f1c476b5148b68e7d3bd08211547a09204d2ac2a",
         "missing_evidence": [
           "No historical state transitions are reconstructed before schema4 or across process boundaries"
         ],
@@ -128,7 +128,7 @@
       },
       {
         "route": "health-history",
-        "cursor_asked": "b4435e69f6f6e747ce97870497487050d0d9635929d1a1b640e519ddb5cbe81c",
+        "cursor_asked": "9d906782a232fec1bc5a2404f1c476b5148b68e7d3bd08211547a09204d2ac2a",
         "limit": "50",
         "status": 200,
         "items": 5,
@@ -160,7 +160,7 @@
       {
         "check": "the Core handed a cursor for the continuation",
         "ok": true,
-        "the_detail": "\"e6c8469590ed36cb050dd54f8128674176a7befe519f7b95092472e15ff404c0\""
+        "the_detail": "\"b359788ba9def1b5e58ef0e89da1b8e10e9ca3164e74c626a2bdc098ee530750\""
       },
       {
         "check": "the surface offers the continuation of the gaps",
@@ -185,7 +185,7 @@
       {
         "check": "the continuation asked the Core with the opaque cursor",
         "ok": true,
-        "the_detail": "[{\"cursor\":null,\"items\":50},{\"cursor\":\"e6c8469590ed36cb050dd54f8128674176a7befe519f7b95092472e15ff404c0\",\"items\":1}]"
+        "the_detail": "[{\"cursor\":null,\"items\":50},{\"cursor\":\"b359788ba9def1b5e58ef0e89da1b8e10e9ca3164e74c626a2bdc098ee530750\",\"items\":1}]"
       },
       {
         "check": "the continuation repeats no row of the first page",
@@ -215,7 +215,7 @@
       {
         "check": "the health history is continued with the cursor of the Core",
         "ok": true,
-        "the_detail": "[{\"cursor\":null,\"items\":50},{\"cursor\":\"4293271d1dd25eff9f74f984713b9cd402c506be0105102dedb36212141d2df4\",\"items\":50},{\"cursor\":\"0cccd6dd87f482816c5edefa1acec0defeb63ecf62037627b44bb3fd3ff76cf8\",\"items\":50},{\"cursor\":\"b4435e69f6f6e747ce97870497487050d0d9635929d1a1b640e519ddb5cbe81c\",\"items\":5}]"
+        "the_detail": "[{\"cursor\":null,\"items\":50},{\"cursor\":\"a03eb1b097ff1ded8bc6d9c878b27eb5510dfd88e84643ea5aef43ef7de54ad1\",\"items\":50},{\"cursor\":\"3a91258a08b1e25aeef28e67b2c2b8365323504cab51ef67652a743366db59d4\",\"items\":50},{\"cursor\":\"9d906782a232fec1bc5a2404f1c476b5148b68e7d3bd08211547a09204d2ac2a\",\"items\":5}]"
       },
       {
         "check": "the offer of the health history is gone after the continuation",
@@ -246,8 +246,8 @@
     "errors": []
   },
   "status": "PASS",
-  "the_revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
-  "the_tree": "9acef728e1567435fdae2600d0b2e31f54ebfc79",
+  "the_revision": "d350bb0e66c52cd9f671f09c67ad72d7fa21a9ab",
+  "the_tree": "479398a890dc5924eb4fc0a09316dd72049923c5",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T20:19:12Z"
+  "finished_utc": "2026-11-12T00:20:36Z"
 }

@@ -8,29 +8,29 @@
     "the installed bundle starts again from the installation directory"
   ],
   "the_installation": {
-    "the_directory_of_the_rehearsal": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-install-jfn0m21p/Applications",
+    "the_directory_of_the_rehearsal": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-install-xpleu6iw/Applications",
     "the_bundle": "oip_dashboard.app",
     "the_files": 44,
-    "the_tree_sha256": "3c734f8344541a1b931aaac82fd864467a89c3e9266db50beb1c88422656cc6d",
-    "the_tree_of_the_release_bundle": "3c734f8344541a1b931aaac82fd864467a89c3e9266db50beb1c88422656cc6d",
+    "the_tree_sha256": "096fd977671d4511acc2f64bb0e5c0490948aad94023fb8f56a149731ea5b78e",
+    "the_tree_of_the_release_bundle": "096fd977671d4511acc2f64bb0e5c0490948aad94023fb8f56a149731ea5b78e",
     "the_copy_is_byte_identical": true,
     "the_note": "the rehearsal installs into a directory of the temporary tree; the installation into /Applications is the step of the operator and is named in the runbook"
   },
   "the_installed_bundle": {
     "the_bundle_identifier": "org.openindustrial.oipDashboard",
     "the_version": "0.3.0",
-    "the_executable": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-install-jfn0m21p/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard",
+    "the_executable": "/private/var/folders/gw/ybd859y97kbgqblclj7tfmvw0000gn/T/oip-install-xpleu6iw/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard",
     "the_executable_exists": true,
-    "the_executable_sha256": "5904bcfae5f9205f338f95f95ca6bd839e2848db283b9d69d9c19cc4ac640c86"
+    "the_executable_sha256": "aa33388a36b199845edfdef987e6efa8ee8ff6b90a5f1208ca2eb0afb14b9cc3"
   },
   "the_witness": {
     "the_port": 18808,
-    "the_core_of_the_rehearsal": 61825,
+    "the_core_of_the_rehearsal": 60554,
     "the_note": "the witness stands on the documented port of the instance; the installed bundle therefore carries the URL that the operator uses"
   },
   "the_start": {
     "label": "the installed bundle",
-    "the_seconds_until_the_first_request": 0.5,
+    "the_seconds_until_the_first_request": 0.4,
     "the_requests": [
       {
         "the_method": "GET",
@@ -41,12 +41,6 @@
       {
         "the_method": "GET",
         "the_path": "/api/v1/devices",
-        "the_status": 403,
-        "the_code": "PERMISSION_DENIED"
-      },
-      {
-        "the_method": "GET",
-        "the_path": "/api/v1/sources",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       },
@@ -65,6 +59,12 @@
       {
         "the_method": "GET",
         "the_path": "/api/v1/system/status",
+        "the_status": 403,
+        "the_code": "PERMISSION_DENIED"
+      },
+      {
+        "the_method": "GET",
+        "the_path": "/api/v1/sources",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       }
@@ -88,12 +88,6 @@
     },
     {
       "the_method": "GET",
-      "the_path": "/api/v1/sources",
-      "the_status": 403,
-      "the_code": "PERMISSION_DENIED"
-    },
-    {
-      "the_method": "GET",
       "the_path": "/api/v1/events",
       "the_status": 403,
       "the_code": "PERMISSION_DENIED"
@@ -107,6 +101,12 @@
     {
       "the_method": "GET",
       "the_path": "/api/v1/system/status",
+      "the_status": 403,
+      "the_code": "PERMISSION_DENIED"
+    },
+    {
+      "the_method": "GET",
+      "the_path": "/api/v1/sources",
       "the_status": 403,
       "the_code": "PERMISSION_DENIED"
     }
@@ -133,7 +133,7 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/system/status",
+        "the_path": "/api/v1/devices",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       },
@@ -145,7 +145,7 @@
       },
       {
         "the_method": "GET",
-        "the_path": "/api/v1/devices",
+        "the_path": "/api/v1/system/status",
         "the_status": 403,
         "the_code": "PERMISSION_DENIED"
       },
@@ -172,8 +172,8 @@
     "the_output": "[IMPORTANT:flutter/shell/platform/darwin/graphics/FlutterDarwinContextMetalSkia.mm(66)] Using the Skia rendering backend (Metal).\nOIP-WINDOW frames=[(0.0, 0.0, 1512.0, 949.0), (1512.0, 22.0, 1600.0, 930.0)] window=(356.0, 164.0, 800.0, 632.0) visible=true\n"
   },
   "status": "PASS",
-  "the_revision": "dd4bb3e3372d6bad10c3e592b5ff5f680ff9788e",
-  "the_tree": "9acef728e1567435fdae2600d0b2e31f54ebfc79",
+  "the_revision": "d350bb0e66c52cd9f671f09c67ad72d7fa21a9ab",
+  "the_tree": "479398a890dc5924eb4fc0a09316dd72049923c5",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-11T20:24:45Z"
+  "finished_utc": "2026-11-12T00:26:27Z"
 }
