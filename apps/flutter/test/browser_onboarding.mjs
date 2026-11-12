@@ -100,24 +100,36 @@ async function activateControl(locator,predicate){
 }
 
 /// A **text field** of the Flutter view is written through its own input
-/// element: the click of the input gives the field of the view its focus,
-/// and the keyboard of the journey then writes into it. The focus of the
-/// element alone does not open the editing of the view — the engine of the
-/// Flutter view needs the click.
+/// element.
+///
+/// The gesture of the pointer is deduplicated by the Flutter view for 500 ms,
+/// so the input is focused through its accessibility element only after that
+/// window; without the window the view receives the deletion of the field
+/// but not the text that follows it. The journey therefore clicks, blurs,
+/// waits and focuses — and it **reads the field back**, because a field that
+/// carries a different text is a defect of the surface, not a fact of the
+/// journey.
 async function fillField(locator,text){
-  for(let n=0;!(await locator.isEditable());n++){
-    if(n===100)throw Error('the field of the surface did not become editable');
-    await page.waitForTimeout(100);
+  for(let attempt=0;attempt<3;attempt++){
+    for(let n=0;!(await locator.isEditable());n++){
+      if(n===100)throw Error('the field of the surface did not become editable');
+      await page.waitForTimeout(100);
+    }
+    await locator.click({force:true});
+    await locator.evaluate(e=>e.blur());
+    await page.waitForTimeout(650);
+    await locator.focus();
+    await page.waitForTimeout(250);
+    await page.keyboard.press('Meta+A');
+    await page.waitForTimeout(80);
+    await page.keyboard.press('Backspace');
+    await page.waitForTimeout(120);
+    await page.keyboard.type(text,{delay:60});
+    await page.waitForTimeout(300);
+    const value=await locator.inputValue().catch(()=>null);
+    if(value===text)return true;
   }
-  await locator.click({force:true});
-  await page.waitForTimeout(250);
-  await page.keyboard.press('Meta+A');
-  await page.waitForTimeout(80);
-  await page.keyboard.press('Backspace');
-  await page.waitForTimeout(120);
-  await page.keyboard.type(text,{delay:60});
-  await page.waitForTimeout(150);
-  return true;
+  return false;
 }
 
 async function typeInto(locator, text) { for(let n=0;!(await locator.isEditable());n++){if(n===100)throw Error('Field did not become editable');await page.waitForTimeout(100);} await locator.click({force:true}); await page.waitForTimeout(250); await page.keyboard.press('Meta+A'); await page.waitForTimeout(80); await page.keyboard.press('Backspace'); await page.waitForTimeout(120); await page.keyboard.type(text,{delay:100}); await page.waitForTimeout(150); await page.keyboard.press('Tab'); await page.waitForTimeout(100); }
@@ -175,7 +187,7 @@ try {
     'the administration of the device does not name the revision it works on');
   const nameField=page.getByRole('textbox',{name:'Anzeigename'}).last();
   assert(await fillField(nameField,'Manual inventory fixture renamed'),
-    'the name of the device is not reachable in the inspector');
+    'the name of the device does not carry the text of the operator');
   const save=page.getByRole('button',{name:'Änderungen speichern',exact:true});
   const renamed=async()=>{
     const page2=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
@@ -242,7 +254,7 @@ try {
   // the client is not a claim but a measured difference.
   const noteField=page.getByRole('textbox',{name:/Notiz/}).last();
   assert(await fillField(noteField,NOTE),
-    'the note of the device is not reachable in the inspector');
+    'the note of the device does not carry the text of the operator');
   const noted0=async()=>{
     const page2=await (await context.request.get(base+'/api/v2/inventory/devices?q=Manual%20inventory%20fixture%20renamed',{timeout:60000})).json();
     return page2.items.length===1&&(page2.items[0].record.device.metadata||{}).notes===NOTE;
