@@ -40,7 +40,7 @@ b794a408d1bac780a40153c9c2f40e132740869ab64d33bc266eb49df3126c70  docs/evidence/
 66c67546e2a5949e379fe296e1496a29ce7095ff23890601ed864bc40e3dafac  docs/evidence/oip-hue-device/hue-device.json
 ace195e433e58d71d6522acef0507706415556de8d437a82dfdea82cec0afa13  docs/evidence/oip-loopback-rate/loopback-rate.json
 51f81088f253ef4fbf366042d951742a51ce72bbec57b4ba18e79be3a379f003  docs/evidence/oip-macos-install/macos-install.json
-3761419cc73562df3837ea98955f438c40f8d266d4af05e1d30b59c8a346ef5e  docs/evidence/oip-mas-export/mas-export.json
+3116c9aa46d0fb57b3f920943e1ba220d5a4f5bff1efecaea101a81473b6a6b2  docs/evidence/oip-mas-export/mas-export.json
 f6657f6658becf26511eba1036aa1b2b529dee7a3c18a7575abfc6d82221dbc3  docs/evidence/oip-mas-package/mas-package.json
 b0e0042ac22ed7b82d3e655f041370580f1fabb45d446bc130c27d8b0adc8250  docs/evidence/oip-measurement-coverage/measurement-coverage-browser.json
 c49fded8af03064220c9357fd9daa92aa559a7534399555ffb5425e656421821  docs/evidence/oip-measurement-coverage/measurement-coverage.json

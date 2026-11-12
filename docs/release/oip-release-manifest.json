@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "2cc194ff8598bd9724dc291fc4b008926d67c67c",
-  "the_tree": "c5b12466c2329289ff2b76f7c9f2a5e4b5e05a15",
+  "the_revision": "7971fba602e39660c0399b0f0dfa6df109761945",
+  "the_tree": "ab204a9396f9a9dce7ab39a9029e33c147adf0e6",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "66136a095587b727ca52d8fd6f585f80dff231a1",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 739,
-    "the_sha256": "c1b04025b9659bbae8a23c448e0668adde50605a5f2f9407900ea8783f802811"
+    "the_sha256": "b82b4aa81df240fbc50f800b0c82f9062117be1cf39ee215510f0fff9989824e"
   },
   "the_artifacts": {
     "the_core": {
@@ -268,7 +268,7 @@
     },
     "the_oip-mas-export_mas-export_json": {
       "path": "docs/evidence/oip-mas-export/mas-export.json",
-      "sha256": "3761419cc73562df3837ea98955f438c40f8d266d4af05e1d30b59c8a346ef5e"
+      "sha256": "3116c9aa46d0fb57b3f920943e1ba220d5a4f5bff1efecaea101a81473b6a6b2"
     },
     "the_oip-mas-package_mas-package_json": {
       "path": "docs/evidence/oip-mas-package/mas-package.json",
