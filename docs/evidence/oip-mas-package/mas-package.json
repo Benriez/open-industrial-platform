@@ -25,7 +25,7 @@
     "the_code": 0
   },
   "the_checks": {
-    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20400 size=536 flags=0x2(adhoc) hashes=6+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=d13d621cd15a8caee3eb98487a9a969d79da6480\nCandidateCDHashFull sha256=d13d621cd15a8caee3eb98487a9a969d79da6480647787ee7a7900e5f6f126f8\nHash choices=sha256\nCMSDigest=d13d621cd15a8caee3eb98487a9a969d79da6480647787ee7a7900e5f6f126f8\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=d13d621cd15a8caee3eb98487a9a969d79da6480\nSignature=adhoc\nInfo.plist entries=27\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
+    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20400 size=536 flags=0x2(adhoc) hashes=6+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=6e0573bbb6c49a8e36ad8dc4b49da9ad9c5a4031\nCandidateCDHashFull sha256=6e0573bbb6c49a8e36ad8dc4b49da9ad9c5a4031a3aeaceaa45e26b48b4b8ab5\nHash choices=sha256\nCMSDigest=6e0573bbb6c49a8e36ad8dc4b49da9ad9c5a4031a3aeaceaa45e26b48b4b8ab5\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=6e0573bbb6c49a8e36ad8dc4b49da9ad9c5a4031\nSignature=adhoc\nInfo.plist entries=27\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
     "the_signature_carries_the_hardened_runtime": false,
     "the_signature_is_ad_hoc": true,
     "the_signature_identity": "adhoc",
@@ -83,7 +83,7 @@
     "the_icon_is_present": true,
     "the_unsigned_executables": []
   },
-  "the_tree_sha256": "096fd977671d4511acc2f64bb0e5c0490948aad94023fb8f56a149731ea5b78e",
+  "the_tree_sha256": "3361bee71fb49bd050d438fbc4d06ee4e02ddacfca428c3f750fdcfa2bb520e2",
   "the_files": 44,
   "the_store_assets": {
     "the_assets_are_present": true,
@@ -91,8 +91,8 @@
     "the_assets": [
       {
         "the_file": "store-devices-1440x900.png",
-        "the_bytes": 117191,
-        "the_sha256": "b0d179b63bb9991e72c6a4c2aba366f9d652c2cdce1f670e5a1b6ff3a08ec700",
+        "the_bytes": 117140,
+        "the_sha256": "67fbff3ee8cc2d5c43ae8a7ef9a5a631f4a77b96cb97ae7359fc34ce13e94d76",
         "the_width": 1440,
         "the_height": 900,
         "the_colour_type": 2,
@@ -109,8 +109,8 @@
       },
       {
         "the_file": "store-network-1440x900.png",
-        "the_bytes": 123050,
-        "the_sha256": "3a2e65c0d9166426918f8f798da917edfe4c5cf035e9fba027de9f5427df61da",
+        "the_bytes": 122592,
+        "the_sha256": "bedc1f6e4cd96b66b5d54ca712e3064ca0784e702067fdda7477eed2f8cae92d",
         "the_width": 1440,
         "the_height": 900,
         "the_colour_type": 2,
@@ -127,8 +127,8 @@
       },
       {
         "the_file": "store-overview-1440x900.png",
-        "the_bytes": 148295,
-        "the_sha256": "0f6d5ebfff94406e0f1655a6cdaf890c372915993d01bc504a5581e99345fa81",
+        "the_bytes": 148200,
+        "the_sha256": "4d21f45588dc5f9a7bb019a6482aeded1b0d54cb459bd271ea76ab81fcea2020",
         "the_width": 1440,
         "the_height": 900,
         "the_colour_type": 2,
@@ -195,7 +195,7 @@
       "the archive of the distribution is built",
       "the signature of the archive carries the hardened runtime"
     ],
-    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20500 size=512 flags=0x10002(adhoc,runtime) hashes=5+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=9c4f2a738ee13fc530d6cae4cf45bc129426861e\nCandidateCDHashFull sha256=9c4f2a738ee13fc530d6cae4cf45bc129426861e295daaa54650333f6f64cf43\nHash choices=sha256\nCMSDigest=9c4f2a738ee13fc530d6cae4cf45bc129426861e295daaa54650333f6f64cf43\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=9c4f2a738ee13fc530d6cae4cf45bc129426861e\nSignature=adhoc\nInfo.plist entries=27\nTeamIdentifier=not set\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
+    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20500 size=512 flags=0x10002(adhoc,runtime) hashes=5+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=13964c6bca35e0d21094e2ebd2cb9f160b59d409\nCandidateCDHashFull sha256=13964c6bca35e0d21094e2ebd2cb9f160b59d4091dd5cdcb783b57385921fb71\nHash choices=sha256\nCMSDigest=13964c6bca35e0d21094e2ebd2cb9f160b59d4091dd5cdcb783b57385921fb71\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=13964c6bca35e0d21094e2ebd2cb9f160b59d409\nSignature=adhoc\nInfo.plist entries=27\nTeamIdentifier=not set\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
     "the_signature_carries_the_hardened_runtime": true,
     "the_entitlements": {
       "com.apple.security.app-sandbox": true,
@@ -211,8 +211,8 @@
     }
   },
   "the_status": "PASS",
-  "the_revision": "d350bb0e66c52cd9f671f09c67ad72d7fa21a9ab",
-  "the_tree": "479398a890dc5924eb4fc0a09316dd72049923c5",
+  "the_revision": "21cf21330ccd46e679552c0076b0866cd64922d1",
+  "the_tree": "835f13c2b95c579bd12060eaeeaddab96b181e9e",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-12T00:57:19Z"
+  "finished_utc": "2026-11-12T14:15:39Z"
 }
