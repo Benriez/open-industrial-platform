@@ -229,6 +229,8 @@ Registry-/Health-Felder reported; UI-Aggregate derived ohne neue Fachlogik
 UNKNOWN
 Organization, Site, Firmware, OS, Services, aktive Probes und physische Beziehungen
 VERWALTUNG · REVISION 2
+Freier Text des Betreibers zu diesem Gerät
+1024 characters remaining
 Gerätetyp
 Einzelplatine
 Änderungen speichern

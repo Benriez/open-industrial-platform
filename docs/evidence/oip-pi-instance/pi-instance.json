@@ -14,16 +14,16 @@
     "the_code": 0,
     "the_output": "arch64.so.1, for GNU/Linux 2.0.0, stripped\n65f5f94acbd035f9e469638359bf6fdeff7aeac445ff752a28f464fbece439f9  /Users/benny/Code/open-industrial-platform/target/pi/aarch64-unknown-linux-gnu/aarch64-unknown-linux-gnu/release/oip-simulated-server\n\n== the next step (the operator, on the Pi)\nthe artefacts are in /Users/benny/Code/open-industrial-platform/target/pi/aarch64-unknown-linux-gnu/aarch64-unknown-linux-gnu/release\ncopy oip-server and oip-simulated-server to the Pi, start a disposable\ninstance by hand over SSH and reach it through a tunnel of the loopback\n(docs/runbooks/operations.md \u00a715.3)."
   },
-  "the_revision_of_the_artefacts": "2660663dbde8a3de6e7bc99b95d75a36ec91bcbe",
+  "the_revision_of_the_artefacts": "fc18ce29954a83263be82bf7dab3d8e122564a42",
   "the_artefacts": {
-    "oip-server": "ebc3fbc2b492e5d14aca16f0ada169b07c582b443b786ab86fd54a09a8fb2bed",
+    "oip-server": "eb9f2e9ce9503280e13de1e586cc343a501d3caa156cf01a4c66a3b244f13aa6",
     "oip-simulated-server": "65f5f94acbd035f9e469638359bf6fdeff7aeac445ff752a28f464fbece439f9"
   },
   "the_bundle": {
     "the_code": 0,
     "the_output": "0c9ff89ea695922f1483e27c2ef315029d76d5ea2f5bab72dd36d25e75879405  ./bin/start.sh\n51d365198b4fab3765e2030567ca0ca1c737b6a3658f06955a0ee8b8307358e2  ./bin/status.sh\n40b00ec39102f3262d7d145078059ef13dc74c232f0c4db76fa978a3ba63d529  ./bin/stop.sh\n3b5adba98de9ab2fa02ecb3f9d3cc4e09b70e5d54ee4c7340c9db87359c454cc  ./README.md\n515e0d0172a57806d68112bd97d62e2c3d94ec19f6c5534d85b46548ee35927d  ./tools/oip_ops.py\n640f07d7bedb1f574e8e35ea358e4efb91a58008da3edeb2a226a6dd2b7cbb92  ./tools/oip_pi_instance.py\n\nthe next step (the operator, on the host):\n  copy this directory to the host and run: ./bin/start.sh"
   },
-  "the_bundle_digest": "f3f9b9887a70fb6e4a2815fcce31b5bb5b34947cc915be976af8647e393a3ef3",
+  "the_bundle_digest": "037da50564fd8d9367b4dab2310df02495dbe8c65042c7f361f878dec67b6e12",
   "the_services_before": [
     "accounts-daemon.service",
     "avahi-daemon.service",
@@ -55,15 +55,15 @@
   "the_steps": [],
   "the_copy": {
     "the_code": 0,
-    "the_error": "mux_client_request_session: session request failed: Session open refused by peer\r\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
+    "the_error": ""
   },
   "the_cleanup": {
     "the_code": 0
   },
   "the_start": {
     "the_code": 0,
-    "the_output": "e/etc/plan.json\",\n  \"the_ipc_configuration\": \"/home/flashback/oip-bundle/instance/etc/ipc.json\",\n  \"the_database\": \"/home/flashback/oip-bundle/instance/state/oip-core.sqlite\",\n  \"the_socket\": \"/home/flashback/oip-bundle/instance/state/ipc.sock\",\n  \"the_credential_of_the_operator\": \"/home/flashback/oip-bundle/instance/state/platform-reader.credential\",\n  \"the_http_port\": 18808,\n  \"the_source_port\": 18809,\n  \"the_source_id\": \"pi-simulation\",\n  \"the_uid\": 1000,\n  \"the_host\": \"rpi4\"\n}\nthe simulation of the host listens on 127.0.0.1:18809 (pid 314420)\n{\"status\": \"provisioned\", \"plan\": \"/home/flashback/oip-bundle/instance/etc/plan.json\", \"database\": \"/home/flashback/oip-bundle/instance/state/oip-core.sqlite\", \"result\": \"{\\\"schema_version\\\":3,\\\"organizations\\\":1,\\\"sources\\\":1,\\\"idempotent\\\":false,\\\"legacy_migrated\\\":false}\"}\n{\"status\": \"started\", \"pid\": 314435, \"http_port\": 18808, \"database\": \"/home/flashback/oip-bundle/instance/state/oip-core.sqlite\", \"log\": \"/home/flashback/oip-bundle/instance/state/oip.log\", \"ipc_credentials_provisioned\": 2}\n\nthe Core of the instance answers on http://127.0.0.1:18808 of this host\nthe session of the operator: /home/flashback/oip-bundle/bin/login-code.sh",
-    "the_error": "mux_client_request_session: session request failed: Session open refused by peer\r\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
+    "the_output": "e/etc/plan.json\",\n  \"the_ipc_configuration\": \"/home/flashback/oip-bundle/instance/etc/ipc.json\",\n  \"the_database\": \"/home/flashback/oip-bundle/instance/state/oip-core.sqlite\",\n  \"the_socket\": \"/home/flashback/oip-bundle/instance/state/ipc.sock\",\n  \"the_credential_of_the_operator\": \"/home/flashback/oip-bundle/instance/state/platform-reader.credential\",\n  \"the_http_port\": 18808,\n  \"the_source_port\": 18809,\n  \"the_source_id\": \"pi-simulation\",\n  \"the_uid\": 1000,\n  \"the_host\": \"rpi4\"\n}\nthe simulation of the host listens on 127.0.0.1:18809 (pid 334600)\n{\"status\": \"provisioned\", \"plan\": \"/home/flashback/oip-bundle/instance/etc/plan.json\", \"database\": \"/home/flashback/oip-bundle/instance/state/oip-core.sqlite\", \"result\": \"{\\\"schema_version\\\":3,\\\"organizations\\\":1,\\\"sources\\\":1,\\\"idempotent\\\":false,\\\"legacy_migrated\\\":false}\"}\n{\"status\": \"started\", \"pid\": 334615, \"http_port\": 18808, \"database\": \"/home/flashback/oip-bundle/instance/state/oip-core.sqlite\", \"log\": \"/home/flashback/oip-bundle/instance/state/oip.log\", \"ipc_credentials_provisioned\": 2}\n\nthe Core of the instance answers on http://127.0.0.1:18808 of this host\nthe session of the operator: /home/flashback/oip-bundle/bin/login-code.sh",
+    "the_error": ""
   },
   "the_code_of_the_session": {
     "the_code": 0
@@ -103,7 +103,7 @@
   "the_published_listeners_of_the_instance": [],
   "the_stop": {
     "the_code": 0,
-    "the_output": "{\"status\": \"stopped\", \"pid\": 314435}\nthe simulation of the host was stopped (pid 314420)\nthe instance is stopped; the data of the instance stays in /home/flashback/oip-bundle/instance/state"
+    "the_output": "{\"status\": \"stopped\", \"pid\": 334615}\nthe simulation of the host was stopped (pid 334600)\nthe instance is stopped; the data of the instance stays in /home/flashback/oip-bundle/instance/state"
   },
   "the_services_after": [
     "accounts-daemon.service",
@@ -136,8 +136,8 @@
   "the_services_are_unchanged": true,
   "the_listeners_of_the_instance_after_the_stop": [],
   "the_status": "PASS",
-  "the_revision": "2660663dbde8a3de6e7bc99b95d75a36ec91bcbe",
-  "the_tree": "e84f36060ec1427c20f51f00d8410b9b4f6c6271",
+  "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
+  "the_tree": "b1d8559e13177a92d83e8a5b70447cabfd0340e4",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-12T10:28:20Z"
+  "finished_utc": "2026-11-12T20:52:55Z"
 }

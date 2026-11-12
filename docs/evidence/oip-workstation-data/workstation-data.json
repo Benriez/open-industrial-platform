@@ -1,9 +1,9 @@
 {
   "schema": "oip-workstation-data-v1",
-  "revision": "0e7f52df86840545722ffce4d2715c43b3d52e9d",
+  "revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "the functional depth of the six workstations against the real Core",
-  "base": "http://127.0.0.1:60932",
+  "base": "http://127.0.0.1:57896",
   "selected_source": "Kontext Organization A / Infrastructure A1 / site-a1 / source-a auswählen\nsource-a\nOrganization A / Infrastructure A1 / site-a1 / source-a",
   "surfaces": {
     "overview": {
@@ -19,7 +19,7 @@
       "lines": 124
     },
     "diagnostics": {
-      "lines": 107
+      "lines": 114
     },
     "settings": {
       "lines": 77
