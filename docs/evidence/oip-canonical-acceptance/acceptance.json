@@ -53,8 +53,8 @@
       "phase": "no_clients_ingestion_progress",
       "status": "PASS",
       "details": {
-        "before": 430,
-        "after": 440,
+        "before": 450,
+        "after": 460,
         "no_browser_or_mcp_sessions": true
       }
     },
@@ -87,15 +87,15 @@
       }
     }
   ],
-  "runtime_directory": "/private/tmp/oip82-32277-1794523796581351000",
+  "runtime_directory": "/private/tmp/oip82-50477-1794525554502110000",
   "model_used": false,
-  "server_binary_sha256": "308b0a2898acd7e5f3cb0d698513fe0c9b1ee65391e7f59440bd05d695ebd6ce",
+  "server_binary_sha256": "4f6387ecbd74193ee9bc960a2ad090f1ee13567219354cf7e8835fcd91cff729",
   "mcp_probe_binary_sha256": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
   "canonical_ui_precheck": {
     "schema": "oip-canonical-ui-gate-v2",
-    "started_utc": "2026-11-12T22:49:57Z",
-    "source_revision": "5d9ace101d0eaf0f83fdff016ed1efdfbafb91ea",
-    "source_tree": "7bb60b954a5ac456a048ecde7ddd1eba1b5e1ab3",
+    "started_utc": "2026-11-12T23:19:15Z",
+    "source_revision": "07cc80857930434d1fa187f176357a4e66ee03ac",
+    "source_tree": "5ab1705d73a07c08502eaa26b2f72bfd73074054",
     "source_worktree": "/Users/benny/Code/open-industrial-platform",
     "source_dirty": false,
     "baseline_document": "docs/design/OIP_CANONICAL_UI_BASELINE.md",
@@ -178,15 +178,15 @@
     "flutter_tests_skipped": 1,
     "browser_gate_executed": false,
     "complete": false,
-    "finished_utc": "2026-11-12T22:50:55Z"
+    "finished_utc": "2026-11-12T23:20:17Z"
   },
   "physical_raspberry_pi_tested": false,
   "ssh_fixture": "owned loopback OpenSSH, actual host facts",
   "canonical_ui_browser": {
     "verdict": "PASS",
-    "revision": "5d9ace101d0eaf0f83fdff016ed1efdfbafb91ea",
+    "revision": "07cc80857930434d1fa187f176357a4e66ee03ac",
     "the_detail_is": "the observed value of the check",
-    "base": "http://127.0.0.1:51333",
+    "base": "http://127.0.0.1:56464",
     "browser_version": "157.0.8103.52",
     "bundle_sha256": "3e0f82db33c41cf7ab1803cddf8fa60ec55205e9d8fcbd4e24655e42133cee4f",
     "bundle_matches_local_build": true,
@@ -472,7 +472,7 @@
       {
         "check": "screenshot overview 1440px",
         "ok": true,
-        "detail": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-1440.png"
+        "detail": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-1440.png"
       },
       {
         "check": "no legacy marker Deine Infrastruktur. Ein Bild. on devices",
@@ -532,7 +532,7 @@
       {
         "check": "screenshot devices 1440px",
         "ok": true,
-        "detail": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-devices-1440.png"
+        "detail": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-devices-1440.png"
       },
       {
         "check": "no legacy marker Deine Infrastruktur. Ein Bild. on network",
@@ -592,7 +592,7 @@
       {
         "check": "screenshot network 1440px",
         "ok": true,
-        "detail": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-network-1440.png"
+        "detail": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-network-1440.png"
       },
       {
         "check": "no legacy marker Deine Infrastruktur. Ein Bild. on opcua",
@@ -657,7 +657,7 @@
       {
         "check": "screenshot opcua 1440px",
         "ok": true,
-        "detail": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-opcua-1440.png"
+        "detail": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-opcua-1440.png"
       },
       {
         "check": "no legacy marker Deine Infrastruktur. Ein Bild. on diagnostics",
@@ -717,7 +717,7 @@
       {
         "check": "screenshot diagnostics 1440px",
         "ok": true,
-        "detail": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-diagnostics-1440.png"
+        "detail": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-diagnostics-1440.png"
       },
       {
         "check": "no legacy marker Deine Infrastruktur. Ein Bild. on settings",
@@ -772,7 +772,7 @@
       {
         "check": "screenshot settings 1440px",
         "ok": true,
-        "detail": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-settings-1440.png"
+        "detail": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-settings-1440.png"
       },
       {
         "check": "no legacy marker Deine Infrastruktur. Ein Bild. on overview",
@@ -832,7 +832,7 @@
       {
         "check": "screenshot overview 1920px",
         "ok": true,
-        "detail": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-1920.png"
+        "detail": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-1920.png"
       },
       {
         "check": "no legacy marker Deine Infrastruktur. Ein Bild. on devices",
@@ -892,7 +892,7 @@
       {
         "check": "screenshot devices 1920px",
         "ok": true,
-        "detail": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-devices-1920.png"
+        "detail": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-devices-1920.png"
       },
       {
         "check": "no legacy marker Deine Infrastruktur. Ein Bild. on network",
@@ -952,7 +952,7 @@
       {
         "check": "screenshot network 1920px",
         "ok": true,
-        "detail": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-network-1920.png"
+        "detail": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-network-1920.png"
       },
       {
         "check": "no legacy marker Deine Infrastruktur. Ein Bild. on opcua",
@@ -1017,7 +1017,7 @@
       {
         "check": "screenshot opcua 1920px",
         "ok": true,
-        "detail": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-opcua-1920.png"
+        "detail": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-opcua-1920.png"
       },
       {
         "check": "no legacy marker Deine Infrastruktur. Ein Bild. on diagnostics",
@@ -1077,7 +1077,7 @@
       {
         "check": "screenshot diagnostics 1920px",
         "ok": true,
-        "detail": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-diagnostics-1920.png"
+        "detail": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-diagnostics-1920.png"
       },
       {
         "check": "no legacy marker Deine Infrastruktur. Ein Bild. on settings",
@@ -1132,7 +1132,7 @@
       {
         "check": "screenshot settings 1920px",
         "ok": true,
-        "detail": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-settings-1920.png"
+        "detail": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-settings-1920.png"
       },
       {
         "check": "only expected Core authorization denials",
@@ -1151,59 +1151,59 @@
       }
     ],
     "screenshots": [
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/authentication-required.png",
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-1440.png",
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-devices-1440.png",
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-network-1440.png",
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-opcua-1440.png",
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-diagnostics-1440.png",
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-settings-1440.png",
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-1920.png",
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-devices-1920.png",
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-network-1920.png",
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-opcua-1920.png",
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-diagnostics-1920.png",
-      "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-settings-1920.png"
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/authentication-required.png",
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-1440.png",
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-devices-1440.png",
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-network-1440.png",
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-opcua-1440.png",
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-diagnostics-1440.png",
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-settings-1440.png",
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-1920.png",
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-devices-1920.png",
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-network-1920.png",
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-opcua-1920.png",
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-diagnostics-1920.png",
+      "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-settings-1920.png"
     ],
     "console_errors": [],
     "external_requests": [],
     "core_denials": [
       {
-        "url": "http://127.0.0.1:51333/api/v2/organizations?offset=0&limit=100",
+        "url": "http://127.0.0.1:56464/api/v2/organizations?offset=0&limit=100",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:51333/api/v1/system/status",
+        "url": "http://127.0.0.1:56464/api/v1/system/status",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:51333/api/v1/devices",
+        "url": "http://127.0.0.1:56464/api/v1/devices",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:51333/api/v1/metrics/current",
+        "url": "http://127.0.0.1:56464/api/v1/events",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:51333/api/v1/events",
+        "url": "http://127.0.0.1:56464/api/v1/sources",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:51333/api/v1/sources",
+        "url": "http://127.0.0.1:56464/api/v1/metrics/current",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:51333/api/v2/settings?scope=platform",
+        "url": "http://127.0.0.1:56464/api/v2/settings?scope=platform",
         "status": 403
       },
       {
-        "url": "http://127.0.0.1:51333/api/v2/settings?scope=platform",
+        "url": "http://127.0.0.1:56464/api/v2/settings?scope=platform",
         "status": 403
       }
     ],
     "fatal": null,
     "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
-    "duration_ms": 91703
+    "duration_ms": 92335
   },
   "canonical_ui_visual": {
     "schema": "oip-canonical-ui-visual-comparison-v2",
@@ -1220,8 +1220,8 @@
         "baseline": "/Users/benny/Code/open-industrial-platform/docs/design/baselines/canonical-ui-1440.png",
         "baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
         "expected_baseline_sha256": "0a130f20d1fe8954a2a0d9ca12407032262fe40819a3b5cacfcb511f83572a3a",
-        "actual": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-1440.png",
-        "actual_sha256": "76affa64709b919fd3fc22541cf5d330ca1da9ac6d17b64eea2d29c4c623d58e",
+        "actual": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-1440.png",
+        "actual_sha256": "9509a41503044122b20c60dea5f56343ad3765e30eda4684861a240f40d179cf",
         "crop": [
           0,
           0,
@@ -1255,8 +1255,8 @@
         "baseline": "/Users/benny/Code/open-industrial-platform/docs/design/baselines/canonical-ui-1920.png",
         "baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
         "expected_baseline_sha256": "b13ce2ef8da1e9ecaa1aadd1493371443f71e54079cb0c5d3d4c0c2cb6e959ae",
-        "actual": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/canonical-ui-1920.png",
-        "actual_sha256": "d7185c990925c6ca3d092bcc2131fd6cf0c714a229c06ea94ee7bc0a1ab6f095",
+        "actual": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/canonical-ui-1920.png",
+        "actual_sha256": "aee898aed337f797e26cfd3a344c868b1c558c5b8154b1666e74e6a7137aadf8",
         "crop": [
           0,
           0,
@@ -1333,9 +1333,9 @@
   },
   "canonical_ui_global_context": {
     "schema": "oip-global-context-receipt-v1",
-    "revision": "5d9ace101d0eaf0f83fdff016ed1efdfbafb91ea",
+    "revision": "07cc80857930434d1fa187f176357a4e66ee03ac",
     "the_detail_is": "the message that describes the failure of the check",
-    "base": "http://127.0.0.1:51333",
+    "base": "http://127.0.0.1:56464",
     "options_offered": 4,
     "scope_per_workstation": [
       {
@@ -1463,10 +1463,10 @@
   },
   "canonical_ui_accessibility": {
     "schema": "oip-accessibility-receipt-v1",
-    "revision": "5d9ace101d0eaf0f83fdff016ed1efdfbafb91ea",
+    "revision": "07cc80857930434d1fa187f176357a4e66ee03ac",
     "the_detail_is": "the message that describes the failure of the check",
     "scope": "name and role coverage of the rendered surface of the six workstations; not a full WCAG audit",
-    "base": "http://127.0.0.1:51333",
+    "base": "http://127.0.0.1:56464",
     "stations": [
       {
         "workstation": "overview",
@@ -1656,18 +1656,18 @@
       "rendered_samples": 6,
       "all_stale": true,
       "receive_times_shown": 1,
-      "first_receive_time": "2026-11-12 22:57:31.497 UTC",
+      "first_receive_time": "2026-11-12 23:27:14.739 UTC",
       "metrics": [
-        "host.cpu_info",
+        "host.model",
+        "host.memory_total_bytes",
+        "host.os",
         "host.disks",
-        "host.interfaces",
-        "host.memory_used_bytes",
-        "host.uptime_seconds",
+        "host.cpu_info",
         "host.hostname"
       ]
     },
     "rendered_administration": {
-      "device_id": "3871c01e-d138-48c5-bfe7-3a476eff7ca0",
+      "device_id": "4e88d9f0-8741-455c-abef-0508e51ca813",
       "revision_before": 1,
       "revision_after": 2,
       "display_name_updated": true,
@@ -1709,12 +1709,12 @@
   },
   "canonical_ui_gate_receipt": {
     "verdict": "PASS",
-    "precheck_path": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
-    "browser_path": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
-    "visual_path": "target/oip-canonical-regression-release17/oip_canonical_ui_gate/canonical-ui/visual-comparison.json",
-    "precheck_receipt_sha256": "aea3bf4b0b89173dac18ed1cc50838001a798831db628bc9a1838d335ac119c8",
-    "browser_receipt_sha256": "4a43d4c15e1b6238c05d3f3a78024099c400cb97ae0492341f7b259e44d4f903",
-    "visual_receipt_sha256": "4d6f61eaf9c54cbad26d1bdb9ca6fb3bffa37fba4f1cafe038ef938b0efe7eb6",
+    "precheck_path": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/canonical-ui/canonical-ui-gate.json",
+    "browser_path": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/browser/browser-canonical-ui-gate.json",
+    "visual_path": "target/oip-canonical-regression-release18/oip_canonical_ui_gate/canonical-ui/visual-comparison.json",
+    "precheck_receipt_sha256": "8447ab908baddeea2b370d927dd5876911ec448f41e44656ea9ada2b70001f5b",
+    "browser_receipt_sha256": "d7b46617a792dd59be0a11b79283b8ce9f60cffde89a1178d70110dc25da0706",
+    "visual_receipt_sha256": "6cdadaf3e3636e608c06c6aafdebd056601b22949d55188104b7151086e7b419",
     "flutter_tests_passed": 387,
     "flutter_tests_failed": 0,
     "browser_findings": 189,
@@ -1725,16 +1725,16 @@
   "performance": {
     "connection_read_official_mcp": {
       "samples": 20,
-      "p50_ms": 0.6549579557031393,
-      "p95_ms": 0.7400419563055038
+      "p50_ms": 0.6499579176306725,
+      "p95_ms": 0.6902499590069056
     },
-    "core_rss_kib_cpu_percent": "20720   0.8",
+    "core_rss_kib_cpu_percent": "21024   0.5",
     "short_local_measurement_not_sla": true
   },
   "status": "PASS",
   "own_processes_stopped": true,
-  "the_revision": "5d9ace101d0eaf0f83fdff016ed1efdfbafb91ea",
-  "the_tree": "7bb60b954a5ac456a048ecde7ddd1eba1b5e1ab3",
+  "the_revision": "07cc80857930434d1fa187f176357a4e66ee03ac",
+  "the_tree": "5ab1705d73a07c08502eaa26b2f72bfd73074054",
   "the_working_tree_is_clean": true,
-  "the_revision_of_the_acceptance": "5d9ace101d0eaf0f83fdff016ed1efdfbafb91ea"
+  "the_revision_of_the_acceptance": "07cc80857930434d1fa187f176357a4e66ee03ac"
 }
