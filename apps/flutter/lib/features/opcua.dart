@@ -12,6 +12,7 @@ import '../widgets/workstation.dart';
 import '../widgets/opcua_compare.dart';
 import 'diagnostics.dart' show scenarios;
 import 'opcua_value.dart';
+import '../core/keyboard.dart';
 
 /// OPC UA workstation: context rail, node explorer and value inspector.
 ///
@@ -554,16 +555,22 @@ class _OpcuaPageState extends State<OpcuaPage> {
         const SingleActivator(LogicalKeyboardKey.keyK, meta: true):
             _focusSearch,
         const SingleActivator(LogicalKeyboardKey.slash): () {
-          if (!searchFocus.hasFocus) _focusSearch();
+          if (!searchFocus.hasFocus && !aTextFieldHasTheFocus()) _focusSearch();
         },
         const SingleActivator(LogicalKeyboardKey.slash, shift: true): () {
-          if (!searchFocus.hasFocus) _focusSearch();
+          if (!searchFocus.hasFocus && !aTextFieldHasTheFocus()) _focusSearch();
         },
         const SingleActivator(LogicalKeyboardKey.keyP): () {
-          if (!searchFocus.hasFocus && selected != null) _togglePin(selected!);
+          if (!searchFocus.hasFocus &&
+              !aTextFieldHasTheFocus() &&
+              selected != null) {
+            _togglePin(selected!);
+          }
         },
         const SingleActivator(LogicalKeyboardKey.keyC): () {
-          if (!searchFocus.hasFocus && selected != null) {
+          if (!searchFocus.hasFocus &&
+              !aTextFieldHasTheFocus() &&
+              selected != null) {
             _toggleCompare(selected!);
           }
         },

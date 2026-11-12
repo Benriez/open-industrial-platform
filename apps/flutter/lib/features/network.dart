@@ -13,6 +13,7 @@ import 'network/network_explorer.dart';
 import 'network/network_graph.dart';
 import 'network/network_model.dart';
 import '../widgets/device_kind.dart';
+import '../core/keyboard.dart';
 
 enum _NetworkMode { topology, connections, vpn, diagnostics, compare }
 
@@ -449,10 +450,6 @@ class _NetworkPageState extends State<NetworkPage> {
         focus?.context?.findAncestorWidgetOfExactType<EditableText>() != null;
     if (editing) return KeyEventResult.ignored;
     final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.slash) {
-      _focusSearch();
-      return KeyEventResult.handled;
-    }
     if (key == LogicalKeyboardKey.f6) {
       if (searchFocus.hasFocus) {
         listFocus.requestFocus();
@@ -461,6 +458,13 @@ class _NetworkPageState extends State<NetworkPage> {
       } else {
         inspectorFocus.requestFocus();
       }
+      return KeyEventResult.handled;
+    }
+    // A field of the explorer is a field of the page too: while it is
+    // edited, every key belongs to the field. The navigation key (F6) stays.
+    if (aTextFieldHasTheFocus()) return KeyEventResult.ignored;
+    if (key == LogicalKeyboardKey.slash) {
+      _focusSearch();
       return KeyEventResult.handled;
     }
     final snapshot = widget.controller.snapshot;

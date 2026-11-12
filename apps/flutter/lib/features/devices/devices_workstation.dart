@@ -14,6 +14,7 @@ import 'device_detail.dart';
 import 'device_inventory.dart';
 import 'device_session.dart';
 import 'devices_layout.dart';
+import '../../core/keyboard.dart';
 
 enum DevicesWorkspaceMode { devices, services, health }
 
@@ -171,6 +172,9 @@ class _DevicesPageState extends State<DevicesPage> {
       }
       return KeyEventResult.ignored;
     }
+    // A field of the inspector is a field of the page too: while it is
+    // edited, every key belongs to the field.
+    if (aTextFieldHasTheFocus()) return KeyEventResult.ignored;
     if (key == LogicalKeyboardKey.slash) {
       searchFocus.requestFocus();
       return KeyEventResult.handled;

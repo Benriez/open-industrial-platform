@@ -99,27 +99,30 @@ async function activateControl(locator,predicate){
   return false;
 }
 
-/// A **text field** of the Flutter view is written through its own input
-/// element.
+/// A **text field** of the Flutter view is written the way the operator
+/// writes it: with a painted click on the field, which reaches the canvas of
+/// the view, and with the keyboard afterwards.
 ///
-/// The gesture of the pointer is deduplicated by the Flutter view for 500 ms,
-/// so the input is focused through its accessibility element only after that
-/// window; without the window the view receives the deletion of the field
-/// but not the text that follows it. The journey therefore clicks, blurs,
-/// waits and focuses — and it **reads the field back**, because a field that
-/// carries a different text is a defect of the surface, not a fact of the
-/// journey.
+/// The accessibility element of the field is **not** the editing element of
+/// the view, so the journey writes into the editing element of the view: it
+/// clicks the painted position of the field — which reaches the canvas of the
+/// view — and it types with the keyboard afterwards. It reads the field back,
+/// because a field that carries a different text is a defect of the surface
+/// and not a fact of the journey.
 async function fillField(locator,text){
+  const view=page.viewportSize();
   for(let attempt=0;attempt<3;attempt++){
-    for(let n=0;!(await locator.isEditable());n++){
-      if(n===100)throw Error('the field of the surface did not become editable');
-      await page.waitForTimeout(100);
+    for(let i=0;i<16;i++){
+      const box=await locator.boundingBox();
+      if(box&&box.y>70&&box.y+box.height<view.height-20){
+        await page.mouse.click(box.x+Math.min(box.width/2,60),box.y+box.height/2);
+        break;
+      }
+      await page.mouse.move(1150,700);
+      await page.mouse.wheel(0,300);
+      await page.waitForTimeout(220);
     }
-    await locator.click({force:true});
-    await locator.evaluate(e=>e.blur());
-    await page.waitForTimeout(650);
-    await locator.focus();
-    await page.waitForTimeout(250);
+    await page.waitForTimeout(500);
     await page.keyboard.press('Meta+A');
     await page.waitForTimeout(80);
     await page.keyboard.press('Backspace');

@@ -4,8 +4,68 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oip_dashboard/app/app.dart';
 import 'package:oip_dashboard/app/controller.dart';
 import 'package:oip_dashboard/models/contracts.dart';
+import 'package:oip_dashboard/models/history.dart';
+import 'package:oip_dashboard/models/onboarding.dart';
+import 'package:oip_dashboard/services/api.dart';
 import 'package:oip_dashboard/widgets/workstation.dart';
+import 'infrastructure_support.dart';
 import 'support.dart';
+
+/// The fixture with the management of the devices.
+///
+/// The administration of the inspector needs an authorized adapter, and the
+/// note of the device is a field of that inspector: the keys of the page must
+/// not be captured while the field is edited.
+class _ManagedApi extends FakeApi implements DeviceManagementApi {
+  @override
+  bool get managed => true;
+
+  @override
+  Future<BrowserSession> session() async => BrowserSession.fromJson({
+        'authenticated': true,
+        'principal_id': 'fixture-operator',
+        'csrf_token': null,
+        'mode': 'local_operator_session',
+      });
+
+  @override
+  Future<BrowserSession> login(String code) => session();
+
+  @override
+  Future<void> logout() async {}
+
+  @override
+  Future<List<HierarchyItem>> hierarchy(
+          String level, Map<String, String> scope) async =>
+      const <HierarchyItem>[];
+
+  @override
+  Future<Json> inventory(String id) async =>
+      <String, dynamic>{'id': id, 'revision': 1};
+
+  @override
+  Future<void> register(Json device) async {}
+
+  @override
+  Future<void> update(Json device, {required int expectedRevision}) async {}
+
+  @override
+  Future<void> archive(String id, {required int expectedRevision}) async {}
+
+  @override
+  Future<ConnectionResult> connection(
+          {String? deviceId, String? planId}) async =>
+      ConnectionResult.fromJson(<String, dynamic>{'profiles': <dynamic>[]});
+
+  @override
+  Future<ConnectionResult> configure(Json action) async =>
+      ConnectionResult.fromJson(<String, dynamic>{'profiles': <dynamic>[]});
+
+  @override
+  Future<HistoryPage> observationHistory(
+          {required String deviceId, String? cursor, int limit = 20}) async =>
+      HistoryPage.fromJson(<String, dynamic>{'items': <dynamic>[]});
+}
 
 const String _sim = 'oip-local-simulation-v1';
 
@@ -968,6 +1028,38 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Gerät für die technische Untersuchung auswählen'),
           findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('A field of the inspector keeps the keys of the page',
+        (tester) async {
+      final bootstrapped = await _bootstrap(tester, apiFactory: () {
+        final api = _ManagedApi()..infrastructure = infrastructureFixture();
+        return api;
+      });
+      // The inventory of the operator: the administration of the device needs
+      // the record with its revision.
+      await bootstrapped.controller.resyncInfrastructure();
+      await tester.pumpAndSettle();
+      await _navigate(tester, 1440);
+      await tester.tap(find.byKey(const Key('device-device-a1')));
+      await tester.pumpAndSettle();
+
+      // The note of the device is a field of the inspector. While it is
+      // edited, the keys of the page belong to the field: the letter "c"
+      // toggled the comparison instead of being written into the note, and
+      // the operator lost every "c" of the note.
+      final note = find.byKey(const Key('device-administration-note'));
+      await tester.ensureVisible(note);
+      await tester.pumpAndSettle();
+      await tester.tap(note);
+      await tester.pumpAndSettle();
+      expect(find.text('Comparison 0/4'), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
+      await tester.pumpAndSettle();
+      expect(find.text('Comparison 0/4'), findsOneWidget);
+      expect(find.text('Comparison 1/4'), findsNothing);
+      expect(find.byTooltip('Pin entfernen'), findsNothing);
       expect(tester.takeException(), isNull);
     });
 

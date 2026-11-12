@@ -17,6 +17,7 @@ import 'diagnostics/diagnostics_workspaces.dart';
 import 'diagnostics/event_explorer.dart';
 import 'diagnostics/evidence_inspector.dart';
 import 'diagnostics/evidence_timeline.dart';
+import '../core/keyboard.dart';
 
 const scenarios = {
   'normal': 'Normalbetrieb',
@@ -357,6 +358,9 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
       return KeyEventResult.handled;
     }
     if (searchFocus.hasFocus) return KeyEventResult.ignored;
+    // A field of the explorer is a field of the page too: while it is
+    // edited, every key belongs to the field.
+    if (aTextFieldHasTheFocus()) return KeyEventResult.ignored;
     if (key == LogicalKeyboardKey.slash) {
       searchFocus.requestFocus();
       return KeyEventResult.handled;
