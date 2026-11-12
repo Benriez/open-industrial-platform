@@ -295,17 +295,6 @@ An **independent verification** of that change (a delegated, read-only audit of 
     (`tests/oip_opcua_browser.py`, `apps/flutter/test/browser_opcua_address_space.mjs`,
     `docs/evidence/oip-opcua-browser/opcua-browser.json`).
 
-16. **N34 (the journeys of the client that no harness names)**: **measured**. Twenty-two browser
-    journeys and performance scripts under `apps/flutter/test/` were named by **no** harness: no
-    rehearsal of the refresh, no case of the canonical regression, no script of the tools. Their
-    proofs were therefore **no receipts** — and every one of them waited for the surface of the
-    OIP/005 demo (`Operations Workstation`), one of them for its slogan (`Deine Infrastruktur. Ein
-    Bild.`): a file that asserts the prohibited surface is a trap for the next reader. The journeys
-    are **retired** (they stay in the history of the repository). The claim of the address space,
-    which the record had backed with one of them, is measured again by a **rehearsal**
-    (`tests/oip_opcua_browser.py`, `apps/flutter/test/browser_opcua_address_space.mjs`,
-    `docs/evidence/oip-opcua-browser/opcua-browser.json`).
-
 17. **N35 (the live claims of the retired journeys)**: the **next READY task**. Ten of the retired
     journeys still prove **live** claims of the surface — the density and the geometry of the
     Devices workstation, the geometry, the comparison and the transport of the Network workspace, the
