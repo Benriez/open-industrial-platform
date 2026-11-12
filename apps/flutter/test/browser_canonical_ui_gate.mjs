@@ -193,10 +193,10 @@ try {
         await page.waitForTimeout(650);
         await page.keyboard.type('abc', { delay: 40 });
         await page.waitForTimeout(400);
-        const search = page.locator('input[aria-label="Nodes durchsuchen"], textarea[aria-label="Nodes durchsuchen"]').first();
-        const typed = await search.inputValue().catch(() => '');
-        check('the search of the address space keeps every character', typed === 'abc', typed);
-        await search.click({ force: true });
+        // The rendered field carries the text: the accessible name of the
+        // field is its hint, the value is the text of the operator.
+        const typed = /textbox "Nodes durchsuchen": abc/.test(await snapshot());
+        check('the search of the address space keeps every character', typed, typed);
         await page.keyboard.press('Meta+A');
         await page.keyboard.press('Backspace');
         await page.waitForTimeout(300);
