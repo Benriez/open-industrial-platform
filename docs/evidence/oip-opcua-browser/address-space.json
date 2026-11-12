@@ -1,5 +1,6 @@
 {
   "status": "PASS",
+  "the_revision": "12d978c6333a30c9f6e16ecc76c1e8280cd0ab32",
   "the_address_space": {
     "the_nodes_of_the_core": 1020,
     "the_folders_of_the_core": [
