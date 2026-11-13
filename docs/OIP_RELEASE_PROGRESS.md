@@ -139,7 +139,7 @@ Each item names the next *delimited* step, its gate and its blocker and carries 
 | N7 monitoring measurements in the panel | **DONE** | closed in iteration 8 |
 | N8 real multi-infrastructure overview | **DONE** | closed in iteration 10 |
 | N9 the network view of the authorized placement | **DONE** | closed in iteration 11 |
-| N10 the managed diagnostics view | **READY** | the next step of the loop |
+| N10 the managed diagnostics view | **DONE** | closed via the diagnostics-2027 workspaces (event explorer, evidence inspector, persisted evidence) in the approved Spectrum-2027 shell: `apps/flutter/lib/features/diagnostics/`, `managed_diagnostics_test.dart`, wired as workstation page 4 (`DiagnosticsPage`) in `apps/flutter/lib/app/app.dart`; reconciled into the approved workspace in `7fc612e`, measured in iteration 13 |
 | N11 canonical Spectrum-2027 UI baseline and design regression gate | **DONE, closed in iteration 12** | the two parallel executions of the same integration were reconciled into one candidate, the full gate is PASS on `e7aa994` and the candidate is integrated into canonical `main` with `git merge --ff-only`; operator visual approval remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE` |
 
 A blocked item never stops the loop while an independent READY item exists. Items that need an
@@ -4514,6 +4514,26 @@ production-security scope of G10, the operator acceptance of G12, the network re
 deployed devices (the router and the bridge on `192.168.1.x`, unreachable from `192.168.178.0/24`)
 for their discovery, and the Mac App Store archive, metadata, screenshots and upload. The verdict
 stays **OIP_PRODUCTION_NOT_READY** until the operator accepts the application.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no build-configuration change of the
+client, no push, no deployment.
+
+### Iteration 96 — the last stale task entry is reconciled and the agent backlog is confirmed exhausted
+
+**Status: reconciled on canonical `main`.** This iteration re-scanned the record for any
+agent-addressable work before re-affirming the blocked state, and found one more stale entry: the
+original task table (§3, N1–N11) still listed **N10 the managed diagnostics view as `READY`,
+"the next step of the loop."** N10 is **DONE** — the diagnostics-2027 workspaces (event explorer,
+evidence inspector, persisted evidence) are in the approved Spectrum-2027 shell
+(`apps/flutter/lib/features/diagnostics/`), proven by `managed_diagnostics_test.dart`, and wired as
+workstation page 4 (`DiagnosticsPage`) in `apps/flutter/lib/app/app.dart`; the capability was
+reconciled into the approved workspace in `7fc612e` and measured in iteration 13. The row is now
+`DONE`. With N10 reconciled, every item of both task lists (§3 N1–N11 and the N19–N36 list) is
+**DONE**, **measured**, or **operator-blocked**; there is no READY task left for the loop. The
+product of the release (`crates/`, `apps/flutter/lib/`) is byte-identical to the last verified
+revision, so no build or gate is re-run for a record-only change. The verdict stays
+**OIP_PRODUCTION_NOT_READY** and the loop enters **BLOCKED_OPERATOR**.
 
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no build-configuration change of the
