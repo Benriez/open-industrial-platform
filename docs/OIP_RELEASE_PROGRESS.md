@@ -4459,12 +4459,65 @@ the record (iteration 92) and are not re-measured for a change that does not tou
 
 Beside it remain the operator actions: the product decision on the delivery of the web release, the
 physical device of G5, the production-security scope of G10, the operator acceptance of G12 and the
-network of the devices (the router and the bridge). The next independent task is **N36** — the
-actions of an explorer row are not in the semantics tree — and after it one full release cycle at
-the final revision.
+network of the devices (the router and the bridge). This closing note was written before N36 was
+merged; **N36 is now complete** (`4132d8d`, accepted at `0a9b64f`), the full release cycle at the
+final revision is done (`0a9b64f` final acceptance, `1d3fc02` record verification), and the
+agent-addressable backlog is exhausted — see Iteration 95.
 
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
+
+### Iteration 95 — the record is reconciled with the product, and a regressed configuration is restored
+
+**Status: reconciled on canonical `main` (`1d3fc02`).**
+An earlier turn of the loop operated on a stale premise: it treated the Mac App Store readiness as
+the open task and re-applied a hardened runtime and a raised deployment target to the local Xcode
+project of the client. This iteration read the record first, found that premise wrong, and restored
+the verified state instead of committing a regression. No product code and no build configuration
+changed; only the record was reconciled.
+
+* **The Mac App Store readiness is already complete, and the re-applied hardening was a regression.**
+  The requirements of the store were read with their sources in
+  `docs/release/mac-app-store/requirements.md` (iteration 74), and the package is measured
+  (`docs/evidence/oip-mas-package/mas-package.json`). Requirement **R4** of that document is
+  explicit: the hardened runtime belongs to the **distribution** build, and it must **not** be set
+  in the local Xcode project — the local bundle is signed ad-hoc, the embedded Flutter framework
+  carries another ad-hoc identity, and the library validation of the hardened runtime refuses it, so
+  the local bundle would stop launching. Commit `46c0fcf` ("the hardened runtime belongs to the
+  distribution build, not to the local ad-hoc bundle") already removed it for exactly that reason,
+  and the archive of the distribution carries the hardened runtime instead
+  (`flags=0x10002(adhoc,runtime)` in `mas-package.json`). The re-applied change —
+  `ENABLE_HARDENED_RUNTIME = YES` and `MACOSX_DEPLOYMENT_TARGET = 13.0` in the Debug/Release/Profile
+  configurations of `apps/flutter/macos/Runner.xcodeproj/project.pbxproj` — reverted that deliberate
+  fix and would have re-broken the local launch. It was **restored** to the committed configuration
+  (`git checkout` of the working tree), and the two duplicate artefacts a parallel draft had added
+  (`tools/oip_macos_mas_harden.sh`, `docs/macos-app-store-readiness.md`) were removed, because they
+  duplicated `tools/oip_mas_package.py` and `docs/release/mac-app-store/`. No build configuration of
+  the client changed in this iteration.
+* **N36 is complete; the "next tasks" of the record were stale.** The row actions of the Device
+  Explorer and the Event Explorer reach the semantics tree now (`4132d8d`, the canonical source
+  revision): each row excludes only its icon and its texts with `ExcludeSemantics`, and the compare
+  and the pin buttons are **not** excluded, so assistive technology reaches them by name. Proven in
+  `apps/flutter/test/browser_network_2027.mjs` and `apps/flutter/test/browser_diagnostics_2027.mjs`.
+  The ledger and the closing note of Iteration 94 still named N36 as the next task; both are
+  reconciled to the truth. Every item of the "Next READY tasks" list (N19–N36) is now measured or
+  complete, and the full release cycle at the final revision is done (`0a9b64f` final acceptance,
+  `1d3fc02` record verification).
+* **The state that is verified is unchanged.** The product of the release (`crates/`,
+  `apps/flutter/lib/`) and its build configuration were not changed by this iteration; only the record
+  (`docs/OIP_RELEASE_LEDGER.md`, `docs/OIP_RELEASE_PROGRESS.md`) was reconciled. The tree is clean,
+  the personal installation is untouched at schema 6, and the repository has no remote.
+
+**The agent-addressable backlog is exhausted.** The software of every mandatory gate is DONE or
+READY (the software part), and what remains is operator-owned: the physical device of G5, the
+production-security scope of G10, the operator acceptance of G12, the network reachability of the two
+deployed devices (the router and the bridge on `192.168.1.x`, unreachable from `192.168.178.0/24`)
+for their discovery, and the Mac App Store archive, metadata, screenshots and upload. The verdict
+stays **OIP_PRODUCTION_NOT_READY** until the operator accepts the application.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no build-configuration change of the
+client, no push, no deployment.
 
 ## 5. Evidence index
 

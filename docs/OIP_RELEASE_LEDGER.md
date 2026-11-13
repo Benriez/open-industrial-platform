@@ -385,31 +385,36 @@ An **independent verification** of that change (a delegated, read-only audit of 
     `docs/evidence/oip-overview-performance/overview-performance-rehearsal.json`): eleven checks,
     measured at `d177881` on a clean tree. The **next READY task** is N36.
 
-18. **N36 (the actions of a row are not in the semantics tree)**: the compare and the pin of a
-   row are **not** in the semantics tree of the surface: the row excludes the semantics of its
-   descendants, so the two buttons are reachable only by the documented keyboard (`P`, `C`). It is
-   the same in two rows of the release: the row of the Device Explorer
-   (`apps/flutter/lib/features/network/network_explorer.dart`) and the row of the Event Explorer
-   (`apps/flutter/lib/features/diagnostics/event_explorer.dart`). The journeys of the Network
-   workspace and of the Diagnostics workstation drive the comparison by that keyboard path
-   (`apps/flutter/test/browser_network_2027.mjs`,
-   `apps/flutter/test/browser_diagnostics_2027.mjs`). The fix — the **texts** of the row excluded
-   instead of the whole row — changes the **product** and needs therefore the full re-measurement
-   of the release (the refresh of every rehearsal and the acceptance at the new revision). It is
-   the next product change. Beside it: the **evidence id** of an event is delivered by the Core
-   (the diagnostic projection carries the id of the record) and not shown by the surface, which
-   names the source-local record id — `keine Server-Record-ID` — that the projection does not
-   deliver.
+18. **N36 (the actions of a row reach the semantics tree)**: **COMPLETE — committed in `4132d8d`
+   ("the compare and the pin of an explorer row reach the semantics tree"), the canonical source
+   revision of the product, and part of the accepted release at `0a9b64f`.** The compare and the pin
+   of a row **are** in the semantics tree of the surface: each row excludes only its **icon** and its
+   **texts** with `ExcludeSemantics`, and the compare and the pin `IconButton`s are **not** excluded,
+   so assistive technology reaches them by name without the keyboard. It is so in the row of the
+   Device Explorer (`apps/flutter/lib/features/network/network_explorer.dart`) and the row of the
+   Event Explorer (`apps/flutter/lib/features/diagnostics/event_explorer.dart`), and it is proven in
+   the browser by `apps/flutter/test/browser_network_2027.mjs` ("the compare and the pin of a row are
+   in the semantics tree and reachable by name") and
+   `apps/flutter/test/browser_diagnostics_2027.mjs` ("the pin of an event row is in the semantics
+   tree and reachable by name"). The Event Explorer row also shows the record id the Core delivers
+   (`API-RECORD <id>`, or `OHNE RECORD-ID` when it is absent) instead of the earlier
+   `keine Server-Record-ID`. The defect that this closed — the row excluded the semantics of its
+   whole descendants, so the two buttons were reachable only by the documented keyboard (`P`, `C`) —
+   was a product change and needed the re-measurement of the release, which the accepted tree at
+   `0a9b64f` carries.
 
-The independent tasks of this list are open again: **N35 is complete** — its six groups are
+The independent tasks of this list are **exhausted**: **N35 is complete** — its six groups are
 measured (the density and the geometry of the Devices workspace, the Network workspace with two
 claims withdrawn, the evidence workspace of the Diagnostics workstation, the depth of the Settings
-workspace and the performance of the Overview). The next READY task is **N36**, the product change
-of the row actions, which is followed by one full release cycle at the final revision (the refresh
-of every rehearsal, the reproducible build, the acceptance, the manifest and the verification).
-Beside it remain the operator actions: the product decision on the delivery of the web release,
-the physical device of G5, the production-security scope of G10, the operator
-acceptance of G12 and the discovery of the host of the Core.
+workspace and the performance of the Overview) — and **N36 is complete** (`4132d8d`). The full
+release cycle at the final revision that was to follow N36 is **done**: the final acceptance ran on
+`0a9b64f` and the record was verified at `1d3fc02`; the canonical source revision of the product is
+`4132d8d`. There is **no** agent-addressable task left in this list — every item N19–N36 is measured
+or complete — and the release is feature-complete for the agent. What remains are the operator
+actions in the next section: the product decision on the delivery of the web release, the physical
+device of G5, the production-security scope of G10, the operator acceptance of G12, the network
+reachability of the two deployed devices for their discovery, and the Mac App Store archive and
+upload.
 
 ## Operator actions required (nothing here is executed by the loop)
 
