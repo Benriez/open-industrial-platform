@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "9225cad7f671fc72ff3196ab535ca1ee1c9ab468",
+      "the_revision": "7edf563d758177ce53c8f0a5ac14575740dceceb",
       "the_revision_of_the_source": {
         "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
         "the_subject": "fix(g4): every field of the surface keeps the characters of the keyboard"
@@ -12,7 +12,7 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 748,
-        "the_sha256": "3e62acfb740adfcdd1e603cb352699ea49cc512d41969d8bafb15b47b4ab3512"
+        "the_sha256": "c7e4a8c1947899bb30d8662aac36b7677e5e6b78377a8881affd802c9b60cf79"
       },
       "the_artifacts": {
         "the_core": "b943b3bb7ce43e94e609f187298c64b116df50c63f0847cc22c6216001807d5b",
@@ -156,8 +156,8 @@
     "the receipt docs/evidence/oip-deployment-discovery/deployment-discovery.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)",
     "the receipt docs/evidence/oip-hue-device/hue-device.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)"
   ],
-  "the_revision": "786856a0704e86c6c49d05fdc6a050f1fc5a700a",
-  "the_tree": "7a8250d4a6254569cba92674aceebf6442f8daf3",
-  "the_working_tree_is_clean": false,
+  "the_revision": "2d7ae6692350332792b3e5527a8e67e703a5c820",
+  "the_tree": "3bee0876f64a347b1cfc0a0000025aaa07db46a2",
+  "the_working_tree_is_clean": true,
   "status": "FAIL"
 }
