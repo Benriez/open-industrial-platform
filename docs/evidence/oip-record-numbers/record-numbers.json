@@ -225,10 +225,10 @@
       "the_row": "`docs/evidence/oip-accessibility/accessibility.json`",
       "the_measurements": [
         {
-          "the_number": "152",
+          "the_number": "174",
           "the_unit": "controls",
-          "the_quoted": "152 controls",
-          "the_receipt_carries_it": false
+          "the_quoted": "174 controls",
+          "the_receipt_carries_it": true
         }
       ],
       "the_receipts": 1
@@ -948,12 +948,10 @@
       "the_receipts": 1
     }
   ],
-  "the_problems": [
-    "the row `docs/evidence/oip-accessibility/accessibility.json` quotes 152 controls, which no receipt it names carries"
-  ],
-  "status": "FAIL",
-  "the_revision": "d61f7ed4e0f0fec1a8cf53d8a5cd8880440bf403",
-  "the_tree": "078455763447e42627c10e61a338140b4ff8967a",
+  "the_problems": [],
+  "status": "PASS",
+  "the_revision": "33fbb2d5062eb04112a93161b5b01ac4a049bd1c",
+  "the_tree": "5c35f042a92addda9c28e16f4e2ead7da60460cf",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T16:55:28Z"
+  "finished_utc": "2026-11-13T17:16:28Z"
 }
