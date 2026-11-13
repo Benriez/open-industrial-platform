@@ -6,9 +6,9 @@
     "the canonical state names the release",
     "every file of the evidence tree is cited"
   ],
-  "the_cited_paths": 89,
+  "the_cited_paths": 96,
   "the_citations": {
-    "the_cited": 89,
+    "the_cited": 96,
     "the_missing_on_disk": [],
     "the_present_but_untracked": []
   },
@@ -38,24 +38,30 @@
   },
   "the_canonical_state": {
     "the_source_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
-    "the_acceptance_revision": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
-    "the_core_binary_revision": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
-    "the_tracked_files": 748,
+    "the_acceptance_revision": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
+    "the_core_binary_revision": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
+    "the_tracked_files": 772,
     "the_product_is_committed": true
   },
   "the_files_of_the_release": {
-    "the_present": 97,
-    "the_cited": 97,
-    "the_orphaned": [],
+    "the_present": 117,
+    "the_cited": 115,
+    "the_orphaned": [
+      "docs/evidence/oip-devices-geometry/geometry-1440x900.json",
+      "docs/evidence/oip-devices-geometry/geometry-1920x1080.json"
+    ],
     "the_files_of_the_eras": 1271,
     "the_areas_of_the_eras_that_the_record_does_not_name": [],
     "the_note": "every file of the evidence tree, not only the receipts: the captures and the painted surfaces are evidence as well"
   },
   "the_repeated_blocks_of_the_ledger": [],
-  "the_problems": [],
-  "status": "PASS",
-  "the_revision": "5ba76f17c4ef3e8a36d5d5be60c4ecea040cb77d",
-  "the_tree": "cd1ebef6ef925fc39440dd679cf6b5b3aa2b45d6",
+  "the_problems": [
+    "the file docs/evidence/oip-devices-geometry/geometry-1440x900.json of the evidence tree is cited by nobody",
+    "the file docs/evidence/oip-devices-geometry/geometry-1920x1080.json of the evidence tree is cited by nobody"
+  ],
+  "status": "FAIL",
+  "the_revision": "b495badd4abd572c5279adebcd7fe6666c23f633",
+  "the_tree": "1648e75611fe7a2a8741cc87e34736078ad4f86e",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T02:12:55Z"
+  "finished_utc": "2026-11-13T03:39:15Z"
 }

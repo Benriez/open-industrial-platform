@@ -564,6 +564,41 @@
       "the_receipts": 0
     },
     {
+      "the_row": "`docs/evidence/oip-devices-geometry/devices-geometry.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-devices-geometry/devices-geometry-rehearsal.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-devices-geometry/captures/`",
+      "the_measurements": [],
+      "the_receipts": 0
+    },
+    {
+      "the_row": "`docs/evidence/oip-diagnostics-2027/diagnostics-2027-rehearsal.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-diagnostics-2027/diagnostics-live.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-diagnostics-2027/diagnostics-failed.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-diagnostics-2027/captures/`",
+      "the_measurements": [],
+      "the_receipts": 0
+    },
+    {
       "the_row": "`docs/evidence/oip-devices-density/devices-density.json`",
       "the_measurements": [],
       "the_receipts": 1
@@ -671,7 +706,7 @@
     {
       "the_row": "the item 17",
       "the_measurements": [],
-      "the_receipts": 2
+      "the_receipts": 4
     },
     {
       "the_row": "the item 20",
@@ -801,8 +836,8 @@
   ],
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "5ba76f17c4ef3e8a36d5d5be60c4ecea040cb77d",
-  "the_tree": "cd1ebef6ef925fc39440dd679cf6b5b3aa2b45d6",
+  "the_revision": "b495badd4abd572c5279adebcd7fe6666c23f633",
+  "the_tree": "1648e75611fe7a2a8741cc87e34736078ad4f86e",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T02:12:55Z"
+  "finished_utc": "2026-11-13T03:39:15Z"
 }
