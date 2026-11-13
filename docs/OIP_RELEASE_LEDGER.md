@@ -343,6 +343,26 @@ An **independent verification** of that change (a delegated, read-only audit of 
     (`apps/flutter/test/network_workstation_test.dart`), and the browser proves that the surface
     names the absence instead of simulating it.
 
+    The **fifth group is measured**: the depth of the Settings workspace. The rehearsal
+    (`tests/oip_settings_depth_2027.py`, `apps/flutter/test/browser_settings_depth_2027.mjs`)
+    starts a disposable Core with the plan of the operator and drives the managed surface with the
+    session of the operator. The settings and the management report are **platform** capabilities;
+    the example plan grants neither, so the rehearsal grants `settings_read` and
+    `mcp_management_read` at platform scope to the reader it authenticates and records the grant in
+    the receipt — without it the surface would show the refusal of the Core instead of the
+    workspace. The journey names **no settings key, no tool and no schema of its own**: every
+    category of the Core is offered, the settings keys are the keys of the Core, the server section
+    names every fact of the server report, the search reaches a tool of the tool catalog, the
+    inspector names its permissions and its scopes, and the copied schema is **byte-equal** to the
+    schema that the Core delivered for that tool. The write path is proven absent (no save control
+    and the offline administration of the Core), the client configuration is the template of the
+    Core (the two placeholders, no bearer token, no credential-looking value and
+    `credential_provisioned: false`), and the limits are named: the unsupported client sessions,
+    the absent retention cleanup, the read-only connection diagnostics, the open advisories of the
+    security category and the `Unknown — no host collector data in this contract` of the runtime.
+    Twelve checks, measured against the Core (`docs/evidence/oip-settings-depth/settings-depth.json`).
+    The **next** group is the performance of the Overview.
+
 18. **N36 (the actions of a row are not in the semantics tree)**: the compare and the pin of a
    row are **not** in the semantics tree of the surface: the row excludes the semantics of its
    descendants, so the two buttons are reachable only by the documented keyboard (`P`, `C`). It is
@@ -360,8 +380,8 @@ An **independent verification** of that change (a delegated, read-only audit of 
    deliver.
 
 The independent tasks of this list are open again: the last one that was measured is N35 — the
-first, the second, the third and the fourth group of its claims are measured — the next
-one is N35 again (the **Settings workspace** and the **Overview**), and N36 (the actions of a
+first, the second, the third, the fourth and the fifth group of its claims are measured — the next
+one is N35 again (the **performance of the Overview**), and N36 (the actions of a
 row) follows it.
 Beside it remain the operator actions: the product decision on the delivery of the web release,
 the physical device of G5, the production-security scope of G10, the operator
@@ -588,6 +608,9 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-diagnostics-2027/captures/` | the captures of the journey of the evidence workspace: the explorer, the timeline and the inspector |
 | `docs/evidence/oip-devices-density/devices-density.json` | the **density of the Devices workspace** in the browser: a disposable Core with the plan of the operator, the devices registered through the authorized route, six widths and three themes, no horizontal overflow and no clipped control of the toolbar |
 | `docs/evidence/oip-devices-density/responsive-report.json` | the receipt of the browser journey of the density: the checks of every width and every theme, the page errors and the overflow errors of the journey |
+| `docs/evidence/oip-settings-depth/settings-depth.json` | the **depth of the Settings workspace** of the managed surface against a real Core: every category of the Core, the settings keys of the Core, the facts of the server report, a tool of the catalog with its permissions and its scopes, the schema of the Core copied byte-equal, the template of the client configuration without a credential, and the limits that the surface names |
+| `docs/evidence/oip-settings-depth/settings-depth-rehearsal.json` | the rehearsal that produced it: the disposable instance it owns, the platform permissions it grants to its reader and the steps of the journey |
+| `docs/evidence/oip-settings-depth/captures/` | the captures of the journey of the Settings workspace: the application settings, the appearance, the MCP runtime, the tool explorer, the copied schema, the client configuration, the limits, the storage, the security and the system |
 | `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
 | `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the pagination and the scope of the OPC-UA address space |

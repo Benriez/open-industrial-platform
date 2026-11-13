@@ -199,6 +199,14 @@ REHEARSALS = [
      {"network-2027-rehearsal.json": "oip-network-2027/network-2027-rehearsal.json",
       "network-2027.json": "oip-network-2027/network-2027.json",
       "captures/": "oip-network-2027/captures/"}),
+    # The **depth of the Settings workspace**: the categories of the Core, the
+    # real MCP runtime, the schema of the Core and a client template without
+    # a credential.
+    ("oip_settings_depth", "tests/oip_settings_depth_2027.py",
+     {"settings-depth-rehearsal.json":
+      "oip-settings-depth/settings-depth-rehearsal.json",
+      "settings-depth.json": "oip-settings-depth/settings-depth.json",
+      "captures/": "oip-settings-depth/captures/"}),
     # The **address space** of the operator in the browser: the nodes, their
     # folders and their identity are the ones that the Core delivers.
     ("oip_opcua_browser", "tests/oip_opcua_browser.py",

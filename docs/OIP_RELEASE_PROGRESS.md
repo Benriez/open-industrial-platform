@@ -4376,6 +4376,64 @@ network of the devices (the router and the bridge).
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
 
+### Iteration 93 — the depth of the Settings workspace of the managed surface
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates
+that need the operator (G5, G10, G12) stay open, and the two real devices of the operator are still
+out of reach of this machine.
+
+* **The fifth group of N35 is measured: the depth of the Settings workspace.** The workspace is
+  where the operator reads what the Core can and cannot do, and a surface that invents a setting,
+  a tool or a credential is worse than no surface. The rehearsal
+  (`tests/oip_settings_depth_2027.py`, `apps/flutter/test/browser_settings_depth_2027.mjs`) starts a
+  disposable Core with the plan of the operator, authenticates the session of the operator and
+  drives the managed surface in the browser. The journey names **no settings key, no tool and no
+  schema of its own** — it reads the settings, the reports of the management and the client
+  configuration from the Core with the session of the same origin and checks the surface against
+  them (`docs/evidence/oip-settings-depth/settings-depth.json`, twelve checks).
+* **The settings are read-only and offline administered.** The surface offers the seven categories
+  of the Core, the three settings keys of the instance and the startup snapshot that the Core
+  delivered (`loaded_at_ms`), names the category as `OFFLINE ADMINISTRATION REQUIRED` and carries
+  no save control at all — the surface has no write path, and the journey proves the absence with
+  a role query instead of a claim.
+* **The MCP runtime is the runtime of the Core.** The server section names the transport and every
+  fact of the server report, the tool explorer reaches a tool of the delivered catalog (`MCP Tool
+  & Capability Explorer`), the inspector names its permissions and its allowed scopes, and the
+  copied schema is **deep-equal** to the `input_schema_json` that the Core delivered for that
+  tool — the surface renders the authorization read, not a schema of the client.
+* **The client configuration is the template of the Core and carries no credential.** The copied
+  JSON names the `oip-local` server with `--mcp-bridge`, `--ipc-socket`, `--ipc-credential`, the
+  placeholders `<AUTHORIZED_PRIVATE_SOCKET>` and `<AUTHORIZED_PRIVATE_CREDENTIAL_FILE>`, no bearer
+  token and no credential-looking value; the Core reports `credential_provisioned: false` and
+  `usable_without_replacement: false`. The copy of the executable of the Core stays in the template
+  — it is the path of the instance and not a credential — and the receipt records the template as
+  it is.
+* **The limits are named.** The client sessions are `UNSUPPORTED`, the retention names `Keine
+  Datenlöschung`, the connection diagnostics are `STATUS READ ONLY` and the number of the delivered
+  tools, the security category names `PRODUCTION BLOCKERS OPEN` with the open advisories
+  (`RUSTSEC-2023-0071`, …), and the runtime names `CPU / RAM / GPU — Unknown — no host collector
+  data in this contract`. The surface never claims a production readiness.
+* **The permissions of the rehearsal are recorded.** The settings and the management report are
+  platform capabilities and the plan of the example grants neither; the rehearsal therefore grants
+  `settings_read` and `mcp_management_read` at platform scope to the reader it authenticates and
+  names the grant in its receipt. Without it the surface would show the refusal of the Core and the
+  journey would prove nothing about the depth of the workspace. The refusals that the Core still
+  returns for the routes of the platform (`/api/v1/sources`, `/api/v1/events`, …) are recorded as
+  evidence of the authorization, not as a defect of the surface.
+
+The product of the release (`crates/`, `apps/flutter/lib/`) was not touched by this iteration, so
+the boundary of the product (`fc18ce2`) and the freshness of every receipt of the release stay what
+they are. The acceptance and the reproducible build of the release were measured at the revision of
+the record (iteration 92) and are not re-measured for a change that does not touch the product.
+
+Beside it remain the operator actions: the product decision on the delivery of the web release, the
+physical device of G5, the production-security scope of G10, the operator acceptance of G12 and the
+network of the devices (the router and the bridge). The next independent task is the **performance
+of the Overview** (the last group of N35), followed by N36.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
+
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -4441,6 +4499,9 @@ service of the operator, no published port, no firewall change, no push, no depl
 | `docs/evidence/oip-diagnostics-2027/captures/` | the captures of the journey of the evidence workspace: the explorer, the timeline and the inspector (tracked) |
 | `docs/evidence/oip-devices-density/devices-density.json` | the **density of the Devices workspace** in the browser: a disposable Core with the plan of the operator, the devices registered through the authorized route, six widths and three themes, no horizontal overflow and no clipped control of the toolbar (tracked) |
 | `docs/evidence/oip-devices-density/responsive-report.json` | the receipt of the browser journey of the density: the checks of every width and every theme, the page errors and the overflow errors of the journey (tracked) |
+| `docs/evidence/oip-settings-depth/settings-depth.json` | the **depth of the Settings workspace** of the managed surface against a real Core: every category of the Core, the settings keys of the Core, the facts of the server report, a tool of the catalog with its permissions and its scopes, the schema of the Core copied deep-equal, the template of the client configuration without a credential, and the limits that the surface names (tracked) |
+| `docs/evidence/oip-settings-depth/settings-depth-rehearsal.json` | the rehearsal that produced it: the disposable instance it owns, the platform permissions it grants to its reader and the steps of the journey (tracked) |
+| `docs/evidence/oip-settings-depth/captures/` | the captures of the journey of the Settings workspace: the application settings, the appearance, the MCP runtime, the tool explorer, the copied schema, the client configuration, the limits, the storage, the security and the system (tracked) |
 | `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named (tracked) |
 | `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches (tracked) |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the measured parity of the OPC-UA address space between the official MCP tool and the REST routes against the real backend (iteration 25) |
