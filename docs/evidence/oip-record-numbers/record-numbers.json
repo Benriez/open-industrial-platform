@@ -1,0 +1,788 @@
+{
+  "schema": "oip-record-numbers-v1",
+  "the_rows": [
+    {
+      "the_row": "G1 integrated Core + six workstations",
+      "the_measurements": [
+        {
+          "the_number": "189",
+          "the_unit": "findings",
+          "the_quoted": "189 findings",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "G2 auth, sessions, REST/SSE/MCP parity, org isolation",
+      "the_measurements": [
+        {
+          "the_number": "30",
+          "the_unit": "minutes",
+          "the_quoted": "30 minutes",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "G3 global infrastructure context",
+      "the_measurements": [],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "G4 device management in Flutter",
+      "the_measurements": [],
+      "the_receipts": 0
+    },
+    {
+      "the_row": "G5 real device connections",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "G6 monitoring",
+      "the_measurements": [
+        {
+          "the_number": "9",
+          "the_unit": "checks",
+          "the_quoted": "9 checks",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 4
+    },
+    {
+      "the_row": "G7 Spectrum-2027 UX preserved",
+      "the_measurements": [],
+      "the_receipts": 0
+    },
+    {
+      "the_row": "G8 six functional views",
+      "the_measurements": [
+        {
+          "the_number": "17",
+          "the_unit": "checks",
+          "the_quoted": "17 checks",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "85",
+          "the_unit": "checks",
+          "the_quoted": "85 checks",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "8",
+          "the_unit": "phases",
+          "the_quoted": "8 phases",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "189",
+          "the_unit": "browser findings",
+          "the_quoted": "189 browser findings",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "387",
+          "the_unit": "Flutter tests",
+          "the_quoted": "387 Flutter tests",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 7
+    },
+    {
+      "the_row": "G9 macOS build, install, start/stop, logging, backup/restore",
+      "the_measurements": [
+        {
+          "the_number": "8",
+          "the_unit": "phases",
+          "the_quoted": "8 phases",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "189",
+          "the_unit": "browser findings",
+          "the_quoted": "189 browser findings",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "387",
+          "the_unit": "Flutter tests",
+          "the_quoted": "387 Flutter tests",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 8
+    },
+    {
+      "the_row": "G10 security release review",
+      "the_measurements": [
+        {
+          "the_number": "28",
+          "the_unit": "candidates",
+          "the_quoted": "28 candidates",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "12",
+          "the_unit": "findings",
+          "the_quoted": "12 findings",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "G11 acceptance, a11y, perf, resilience, upgrade/rollback",
+      "the_measurements": [
+        {
+          "the_number": "64",
+          "the_unit": "MiB",
+          "the_quoted": "64 MiB",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "11",
+          "the_unit": "checks",
+          "the_quoted": "11 checks",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "152",
+          "the_unit": "controls",
+          "the_quoted": "152 controls",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "13",
+          "the_unit": "captures",
+          "the_quoted": "13 captures",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "191",
+          "the_unit": "tests",
+          "the_quoted": "191 tests",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "30",
+          "the_unit": "suites",
+          "the_quoted": "30 suites",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "189",
+          "the_unit": "browser findings",
+          "the_quoted": "189 browser findings",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "387",
+          "the_unit": "Flutter tests",
+          "the_quoted": "387 Flutter tests",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 12
+    },
+    {
+      "the_row": "G12 operator acceptance",
+      "the_measurements": [],
+      "the_receipts": 0
+    },
+    {
+      "the_row": "`docs/evidence/oip-canonical-acceptance/acceptance.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-canonical-acceptance/browser-gate.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-canonical-acceptance/captures/*.png`",
+      "the_measurements": [
+        {
+          "the_number": "13",
+          "the_unit": "captures",
+          "the_quoted": "13 captures",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-canonical-acceptance/ui-gate.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-accessibility/accessibility.json`",
+      "the_measurements": [
+        {
+          "the_number": "152",
+          "the_unit": "controls",
+          "the_quoted": "152 controls",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-global-context/global-context.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-device-administration/device-administration.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-device-connection/device-connection.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-device-connection/rehearsal.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-diagnostic-continuation/diagnostic-continuation.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-diagnostic-continuation/rehearsal.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-workstation-data/workstation-data.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-workstation-data/rehearsal.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-reconnect-recovery/reconnect-recovery.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-reconnect-recovery/rehearsal.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-performance/performance.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-stability/stability.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-storage-failure/storage-failure.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-macos-install/macos-install.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-loopback-rate/loopback-rate.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-worktree-reconciliation/worktree-reconciliation.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-scope-persistence/scope-persistence.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-scope-persistence/scope-persistence-rehearsal.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-connection-states/connection-states.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-connection-states/connection-states-rehearsal.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-settings-status/settings-status.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-settings-status/settings-status-rehearsal.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-observation-history/observation-history.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-measurement-coverage/measurement-coverage.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-measurement-coverage/measurement-coverage-browser.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-measurement-coverage/painted-surface.txt`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-device-connection/painted-surface.txt`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-settings-status/painted-surface.txt`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-scope-persistence/painted-surface.txt`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-connection-states/painted-surface.txt`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip003/`, `docs/evidence/oip004/`, `docs/evidence/oip004-ui/`, `docs/evidence/oip005/`, `docs/evidence/oip006/`, `docs/evidence/oip0061/`, `docs/evidence/oip007/`, `docs/evidence/oip008/`, `docs/evidence/oip0082/`, `docs/evidence/oip0084/`, `docs/evidence/oip0085/`, `docs/evidence/git-baseline/`",
+      "the_measurements": [],
+      "the_receipts": 165
+    },
+    {
+      "the_row": "`docs/evidence/oip-record-numbers/record-numbers.json`",
+      "the_measurements": [],
+      "the_receipts": 0
+    },
+    {
+      "the_row": "`docs/evidence/oip-record-integrity/record-integrity.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-release-verification/release-verification.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-session-lifetime/session-lifetime.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-reproducible-build/reproducible-build.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-macos-app/macos-app.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-native-session/native-session.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-transport-parity/transport-parity.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-security-review/security-review.json`",
+      "the_measurements": [
+        {
+          "the_number": "12",
+          "the_unit": "findings",
+          "the_quoted": "12 findings",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-rust-regression/rust-regression.json`",
+      "the_measurements": [
+        {
+          "the_number": "191",
+          "the_unit": "tests",
+          "the_quoted": "191 tests",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "30",
+          "the_unit": "suites",
+          "the_quoted": "30 suites",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-hue-device/hue-device.json`",
+      "the_measurements": [],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "`docs/evidence/oip-store-screenshots/store-screenshots.json`",
+      "the_measurements": [],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "`docs/evidence/oip-pi-instance/pi-instance.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-update/update.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-mas-package/mas-package.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-service-registry/service-registry.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-mas-export/mas-export.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-deployment-discovery/deployment-discovery.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-pi-bundle/pi-bundle.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-operations/operations.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-documented-plan/documented-plan.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-activation-dry-run/activation-dry-run.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-upgrade-rollback/upgrade-rollback.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-historical-daemon/historical-daemon.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-extend-registry/extend-registry.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-settings-offline/settings-offline.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-offline-archive/offline-archive.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-devices-density/devices-density.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-devices-density/responsive-report.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-opcua-browser/opcua-browser.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-opcua-browser/address-space.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-opcua-parity/opcua-parity.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-real-device/test-summary.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-real-device/review.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 1",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 2",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 3",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 4",
+      "the_measurements": [],
+      "the_receipts": 3
+    },
+    {
+      "the_row": "the item 5",
+      "the_measurements": [],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "the item 6",
+      "the_measurements": [],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "the item 7",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 8",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 9",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 10",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 12",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 14",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 15",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 16",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 17",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 19",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 22",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 23",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 24",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 25",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 26",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 27",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 31",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the item 32",
+      "the_measurements": [],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "the item 33",
+      "the_measurements": [],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "the runbook \u00a73",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the runbook \u00a733",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the runbook \u00a768",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the runbook \u00a791",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the runbook \u00a7107",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the runbook \u00a7114",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the runbook \u00a7120",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the runbook \u00a7123",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the runbook \u00a7140",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the runbook \u00a7149",
+      "the_measurements": [],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "the runbook \u00a7150",
+      "the_measurements": [],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "the runbook \u00a7180",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the runbook \u00a7181",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the runbook \u00a7190",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "the runbook \u00a7194",
+      "the_measurements": [],
+      "the_receipts": 1
+    }
+  ],
+  "the_problems": [],
+  "status": "PASS",
+  "the_revision": "9a466136bcb984f0996d82c51fe7cd79fa999577",
+  "the_tree": "7cd1492af6ee9bdd6ec8eeade330719bac5620a1",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-13T01:01:32Z"
+}
