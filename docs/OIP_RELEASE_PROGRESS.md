@@ -4574,6 +4574,33 @@ No personal database change, no schema-7 activation of the personal installation
 of the operator, no published port, no firewall change, no build-configuration change of the client, no
 re-pin of an unmeasured artefact, no re-measurement of a byte-identical product, no push, no deployment.
 
+### Iteration 100 — the in-scope devices are reachable; a read-only discovery re-confirms Iterations 73 and 79
+
+**Status: reconciled on canonical `main`.** The machine of the loop moved onto the network of the
+operator's devices (`en0` = `192.168.1.219`, gateway `192.168.1.1`), so the two in-scope devices that the
+later iterations had out of reach are now reachable. A **read-only** discovery was performed — no API key
+was requested, no link button pressed, no router login made, nothing on either device changed:
+
+* **The Philips Hue Bridge** (`192.168.1.131`): model `BSB002` (the V1 `hue bridge 2015`), Signify; its
+  REST API is up but **authentication-gated** (`GET /api` refuses without a key). This is the **same
+  bridge** that Iterations 73 and 79 discovered and onboarded with a verified pin, and its receipts
+  (`docs/evidence/oip-deployment-discovery/deployment-discovery.json`,
+  `docs/evidence/oip-hue-device/hue-device.json`) are present, tracked and **not** flagged by the
+  one-command verification.
+* **The OpenWrt router** (`192.168.1.1`): up, LuCI serving behind a login (credential-gated).
+
+The substantive state is **unchanged** by the reachability: the bridge is an **identity-only inventory
+device** (model, bridge id, MAC, IP, verified pin), and its **monitoring and control are not supported** —
+the control capability is a new permission, audit and scope that only the operator can authorize
+(Iteration 73), and the negative control is measured in `hue-device.json`. OIP never simulates Hue or
+router control. This supersedes the stale operator action of Iterations 95–97, which named the devices
+"unreachable from `192.168.178.0/24`" — the state of the machine on another network. The verdict stays
+**OIP_PRODUCTION_NOT_READY** and the loop remains in **BLOCKED_OPERATOR**.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a service
+of the operator, no published port, no firewall change, no request for a device credential, no
+modification of the router or the bridge, no push, no deployment.
+
 ## 5. Evidence index
 
 | Artifact | Content |

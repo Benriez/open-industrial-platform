@@ -418,15 +418,23 @@ upload.
 
 ## Operator actions required (nothing here is executed by the loop)
 
-* The **two real devices of the operator are not reachable from the network of this machine**: the
-  router (`192.168.1.1`) and the Philips Hue Bridge (`192.168.1.131`) are on the network
-  `192.168.1.x`, and the machine is on `192.168.178.0/24` (its gateway `192.168.178.1` does not
-  answer on the port of the router either). The two rehearsals of the real devices — the discovery
-  and the bridge — therefore **failed** in the refresh of this iteration: the router did not answer
-  on the port 22 and the bridge did not answer on the port 443. Their receipts name an earlier
-  revision and the verification of the release names them as stale. The operator's action: connect
-  the machine to the network of the devices (or make the two devices reachable from it), and the
-  loop measures both again.
+* The **two real devices of the operator are reachable** from the network of this machine: the
+  router (`192.168.1.1`) and the Philips Hue Bridge (`192.168.1.131`, model `BSB002`) are on
+  `192.168.1.0/24`, and the machine is now on the same network (`en0` = `192.168.1.219`, gateway
+  `192.168.1.1`). A **read-only** discovery in the refresh of this iteration re-confirmed the bridge
+  of Iterations 73 and 79 — the same `BSB002` that their receipts discovered (API `1.78.0` in
+  `docs/evidence/oip-hue-device/hue-device.json`); its REST API is up but **authentication-gated**
+  (a `GET` of the API refuses without a key) and the router serves LuCI behind a login. Nothing on
+  either device was touched: no API key was requested, no link button pressed, no router login. The
+  discovery and bridge receipts (`docs/evidence/oip-deployment-discovery/deployment-discovery.json`,
+  `docs/evidence/oip-hue-device/hue-device.json`) are present, tracked and **not** flagged by the
+  verification of the release. The bridge is an **identity-only inventory device** (model, bridge id,
+  MAC, IP, verified pin); its **monitoring and control are not supported** — a control capability
+  would be a new permission, audit and scope (the negative control is measured in `hue-device.json`),
+  which only the operator can authorize. The operator's action: authorize the Hue monitoring/control
+  capability (an API key via the link button, plus the new permission), or accept the bridge as an
+  identity-only inventory device. (The earlier note that the devices were unreachable from
+  `192.168.178.0/24` was the state of the machine on another network and is superseded.)
 
 * Decide F5 permission rule (N1b) and protected schema-7 activation with a fresh schema-6 backup (N4).
   The activation itself is **rehearsed on a copy** of the store of the operator: the migration is
