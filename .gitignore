@@ -107,6 +107,9 @@ secrets/
 # The integrity of the record itself: every cited receipt exists and is
 # tracked, and every receipt of the release is cited.
 !/docs/evidence/oip-record-integrity/record-integrity.json
+# The numbers of the record: every measurement that a row quotes is looked up
+# in the receipt that the row names.
+!/docs/evidence/oip-record-numbers/record-numbers.json
 # The local installation of the macOS application bundle.
 !/docs/evidence/oip-macos-install/macos-install.json
 # The verification of the release: the receipt of the single command that a

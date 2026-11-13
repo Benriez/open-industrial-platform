@@ -41,6 +41,11 @@ EVIDENCE = ROOT / "docs" / "evidence"
 REHEARSALS = [
     ("oip_record_integrity", "tests/oip_record_integrity.py",
      {"record-integrity.json": "oip-record-integrity/record-integrity.json"}),
+    # The numbers of the record must be the numbers of the receipts: every
+    # measurement that a row of the record quotes is looked up in the receipt
+    # that the row names.
+    ("oip_record_numbers", "tests/oip_record_numbers.py",
+     {"record-numbers.json": "oip-record-numbers/record-numbers.json"}),
     ("oip_documented_plan", "tests/oip_documented_plan.py",
      {"documented-plan.json": "oip-documented-plan/documented-plan.json"}),
     ("oip_session_lifetime", "tests/oip_session_lifetime.py",
