@@ -178,6 +178,13 @@ secrets/
 !/docs/evidence/oip-settings-status/settings-status.json
 !/docs/evidence/oip-settings-status/settings-status-rehearsal.json
 !/docs/evidence/oip-settings-status/painted-surface.txt
+# The depth of the Settings workspace: every category of the Core, the real
+# MCP runtime, the schema of the Core and a client template without a
+# credential.
+!/docs/evidence/oip-settings-depth/settings-depth.json
+!/docs/evidence/oip-settings-depth/settings-depth-rehearsal.json
+!/docs/evidence/oip-settings-depth/captures/
+!/docs/evidence/oip-settings-depth/captures/*.png
 # The painted surface of the connection of a device.
 !/docs/evidence/oip-device-connection/painted-surface.txt
 # The persisted observation history of the real device.

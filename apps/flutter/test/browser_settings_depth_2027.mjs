@@ -37,7 +37,7 @@ const captures = resolve(out, 'captures');
 const bootTimeout = Number(process.env.OIP_BOOT_TIMEOUT ?? 60000);
 await mkdir(out, {recursive: true});
 await mkdir(captures, {recursive: true});
-await rm(resolve(out, 'failure.png'), {force: true});
+await rm(resolve(captures, 'failure.png'), {force: true});
 await rm(resolve(out, 'failure.json'), {force: true});
 
 const systemChrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
