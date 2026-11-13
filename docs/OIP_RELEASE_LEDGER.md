@@ -310,25 +310,59 @@ An **independent verification** of that change (a delegated, read-only audit of 
     sitzungslokal`), the graph names its empty state, the markers of the demo of the generation
     2027 are absent, and the channel that goes stale is named as stale and comes back.
 
+    The **third group is measured**: the geometry of the Devices workspace. The layout is a claim
+    of the release — the operator accepts the visible result (G12) — and the numbers of the layout
+    are the evidence that the acceptance can look at. The rehearsal
+    (`tests/oip_devices_geometry.py`, `apps/flutter/test/browser_devices_geometry.mjs`) registers
+    the devices **through the authorized route** and measures the **four states** of the workspace
+    — no selection, a device selected, the secondary filters open and the comparison — at 1440 px
+    and 1920 px: the height of the filter bar (42 px, 79 px with the secondary filters open), the
+    number of its controls (4 and 7), the height of the search field, the pitch of the rows of the
+    inventory, the edges of the content and the height of the document
+    (`docs/evidence/oip-devices-geometry/devices-geometry.json`).
+
+    The **fourth group is measured**: the evidence workspace of the Diagnostics workstation. The
+    rehearsal (`tests/oip_diagnostics_2027.py`, `apps/flutter/test/browser_diagnostics_2027.mjs`)
+    starts a disposable Core with **live** collectors, drives the surface and then changes the
+    state of the source: the collectors die and come back. The journey names **no event of its
+    own** — every row of the explorer and every marker of the timeline is checked against the
+    events of the Core (read from the diagnostic history of the authorized context), the attributes
+    that the Core does not deliver are named instead of invented (the severity, the source
+    timestamp, the record id), and the **loss** of a source is the evidence of the Core: the
+    `ConnectionLost` event, the sources `disconnected` / `unknown` / **stale** with the last error
+    named, and the recovery measured by the health of the source
+    (`docs/evidence/oip-diagnostics-2027/diagnostics-2027-rehearsal.json`). The **recovery of an
+    OPC-UA source is not a collection event of the Core** — the adapter reconnects without an
+    event — so the evidence of the recovery is the health of the source and its reconnect attempts.
+    The **next** group is the **Settings workspace** (the depth of its categories) and the
+    **Overview** (its performance).
+
     **Two claims of the group are withdrawn**: the geometry of the graph over real links and the
     transport filter over real transports cannot be measured against the managed Core, because the
     Core delivers no link. The geometry stays proven at the widget level
     (`apps/flutter/test/network_workstation_test.dart`), and the browser proves that the surface
-    names the absence instead of simulating it. The next group is the **Diagnostics workspace**:
-    the timeline and the stale marking of its events.
+    names the absence instead of simulating it.
 
-18. **N36 (the compare and the pin of a row of the Network explorer)**: the two actions of
-   a row of the Device Explorer are **not** in the semantics tree: the row excludes the semantics of
-   its descendants (`apps/flutter/lib/features/network/network_explorer.dart`), so the buttons are
-   reachable only by the documented keyboard (`P`, `C`). The journey of the Network workspace drives
-   the comparison by that keyboard path (`apps/flutter/test/browser_network_2027.mjs`). The fix —
-   the **texts** of the row excluded instead of the whole row — changes the **product** and needs
-   therefore the full re-measurement of the release (the refresh of every rehearsal and the
-   acceptance at the new revision). It is the next product change and the next iteration.
+18. **N36 (the actions of a row are not in the semantics tree)**: the compare and the pin of a
+   row are **not** in the semantics tree of the surface: the row excludes the semantics of its
+   descendants, so the two buttons are reachable only by the documented keyboard (`P`, `C`). It is
+   the same in two rows of the release: the row of the Device Explorer
+   (`apps/flutter/lib/features/network/network_explorer.dart`) and the row of the Event Explorer
+   (`apps/flutter/lib/features/diagnostics/event_explorer.dart`). The journeys of the Network
+   workspace and of the Diagnostics workstation drive the comparison by that keyboard path
+   (`apps/flutter/test/browser_network_2027.mjs`,
+   `apps/flutter/test/browser_diagnostics_2027.mjs`). The fix — the **texts** of the row excluded
+   instead of the whole row — changes the **product** and needs therefore the full re-measurement
+   of the release (the refresh of every rehearsal and the acceptance at the new revision). It is
+   the next product change. Beside it: the **evidence id** of an event is delivered by the Core
+   (the diagnostic projection carries the id of the record) and not shown by the surface, which
+   names the source-local record id — `keine Server-Record-ID` — that the projection does not
+   deliver.
 
 The independent tasks of this list are open again: the last one that was measured is N35 — the
-first and the second group of its claims are measured — the next one is N35 again (the
-**Diagnostics workspace**), and N36 (the compare and the pin of the Network explorer) follows it.
+first, the second, the third and the fourth group of its claims are measured — the next
+one is N35 again (the **Settings workspace** and the **Overview**), and N36 (the actions of a
+row) follows it.
 Beside it remain the operator actions: the product decision on the delivery of the web release,
 the physical device of G5, the production-security scope of G10, the operator
 acceptance of G12 and the discovery of the host of the Core.
@@ -543,6 +577,13 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-network-2027/network-2027.json` | the **Network workspace** of the managed surface in the browser: the absence of the logical paths is named, the devices of the Core are the devices of the surface, the comparison of two devices names its own limit, the channel that goes stale is named as stale |
 | `docs/evidence/oip-network-2027/network-2027-rehearsal.json` | the rehearsal that produced it: the disposable instance it owns, the devices it registers through the authorized route and the steps of the journey |
 | `docs/evidence/oip-network-2027/captures/` | the captures of the journey of the Network workspace: the summary, the explorer, the search, the filters, the comparison, the graph and the stale channel |
+| `docs/evidence/oip-devices-geometry/devices-geometry.json` | the **geometry of the Devices workspace**: the four states of the workspace at 1440 px and 1920 px — the numbers that the acceptance of the visible result looks at |
+| `docs/evidence/oip-devices-geometry/devices-geometry-rehearsal.json` | the rehearsal that produced it: the disposable instance it owns, the devices it registers through the authorized route and the steps of the journey |
+| `docs/evidence/oip-devices-geometry/captures/` | the captures of the journey of the geometry: the four states of the workspace at 1440 px and 1920 px |
+| `docs/evidence/oip-diagnostics-2027/diagnostics-2027-rehearsal.json` | the **evidence workspace** of the Diagnostics workstation: the loss of a source and its recovery, measured on the Core, and the events of the Core that the surface shows |
+| `docs/evidence/oip-diagnostics-2027/diagnostics-live.json` | the receipt of the journey with the live collectors: every row of the explorer and every marker of the timeline is an event of the Core |
+| `docs/evidence/oip-diagnostics-2027/diagnostics-failed.json` | the receipt of the journey after the loss of the source: the events of the Core, the markers of the timeline and the attributes that the Core does not deliver |
+| `docs/evidence/oip-diagnostics-2027/captures/` | the captures of the journey of the evidence workspace: the explorer, the timeline and the inspector |
 | `docs/evidence/oip-devices-density/devices-density.json` | the **density of the Devices workspace** in the browser: a disposable Core with the plan of the operator, the devices registered through the authorized route, six widths and three themes, no horizontal overflow and no clipped control of the toolbar |
 | `docs/evidence/oip-devices-density/responsive-report.json` | the receipt of the browser journey of the density: the checks of every width and every theme, the page errors and the overflow errors of the journey |
 | `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
