@@ -558,7 +558,7 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-canonical-acceptance/browser-gate.json` | the browser gate: the findings, the captures and the state of the visual acceptance |
 | `docs/evidence/oip-canonical-acceptance/captures/*.png` | the 13 captures of the acceptance of the release (`docs/evidence/oip-canonical-acceptance/acceptance.json`): the six workstations at 1440 px and 1920 px and the state of the anonymous session |
 | `docs/evidence/oip-canonical-acceptance/ui-gate.json` | the build provenance and the served bundle of the gate |
-| `docs/evidence/oip-accessibility/accessibility.json` | 152 controls, 0 of them unnamed |
+| `docs/evidence/oip-accessibility/accessibility.json` | 174 controls, 0 of them unnamed |
 | `docs/evidence/oip-global-context/global-context.json` | the selector of the global infrastructure context and the six workstations |
 | `docs/evidence/oip-device-administration/device-administration.json` | the administration of a device through the surface: the revision advances from 1 to 2, the note of the device is written through the surface and kept by the Core (the revision advances from 2 to 3), a write whose metadata does not carry the note drops it, the archive of an online device is refused |
 | `docs/evidence/oip-device-connection/device-connection.json` | the read-only monitoring with its polling, its revision and its honest states |
