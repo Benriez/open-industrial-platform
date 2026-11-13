@@ -1,0 +1,24 @@
+{
+  "verdict": "PASS",
+  "status": "PASS",
+  "the_revision": "9386881fab596850716df7e51b1a91dd8079e2fe",
+  "base": "http://127.0.0.1:55521",
+  "checks": [
+    "320x740: toolbar, disclosure, inventory and overflow verified",
+    "390x844: toolbar, disclosure, inventory and overflow verified",
+    "768x1024: toolbar, disclosure, inventory and overflow verified",
+    "1024x900: toolbar, disclosure, inventory and overflow verified",
+    "1440x900: toolbar, disclosure, inventory and overflow verified",
+    "1920x1080: toolbar, disclosure, inventory and overflow verified",
+    "1440x900 DAYLIGHT: layout and toolbar verified",
+    "1440x900 GRAPHITE: layout and toolbar verified",
+    "1440x900 SPECTRUM: layout and toolbar verified",
+    "390x844 DAYLIGHT: layout and toolbar verified",
+    "390x844 GRAPHITE: layout and toolbar verified",
+    "390x844 SPECTRUM: layout and toolbar verified",
+    "no page errors",
+    "no RenderFlex overflow errors"
+  ],
+  "pageErrors": [],
+  "overflowErrors": []
+}

@@ -130,6 +130,10 @@ secrets/
 # and their identity are the ones that the Core delivers.
 !/docs/evidence/oip-opcua-browser/opcua-browser.json
 !/docs/evidence/oip-opcua-browser/address-space.json
+# The density of the Devices workspace: no horizontal overflow and no clipped
+# control of the toolbar at every width and in every theme.
+!/docs/evidence/oip-devices-density/devices-density.json
+!/docs/evidence/oip-devices-density/responsive-report.json
 !/docs/evidence/oip-workstation-data/workstation-data.json
 !/docs/evidence/oip-workstation-data/rehearsal.json
 !/docs/evidence/oip-device-connection/device-connection.json
