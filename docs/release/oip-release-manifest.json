@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "9bb405c14ed98ae96e0e071e2554297ae66a72a0",
-  "the_tree": "169e853f5a3c60e21f2b6ab31039c1cd04a4b81c",
+  "the_revision": "8649ee7251d5df69aa84c8aed002881ed60827f9",
+  "the_tree": "90958442d4eaffdbba2acf3091a7a9366d477a18",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
@@ -21,8 +21,8 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 734,
-    "the_sha256": "85d60d8c3b19bc21c0d011e5569de7b81fb330485d4367471bfcdd095f724126"
+    "the_files": 735,
+    "the_sha256": "894bbae8d9ed8690d77f12b0f0df29638da425e8ac7f84ca6598ceaebd85ad78"
   },
   "the_artifacts": {
     "the_core": {
@@ -322,6 +322,10 @@
       "path": "docs/evidence/oip-reconnect-recovery/rehearsal.json",
       "sha256": "9d7d477d8939b922ca84b4bf9dface690b875f0d3f344ee0a68d64068b53f8dc"
     },
+    "the_oip-record-numbers_record-numbers_json": {
+      "path": "docs/evidence/oip-record-numbers/record-numbers.json",
+      "sha256": "6a2abfe92591c640bd482ded7d1e60b472f9b012ce323e4840b4b6ddc5abed87"
+    },
     "the_oip-scope-persistence_painted-surface_txt": {
       "path": "docs/evidence/oip-scope-persistence/painted-surface.txt",
       "sha256": "4180a6845b0b9982ef86bc991f1b767a91333272d9885fa2bc433f2f1aa1a050"
@@ -398,8 +402,7 @@
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-release20",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/OIP_RELEASE_LEDGER.md",
-    " M docs/OIP_RELEASE_PROGRESS.md"
+    "M docs/evidence/oip-release-verification/release-verification.json"
   ],
   "the_revision_of_the_acceptance": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
   "the_tree_of_the_acceptance": "6534663ece8a855096934c654c446836c0c4653c",
