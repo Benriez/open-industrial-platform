@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "fb7979799fd6293c285b8c80e62680d600eb2dd8",
-  "the_tree": "8c1e8ef344e4c06d2b63fbc3dd99d70799eaaea6",
+  "the_revision": "04194907c6b136198406fa2dd91c45d0a6852ca9",
+  "the_tree": "8e2bb7f4e0ca4abca477334a7cbde732579f8f26",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 772,
-    "the_sha256": "d4e625eec2ba25cead929ca911ba7825752488fcd352d137a8ccd69f525af3c4"
+    "the_sha256": "f16d3f669ef9c93753b0c2abd9c9fe976342699238faa81e0d87b2f56a947e6b"
   },
   "the_artifacts": {
     "the_core": {
@@ -444,7 +444,7 @@
     },
     "the_oip-record-numbers_record-numbers_json": {
       "path": "docs/evidence/oip-record-numbers/record-numbers.json",
-      "sha256": "b518808cfb72cb32ece960972c9508a16cb0a7777119ecf0adda1d03ba9c68b2"
+      "sha256": "307928198ebb9bb6941ea9083df064e1c69044d27075f5499fe6bd073a29e649"
     },
     "the_oip-scope-persistence_painted-surface_txt": {
       "path": "docs/evidence/oip-scope-persistence/painted-surface.txt",
