@@ -1,0 +1,416 @@
+{
+  "schema": "oip-deployment-hosts-v1",
+  "the_problems": [],
+  "the_scope": "the two deployment hosts of the operator \u2014 the hosts are reached over SSH from any network",
+  "the_devices_are_not_part_of_this_receipt": {
+    "the_receipt": "docs/evidence/oip-deployment-discovery/deployment-discovery.json",
+    "the_reason": "the router and the bridge of the operator live on the network of the operator (192.168.1.x); the machine of the loop is on another network, so the probe of the devices fails there. Their discovery is the receipt of the measurement that could reach them."
+  },
+  "the_hosts": {
+    "bodi-pi": {
+      "the_host": "bodi-pi",
+      "the_role": "the host that shall carry the Core of the release",
+      "the_facts": {
+        "the_identity": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pi",
+            "uname -srmo; hostname; id -un"
+          ],
+          "the_code": 0,
+          "the_output": "Linux 6.12.62+rpt-rpi-v8 aarch64 GNU/Linux\nrpi4\nflashback",
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
+        },
+        "the_architecture": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pi",
+            "uname -m; (dpkg --print-architecture 2>/dev/null || true)"
+          ],
+          "the_code": 0,
+          "the_output": "aarch64\narm64",
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
+        },
+        "the_memory": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pi",
+            "free -m 2>/dev/null | head -3; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo"
+          ],
+          "the_code": 0,
+          "the_output": "total        used        free      shared  buff/cache   available\nMem:            1844         822         191          12         911        1022\nSwap:          32767        1762       31005\nMemTotal:        1888848 kB\nMemAvailable:    1046780 kB",
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
+        },
+        "the_disk": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pi",
+            "df -h / | tail -2"
+          ],
+          "the_code": 0,
+          "the_output": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/sda2       235G  171G   54G  77% /",
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
+        },
+        "the_toolchain": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pi",
+            "for t in python3 sqlite3 curl git cargo rustc; do printf '%s: ' \"$t\"; command -v \"$t\" || echo absent; done"
+          ],
+          "the_code": 0,
+          "the_output": "python3: /usr/bin/python3\nsqlite3: /usr/bin/sqlite3\ncurl: /usr/bin/curl\ngit: /usr/bin/git\ncargo: absent\nrustc: absent",
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
+        },
+        "the_services": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pi",
+            "systemctl list-units --type=service --state=running --no-pager --no-legend 2>/dev/null | awk '{print $1}' | sort"
+          ],
+          "the_code": 0,
+          "the_output": "accounts-daemon.service\navahi-daemon.service\nbluetooth.service\ncron.service\ncups-browsed.service\ncups.service\ndbus.service\ngetty@tty1.service\nlightdm.service\nModemManager.service\nNetworkManager.service\nnfs-blkmap.service\npolkit.service\nserial-getty@ttyS0.service\nsmartmontools.service\nsmbd.service\nssh.service\nsystemd-journald.service\nsystemd-logind.service\nsystemd-timesyncd.service\nsystemd-udevd.service\ntailscaled.service\nudisks2.service\nuser@1000.service\nuser@1001.service\nwpa_supplicant.service",
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
+        },
+        "the_listeners": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pi",
+            "ss -ltn 2>/dev/null | tail -n +2 | awk '{print $4}' | sort"
+          ],
+          "the_code": 0,
+          "the_output": "0.0.0.0:22\n0.0.0.0:445\n100.127.113.104:18700\n100.127.113.104:18780\n100.127.113.104:18782\n100.127.113.104%tailscale0:10000\n100.127.113.104%tailscale0:443\n100.127.113.104%tailscale0:55202\n100.127.113.104%tailscale0:8443\n[::1]:18700\n127.0.0.1:18700\n127.0.0.1:18780\n127.0.0.1:18781\n127.0.0.1:18783\n127.0.0.1:18790\n127.0.0.1:18795\n127.0.0.1:631\n127.0.0.1:8384\n127.0.0.1:9119\n[::1]:631\n[::]:22\n[::]:445\n[fd7a:115c:a1e0::b734:7168]%tailscale0:10000\n[fd7a:115c:a1e0::b734:7168]%tailscale0:443\n[fd7a:115c:a1e0::b734:7168]%tailscale0:46467\n[fd7a:115c:a1e0::b734:7168]%tailscale0:8443",
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
+        },
+        "the_home": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pi",
+            "printf '%s\\n' \"$HOME\"; ls -ld \"$HOME\" 2>/dev/null"
+          ],
+          "the_code": 0,
+          "the_output": "/home/flashback\ndrwx------ 82 flashback flashback 12288 Nov 12 21:15 /home/flashback",
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
+        },
+        "the_services_around_the_measurement": {
+          "before": [
+            "accounts-daemon.service",
+            "avahi-daemon.service",
+            "bluetooth.service",
+            "cron.service",
+            "cups-browsed.service",
+            "cups.service",
+            "dbus.service",
+            "getty@tty1.service",
+            "lightdm.service",
+            "ModemManager.service",
+            "NetworkManager.service",
+            "nfs-blkmap.service",
+            "polkit.service",
+            "serial-getty@ttyS0.service",
+            "smartmontools.service",
+            "smbd.service",
+            "ssh.service",
+            "systemd-journald.service",
+            "systemd-logind.service",
+            "systemd-timesyncd.service",
+            "systemd-udevd.service",
+            "tailscaled.service",
+            "udisks2.service",
+            "user@1000.service",
+            "user@1001.service",
+            "wpa_supplicant.service"
+          ],
+          "after": [
+            "accounts-daemon.service",
+            "avahi-daemon.service",
+            "bluetooth.service",
+            "cron.service",
+            "cups-browsed.service",
+            "cups.service",
+            "dbus.service",
+            "getty@tty1.service",
+            "lightdm.service",
+            "ModemManager.service",
+            "NetworkManager.service",
+            "nfs-blkmap.service",
+            "polkit.service",
+            "serial-getty@ttyS0.service",
+            "smartmontools.service",
+            "smbd.service",
+            "ssh.service",
+            "systemd-journald.service",
+            "systemd-logind.service",
+            "systemd-timesyncd.service",
+            "systemd-udevd.service",
+            "tailscaled.service",
+            "udisks2.service",
+            "user@1000.service",
+            "user@1001.service",
+            "wpa_supplicant.service"
+          ],
+          "the_services_are_unchanged": true
+        }
+      },
+      "the_machine": "aarch64",
+      "the_target_of_the_cross_build": "aarch64-unknown-linux-gnu",
+      "the_target_is_the_expected_one": true,
+      "the_ports_of_the_plan": [
+        {
+          "the_port": 18808,
+          "the_port_is_free": true
+        },
+        {
+          "the_port": 18809,
+          "the_port_is_free": true
+        }
+      ],
+      "the_home": "/home/flashback",
+      "the_sqlite_command_is_present": true,
+      "the_operators_services_are_unchanged": true
+    },
+    "bodi-pc": {
+      "the_host": "bodi-pc",
+      "the_role": "the NucBox of the operator",
+      "the_facts": {
+        "the_identity": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pc",
+            "uname -srmo; hostname; id -un"
+          ],
+          "the_code": 0,
+          "the_output": "Linux 6.17.0-1032-oem x86_64 GNU/Linux\nbodi-NucBox-EVO-X2\nbodi",
+          "the_error": ""
+        },
+        "the_architecture": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pc",
+            "uname -m; (dpkg --print-architecture 2>/dev/null || true)"
+          ],
+          "the_code": 0,
+          "the_output": "x86_64\namd64",
+          "the_error": ""
+        },
+        "the_memory": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pc",
+            "free -m 2>/dev/null | head -3; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo"
+          ],
+          "the_code": 0,
+          "the_output": "gesamt       benutzt     frei      gemns.  Puffer/Cache verf\u00fcgbar\nSpeicher:      31724       15293        3046         130       13972       16431\nAuslager:     131071        2484      128587\nMemTotal:       32486132 kB\nMemAvailable:   16825636 kB",
+          "the_error": ""
+        },
+        "the_disk": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pc",
+            "df -h / | tail -2"
+          ],
+          "the_code": 0,
+          "the_output": "Dateisystem                       Gr\u00f6\u00dfe Benutzt Verf. Verw% Eingeh\u00e4ngt auf\n/dev/mapper/ubuntu--vg-ubuntu--lv  1,9T    590G  1,2T   34% /",
+          "the_error": ""
+        },
+        "the_toolchain": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pc",
+            "for t in python3 sqlite3 curl git cargo rustc; do printf '%s: ' \"$t\"; command -v \"$t\" || echo absent; done"
+          ],
+          "the_code": 0,
+          "the_output": "python3: /usr/bin/python3\nsqlite3: absent\ncurl: /usr/bin/curl\ngit: /usr/bin/git\ncargo: /usr/bin/cargo\nrustc: /usr/bin/rustc",
+          "the_error": ""
+        },
+        "the_services": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pc",
+            "systemctl list-units --type=service --state=running --no-pager --no-legend 2>/dev/null | awk '{print $1}' | sort"
+          ],
+          "the_code": 0,
+          "the_output": "accounts-daemon.service\navahi-daemon.service\nbluetooth.service\nbodi-inference-gateway.service\nbolt.service\ncolord.service\ncron.service\ncups-browsed.service\ncups.service\ndbus.service\nfwupd.service\ngdm.service\ngnome-remote-desktop.service\nkerneloops.service\nModemManager.service\nNetworkManager.service\nnginx.service\nnode_exporter.service\npolkit.service\npower-profiles-daemon.service\nrsyslog.service\nrtkit-daemon.service\nsnapd.service\nssh.service\nswitcheroo-control.service\nsystemd-journald.service\nsystemd-logind.service\nsystemd-oomd.service\nsystemd-resolved.service\nsystemd-timesyncd.service\nsystemd-udevd.service\ntailscaled.service\nudisks2.service\nunattended-upgrades.service\nupower.service\nuser@1000.service\nwpa_supplicant.service",
+          "the_error": ""
+        },
+        "the_listeners": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pc",
+            "ss -ltn 2>/dev/null | tail -n +2 | awk '{print $4}' | sort"
+          ],
+          "the_code": 0,
+          "the_output": "0.0.0.0:22\n100.76.9.100:18443\n100.76.9.100:443\n100.76.9.100:8189\n100.76.9.100:8787\n100.76.9.100%tailscale0:46014\n127.0.0.1:18189\n127.0.0.1:631\n127.0.0.1:8181\n127.0.0.1:8182\n127.0.0.1:8183\n127.0.0.1:8184\n127.0.0.1:8188\n127.0.0.1:8252\n127.0.0.53%lo:53\n127.0.0.54:53\n[::1]:631\n[::]:22\n*:9100\n[fd7a:115c:a1e0::d134:964]%tailscale0:35414",
+          "the_error": ""
+        },
+        "the_home": {
+          "the_command": [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=10",
+            "bodi-pc",
+            "printf '%s\\n' \"$HOME\"; ls -ld \"$HOME\" 2>/dev/null"
+          ],
+          "the_code": 0,
+          "the_output": "/home/bodi\ndrwxr-x--- 53 bodi bodi 12288 Nov  7 12:58 /home/bodi",
+          "the_error": ""
+        },
+        "the_services_around_the_measurement": {
+          "before": [
+            "accounts-daemon.service",
+            "avahi-daemon.service",
+            "bluetooth.service",
+            "bodi-inference-gateway.service",
+            "bolt.service",
+            "colord.service",
+            "cron.service",
+            "cups-browsed.service",
+            "cups.service",
+            "dbus.service",
+            "fwupd.service",
+            "gdm.service",
+            "gnome-remote-desktop.service",
+            "kerneloops.service",
+            "ModemManager.service",
+            "NetworkManager.service",
+            "nginx.service",
+            "node_exporter.service",
+            "polkit.service",
+            "power-profiles-daemon.service",
+            "rsyslog.service",
+            "rtkit-daemon.service",
+            "snapd.service",
+            "ssh.service",
+            "switcheroo-control.service",
+            "systemd-journald.service",
+            "systemd-logind.service",
+            "systemd-oomd.service",
+            "systemd-resolved.service",
+            "systemd-timesyncd.service",
+            "systemd-udevd.service",
+            "tailscaled.service",
+            "udisks2.service",
+            "unattended-upgrades.service",
+            "upower.service",
+            "user@1000.service",
+            "wpa_supplicant.service"
+          ],
+          "after": [
+            "accounts-daemon.service",
+            "avahi-daemon.service",
+            "bluetooth.service",
+            "bodi-inference-gateway.service",
+            "bolt.service",
+            "colord.service",
+            "cron.service",
+            "cups-browsed.service",
+            "cups.service",
+            "dbus.service",
+            "fwupd.service",
+            "gdm.service",
+            "gnome-remote-desktop.service",
+            "kerneloops.service",
+            "ModemManager.service",
+            "NetworkManager.service",
+            "nginx.service",
+            "node_exporter.service",
+            "polkit.service",
+            "power-profiles-daemon.service",
+            "rsyslog.service",
+            "rtkit-daemon.service",
+            "snapd.service",
+            "ssh.service",
+            "switcheroo-control.service",
+            "systemd-journald.service",
+            "systemd-logind.service",
+            "systemd-oomd.service",
+            "systemd-resolved.service",
+            "systemd-timesyncd.service",
+            "systemd-udevd.service",
+            "tailscaled.service",
+            "udisks2.service",
+            "unattended-upgrades.service",
+            "upower.service",
+            "user@1000.service",
+            "wpa_supplicant.service"
+          ],
+          "the_services_are_unchanged": true
+        }
+      },
+      "the_machine": "x86_64",
+      "the_target_of_the_cross_build": "x86_64-unknown-linux-gnu",
+      "the_target_is_the_expected_one": true,
+      "the_ports_of_the_plan": [],
+      "the_home": "/home/bodi",
+      "the_sqlite_command_is_present": false,
+      "the_operators_services_are_unchanged": true
+    }
+  },
+  "the_read_only": true,
+  "the_status": "PASS",
+  "the_revision": "4d9524aacbb51cf3368907821386fb4652b69fac",
+  "the_tree": "c34394446447cb9a3cbd0a8ac93d123d9867aa96",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-13T01:04:57Z"
+}

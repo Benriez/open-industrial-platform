@@ -128,8 +128,14 @@ An **independent verification** of that change (a delegated, read-only audit of 
    operator runs). The **bundle of the instance** is READY and measured: the operator's part
    is one copy and one command (`tools/oip_pi_bundle.sh`, `docs/evidence/oip-pi-bundle/pi-bundle.json`).
 
-3. **N21 (the deployed hosts and the device classes of the operator)**: the **discovery** of
-   `bodi-pi` and `bodi-pc` and of the two new devices is **measured** read-only
+3. **N21 (the deployed hosts and the device classes of the operator)**: the **hosts** are
+   **measured** read-only in their own rehearsal, so that their receipt stays fresh at every
+   revision of the release (`tests/oip_deployment_hosts.py`,
+   `docs/evidence/oip-deployment-hosts/deployment-hosts.json`: the identity, the architecture, the
+   memory, the disk, the toolchain, the services of the operator — unchanged before and after the
+   measurement — and the listeners of `bodi-pi` and `bodi-pc`, the target of the cross build
+   answered by the Pi and the ports of the plan free on it). The **discovery** of the two new
+   devices is measured in the rehearsal of the discovery
    (`tests/oip_deployment_discovery.py`,
    `docs/evidence/oip-deployment-discovery/deployment-discovery.json`; the receipt of this revision
    is **stale**: the router and the bridge are on `192.168.1.x` and the network of this machine is
@@ -539,6 +545,7 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-mas-package/mas-package.json` | the package of the macOS client for the Mac App Store: the release build, the entitlements of the bundle (the app sandbox and the network client, without the debug entitlement of the entitlements file), the hardened runtime in the signature, the privacy manifest in the bundle, the absence of the quarantine attribute on every file, the category and the transport security of the Info.plist, the icon and the signature of every executable |
 | `docs/evidence/oip-service-registry/service-registry.json` | the **service registry** that the operator declared in the plan: the Core delivers it with the provenance `declared` (the Core measures no service), the scope of the read is the scope of the hierarchy, a foreign identifier is refused **identically** to an unknown one, the MCP tool answers the same registry as the route, and a plan that declares a service for a site that does not exist is refused |
 | `docs/evidence/oip-mas-export/mas-export.json` | the **export recipe** of the Mac App Store listing: the template carries every key that the export needs and every identity of the operator as a placeholder, the tool **refuses** while that identity is incomplete and names the missing values, the rendered file carries every key and **no placeholder** any more and lies **outside** the checkout, the printed command names the archive and the options file, and the checkout stays **untouched** — the rehearsal never exports, never signs and never uploads |
+| `docs/evidence/oip-deployment-hosts/deployment-hosts.json` | the **deployment hosts** of the operator, measured read-only over SSH: the identity, the architecture, the memory, the disk, the toolchain, the services of the operator (unchanged before and after) and the listeners of `bodi-pi` and `bodi-pc` — the receipt is fresh at every revision, the devices of the operator live on the network of the operator and their discovery is the receipt of the measurement that could reach them |
 | `docs/evidence/oip-deployment-discovery/deployment-discovery.json` | the deployed hosts and the two device classes of the operator, measured read-only: the identity, the architecture, the memory, the disk, the toolchain, the services of the operator (unchanged before and after) and the listeners of `bodi-pi` and `bodi-pc`; the SSH banner and the host keys of the OpenWrt router; the public configuration of the Hue Bridge and the refusal of its lights without a token |
 | `docs/evidence/oip-pi-bundle/pi-bundle.json` | the bundle of a disposable instance for a foreign host: the whole procedure measured with stubs — the files of the instance are absolute and inside the instance, the procedure writes nothing outside it, the code of the operator session is minted over the local IPC, the instance stops without a forced signal, and the bundle installs no service and names no path of the machine it was built on |
 | `docs/evidence/oip-operations/operations.json` | the local operations: the backup, the refused restore, the clean shutdown, the three refusals of the personal installation |
