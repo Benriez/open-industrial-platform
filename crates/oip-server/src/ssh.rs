@@ -647,6 +647,31 @@ case "$(uname -s)" in
  printf '\n__OIP_MEMORY__\n'; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo
  printf '\n__OIP_UPTIME__\n'; cat /proc/uptime
  printf '\n__OIP_HOSTID__\n'; if [ -r /etc/machine-id ]; then cat /etc/machine-id; fi
+ printf '\n__OIP_THERMAL__\n'
+ for _oip_hm in /sys/class/hwmon/hwmon*; do
+  [ -r "$_oip_hm/name" ] || continue
+  _oip_sensor=$(cat "$_oip_hm/name" 2>/dev/null) || continue
+  case "$_oip_sensor" in cpu_thermal|k10temp|coretemp|zenpower|amdgpu|nouveau|nvidia|i915|xe) ;; *) continue ;; esac
+  for _oip_temp in "$_oip_hm"/temp*_input; do
+   [ -r "$_oip_temp" ] || continue
+   _oip_label_file=${_oip_temp%_input}_label
+   _oip_label=''
+   [ -r "$_oip_label_file" ] && _oip_label=$(cat "$_oip_label_file" 2>/dev/null)
+   _oip_value=$(cat "$_oip_temp" 2>/dev/null) || continue
+   printf '%s|%s|%s\n' "$_oip_sensor" "$_oip_label" "$_oip_value"
+  done
+ done
+ printf '\n__OIP_GPU__\n'
+ for _oip_gpu in /sys/class/drm/card[0-9]/device; do
+  [ -e "$_oip_gpu" ] || continue
+  _oip_driver=$(basename "$(readlink -f "$_oip_gpu/driver" 2>/dev/null)" 2>/dev/null)
+  [ -n "$_oip_driver" ] && [ "$_oip_driver" != driver ] || continue
+  _oip_vendor=''; _oip_device_id=''; _oip_busy=''
+  [ -r "$_oip_gpu/vendor" ] && _oip_vendor=$(cat "$_oip_gpu/vendor" 2>/dev/null)
+  [ -r "$_oip_gpu/device" ] && _oip_device_id=$(cat "$_oip_gpu/device" 2>/dev/null)
+  [ -r "$_oip_gpu/gpu_busy_percent" ] && _oip_busy=$(cat "$_oip_gpu/gpu_busy_percent" 2>/dev/null)
+  printf '%s|%s|%s|%s\n' "$_oip_driver" "$_oip_vendor" "$_oip_device_id" "$_oip_busy"
+ done
  printf '\n__OIP_NETWORK__\n'; _oip_net=''; if command -v ip >/dev/null 2>&1; then _oip_net="$(ip -j address show 2>/dev/null)"; if [ -z "$_oip_net" ]; then _oip_net="$(ip -o address show 2>/dev/null)"; fi; fi; if [ -z "$_oip_net" ] && command -v ifconfig >/dev/null 2>&1; then _oip_net="$(ifconfig -a 2>/dev/null)"; fi; printf '%s\n' "$_oip_net"
  ;;
  Darwin)
@@ -654,6 +679,7 @@ case "$(uname -s)" in
  printf '\n__OIP_MODEL__\n'; sysctl -n hw.model
  printf '\n__OIP_MEMORY__\n'; sysctl -n hw.memsize; vm_stat
  printf '\n__OIP_UPTIME__\n'; sysctl -n kern.boottime; date +%s
+ printf '\n__OIP_THERMAL__\n'; printf '\n__OIP_GPU__\n'
  printf '\n__OIP_NETWORK__\n'; ifconfig -a
  ;;
  *) printf 'OIP_UNSUPPORTED_OS\n' >&2; exit 42 ;;
@@ -677,7 +703,10 @@ fn is_ip_oneline(line: &str) -> bool {
     let p: Vec<&str> = line.split_whitespace().collect();
     p.len() >= 4
         && p[0].ends_with(':')
-        && p[0].trim_end_matches(':').chars().all(|c| c.is_ascii_digit())
+        && p[0]
+            .trim_end_matches(':')
+            .chars()
+            .all(|c| c.is_ascii_digit())
         && !p[0].trim_end_matches(':').is_empty()
         && matches!(p[2], "inet" | "inet6")
 }
@@ -688,6 +717,37 @@ fn number(text: &str) -> Option<u64> {
         .trim_end_matches('.')
         .parse()
         .ok()
+}
+fn temperature_c(sensor: &str, value: &str) -> Option<f64> {
+    let millidegrees = value.trim().parse::<i64>().ok()?;
+    let celsius = millidegrees as f64 / 1000.0;
+    let sensor = sensor.trim();
+    (!sensor.is_empty() && (-40.0..=150.0).contains(&celsius)).then_some(celsius)
+}
+fn gpu_label(driver: &str, vendor: &str, device: &str) -> Option<String> {
+    let driver = driver.trim().chars().take(32).collect::<String>();
+    if driver.is_empty()
+        || !driver
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b"_.-".contains(&b))
+    {
+        return None;
+    }
+    let vendor_name = match vendor.trim().to_ascii_lowercase().as_str() {
+        "0x1002" => "AMD",
+        "0x10de" => "NVIDIA",
+        "0x8086" => "Intel",
+        _ if matches!(driver.as_str(), "v3d" | "vc4-drm") => "VideoCore",
+        _ => "GPU",
+    };
+    let pci = [vendor.trim(), device.trim()]
+        .into_iter()
+        .all(|s| s.starts_with("0x") && s[2..].bytes().all(|b| b.is_ascii_hexdigit()));
+    Some(if pci {
+        format!("{vendor_name} GPU (PCI {vendor}:{device}; {driver})")
+    } else {
+        format!("{vendor_name} GPU ({driver})")
+    })
 }
 pub fn parse(bytes: &[u8], at: i64) -> Result<HostInformation, ConnectionFault> {
     let text = std::str::from_utf8(bytes).map_err(|_| fault("SSH_FAILED"))?;
@@ -729,7 +789,7 @@ pub fn parse(bytes: &[u8], at: i64) -> Result<HostInformation, ConnectionFault> 
             Some(x.chars().take(512).collect::<String>())
         }
     };
-    let mut unavailable = vec!["gpu".into(), "temperature".into(), "cpu_utilization".into()];
+    let mut unavailable = vec!["cpu_utilization".into()];
     let memory = field("__OIP_MEMORY__");
     let (memory_total_bytes, memory_used_bytes) = if os == "Linux" {
         let values = memory
@@ -770,6 +830,53 @@ pub fn parse(bytes: &[u8], at: i64) -> Result<HostInformation, ConnectionFault> 
         });
         (total, used.filter(|u| total.is_some_and(|t| *u <= t)))
     };
+    let memory_used_percent = memory_total_bytes
+        .zip(memory_used_bytes)
+        .filter(|(total, used)| *total > 0 && *used <= *total)
+        .map(|(total, used)| used as f64 * 100.0 / total as f64);
+    let mut cpu_temperature_c: Option<f64> = None;
+    let mut soc_temperature_c: Option<f64> = None;
+    let mut gpu_temperature_c: Option<f64> = None;
+    for line in field("__OIP_THERMAL__").lines() {
+        let mut parts = line.splitn(3, '|');
+        let Some(sensor) = parts.next() else { continue };
+        let Some(_label) = parts.next() else { continue };
+        let Some(raw) = parts.next() else { continue };
+        let Some(temp) = temperature_c(sensor, raw) else {
+            continue;
+        };
+        match sensor.trim() {
+            "cpu_thermal" => {
+                soc_temperature_c = Some(soc_temperature_c.map_or(temp, |old| old.max(temp)))
+            }
+            "k10temp" | "coretemp" | "zenpower" => {
+                cpu_temperature_c = Some(cpu_temperature_c.map_or(temp, |old| old.max(temp)))
+            }
+            "amdgpu" | "nouveau" | "nvidia" | "i915" | "xe" => {
+                gpu_temperature_c = Some(gpu_temperature_c.map_or(temp, |old| old.max(temp)))
+            }
+            _ => {}
+        }
+    }
+    let mut gpu_model = None;
+    let mut gpu_utilization_percent = None;
+    for line in field("__OIP_GPU__").lines() {
+        let mut parts = line.splitn(4, '|');
+        let Some(driver) = parts.next() else { continue };
+        let Some(vendor) = parts.next() else { continue };
+        let Some(device) = parts.next() else { continue };
+        let Some(busy) = parts.next() else { continue };
+        if gpu_model.is_none() {
+            gpu_model = gpu_label(driver, vendor, device);
+        }
+        if gpu_utilization_percent.is_none() {
+            gpu_utilization_percent = busy
+                .trim()
+                .parse::<f64>()
+                .ok()
+                .filter(|v| v.is_finite() && (0.0..=100.0).contains(v));
+        }
+    }
     let uptime = field("__OIP_UPTIME__");
     let uptime_seconds = if os == "Linux" {
         uptime
@@ -876,7 +983,9 @@ pub fn parse(bytes: &[u8], at: i64) -> Result<HostInformation, ConnectionFault> 
                         name: name.clone(),
                         addresses: vec![],
                     });
-                    interfaces.last_mut().expect("the interface was just pushed")
+                    interfaces
+                        .last_mut()
+                        .expect("the interface was just pushed")
                 }
             };
             if entry.addresses.len() < 32 && !entry.addresses.contains(&address) {
@@ -918,12 +1027,40 @@ pub fn parse(bytes: &[u8], at: i64) -> Result<HostInformation, ConnectionFault> 
         ("uptime", uptime_seconds.is_none()),
         ("network_interfaces", interfaces.is_empty()),
         ("disks", disks.is_empty()),
+        ("gpu_model", gpu_model.is_none()),
+        ("gpu_utilization", gpu_utilization_percent.is_none()),
+        ("gpu_temperature", gpu_temperature_c.is_none()),
+        ("cpu_temperature", cpu_temperature_c.is_none()),
+        ("soc_temperature", soc_temperature_c.is_none()),
+        ("memory_used_percent", memory_used_percent.is_none()),
     ] {
         if missing {
             unavailable.push(name.into());
         }
     }
-    Ok(HostInformation{hostname:host.into(),operating_system:os.into(),architecture:arch.into(),cpu_info:optional("__OIP_CPU__"),model:optional("__OIP_MODEL__"),stable_host_id_sha256:optional("__OIP_HOSTID__").map(|v|format!("{:x}",Sha256::digest(v.as_bytes()))),memory_total_bytes,memory_used_bytes,uptime_seconds,disks,interfaces,captured_at_ms:at,unavailable,provenance:"authenticated SSH host report; fixed read-only query; capture time is Core time, remote measurement clocks unknown; no hardware attestation or inferred sensors".into()})
+    Ok(HostInformation {
+        hostname: host.into(),
+        operating_system: os.into(),
+        architecture: arch.into(),
+        cpu_info: optional("__OIP_CPU__"),
+        model: optional("__OIP_MODEL__"),
+        stable_host_id_sha256: optional("__OIP_HOSTID__")
+            .map(|v| format!("{:x}", Sha256::digest(v.as_bytes()))),
+        memory_total_bytes,
+        memory_used_bytes,
+        gpu_model,
+        gpu_utilization_percent,
+        gpu_temperature_c,
+        cpu_temperature_c,
+        soc_temperature_c,
+        memory_used_percent,
+        uptime_seconds,
+        disks,
+        interfaces,
+        captured_at_ms: at,
+        unavailable,
+        provenance: "authenticated SSH host report; fixed read-only query; capture time is Core time, remote measurement clocks unknown; no hardware attestation or inferred sensors".into(),
+    })
 }
 pub fn definition(c: &DeviceConnectionRecord) -> SourceDefinition {
     let mut metrics = BTreeMap::new();
@@ -933,6 +1070,7 @@ pub fn definition(c: &DeviceConnectionRecord) -> SourceDefinition {
         "architecture",
         "cpu_info",
         "model",
+        "gpu_model",
         "disks",
         "interfaces",
     ] {
@@ -941,10 +1079,22 @@ pub fn definition(c: &DeviceConnectionRecord) -> SourceDefinition {
             ValueKind::Text,
         );
     }
-    for name in ["memory_total_bytes", "memory_used_bytes"] {
+    for name in [
+        "memory_total_bytes",
+        "memory_used_bytes",
+        "gpu_utilization_percent",
+        "gpu_temperature_c",
+        "cpu_temperature_c",
+        "soc_temperature_c",
+        "memory_used_percent",
+    ] {
         metrics.insert(
             MetricId::new(format!("host.{name}")).expect("static metric"),
-            ValueKind::UnsignedInteger,
+            if name == "memory_total_bytes" || name == "memory_used_bytes" {
+                ValueKind::UnsignedInteger
+            } else {
+                ValueKind::Float
+            },
         );
     }
     metrics.insert(
@@ -990,6 +1140,7 @@ pub fn observations(c: &DeviceConnectionRecord, h: &HostInformation) -> Vec<Obse
         ("architecture", Some(h.architecture.clone())),
         ("cpu_info", h.cpu_info.clone()),
         ("model", h.model.clone()),
+        ("gpu_model", h.gpu_model.clone()),
         (
             "disks",
             if h.disks.is_empty() {
@@ -1020,6 +1171,25 @@ pub fn observations(c: &DeviceConnectionRecord, h: &HostInformation) -> Vec<Obse
                 name,
                 MetricValue::UnsignedInteger(value),
                 Unit::Custom("bytes".into()),
+            ));
+        }
+    }
+    for (name, value) in [
+        ("gpu_utilization_percent", h.gpu_utilization_percent),
+        ("gpu_temperature_c", h.gpu_temperature_c),
+        ("cpu_temperature_c", h.cpu_temperature_c),
+        ("soc_temperature_c", h.soc_temperature_c),
+        ("memory_used_percent", h.memory_used_percent),
+    ] {
+        if let Some(value) = value.filter(|v| v.is_finite()) {
+            values.push((
+                name,
+                MetricValue::Float(value),
+                if name.ends_with("_temperature_c") {
+                    Unit::Celsius
+                } else {
+                    Unit::Custom("%".into())
+                },
             ));
         }
     }
@@ -1146,7 +1316,11 @@ __OIP_END__
         assert_eq!(report.cpu_info.as_deref(), Some("BCM2711"));
         assert_eq!(report.memory_total_bytes, Some(126_218_496 * 1024));
         assert!(report.uptime_seconds.is_some());
-        assert_eq!(report.disks.len(), 3, "every filesystem of the host is named");
+        assert_eq!(
+            report.disks.len(),
+            3,
+            "every filesystem of the host is named"
+        );
         // The network of the host is measured: the interfaces and their
         // addresses, in the order the host answers them.
         let names: Vec<&str> = report
@@ -1158,7 +1332,10 @@ __OIP_END__
         assert_eq!(report.interfaces[1].addresses, vec!["192.168.1.1"]);
         assert_eq!(report.interfaces[0].addresses, vec!["127.0.0.1", "::1"]);
         assert!(
-            !report.unavailable.iter().any(|item| item == "network_interfaces"),
+            !report
+                .unavailable
+                .iter()
+                .any(|item| item == "network_interfaces"),
             "the network of a BusyBox host is measured, not missing: {:?}",
             report.unavailable
         );
@@ -1171,12 +1348,18 @@ __OIP_END__
             "2: eth0    inet 192.168.1.1/24 brd 192.168.1.255 scope global eth0"
         ));
         assert!(is_ip_oneline("3: wlan0    inet6 fe80::1/64 scope link"));
-        assert!(!is_ip_oneline("eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500"));
-        assert!(!is_ip_oneline("        inet 192.168.1.1  netmask 255.255.255.0"));
+        assert!(!is_ip_oneline(
+            "eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500"
+        ));
+        assert!(!is_ip_oneline(
+            "        inet 192.168.1.1  netmask 255.255.255.0"
+        ));
         // The address alone is enough for one entry.
         assert!(is_ip_oneline("1: lo    inet 127.0.0.1/8"));
         // The header of `df` and a line of `ifconfig` are not entries.
-        assert!(!is_ip_oneline("Filesystem 1024-blocks Used Available Capacity Mounted on"));
+        assert!(!is_ip_oneline(
+            "Filesystem 1024-blocks Used Available Capacity Mounted on"
+        ));
     }
 
     #[test]

@@ -153,6 +153,20 @@ pub struct HostInformation {
     pub stable_host_id_sha256: Option<String>,
     pub memory_total_bytes: Option<u64>,
     pub memory_used_bytes: Option<u64>,
+    /// Adapter label and live GPU/thermal readings are optional because the
+    /// host may not expose a kernel sensor for every device.
+    #[serde(default)]
+    pub gpu_model: Option<String>,
+    #[serde(default)]
+    pub gpu_utilization_percent: Option<f64>,
+    #[serde(default)]
+    pub gpu_temperature_c: Option<f64>,
+    #[serde(default)]
+    pub cpu_temperature_c: Option<f64>,
+    #[serde(default)]
+    pub soc_temperature_c: Option<f64>,
+    #[serde(default)]
+    pub memory_used_percent: Option<f64>,
     pub uptime_seconds: Option<f64>,
     pub disks: Vec<DiskInformation>,
     pub interfaces: Vec<NetworkInterfaceInformation>,

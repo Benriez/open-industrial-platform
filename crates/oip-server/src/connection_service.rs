@@ -1012,6 +1012,12 @@ mod tests {
             stable_host_id_sha256: None,
             memory_total_bytes: Some(1024),
             memory_used_bytes: None,
+            gpu_model: None,
+            gpu_utilization_percent: None,
+            gpu_temperature_c: None,
+            cpu_temperature_c: None,
+            soc_temperature_c: None,
+            memory_used_percent: None,
             uptime_seconds: None,
             disks: Vec::new(),
             interfaces: vec![NetworkInterfaceInformation {
