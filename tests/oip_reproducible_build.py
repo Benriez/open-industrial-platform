@@ -84,15 +84,21 @@ def embedded_revision(path):
     --dirty` into the binary. The binary therefore names the revision it was
     built from, and the reproducibility of the Core is the property that
     **the same revision** yields the same bytes.
+
+    The marker of a tree with changes in it is read **first**: the revision
+    with the marker contains the revision without it, so a reader that looks
+    for the plain revision first would report a binary of a dirty tree as the
+    binary of the release.
     """
     if not path.is_file():
         return None
     payload = path.read_bytes()
     revision = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-    for candidate in (revision, revision + "-dirty"):
-        if candidate.encode() in payload:
-            return candidate
+    if (revision + "-dirty").encode() in payload:
+        return revision + "-dirty"
+    if revision.encode() in payload:
+        return revision
     return None
 
 
@@ -129,6 +135,22 @@ def main():
     report = {"schema": "oip-reproducible-build-v1", "steps": []}
 
     try:
+        # 0. the tree of the measurement must be clean.
+        #
+        # The build script of the Core embeds `git describe --always
+        # --abbrev=40 --dirty`: a tree with changes in it yields a binary
+        # that names the revision **with the marker**, and that binary has
+        # other bytes than the binary of the same revision. Two builds on a
+        # dirty tree are therefore identical to each other and prove the
+        # reproducibility of the dirty variant — and not the property of the
+        # release. The measurement is refused on a dirty tree.
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"], cwd=ROOT, text=True).strip()
+        report["the_tree_of_the_measurement_is_clean"] = not status
+        if status:
+            raise AssertionError(
+                "the tree of the measurement is not clean: the build of the release "
+                f"must be measured on the committed source (the changes: {status[:200]})")
         # 1. the web release, twice
         seconds = build(WEB_COMMAND)
         first_main = hashlib.sha256((WEB / "main.dart.js").read_bytes()).hexdigest()
@@ -215,9 +237,16 @@ def main():
             # depend on a binary that happened to be there before.
             first_seconds, first_core, first_probe = build_the_core()
             second_seconds, second_core, second_probe = build_the_core()
+            revision = subprocess.check_output(
+                ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+            embedded = embedded_revision(core)
+            # The binary of the release names the revision of the release —
+            # without the marker of a tree with changes in it.
+            assert embedded == revision, (
+                f"the binary of the Core names {embedded}, the release is {revision}")
             report["the_core"] = {
                 "the_command": " ".join(command),
-                "the_revision_the_binary_names": embedded_revision(core),
+                "the_revision_the_binary_names": embedded,
                 "the_revision_of_the_run": subprocess.check_output(
                     ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                 "the_note": "the binary names the revision it was built from; the "

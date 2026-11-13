@@ -174,6 +174,13 @@ REHEARSALS = [
     ("oip_devices_density", "tests/oip_devices_density.py",
      {"devices-density.json": "oip-devices-density/devices-density.json",
       "responsive-report.json": "oip-devices-density/responsive-report.json"}),
+    # The **Network workspace** of the managed surface: the absence of the
+    # logical paths is named, the devices of the Core are the devices of the
+    # surface, and the comparison names its own limit.
+    ("oip_network_2027", "tests/oip_network_2027.py",
+     {"network-2027-rehearsal.json": "oip-network-2027/network-2027-rehearsal.json",
+      "network-2027.json": "oip-network-2027/network-2027.json",
+      "captures/": "oip-network-2027/captures/"}),
     # The **address space** of the operator in the browser: the nodes, their
     # folders and their identity are the ones that the Core delivers.
     ("oip_opcua_browser", "tests/oip_opcua_browser.py",

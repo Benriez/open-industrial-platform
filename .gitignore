@@ -109,6 +109,13 @@ secrets/
 !/docs/evidence/oip-record-integrity/record-integrity.json
 # The deployment hosts of the operator, measured read-only over SSH.
 !/docs/evidence/oip-deployment-hosts/deployment-hosts.json
+# The Network workspace of the managed surface: the absence of the logical
+# paths is named, the devices of the Core are the devices of the surface, and
+# the comparison names its own limit.
+!/docs/evidence/oip-network-2027/network-2027.json
+!/docs/evidence/oip-network-2027/network-2027-rehearsal.json
+!/docs/evidence/oip-network-2027/captures/
+!/docs/evidence/oip-network-2027/captures/*.png
 # The numbers of the record: every measurement that a row quotes is looked up
 # in the receipt that the row names.
 !/docs/evidence/oip-record-numbers/record-numbers.json
