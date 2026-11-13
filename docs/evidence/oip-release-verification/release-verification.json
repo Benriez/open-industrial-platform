@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "04194907c6b136198406fa2dd91c45d0a6852ca9",
+      "the_revision": "f6daa8316f8be30fb5961c6233f36d09f9ebe041",
       "the_revision_of_the_source": {
         "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
         "the_subject": "fix(g4): every field of the surface keeps the characters of the keyboard"
@@ -12,7 +12,7 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 772,
-        "the_sha256": "f16d3f669ef9c93753b0c2abd9c9fe976342699238faa81e0d87b2f56a947e6b"
+        "the_sha256": "ab59ac064d13f1dd9931ef49809b662689676a6fc88e84f02f286a71840c10d0"
       },
       "the_artifacts": {
         "the_core": "7040dc04d51dadd8cf75b9b29eec1cd7e4be60b1b135e0d43a85dd1547f159ba",
@@ -40,7 +40,7 @@
       },
       "the_revision_of_the_source": "fc18ce29954a",
       "the_receipts": 72,
-      "the_receipts_measured_on_a_tree_that_carries_the_source": 66,
+      "the_receipts_measured_on_a_tree_that_carries_the_source": 68,
       "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 2,
       "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
@@ -154,12 +154,10 @@
   ],
   "the_problems": [
     "the receipt docs/evidence/oip-deployment-discovery/deployment-discovery.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)",
-    "the receipt docs/evidence/oip-devices-geometry/geometry-1440x900.json names no revision",
-    "the receipt docs/evidence/oip-devices-geometry/geometry-1920x1080.json names no revision",
     "the receipt docs/evidence/oip-hue-device/hue-device.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)"
   ],
-  "the_revision": "328d6e6f523be6882f11f2872f2a7586303055a1",
-  "the_tree": "a3337956ac9b84f44254d8d3bf62d8d5131353a6",
+  "the_revision": "d1648a73ce998d2412f40a0be1970306dc48d216",
+  "the_tree": "fafd7821c9ac8e85f6ed6316350d455e4b1bd836",
   "the_working_tree_is_clean": true,
   "status": "FAIL"
 }
