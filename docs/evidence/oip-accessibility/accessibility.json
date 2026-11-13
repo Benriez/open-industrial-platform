@@ -1,9 +1,9 @@
 {
   "schema": "oip-accessibility-receipt-v1",
-  "revision": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
+  "revision": "0a9b64f6f6a6f78a8eda9ab9380ec8acaa397094",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "name and role coverage of the rendered surface of the six workstations; not a full WCAG audit",
-  "base": "http://127.0.0.1:53969",
+  "base": "http://127.0.0.1:60904",
   "stations": [
     {
       "workstation": "overview",
@@ -27,8 +27,8 @@
     },
     {
       "workstation": "network",
-      "controls": 22,
-      "focusable": 14,
+      "controls": 26,
+      "focusable": 20,
       "unnamed": 0,
       "unnamedFocusable": 0,
       "roles": [
@@ -47,8 +47,8 @@
     },
     {
       "workstation": "diagnostics",
-      "controls": 30,
-      "focusable": 15,
+      "controls": 48,
+      "focusable": 42,
       "unnamed": 0,
       "unnamedFocusable": 0,
       "roles": [
@@ -66,7 +66,7 @@
       ]
     }
   ],
-  "controls_total": 152,
+  "controls_total": 174,
   "unnamed_total": 0,
   "findings": [
     {
@@ -161,8 +161,8 @@
     "Failed to load resource: the server responded with a status of 403 (Forbidden)"
   ],
   "external_requests": [],
-  "the_revision": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
-  "the_tree": "37f77024487475ad6805e9a4fb93172c40cf46aa",
+  "the_revision": "0a9b64f6f6a6f78a8eda9ab9380ec8acaa397094",
+  "the_tree": "892779da684e874fa39c0de912cb902acf887720",
   "the_working_tree_is_clean": false,
-  "the_revision_of_the_acceptance": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f"
+  "the_revision_of_the_acceptance": "0a9b64f6f6a6f78a8eda9ab9380ec8acaa397094"
 }
