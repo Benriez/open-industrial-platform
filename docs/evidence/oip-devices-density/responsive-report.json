@@ -1,8 +1,8 @@
 {
   "verdict": "PASS",
   "status": "PASS",
-  "the_revision": "9386881fab596850716df7e51b1a91dd8079e2fe",
-  "base": "http://127.0.0.1:55521",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "base": "http://127.0.0.1:63462",
   "checks": [
     "320x740: toolbar, disclosure, inventory and overflow verified",
     "390x844: toolbar, disclosure, inventory and overflow verified",

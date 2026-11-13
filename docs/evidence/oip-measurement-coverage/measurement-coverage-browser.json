@@ -61,11 +61,11 @@
     "expanded",
     "expanded"
   ],
-  "revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
+  "revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "the verified connection of a device in the approved surface against the real Core",
-  "base": "http://127.0.0.1:51692",
-  "expected_fingerprint": "SHA256:L9OlNJeaAHbGmCvuRLvcvn3G2M5EKY5h/k6QTOwg+zU",
+  "base": "http://127.0.0.1:51480",
+  "expected_fingerprint": "SHA256:NiwfUPk6fc8HTbmr7ANTXxQbbOCXE57I0Gfe7IhZDQA",
   "findings": [
     {
       "check": "browser-login accepted",
@@ -75,7 +75,7 @@
     {
       "check": "the inventory of the scope lists the device",
       "ok": true,
-      "the_detail": "Coverage device · coverage-device\nGerät Coverage device coverage-device auswählen · Einzelplatine · dfd041b6-0d0c-4b76-873e-4e61a306dbbf · 10 Observations · Reachability Erreichbar reported\nCoverage d"
+      "the_detail": "Coverage device · coverage-device\nGerät Coverage device coverage-device auswählen · Einzelplatine · 87fa8dec-f636-47b2-8fac-8b50bb0147d6 · 10 Observations · Reachability Erreichbar reported\nCoverage d"
     },
     {
       "check": "the connection panel of the device is shown",

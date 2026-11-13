@@ -106,8 +106,8 @@
         },
         "registration": "registered",
         "origin": "manual_operator",
-        "created_ms": 1794474184866,
-        "updated_ms": 1794474184866,
+        "created_ms": 1794584330512,
+        "updated_ms": 1794584330512,
         "registered_by": null,
         "revision": 1
       },
@@ -132,9 +132,9 @@
   },
   "the_orphaned_processes": [],
   "the_status": "PASS",
-  "the_revision": "0e7f52df86840545722ffce4d2715c43b3d52e9d",
-  "the_tree": "7f570d53cab642fad7f150de34de5c0ffd2d298e",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
   "the_working_tree_is_clean": true,
   "the_read_only": "every request of the rehearsal is a GET; the bridge was not modified",
-  "finished_utc": "2026-11-12T09:03:05Z"
+  "finished_utc": "2026-11-13T15:38:50Z"
 }

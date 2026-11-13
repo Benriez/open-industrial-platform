@@ -18,7 +18,7 @@
           ],
           "the_code": 0,
           "the_output": "Linux 6.12.62+rpt-rpi-v8 aarch64 GNU/Linux\nrpi4\nflashback",
-          "the_error": ""
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
         },
         "the_architecture": {
           "the_command": [
@@ -32,7 +32,7 @@
           ],
           "the_code": 0,
           "the_output": "aarch64\narm64",
-          "the_error": ""
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
         },
         "the_memory": {
           "the_command": [
@@ -45,8 +45,8 @@
             "free -m 2>/dev/null | head -3; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo"
           ],
           "the_code": 0,
-          "the_output": "total        used        free      shared  buff/cache   available\nMem:            1844        1159         143          10         620         685\nSwap:          32767        1522       31245\nMemTotal:        1888848 kB\nMemAvailable:     702140 kB",
-          "the_error": ""
+          "the_output": "total        used        free      shared  buff/cache   available\nMem:            1844        1008         240          10         673         836\nSwap:          32767        2573       30194\nMemTotal:        1888848 kB\nMemAvailable:     856172 kB",
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
         },
         "the_disk": {
           "the_command": [
@@ -60,7 +60,7 @@
           ],
           "the_code": 0,
           "the_output": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/sda2       235G  171G   54G  77% /",
-          "the_error": ""
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
         },
         "the_toolchain": {
           "the_command": [
@@ -74,7 +74,7 @@
           ],
           "the_code": 0,
           "the_output": "python3: /usr/bin/python3\nsqlite3: /usr/bin/sqlite3\ncurl: /usr/bin/curl\ngit: /usr/bin/git\ncargo: absent\nrustc: absent",
-          "the_error": ""
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
         },
         "the_services": {
           "the_command": [
@@ -88,7 +88,7 @@
           ],
           "the_code": 0,
           "the_output": "accounts-daemon.service\navahi-daemon.service\nbluetooth.service\ncron.service\ncups-browsed.service\ncups.service\ndbus.service\ngetty@tty1.service\nlightdm.service\nModemManager.service\nNetworkManager.service\nnfs-blkmap.service\npolkit.service\nserial-getty@ttyS0.service\nsmartmontools.service\nsmbd.service\nssh.service\nsystemd-journald.service\nsystemd-logind.service\nsystemd-timesyncd.service\nsystemd-udevd.service\ntailscaled.service\nudisks2.service\nuser@1000.service\nuser@1001.service\nwpa_supplicant.service",
-          "the_error": ""
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
         },
         "the_listeners": {
           "the_command": [
@@ -101,8 +101,8 @@
             "ss -ltn 2>/dev/null | tail -n +2 | awk '{print $4}' | sort"
           ],
           "the_code": 0,
-          "the_output": "0.0.0.0:22\n0.0.0.0:445\n100.127.113.104:18700\n100.127.113.104:18780\n100.127.113.104:18782\n100.127.113.104%tailscale0:10000\n100.127.113.104%tailscale0:443\n100.127.113.104%tailscale0:55202\n100.127.113.104%tailscale0:8443\n[::1]:18700\n127.0.0.1:18700\n127.0.0.1:18780\n127.0.0.1:18781\n127.0.0.1:18783\n127.0.0.1:18790\n127.0.0.1:18795\n127.0.0.1:631\n127.0.0.1:8384\n127.0.0.1:9119\n[::1]:631\n[::]:22\n[::]:445\n[fd7a:115c:a1e0::b734:7168]%tailscale0:10000\n[fd7a:115c:a1e0::b734:7168]%tailscale0:443\n[fd7a:115c:a1e0::b734:7168]%tailscale0:46467\n[fd7a:115c:a1e0::b734:7168]%tailscale0:8443",
-          "the_error": ""
+          "the_output": "0.0.0.0:22\n0.0.0.0:445\n100.127.113.104:18700\n100.127.113.104:18780\n100.127.113.104:18782\n100.127.113.104%tailscale0:10000\n100.127.113.104%tailscale0:443\n100.127.113.104%tailscale0:55202\n100.127.113.104%tailscale0:8443\n[::1]:18700\n127.0.0.1:18700\n127.0.0.1:18780\n127.0.0.1:18781\n127.0.0.1:18783\n127.0.0.1:18790\n127.0.0.1:18795\n127.0.0.1:42871\n127.0.0.1:631\n127.0.0.1:8384\n127.0.0.1:9119\n[::1]:631\n[::]:22\n[::]:445\n[fd7a:115c:a1e0::b734:7168]%tailscale0:10000\n[fd7a:115c:a1e0::b734:7168]%tailscale0:443\n[fd7a:115c:a1e0::b734:7168]%tailscale0:46467\n[fd7a:115c:a1e0::b734:7168]%tailscale0:8443",
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
         },
         "the_home": {
           "the_command": [
@@ -115,8 +115,8 @@
             "printf '%s\\n' \"$HOME\"; ls -ld \"$HOME\" 2>/dev/null"
           ],
           "the_code": 0,
-          "the_output": "/home/flashback\ndrwx------ 82 flashback flashback 12288 Nov 11 19:20 /home/flashback",
-          "the_error": ""
+          "the_output": "/home/flashback\ndrwx------ 82 flashback flashback 12288 Nov 13 16:00 /home/flashback",
+          "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
         },
         "the_services_around_the_measurement": {
           "before": [
@@ -238,7 +238,7 @@
             "free -m 2>/dev/null | head -3; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo"
           ],
           "the_code": 0,
-          "the_output": "gesamt       benutzt     frei      gemns.  Puffer/Cache verf\u00fcgbar\nSpeicher:      31724       15127        3386         130       13798       16596\nAuslager:     131071        2503      128568\nMemTotal:       32486132 kB\nMemAvailable:   16995184 kB",
+          "the_output": "gesamt       benutzt     frei      gemns.  Puffer/Cache verf\u00fcgbar\nSpeicher:      31724        9807       11030         130       11473       21916\nAuslager:     131071        2480      128591\nMemTotal:       32486132 kB\nMemAvailable:   22442744 kB",
           "the_error": ""
         },
         "the_disk": {
@@ -406,11 +406,11 @@
     "the_router": {
       "the_device": "the OpenWrt router",
       "the_host": "192.168.1.1",
-      "the_ssh_banner": "SSH-2.0-dropbear\r\n\u0000\u0000\u0001\ufffd\u0007\u0014%\u001d\u0015\ufffd\ufffd\ufffdL\u001c\ufffd\ufffd\u0018\ufffd+\u0018?\ufffd\u0000\u0000\u0000\ufffdcurve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256",
+      "the_ssh_banner": "SSH-2.0-dropbear\r\n\u0000\u0000\u0001\ufffd\u0007\u0014C\ufffd\ufffd\u0166\ufffd\f\u0007\ufffd\u000f\ufffd\ufffd\ufffd\ufffd\u05f7\u0000\u0000\u0000\ufffdcurve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256",
       "the_ssh_banner_names_dropbear": true,
       "the_host_keys": [
-        "192.168.1.1 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCTFkEPVyYh8Ng4+7ob7ecvUwShZ+fWQHOe3Xbq9Gp+uYXT6wQsPUB1b8WuHn404aqhf2Rg4bgKlMxleOeuFUOg5Zsbz1401Bge0J2r3opnPr5qbHE5aAQMXsaNxIIyCiVYcODqjId6OT8m5bQHhnxmboOxwVEifJ+4wUz6ve/08BRAFLCqrHbLb0k34+hED8tUx8kuTB98l7AdDfAyI0OGMP3FLulOF2ez5EGT+sVkHjgZO9jA/ElyuP8hupUV3LDnNuXhCVIuhP+JykeAZ+sh+Pfvghpkq2eFeRCcwB0omNlLD3Vg8udK2J4F1vKoUF7RZzNDNTudSALihzlQfShp",
-        "192.168.1.1 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMhaGfQYJysHIUZsPeBDPlehUzdoowXCv9GJUPzQH53"
+        "192.168.1.1 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMhaGfQYJysHIUZsPeBDPlehUzdoowXCv9GJUPzQH53",
+        "192.168.1.1 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCTFkEPVyYh8Ng4+7ob7ecvUwShZ+fWQHOe3Xbq9Gp+uYXT6wQsPUB1b8WuHn404aqhf2Rg4bgKlMxleOeuFUOg5Zsbz1401Bge0J2r3opnPr5qbHE5aAQMXsaNxIIyCiVYcODqjId6OT8m5bQHhnxmboOxwVEifJ+4wUz6ve/08BRAFLCqrHbLb0k34+hED8tUx8kuTB98l7AdDfAyI0OGMP3FLulOF2ez5EGT+sVkHjgZO9jA/ElyuP8hupUV3LDnNuXhCVIuhP+JykeAZ+sh+Pfvghpkq2eFeRCcwB0omNlLD3Vg8udK2J4F1vKoUF7RZzNDNTudSALihzlQfShp"
       ],
       "the_http_status": "307",
       "the_read_only": true
@@ -442,7 +442,7 @@
   },
   "the_read_only": true,
   "the_status": "PASS",
-  "the_revision": "0e7f52df86840545722ffce4d2715c43b3d52e9d",
-  "the_tree": "7f570d53cab642fad7f150de34de5c0ffd2d298e",
-  "finished_utc": "2026-11-12T09:03:03Z"
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
+  "finished_utc": "2026-11-13T15:38:48Z"
 }

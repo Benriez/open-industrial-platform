@@ -12,7 +12,7 @@
   "the_output_of_the_journey": "PASS the Core delivered 7 categories, 3 settings and 22 tools\nPASS the surface offers the 7 categories of the Core\nPASS the settings of the Core are named as offline administration, with no browser save\nPASS the appearance is its own client-local section of the surface\nPASS the MCP section names the real runtime and the 11 facts of the Core\nPASS the tool explorer reaches the tool oip_sources_read of the Core and names its permissions\nPASS the copied schema is the schema that the Core delivered for oip_sources_read\nPASS the client configuration copies the Core template with its placeholders and no credential\nPASS the permissions, the client sessions and the connection diagnostics name their limits\nPASS the storage category names the store and the absence of a retention cleanup\nPASS the security category names the open advisories and the production blockers\nPASS the system category names the facts of the Core and no invented host metric\n",
   "browser_receipt": {
     "status": "PASS",
-    "the_revision": "0832c6cc07d26837857a3744169614c18313bbac",
+    "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
     "the_categories_of_the_core": [
       "general",
       "mcp_agents",
@@ -57,10 +57,10 @@
     "the_refusals_of_the_core": [
       "/api/v2/organizations?offset=0&limit=100",
       "/api/v1/system/status",
-      "/api/v1/metrics/current",
+      "/api/v1/sources",
       "/api/v1/devices",
-      "/api/v1/events",
-      "/api/v1/sources"
+      "/api/v1/metrics/current",
+      "/api/v1/events"
     ],
     "the_checks": [
       "the Core delivered 7 categories, 3 settings and 22 tools",
@@ -133,15 +133,15 @@
   "the_refusals_of_the_core": [
     "/api/v2/organizations?offset=0&limit=100",
     "/api/v1/system/status",
-    "/api/v1/metrics/current",
+    "/api/v1/sources",
     "/api/v1/devices",
-    "/api/v1/events",
-    "/api/v1/sources"
+    "/api/v1/metrics/current",
+    "/api/v1/events"
   ],
   "checks": 12,
   "status": "PASS",
-  "the_revision": "0832c6cc07d26837857a3744169614c18313bbac",
-  "the_tree": "916ac924a4b33c8afd8086879868d60852da7e00",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T10:55:01Z"
+  "finished_utc": "2026-11-13T15:57:20Z"
 }

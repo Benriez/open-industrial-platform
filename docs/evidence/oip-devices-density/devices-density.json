@@ -12,8 +12,8 @@
   "browser_receipt": {
     "verdict": "PASS",
     "status": "PASS",
-    "the_revision": "9386881fab596850716df7e51b1a91dd8079e2fe",
-    "base": "http://127.0.0.1:55521",
+    "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+    "base": "http://127.0.0.1:63462",
     "checks": [
       "320x740: toolbar, disclosure, inventory and overflow verified",
       "390x844: toolbar, disclosure, inventory and overflow verified",
@@ -35,8 +35,8 @@
   },
   "checks": 14,
   "status": "PASS",
-  "the_revision": "9386881fab596850716df7e51b1a91dd8079e2fe",
-  "the_tree": "769d65f77885f19648fe8934265be098b918f527",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T00:36:50Z"
+  "finished_utc": "2026-11-13T15:49:24Z"
 }

@@ -61,11 +61,11 @@
     "expanded",
     "expanded"
   ],
-  "revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
+  "revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "the verified connection of a device in the approved surface against the real Core",
-  "base": "http://127.0.0.1:51383",
-  "expected_fingerprint": "SHA256:wN15BupxwNEiZvkeFDdZSDFyEB1bBa+wAXipuwrsKKE",
+  "base": "http://127.0.0.1:63552",
+  "expected_fingerprint": "SHA256:VLPbfllGOzlYAZ6RI/l2zLaonXDbtvjHCfR59mPEl2A",
   "findings": [
     {
       "check": "browser-login accepted",
@@ -75,7 +75,7 @@
     {
       "check": "the inventory of the scope lists the device",
       "ok": true,
-      "the_detail": "Existing inventory identity · existing-pi\nGerät Existing inventory identity existing-pi auswählen · Einzelplatine · 54bdd73c-c5df-4687-ae30-5f8c8022edfd · 10 Observations · Reachability Erreichbar rep"
+      "the_detail": "Existing inventory identity · existing-pi\nGerät Existing inventory identity existing-pi auswählen · Einzelplatine · 3e1185b9-d019-4b00-8716-d8078acbe3a0 · 10 Observations · Reachability Erreichbar rep"
     },
     {
       "check": "the connection panel of the device is shown",

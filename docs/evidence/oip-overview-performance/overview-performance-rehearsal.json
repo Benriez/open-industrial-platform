@@ -9,15 +9,15 @@
     "the_kinds": [
       "Reconnected"
     ],
-    "the_collection_events": 2,
-    "the_records": 2
+    "the_collection_events": 3,
+    "the_records": 3
   },
   "the_sources_of_the_core": 3,
   "the_devices_of_the_core": 3,
-  "the_output_of_the_journey": "PASS the Core delivered 3 sources, 3 devices and the event kinds Reconnected\nPASS the Overview names the managed surface and the counts of the Core\nPASS the three tabs of the activity workspace render the Core's content\nPASS the event filter reaches the kind Reconnected of the Core and returns to all\nPASS the global context selects an infrastructure of the Core and returns to the unified view\nPASS the Overview returns from another workstation in every round trip\nPASS the theme of the application switches in every iteration\nPASS every one of the 23 interactions stayed inside 3000 ms (median 224 ms, max 755 ms)\nPASS no long task of the main thread exceeded 250 ms (1 long tasks)\nPASS the surface retained 7607 KiB after the explicit GC, inside the 24 MiB budget\nPASS the compositor presented 363 frames (297 paints, 365 layerizations, 77 layouts, 139 style recalculations)\n",
+  "the_output_of_the_journey": "PASS the Core delivered 3 sources, 3 devices and the event kinds Reconnected\nPASS the Overview names the managed surface and the counts of the Core\nPASS the three tabs of the activity workspace render the Core's content\nPASS the event filter reaches the kind Reconnected of the Core and returns to all\nPASS the global context selects an infrastructure of the Core and returns to the unified view\nPASS the Overview returns from another workstation in every round trip\nPASS the theme of the application switches in every iteration\nPASS every one of the 23 interactions stayed inside 3000 ms (median 227 ms, max 609 ms)\nPASS no long task of the main thread exceeded 250 ms (1 long tasks)\nPASS the surface retained 7850 KiB after the explicit GC, inside the 24 MiB budget\nPASS the compositor presented 382 frames (299 paints, 384 layerizations, 79 layouts, 144 style recalculations)\n",
   "browser_receipt": {
     "status": "PASS",
-    "the_revision": "d1778815d3532054b96ea82ad792f1a1b63ea906",
+    "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
     "the_scope": "the client of the delivered web release on the loopback of this machine; a local measurement, not an SLA",
     "the_core_facts": {
       "sources": 3,
@@ -32,116 +32,116 @@
           212,
           212,
           210,
-          209,
-          20
+          213,
+          209
         ],
-        "median_ms": 210,
-        "p95_ms": 212,
-        "max_ms": 212
+        "median_ms": 212,
+        "p95_ms": 213,
+        "max_ms": 213
       },
       "filter": {
         "samples": [
-          755,
-          432,
           602,
-          527
+          542,
+          609,
+          543
         ],
         "median_ms": 602,
-        "p95_ms": 755,
-        "max_ms": 755
+        "p95_ms": 609,
+        "max_ms": 609
       },
       "context": {
         "samples": [
-          19,
-          312
+          210,
+          264
         ],
-        "median_ms": 312,
-        "p95_ms": 312,
-        "max_ms": 312
+        "median_ms": 264,
+        "p95_ms": 264,
+        "max_ms": 264
       },
       "navigation": {
         "samples": [
-          460,
-          11,
-          251,
-          251,
-          13,
-          18
+          196,
+          12,
+          265,
+          12,
+          249,
+          252
         ],
-        "median_ms": 251,
-        "p95_ms": 460,
-        "max_ms": 460
+        "median_ms": 249,
+        "p95_ms": 265,
+        "max_ms": 265
       },
       "theme": {
         "samples": [
-          309,
-          207,
-          268,
-          224,
+          319,
+          214,
+          251,
           220,
-          244
+          227,
+          255
         ],
-        "median_ms": 244,
-        "p95_ms": 309,
-        "max_ms": 309
+        "median_ms": 251,
+        "p95_ms": 319,
+        "max_ms": 319
       },
       "all": {
         "samples": [
           212,
           212,
           210,
+          213,
           209,
-          20,
-          755,
-          432,
           602,
-          527,
-          19,
-          312,
-          460,
-          11,
+          542,
+          609,
+          543,
+          210,
+          264,
+          196,
+          12,
+          265,
+          12,
+          249,
+          252,
+          319,
+          214,
           251,
-          251,
-          13,
-          18,
-          309,
-          207,
-          268,
-          224,
           220,
-          244
+          227,
+          255
         ],
-        "median_ms": 224,
+        "median_ms": 227,
         "p95_ms": 602,
-        "max_ms": 755
+        "max_ms": 609
       },
       "budget_ms": 3000
     },
     "the_frames": {
-      "frames": 516,
+      "frames": 531,
       "median_ms": 17,
       "p95_ms": 17,
       "max_ms": 50,
       "long_tasks_ms": [
-        51
+        56
       ],
       "long_task_budget_ms": 250
     },
     "the_heap": {
-      "before_gc": 26975903,
-      "final": 60849851,
-      "after_gc": 34765854,
-      "the_delta_bytes": 7789951,
-      "the_growth_bytes": 7789951,
+      "before_gc": 26870401,
+      "final": 58472333,
+      "after_gc": 34908349,
+      "the_delta_bytes": 8037948,
+      "the_growth_bytes": 8037948,
       "budget_bytes": 25165824
     },
     "the_trace": {
-      "presented_frames": 363,
-      "animation_frames": 1456,
-      "paint_events": 297,
-      "layerize": 365,
-      "layouts": 77,
-      "style_recalculations": 139
+      "presented_frames": 382,
+      "animation_frames": 1532,
+      "paint_events": 299,
+      "layerize": 384,
+      "layouts": 79,
+      "style_recalculations": 144
     },
     "the_checks": [
       "the Core delivered 3 sources, 3 devices and the event kinds Reconnected",
@@ -151,10 +151,10 @@
       "the global context selects an infrastructure of the Core and returns to the unified view",
       "the Overview returns from another workstation in every round trip",
       "the theme of the application switches in every iteration",
-      "every one of the 23 interactions stayed inside 3000 ms (median 224 ms, max 755 ms)",
+      "every one of the 23 interactions stayed inside 3000 ms (median 227 ms, max 609 ms)",
       "no long task of the main thread exceeded 250 ms (1 long tasks)",
-      "the surface retained 7607 KiB after the explicit GC, inside the 24 MiB budget",
-      "the compositor presented 363 frames (297 paints, 365 layerizations, 77 layouts, 139 style recalculations)"
+      "the surface retained 7850 KiB after the explicit GC, inside the 24 MiB budget",
+      "the compositor presented 382 frames (299 paints, 384 layerizations, 79 layouts, 144 style recalculations)"
     ],
     "the_captures": [
       "overview.png",
@@ -180,116 +180,116 @@
         212,
         212,
         210,
-        209,
-        20
+        213,
+        209
       ],
-      "median_ms": 210,
-      "p95_ms": 212,
-      "max_ms": 212
+      "median_ms": 212,
+      "p95_ms": 213,
+      "max_ms": 213
     },
     "filter": {
       "samples": [
-        755,
-        432,
         602,
-        527
+        542,
+        609,
+        543
       ],
       "median_ms": 602,
-      "p95_ms": 755,
-      "max_ms": 755
+      "p95_ms": 609,
+      "max_ms": 609
     },
     "context": {
       "samples": [
-        19,
-        312
+        210,
+        264
       ],
-      "median_ms": 312,
-      "p95_ms": 312,
-      "max_ms": 312
+      "median_ms": 264,
+      "p95_ms": 264,
+      "max_ms": 264
     },
     "navigation": {
       "samples": [
-        460,
-        11,
-        251,
-        251,
-        13,
-        18
+        196,
+        12,
+        265,
+        12,
+        249,
+        252
       ],
-      "median_ms": 251,
-      "p95_ms": 460,
-      "max_ms": 460
+      "median_ms": 249,
+      "p95_ms": 265,
+      "max_ms": 265
     },
     "theme": {
       "samples": [
-        309,
-        207,
-        268,
-        224,
+        319,
+        214,
+        251,
         220,
-        244
+        227,
+        255
       ],
-      "median_ms": 244,
-      "p95_ms": 309,
-      "max_ms": 309
+      "median_ms": 251,
+      "p95_ms": 319,
+      "max_ms": 319
     },
     "all": {
       "samples": [
         212,
         212,
         210,
+        213,
         209,
-        20,
-        755,
-        432,
         602,
-        527,
-        19,
-        312,
-        460,
-        11,
+        542,
+        609,
+        543,
+        210,
+        264,
+        196,
+        12,
+        265,
+        12,
+        249,
+        252,
+        319,
+        214,
         251,
-        251,
-        13,
-        18,
-        309,
-        207,
-        268,
-        224,
         220,
-        244
+        227,
+        255
       ],
-      "median_ms": 224,
+      "median_ms": 227,
       "p95_ms": 602,
-      "max_ms": 755
+      "max_ms": 609
     },
     "budget_ms": 3000
   },
   "the_frames": {
-    "frames": 516,
+    "frames": 531,
     "median_ms": 17,
     "p95_ms": 17,
     "max_ms": 50,
     "long_tasks_ms": [
-      51
+      56
     ],
     "long_task_budget_ms": 250
   },
   "the_heap": {
-    "before_gc": 26975903,
-    "final": 60849851,
-    "after_gc": 34765854,
-    "the_delta_bytes": 7789951,
-    "the_growth_bytes": 7789951,
+    "before_gc": 26870401,
+    "final": 58472333,
+    "after_gc": 34908349,
+    "the_delta_bytes": 8037948,
+    "the_growth_bytes": 8037948,
     "budget_bytes": 25165824
   },
   "the_trace": {
-    "presented_frames": 363,
-    "animation_frames": 1456,
-    "paint_events": 297,
-    "layerize": 365,
-    "layouts": 77,
-    "style_recalculations": 139
+    "presented_frames": 382,
+    "animation_frames": 1532,
+    "paint_events": 299,
+    "layerize": 384,
+    "layouts": 79,
+    "style_recalculations": 144
   },
   "the_core_facts": {
     "sources": 3,
@@ -308,8 +308,8 @@
   ],
   "checks": 11,
   "status": "PASS",
-  "the_revision": "d1778815d3532054b96ea82ad792f1a1b63ea906",
-  "the_tree": "7da9c09766f18bd93bf7c70fcbf8b6e7cd34332b",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T11:23:54Z"
+  "finished_utc": "2026-11-13T15:58:35Z"
 }

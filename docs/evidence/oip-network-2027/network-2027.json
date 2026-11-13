@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "the_revision": "abdf00d26017f9b3dfa5aa520f756203e18f794f",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
   "the_devices_of_the_core": [
     {
       "the_id": "device-a",
@@ -44,6 +44,7 @@
     "the explorer counts the 5 devices of the Core and no relation",
     "the search of the explorer reaches the 5 devices of the Core",
     "the relation filter of the explorer keeps the devices without a relation",
+    "the compare and the pin of a row are in the semantics tree and reachable by name",
     "the comparison of two devices names the devices of the Core and its own limit",
     "the graph names its empty state",
     "the markers of the demo of the generation 2027 are absent",

@@ -11,7 +11,7 @@
   "the_output_of_the_journey": "PASS 1440x900: the four states of the workspace are measured, no horizontal overflow\nPASS 1920x1080: the four states of the workspace are measured, no horizontal overflow\nPASS no page errors in any captured state\nPASS no RenderFlex overflow errors in any captured state\n{\n  \"status\": \"PASS\",\n  \"checks\": 4\n}\n",
   "browser_receipt": {
     "status": "PASS",
-    "the_revision": "3fe0a7d6ce560162d8a580c5881337578a093fea",
+    "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
     "the_checks": [
       "1440x900: the four states of the workspace are measured, no horizontal overflow",
       "1920x1080: the four states of the workspace are measured, no horizontal overflow",
@@ -33,8 +33,8 @@
   },
   "checks": 4,
   "status": "PASS",
-  "the_revision": "3fe0a7d6ce560162d8a580c5881337578a093fea",
-  "the_tree": "a4b1b4cfd00525269be97ce1cd1af50170e80d6f",
-  "the_working_tree_is_clean": false,
-  "finished_utc": "2026-11-13T03:41:57Z"
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-13T15:53:52Z"
 }

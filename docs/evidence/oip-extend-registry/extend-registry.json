@@ -22,7 +22,8 @@
     "source-e"
   ],
   "the_four_sources_survived": true,
-  "the_observations_of_the_new_source": "13",
+  "the_observations_of_the_new_source": "6",
+  "the_seconds_to_first_observation": 8.1,
   "the_new_source_collects": true,
   "the_reduced_plan": {
     "exit_code": 2,
@@ -36,8 +37,8 @@
     "source-e"
   ],
   "status": "PASS",
-  "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
-  "the_tree": "b1d8559e13177a92d83e8a5b70447cabfd0340e4",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-12T19:53:29Z"
+  "finished_utc": "2026-11-13T14:43:51Z"
 }

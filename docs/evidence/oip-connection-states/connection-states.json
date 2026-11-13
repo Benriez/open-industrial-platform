@@ -1,9 +1,9 @@
 {
   "schema": "oip-connection-states-v1",
-  "revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
+  "revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
   "the_detail_is": "the message that describes the failure of the check",
   "scope": "the honest connection states of the surface against the real Core",
-  "base": "http://127.0.0.1:56130",
+  "base": "http://127.0.0.1:60812",
   "device": "state-device",
   "the_states": [
     {
@@ -76,7 +76,7 @@
     {
       "check": "the inventory of the scope lists the device",
       "ok": true,
-      "the_detail": "State device · state-device\nGerät State device state-device auswählen · Einzelplatine · 5da9ef74-05bf-4539-8d3a-72a1bbfa2eaa · keine aktuelle Observation · Reachability Unbekannt reported\nState device"
+      "the_detail": "State device · state-device\nGerät State device state-device auswählen · Einzelplatine · 9ec97fea-0a64-4ea6-8069-a282ea97b253 · keine aktuelle Observation · Reachability Unbekannt reported\nState device"
     },
     {
       "check": "the surface shows the verified state of the Core",

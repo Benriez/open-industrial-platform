@@ -50,7 +50,7 @@
             "free -m 2>/dev/null | head -3; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo"
           ],
           "the_code": 0,
-          "the_output": "total        used        free      shared  buff/cache   available\nMem:            1844         822         191          12         911        1022\nSwap:          32767        1762       31005\nMemTotal:        1888848 kB\nMemAvailable:    1046780 kB",
+          "the_output": "total        used        free      shared  buff/cache   available\nMem:            1844        1027         221          10         673         817\nSwap:          32767        2576       30191\nMemTotal:        1888848 kB\nMemAvailable:     836976 kB",
           "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
         },
         "the_disk": {
@@ -106,7 +106,7 @@
             "ss -ltn 2>/dev/null | tail -n +2 | awk '{print $4}' | sort"
           ],
           "the_code": 0,
-          "the_output": "0.0.0.0:22\n0.0.0.0:445\n100.127.113.104:18700\n100.127.113.104:18780\n100.127.113.104:18782\n100.127.113.104%tailscale0:10000\n100.127.113.104%tailscale0:443\n100.127.113.104%tailscale0:55202\n100.127.113.104%tailscale0:8443\n[::1]:18700\n127.0.0.1:18700\n127.0.0.1:18780\n127.0.0.1:18781\n127.0.0.1:18783\n127.0.0.1:18790\n127.0.0.1:18795\n127.0.0.1:631\n127.0.0.1:8384\n127.0.0.1:9119\n[::1]:631\n[::]:22\n[::]:445\n[fd7a:115c:a1e0::b734:7168]%tailscale0:10000\n[fd7a:115c:a1e0::b734:7168]%tailscale0:443\n[fd7a:115c:a1e0::b734:7168]%tailscale0:46467\n[fd7a:115c:a1e0::b734:7168]%tailscale0:8443",
+          "the_output": "0.0.0.0:22\n0.0.0.0:445\n100.127.113.104:18700\n100.127.113.104:18780\n100.127.113.104:18782\n100.127.113.104%tailscale0:10000\n100.127.113.104%tailscale0:443\n100.127.113.104%tailscale0:55202\n100.127.113.104%tailscale0:8443\n[::1]:18700\n127.0.0.1:18700\n127.0.0.1:18780\n127.0.0.1:18781\n127.0.0.1:18783\n127.0.0.1:18790\n127.0.0.1:18795\n127.0.0.1:42871\n127.0.0.1:631\n127.0.0.1:8384\n127.0.0.1:9119\n[::1]:631\n[::]:22\n[::]:445\n[fd7a:115c:a1e0::b734:7168]%tailscale0:10000\n[fd7a:115c:a1e0::b734:7168]%tailscale0:443\n[fd7a:115c:a1e0::b734:7168]%tailscale0:46467\n[fd7a:115c:a1e0::b734:7168]%tailscale0:8443",
           "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
         },
         "the_home": {
@@ -120,7 +120,7 @@
             "printf '%s\\n' \"$HOME\"; ls -ld \"$HOME\" 2>/dev/null"
           ],
           "the_code": 0,
-          "the_output": "/home/flashback\ndrwx------ 82 flashback flashback 12288 Nov 12 21:15 /home/flashback",
+          "the_output": "/home/flashback\ndrwx------ 82 flashback flashback 12288 Nov 13 16:00 /home/flashback",
           "the_error": "mux_client_request_session: session request failed: Session open refused by peer\nControlSocket /Users/benny/.ssh/sockets/flashback@100.127.113.104:22 already exists, disabling multiplexing"
         },
         "the_services_around_the_measurement": {
@@ -243,7 +243,7 @@
             "free -m 2>/dev/null | head -3; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo"
           ],
           "the_code": 0,
-          "the_output": "gesamt       benutzt     frei      gemns.  Puffer/Cache verf\u00fcgbar\nSpeicher:      31724       15293        3046         130       13972       16431\nAuslager:     131071        2484      128587\nMemTotal:       32486132 kB\nMemAvailable:   16825636 kB",
+          "the_output": "gesamt       benutzt     frei      gemns.  Puffer/Cache verf\u00fcgbar\nSpeicher:      31724        9806       11033         130       11472       21918\nAuslager:     131071        2480      128591\nMemTotal:       32486132 kB\nMemAvailable:   22444740 kB",
           "the_error": ""
         },
         "the_disk": {
@@ -409,8 +409,8 @@
   },
   "the_read_only": true,
   "the_status": "PASS",
-  "the_revision": "4d9524aacbb51cf3368907821386fb4652b69fac",
-  "the_tree": "c34394446447cb9a3cbd0a8ac93d123d9867aa96",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T01:04:57Z"
+  "finished_utc": "2026-11-13T15:38:43Z"
 }

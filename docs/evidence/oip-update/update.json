@@ -13,7 +13,7 @@
   "the_problems": [],
   "the_first_update": {
     "the_code": 0,
-    "the_output": "PDATED\",\n  \"the_moment_utc\": \"2026-11-12T20:53:47Z\",\n  \"the_target_of_the_instance\": \"aarch64-unknown-linux-gnu\",\n  \"the_revision\": \"revision-one\",\n  \"the_version\": \"1.0.0\",\n  \"the_target\": \"aarch64-unknown-linux-gnu\",\n  \"the_artefacts\": {\n    \"oip-server\": \"933704bfafb59bb4d87f119c4ff97cb7015315acce1535c48032c3420a29236a\"\n  },\n  \"the_verification\": \"the signature and every digest are verified\",\n  \"the_activation\": \"the version revision-one is active\",\n  \"the_previous_revision\": null,\n  \"the_health_check\": \"the new version became ready\",\n  \"the_result\": \"the new version is active and ready\"\n}\n",
+    "the_output": "PDATED\",\n  \"the_moment_utc\": \"2026-11-13T15:40:43Z\",\n  \"the_target_of_the_instance\": \"aarch64-unknown-linux-gnu\",\n  \"the_revision\": \"revision-one\",\n  \"the_version\": \"1.0.0\",\n  \"the_target\": \"aarch64-unknown-linux-gnu\",\n  \"the_artefacts\": {\n    \"oip-server\": \"933704bfafb59bb4d87f119c4ff97cb7015315acce1535c48032c3420a29236a\"\n  },\n  \"the_verification\": \"the signature and every digest are verified\",\n  \"the_activation\": \"the version revision-one is active\",\n  \"the_previous_revision\": null,\n  \"the_health_check\": \"the new version became ready\",\n  \"the_result\": \"the new version is active and ready\"\n}\n",
     "the_error": ""
   },
   "the_second_update": {
@@ -47,7 +47,7 @@
         "oip-server": "933704bfafb59bb4d87f119c4ff97cb7015315acce1535c48032c3420a29236a"
       },
       "the_health_check": "the new version became ready",
-      "the_moment_utc": "2026-11-12T20:53:47Z",
+      "the_moment_utc": "2026-11-13T15:40:43Z",
       "the_previous_revision": null,
       "the_result": "the new version is active and ready",
       "the_revision": "revision-one",
@@ -62,7 +62,7 @@
         "oip-server": "933704bfafb59bb4d87f119c4ff97cb7015315acce1535c48032c3420a29236a"
       },
       "the_health_check": "the new version became ready",
-      "the_moment_utc": "2026-11-12T20:53:47Z",
+      "the_moment_utc": "2026-11-13T15:40:44Z",
       "the_previous_revision": "revision-one",
       "the_result": "the new version is active and ready",
       "the_revision": "revision-two",
@@ -72,30 +72,30 @@
       "the_version": "1.0.0"
     },
     {
-      "the_bundle": "/private/tmp/oip-update-zrgx6u7g/bundle-tampered",
+      "the_bundle": "/private/tmp/oip-update-84ur3tpb/bundle-tampered",
       "the_detail": "the digest of oip-server is e9d67797be91a80afcd889cd78c2f51f709afd3d8c8ee134a710ed994edb8499, but the manifest names 933704bfafb59bb4d87f119c4ff97cb7015315acce1535c48032c3420a29236a: the bundle is refused",
-      "the_moment_utc": "2026-11-12T20:53:48Z",
+      "the_moment_utc": "2026-11-13T15:40:44Z",
       "the_result": "REFUSED: the verification failed",
       "the_target_of_the_instance": "aarch64-unknown-linux-gnu"
     },
     {
-      "the_bundle": "/private/tmp/oip-update-zrgx6u7g/bundle-forged",
+      "the_bundle": "/private/tmp/oip-update-84ur3tpb/bundle-forged",
       "the_detail": "the signature of the manifest is not valid for the public key of the instance: the bundle is refused",
-      "the_moment_utc": "2026-11-12T20:53:48Z",
+      "the_moment_utc": "2026-11-13T15:40:44Z",
       "the_result": "REFUSED: the verification failed",
       "the_target_of_the_instance": "aarch64-unknown-linux-gnu"
     },
     {
-      "the_bundle": "/private/tmp/oip-update-zrgx6u7g/bundle-foreign",
+      "the_bundle": "/private/tmp/oip-update-84ur3tpb/bundle-foreign",
       "the_detail": "the bundle is built for x86_64-unknown-linux-gnu, but the instance is aarch64-unknown-linux-gnu",
-      "the_moment_utc": "2026-11-12T20:53:48Z",
+      "the_moment_utc": "2026-11-13T15:40:44Z",
       "the_result": "REFUSED: the verification failed",
       "the_target_of_the_instance": "aarch64-unknown-linux-gnu"
     },
     {
-      "the_bundle": "/private/tmp/oip-update-zrgx6u7g/bundle-2",
+      "the_bundle": "/private/tmp/oip-update-84ur3tpb/bundle-2",
       "the_detail": "the revision revision-two is already the version of the instance",
-      "the_moment_utc": "2026-11-12T20:53:48Z",
+      "the_moment_utc": "2026-11-13T15:40:44Z",
       "the_result": "REFUSED: the verification failed",
       "the_target_of_the_instance": "aarch64-unknown-linux-gnu"
     },
@@ -105,7 +105,7 @@
         "oip-server": "8ec5a6a1b12b7997a2aad76bae5d266360a0db76560b7cd348687f5a2933c9fa"
       },
       "the_health_check": "the new version did not become ready",
-      "the_moment_utc": "2026-11-12T20:53:48Z",
+      "the_moment_utc": "2026-11-13T15:40:44Z",
       "the_previous_revision": "revision-two",
       "the_result": "REFUSED: the new version did not pass the health check",
       "the_revision": "revision-broken",
@@ -118,8 +118,8 @@
   ],
   "the_journal_entries": 7,
   "the_status": "PASS",
-  "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
-  "the_tree": "b1d8559e13177a92d83e8a5b70447cabfd0340e4",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-12T20:53:48Z"
+  "finished_utc": "2026-11-13T15:40:45Z"
 }

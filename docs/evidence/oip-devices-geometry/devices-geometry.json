@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "the_revision": "3fe0a7d6ce560162d8a580c5881337578a093fea",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
   "the_checks": [
     "1440x900: the four states of the workspace are measured, no horizontal overflow",
     "1920x1080: the four states of the workspace are measured, no horizontal overflow",

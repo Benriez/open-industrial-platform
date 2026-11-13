@@ -8,10 +8,10 @@
     "network-device-a1",
     "network-device-b2"
   ],
-  "the_output_of_the_journey": "PASS the Core delivered 5 devices and 5 registered devices\nPASS the summary names the paths, the VPN telemetry and the demo paths as not delivered\nPASS the list of the paths is empty and an empty result is no offline state\nPASS the transport filter offers only \"alle\" \u2014 the Core delivered no transport\nPASS the explorer counts the 5 devices of the Core and no relation\nPASS the search of the explorer reaches the 5 devices of the Core\nPASS the relation filter of the explorer keeps the devices without a relation\nPASS the comparison of two devices names the devices of the Core and its own limit\nPASS the graph names its empty state\nPASS the markers of the demo of the generation 2027 are absent\nPASS the channel that goes stale is named as stale\nPASS the channel comes back after the interruption\n",
+  "the_output_of_the_journey": "PASS the Core delivered 5 devices and 5 registered devices\nPASS the summary names the paths, the VPN telemetry and the demo paths as not delivered\nPASS the list of the paths is empty and an empty result is no offline state\nPASS the transport filter offers only \"alle\" \u2014 the Core delivered no transport\nPASS the explorer counts the 5 devices of the Core and no relation\nPASS the search of the explorer reaches the 5 devices of the Core\nPASS the relation filter of the explorer keeps the devices without a relation\nPASS the compare and the pin of a row are in the semantics tree and reachable by name\nPASS the comparison of two devices names the devices of the Core and its own limit\nPASS the graph names its empty state\nPASS the markers of the demo of the generation 2027 are absent\nPASS the channel that goes stale is named as stale\nPASS the channel comes back after the interruption\n",
   "browser_receipt": {
     "status": "PASS",
-    "the_revision": "abdf00d26017f9b3dfa5aa520f756203e18f794f",
+    "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
     "the_devices_of_the_core": [
       {
         "the_id": "device-a",
@@ -55,6 +55,7 @@
       "the explorer counts the 5 devices of the Core and no relation",
       "the search of the explorer reaches the 5 devices of the Core",
       "the relation filter of the explorer keeps the devices without a relation",
+      "the compare and the pin of a row are in the semantics tree and reachable by name",
       "the comparison of two devices names the devices of the Core and its own limit",
       "the graph names its empty state",
       "the markers of the demo of the generation 2027 are absent",
@@ -73,10 +74,10 @@
     "errors": [],
     "external": []
   },
-  "checks": 12,
+  "checks": 13,
   "status": "PASS",
-  "the_revision": "abdf00d26017f9b3dfa5aa520f756203e18f794f",
-  "the_tree": "c0a3e1144ccd98f1ea3bae11c0fc732ed061e21f",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T01:48:00Z"
+  "finished_utc": "2026-11-13T15:55:31Z"
 }

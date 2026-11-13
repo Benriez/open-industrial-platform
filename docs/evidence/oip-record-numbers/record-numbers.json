@@ -619,6 +619,43 @@
       "the_receipts": 1
     },
     {
+      "the_row": "`docs/evidence/oip-settings-depth/settings-depth.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-settings-depth/settings-depth-rehearsal.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-settings-depth/captures/`",
+      "the_measurements": [],
+      "the_receipts": 0
+    },
+    {
+      "the_row": "`docs/evidence/oip-overview-performance/overview-performance.json`",
+      "the_measurements": [
+        {
+          "the_number": "3000",
+          "the_unit": "ms",
+          "the_quoted": "3000 ms",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-overview-performance/overview-performance-rehearsal.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-overview-performance/captures/`",
+      "the_measurements": [],
+      "the_receipts": 0
+    },
+    {
       "the_row": "`docs/evidence/oip-opcua-browser/opcua-browser.json`",
       "the_measurements": [],
       "the_receipts": 1
@@ -715,8 +752,75 @@
     },
     {
       "the_row": "the item 17",
-      "the_measurements": [],
-      "the_receipts": 4
+      "the_measurements": [
+        {
+          "the_number": "224",
+          "the_unit": "ms",
+          "the_quoted": "224 ms",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "602",
+          "the_unit": "ms",
+          "the_quoted": "602 ms",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "755",
+          "the_unit": "ms",
+          "the_quoted": "755 ms",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "3000",
+          "the_unit": "ms",
+          "the_quoted": "3000 ms",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "17",
+          "the_unit": "ms",
+          "the_quoted": "17 ms",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "17",
+          "the_unit": "ms",
+          "the_quoted": "17 ms",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "50",
+          "the_unit": "ms",
+          "the_quoted": "50 ms",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "51",
+          "the_unit": "ms",
+          "the_quoted": "51 ms",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "250",
+          "the_unit": "ms",
+          "the_quoted": "250 ms",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "24",
+          "the_unit": "MiB",
+          "the_quoted": "24 MiB",
+          "the_receipt_carries_it": true
+        },
+        {
+          "the_number": "516",
+          "the_unit": "samples",
+          "the_quoted": "516 samples",
+          "the_receipt_carries_it": true
+        }
+      ],
+      "the_receipts": 7
     },
     {
       "the_row": "the item 20",
@@ -846,8 +950,8 @@
   ],
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "4fb0a47d5628c06a4af0819507a29ec433a77853",
-  "the_tree": "85364de5134ec401c6ce8836813e8c8cc2594f6d",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T03:42:07Z"
+  "finished_utc": "2026-11-13T14:10:28Z"
 }

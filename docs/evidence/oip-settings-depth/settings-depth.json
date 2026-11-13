@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "the_revision": "0832c6cc07d26837857a3744169614c18313bbac",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
   "the_categories_of_the_core": [
     "general",
     "mcp_agents",
@@ -45,10 +45,10 @@
   "the_refusals_of_the_core": [
     "/api/v2/organizations?offset=0&limit=100",
     "/api/v1/system/status",
-    "/api/v1/metrics/current",
+    "/api/v1/sources",
     "/api/v1/devices",
-    "/api/v1/events",
-    "/api/v1/sources"
+    "/api/v1/metrics/current",
+    "/api/v1/events"
   ],
   "the_checks": [
     "the Core delivered 7 categories, 3 settings and 22 tools",

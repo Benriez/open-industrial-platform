@@ -6,7 +6,7 @@
   "the_output_of_the_journey": "PASS the authorized session of the operator opens the address space\nPASS the Core names 4 folders and 1020 nodes\nPASS the surface renders the nodes of the Core (15 rows in the viewport)\nPASS the identity of the node is the identity that the Core delivered\nPASS the attributes that the Core does not deliver are named\nPASS the history and the hierarchy of the address space are named as absent\nPASS the keyboard search reaches the node Bulk of the Core\n",
   "browser_receipt": {
     "status": "PASS",
-    "the_revision": "12d978c6333a30c9f6e16ecc76c1e8280cd0ab32",
+    "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
     "the_address_space": {
       "the_nodes_of_the_core": 1020,
       "the_folders_of_the_core": [
@@ -61,8 +61,8 @@
     "the_search_reaches": "Bulk"
   },
   "status": "PASS",
-  "the_revision": "12d978c6333a30c9f6e16ecc76c1e8280cd0ab32",
-  "the_tree": "09db9a8988788345e511271c96a2b4610d7a3ffb",
+  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
+  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-12T23:37:59Z"
+  "finished_utc": "2026-11-13T15:59:47Z"
 }
