@@ -207,6 +207,16 @@ REHEARSALS = [
       "oip-settings-depth/settings-depth-rehearsal.json",
       "settings-depth.json": "oip-settings-depth/settings-depth.json",
       "captures/": "oip-settings-depth/captures/"}),
+    # The **performance of the Overview**: the latency of every interaction,
+    # the frames of the browser, the long tasks of the main thread, the memory
+    # the surface retains and the frames the compositor presents — measured on
+    # the managed surface against the real Core.
+    ("oip_overview_performance", "tests/oip_overview_performance_2027.py",
+     {"overview-performance-rehearsal.json":
+      "oip-overview-performance/overview-performance-rehearsal.json",
+      "overview-performance.json":
+      "oip-overview-performance/overview-performance.json",
+      "captures/": "oip-overview-performance/captures/"}),
     # The **address space** of the operator in the browser: the nodes, their
     # folders and their identity are the ones that the Core delivers.
     ("oip_opcua_browser", "tests/oip_opcua_browser.py",

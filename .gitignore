@@ -185,6 +185,14 @@ secrets/
 !/docs/evidence/oip-settings-depth/settings-depth-rehearsal.json
 !/docs/evidence/oip-settings-depth/captures/
 !/docs/evidence/oip-settings-depth/captures/*.png
+# The performance of the Overview: the latency of every interaction, the
+# frames and the long tasks of the browser, the memory the surface retains and
+# the frames the compositor presents, on the managed surface against the real
+# Core.
+!/docs/evidence/oip-overview-performance/overview-performance.json
+!/docs/evidence/oip-overview-performance/overview-performance-rehearsal.json
+!/docs/evidence/oip-overview-performance/captures/
+!/docs/evidence/oip-overview-performance/captures/*.png
 # The painted surface of the connection of a device.
 !/docs/evidence/oip-device-connection/painted-surface.txt
 # The persisted observation history of the real device.
