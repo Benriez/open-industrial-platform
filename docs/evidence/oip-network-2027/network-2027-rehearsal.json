@@ -1,0 +1,82 @@
+{
+  "schema": "oip-network-2027-rehearsal-v1",
+  "steps": [
+    "the instance runs with its authorized session",
+    "the devices are registered through the authorized route"
+  ],
+  "the_devices": [
+    "network-device-a1",
+    "network-device-b2"
+  ],
+  "the_output_of_the_journey": "PASS the Core delivered 5 devices and 5 registered devices\nPASS the summary names the paths, the VPN telemetry and the demo paths as not delivered\nPASS the list of the paths is empty and an empty result is no offline state\nPASS the transport filter offers only \"alle\" \u2014 the Core delivered no transport\nPASS the explorer counts the 5 devices of the Core and no relation\nPASS the search of the explorer reaches the 5 devices of the Core\nPASS the relation filter of the explorer keeps the devices without a relation\nPASS the comparison of two devices names the devices of the Core and its own limit\nPASS the graph names its empty state\nPASS the markers of the demo of the generation 2027 are absent\nPASS the channel that goes stale is named as stale\nPASS the channel comes back after the interruption\n",
+  "browser_receipt": {
+    "status": "PASS",
+    "the_revision": "abdf00d26017f9b3dfa5aa520f756203e18f794f",
+    "the_devices_of_the_core": [
+      {
+        "the_id": "device-a",
+        "the_name": "Local simulation a",
+        "the_status": "unknown"
+      },
+      {
+        "the_id": "device-b",
+        "the_name": "Local simulation b",
+        "the_status": "unknown"
+      },
+      {
+        "the_id": "device-c",
+        "the_name": "Local simulation c",
+        "the_status": "unknown"
+      },
+      {
+        "the_id": "network-device-a1",
+        "the_name": "Netzpfad Messung A1",
+        "the_status": "unknown"
+      },
+      {
+        "the_id": "network-device-b2",
+        "the_name": "Netzpfad Check B2",
+        "the_status": "unknown"
+      }
+    ],
+    "the_registered_devices": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "the_paths_are_not_delivered": true,
+    "the_checks": [
+      "the Core delivered 5 devices and 5 registered devices",
+      "the summary names the paths, the VPN telemetry and the demo paths as not delivered",
+      "the list of the paths is empty and an empty result is no offline state",
+      "the transport filter offers only \"alle\" \u2014 the Core delivered no transport",
+      "the explorer counts the 5 devices of the Core and no relation",
+      "the search of the explorer reaches the 5 devices of the Core",
+      "the relation filter of the explorer keeps the devices without a relation",
+      "the comparison of two devices names the devices of the Core and its own limit",
+      "the graph names its empty state",
+      "the markers of the demo of the generation 2027 are absent",
+      "the channel that goes stale is named as stale",
+      "the channel comes back after the interruption"
+    ],
+    "the_captures": [
+      "summary.png",
+      "explorer.png",
+      "search.png",
+      "filters.png",
+      "compare.png",
+      "topology.png",
+      "stale.png"
+    ],
+    "errors": [],
+    "external": []
+  },
+  "checks": 12,
+  "status": "PASS",
+  "the_revision": "abdf00d26017f9b3dfa5aa520f756203e18f794f",
+  "the_tree": "c0a3e1144ccd98f1ea3bae11c0fc732ed061e21f",
+  "the_working_tree_is_clean": true,
+  "finished_utc": "2026-11-13T01:48:00Z"
+}
