@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "04194907c6b136198406fa2dd91c45d0a6852ca9",
-  "the_tree": "8e2bb7f4e0ca4abca477334a7cbde732579f8f26",
+  "the_revision": "f6daa8316f8be30fb5961c6233f36d09f9ebe041",
+  "the_tree": "35970df91e06c460b44adc210d135b368b1e3dce",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 772,
-    "the_sha256": "f16d3f669ef9c93753b0c2abd9c9fe976342699238faa81e0d87b2f56a947e6b"
+    "the_sha256": "ab59ac064d13f1dd9931ef49809b662689676a6fc88e84f02f286a71840c10d0"
   },
   "the_artifacts": {
     "the_core": {
@@ -296,19 +296,19 @@
     },
     "the_oip-devices-geometry_devices-geometry-rehearsal_json": {
       "path": "docs/evidence/oip-devices-geometry/devices-geometry-rehearsal.json",
-      "sha256": "25e3dc7f3bae2032158f6ff67749e864b6cf04c96fe060756f7158f93110d4e2"
+      "sha256": "27c75f9ff806fedc9b4ccae53689ecb9fe3318f4fe8f84dfb2b0f68c963ead38"
     },
     "the_oip-devices-geometry_devices-geometry_json": {
       "path": "docs/evidence/oip-devices-geometry/devices-geometry.json",
-      "sha256": "bee4949be3957c4c96d98c0706ce61ccf9ff5ed3c6c12b2bacb804f061abb4db"
+      "sha256": "189b6cdb710a0a5c61ff79b23fee48404814ba3b4dc3014ae91c25510f34f910"
     },
     "the_oip-devices-geometry_geometry-1440x900_json": {
       "path": "docs/evidence/oip-devices-geometry/geometry-1440x900.json",
-      "sha256": "5f9955b951d3e5cf16146aeb48c7a9b16a1424a4fe49a5bd0558665c4a2a6c33"
+      "sha256": "4ecf26a5f6d6ea9b601dc1f89c08f77462ae8ffbe4dee43d7a5319189bbec84c"
     },
     "the_oip-devices-geometry_geometry-1920x1080_json": {
       "path": "docs/evidence/oip-devices-geometry/geometry-1920x1080.json",
-      "sha256": "1f90d5110fb8c77fee62c5f75540a9404827f8557d3e176f5318289e61baf3ad"
+      "sha256": "e29c7b23d44b153ef4a6a4dca3d6bbe5b053941ba838ec4a1f9668972f80e6f3"
     },
     "the_oip-diagnostic-continuation_rehearsal_json": {
       "path": "docs/evidence/oip-diagnostic-continuation/rehearsal.json",
@@ -444,7 +444,7 @@
     },
     "the_oip-record-numbers_record-numbers_json": {
       "path": "docs/evidence/oip-record-numbers/record-numbers.json",
-      "sha256": "307928198ebb9bb6941ea9083df064e1c69044d27075f5499fe6bd073a29e649"
+      "sha256": "ae318723487d5cb0dcb58eda4d0af5916be04748373c5ce9a5bb01ad6e0f2973"
     },
     "the_oip-scope-persistence_painted-surface_txt": {
       "path": "docs/evidence/oip-scope-persistence/painted-surface.txt",
