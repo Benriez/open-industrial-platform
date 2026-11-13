@@ -20,6 +20,7 @@ Usage:
   python3 tests/oip_record_integrity.py [--evidence DIR]
 """
 import argparse
+import collections
 import json
 import pathlib
 import re
@@ -125,6 +126,23 @@ def the_canonical_state():
         "the_tracked_files": files,
         "the_product_is_committed": not uncommitted,
     }, problems
+
+def the_repeated_blocks(text):
+    """The blocks of the ledger that appear more than once.
+
+    A **block** is a paragraph or a table row of the ledger. A block that
+    appears twice is a block that was written twice — a record script that
+    inserted its paragraph again, or a row that was copied. The ledger has
+    one row per gate and one paragraph per claim: a repeated block is a
+    defect of the record, and it inflates the number of its rows.
+    """
+    blocks = [block.strip() for block in text.split("\n\n") if len(block.strip()) > 150]
+    repeated = []
+    for block, count in collections.Counter(blocks).items():
+        if count > 1:
+            repeated.append({"the_block": block[:160], "the_times": count})
+    return repeated
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -252,6 +270,12 @@ def main():
     problems.extend(f"the cited receipt {name} is not tracked by git" for name in untracked)
     problems.extend(f"the file {name} of the evidence tree is cited by nobody" for name in orphans)
     problems.extend(f"the record does not name the era area {area}" for area in unnamed_eras)
+    # the ledger must not repeat a block
+    repeated = the_repeated_blocks(LEDGER.read_text())
+    report["the_repeated_blocks_of_the_ledger"] = repeated
+    problems.extend(f"the ledger repeats a block {item['the_times']} times: "
+                    f"{item['the_block'][:80]}" for item in repeated)
+
     report["the_problems"] = problems
     report["status"] = "PASS" if not problems else "FAIL"
 

@@ -44,56 +44,6 @@ Core does not deliver are **named** instead of invented, the limits of the addre
 history, no hierarchy) are named, and the keyboard search reaches a node of the Core before the
 pagination (`docs/evidence/oip-opcua-browser/opcua-browser.json`,
 `docs/evidence/oip-opcua-browser/address-space.json`).
-The **address space of the operator is measured in the browser**: the rehearsal
-`tests/oip_opcua_browser.py` starts a disposable Core with live collectors and drives the real
-surface (`apps/flutter/test/browser_opcua_address_space.mjs`); the journey reads the address space
-from the API and names **no** node and **no** folder of its own, so every name it looks for is the
-name the Core delivered — the rows of the surface are the nodes of the Core, the identity of a node
-carries the namespace, the folder and the node id that the Core delivered, the attributes that the
-Core does not deliver are **named** instead of invented, the limits of the address space (no
-history, no hierarchy) are named, and the keyboard search reaches a node of the Core before the
-pagination (`docs/evidence/oip-opcua-browser/opcua-browser.json`,
-`docs/evidence/oip-opcua-browser/address-space.json`).
-The **address space of the operator is measured in the browser**: the rehearsal
-`tests/oip_opcua_browser.py` starts a disposable Core with live collectors and drives the real
-surface (`apps/flutter/test/browser_opcua_address_space.mjs`); the journey reads the address space
-from the API and names **no** node and **no** folder of its own, so every name it looks for is the
-name the Core delivered — the rows of the surface are the nodes of the Core, the identity of a node
-carries the namespace, the folder and the node id that the Core delivered, the attributes that the
-Core does not deliver are **named** instead of invented, the limits of the address space (no
-history, no hierarchy) are named, and the keyboard search reaches a node of the Core before the
-pagination (`docs/evidence/oip-opcua-browser/opcua-browser.json`,
-`docs/evidence/oip-opcua-browser/address-space.json`).
-The **address space of the operator is measured in the browser**: the rehearsal
-`tests/oip_opcua_browser.py` starts a disposable Core with live collectors and drives the real
-surface (`apps/flutter/test/browser_opcua_address_space.mjs`); the journey reads the address space
-from the API and names **no** node and **no** folder of its own, so every name it looks for is the
-name the Core delivered — the rows of the surface are the nodes of the Core, the identity of a node
-carries the namespace, the folder and the node id that the Core delivered, the attributes that the
-Core does not deliver are **named** instead of invented, the limits of the address space (no
-history, no hierarchy) are named, and the keyboard search reaches a node of the Core before the
-pagination (`docs/evidence/oip-opcua-browser/opcua-browser.json`,
-`docs/evidence/oip-opcua-browser/address-space.json`).
-The **address space of the operator is measured in the browser**: the rehearsal
-`tests/oip_opcua_browser.py` starts a disposable Core with live collectors and drives the real
-surface (`apps/flutter/test/browser_opcua_address_space.mjs`); the journey reads the address space
-from the API and names **no** node and **no** folder of its own, so every name it looks for is the
-name the Core delivered — the rows of the surface are the nodes of the Core, the identity of a node
-carries the namespace, the folder and the node id that the Core delivered, the attributes that the
-Core does not deliver are **named** instead of invented, the limits of the address space (no
-history, no hierarchy) are named, and the keyboard search reaches a node of the Core before the
-pagination (`docs/evidence/oip-opcua-browser/opcua-browser.json`,
-`docs/evidence/oip-opcua-browser/address-space.json`).
-The **address space of the operator is measured in the browser**: the rehearsal
-`tests/oip_opcua_browser.py` starts a disposable Core with live collectors and drives the real
-surface (`apps/flutter/test/browser_opcua_address_space.mjs`); the journey reads the address space
-from the API and names **no** node and **no** folder of its own, so every name it looks for is the
-name the Core delivered — the rows of the surface are the nodes of the Core, the identity of a node
-carries the namespace, the folder and the node id that the Core delivered, the attributes that the
-Core does not deliver are **named** instead of invented, the limits of the address space (no
-history, no hierarchy) are named, and the keyboard search reaches a node of the Core before the
-pagination (`docs/evidence/oip-opcua-browser/opcua-browser.json`,
-`docs/evidence/oip-opcua-browser/address-space.json`).
 The **search of the address space keeps every character**: the plain
 characters of the page are handled by the page and not by a shortcut — a shortcut that matches a
 character swallows it, and the operator lost every `c` of the search (the laboratory of the loop
