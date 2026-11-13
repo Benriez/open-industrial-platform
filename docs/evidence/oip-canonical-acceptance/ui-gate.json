@@ -1,8 +1,8 @@
 {
   "schema": "oip-canonical-ui-gate-v2",
-  "started_utc": "2026-11-13T01:56:05Z",
-  "source_revision": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
-  "source_tree": "583b34544a03629e9c9526b515bd800d3634a69a",
+  "started_utc": "2026-11-13T03:29:34Z",
+  "source_revision": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
+  "source_tree": "37f77024487475ad6805e9a4fb93172c40cf46aa",
   "source_worktree": "/Users/benny/Code/open-industrial-platform",
   "source_dirty": false,
   "baseline_document": "docs/design/OIP_CANONICAL_UI_BASELINE.md",
@@ -85,11 +85,11 @@
   "flutter_tests_skipped": 1,
   "browser_gate_executed": false,
   "complete": false,
-  "finished_utc": "2026-11-13T01:56:58Z",
-  "the_revision": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
-  "the_tree": "583b34544a03629e9c9526b515bd800d3634a69a",
+  "finished_utc": "2026-11-13T03:30:29Z",
+  "the_revision": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
+  "the_tree": "37f77024487475ad6805e9a4fb93172c40cf46aa",
   "the_working_tree_is_clean": false,
-  "the_revision_of_the_acceptance": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
+  "the_revision_of_the_acceptance": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
   "what_this_receipt_is": "the build provenance and the widget gate of the acceptance; the browser gate is 'browser-gate.json' and the overall verdict is in 'acceptance.json'",
   "the_verdict_of_the_acceptance": "PASS"
 }
