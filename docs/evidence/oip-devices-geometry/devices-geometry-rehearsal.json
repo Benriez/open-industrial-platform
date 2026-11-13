@@ -1,0 +1,40 @@
+{
+  "schema": "oip-devices-geometry-rehearsal-v1",
+  "steps": [
+    "the instance runs with its authorized session",
+    "the devices are registered through the authorized route"
+  ],
+  "the_devices": [
+    "geometry-device-a1",
+    "geometry-device-a2"
+  ],
+  "the_output_of_the_journey": "PASS 1440x900: the four states of the workspace are measured, no horizontal overflow\nPASS 1920x1080: the four states of the workspace are measured, no horizontal overflow\nPASS no page errors in any captured state\nPASS no RenderFlex overflow errors in any captured state\n{\n  \"status\": \"PASS\",\n  \"checks\": 4\n}\n",
+  "browser_receipt": {
+    "status": "PASS",
+    "the_revision": "1d52ad6998f0bfd4c13fc585f12cc3e475eb9ed2",
+    "the_checks": [
+      "1440x900: the four states of the workspace are measured, no horizontal overflow",
+      "1920x1080: the four states of the workspace are measured, no horizontal overflow",
+      "no page errors in any captured state",
+      "no RenderFlex overflow errors in any captured state"
+    ],
+    "the_captures": [
+      "1440x900-1-no-selection.png",
+      "1440x900-2-device-selected.png",
+      "1440x900-3-filters-open.png",
+      "1440x900-4-comparison.png",
+      "1920x1080-1-no-selection.png",
+      "1920x1080-2-device-selected.png",
+      "1920x1080-3-filters-open.png",
+      "1920x1080-4-comparison.png"
+    ],
+    "the_page_errors": [],
+    "the_overflow_errors": []
+  },
+  "checks": 4,
+  "status": "PASS",
+  "the_revision": "1d52ad6998f0bfd4c13fc585f12cc3e475eb9ed2",
+  "the_tree": "dc155be139e9fe317a7f92e9daac4fa33a99da49",
+  "the_working_tree_is_clean": false,
+  "finished_utc": "2026-11-13T02:25:21Z"
+}

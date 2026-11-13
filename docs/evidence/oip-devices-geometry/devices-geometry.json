@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "the_revision": "1d52ad6998f0bfd4c13fc585f12cc3e475eb9ed2",
+  "the_checks": [
+    "1440x900: the four states of the workspace are measured, no horizontal overflow",
+    "1920x1080: the four states of the workspace are measured, no horizontal overflow",
+    "no page errors in any captured state",
+    "no RenderFlex overflow errors in any captured state"
+  ],
+  "the_captures": [
+    "1440x900-1-no-selection.png",
+    "1440x900-2-device-selected.png",
+    "1440x900-3-filters-open.png",
+    "1440x900-4-comparison.png",
+    "1920x1080-1-no-selection.png",
+    "1920x1080-2-device-selected.png",
+    "1920x1080-3-filters-open.png",
+    "1920x1080-4-comparison.png"
+  ],
+  "the_page_errors": [],
+  "the_overflow_errors": []
+}

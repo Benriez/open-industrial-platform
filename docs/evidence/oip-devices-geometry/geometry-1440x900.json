@@ -1,0 +1,117 @@
+{
+  "the_viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "the_devices_of_the_core": [
+    {
+      "the_id": "device-a",
+      "the_name": "Local simulation a"
+    },
+    {
+      "the_id": "device-b",
+      "the_name": "Local simulation b"
+    },
+    {
+      "the_id": "device-c",
+      "the_name": "Local simulation c"
+    },
+    {
+      "the_id": "geometry-device-a1",
+      "the_name": "Geometrie Messung A1"
+    },
+    {
+      "the_id": "geometry-device-a2",
+      "the_name": "Geometrie Messung A2"
+    }
+  ],
+  "noSelection": {
+    "headerToInventoryPx": 12,
+    "countLineTopPx": 160,
+    "filterBarHeightPx": 42,
+    "filterControlCount": 4,
+    "filterRowsDetected": 1,
+    "filterHasDisclosure": true,
+    "searchFieldHeightPx": 42,
+    "resetButtonHeightPx": 36,
+    "explorerRowHeightPx": 63,
+    "explorerRowSemanticHeightPx": 36,
+    "explorerRowWidthPx": 142,
+    "explorerContentLeftPx": 524,
+    "explorerContentRightPx": 666,
+    "workspaceContentLeftPx": null,
+    "contentBottomPx": 942,
+    "comparisonStripTopPx": 807,
+    "documentScrollHeightPx": 900,
+    "documentScrollWidthPx": 1440,
+    "viewportHeightPx": 900,
+    "viewportWidthPx": 1440
+  },
+  "selected": {
+    "headerToInventoryPx": 12,
+    "countLineTopPx": 160,
+    "filterBarHeightPx": 42,
+    "filterControlCount": 4,
+    "filterRowsDetected": 1,
+    "filterHasDisclosure": true,
+    "searchFieldHeightPx": 42,
+    "resetButtonHeightPx": 36,
+    "explorerRowHeightPx": 63,
+    "explorerRowSemanticHeightPx": 36,
+    "explorerRowWidthPx": 142,
+    "explorerContentLeftPx": 524,
+    "explorerContentRightPx": 666,
+    "workspaceContentLeftPx": 539,
+    "contentBottomPx": 1810,
+    "comparisonStripTopPx": 807,
+    "documentScrollHeightPx": 900,
+    "documentScrollWidthPx": 1440,
+    "viewportHeightPx": 900,
+    "viewportWidthPx": 1440
+  },
+  "filtersOpen": {
+    "headerToInventoryPx": 12,
+    "countLineTopPx": 160,
+    "filterBarHeightPx": 79,
+    "filterControlCount": 7,
+    "filterRowsDetected": 2,
+    "filterHasDisclosure": true,
+    "searchFieldHeightPx": 42,
+    "resetButtonHeightPx": 36,
+    "explorerRowHeightPx": 63,
+    "explorerRowSemanticHeightPx": 36,
+    "explorerRowWidthPx": 142,
+    "explorerContentLeftPx": 524,
+    "explorerContentRightPx": 666,
+    "workspaceContentLeftPx": 539,
+    "contentBottomPx": 1854,
+    "comparisonStripTopPx": 851,
+    "documentScrollHeightPx": 900,
+    "documentScrollWidthPx": 1440,
+    "viewportHeightPx": 900,
+    "viewportWidthPx": 1440
+  },
+  "filtersDisclosurePresent": true,
+  "comparison": {
+    "headerToInventoryPx": 12,
+    "countLineTopPx": 160,
+    "filterBarHeightPx": 42,
+    "filterControlCount": 4,
+    "filterRowsDetected": 1,
+    "filterHasDisclosure": true,
+    "searchFieldHeightPx": 42,
+    "resetButtonHeightPx": 36,
+    "explorerRowHeightPx": 63,
+    "explorerRowSemanticHeightPx": 36,
+    "explorerRowWidthPx": 142,
+    "explorerContentLeftPx": 524,
+    "explorerContentRightPx": 666,
+    "workspaceContentLeftPx": 539,
+    "contentBottomPx": 1810,
+    "comparisonStripTopPx": 687,
+    "documentScrollHeightPx": 900,
+    "documentScrollWidthPx": 1440,
+    "viewportHeightPx": 900,
+    "viewportWidthPx": 1440
+  }
+}
