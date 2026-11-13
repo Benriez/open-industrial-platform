@@ -549,6 +549,21 @@
       "the_receipts": 1
     },
     {
+      "the_row": "`docs/evidence/oip-network-2027/network-2027.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-network-2027/network-2027-rehearsal.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-network-2027/captures/`",
+      "the_measurements": [],
+      "the_receipts": 0
+    },
+    {
       "the_row": "`docs/evidence/oip-devices-density/devices-density.json`",
       "the_measurements": [],
       "the_receipts": 1
@@ -656,15 +671,10 @@
     {
       "the_row": "the item 17",
       "the_measurements": [],
-      "the_receipts": 1
+      "the_receipts": 2
     },
     {
-      "the_row": "the item 19",
-      "the_measurements": [],
-      "the_receipts": 1
-    },
-    {
-      "the_row": "the item 22",
+      "the_row": "the item 20",
       "the_measurements": [],
       "the_receipts": 1
     },
@@ -694,17 +704,22 @@
       "the_receipts": 1
     },
     {
-      "the_row": "the item 31",
+      "the_row": "the item 28",
       "the_measurements": [],
       "the_receipts": 1
     },
     {
       "the_row": "the item 32",
       "the_measurements": [],
-      "the_receipts": 2
+      "the_receipts": 1
     },
     {
       "the_row": "the item 33",
+      "the_measurements": [],
+      "the_receipts": 2
+    },
+    {
+      "the_row": "the item 34",
       "the_measurements": [],
       "the_receipts": 2
     },
@@ -786,8 +801,8 @@
   ],
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "fdba55424cb2a88b89ace1657c42d1f8e0fa9867",
-  "the_tree": "ae55e3db17c6b6ab6b63f20175585943d71fdaf6",
+  "the_revision": "317a3464f7a77ca69315b2ac97ef059b667d104d",
+  "the_tree": "bf993b22672cb5bfd41f96ee07d4693382c69474",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T01:05:33Z"
+  "finished_utc": "2026-11-13T02:11:11Z"
 }
