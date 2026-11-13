@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "f341ea06dbec76f8ab66d82257dbb4c389db6409",
-  "the_tree": "f8d7f11650cc7956faa6c8d6ce31972649d7deec",
+  "the_revision": "0597fb47f3af1b2dbd22111fe12a1bb38d45fc72",
+  "the_tree": "4bc2687eacbdf618ca4c4187f7c90562a6edcfad",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 730,
-    "the_sha256": "523caa81d4dcec3606efa0012dc30f2afc7965b98b1a4e29370a8c4f76689a38"
+    "the_sha256": "b39545f272906c6fa6bcb5d7a7635b9485b7f2f59410f545d5f8b5e5a26dd63e"
   },
   "the_artifacts": {
     "the_core": {
@@ -108,7 +108,7 @@
     },
     "the_reproducible_build": {
       "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-      "sha256": "ace8d99be5450375f4ce678bf3f55f7fb82f56be4af40fe25af22dc12dc9e4f4"
+      "sha256": "35adcb17ac5b12a91dee0d0abaf0a3272261ce2992d225861eba1d2f8fe36daf"
     },
     "the_upgrade_rollback": {
       "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
@@ -396,15 +396,15 @@
   "the_receipt_of_the_acceptance": "docs/evidence/oip-canonical-acceptance/ui-gate.json",
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-    "the_digest_of_the_reproducible_build": "7fa611c45db1a21ae018bf2bad7855c6f77222369f49f51d9a618dbddcc67123",
+    "the_digest_of_the_reproducible_build": "8a8d11f5643efc688e774e72d52ba6649f1468e9b6f6c57a911cffc6cb052c40",
     "the_core_is_identical_across_the_two_builds": true,
-    "the_manifest_names_the_reproducible_binary": false,
-    "the_revision_the_binary_names": "7a2da6a6c2cbc7ae6df808bce4c08e17f404e0e7",
-    "the_revision_of_the_receipt": "7a2da6a6c2cbc7ae6df808bce4c08e17f404e0e7",
+    "the_manifest_names_the_reproducible_binary": true,
+    "the_revision_the_binary_names": "341842646172de92ca4949a618f29b1e2df1127d",
+    "the_revision_of_the_receipt": "341842646172de92ca4949a618f29b1e2df1127d",
     "the_sources_of_the_core_are_unchanged_since_the_receipt": true,
     "the_property_holds_for_the_release": true,
     "the_note": "the binary names the revision it was built from, so the bytes of a later revision differ; the property of the release is that the same revision yields the same bytes \u2014 it is measured by the rehearsal and it carries over as long as the sources of the Core are unchanged",
-    "the_revision_the_rehearsal_built": "7a2da6a6c2cbc7ae6df808bce4c08e17f404e0e7"
+    "the_revision_the_rehearsal_built": "341842646172de92ca4949a618f29b1e2df1127d"
   },
   "the_visual_acceptance": {
     "the_state": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
