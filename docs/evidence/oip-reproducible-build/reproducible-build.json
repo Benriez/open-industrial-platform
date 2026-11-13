@@ -5,9 +5,10 @@
     "the macOS bundle is reproducible",
     "the Core of the release is reproducible"
   ],
+  "the_tree_of_the_measurement_is_clean": true,
   "the_web_release": {
     "the_command": "flutter build web --release --web-renderer canvaskit --no-web-resources-cdn --pwa-strategy=none",
-    "the_first_build_seconds": 1.5,
+    "the_first_build_seconds": 1.1,
     "the_main_bundle_sha256": "3e0f82db33c41cf7ab1803cddf8fa60ec55205e9d8fcbd4e24655e42133cee4f",
     "the_tree_sha256": "9c9ed2153676e3244c3a8a24c485229d0c92adb00750c3eb48afd0cdf55272a0",
     "the_files": 35,
@@ -20,10 +21,10 @@
   },
   "the_macos_bundle": {
     "the_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18808",
-    "the_first_build_seconds": 17.6,
+    "the_first_build_seconds": 18.1,
     "the_tree_sha256": "b391de2d378acc63e41d2ba910eadbab62e508162545b1bd4a2049c172983eef",
     "the_files": 44,
-    "the_second_build_seconds": 13.2,
+    "the_second_build_seconds": 13.3,
     "the_tree_of_the_second_build": "b391de2d378acc63e41d2ba910eadbab62e508162545b1bd4a2049c172983eef",
     "the_tree_is_identical": true,
     "the_files_that_differ": []
@@ -36,21 +37,21 @@
   },
   "the_core": {
     "the_command": "cargo build --locked --release --workspace --bin oip-server --example mcp_probe",
-    "the_revision_the_binary_names": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
-    "the_revision_of_the_run": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
+    "the_revision_the_binary_names": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
+    "the_revision_of_the_run": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
     "the_note": "the binary names the revision it was built from; the reproducibility is the property that the same revision yields the same bytes",
-    "the_first_build_seconds": 33.0,
-    "the_second_build_seconds": 32.1,
-    "the_core_of_the_first_build": "df908926ab0b932f5fae0fe00b077fb977b40957ceb6e4cac6fd49fefa74786b",
-    "the_core_of_the_second_build": "df908926ab0b932f5fae0fe00b077fb977b40957ceb6e4cac6fd49fefa74786b",
+    "the_first_build_seconds": 33.8,
+    "the_second_build_seconds": 32.9,
+    "the_core_of_the_first_build": "b943b3bb7ce43e94e609f187298c64b116df50c63f0847cc22c6216001807d5b",
+    "the_core_of_the_second_build": "b943b3bb7ce43e94e609f187298c64b116df50c63f0847cc22c6216001807d5b",
     "the_probe_of_the_first_build": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
     "the_probe_of_the_second_build": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
     "the_core_is_identical": true,
     "the_probe_is_identical": true
   },
   "status": "PASS",
-  "the_revision": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
-  "the_tree": "6534663ece8a855096934c654c446836c0c4653c",
+  "the_revision": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
+  "the_tree": "583b34544a03629e9c9526b515bd800d3634a69a",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T00:38:42Z"
+  "finished_utc": "2026-11-13T01:49:51Z"
 }
