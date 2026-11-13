@@ -38,14 +38,14 @@
   },
   "the_canonical_state": {
     "the_source_revision": "4132d8d63abfa488dbb9ebf55a6eb158cfcf72d0",
-    "the_acceptance_revision": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
-    "the_core_binary_revision": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
-    "the_tracked_files": 772,
+    "the_acceptance_revision": "0a9b64f6f6a6f78a8eda9ab9380ec8acaa397094",
+    "the_core_binary_revision": "0a9b64f6f6a6f78a8eda9ab9380ec8acaa397094",
+    "the_tracked_files": 797,
     "the_product_is_committed": true
   },
   "the_files_of_the_release": {
-    "the_present": 136,
-    "the_cited": 136,
+    "the_present": 138,
+    "the_cited": 138,
     "the_orphaned": [],
     "the_files_of_the_eras": 1271,
     "the_areas_of_the_eras_that_the_record_does_not_name": [],
@@ -54,8 +54,8 @@
   "the_repeated_blocks_of_the_ledger": [],
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
-  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
+  "the_revision": "33fbb2d5062eb04112a93161b5b01ac4a049bd1c",
+  "the_tree": "5c35f042a92addda9c28e16f4e2ead7da60460cf",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T14:10:28Z"
+  "finished_utc": "2026-11-13T17:16:28Z"
 }
