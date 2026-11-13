@@ -38,8 +38,8 @@
   },
   "the_canonical_state": {
     "the_source_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
-    "the_acceptance_revision": "07cc80857930434d1fa187f176357a4e66ee03ac",
-    "the_core_binary_revision": "07cc80857930434d1fa187f176357a4e66ee03ac",
+    "the_acceptance_revision": "341842646172de92ca4949a618f29b1e2df1127d",
+    "the_core_binary_revision": "341842646172de92ca4949a618f29b1e2df1127d",
     "the_tracked_files": 730,
     "the_product_is_committed": true
   },
@@ -53,8 +53,8 @@
   },
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "8e65a6a2d95d376096cfdd8953fb28f0576a4568",
-  "the_tree": "264cbcedf9017a4529b87fd4f35ff17aae7a1143",
+  "the_revision": "3331eb4222f44ee3da0f0ef188332eb997d3bbe9",
+  "the_tree": "c5fac652792b32fb1236fe391f6a3e2c55e150bc",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-12T23:34:34Z"
+  "finished_utc": "2026-11-13T00:17:00Z"
 }
