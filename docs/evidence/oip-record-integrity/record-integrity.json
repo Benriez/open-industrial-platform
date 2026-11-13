@@ -6,9 +6,9 @@
     "the canonical state names the release",
     "every file of the evidence tree is cited"
   ],
-  "the_cited_paths": 85,
+  "the_cited_paths": 86,
   "the_citations": {
-    "the_cited": 85,
+    "the_cited": 86,
     "the_missing_on_disk": [],
     "the_present_but_untracked": []
   },
@@ -39,13 +39,13 @@
   "the_canonical_state": {
     "the_source_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
     "the_acceptance_revision": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
-    "the_core_binary_revision": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
-    "the_tracked_files": 734,
+    "the_core_binary_revision": "4d9524aacbb51cf3368907821386fb4652b69fac",
+    "the_tracked_files": 737,
     "the_product_is_committed": true
   },
   "the_files_of_the_release": {
-    "the_present": 87,
-    "the_cited": 87,
+    "the_present": 88,
+    "the_cited": 88,
     "the_orphaned": [],
     "the_files_of_the_eras": 1271,
     "the_areas_of_the_eras_that_the_record_does_not_name": [],
@@ -53,8 +53,8 @@
   },
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "649d2b9513f5523d45e7b3333492c46caa489d55",
-  "the_tree": "755489c5b8b0655ae10877b8d9b064ca0d548db4",
+  "the_revision": "fdba55424cb2a88b89ace1657c42d1f8e0fa9867",
+  "the_tree": "ae55e3db17c6b6ab6b63f20175585943d71fdaf6",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T01:01:38Z"
+  "finished_utc": "2026-11-13T01:05:34Z"
 }

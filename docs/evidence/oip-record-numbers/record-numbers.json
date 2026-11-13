@@ -391,7 +391,7 @@
     {
       "the_row": "`docs/evidence/oip-record-numbers/record-numbers.json`",
       "the_measurements": [],
-      "the_receipts": 0
+      "the_receipts": 1
     },
     {
       "the_row": "`docs/evidence/oip-record-integrity/record-integrity.json`",
@@ -494,6 +494,11 @@
       "the_receipts": 1
     },
     {
+      "the_row": "`docs/evidence/oip-deployment-hosts/deployment-hosts.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
       "the_row": "`docs/evidence/oip-deployment-discovery/deployment-discovery.json`",
       "the_measurements": [],
       "the_receipts": 1
@@ -591,7 +596,7 @@
     {
       "the_row": "the item 3",
       "the_measurements": [],
-      "the_receipts": 1
+      "the_receipts": 2
     },
     {
       "the_row": "the item 4",
@@ -781,8 +786,8 @@
   ],
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "9a466136bcb984f0996d82c51fe7cd79fa999577",
-  "the_tree": "7cd1492af6ee9bdd6ec8eeade330719bac5620a1",
+  "the_revision": "fdba55424cb2a88b89ace1657c42d1f8e0fa9867",
+  "the_tree": "ae55e3db17c6b6ab6b63f20175585943d71fdaf6",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T01:01:32Z"
+  "finished_utc": "2026-11-13T01:05:33Z"
 }
