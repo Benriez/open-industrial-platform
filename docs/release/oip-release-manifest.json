@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "191b0bbe6fb2a2c98d8af64dd4089217023d4a2e",
-  "the_tree": "4e7ffeeaa77211d16e381288923252e23fdfdb05",
+  "the_revision": "9bb405c14ed98ae96e0e071e2554297ae66a72a0",
+  "the_tree": "169e853f5a3c60e21f2b6ab31039c1cd04a4b81c",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
@@ -21,16 +21,16 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 730,
-    "the_sha256": "f92412b26b31d80a15e59ffd779402cf824f516686ad255643bab6e4f2a33904"
+    "the_files": 734,
+    "the_sha256": "85d60d8c3b19bc21c0d011e5569de7b81fb330485d4367471bfcdd095f724126"
   },
   "the_artifacts": {
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
       "bytes": 36648400,
-      "sha256": "8a8d11f5643efc688e774e72d52ba6649f1468e9b6f6c57a911cffc6cb052c40",
-      "the_revision_the_binary_names": "341842646172de92ca4949a618f29b1e2df1127d",
+      "sha256": "df908926ab0b932f5fae0fe00b077fb977b40957ceb6e4cac6fd49fefa74786b",
+      "the_revision_the_binary_names": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
       "the_revision_was_read_out_of_the_binary": true
     },
     "the_official_mcp_probe": {
@@ -60,11 +60,11 @@
   "the_receipts": {
     "the_global_context": {
       "path": "docs/evidence/oip-global-context/global-context.json",
-      "sha256": "8a3eede0b318559a1fa094613a635a9f19debf33de739e7a81c220d27582ce2a"
+      "sha256": "21b298d895af223e22c8f4b704dddcc9d8a9321afa767a4d6190742677a1e8a0"
     },
     "the_accessibility": {
       "path": "docs/evidence/oip-accessibility/accessibility.json",
-      "sha256": "dc11930a4957ef59d99b8260e580c670c127252393a3b9b61250fe5fba28b3d2"
+      "sha256": "29f6da6a1ff70de542c10722f6ad50ef775d2c7add3d4ac74594e4bdb7f07d26"
     },
     "the_performance": {
       "path": "docs/evidence/oip-performance/performance.json",
@@ -84,19 +84,19 @@
     },
     "the_acceptance": {
       "path": "docs/evidence/oip-canonical-acceptance/acceptance.json",
-      "sha256": "6b560db08276d10ab3ba4c2c4bf00582b0ca5f0170a604410ac5c0526dc8b547"
+      "sha256": "5cd73549ad63433c1526905f982ffecb00914c4912867f332c674993cfc06b3b"
     },
     "the_acceptance_browser_gate": {
       "path": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
-      "sha256": "7e8a92b1a76535a6fb0789a88715854ce351cdedaf7172278dff9a22e3219ee8"
+      "sha256": "e50b5935cd4cc1c06c2145fecf13219a7f1b2746c9979ba8b85025e0ed080f0a"
     },
     "the_acceptance_ui_gate": {
       "path": "docs/evidence/oip-canonical-acceptance/ui-gate.json",
-      "sha256": "c66184bd36d13a13998e190b77d02d4371b218df61c991da661ec4dc22611610"
+      "sha256": "1e615d7c460d748c756599d470646ec300660bfba2654d128ba294249d3e9a07"
     },
     "the_device_administration": {
       "path": "docs/evidence/oip-device-administration/device-administration.json",
-      "sha256": "8e48ae53aae00d832a0a001e349f74820d295b7eac1c1fa44fee7e233dc1a115"
+      "sha256": "443a154c60bf2ecd160292686a9d60b9738177cd49a0d8226c12f030af558e4c"
     },
     "the_session_lifetime": {
       "path": "docs/evidence/oip-session-lifetime/session-lifetime.json",
@@ -108,7 +108,7 @@
     },
     "the_reproducible_build": {
       "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-      "sha256": "35adcb17ac5b12a91dee0d0abaf0a3272261ce2992d225861eba1d2f8fe36daf"
+      "sha256": "71dce71c3dfac7fcb2e9e580480f9cc2e325c1f20891b21854de3c9e6bf2841f"
     },
     "the_upgrade_rollback": {
       "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
@@ -176,19 +176,19 @@
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-1440.png",
-      "sha256": "bc1584377983937e8a3d97e214c50c7589d96ede7377776313916b17914722c4"
+      "sha256": "699d95474d4c8b1daf2b2aff7807c193d3a69f1ea3799922aa0ebe576e172820"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-1920.png",
-      "sha256": "6953ec8cd10341caa53442d518d0d74507dd33d1c42b7fea48c34c2a83756b21"
+      "sha256": "3a4fba500d234490570434a2e382be3eba0b80974e0a6b14ddc6583d797d337b"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-devices-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-devices-1440.png",
-      "sha256": "dfda24f0646eb30d134ca223f5eb48bd23a261741db1ba5c6f0dae2f62364980"
+      "sha256": "988061da59fe9d8577b0ebefd10ff88efc478e5fe11f282bb9596037e77aeddb"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-devices-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-devices-1920.png",
-      "sha256": "8e91d5dad30d325d14e461bc93f4f51ea967e1fb0247d71b1a70b203922fdd07"
+      "sha256": "8cec1a6538b70f0dfbd7124e198e18af3f1c8219cfe2d04a88f4b9fc8e2b373b"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-diagnostics-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-diagnostics-1440.png",
@@ -200,19 +200,19 @@
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-network-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-network-1440.png",
-      "sha256": "760966c5a5c8f1679edec817feae7252b022608839279a12ddd561af8a9c2422"
+      "sha256": "3feb73ed557dcbb1926fc3f5ae693c9deb8649c9932f4ff3fb8070cf1f834afa"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-network-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-network-1920.png",
-      "sha256": "dbeb50410e40ae528f101aa13d649357ebbda2855b3f9d772b069ef7fa674d51"
+      "sha256": "8a08ad469aee73441c4cab04fdea68031a562dcdab6705c5a7ff4e5d90b8baea"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-opcua-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-opcua-1440.png",
-      "sha256": "e1f654a98fdde99a596d1b3e53bb606c15b7ffa8cd2de7ca526f2823a1d00e4a"
+      "sha256": "2cd54533ae9d6f57b04ab1f5bb9f7d0f9b89b95e63916e16eacb328f4c5b6bc6"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-opcua-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-opcua-1920.png",
-      "sha256": "13a8bc88649ba589e08ac76432a6376af78932f5732c246b4175c87d3170a4b4"
+      "sha256": "e3607b9caaaf718089d34579f24cc88d6e56c74945dda58b99560f666a8179a9"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-settings-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-settings-1440.png",
@@ -245,6 +245,14 @@
     "the_oip-device-connection_rehearsal_json": {
       "path": "docs/evidence/oip-device-connection/rehearsal.json",
       "sha256": "70804c28d9dfdb038217a5a7141ffdbb984fbaec9f9914fc3bf7a23fac92234c"
+    },
+    "the_oip-devices-density_devices-density_json": {
+      "path": "docs/evidence/oip-devices-density/devices-density.json",
+      "sha256": "8904f6e6d93cf25df260fef3ba63f577fe1fc4ff5c95b21ba42207e6f8ebac4c"
+    },
+    "the_oip-devices-density_responsive-report_json": {
+      "path": "docs/evidence/oip-devices-density/responsive-report.json",
+      "sha256": "e7566c18b07121c61b186c1f7b4c10e08d5dcef786d3c962297a2db23ea9cd97"
     },
     "the_oip-diagnostic-continuation_rehearsal_json": {
       "path": "docs/evidence/oip-diagnostic-continuation/rehearsal.json",
@@ -387,31 +395,32 @@
       "sha256": "e7d658c41ef8400f551646613ff2d30a7a847723903705ec4f7dfa34e71759a5"
     }
   },
-  "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-release19",
+  "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-release20",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [
-    "M docs/OIP_RELEASE_PROGRESS.md"
+    "M docs/OIP_RELEASE_LEDGER.md",
+    " M docs/OIP_RELEASE_PROGRESS.md"
   ],
-  "the_revision_of_the_acceptance": "341842646172de92ca4949a618f29b1e2df1127d",
-  "the_tree_of_the_acceptance": "5b6a900ab55c895cde14e2c135efdb2b5d4f07a8",
+  "the_revision_of_the_acceptance": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
+  "the_tree_of_the_acceptance": "6534663ece8a855096934c654c446836c0c4653c",
   "the_acceptance_was_run_on_a_clean_tree": true,
   "the_receipt_of_the_acceptance": "docs/evidence/oip-canonical-acceptance/ui-gate.json",
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-    "the_digest_of_the_reproducible_build": "8a8d11f5643efc688e774e72d52ba6649f1468e9b6f6c57a911cffc6cb052c40",
+    "the_digest_of_the_reproducible_build": "df908926ab0b932f5fae0fe00b077fb977b40957ceb6e4cac6fd49fefa74786b",
     "the_core_is_identical_across_the_two_builds": true,
     "the_manifest_names_the_reproducible_binary": true,
-    "the_revision_the_binary_names": "341842646172de92ca4949a618f29b1e2df1127d",
-    "the_revision_of_the_receipt": "341842646172de92ca4949a618f29b1e2df1127d",
+    "the_revision_the_binary_names": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
+    "the_revision_of_the_receipt": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
     "the_sources_of_the_core_are_unchanged_since_the_receipt": true,
     "the_property_holds_for_the_release": true,
     "the_note": "the binary names the revision it was built from, so the bytes of a later revision differ; the property of the release is that the same revision yields the same bytes \u2014 it is measured by the rehearsal and it carries over as long as the sources of the Core are unchanged",
-    "the_revision_the_rehearsal_built": "341842646172de92ca4949a618f29b1e2df1127d"
+    "the_revision_the_rehearsal_built": "558890ab04a676c8e2a4b7a3feff1ba132f815b2"
   },
   "the_visual_acceptance": {
     "the_state": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
     "the_source": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
-    "the_revision_of_the_acceptance": "341842646172de92ca4949a618f29b1e2df1127d",
+    "the_revision_of_the_acceptance": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
     "the_note": "the operator alone accepts the visible result; the gate records the state, it never grants it"
   },
   "the_manifest_verifies": true,

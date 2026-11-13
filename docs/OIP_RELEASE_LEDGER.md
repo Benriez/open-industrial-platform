@@ -317,7 +317,7 @@ An **independent verification** of that change (a delegated, read-only audit of 
 
 17. **N35 (the live claims of the retired journeys)**: the **next READY task**. Ten of the retired
     journeys still prove **live** claims of the surface — the density and the geometry of the
-    Devices workstation, the geometry, the comparison and the transport of the Network workspace, the
+    Devices workspace, the geometry, the comparison and the transport of the Network workspace, the
     value modes, the page filter and the performance of the address space, the timeline and the
     stale marking of the Diagnostics workspace, the depth and the performance of the settings, and
     the performance of the Overview. Each group needs its own rehearsal — a disposable Core with the
@@ -325,6 +325,18 @@ An **independent verification** of that change (a delegated, read-only audit of 
     that need the **fixture servers** of the old contract need those servers taught the current
     contract first (the session, the hierarchy and the snapshot of the managed mode), or the claim
     is withdrawn. The files stay in the history of the repository until then.
+
+    The **first group is measured**: the density of the Devices workspace. The rehearsal
+    `tests/oip_devices_density.py` starts a disposable Core with the plan of the operator,
+    registers the devices **through the authorized route** (so the rows of the inventory are the
+    devices that the Core delivered) and drives the real surface in the browser
+    (`apps/flutter/test/browser_devices_density.mjs`): six widths (320, 390, 768, 1024, 1440 and
+    1920 px) and three themes (Spectrum, Graphite and Daylight), fourteen checks in all — the
+    document never scrolls horizontally, no control of the filter toolbar is clipped outside the
+    viewport, the disclosure of the secondary filters opens and the inventory explorer is rendered
+    (`docs/evidence/oip-devices-density/devices-density.json`). The **next** group is the Network
+    workspace: the geometry of the graph, the comparison of two devices, the transport filter and
+    the recovery from an unreachable source.
 
 The independent tasks of this list are open again: the last one that was measured is N34, and the
 next one is N35. Beside it remain the operator actions: the product decision on the delivery of the
@@ -536,16 +548,8 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-extend-registry/extend-registry.json` | the extension of the registry of an instance and the refused plan that drops a source |
 | `docs/evidence/oip-settings-offline/settings-offline.json` | the offline change of a setting and its refusal on a conflict |
 | `docs/evidence/oip-offline-archive/offline-archive.json` | the offline archive of a device and the refused archive of an online device |
-| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
-| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches |
-| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
-| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches |
-| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
-| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches |
-| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
-| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches |
-| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
-| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches |
+| `docs/evidence/oip-devices-density/devices-density.json` | the **density of the Devices workspace** in the browser: a disposable Core with the plan of the operator, the devices registered through the authorized route, six widths and three themes, no horizontal overflow and no clipped control of the toolbar |
+| `docs/evidence/oip-devices-density/responsive-report.json` | the receipt of the browser journey of the density: the checks of every width and every theme, the page errors and the overflow errors of the journey |
 | `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
 | `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the pagination and the scope of the OPC-UA address space |

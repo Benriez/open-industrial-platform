@@ -14,12 +14,12 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 |---|---|
 | Canonical branch | `main` |
 | Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `fc18ce2` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `3418426` (tree `5b6a900a`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `3418426` — the binary names its own revision; the same revision yields the same bytes |
+| The revision of the final acceptance | `558890a` (tree `6534663e`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `558890a` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 730 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 734 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -4237,6 +4237,42 @@ acceptance of G12 and the discovery of the host of the Core.
 
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
+### Iteration 89 — the density of the Devices workspace is measured in the browser
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates that
+need the operator (G5, G10, G12) stay open, and the two real devices of the operator are still out
+of reach of this machine.
+
+* **The first group of N35 is measured.** The claim of the density of the Devices workspace — the
+  document never scrolls horizontally and no control of the filter toolbar is clipped outside the
+  viewport — was carried by a journey that no harness named and that no receipt measured. The
+  **rehearsal of the density** (`tests/oip_devices_density.py`) starts a disposable Core with the
+  plan of the operator, registers the devices **through the authorized route** (so the rows of the
+  inventory are the devices that the Core delivered) and drives the real surface in the browser
+  (`apps/flutter/test/browser_devices_density.mjs`): six widths (320, 390, 768, 1024, 1440 and
+  1920 px) and three themes (Spectrum, Graphite and Daylight), fourteen checks in all — the
+  disclosure of the secondary filters opens, the inventory explorer is rendered, and no control is
+  clipped (`docs/evidence/oip-devices-density/devices-density.json`).
+* **The journey of the generation 2027 was adapted, not revived.** It drove the surface of the
+  OIP/005 demo and waited for the title of the old overview; it now waits for the **authorized
+  session** of the operator and drives the managed surface, and it names no device of its own.
+* **The product of the release was not touched by this iteration** (`crates/` and
+  `apps/flutter/lib/`), so every receipt of the release stays fresh and the product boundary
+  (`fc18ce2`) is the one of the record. The acceptance and the reproducible build were measured
+  again at the revision of the record, so the Core that the canonical gate executed is the Core
+  that the manifest names — byte-identical with the two builds of the reproducible build.
+
+The next independent READY task is **N35** again, with the next group: the **Network workspace** —
+the geometry of the graph, the comparison of two devices, the transport filter and the recovery
+from an unreachable source (`browser_network_2027.mjs` and `performance_network_2027.mjs` of the
+generation 2027, adapted to the managed surface and driven by a rehearsal of their own).
+
+Beside it remain the operator actions: the product decision on the delivery of the web release, the
+physical device of G5, the production-security scope of G10, the operator acceptance of G12 and the
+discovery of the host of the Core.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -4286,14 +4322,8 @@ service of the operator, no published port, no firewall change, no push, no depl
 | `docs/evidence/oip-security-review/security-review.json` | the measured security review of the current release: 12 findings — 9 resolved, 2 mitigated, 1 escalated (the durability of the execution audit) (iteration 29) |
 | `docs/evidence/oip-device-connection/device-connection.json` | the measured verified connection of a device in the approved surface against the real Core and an owned loopback SSH fixture (iteration 28) |
 | `docs/evidence/oip-workstation-data/workstation-data.json` | the measured functional depth of the six workstations against the real Core: the real hierarchy, device, placement, nodes, events and settings, and no identifier of the other organization (iteration 27) |
-| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named (tracked) |
-| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches (tracked) |
-| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named (tracked) |
-| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches (tracked) |
-| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named (tracked) |
-| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches (tracked) |
-| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named (tracked) |
-| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches (tracked) |
+| `docs/evidence/oip-devices-density/devices-density.json` | the **density of the Devices workspace** in the browser: a disposable Core with the plan of the operator, the devices registered through the authorized route, six widths and three themes, no horizontal overflow and no clipped control of the toolbar (tracked) |
+| `docs/evidence/oip-devices-density/responsive-report.json` | the receipt of the browser journey of the density: the checks of every width and every theme, the page errors and the overflow errors of the journey (tracked) |
 | `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named (tracked) |
 | `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches (tracked) |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the measured parity of the OPC-UA address space between the official MCP tool and the REST routes against the real backend (iteration 25) |
@@ -4311,7 +4341,6 @@ service of the operator, no published port, no firewall change, no push, no depl
 | `docs/design/OIP_CANONICAL_UI_BASELINE.md` | the binding canonical UI contract: source of authority, the approved shell, the prohibited regressions R1-R10 and the gate table |
 | `docs/design/OIP_UI_2027_HANDOFF_MANIFEST.json` | the verified 2027 handoff manifest: eight upstream workstreams with their archive hashes and technical verdicts, the hash-pinned visual references and the candidate verification |
 | `docs/design/baselines/canonical-ui-1440.png`, `docs/design/baselines/canonical-ui-1920.png` | the committed technical visual references of the stable shell (tracked) |
-| `docs/evidence/oip-canonical-acceptance/captures/*.png` | the 13 captures of the acceptance of the release: the six workstations at 1440 px and 1920 px and the state of the anonymous session (tracked) |
 | `docs/evidence/oip-real-device/test-summary.json` | the machine-readable result of the canonical UI gate of iteration 12 |
 | `target/oip-conformance-e2e/report.json` | the same acceptance report from the isolated branch build before the integration (local, not tracked) |
 | `target/oip008-ui-canonical/ui-regression.json` | UI regression result of iteration 3 with the per step durations and markers (local, not tracked) |
