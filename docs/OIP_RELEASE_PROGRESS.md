@@ -23,7 +23,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
-| Real installation | **not activated**; the personal SQLite database is untouched at schema 6 |
+| Personal schema-6 installation | **not activated**; untouched. A separate operator-hosted instance is running per N7 |
 
 The canonical tree carries eleven controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
@@ -259,8 +259,9 @@ installation check it was active with zero service restarts and listened only on
 18808; the simulator port 18809 had no listener. The Mac client was copied to
 `~/Applications/Open Industrial Platform.app`. A per-user LaunchAgent maintains the SSH tunnel
 from Mac loopback port 18848 to the Pi Core, so the installed client can reach the Pi without
-placing the Core or simulator on the Mac. The app authenticated to this instance and displayed
-the API inventory with 2/2 devices, 2/2 connected sources and fresh data; the device view
+placing the Core or simulator on the Mac. The app authenticated to this instance, selected the
+real `The host` infrastructure context and displayed the API inventory with 2/2 devices, 2/2
+connected sources and fresh data; the device view
 reported 2 of 2 devices. This is an operator-hosted installation check, not a release gate or
 operator visual acceptance.
 
