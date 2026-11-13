@@ -20,10 +20,10 @@
   },
   "the_macos_bundle": {
     "the_command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18808",
-    "the_first_build_seconds": 17.8,
+    "the_first_build_seconds": 17.6,
     "the_tree_sha256": "b391de2d378acc63e41d2ba910eadbab62e508162545b1bd4a2049c172983eef",
     "the_files": 44,
-    "the_second_build_seconds": 14.6,
+    "the_second_build_seconds": 13.2,
     "the_tree_of_the_second_build": "b391de2d378acc63e41d2ba910eadbab62e508162545b1bd4a2049c172983eef",
     "the_tree_is_identical": true,
     "the_files_that_differ": []
@@ -36,21 +36,21 @@
   },
   "the_core": {
     "the_command": "cargo build --locked --release --workspace --bin oip-server --example mcp_probe",
-    "the_revision_the_binary_names": "341842646172de92ca4949a618f29b1e2df1127d",
-    "the_revision_of_the_run": "341842646172de92ca4949a618f29b1e2df1127d",
+    "the_revision_the_binary_names": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
+    "the_revision_of_the_run": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
     "the_note": "the binary names the revision it was built from; the reproducibility is the property that the same revision yields the same bytes",
-    "the_first_build_seconds": 35.5,
-    "the_second_build_seconds": 34.4,
-    "the_core_of_the_first_build": "8a8d11f5643efc688e774e72d52ba6649f1468e9b6f6c57a911cffc6cb052c40",
-    "the_core_of_the_second_build": "8a8d11f5643efc688e774e72d52ba6649f1468e9b6f6c57a911cffc6cb052c40",
+    "the_first_build_seconds": 33.0,
+    "the_second_build_seconds": 32.1,
+    "the_core_of_the_first_build": "df908926ab0b932f5fae0fe00b077fb977b40957ceb6e4cac6fd49fefa74786b",
+    "the_core_of_the_second_build": "df908926ab0b932f5fae0fe00b077fb977b40957ceb6e4cac6fd49fefa74786b",
     "the_probe_of_the_first_build": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
     "the_probe_of_the_second_build": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
     "the_core_is_identical": true,
     "the_probe_is_identical": true
   },
   "status": "PASS",
-  "the_revision": "341842646172de92ca4949a618f29b1e2df1127d",
-  "the_tree": "5b6a900ab55c895cde14e2c135efdb2b5d4f07a8",
+  "the_revision": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
+  "the_tree": "6534663ece8a855096934c654c446836c0c4653c",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-12T23:52:22Z"
+  "finished_utc": "2026-11-13T00:38:42Z"
 }
