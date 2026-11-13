@@ -262,6 +262,16 @@ try {
     await waitForNameContaining('Nicht vom Core geliefert');
     await pass('the inspector of an event names the absent attributes instead of inventing them');
     await capture('inspector');
+
+    // The controls of a row are in the semantics tree: the pin of an event is
+    // reachable by its name — an assistive technology can take that path and
+    // does not need the keyboard (N36).
+    await waitForNameContaining('Ereignis anheften');
+    await page.getByRole('button', {name: 'Ereignis anheften', exact: true})
+      .first().click({force: true});
+    await waitForNameContaining('Ereignis lösen');
+    await pass('the pin of an event row is in the semantics tree and reachable by name');
+    await capture('pin');
   }
 
   assert.deepEqual(errors, [], `page errors: ${errors.join(' | ')}`);

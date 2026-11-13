@@ -418,10 +418,13 @@ class _DeviceRow extends StatelessWidget {
     final status = transportLive ? device.health.reachability : 'stale';
     final statusColor = OipTokens.statusColor(context, status);
     final accent = OipTokens.readableAccent(context, OipTokens.violet);
+    // The row is one button for the operator, and its texts are its label: the
+    // texts are excluded from the semantics so that the label is not read a
+    // second time. The controls of the row are **not** excluded — the compare
+    // and the pin of the row have to be reachable without the keyboard.
     return Semantics(
       button: true,
       selected: selected,
-      excludeSemantics: true,
       label: 'Gerät ${device.name} auswählen, ID ${device.id}, '
           'Status ${known(status)}, $relationCount bekannte logische Verbindungen, '
           '${device.simulated ? 'Demo-Inventar' : 'API-Inventar'}',
@@ -441,37 +444,40 @@ class _DeviceRow extends StatelessWidget {
                       color: selected ? accent : Colors.transparent, width: 2)),
             ),
             child: Row(children: [
-              Icon(networkKindIcon(device.kind),
-                  size: 19,
-                  color: OipTokens.readableAccent(context, OipTokens.cyan)),
+              ExcludeSemantics(
+                  child: Icon(networkKindIcon(device.kind),
+                      size: 19,
+                      color: OipTokens.readableAccent(context, OipTokens.cyan))),
               const SizedBox(width: 8),
               Expanded(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(device.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 3),
-                      Text(
-                        '${known(status)} · $relationCount Relationen · ${device.simulated ? 'Demo' : 'API'}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: WorkstationTokens.mono(context,
-                            size: 9.5, color: statusColor),
-                      ),
-                      if (device.sourceId != null)
-                        Text('Source ${device.sourceId}',
+                child: ExcludeSemantics(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(device.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: WorkstationTokens.mono(context,
-                                size: 9, color: OipTokens.muted(context))),
-                    ]),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 3),
+                        Text(
+                          '${known(status)} · $relationCount Relationen · ${device.simulated ? 'Demo' : 'API'}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: WorkstationTokens.mono(context,
+                              size: 9.5, color: statusColor),
+                        ),
+                        if (device.sourceId != null)
+                          Text('Source ${device.sourceId}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: WorkstationTokens.mono(context,
+                                  size: 9, color: OipTokens.muted(context))),
+                      ]),
+                ),
               ),
               IconButton(
                 key: Key('explorer-compare-${device.id}'),

@@ -438,10 +438,13 @@ class _EventRow extends StatelessWidget {
     final tone = diagnosticEventTone(context, event.kind);
     final title = diagnosticEventTitle(event.kind);
     final accent = OipTokens.readableAccent(context, OipTokens.violet);
+    // The row is one button for the operator, and its texts are its label: the
+    // texts are excluded from the semantics so that the label is not read a
+    // second time. The controls of the row are **not** excluded — the pin and
+    // the compare of the row have to be reachable without the keyboard.
     return Semantics(
       button: true,
       selected: selected,
-      excludeSemantics: true,
       label:
           'Ereignis $title auswählen, ${item.sourceLabel}, ${timestamp(event.atMs)}, Severity nicht geliefert, ${item.recordId == null ? 'keine Server-Record-ID' : 'Record ${item.recordId}'}',
       child: Material(
@@ -459,21 +462,24 @@ class _EventRow extends StatelessWidget {
                         color: selected ? accent : tone.withOpacity(.65),
                         width: 2))),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Icon(
-                      event.kind == 'ConnectionLost'
-                          ? Icons.link_off
-                          : event.kind == 'Reconnected'
-                              ? Icons.link
-                              : event.kind == 'DataLoss'
-                                  ? Icons.data_usage_outlined
-                                  : Icons.error_outline,
-                      size: 17,
-                      color: tone)),
+              ExcludeSemantics(
+                child: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Icon(
+                        event.kind == 'ConnectionLost'
+                            ? Icons.link_off
+                            : event.kind == 'Reconnected'
+                                ? Icons.link
+                                : event.kind == 'DataLoss'
+                                    ? Icons.data_usage_outlined
+                                    : Icons.error_outline,
+                        size: 17,
+                        color: tone)),
+              ),
               const SizedBox(width: 8),
               Expanded(
-                  child: Column(
+                  child: ExcludeSemantics(
+                child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                     Text(title,
@@ -528,7 +534,7 @@ class _EventRow extends StatelessWidget {
                             style: WorkstationTokens.eyebrow(context,
                                 color: OipTokens.red)),
                     ]),
-                  ])),
+                  ]))),
               Column(mainAxisSize: MainAxisSize.min, children: [
                 SizedBox(
                     width: 32,

@@ -79,7 +79,6 @@ await context.route('**/*', async route => {
   return route.continue();
 });
 
-const escapeRegExp = value => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 async function pass(label) {
   checks.push(label);
   console.log('PASS', label);
@@ -269,21 +268,23 @@ try {
 
   // 7. the comparison of two devices names its own limit.
   //
-  // The comparison is driven the way the surface documents it: the row is
-  // selected and the key `C` adds the device to the comparison. The two
-  // buttons of the row (compare and pin) are **not** in the semantics tree
-  // of the surface — the row excludes the semantics of its descendants — so
-  // the keyboard is the path that an assistive technology can take as well.
+  // The comparison is driven through the **buttons of the row**: the compare
+  // and the pin of an explorer row are in the semantics tree of the surface —
+  // the row excludes its **texts** and not its controls (N36) — so an
+  // assistive technology reaches them by their names, without the keyboard.
   const first = devices[0];
   const second = devices[1];
   for (const device of [first, second]) {
-    await page.getByRole('button', {
-      name: new RegExp(`Gerät ${escapeRegExp(device.name)} auswählen,`)})
+    await waitForNameContaining(`${device.name} vergleichen`);
+    await page.getByRole('button', {name: `${device.name} vergleichen`, exact: true})
       .first().click({force: true});
-    await page.waitForTimeout(600);
-    await page.keyboard.press('c');
-    await page.waitForTimeout(600);
+    await waitForNameContaining(`${device.name} aus Vergleich entfernen`);
   }
+  await waitForNameContaining(`${first.name} anheften`);
+  await page.getByRole('button', {name: `${first.name} anheften`, exact: true})
+    .first().click({force: true});
+  await waitForNameContaining(`${first.name} loslösen`);
+  await pass('the compare and the pin of a row are in the semantics tree and reachable by name');
   await page.getByRole('button', {name: /Network Compare öffnen/}).click({force: true});
   await waitForNameContaining('Network Compare');
   await waitForNameContaining('2/4 Geräte · 0/4 Pfade · sitzungslokal');
