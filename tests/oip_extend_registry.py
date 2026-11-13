@@ -142,16 +142,32 @@ def main():
         assert report["the_four_sources_survived"], "the extension lost a source"
         report["steps"].append("the registry is extended and the sources survive")
 
-        # 4. the fifth source collects
+        # 4. the fifth source collects.
+        #
+        # The Core establishes the connection of a newly provisioned source in
+        # a few seconds, and the setup time varies with the load of the
+        # machine. The source is therefore **polled** until it collects, not
+        # checked once after a fixed sleep: a single check would fail on a slow
+        # start and pass on a fast one, and the claim of the rehearsal — the
+        # new source collects — must be measured the same way every time. The
+        # assertion is unchanged: the source must collect within the window.
         tool("start")
-        time.sleep(6)
-        result = subprocess.run(["/usr/bin/sqlite3", "-batch", "-noheader",
-                                 str(work / "core.sqlite"),
-                                 "select count(*) from observations where data_source_id='source-e';"],
-                                capture_output=True, text=True, timeout=60)
-        report["the_observations_of_the_new_source"] = result.stdout.strip()
-        assert report["the_observations_of_the_new_source"] not in ("", "0"), \
-            "the new source collected nothing"
+        started = time.monotonic()
+        collected = None
+        while time.monotonic() - started < 90:
+            result = subprocess.run(["/usr/bin/sqlite3", "-batch", "-noheader",
+                                     str(work / "core.sqlite"),
+                                     "select count(*) from observations where data_source_id='source-e';"],
+                                    capture_output=True, text=True, timeout=60)
+            count = result.stdout.strip()
+            if count not in ("", "0"):
+                collected = count
+                break
+            time.sleep(2)
+        report["the_observations_of_the_new_source"] = collected
+        report["the_seconds_to_first_observation"] = (
+            round(time.monotonic() - started, 1) if collected else None)
+        assert collected not in (None, ""), "the new source collected nothing within 90 s"
         report["the_new_source_collects"] = True
         report["steps"].append("the new source collects")
         tool("stop")
