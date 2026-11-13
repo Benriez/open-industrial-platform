@@ -228,7 +228,7 @@
           "the_number": "152",
           "the_unit": "controls",
           "the_quoted": "152 controls",
-          "the_receipt_carries_it": true
+          "the_receipt_carries_it": false
         }
       ],
       "the_receipts": 1
@@ -948,10 +948,12 @@
       "the_receipts": 1
     }
   ],
-  "the_problems": [],
-  "status": "PASS",
-  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
-  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
+  "the_problems": [
+    "the row `docs/evidence/oip-accessibility/accessibility.json` quotes 152 controls, which no receipt it names carries"
+  ],
+  "status": "FAIL",
+  "the_revision": "d61f7ed4e0f0fec1a8cf53d8a5cd8880440bf403",
+  "the_tree": "078455763447e42627c10e61a338140b4ff8967a",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T14:10:28Z"
+  "finished_utc": "2026-11-13T16:55:28Z"
 }
