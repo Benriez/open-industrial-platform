@@ -4420,6 +4420,37 @@ out of reach of this machine.
   journey would prove nothing about the depth of the workspace. The refusals that the Core still
   returns for the routes of the platform (`/api/v1/sources`, `/api/v1/events`, …) are recorded as
   evidence of the authorization, not as a defect of the surface.
+### Iteration 94 — the performance of the Overview, and the end of N35
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates
+that need the operator (G5, G10, G12) stay open, and the two real devices of the operator are still
+out of reach of this machine.
+
+* **The sixth group of N35 is measured: the performance of the Overview.** The Overview is the
+  workstation the operator opens first and returns to, and no journey had measured what it costs.
+  The rehearsal (`tests/oip_overview_performance_2027.py`,
+  `apps/flutter/test/browser_overview_performance_2027.mjs`) starts a disposable Core with four
+  live collectors, waits until the Core has recorded the collection events that the Overview lists,
+  and drives the managed surface with the session of the operator
+  (`docs/evidence/oip-overview-performance/overview-performance.json`, eleven checks). The journey
+  measures the **twenty-three** interactions the operator performs — the three tabs of the activity
+  workspace, the event filter of the kind that the Core delivered (`Reconnected`), the change of the
+  global context and its return to the unified view, six round trips through the Devices workstation
+  and six switches of the theme. The latency of every interaction is measured against a budget of
+  3000 ms (median 224 ms, p95 602 ms, max 755 ms), the frames of the browser against the frame of
+  the display (516 samples, median 17 ms, p95 17 ms, max 50 ms), the long tasks of the main thread
+  against 250 ms (one task of 51 ms), and the heap the surface retains against 24 MiB (7,789,951
+  bytes after an explicit collection of the garbage). The compositor presents 363 frames, 297
+  paints, 365 layerizations, 77 layouts and 139 style recalculations. The numbers of the surface are
+  the numbers of the Core: the status strip names 3 sources and 3 devices, the activity list holds
+  the records of the Core and the filter reaches the kind that the Core delivered.
+* **The performance is a local measurement, not an SLA.** The scope is the client of the delivered
+  web release on the loopback of this machine, in the same wording as the performance baseline of
+  the record. The budgets are the claim of the journey and the numbers are the measurement; the
+  refusals of the Core (6 routes of the platform scope of the reader) are recorded as evidence of
+  the authorization and no request leaves the loopback. N35 is **complete**: its six groups are
+  measured, and the two claims that the managed Core cannot prove — the geometry of the graph over
+  real links and the transport filter over real transports — stay withdrawn instead of simulated.
 
 The product of the release (`crates/`, `apps/flutter/lib/`) was not touched by this iteration, so
 the boundary of the product (`fc18ce2`) and the freshness of every receipt of the release stay what
@@ -4428,8 +4459,9 @@ the record (iteration 92) and are not re-measured for a change that does not tou
 
 Beside it remain the operator actions: the product decision on the delivery of the web release, the
 physical device of G5, the production-security scope of G10, the operator acceptance of G12 and the
-network of the devices (the router and the bridge). The next independent task is the **performance
-of the Overview** (the last group of N35), followed by N36.
+network of the devices (the router and the bridge). The next independent task is **N36** — the
+actions of an explorer row are not in the semantics tree — and after it one full release cycle at
+the final revision.
 
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
@@ -4502,6 +4534,9 @@ service of the operator, no published port, no firewall change, no push, no depl
 | `docs/evidence/oip-settings-depth/settings-depth.json` | the **depth of the Settings workspace** of the managed surface against a real Core: every category of the Core, the settings keys of the Core, the facts of the server report, a tool of the catalog with its permissions and its scopes, the schema of the Core copied deep-equal, the template of the client configuration without a credential, and the limits that the surface names (tracked) |
 | `docs/evidence/oip-settings-depth/settings-depth-rehearsal.json` | the rehearsal that produced it: the disposable instance it owns, the platform permissions it grants to its reader and the steps of the journey (tracked) |
 | `docs/evidence/oip-settings-depth/captures/` | the captures of the journey of the Settings workspace: the application settings, the appearance, the MCP runtime, the tool explorer, the copied schema, the client configuration, the limits, the storage, the security and the system (tracked) |
+| `docs/evidence/oip-overview-performance/overview-performance.json` | the **performance of the Overview** of the managed surface against a real Core: twenty-three interactions inside a budget of 3000 ms, the frames of the browser, the long tasks of the main thread, the heap the surface retains, the frames the compositor presents and the numbers of the Core that the surface shows (tracked) |
+| `docs/evidence/oip-overview-performance/overview-performance-rehearsal.json` | the rehearsal that produced it: the disposable instance with its four live collectors, the collection events that the Core recorded, the budgets and the steps of the journey (tracked) |
+| `docs/evidence/oip-overview-performance/captures/` | the captures of the performance journey: the Overview, the activity workspace, the event filter, the changed context and the surface at the end of the run (tracked) |
 | `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named (tracked) |
 | `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches (tracked) |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the measured parity of the OPC-UA address space between the official MCP tool and the REST routes against the real backend (iteration 25) |

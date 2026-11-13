@@ -363,6 +363,28 @@ An **independent verification** of that change (a delegated, read-only audit of 
     Twelve checks, measured against the Core (`docs/evidence/oip-settings-depth/settings-depth.json`).
     The **next** group is the performance of the Overview.
 
+    The **sixth group is measured**: the performance of the Overview. The rehearsal
+    (`tests/oip_overview_performance_2027.py`, `apps/flutter/test/browser_overview_performance_2027.mjs`)
+    starts a disposable Core with four live collectors, waits until the Core has recorded the
+    collection events that the Overview lists, and drives the managed surface with the session of
+    the operator. The journey measures what the operator feels: the latency of **twenty-three**
+    interactions — the three tabs of the activity workspace, the event filter of the kind that the
+    Core delivered (`Reconnected`), the change of the global context and its return to the unified
+    view, six round trips through the Devices workstation and six switches of the theme — with a
+    median of 224 ms, a p95 of 602 ms and a maximum of 755 ms against a budget of 3000 ms; the
+    frames of the browser (516 samples, median 17 ms, p95 17 ms, max 50 ms); the long tasks of the
+    main thread (one task of 51 ms against a budget of 250 ms); the heap the surface retains
+    (7,789,951 bytes after an explicit collection, against a budget of 24 MiB) and the frames the
+    compositor presented (363 presented frames, 297 paints, 365 layerizations, 77 layouts and 139
+    style recalculations). The numbers of the surface are the numbers of the Core: the status strip
+    names 3 sources and 3 devices, the activity list holds the records of the Core, and the filter
+    reaches the kind that the Core delivered. The refusals of the Core (6 routes at the platform
+    scope of the reader) are recorded as refusals and no request leaves the loopback. The **scope is
+    a local measurement on the loopback of this machine, not an SLA**
+    (`docs/evidence/oip-overview-performance/overview-performance.json`,
+    `docs/evidence/oip-overview-performance/overview-performance-rehearsal.json`): eleven checks,
+    measured at `d177881` on a clean tree. The **next READY task** is N36.
+
 18. **N36 (the actions of a row are not in the semantics tree)**: the compare and the pin of a
    row are **not** in the semantics tree of the surface: the row excludes the semantics of its
    descendants, so the two buttons are reachable only by the documented keyboard (`P`, `C`). It is
@@ -379,10 +401,12 @@ An **independent verification** of that change (a delegated, read-only audit of 
    names the source-local record id — `keine Server-Record-ID` — that the projection does not
    deliver.
 
-The independent tasks of this list are open again: the last one that was measured is N35 — the
-first, the second, the third, the fourth and the fifth group of its claims are measured — the next
-one is N35 again (the **performance of the Overview**), and N36 (the actions of a
-row) follows it.
+The independent tasks of this list are open again: **N35 is complete** — its six groups are
+measured (the density and the geometry of the Devices workspace, the Network workspace with two
+claims withdrawn, the evidence workspace of the Diagnostics workstation, the depth of the Settings
+workspace and the performance of the Overview). The next READY task is **N36**, the product change
+of the row actions, which is followed by one full release cycle at the final revision (the refresh
+of every rehearsal, the reproducible build, the acceptance, the manifest and the verification).
 Beside it remain the operator actions: the product decision on the delivery of the web release,
 the physical device of G5, the production-security scope of G10, the operator
 acceptance of G12 and the discovery of the host of the Core.
@@ -611,6 +635,9 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-settings-depth/settings-depth.json` | the **depth of the Settings workspace** of the managed surface against a real Core: every category of the Core, the settings keys of the Core, the facts of the server report, a tool of the catalog with its permissions and its scopes, the schema of the Core copied byte-equal, the template of the client configuration without a credential, and the limits that the surface names |
 | `docs/evidence/oip-settings-depth/settings-depth-rehearsal.json` | the rehearsal that produced it: the disposable instance it owns, the platform permissions it grants to its reader and the steps of the journey |
 | `docs/evidence/oip-settings-depth/captures/` | the captures of the journey of the Settings workspace: the application settings, the appearance, the MCP runtime, the tool explorer, the copied schema, the client configuration, the limits, the storage, the security and the system |
+| `docs/evidence/oip-overview-performance/overview-performance.json` | the **performance of the Overview** of the managed surface against a real Core: twenty-three interactions inside a budget of 3000 ms, the frames of the browser, the long tasks of the main thread, the heap the surface retains, the frames the compositor presents and the numbers of the Core that the surface shows |
+| `docs/evidence/oip-overview-performance/overview-performance-rehearsal.json` | the rehearsal that produced it: the disposable instance with its four live collectors, the collection events that the Core recorded, the budgets and the steps of the journey |
+| `docs/evidence/oip-overview-performance/captures/` | the captures of the performance journey: the Overview, the activity workspace, the event filter, the changed context and the surface at the end of the run |
 | `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
 | `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches |
 | `docs/evidence/oip-opcua-parity/opcua-parity.json` | the pagination and the scope of the OPC-UA address space |
