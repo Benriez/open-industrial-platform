@@ -14,12 +14,12 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 |---|---|
 | Canonical branch | `main` |
 | Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `fc18ce2` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `558890a` (tree `6534663e`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `4d9524a` — the binary names its own revision; the same revision yields the same bytes |
+| The revision of the final acceptance | `5e6a1c0` (tree `583b3454`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `5e6a1c0` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
-| Tracked files in the canonical source revision | 737 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
+| Tracked files in the canonical source revision | 748 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
 | Push / deployment | none |
@@ -4273,6 +4273,61 @@ discovery of the host of the Core.
 
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no push, no deployment.
+
+### Iteration 91 — the Network workspace of the managed surface is measured in the browser
+
+**Status: PROVED on canonical `main`. The verdict stays `OIP_PRODUCTION_NOT_READY`** — the gates that
+need the operator (G5, G10, G12) stay open, and the two real devices of the operator are still out
+of reach of this machine.
+
+* **The second group of N35 is measured — and two of its claims are withdrawn.** The Core of the
+  managed mode delivers the devices, the sources, the observations and the events — and **no
+  logical path**: the scoped snapshot of the Core has no topology
+  (`crates/oip-core/src/hierarchy.rs`), no route delivers links (`crates/oip-server/src/api.rs`)
+  and the projection of the client knows that the paths are not delivered
+  (`apps/flutter/lib/models/infrastructure.dart`). The rehearsal of the Network workspace
+  (`tests/oip_network_2027.py`, `apps/flutter/test/browser_network_2027.mjs`) therefore measures
+  what the managed surface can honestly measure: the summary names the absence
+  (`LOGISCHE PFADE NICHT GELIEFERT`, `VPN-TELEMETRIE NICHT GELIEFERT`, `DEMO-PFADE 0`), the list of
+  the paths is empty and says that an empty result is no offline state, the transport filter offers
+  only the transports that the Core delivered — here only `alle` — the Device Explorer shows
+  exactly the devices that the Core delivered (the counter, the rows, the search, the relation
+  filter), the comparison of two devices names its own limit (`2/4 Geräte · 0/4 Pfade ·
+  sitzungslokal`), the graph names its empty state, the markers of the demo of the generation 2027
+  are absent, and the channel that goes stale is named as stale and comes back. **Twelve checks**
+  (`docs/evidence/oip-network-2027/network-2027.json`).
+* **The geometry of the graph over real links and the transport filter over real transports are
+  withdrawn as claims of the managed surface**: the Core delivers no link, so the browser cannot
+  measure them. The geometry stays proven at the widget level
+  (`apps/flutter/test/network_workstation_test.dart`), and the browser proves the **absence** is
+  named instead of simulated.
+* **A hole in the release discipline was closed.** The rehearsal of the reproducible build
+  compared two builds of the Core and reported them as identical — while the tree was **dirty**:
+  the build script of the Core embeds `git describe --always --abbrev=40 --dirty`, so a tree with
+  changes in it yields a binary that names the revision **with the marker** and has other bytes.
+  Two dirty builds are identical to each other and prove nothing about the release. The rehearsal
+  now **refuses a dirty tree** and **refuses a binary that names a dirty revision**
+  (`tests/oip_reproducible_build.py`).
+* **The compare and the pin of a row of the Network explorer are not in the semantics tree** — the
+  row excludes the semantics of its descendants
+  (`apps/flutter/lib/features/network/network_explorer.dart`), so the two actions are reachable
+  only by the documented keyboard (`P`, `C`). The journey drives the comparison by that keyboard
+  path. The fix (the **texts** of the row excluded instead of the whole row) changes the product
+  and therefore needs the full re-measurement of the release: it is the next product change, named
+  as **N36** in the ledger.
+
+The product of the release (`crates/`, `apps/flutter/lib/`) was not touched by this iteration, so
+the boundary of the product (`fc18ce2`) and the freshness of every receipt of the release stay
+what they are. The acceptance and the reproducible build were measured again at the revision of the
+record, on a clean tree, so the Core that the canonical gate executed is the Core that the
+manifest names.
+
+Beside it remain the operator actions: the product decision on the delivery of the web release, the
+physical device of G5, the production-security scope of G10, the operator acceptance of G12 and the
+network of the devices (the router and the bridge).
+
+No personal database change, no schema-7 activation of the personal installation, no change to a
+service of the operator, no published port, no firewall change, no push, no deployment.
 ## 5. Evidence index
 
 | Artifact | Content |
@@ -4324,6 +4379,9 @@ service of the operator, no published port, no firewall change, no push, no depl
 | `docs/evidence/oip-security-review/security-review.json` | the measured security review of the current release: 12 findings — 9 resolved, 2 mitigated, 1 escalated (the durability of the execution audit) (iteration 29) |
 | `docs/evidence/oip-device-connection/device-connection.json` | the measured verified connection of a device in the approved surface against the real Core and an owned loopback SSH fixture (iteration 28) |
 | `docs/evidence/oip-workstation-data/workstation-data.json` | the measured functional depth of the six workstations against the real Core: the real hierarchy, device, placement, nodes, events and settings, and no identifier of the other organization (iteration 27) |
+| `docs/evidence/oip-network-2027/network-2027.json` | the **Network workspace** of the managed surface in the browser: the absence of the logical paths is named, the devices of the Core are the devices of the surface, the comparison of two devices names its own limit, the channel that goes stale is named as stale (tracked) |
+| `docs/evidence/oip-network-2027/network-2027-rehearsal.json` | the rehearsal that produced it: the disposable instance it owns, the devices it registers through the authorized route and the steps of the journey (tracked) |
+| `docs/evidence/oip-network-2027/captures/` | the captures of the journey of the Network workspace: the summary, the explorer, the search, the filters, the comparison, the graph and the stale channel (tracked) |
 | `docs/evidence/oip-devices-density/devices-density.json` | the **density of the Devices workspace** in the browser: a disposable Core with the plan of the operator, the devices registered through the authorized route, six widths and three themes, no horizontal overflow and no clipped control of the toolbar (tracked) |
 | `docs/evidence/oip-devices-density/responsive-report.json` | the receipt of the browser journey of the density: the checks of every width and every theme, the page errors and the overflow errors of the journey (tracked) |
 | `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named (tracked) |

@@ -340,13 +340,47 @@ An **independent verification** of that change (a delegated, read-only audit of 
     1920 px) and three themes (Spectrum, Graphite and Daylight), fourteen checks in all — the
     document never scrolls horizontally, no control of the filter toolbar is clipped outside the
     viewport, the disclosure of the secondary filters opens and the inventory explorer is rendered
-    (`docs/evidence/oip-devices-density/devices-density.json`). The **next** group is the Network
-    workspace: the geometry of the graph, the comparison of two devices, the transport filter and
-    the recovery from an unreachable source.
+    (`docs/evidence/oip-devices-density/devices-density.json`). The **next** group is the
+    Diagnostics workspace: the timeline and the stale marking of its events.
 
-The independent tasks of this list are open again: the last one that was measured is N34, and the
-next one is N35. Beside it remain the operator actions: the product decision on the delivery of the
-web release, the physical device of G5, the production-security scope of G10, the operator
+    The **second group is measured**: the Network workspace of the managed surface. The Core of
+    the managed mode delivers the devices, the sources, the observations and the events — and
+    **no logical path**: the scoped snapshot of the Core has no topology
+    (`crates/oip-core/src/hierarchy.rs`), no route delivers links (`crates/oip-server/src/api.rs`)
+    and the projection of the client knows that the paths are not delivered
+    (`apps/flutter/lib/models/infrastructure.dart`). The rehearsal
+    (`tests/oip_network_2027.py`, `apps/flutter/test/browser_network_2027.mjs`) measures what the
+    managed surface can honestly measure, in twelve checks
+    (`docs/evidence/oip-network-2027/network-2027.json`): the summary names the absence
+    (`LOGISCHE PFADE NICHT GELIEFERT`, `VPN-TELEMETRIE NICHT GELIEFERT`, `DEMO-PFADE 0`), the list
+    of the paths is empty and says that an empty result is no offline state, the transport filter
+    offers only the transports that the Core delivered — here only `alle` — the Device Explorer
+    shows exactly the devices that the Core delivered (the counter, the rows, the search, the
+    relation filter), the comparison of two devices names its own limit (`2/4 Geräte · 0/4 Pfade ·
+    sitzungslokal`), the graph names its empty state, the markers of the demo of the generation
+    2027 are absent, and the channel that goes stale is named as stale and comes back.
+
+    **Two claims of the group are withdrawn**: the geometry of the graph over real links and the
+    transport filter over real transports cannot be measured against the managed Core, because the
+    Core delivers no link. The geometry stays proven at the widget level
+    (`apps/flutter/test/network_workstation_test.dart`), and the browser proves that the surface
+    names the absence instead of simulating it. The next group is the **Diagnostics workspace**:
+    the timeline and the stale marking of its events.
+
+18. **N36 (the compare and the pin of a row of the Network explorer)**: the two actions of
+   a row of the Device Explorer are **not** in the semantics tree: the row excludes the semantics of
+   its descendants (`apps/flutter/lib/features/network/network_explorer.dart`), so the buttons are
+   reachable only by the documented keyboard (`P`, `C`). The journey of the Network workspace drives
+   the comparison by that keyboard path (`apps/flutter/test/browser_network_2027.mjs`). The fix —
+   the **texts** of the row excluded instead of the whole row — changes the **product** and needs
+   therefore the full re-measurement of the release (the refresh of every rehearsal and the
+   acceptance at the new revision). It is the next product change and the next iteration.
+
+The independent tasks of this list are open again: the last one that was measured is N35 — the
+first and the second group of its claims are measured — the next one is N35 again (the
+**Diagnostics workspace**), and N36 (the compare and the pin of the Network explorer) follows it.
+Beside it remain the operator actions: the product decision on the delivery of the web release,
+the physical device of G5, the production-security scope of G10, the operator
 acceptance of G12 and the discovery of the host of the Core.
 
 ## Operator actions required (nothing here is executed by the loop)
@@ -556,6 +590,9 @@ name their own older revision and are kept as the history of that era.
 | `docs/evidence/oip-extend-registry/extend-registry.json` | the extension of the registry of an instance and the refused plan that drops a source |
 | `docs/evidence/oip-settings-offline/settings-offline.json` | the offline change of a setting and its refusal on a conflict |
 | `docs/evidence/oip-offline-archive/offline-archive.json` | the offline archive of a device and the refused archive of an online device |
+| `docs/evidence/oip-network-2027/network-2027.json` | the **Network workspace** of the managed surface in the browser: the absence of the logical paths is named, the devices of the Core are the devices of the surface, the comparison of two devices names its own limit, the channel that goes stale is named as stale |
+| `docs/evidence/oip-network-2027/network-2027-rehearsal.json` | the rehearsal that produced it: the disposable instance it owns, the devices it registers through the authorized route and the steps of the journey |
+| `docs/evidence/oip-network-2027/captures/` | the captures of the journey of the Network workspace: the summary, the explorer, the search, the filters, the comparison, the graph and the stale channel |
 | `docs/evidence/oip-devices-density/devices-density.json` | the **density of the Devices workspace** in the browser: a disposable Core with the plan of the operator, the devices registered through the authorized route, six widths and three themes, no horizontal overflow and no clipped control of the toolbar |
 | `docs/evidence/oip-devices-density/responsive-report.json` | the receipt of the browser journey of the density: the checks of every width and every theme, the page errors and the overflow errors of the journey |
 | `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named |
