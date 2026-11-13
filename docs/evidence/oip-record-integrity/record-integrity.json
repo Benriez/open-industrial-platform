@@ -6,9 +6,9 @@
     "the canonical state names the release",
     "every file of the evidence tree is cited"
   ],
-  "the_cited_paths": 96,
+  "the_cited_paths": 98,
   "the_citations": {
-    "the_cited": 96,
+    "the_cited": 98,
     "the_missing_on_disk": [],
     "the_present_but_untracked": []
   },
@@ -45,23 +45,17 @@
   },
   "the_files_of_the_release": {
     "the_present": 117,
-    "the_cited": 115,
-    "the_orphaned": [
-      "docs/evidence/oip-devices-geometry/geometry-1440x900.json",
-      "docs/evidence/oip-devices-geometry/geometry-1920x1080.json"
-    ],
+    "the_cited": 117,
+    "the_orphaned": [],
     "the_files_of_the_eras": 1271,
     "the_areas_of_the_eras_that_the_record_does_not_name": [],
     "the_note": "every file of the evidence tree, not only the receipts: the captures and the painted surfaces are evidence as well"
   },
   "the_repeated_blocks_of_the_ledger": [],
-  "the_problems": [
-    "the file docs/evidence/oip-devices-geometry/geometry-1440x900.json of the evidence tree is cited by nobody",
-    "the file docs/evidence/oip-devices-geometry/geometry-1920x1080.json of the evidence tree is cited by nobody"
-  ],
-  "status": "FAIL",
-  "the_revision": "b495badd4abd572c5279adebcd7fe6666c23f633",
-  "the_tree": "1648e75611fe7a2a8741cc87e34736078ad4f86e",
+  "the_problems": [],
+  "status": "PASS",
+  "the_revision": "548dc4cb8682d419f8881a02d72f1cb60c504a3b",
+  "the_tree": "9007f6754bba50d340e2fb821312ece06debe195",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T03:39:15Z"
+  "finished_utc": "2026-11-13T03:39:22Z"
 }

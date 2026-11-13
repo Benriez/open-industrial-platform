@@ -579,6 +579,16 @@
       "the_receipts": 0
     },
     {
+      "the_row": "`docs/evidence/oip-devices-geometry/geometry-1440x900.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
+      "the_row": "`docs/evidence/oip-devices-geometry/geometry-1920x1080.json`",
+      "the_measurements": [],
+      "the_receipts": 1
+    },
+    {
       "the_row": "`docs/evidence/oip-diagnostics-2027/diagnostics-2027-rehearsal.json`",
       "the_measurements": [],
       "the_receipts": 1
@@ -836,8 +846,8 @@
   ],
   "the_problems": [],
   "status": "PASS",
-  "the_revision": "b495badd4abd572c5279adebcd7fe6666c23f633",
-  "the_tree": "1648e75611fe7a2a8741cc87e34736078ad4f86e",
+  "the_revision": "548dc4cb8682d419f8881a02d72f1cb60c504a3b",
+  "the_tree": "9007f6754bba50d340e2fb821312ece06debe195",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T03:39:15Z"
+  "finished_utc": "2026-11-13T03:39:26Z"
 }
