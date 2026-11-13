@@ -24,6 +24,43 @@ impl SqliteStore {
             .map(|s| Ok(serde_json::from_str(&s)?))
             .collect()
     }
+    /// Add metrics introduced by a newer SSH collector while preserving any
+    /// source metrics already registered for this verified device connection.
+    pub fn merge_connection_source_definition(
+        &mut self,
+        definition: &SourceDefinition,
+    ) -> Result<(), StorageError> {
+        if definition.origin_class != OriginClass::External
+            || !self
+                .connection_records()?
+                .iter()
+                .any(|connection| connection.source_id == definition.id)
+        {
+            return Err(invalid());
+        }
+        let Some(mut current) = self
+            .definitions()
+            .map_err(|_| invalid())?
+            .into_iter()
+            .find(|source| source.id == definition.id)
+        else {
+            return Err(invalid());
+        };
+        if current.origin_class != OriginClass::External
+            || current.entity_id != definition.entity_id
+        {
+            return Err(invalid());
+        }
+        current.metrics.extend(definition.metrics.clone());
+        current
+            .required_metrics
+            .extend(definition.required_metrics.clone());
+        self.connection.execute(
+            "UPDATE core_sources SET payload_json=?1 WHERE source_id=?2",
+            params![serde_json::to_string(&current)?, definition.id.as_str()],
+        )?;
+        Ok(())
+    }
     pub fn connection_attempts(&self) -> Result<Vec<ConnectionAttempt>, StorageError> {
         let mut q = self.connection.prepare(
             "SELECT payload_json FROM device_connection_attempts ORDER BY device_id LIMIT 2049",

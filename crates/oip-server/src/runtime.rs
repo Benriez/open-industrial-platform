@@ -53,10 +53,8 @@ impl CollectionAdapter for OpcUaAdapter {
                     // The measurements of the source belong to the entity that
                     // the source declares — not to the machine id of the
                     // simulation behind it.
-                    oip_core::EntityId::new(
-                        self.config.entity_id.as_deref().unwrap_or("M-01"),
-                    )
-                    .map_err(|_| RuntimeError::Configuration("entity".into()))?,
+                    oip_core::EntityId::new(self.config.entity_id.as_deref().unwrap_or("M-01"))
+                        .map_err(|_| RuntimeError::Configuration("entity".into()))?,
                 ))
                 .await?,
             );
@@ -265,6 +263,13 @@ impl CoreRuntime {
                 &definitions,
                 None,
             )?;
+        }
+        // SSH source schemas evolve with the fixed, read-only host collector.
+        // Add the newer metric declarations to verified connection sources so
+        // the normal collector can persist those measurements after restart.
+        for connection in store.connection_records()? {
+            let definition = crate::ssh::definition(&connection);
+            store.merge_connection_source_definition(&definition)?;
         }
         let state =
             AppState::configured(store, &config, scenario).map_err(RuntimeError::Ingestion)?;
