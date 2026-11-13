@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "0597fb47f3af1b2dbd22111fe12a1bb38d45fc72",
-  "the_tree": "4bc2687eacbdf618ca4c4187f7c90562a6edcfad",
+  "the_revision": "0b374d6c61d8801d8489116a16f0fea137e3d7a7",
+  "the_tree": "9b9200b632d8a3fd731760c84e8e0b320233f292",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 730,
-    "the_sha256": "b39545f272906c6fa6bcb5d7a7635b9485b7f2f59410f545d5f8b5e5a26dd63e"
+    "the_sha256": "5486fd92c2496c93db2f331eb5d0d39b317830d1cb3012fd183308d1e8ee9dc9"
   },
   "the_artifacts": {
     "the_core": {
