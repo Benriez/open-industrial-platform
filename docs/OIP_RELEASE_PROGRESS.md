@@ -14,8 +14,8 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 |---|---|
 | Canonical branch | `main` |
 | Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `fc18ce2` — the last commit that changed the product; the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `07cc808` (tree `5ab1705d`) — the tree the canonical gate passed on |
-| The revision of the Core binary of the release | `07cc808` — the binary names its own revision; the same revision yields the same bytes |
+| The revision of the final acceptance | `3418426` (tree `5b6a900a`) — the tree the canonical gate passed on |
+| The revision of the Core binary of the release | `3418426` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
 | Integration method | real `git merge --ff-only`, no merge commit, no rewrite, in eleven controlled steps |
@@ -4279,6 +4279,8 @@ service of the operator, no published port, no firewall change, no push, no depl
 | `docs/evidence/oip-security-review/security-review.json` | the measured security review of the current release: 12 findings — 9 resolved, 2 mitigated, 1 escalated (the durability of the execution audit) (iteration 29) |
 | `docs/evidence/oip-device-connection/device-connection.json` | the measured verified connection of a device in the approved surface against the real Core and an owned loopback SSH fixture (iteration 28) |
 | `docs/evidence/oip-workstation-data/workstation-data.json` | the measured functional depth of the six workstations against the real Core: the real hierarchy, device, placement, nodes, events and settings, and no identifier of the other organization (iteration 27) |
+| `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named (tracked) |
+| `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches (tracked) |
 | `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named (tracked) |
 | `docs/evidence/oip-opcua-browser/address-space.json` | the receipt of the browser journey of the address space: the checks, the nodes of the Core, the folders of the Core, the rows of the surface, the identity of the node and the node that the keyboard search reaches (tracked) |
 | `docs/evidence/oip-opcua-browser/opcua-browser.json` | the **address space of the operator** in the browser: a disposable Core with live collectors, the real surface, the nodes, their folders and their identity are the ones that the Core delivers, the absent attributes and the limits of the address space are named (tracked) |

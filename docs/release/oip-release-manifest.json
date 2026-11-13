@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "54e9b459e0bccc0d825f75d75f0cb81722c91cb0",
-  "the_tree": "0bb33953ec39189f5fe62d9dab833b0505257e0f",
+  "the_revision": "f341ea06dbec76f8ab66d82257dbb4c389db6409",
+  "the_tree": "f8d7f11650cc7956faa6c8d6ce31972649d7deec",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
@@ -22,15 +22,15 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 730,
-    "the_sha256": "ccf495c791b1fe4e4a216df02bf154a9e2797375cc928e8e276b1a5dac89bf2d"
+    "the_sha256": "523caa81d4dcec3606efa0012dc30f2afc7965b98b1a4e29370a8c4f76689a38"
   },
   "the_artifacts": {
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
       "bytes": 36648400,
-      "sha256": "4f6387ecbd74193ee9bc960a2ad090f1ee13567219354cf7e8835fcd91cff729",
-      "the_revision_the_binary_names": "07cc80857930434d1fa187f176357a4e66ee03ac",
+      "sha256": "8a8d11f5643efc688e774e72d52ba6649f1468e9b6f6c57a911cffc6cb052c40",
+      "the_revision_the_binary_names": "341842646172de92ca4949a618f29b1e2df1127d",
       "the_revision_was_read_out_of_the_binary": true
     },
     "the_official_mcp_probe": {
@@ -60,11 +60,11 @@
   "the_receipts": {
     "the_global_context": {
       "path": "docs/evidence/oip-global-context/global-context.json",
-      "sha256": "fa1ff56108ad3fb52a8529c9b2e147e35f73ddd9203a346e75ce331df064560d"
+      "sha256": "8a3eede0b318559a1fa094613a635a9f19debf33de739e7a81c220d27582ce2a"
     },
     "the_accessibility": {
       "path": "docs/evidence/oip-accessibility/accessibility.json",
-      "sha256": "2370926d82f46f83438bef5590c2fe76338893b51658db948d4a00a04cb91dfe"
+      "sha256": "dc11930a4957ef59d99b8260e580c670c127252393a3b9b61250fe5fba28b3d2"
     },
     "the_performance": {
       "path": "docs/evidence/oip-performance/performance.json",
@@ -84,19 +84,19 @@
     },
     "the_acceptance": {
       "path": "docs/evidence/oip-canonical-acceptance/acceptance.json",
-      "sha256": "39a0761b09e3ef462fbf24d7cb1ba0f5ee0affe6fc83a5f67b77d15ab7899525"
+      "sha256": "6b560db08276d10ab3ba4c2c4bf00582b0ca5f0170a604410ac5c0526dc8b547"
     },
     "the_acceptance_browser_gate": {
       "path": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
-      "sha256": "b9f977de5aa68dac0e02e2b808e00165526d1181a6aaa61b0b803b2504b3c9c1"
+      "sha256": "7e8a92b1a76535a6fb0789a88715854ce351cdedaf7172278dff9a22e3219ee8"
     },
     "the_acceptance_ui_gate": {
       "path": "docs/evidence/oip-canonical-acceptance/ui-gate.json",
-      "sha256": "16719e88d5a3d6f754847390ca273f2cf521ce749d822b8d28e9608699e9b87b"
+      "sha256": "c66184bd36d13a13998e190b77d02d4371b218df61c991da661ec4dc22611610"
     },
     "the_device_administration": {
       "path": "docs/evidence/oip-device-administration/device-administration.json",
-      "sha256": "f5b531288cc0a8b3773cee21fb2335c44b66a8b80c5704e0cca5bea1ae4c461d"
+      "sha256": "8e48ae53aae00d832a0a001e349f74820d295b7eac1c1fa44fee7e233dc1a115"
     },
     "the_session_lifetime": {
       "path": "docs/evidence/oip-session-lifetime/session-lifetime.json",
@@ -176,19 +176,19 @@
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-1440.png",
-      "sha256": "9509a41503044122b20c60dea5f56343ad3765e30eda4684861a240f40d179cf"
+      "sha256": "bc1584377983937e8a3d97e214c50c7589d96ede7377776313916b17914722c4"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-1920.png",
-      "sha256": "aee898aed337f797e26cfd3a344c868b1c558c5b8154b1666e74e6a7137aadf8"
+      "sha256": "6953ec8cd10341caa53442d518d0d74507dd33d1c42b7fea48c34c2a83756b21"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-devices-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-devices-1440.png",
-      "sha256": "9fc9cab282b120e078b1d99fbf9a1450db5046d88ac04f425632cfd6184ebd59"
+      "sha256": "dfda24f0646eb30d134ca223f5eb48bd23a261741db1ba5c6f0dae2f62364980"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-devices-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-devices-1920.png",
-      "sha256": "e1b602dc04254cf3c2ab829194f23988e32c9b53d45672f0a951929bfe85bc8f"
+      "sha256": "8e91d5dad30d325d14e461bc93f4f51ea967e1fb0247d71b1a70b203922fdd07"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-diagnostics-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-diagnostics-1440.png",
@@ -200,27 +200,27 @@
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-network-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-network-1440.png",
-      "sha256": "6091e6b591e41b08b1a1b9fa4379ffa5c0e46616ebfaee0a9f40035587008103"
+      "sha256": "760966c5a5c8f1679edec817feae7252b022608839279a12ddd561af8a9c2422"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-network-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-network-1920.png",
-      "sha256": "2fc0e4cb21179902747132e44734bf3030a06677fd84ba72f5bda91aef8d683f"
+      "sha256": "dbeb50410e40ae528f101aa13d649357ebbda2855b3f9d772b069ef7fa674d51"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-opcua-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-opcua-1440.png",
-      "sha256": "cd2dfded672b856d89873b62b2157e6258232190d4a66fc24839e305862f1df4"
+      "sha256": "e1f654a98fdde99a596d1b3e53bb606c15b7ffa8cd2de7ca526f2823a1d00e4a"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-opcua-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-opcua-1920.png",
-      "sha256": "e30fc37b1b7ae86100470b61f6715c52fab51501104906acc4e0613f5516a9ae"
+      "sha256": "13a8bc88649ba589e08ac76432a6376af78932f5732c246b4175c87d3170a4b4"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-settings-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-settings-1440.png",
-      "sha256": "3dfc8ad49e1232bed7e6d95eb9f642e27fb6f1cb58ef5c4444c274c34c38476c"
+      "sha256": "9de6172b7a4881ef01f110e7397d7542b5d3351d4e2e3c3430019771a1093a20"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-settings-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-settings-1920.png",
-      "sha256": "9f3c78d80f3c91bfeaa4764c6e38fd23b45630f655b50db908b16eaf187716cd"
+      "sha256": "15882099394bbd626de0b57b6979ebdb8d6811bc04b304c333b12dac9cddc631"
     },
     "the_oip-connection-states_connection-states-rehearsal_json": {
       "path": "docs/evidence/oip-connection-states/connection-states-rehearsal.json",
@@ -296,11 +296,11 @@
     },
     "the_oip-opcua-browser_address-space_json": {
       "path": "docs/evidence/oip-opcua-browser/address-space.json",
-      "sha256": "f0e32a02c43090718dab58757677152dfab223ac8a8a91390a0765992eb96b3b"
+      "sha256": "93478c9c4a6151bf0413f330b288f66eb5a438a23acedb98a7c0dfdcdc82ca1c"
     },
     "the_oip-opcua-browser_opcua-browser_json": {
       "path": "docs/evidence/oip-opcua-browser/opcua-browser.json",
-      "sha256": "2b7d5089bf9f6e27f43f014758b845e3eb30ae4876be324f2adaf240b8833278"
+      "sha256": "53640e7bef96317dc246e30fb2d75a701739973f2a9563abf1ae1943eb080df1"
     },
     "the_oip-pi-bundle_pi-bundle_json": {
       "path": "docs/evidence/oip-pi-bundle/pi-bundle.json",
@@ -387,11 +387,11 @@
       "sha256": "e7d658c41ef8400f551646613ff2d30a7a847723903705ec4f7dfa34e71759a5"
     }
   },
-  "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-release18",
+  "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-release19",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [],
-  "the_revision_of_the_acceptance": "07cc80857930434d1fa187f176357a4e66ee03ac",
-  "the_tree_of_the_acceptance": "5ab1705d73a07c08502eaa26b2f72bfd73074054",
+  "the_revision_of_the_acceptance": "341842646172de92ca4949a618f29b1e2df1127d",
+  "the_tree_of_the_acceptance": "5b6a900ab55c895cde14e2c135efdb2b5d4f07a8",
   "the_acceptance_was_run_on_a_clean_tree": true,
   "the_receipt_of_the_acceptance": "docs/evidence/oip-canonical-acceptance/ui-gate.json",
   "the_core_is_the_reproducible_one": {
@@ -409,7 +409,7 @@
   "the_visual_acceptance": {
     "the_state": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
     "the_source": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
-    "the_revision_of_the_acceptance": "07cc80857930434d1fa187f176357a4e66ee03ac",
+    "the_revision_of_the_acceptance": "341842646172de92ca4949a618f29b1e2df1127d",
     "the_note": "the operator alone accepts the visible result; the gate records the state, it never grants it"
   },
   "the_manifest_verifies": true,
