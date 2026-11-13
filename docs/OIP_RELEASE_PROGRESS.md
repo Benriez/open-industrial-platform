@@ -245,6 +245,32 @@ one `--browser-login` code, the explicitly confirmed endpoint for
 `tools/configure_ssh_profile.py` (dry run first) and the physical Raspberry-Pi acceptance that
 belongs to the still withheld hardware verdict.
 
+### N7 — Separate operator-hosted real-device installation — **RUNNING, PARTIAL** (2026-11-13)
+
+The operator requested an installation without simulation data. A separate, private instance
+was created on `bodi-pi` from a live backup of the disposable run. Only the simulator-owned
+source, device and observations were removed from that copy; the two registered real devices
+(`bodi-pi` and `bodi-pc`), their SSH connection profiles and their collected observations were
+retained. The personal installation database was not opened or changed, and no schema-7
+activation was performed.
+
+The Core is managed by the `flashback` user systemd service with lingering enabled. At the
+installation check it was active with zero service restarts and listened only on loopback port
+18808; the simulator port 18809 had no listener. The Mac client was copied to
+`~/Applications/Open Industrial Platform.app`. A per-user LaunchAgent maintains the SSH tunnel
+from Mac loopback port 18848 to the Pi Core, so the installed client can reach the Pi without
+placing the Core or simulator on the Mac. The app authenticated to this instance and displayed
+the API inventory with 2/2 devices, 2/2 connected sources and fresh data; the device view
+reported 2 of 2 devices. This is an operator-hosted installation check, not a release gate or
+operator visual acceptance.
+
+**Remaining limits:** the observed overview also reported six collection problems and an
+unknown Core health value. Those findings need investigation before this can be called ready for
+continuous operation. This check did not exercise a Pi reboot, a Mac login restart, an OTA client
+update, physical sensor values, the Hue Bridge or OpenWrt, the canonical UI regression gate, or
+App Store signing and submission. No tests or release gates were run for this operational
+change.
+
 ### N5 — Production advisories and remaining security work — **the three documented exceptions are DONE; the production work stays open**
 
 **The three documented exceptions were verified against the advisory database in iteration 7
