@@ -1,7 +1,7 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "7edf563d758177ce53c8f0a5ac14575740dceceb",
-  "the_tree": "22433b3cbd779007a3da4b90036a8edf3dedf321",
+  "the_revision": "fb7979799fd6293c285b8c80e62680d600eb2dd8",
+  "the_tree": "8c1e8ef344e4c06d2b63fbc3dd99d70799eaaea6",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
@@ -21,16 +21,16 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 748,
-    "the_sha256": "c7e4a8c1947899bb30d8662aac36b7677e5e6b78377a8881affd802c9b60cf79"
+    "the_files": 772,
+    "the_sha256": "d4e625eec2ba25cead929ca911ba7825752488fcd352d137a8ccd69f525af3c4"
   },
   "the_artifacts": {
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
       "bytes": 36648400,
-      "sha256": "b943b3bb7ce43e94e609f187298c64b116df50c63f0847cc22c6216001807d5b",
-      "the_revision_the_binary_names": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
+      "sha256": "7040dc04d51dadd8cf75b9b29eec1cd7e4be60b1b135e0d43a85dd1547f159ba",
+      "the_revision_the_binary_names": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
       "the_revision_was_read_out_of_the_binary": true
     },
     "the_official_mcp_probe": {
@@ -60,11 +60,11 @@
   "the_receipts": {
     "the_global_context": {
       "path": "docs/evidence/oip-global-context/global-context.json",
-      "sha256": "88d2c3bb4a4d0da828823e6871384e66a02f39f62988ab3d48a0a91729ac7208"
+      "sha256": "0385094f279100325ad8aa1f007ef56715d2adfa364dd01f48da844a31065789"
     },
     "the_accessibility": {
       "path": "docs/evidence/oip-accessibility/accessibility.json",
-      "sha256": "be823a1a28ef7a84cb821716b5dbf5cf43ed3a4d1403a86a6853a351d2ae55d7"
+      "sha256": "229fd260aa432b1548a563be055bdaa84494478af9096c3c3fbd30fa63feca7d"
     },
     "the_performance": {
       "path": "docs/evidence/oip-performance/performance.json",
@@ -84,19 +84,19 @@
     },
     "the_acceptance": {
       "path": "docs/evidence/oip-canonical-acceptance/acceptance.json",
-      "sha256": "5930b0a89a423199d7e5e44592660e23db3f5c901336f42421172d4b6e6e660b"
+      "sha256": "ee9ba254e5475226d839d2392ed33e3e9912e69e2f36a9ff3c95c3e7b59302c6"
     },
     "the_acceptance_browser_gate": {
       "path": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
-      "sha256": "3be4719b6c6c82ebc32923bc82d01c7f56c25b3bc96a4c2f9373438034b94c9b"
+      "sha256": "03e0243b9120743db2103290c22ec339f6ea162e89d5da485b7d475c456c1a95"
     },
     "the_acceptance_ui_gate": {
       "path": "docs/evidence/oip-canonical-acceptance/ui-gate.json",
-      "sha256": "a489845f103a0ecaba43fcf8b330988b54d608be723982c413ac778d9c807988"
+      "sha256": "bf2a15e52e97dd0254432c5e789258940caa124f9191496ce911b5c253318f18"
     },
     "the_device_administration": {
       "path": "docs/evidence/oip-device-administration/device-administration.json",
-      "sha256": "d706935d90f9415ff7826c3ef5477afcf626c415d9e1dfb71679fc77c9aa7136"
+      "sha256": "69a8e5d9f2670c8db7d1995ee68b5423467f01f272855ee531f7bc2597a0e580"
     },
     "the_session_lifetime": {
       "path": "docs/evidence/oip-session-lifetime/session-lifetime.json",
@@ -108,7 +108,7 @@
     },
     "the_reproducible_build": {
       "path": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-      "sha256": "bf9f68279a1f8b50ee185d510b095c8385b66f960b15fa7eca83c91ebbd4a30f"
+      "sha256": "3d8947d9c3720cdee749f19047c3b3fbd5e074e7936ce52e80a827a611d1ed84"
     },
     "the_upgrade_rollback": {
       "path": "docs/evidence/oip-upgrade-rollback/upgrade-rollback.json",
@@ -176,19 +176,19 @@
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-1440.png",
-      "sha256": "10feb880ba72a46bf915c5fe82f4e047b43aacfc30e8116ced79063eff8e7b71"
+      "sha256": "4fdb97120c024717486696c01979c3fd2deb600b9b53787e80bf1a1f9e72e32c"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-1920.png",
-      "sha256": "1d5bbfe23f67c0496caa09af3ad0b15259ec9546c506bdc9fd587b3563a2d564"
+      "sha256": "7974a41e06e9ec7a2622af39e6df49200703b1a6c8d7bb98f6bc9af3d5b9ecda"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-devices-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-devices-1440.png",
-      "sha256": "71cac7aa4173f345716416020f9b778fb8c06240833e89e1b31cac59398394e4"
+      "sha256": "cd7211f6738b530c4b2fe1fcb97443d1150ea960da1ab45e53737cadd83614fd"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-devices-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-devices-1920.png",
-      "sha256": "87091ef054aa3c774136c9c123ffdf1f8d6b1895a7bdca406777c1a5b34f380e"
+      "sha256": "7100fc4b8cc52a174aeaef73d0d90ffbb3fd000e6a8bb477bd7a06cf0e723a47"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-diagnostics-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-diagnostics-1440.png",
@@ -200,19 +200,19 @@
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-network-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-network-1440.png",
-      "sha256": "e44fd2600e1fe3937f3e6d935ae25636b41761d4bfcdcab9a2ea66e605741d25"
+      "sha256": "baa22457ecf48aef85628e170bed4fe61a5a4715f697e5eb6733341235f68041"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-network-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-network-1920.png",
-      "sha256": "634c55ff02716a407323afbefb7e9bbda31b4400ef3c27a69977e355ff806483"
+      "sha256": "c540a5780aa93d52d99f2dddbf1ca3d3ec43fafbc56d343fe1eb71c67c650f6a"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-opcua-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-opcua-1440.png",
-      "sha256": "b804182820a0de7d3c1c145d95043cd91fb60548c286ee32e2a9044a55c1ca76"
+      "sha256": "770969c07271dec0ff06a516e9bff7c41f025c0337adeea3ea2a63293c2401c4"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-opcua-1920_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-opcua-1920.png",
-      "sha256": "ba7330ddd01945d6a50f31cdc8887bff23f0a3bae05aabfe03d4401d8d16bdd8"
+      "sha256": "4e01650f24e002dca430a777f6c1a9bec90dc3cedb82a1eb25ea5ef870abffee"
     },
     "the_oip-canonical-acceptance_captures_canonical-ui-settings-1440_png": {
       "path": "docs/evidence/oip-canonical-acceptance/captures/canonical-ui-settings-1440.png",
@@ -258,9 +258,89 @@
       "path": "docs/evidence/oip-devices-density/responsive-report.json",
       "sha256": "e7566c18b07121c61b186c1f7b4c10e08d5dcef786d3c962297a2db23ea9cd97"
     },
+    "the_oip-devices-geometry_captures_1440x900-1-no-selection_png": {
+      "path": "docs/evidence/oip-devices-geometry/captures/1440x900-1-no-selection.png",
+      "sha256": "a664dae8d60517f82e548e5380be140c26fc9a581631730ebcb5d300d029ce13"
+    },
+    "the_oip-devices-geometry_captures_1440x900-2-device-selected_png": {
+      "path": "docs/evidence/oip-devices-geometry/captures/1440x900-2-device-selected.png",
+      "sha256": "a355c7613aa8eaab250e92389d7b3215ab901335bff68def3aa04f26d3803bda"
+    },
+    "the_oip-devices-geometry_captures_1440x900-3-filters-open_png": {
+      "path": "docs/evidence/oip-devices-geometry/captures/1440x900-3-filters-open.png",
+      "sha256": "7a68c8be7e495691f30ca27815662d7bdaf80f59dfe4721b43ad45f357806f45"
+    },
+    "the_oip-devices-geometry_captures_1440x900-4-comparison_png": {
+      "path": "docs/evidence/oip-devices-geometry/captures/1440x900-4-comparison.png",
+      "sha256": "6dc8db2b74b3113ac5105cb2a1738b40a0242e3c1f13dc7c38bfc18056a16ef2"
+    },
+    "the_oip-devices-geometry_captures_1920x1080-1-no-selection_png": {
+      "path": "docs/evidence/oip-devices-geometry/captures/1920x1080-1-no-selection.png",
+      "sha256": "635abca54cacd4d452e558113bc892622f72e1e4bfd2217c894e47bd8501406e"
+    },
+    "the_oip-devices-geometry_captures_1920x1080-2-device-selected_png": {
+      "path": "docs/evidence/oip-devices-geometry/captures/1920x1080-2-device-selected.png",
+      "sha256": "57c9898538400a2004580a93f924f79c29daa6bf4dcaa95bfc206fe5795bda78"
+    },
+    "the_oip-devices-geometry_captures_1920x1080-3-filters-open_png": {
+      "path": "docs/evidence/oip-devices-geometry/captures/1920x1080-3-filters-open.png",
+      "sha256": "f83501573205057bf80f949c065477f87ad3d542adf2cab2201accaaff83fd62"
+    },
+    "the_oip-devices-geometry_captures_1920x1080-4-comparison_png": {
+      "path": "docs/evidence/oip-devices-geometry/captures/1920x1080-4-comparison.png",
+      "sha256": "bdaf046a3ef6be432ee444b2ac602915cf2dcd5c937f8932b2175459a3a7d26f"
+    },
+    "the_oip-devices-geometry_captures_failure_png": {
+      "path": "docs/evidence/oip-devices-geometry/captures/failure.png",
+      "sha256": "a664dae8d60517f82e548e5380be140c26fc9a581631730ebcb5d300d029ce13"
+    },
+    "the_oip-devices-geometry_devices-geometry-rehearsal_json": {
+      "path": "docs/evidence/oip-devices-geometry/devices-geometry-rehearsal.json",
+      "sha256": "25e3dc7f3bae2032158f6ff67749e864b6cf04c96fe060756f7158f93110d4e2"
+    },
+    "the_oip-devices-geometry_devices-geometry_json": {
+      "path": "docs/evidence/oip-devices-geometry/devices-geometry.json",
+      "sha256": "bee4949be3957c4c96d98c0706ce61ccf9ff5ed3c6c12b2bacb804f061abb4db"
+    },
+    "the_oip-devices-geometry_geometry-1440x900_json": {
+      "path": "docs/evidence/oip-devices-geometry/geometry-1440x900.json",
+      "sha256": "5f9955b951d3e5cf16146aeb48c7a9b16a1424a4fe49a5bd0558665c4a2a6c33"
+    },
+    "the_oip-devices-geometry_geometry-1920x1080_json": {
+      "path": "docs/evidence/oip-devices-geometry/geometry-1920x1080.json",
+      "sha256": "1f90d5110fb8c77fee62c5f75540a9404827f8557d3e176f5318289e61baf3ad"
+    },
     "the_oip-diagnostic-continuation_rehearsal_json": {
       "path": "docs/evidence/oip-diagnostic-continuation/rehearsal.json",
       "sha256": "3cbc8be87b8d35f8eb745881bc573c2ed632d182eb32a4add8ac6df3f1e539eb"
+    },
+    "the_oip-diagnostics-2027_captures_explorer_png": {
+      "path": "docs/evidence/oip-diagnostics-2027/captures/explorer.png",
+      "sha256": "1ae8cb43291dea7dcd8de19585786b798082dbd94601d7e9dd84af93bb048ef2"
+    },
+    "the_oip-diagnostics-2027_captures_failure_png": {
+      "path": "docs/evidence/oip-diagnostics-2027/captures/failure.png",
+      "sha256": "c689d1f882b95bd9e6f6f98665402e74bfafe4a8112855038266582854dec9b1"
+    },
+    "the_oip-diagnostics-2027_captures_inspector_png": {
+      "path": "docs/evidence/oip-diagnostics-2027/captures/inspector.png",
+      "sha256": "3ebd8e40482c3fd5ab16e21cb99a58369d51b5e65925f4412cdd5813f3a7b7f5"
+    },
+    "the_oip-diagnostics-2027_captures_timeline_png": {
+      "path": "docs/evidence/oip-diagnostics-2027/captures/timeline.png",
+      "sha256": "395e0175f3fa2814ba78d9609f33b2cf94ce288152a04a3085fc9dcc00efd93c"
+    },
+    "the_oip-diagnostics-2027_diagnostics-2027-rehearsal_json": {
+      "path": "docs/evidence/oip-diagnostics-2027/diagnostics-2027-rehearsal.json",
+      "sha256": "b71f1b5d20ff9e69ad4f251a6ddfa9ded435c345feb8997371a076df8ad0e7ee"
+    },
+    "the_oip-diagnostics-2027_diagnostics-failed_json": {
+      "path": "docs/evidence/oip-diagnostics-2027/diagnostics-failed.json",
+      "sha256": "f981e0b006486470ef9a8cbcb1f7fd8f32915a781b7e31217a151cf6af2a21d1"
+    },
+    "the_oip-diagnostics-2027_diagnostics-live_json": {
+      "path": "docs/evidence/oip-diagnostics-2027/diagnostics-live.json",
+      "sha256": "c41ebe069580b075c82c6ac9feb47e0cf8800d80f298b4761503d99a393e1d35"
     },
     "the_oip-hue-device_bridge-certificate_pem": {
       "path": "docs/evidence/oip-hue-device/bridge-certificate.pem",
@@ -439,29 +519,29 @@
       "sha256": "e7d658c41ef8400f551646613ff2d30a7a847723903705ec4f7dfa34e71759a5"
     }
   },
-  "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-release22",
+  "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-release23",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
   "the_working_tree_without_the_manifest": [],
-  "the_revision_of_the_acceptance": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
-  "the_tree_of_the_acceptance": "583b34544a03629e9c9526b515bd800d3634a69a",
+  "the_revision_of_the_acceptance": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
+  "the_tree_of_the_acceptance": "37f77024487475ad6805e9a4fb93172c40cf46aa",
   "the_acceptance_was_run_on_a_clean_tree": true,
   "the_receipt_of_the_acceptance": "docs/evidence/oip-canonical-acceptance/ui-gate.json",
   "the_core_is_the_reproducible_one": {
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
-    "the_digest_of_the_reproducible_build": "b943b3bb7ce43e94e609f187298c64b116df50c63f0847cc22c6216001807d5b",
+    "the_digest_of_the_reproducible_build": "7040dc04d51dadd8cf75b9b29eec1cd7e4be60b1b135e0d43a85dd1547f159ba",
     "the_core_is_identical_across_the_two_builds": true,
     "the_manifest_names_the_reproducible_binary": true,
-    "the_revision_the_binary_names": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
-    "the_revision_of_the_receipt": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
+    "the_revision_the_binary_names": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
+    "the_revision_of_the_receipt": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
     "the_sources_of_the_core_are_unchanged_since_the_receipt": true,
     "the_property_holds_for_the_release": true,
     "the_note": "the binary names the revision it was built from, so the bytes of a later revision differ; the property of the release is that the same revision yields the same bytes \u2014 it is measured by the rehearsal and it carries over as long as the sources of the Core are unchanged",
-    "the_revision_the_rehearsal_built": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748"
+    "the_revision_the_rehearsal_built": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f"
   },
   "the_visual_acceptance": {
     "the_state": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
     "the_source": "docs/evidence/oip-canonical-acceptance/browser-gate.json",
-    "the_revision_of_the_acceptance": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
+    "the_revision_of_the_acceptance": "2e458c6e7dae2f95c5a15fafcada45808d4a9a4f",
     "the_note": "the operator alone accepts the visible result; the gate records the state, it never grants it"
   },
   "the_manifest_verifies": true,
