@@ -4491,7 +4491,7 @@ changed; only the record was reconciled.
   configurations of `apps/flutter/macos/Runner.xcodeproj/project.pbxproj` — reverted that deliberate
   fix and would have re-broken the local launch. It was **restored** to the committed configuration
   (`git checkout` of the working tree), and the two duplicate artefacts a parallel draft had added
-  (`tools/oip_macos_mas_harden.sh`, `docs/macos-app-store-readiness.md`) were removed, because they
+  — the draft script `oip_macos_mas_harden.sh` and the draft note `macos-app-store-readiness.md` — were removed, because they
   duplicated `tools/oip_mas_package.py` and `docs/release/mac-app-store/`. No build configuration of
   the client changed in this iteration.
 * **N36 is complete; the "next tasks" of the record were stale.** The row actions of the Device
@@ -4538,6 +4538,41 @@ revision, so no build or gate is re-run for a record-only change. The verdict st
 No personal database change, no schema-7 activation of the personal installation, no change to a
 service of the operator, no published port, no firewall change, no build-configuration change of the
 client, no push, no deployment.
+
+### Iteration 97 — the one-command verification is re-run; two stale citations are reconciled
+
+**Status: reconciled on canonical `main`.** Before re-affirming the blocked state, the loop re-ran the
+one-command release verification (`tools/oip_verify_release.py`, read-only). It reported three defects of
+the handoff: two were a real regression of the record, and one is an environmental fact that is not a
+defect of the record.
+
+* **Two stale citations — fixed.** The removal of the two draft artefacts in Iteration 95 deleted the
+  files but left their checkout paths backtick-cited in that iteration's log. The checker of the record
+  names a cited path that must exist, so it flagged both. The log is now reconciled: the removal is still
+  recorded, but the two names are written as the basenames of the removed drafts and no longer as live
+  paths of the checkout. Their canonical replacements — `tools/oip_mas_package.py` and
+  `docs/release/mac-app-store/` — remain the authority of the Mac App Store work and are unchanged.
+
+* **The macOS bundle digest is not a defect of the record (operator-owned).** The manifest of the
+  release is byte-identical to the revision at which the gate was last green (`8d67a8a`), and it pins the
+  digest of the macOS application bundle that the receipts `oip-macos-app` and `oip-macos-install` really
+  measured. The bundle is gitignored build output and is not bit-reproducible; the copy on this machine
+  was regenerated externally today (a build of the byte-identical source), so its digest no longer equals
+  the measured one. Re-pinning the manifest to the regenerated bundle would claim an unmeasured build as
+  verified, and rebuilding is a re-measurement of a byte-identical product; both are forbidden. The
+  operator must therefore either restore the measured bundle or authorize the re-measurement of the
+  regenerated one.
+
+The product of the release (`crates/`, `apps/flutter/lib/`) is byte-identical to the last verified
+revision, so no build or functional gate is re-run. The verdict stays **OIP_PRODUCTION_NOT_READY** and the
+loop remains in **BLOCKED_OPERATOR**: the physical device of G5, the production-security scope of G10, the
+operator acceptance of G12, the network reachability of the two deployed devices (the router and the
+bridge on `192.168.1.x`, unreachable from `192.168.178.0/24`) for their discovery, and the Mac App Store
+archive, metadata, screenshots and upload remain with the operator.
+
+No personal database change, no schema-7 activation of the personal installation, no change to a service
+of the operator, no published port, no firewall change, no build-configuration change of the client, no
+re-pin of an unmeasured artefact, no re-measurement of a byte-identical product, no push, no deployment.
 
 ## 5. Evidence index
 
