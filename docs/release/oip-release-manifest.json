@@ -1,13 +1,13 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "8649ee7251d5df69aa84c8aed002881ed60827f9",
-  "the_tree": "90958442d4eaffdbba2acf3091a7a9366d477a18",
+  "the_revision": "60b553e268c4ab2b99e8aa94500c99fa2dd1fa0d",
+  "the_tree": "6978a1c3a0e67ba2f0a13684b41f6337bb7b3e75",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
     "the_subject": "fix(g4): every field of the surface keeps the characters of the keyboard"
   },
-  "the_working_tree_is_clean": false,
+  "the_working_tree_is_clean": true,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -21,16 +21,16 @@
   },
   "the_source_manifest": {
     "the_command": "git ls-files -s",
-    "the_files": 735,
-    "the_sha256": "894bbae8d9ed8690d77f12b0f0df29638da425e8ac7f84ca6598ceaebd85ad78"
+    "the_files": 737,
+    "the_sha256": "c4b5c4a551a17e14dd37e11e251aad4453219215734dca991efcaa7124adc717"
   },
   "the_artifacts": {
     "the_core": {
       "present": true,
       "path": "target/release/oip-server",
       "bytes": 36648400,
-      "sha256": "df908926ab0b932f5fae0fe00b077fb977b40957ceb6e4cac6fd49fefa74786b",
-      "the_revision_the_binary_names": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
+      "sha256": "9862f4b42678a4541709761bb1a3ef943adde16f3e21d58177f1c5707963ed80",
+      "the_revision_the_binary_names": "4d9524aacbb51cf3368907821386fb4652b69fac",
       "the_revision_was_read_out_of_the_binary": true
     },
     "the_official_mcp_probe": {
@@ -238,6 +238,10 @@
       "path": "docs/evidence/oip-deployment-discovery/deployment-discovery.json",
       "sha256": "645fcba4cd065a1fb8178ff8cc8948f8a3fb546da057ddcf1e347b1952138fdc"
     },
+    "the_oip-deployment-hosts_deployment-hosts_json": {
+      "path": "docs/evidence/oip-deployment-hosts/deployment-hosts.json",
+      "sha256": "414e5c64840456071820c35d9154839a8b2f68cce95bc6abc33786df05e955d1"
+    },
     "the_oip-device-connection_painted-surface_txt": {
       "path": "docs/evidence/oip-device-connection/painted-surface.txt",
       "sha256": "0198bbd17d69709dd4d0460882dc2aca04d28d6f1599a46df61e8a6c5c318ffd"
@@ -401,9 +405,7 @@
   },
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-release20",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
-  "the_working_tree_without_the_manifest": [
-    "M docs/evidence/oip-release-verification/release-verification.json"
-  ],
+  "the_working_tree_without_the_manifest": [],
   "the_revision_of_the_acceptance": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
   "the_tree_of_the_acceptance": "6534663ece8a855096934c654c446836c0c4653c",
   "the_acceptance_was_run_on_a_clean_tree": true,
@@ -412,7 +414,7 @@
     "the_receipt": "docs/evidence/oip-reproducible-build/reproducible-build.json",
     "the_digest_of_the_reproducible_build": "df908926ab0b932f5fae0fe00b077fb977b40957ceb6e4cac6fd49fefa74786b",
     "the_core_is_identical_across_the_two_builds": true,
-    "the_manifest_names_the_reproducible_binary": true,
+    "the_manifest_names_the_reproducible_binary": false,
     "the_revision_the_binary_names": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
     "the_revision_of_the_receipt": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
     "the_sources_of_the_core_are_unchanged_since_the_receipt": true,
