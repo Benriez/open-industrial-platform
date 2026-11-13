@@ -232,7 +232,8 @@ try {
     assert.ok(devices.length > 0, 'the Core delivered no device');
     const wanted = devices[0];
 
-    const geometry = {the_viewport: {width, height}, the_devices_of_the_core: devices};
+    const geometry = {the_viewport: {width, height}, the_devices_of_the_core: devices,
+      the_revision: process.env.OIP_REVISION};
 
     // 1. no device selected
     geometry.noSelection = await measure(page);
