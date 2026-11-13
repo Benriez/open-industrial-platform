@@ -4,7 +4,7 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "54e9b459e0bccc0d825f75d75f0cb81722c91cb0",
+      "the_revision": "f341ea06dbec76f8ab66d82257dbb4c389db6409",
       "the_revision_of_the_source": {
         "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
         "the_subject": "fix(g4): every field of the surface keeps the characters of the keyboard"
@@ -12,10 +12,10 @@
       "the_source_manifest": {
         "the_command": "git ls-files -s",
         "the_files": 730,
-        "the_sha256": "ccf495c791b1fe4e4a216df02bf154a9e2797375cc928e8e276b1a5dac89bf2d"
+        "the_sha256": "523caa81d4dcec3606efa0012dc30f2afc7965b98b1a4e29370a8c4f76689a38"
       },
       "the_artifacts": {
-        "the_core": "4f6387ecbd74193ee9bc960a2ad090f1ee13567219354cf7e8835fcd91cff729",
+        "the_core": "8a8d11f5643efc688e774e72d52ba6649f1468e9b6f6c57a911cffc6cb052c40",
         "the_official_mcp_probe": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
         "the_macos_application_bundle": "b391de2d378acc63e41d2ba910eadbab62e508162545b1bd4a2049c172983eef",
         "the_web_release": "9c9ed2153676e3244c3a8a24c485229d0c92adb00750c3eb48afd0cdf55272a0"
@@ -26,7 +26,7 @@
         "docs/evidence/oip-record-integrity/record-integrity.json",
         "docs/evidence/oip-release-verification/release-verification.json"
       ],
-      "the_core_the_acceptance_executed": "4f6387ecbd74193ee9bc960a2ad090f1ee13567219354cf7e8835fcd91cff729",
+      "the_core_the_acceptance_executed": "8a8d11f5643efc688e774e72d52ba6649f1468e9b6f6c57a911cffc6cb052c40",
       "the_acceptance_executed_the_core_that_the_manifest_names": true,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
       "the_core_is_the_reproducible_one": true,
@@ -55,13 +55,13 @@
     },
     "the_canonical_state": {
       "the_source_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
-      "the_acceptance_revision": "07cc80857930434d1fa187f176357a4e66ee03ac",
-      "the_core_binary_revision": "07cc80857930434d1fa187f176357a4e66ee03ac",
+      "the_acceptance_revision": "341842646172de92ca4949a618f29b1e2df1127d",
+      "the_core_binary_revision": "341842646172de92ca4949a618f29b1e2df1127d",
       "the_tracked_files": 730,
       "the_product_is_committed": true
     },
     "the_numbers_of_the_record": {
-      "the_rows": 124,
+      "the_rows": 126,
       "the_measurements": 26
     },
     "the_acceptance": {
@@ -72,7 +72,7 @@
       "the_flutter_tests_passed": 387,
       "the_flutter_tests_failed": 0,
       "the_screenshots": 13,
-      "the_revision_of_the_acceptance": "07cc80857930434d1fa187f176357a4e66ee03ac",
+      "the_revision_of_the_acceptance": "341842646172de92ca4949a618f29b1e2df1127d",
       "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
     },
     "the_boundaries": {
@@ -153,14 +153,11 @@
     "G12"
   ],
   "the_problems": [
-    "the artefact the_core does not match its digest",
-    "the receipt the_oip-opcua-browser_address-space_json does not match its digest",
-    "the receipt the_oip-opcua-browser_opcua-browser_json does not match its digest",
     "the receipt docs/evidence/oip-deployment-discovery/deployment-discovery.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)",
     "the receipt docs/evidence/oip-hue-device/hue-device.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)"
   ],
-  "the_revision": "1e1e025bd4089772c0dd805afb6730e966e24f57",
-  "the_tree": "7cce326d9375920f88b8a4c527608a91aa351499",
+  "the_revision": "dd3a7a9a4f4786b2f351f010bdc58a312ef5558e",
+  "the_tree": "f8a12c3335c47e281f23f74aa49ee683f9f6a2fc",
   "the_working_tree_is_clean": true,
   "status": "FAIL"
 }
