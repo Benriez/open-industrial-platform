@@ -174,6 +174,14 @@ REHEARSALS = [
     ("oip_devices_density", "tests/oip_devices_density.py",
      {"devices-density.json": "oip-devices-density/devices-density.json",
       "responsive-report.json": "oip-devices-density/responsive-report.json"}),
+    # The **evidence workspace** of the Diagnostics workstation: the events of
+    # the Core, the markers of the timeline and the loss of a source.
+    ("oip_diagnostics_2027", "tests/oip_diagnostics_2027.py",
+     {"diagnostics-2027-rehearsal.json":
+      "oip-diagnostics-2027/diagnostics-2027-rehearsal.json",
+      "diagnostics-live.json": "oip-diagnostics-2027/diagnostics-live.json",
+      "diagnostics-failed.json": "oip-diagnostics-2027/diagnostics-failed.json",
+      "captures/": "oip-diagnostics-2027/captures/"}),
     # The **geometry** of the Devices workspace: the four states of the
     # workspace at 1440 px and 1920 px — the numbers that the acceptance of
     # the visible result looks at.
