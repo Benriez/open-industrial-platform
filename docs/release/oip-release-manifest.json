@@ -1,13 +1,13 @@
 {
   "schema": "oip-release-manifest-v1",
-  "the_revision": "0b374d6c61d8801d8489116a16f0fea137e3d7a7",
-  "the_tree": "9b9200b632d8a3fd731760c84e8e0b320233f292",
+  "the_revision": "191b0bbe6fb2a2c98d8af64dd4089217023d4a2e",
+  "the_tree": "4e7ffeeaa77211d16e381288923252e23fdfdb05",
   "the_branch": "main",
   "the_revision_of_the_source": {
     "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
     "the_subject": "fix(g4): every field of the surface keeps the characters of the keyboard"
   },
-  "the_working_tree_is_clean": true,
+  "the_working_tree_is_clean": false,
   "the_toolchain": {
     "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
     "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
@@ -22,7 +22,7 @@
   "the_source_manifest": {
     "the_command": "git ls-files -s",
     "the_files": 730,
-    "the_sha256": "5486fd92c2496c93db2f331eb5d0d39b317830d1cb3012fd183308d1e8ee9dc9"
+    "the_sha256": "f92412b26b31d80a15e59ffd779402cf824f516686ad255643bab6e4f2a33904"
   },
   "the_artifacts": {
     "the_core": {
@@ -389,7 +389,9 @@
   },
   "the_gate_run_of_the_acceptance": "/Users/benny/Code/open-industrial-platform/target/oip-canonical-regression-release19",
   "the_digests_are_verifiable_in": "the build environment of the release: the artefacts live in the build tree (target/ and apps/flutter/build/), the receipts live in the checkout (docs/evidence/). In a checkout without the build tree the artefacts are absent and `--verify` reports that.",
-  "the_working_tree_without_the_manifest": [],
+  "the_working_tree_without_the_manifest": [
+    "M docs/OIP_RELEASE_PROGRESS.md"
+  ],
   "the_revision_of_the_acceptance": "341842646172de92ca4949a618f29b1e2df1127d",
   "the_tree_of_the_acceptance": "5b6a900ab55c895cde14e2c135efdb2b5d4f07a8",
   "the_acceptance_was_run_on_a_clean_tree": true,

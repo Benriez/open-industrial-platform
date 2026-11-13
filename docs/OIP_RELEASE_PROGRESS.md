@@ -4218,10 +4218,17 @@ of reach of this machine.
   that the Core does not deliver are **named** instead of invented, the limits of the address space
   (no history, no hierarchy) are named, and the keyboard search reaches a node of the Core before
   the pagination (`docs/evidence/oip-opcua-browser/opcua-browser.json`).
-* **The numbers of the release are unchanged**: the product of the release (`crates/` and
-  `apps/flutter/lib/`) was not touched by this iteration, so every receipt of the release stays
-  fresh, the acceptance of iteration 87 and the reproducible build at the same revision remain the
-  proof of this release, and the product boundary (`fc18ce2`) is the one of the record.
+* **The product of the release was not touched by this iteration** (`crates/` and
+  `apps/flutter/lib/`), so every receipt of the release stays fresh and the product boundary
+  (`fc18ce2`) is the one of the record. The acceptance and the reproducible build were measured
+  again at the revision of the record, so the Core that the canonical gate executed is the Core
+  that the manifest names — byte-identical with the two builds of the reproducible build.
+* **The order of the release cycle was corrected, and the record names it.** The reproducible build
+  **rebuilds** the Core binary, and the binary names the revision it was built from: the
+  reproducible build therefore runs **before** the acceptance, both on the same clean revision, and
+  the acceptance then drives exactly the binary that the manifest names. A single rehearsal of the
+  refresh also rebuilds the binary — the acceptance has to run again after it, and that is what this
+  iteration measured.
 
 The next independent READY task is **none**: the list of the independent tasks is closed — the last
 one (N34) is measured. What remains are the operator actions: the product decision on the delivery
