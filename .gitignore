@@ -109,6 +109,15 @@ secrets/
 !/docs/evidence/oip-record-integrity/record-integrity.json
 # The deployment hosts of the operator, measured read-only over SSH.
 !/docs/evidence/oip-deployment-hosts/deployment-hosts.json
+# The geometry of the Devices workspace: the four states of the workspace at
+# 1440 px and 1920 px — the numbers that the acceptance of the visible result
+# looks at.
+!/docs/evidence/oip-devices-geometry/devices-geometry.json
+!/docs/evidence/oip-devices-geometry/devices-geometry-rehearsal.json
+!/docs/evidence/oip-devices-geometry/geometry-1440x900.json
+!/docs/evidence/oip-devices-geometry/geometry-1920x1080.json
+!/docs/evidence/oip-devices-geometry/captures/
+!/docs/evidence/oip-devices-geometry/captures/*.png
 # The Network workspace of the managed surface: the absence of the logical
 # paths is named, the devices of the Core are the devices of the surface, and
 # the comparison names its own limit.

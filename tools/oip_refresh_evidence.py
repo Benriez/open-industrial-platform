@@ -174,6 +174,16 @@ REHEARSALS = [
     ("oip_devices_density", "tests/oip_devices_density.py",
      {"devices-density.json": "oip-devices-density/devices-density.json",
       "responsive-report.json": "oip-devices-density/responsive-report.json"}),
+    # The **geometry** of the Devices workspace: the four states of the
+    # workspace at 1440 px and 1920 px — the numbers that the acceptance of
+    # the visible result looks at.
+    ("oip_devices_geometry", "tests/oip_devices_geometry.py",
+     {"devices-geometry-rehearsal.json":
+      "oip-devices-geometry/devices-geometry-rehearsal.json",
+      "devices-geometry.json": "oip-devices-geometry/devices-geometry.json",
+      "geometry-1440x900.json": "oip-devices-geometry/geometry-1440x900.json",
+      "geometry-1920x1080.json": "oip-devices-geometry/geometry-1920x1080.json",
+      "captures/": "oip-devices-geometry/captures/"}),
     # The **Network workspace** of the managed surface: the absence of the
     # logical paths is named, the devices of the Core are the devices of the
     # surface, and the comparison names its own limit.
