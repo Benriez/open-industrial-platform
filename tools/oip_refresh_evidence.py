@@ -135,6 +135,11 @@ REHEARSALS = [
     # device classes that are not SSH hosts (the router and the Hue Bridge).
     # A rehearsal that is measured outside the refresh goes stale without a
     # notice; these two belong into it.
+    # The **hosts** of the deployment, measured read-only over SSH: they are
+    # reached from any network, so their receipt stays fresh at every revision
+    # of the release.
+    ("oip_deployment_hosts", "tests/oip_deployment_hosts.py",
+     {"deployment-hosts.json": "oip-deployment-hosts/deployment-hosts.json"}),
     ("oip_deployment_discovery", "tests/oip_deployment_discovery.py",
      {"deployment-discovery.json":
       "oip-deployment-discovery/deployment-discovery.json"}),

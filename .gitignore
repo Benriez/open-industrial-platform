@@ -107,6 +107,8 @@ secrets/
 # The integrity of the record itself: every cited receipt exists and is
 # tracked, and every receipt of the release is cited.
 !/docs/evidence/oip-record-integrity/record-integrity.json
+# The deployment hosts of the operator, measured read-only over SSH.
+!/docs/evidence/oip-deployment-hosts/deployment-hosts.json
 # The numbers of the record: every measurement that a row quotes is looked up
 # in the receipt that the row names.
 !/docs/evidence/oip-record-numbers/record-numbers.json
