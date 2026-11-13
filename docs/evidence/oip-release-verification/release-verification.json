@@ -4,29 +4,29 @@
   "the_note": "the verification of the tool is not a production acceptance: the acceptance of the operator (G12) and the scope of the production security (G10) are the operator's",
   "the_sections": {
     "the_manifest": {
-      "the_revision": "8649ee7251d5df69aa84c8aed002881ed60827f9",
+      "the_revision": "9225cad7f671fc72ff3196ab535ca1ee1c9ab468",
       "the_revision_of_the_source": {
         "the_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
         "the_subject": "fix(g4): every field of the surface keeps the characters of the keyboard"
       },
       "the_source_manifest": {
         "the_command": "git ls-files -s",
-        "the_files": 735,
-        "the_sha256": "894bbae8d9ed8690d77f12b0f0df29638da425e8ac7f84ca6598ceaebd85ad78"
+        "the_files": 748,
+        "the_sha256": "3e62acfb740adfcdd1e603cb352699ea49cc512d41969d8bafb15b47b4ab3512"
       },
       "the_artifacts": {
-        "the_core": "df908926ab0b932f5fae0fe00b077fb977b40957ceb6e4cac6fd49fefa74786b",
+        "the_core": "b943b3bb7ce43e94e609f187298c64b116df50c63f0847cc22c6216001807d5b",
         "the_official_mcp_probe": "0623716146dedea20b186413c7fd4d4d1531a0ed918d761edef32c78416e06e1",
         "the_macos_application_bundle": "b391de2d378acc63e41d2ba910eadbab62e508162545b1bd4a2049c172983eef",
         "the_web_release": "9c9ed2153676e3244c3a8a24c485229d0c92adb00750c3eb48afd0cdf55272a0"
       },
-      "the_receipts": 85,
+      "the_receipts": 95,
       "the_receipts_that_the_manifest_does_not_name": 0,
       "the_receipts_that_are_measured_after_the_manifest": [
         "docs/evidence/oip-record-integrity/record-integrity.json",
         "docs/evidence/oip-release-verification/release-verification.json"
       ],
-      "the_core_the_acceptance_executed": "df908926ab0b932f5fae0fe00b077fb977b40957ceb6e4cac6fd49fefa74786b",
+      "the_core_the_acceptance_executed": "b943b3bb7ce43e94e609f187298c64b116df50c63f0847cc22c6216001807d5b",
       "the_acceptance_executed_the_core_that_the_manifest_names": true,
       "the_visual_acceptance": "VISUAL_PENDING_OPERATOR_ACCEPTANCE",
       "the_core_is_the_reproducible_one": true,
@@ -39,14 +39,14 @@
         "apps/flutter/lib": "fc18ce29954a"
       },
       "the_revision_of_the_source": "fc18ce29954a",
-      "the_receipts": 62,
-      "the_receipts_measured_on_a_tree_that_carries_the_source": 58,
+      "the_receipts": 65,
+      "the_receipts_measured_on_a_tree_that_carries_the_source": 61,
       "the_receipts_measured_before_the_last_change_of_the_code_they_cover": 2,
       "the_note": "a receipt that was measured on an earlier revision is fresh because the code it covers did not change since that measurement; the freshness rule of the record is exactly that"
     },
     "the_record": {
-      "the_citations": 85,
-      "the_receipts_of_the_release": 62,
+      "the_citations": 89,
+      "the_receipts_of_the_release": 65,
       "the_missing": [],
       "the_untracked": [],
       "the_orphaned": [],
@@ -55,13 +55,13 @@
     },
     "the_canonical_state": {
       "the_source_revision": "fc18ce29954a83263be82bf7dab3d8e122564a42",
-      "the_acceptance_revision": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
-      "the_core_binary_revision": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
-      "the_tracked_files": 735,
+      "the_acceptance_revision": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
+      "the_core_binary_revision": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
+      "the_tracked_files": 748,
       "the_product_is_committed": true
     },
     "the_numbers_of_the_record": {
-      "the_rows": 122,
+      "the_rows": 126,
       "the_measurements": 26
     },
     "the_acceptance": {
@@ -72,7 +72,7 @@
       "the_flutter_tests_passed": 387,
       "the_flutter_tests_failed": 0,
       "the_screenshots": 13,
-      "the_revision_of_the_acceptance": "558890ab04a676c8e2a4b7a3feff1ba132f815b2",
+      "the_revision_of_the_acceptance": "5e6a1c06c3d9f05405cc6c55bb1ecd6dc0459748",
       "the_visual_acceptance_of_the_operator": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
     },
     "the_boundaries": {
@@ -156,8 +156,8 @@
     "the receipt docs/evidence/oip-deployment-discovery/deployment-discovery.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)",
     "the receipt docs/evidence/oip-hue-device/hue-device.json names the revision 0e7f52df8684, which predates the last change of apps/flutter/lib (fc18ce29954a)"
   ],
-  "the_revision": "f4abb2ddbad9c386eebd101f080b73cf357ee2a3",
-  "the_tree": "607d3b9e1f4478feafaac9b99dfbddcb1f195b84",
-  "the_working_tree_is_clean": true,
+  "the_revision": "786856a0704e86c6c49d05fdc6a050f1fc5a700a",
+  "the_tree": "7a8250d4a6254569cba92674aceebf6442f8daf3",
+  "the_working_tree_is_clean": false,
   "status": "FAIL"
 }
