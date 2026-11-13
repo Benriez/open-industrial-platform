@@ -158,6 +158,12 @@ REHEARSALS = [
     # identifier and the parity of the route and the MCP tool.
     ("oip_service_registry", "tests/oip_service_registry.py",
      {"service-registry.json": "oip-service-registry/service-registry.json"}),
+    # The **density** of the Devices workspace in the browser: no horizontal
+    # overflow and no clipped control of the toolbar at every width and in
+    # every theme.
+    ("oip_devices_density", "tests/oip_devices_density.py",
+     {"devices-density.json": "oip-devices-density/devices-density.json",
+      "responsive-report.json": "oip-devices-density/responsive-report.json"}),
     # The **address space** of the operator in the browser: the nodes, their
     # folders and their identity are the ones that the Core delivers.
     ("oip_opcua_browser", "tests/oip_opcua_browser.py",
