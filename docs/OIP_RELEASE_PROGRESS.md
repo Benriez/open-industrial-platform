@@ -13,7 +13,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `9f87388` — host telemetry in the device detail and native macOS Touch ID login |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `fe33524` — host telemetry, Touch ID login recovery and native biometric error reporting |
 | The revision of the final acceptance | gate source revision `7a0c6da` with tested working-tree hash `be0fc5e40e3b08ce2b06a9781e2c1b952cee51b0`; local and served web bundle SHA-256 `d76764985bbf0c7626dea8a4090ed5bc6b6ebed64ba23d275956dd560d02703b` |
 | The revision of the Core binary of the release | `0a9b64f` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
@@ -4661,7 +4661,7 @@ Pi instance remains unverified; those routes must be present there before Touch 
 instance. No private SSH device, Pi service, personal database, router, Hue Bridge, push or remote
 deployment was changed.
 
-### Touch ID regression audit — verified candidate, ready for fast-forward integration
+### Touch ID regression audit — integrated into canonical main
 
 On isolated branch `fix/oip-bug-audit` (fix commit `62e6ec2`, progress receipt `5afe4e4`), a
 regression audit found and fixed failure paths around optional Touch ID login: a failed pairing no
@@ -4692,6 +4692,33 @@ tests passed, `flutter analyze` reported no issues, and `git diff --check` passe
 acceptance used an owned loopback SSH fixture, not the physical Pi. No personal installation was
 replaced, and no Pi/Core deployment or remote device change was performed. Operator visual approval
 remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
+
+### Touch ID failure diagnostics — verified candidate, ready for fast-forward integration
+
+The live Mac login window displayed only the generic “Touch-ID-Anmeldung fehlgeschlagen.” The native
+Keychain/LocalAuthentication `PlatformException` was being discarded by `apiErrorMessage`, hiding
+whether biometric evaluation was cancelled or the local Keychain item was unavailable. The client now
+shows the sanitized native message (or its error code when no message is supplied), with a widget
+regression covering a cancelled biometric attempt.
+
+**Canonical UI acceptance: PASS** on tested source revision
+`fe3352430ff39dd9fa1b0e5875b4359572f60598`, tree
+`38e1b1bc2d7ba73eceb5d3c5d0ae1650f14e3e35`. The current-source Core/MCP build, CanvasKit release
+build, complete Flutter widget gate, authenticated browser gate, all 8/8 managed acceptance phases,
+visual comparison, global context, accessibility and SSH onboarding passed. The widget suite reports
+391 passed, 0 failed, 1 skipped; the browser gate reports 189 findings, 0 failures and 13 screenshots.
+Local and served `main.dart.js` have the same SHA-256:
+`22331857bd1db4ed48a08b4c7febed9a5cb756de901c1b061b62591ce5a62a7a`. `flutter analyze` has no issues.
+The native macOS Release build passed at the same product source, with app bundle tree SHA-256
+`6f3c172b8bede4b55d2f18580618df5634626ba98af685e3f1125b8ff29f84a6` (97,233,327 bytes).
+
+The app copy in `~/Applications` is still the earlier installed bundle, and its login process is
+currently running; it was not replaced under that process. The verified updated bundle is in the
+isolated worktree at `apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app`. The Pi Core
+was not contacted or deployed. Touch ID must be paired with a code login against a Pi Core that
+supports the pairing endpoints; a Core restart clears the in-memory server pairing. Physical Pi
+Touch-ID acceptance remains unverified, and operator visual approval remains
+`VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
 
 ## 5. Evidence index
 
