@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import '../core/sse.dart';
 import '../core/event_connection.dart';
@@ -98,6 +99,7 @@ abstract class OipApi {
   /// Cancels the active device detail request when the implementation supports it.
   /// Page-level generations additionally reject every late response.
   void cancelDeviceRequests() {}
+
   /// The Core's own answer about the persisted diagnosis history.
   ///
   /// The state is never assumed by the client: the Core names it.
@@ -109,7 +111,8 @@ abstract class OipApi {
   /// The scope is the session of the principal; no source is preferred and
   /// no global selection payload is invented. The cursor is the opaque
   /// continuation token of the Core.
-  Future<DiagnosticPage> diagnosticGaps({int limit = 50, String? cursor}) async {
+  Future<DiagnosticPage> diagnosticGaps(
+      {int limit = 50, String? cursor}) async {
     throw const ApiFailure(
         'Dokumentierte Lücken werden von diesem API-Client nicht unterstützt.',
         code: 'UNSUPPORTED');
@@ -182,6 +185,11 @@ class ApiFailure implements Exception {
 
 /// Public, sanitized error text. Internal exception objects never reach the UI.
 String apiErrorMessage(Object error, String fallback) {
+  if (error is PlatformException) {
+    final message = error.message?.trim();
+    if (message != null && message.isNotEmpty) return message;
+    return '$fallback (${error.code})';
+  }
   if (error is! ApiFailure) return fallback;
   final code = error.code == null ? '' : ' (${error.code})';
   return '${error.message}$code';
@@ -207,7 +215,8 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
         ...?extra,
         if (_csrf != null) 'x-oip-csrf': _csrf!,
         if (sessionCookieHeader() != null) 'cookie': sessionCookieHeader()!,
-        if (sessionOriginHeader(base) != null) 'origin': sessionOriginHeader(base)!,
+        if (sessionOriginHeader(base) != null)
+          'origin': sessionOriginHeader(base)!,
       };
 
   Future<dynamic> _change(String path, Json body, {String method = 'POST'}) =>
@@ -367,7 +376,8 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
   }
 
   @override
-  Future<DiagnosticPage> diagnosticGaps({int limit = 50, String? cursor}) async {
+  Future<DiagnosticPage> diagnosticGaps(
+      {int limit = 50, String? cursor}) async {
     final value = await _settingsGet('/api/v2/diagnostics/gaps', {
       'limit': '$limit',
       if (cursor != null) 'cursor': cursor,
@@ -603,10 +613,12 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
     try {
       // Deliberately no Authorization header, URL credential, storage token or
       // legacy-access fallback. OIP-009 must provide the secure browser identity.
-      final response = await client.get(
-        uri(path, query),
-        headers: _sessionHeaders(const {'Accept': 'application/json'}),
-      ).timeout(const Duration(seconds: 8));
+      final response = await client
+          .get(
+            uri(path, query),
+            headers: _sessionHeaders(const {'Accept': 'application/json'}),
+          )
+          .timeout(const Duration(seconds: 8));
       if (response.statusCode != 200) {
         String? serverCode;
         try {
@@ -643,9 +655,8 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
       final marker = response.headers['x-oip-contract-fixture'];
       final fixture = marker == 'oip-0084-contract-fixture' ||
           marker == 'oip-009-contract-fixture';
-      final fixturePrincipal = fixture
-          ? response.headers['x-oip-contract-principal']
-          : null;
+      final fixturePrincipal =
+          fixture ? response.headers['x-oip-contract-principal'] : null;
       return (
         body,
         fixture
@@ -685,14 +696,16 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
     return (result.$1 as Json, result.$2, result.$3);
   }
 
-  void _checkContextOrigin(InfrastructureContext context,
-      SettingsDataOrigin actual, String path) {
+  void _checkContextOrigin(
+      InfrastructureContext context, SettingsDataOrigin actual, String path) {
     final expected = context.origin == InfrastructureDataOrigin.contractFixture
         ? SettingsDataOrigin.contractFixture
         : SettingsDataOrigin.liveApi;
     if (context.origin == null || actual != expected) {
-      throw ApiFailure('Die Provenienz des Kontext-Reads weicht vom Bootstrap ab.',
-          code: 'PROVENANCE_MISMATCH', path: path);
+      throw ApiFailure(
+          'Die Provenienz des Kontext-Reads weicht vom Bootstrap ab.',
+          code: 'PROVENANCE_MISMATCH',
+          path: path);
     }
   }
 
@@ -891,8 +904,10 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
         offset += batch.length;
         if (next.$1['has_more'] != true) break;
         if (services.length > 2048) {
-          throw const ApiFailure('Service-Registry überschreitet den Core-Bound.',
-              code: 'CONTEXT_PAGE_LIMIT', path: '/api/v2/services');
+          throw const ApiFailure(
+              'Service-Registry überschreitet den Core-Bound.',
+              code: 'CONTEXT_PAGE_LIMIT',
+              path: '/api/v2/services');
         }
       }
     } on ApiFailure catch (error) {
@@ -947,12 +962,10 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
     return InfrastructureBootstrap(
       principalIdentity: snapshot.$3,
       hierarchy: AuthorizedHierarchy(
-        organizations: organizations.$1
-            .map(AuthorizedOrganization.fromJson)
-            .toList(),
-        infrastructures: infrastructures.$1
-            .map(AuthorizedInfrastructure.fromJson)
-            .toList(),
+        organizations:
+            organizations.$1.map(AuthorizedOrganization.fromJson).toList(),
+        infrastructures:
+            infrastructures.$1.map(AuthorizedInfrastructure.fromJson).toList(),
         sites: sites.$1.map(AuthorizedSite.fromJson).toList(),
         locations: authorized.locations,
       ),

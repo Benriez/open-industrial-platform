@@ -99,6 +99,28 @@ void main() {
     controller.dispose();
   }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
 
+  testWidgets('Touch ID login shows the native biometric failure reason',
+      (tester) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(_touchIdChannel, (call) async {
+      return switch (call.method) {
+        'available' => true,
+        'credentialExists' => true,
+        'readCredential' => throw PlatformException(
+            code: 'TOUCH_ID_CANCELLED', message: 'Touch ID wurde abgebrochen.'),
+        _ => null,
+      };
+    });
+    final controller = OipController(RestApi(Uri.parse('http://127.0.0.1')));
+    await tester.pumpWidget(MaterialApp(home: OperatorLogin(controller)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('operator-login-touch-id')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Touch ID wurde abgebrochen.'), findsOneWidget);
+    controller.dispose();
+  }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
+
   testWidgets(
       'a failed Touch ID pairing keeps the code login and bootstraps once',
       (tester) async {
