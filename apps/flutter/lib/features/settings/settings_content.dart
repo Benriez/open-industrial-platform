@@ -134,18 +134,20 @@ class SettingsSectionContent extends StatelessWidget {
     ]));
   }
 
-  /// The client identity: name, version/build and a local-first data note.
+  /// The client identity: name, version/build, the software license and a
+  /// local-first data note.
   ///
   /// A store-ready surface names the application the way it ships. The version
-  /// and build mirror `pubspec.yaml`; nothing here is a Core fact and nothing
-  /// here is invented.
+  /// and build mirror `pubspec.yaml`, the license names the SPDX identifier the
+  /// client is released under (`LICENSE`); nothing here is a Core fact and
+  /// nothing here is invented.
   Widget _about(BuildContext context) {
     const info = kOipApplication;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const SettingsSectionHeader(
         title: 'About',
         subtitle:
-            'App-Identität, Build-Nummer und Datenschutzerklärung. Keine Core-Konfiguration.',
+            'App-Identität, Build-Nummer, Lizenz und Datenschutzerklärung. Keine Core-Konfiguration.',
         status: 'CLIENT IDENTITY',
         statusColor: OipTokens.cyan,
       ),
@@ -178,6 +180,12 @@ class SettingsSectionContent extends StatelessWidget {
         info.footer,
         mono: false,
         key: const Key('settings-about-shell'),
+      ),
+      KeyValue(
+        'Lizenz',
+        info.license,
+        mono: false,
+        key: const Key('settings-about-license'),
       ),
       const SizedBox(height: 10),
       WorkstationNote(

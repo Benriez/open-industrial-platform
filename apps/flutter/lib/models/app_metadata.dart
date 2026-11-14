@@ -16,6 +16,7 @@ class OipApplicationInfo {
     required this.build,
     required this.footer,
     required this.privacyNote,
+    required this.license,
   });
 
   /// The application display name.
@@ -34,6 +35,11 @@ class OipApplicationInfo {
   /// The store-ready data-disclosure note shown in the About section.
   final String privacyNote;
 
+  /// The software license identifier (SPDX) shown in the About section for
+  /// store-ready attribution. The full license text ships in the repository
+  /// `LICENSE` file; this field names the license the client is released under.
+  final String license;
+
   /// The exact `version:` value of `pubspec.yaml`, kept next to the fields it
   /// describes so a drift between the manifest and the rendered identity is
   /// visible in one place.
@@ -50,4 +56,5 @@ const OipApplicationInfo kOipApplication = OipApplicationInfo(
   privacyNote:
       'Lokal betrieben. OIP sammelt keine Telemetrie und sendet keine Daten nach '
       'außen; autorisierte Geräte- und Hostdaten bleiben im Besitz des Operators.',
+  license: 'Apache-2.0',
 );

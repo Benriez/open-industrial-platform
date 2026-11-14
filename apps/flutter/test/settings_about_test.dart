@@ -29,12 +29,16 @@ void main() {
     expect(find.text('0.3.0'), findsOneWidget);
     expect(find.byKey(const Key('settings-about-build')), findsOneWidget);
     expect(find.byKey(const Key('settings-about-shell')), findsOneWidget);
+    // The software license is attributed for store-ready provenance.
+    expect(find.byKey(const Key('settings-about-license')), findsOneWidget);
+    expect(find.text('Apache-2.0'), findsOneWidget);
     // The local-first data disclosure is rendered for the operator.
     expect(find.text('Lokal · keine Telemetrie'), findsOneWidget);
     // The rendered identity mirrors the package manifest exactly; the version
     // and build are the single source of truth, not invented values.
     expect(kOipApplication.version, '0.3.0');
     expect(kOipApplication.build, '3');
+    expect(kOipApplication.license, 'Apache-2.0');
     expect(OipApplicationInfo.manifestDeclaration, '0.3.0+3');
     expect(tester.takeException(), isNull);
   });
