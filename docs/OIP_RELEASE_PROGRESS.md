@@ -4656,8 +4656,10 @@ by the operator when enabling Touch ID on the Mac.
 The local Mac app bundle was replaced on disk after the verified build; any already-running process was
 left untouched. Its verified bundle tree SHA-256 is
 `91919451510d8beb5d5737bf4654861b266e53859435f6b22746af005594ab76`; it needs a launch to use Touch ID.
-No private SSH device, Pi service, personal database, router, Hue Bridge, push or remote deployment was
-changed.
+The Pi Core was not contacted or deployed, so support for the new pairing routes on the currently running
+Pi instance remains unverified; those routes must be present there before Touch ID can log into that
+instance. No private SSH device, Pi service, personal database, router, Hue Bridge, push or remote
+deployment was changed.
 
 ## 5. Evidence index
 
