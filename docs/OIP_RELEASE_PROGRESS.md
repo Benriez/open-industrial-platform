@@ -63,6 +63,20 @@ approval therefore remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`. The build wrote
 git-ignored `build/` directory; no source, product, Core, contract or dependency changed and the tree
 stayed clean.
 
+**Loop outcome — `oip-ui-polish` COMPLETE; the sole remaining verification is BLOCKED (environment).**
+The sub-loop has delivered every concrete, non-cosmetic, client-side, real-mode-reachable polish item
+(Iteration 103 license attribution; Iteration 104 Settings error-state precision) and a fresh read-only
+audit plus Model Router verification confirmed no further such gap exists. The one remaining acceptance
+step — the full canonical UI design-regression gate that proves `served_bundle_sha256 ==
+bundle_sha256` byte-for-byte — is **BLOCKED for this loop and cannot be resolved here**: it requires the
+loop's *owned* managed acceptance Core and its private IPC socket/credentials, and this environment
+exposes neither. The only running `oip-server` processes belong to **other workstreams** (a
+`oip-diagnostics-2027` daemon, an `oip-0084` `--demo` server, and an `oip84-settings` daemon); per
+`AGENTS.md` §5 this loop must not touch a foreign preview process or another workstream's integration
+authority, and driving the `--demo` core would risk simulated data in real mode. No push, deploy,
+schema-7 activation, personal-database change or store publication was performed. **No further
+`oip-ui-polish` work is available; subsequent firings must not invent cosmetic tasks.**
+
 The canonical tree carries eleven controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
