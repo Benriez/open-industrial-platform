@@ -29,13 +29,11 @@ repository. GitHub Actions needs that value as the repository secret
 `OIP_OTA_SIGNING_PRIVATE_KEY`. The matching public key is embedded in
 `apps/flutter/macos/Runner/Info.plist`.
 
-Once the GitHub release repository exists, install the private key as an
-Actions secret without printing it into a terminal or committing it:
-
-```sh
-swift tools/oip_ota_export_key.swift | gh secret set OIP_OTA_SIGNING_PRIVATE_KEY \
-  --repo Benriez/open-industrial-platform
-```
+The public GitHub repository is `Benriez/open-industrial-platform`. Its Actions
+secret `OIP_OTA_SIGNING_PRIVATE_KEY` is configured from the local Keychain; the
+secret value is never printed or committed. The repository still needs the
+source push and a version tag to run the release workflow and publish the first
+OTA release.
 
 To prepare a release, push a tag such as `v0.3.1`. The workflow builds a
 universal macOS bundle, signs the manifest and publishes the archive, manifest

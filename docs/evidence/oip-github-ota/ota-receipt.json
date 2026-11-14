@@ -35,10 +35,13 @@
   },
   "github_delivery": {
     "repository": "Benriez/open-industrial-platform",
-    "repository_exists": false,
+    "repository_exists": true,
+    "visibility": "PUBLIC",
+    "local_origin_configured": true,
+    "remote_refs": 0,
     "release_available": false,
-    "actions_signing_secret_configured": false,
-    "private_key_location": "macOS login Keychain only; not published",
-    "status": "BLOCKED: source push and public release publication have not been authorized"
+    "actions_signing_secret_configured": true,
+    "private_key_location": "macOS login Keychain and encrypted GitHub Actions secret",
+    "status": "BLOCKED: source and first release not pushed; repository instructions prohibit push"
   }
 }

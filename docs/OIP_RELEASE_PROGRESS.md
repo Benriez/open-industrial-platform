@@ -22,7 +22,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Tracked files in the canonical source revision | 797 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
-| Push / deployment | none — GitHub release repository has not been created or populated |
+| Push / deployment | none — public GitHub repository and Actions secret exist; source and release remain unpublished |
 | Personal schema-6 installation | **not activated**; untouched. A separate operator-hosted instance is running per N7 |
 
 ### oip-ui-polish loop status (UI-polish sub-loop)
@@ -5026,15 +5026,18 @@ matches the signed direct package exactly: SHA-256
 `9026e33672ab8efb85761b8844e026da58bcff2c7dc78c28f3ceee34629234d4`. It was launched in the
 background from that path and process `22146` was observed running.
 
-**Not yet an end-to-end OTA:** `Benriez/open-industrial-platform` does not exist on GitHub and this
-checkout has no GitHub remote, so there is no release to fetch and no Actions signing secret is set.
-The Ed25519 private key is stored only in this Mac's login Keychain; it was not sent to GitHub.
-The repo instructions prohibit a push. Consequently no source was published and no GitHub release
-was created. Once publication is authorized, the repo must be public for the updater to fetch
-releases without putting a token in the app; configure the Actions secret
-`OIP_OTA_SIGNING_PRIVATE_KEY`, push the source and a release tag, and the installed app can receive
-subsequent releases through its GitHub updater. No Store submission, Pi/Core deployment, personal
-database change or device write was performed.
+**Not yet an end-to-end OTA:** the public repository `Benriez/open-industrial-platform` now exists,
+`origin` points to it, and the GitHub Actions secret `OIP_OTA_SIGNING_PRIVATE_KEY` is configured.
+The repository is empty (no refs or default branch); GitHub's latest-release endpoint returns 404.
+The signing key stays in the Mac login Keychain and the encrypted Actions secret; no private key is
+committed or printed. The repo instructions prohibit a push. Consequently the updater source,
+workflow and first release are not on GitHub yet, so the installed app cannot receive a live update.
+No Store submission, Pi/Core deployment, personal database change or device write was performed.
+
+**Follow-up (2026-11-15):** created the public repository and added the local `origin`; configured
+the release-signing Actions secret directly from the Keychain without displaying its value. A
+read-only check confirms zero remote refs and `GET /releases/latest` returns 404. No source push or
+release was made.
 
 ## 5. Evidence index
 
