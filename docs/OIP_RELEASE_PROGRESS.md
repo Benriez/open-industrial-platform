@@ -4663,7 +4663,7 @@ deployment was changed.
 
 ### Touch ID regression audit candidate — isolated and not yet integrated
 
-On branch `fix/oip-bug-audit` (based on `8d92f31`), a regression audit found and fixed four client-side
+On branch `fix/oip-bug-audit` at `62e6ec2` (based on `8d92f31`), a regression audit found and fixed four client-side
 failure paths around the optional Touch ID login: a failed pairing no longer strands a consumed
 one-time-code login; the successful login performs only one infrastructure bootstrap; the biometric
 login action appears only when this Mac actually has a paired Keychain item; and the login card can
