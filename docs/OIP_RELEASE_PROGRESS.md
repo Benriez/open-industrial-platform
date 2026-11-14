@@ -25,6 +25,26 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Push / deployment | none |
 | Personal schema-6 installation | **not activated**; untouched. A separate operator-hosted instance is running per N7 |
 
+### oip-ui-polish loop status (UI-polish sub-loop)
+
+The `oip-ui-polish` sub-loop has completed its two highest-impact, evidence-backed items — Iteration
+103 (client software-license attribution in the About section, product `d34326a`) and Iteration 104
+(precise Settings error-state wording for HTTP 400 / `INVALID_REQUEST` plus a consistent catch-all,
+product `8bb1c1a`). On **2026-11-14** the loop re-ran a fresh read-only audit of `apps/flutter/lib`
+(read-only subagent + Model Router verification of its one candidate and a provenance-disclosure
+spot-check). The audit and the verification agree: the remaining presentation layer is already
+consistent, honest and reachable in real mode — provenance/simulated/fixture disclosures are present
+and gated (`isFixture`, `snapshot.system.simulated`, `device.simulated`, `dataOrigin ==
+contractFixture`) across the features, and error/empty states disclose absence/failure without
+fabrication. The single candidate raised (mixed German/English device-filter labels in
+`features/devices/device_inventory.dart`) is a localization *style* preference whose English terms map
+verbatim to the canonical data-model identifiers; "normalising" them has no correct answer and would
+reduce operator traceability to the contract, so it is **cosmetic and rejected** per the loop's
+no-cosmetic-tasks rule. **No concrete, non-cosmetic, client-side, real-mode-reachable polish gap
+remains.** The sub-loop is at a deliberate, documented stopping point; the canonical product revision
+is unchanged (`8bb1c1a`). Any further work would require either an out-of-scope Core/contract/localization
+change or an invented cosmetic task, both prohibited.
+
 The canonical tree carries eleven controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
