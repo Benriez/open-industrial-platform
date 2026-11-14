@@ -13,7 +13,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `807722b` — the client About section (store-ready app identity) on top of host telemetry and Touch ID login recovery |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `d34326a` — the client software-license attribution in the About section (store-ready provenance) on top of the client About section, host telemetry and Touch ID login recovery |
 | The revision of the final acceptance | gate source revision `7a0c6da` with tested working-tree hash `be0fc5e40e3b08ce2b06a9781e2c1b952cee51b0`; local and served web bundle SHA-256 `d76764985bbf0c7626dea8a4090ed5bc6b6ebed64ba23d275956dd560d02703b` |
 | The revision of the Core binary of the release | `0a9b64f` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
@@ -4766,6 +4766,55 @@ green and the shell identity and footer are unchanged. Reading the *real* macOS 
 native channel (instead of the manifest-mirroring constant) is recorded as optional follow-up
 hardening, not required here. No physical device, Pi service, personal database, router, Hue Bridge,
 push or remote deployment was changed. Operator visual approval remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
+
+### Iteration 103 — the About section attributes the client software license (store-ready provenance)
+
+**Status: verified on an isolated candidate and integrated into canonical `main` by fast-forward**
+(`d34326a`). A focused UI-polish increment (loop `oip-ui-polish`); it changes the presentation layer
+only.
+
+**Step.** Give the About section its missing store-ready provenance. Iteration 102 added the client
+identity — name, version, build and a local-first data note — but the surface named no software
+license, even though the client is released under Apache-2.0 (root `LICENSE`). A released app
+attributes the license it ships under.
+
+**What changed** (client-side only; no Core, contract, permission or server rule changed, no new
+dependency):
+
+* `apps/flutter/lib/models/app_metadata.dart`: a `license` field on the single client-identity source
+  (`OipApplicationInfo`) — the SPDX identifier `Apache-2.0`, whose full text ships in the repository
+  `LICENSE`. The version/build drift guard (`manifestDeclaration`) is unchanged.
+* `apps/flutter/lib/features/settings/settings_content.dart`: a `Lizenz` row in the About section
+  (key `settings-about-license`), rendered with the existing `KeyValue` widget alongside Version,
+  Build and Shell; the section subtitle now names the license too.
+* `apps/flutter/test/settings_about_test.dart`: the existing About widget test asserts the license
+  row, the SPDX value and the model field.
+
+**Deliberately not done (recorded, not skipped silently).** A clickable privacy-policy *link* was
+considered and rejected: (1) launching a URL needs the `url_launcher` package, a prohibited new
+dependency; and (2) OIP collects no data (local-first, no telemetry), so a privacy-policy link is not
+required (Apple App Store Guideline 5.1.1 exempts apps that collect no user data). The existing
+`Lokal · keine Telemetrie` note is the honest data disclosure; fabricating a link to a non-existent
+URL would be dishonest. No privacy link is added.
+
+**Measured result on the isolated candidate** (`feature/oip-ui-about-license`, worktree
+`…/worktrees/ui-about-license`), merged with a real `git merge --ff-only` to `d34326a`:
+
+```
+flutter analyze    exit 0, no issues
+flutter test       392 passed, 0 failed, 1 skipped (native_session_live: no running Core — environment skip)
+```
+
+The single skipped test is `native_session_live_test.dart`, unchanged by this iteration. The additive
+license row sits in the About block, deep in the Settings workstation, outside the protected left-shell
+crops of the canonical UI visual comparison (`docs/design/OIP_CANONICAL_UI_BASELINE.md` §5), so the
+shell identity and footer the gate pins are unchanged.
+
+**Not claimed.** The full canonical UI design-regression gate and the native macOS build were not
+re-run for this focused polish increment; the change is additive, the complete Flutter widget suite is
+green and the shell identity and footer are unchanged. No physical device, Pi service, personal
+database, router, Hue Bridge, push or remote deployment was changed. Operator visual approval remains
+`VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
 
 ## 5. Evidence index
 
