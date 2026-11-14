@@ -13,8 +13,8 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `4132d8d` — the last commit that changed the product (the explorer-row semantics); the commits after it change the record, the harness and the tests |
-| The revision of the final acceptance | `0a9b64f` (tree `892779da`) — the tree the canonical gate passed on |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `9f87388` — host telemetry in the device detail and native macOS Touch ID login |
+| The revision of the final acceptance | gate source revision `7a0c6da` with tested working-tree hash `be0fc5e40e3b08ce2b06a9781e2c1b952cee51b0`; local and served web bundle SHA-256 `d76764985bbf0c7626dea8a4090ed5bc6b6ebed64ba23d275956dd560d02703b` |
 | The revision of the Core binary of the release | `0a9b64f` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
 | The gate statuses of the current release | `docs/OIP_RELEASE_LEDGER.md` — the authoritative table |
@@ -4630,7 +4630,8 @@ modification of the router or the bridge, no push, no deployment.
 
 ### Iteration 101 — verified host telemetry and native macOS Touch ID login
 
-**Status: verified on the isolated candidate; merged into canonical `main` only after the fast-forward.**
+**Status: verified on the isolated candidate and integrated into canonical `main` by fast-forward**
+(`9f87388`).
 The managed Devices Telemetry tab now renders the same authorized SSH connection observations when the
 device-detail projection has no metric rows. It waits for the connection result for the selected device;
 it does not add simulator measurements. The complete acceptance uses an owned loopback OpenSSH fixture,
