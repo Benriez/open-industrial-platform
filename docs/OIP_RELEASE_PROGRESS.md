@@ -4693,7 +4693,7 @@ acceptance used an owned loopback SSH fixture, not the physical Pi. No personal 
 replaced, and no Pi/Core deployment or remote device change was performed. Operator visual approval
 remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
 
-### Touch ID failure diagnostics — verified candidate, ready for fast-forward integration
+### Touch ID failure diagnostics — integrated into canonical main
 
 The live Mac login window displayed only the generic “Touch-ID-Anmeldung fehlgeschlagen.” The native
 Keychain/LocalAuthentication `PlatformException` was being discarded by `apiErrorMessage`, hiding
