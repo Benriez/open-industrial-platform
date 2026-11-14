@@ -13,7 +13,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `d34326a` — the client software-license attribution in the About section (store-ready provenance) on top of the client About section, host telemetry and Touch ID login recovery |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `8bb1c1a` — precise Settings error-state wording (HTTP 400 and a consistent catch-all) on top of the client software-license attribution, the client About section, host telemetry and Touch ID login recovery |
 | The revision of the final acceptance | gate source revision `7a0c6da` with tested working-tree hash `be0fc5e40e3b08ce2b06a9781e2c1b952cee51b0`; local and served web bundle SHA-256 `d76764985bbf0c7626dea8a4090ed5bc6b6ebed64ba23d275956dd560d02703b` |
 | The revision of the Core binary of the release | `0a9b64f` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
@@ -4809,6 +4809,66 @@ The single skipped test is `native_session_live_test.dart`, unchanged by this it
 license row sits in the About block, deep in the Settings workstation, outside the protected left-shell
 crops of the canonical UI visual comparison (`docs/design/OIP_CANONICAL_UI_BASELINE.md` §5), so the
 shell identity and footer the gate pins are unchanged.
+
+**Not claimed.** The full canonical UI design-regression gate and the native macOS build were not
+re-run for this focused polish increment; the change is additive, the complete Flutter widget suite is
+green and the shell identity and footer are unchanged. No physical device, Pi service, personal
+database, router, Hue Bridge, push or remote deployment was changed. Operator visual approval remains
+`VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
+
+### Iteration 104 — the Settings error state names an HTTP 400 precisely and the catch-all is consistent
+
+**Status: verified on an isolated candidate and integrated into canonical `main` by fast-forward**
+(`8bb1c1a`). A focused UI-polish increment (loop `oip-ui-polish`); it changes the presentation layer
+only.
+
+**Step.** The Settings workstation `_error` state mapped four failure kinds to distinct titles and
+messages (unauthorized, connection, unsupported, contract), but an **HTTP 400 / `INVALID_REQUEST`** —
+the Core rejecting the request against the management contract (bad scope/key or an unsupported
+read; produced in `services/api.dart` `_authorizedGet` at HTTP 400 and in the client-side
+scope/key/section validation) — fell through to the generic fallback. There the **title** read
+`Management-Daten nicht verfügbar` while the **message** still described a malformed *response*
+(`Die Antwort wird nicht als gültiger OIP-008.4-Vertrag akzeptiert`). A request-side 400 is none of
+a missing response, an errored transport, an unsupported function or a malformed response, so the
+title and message contradicted each other. The same response-shape wording was also imprecise for
+the genuine catch-all (an unknown HTTP status such as `HTTP_500`, or a server-provided code), whose
+title says the data is unavailable.
+
+**What changed** (client-side only; no Core, contract, permission or server rule changed, no new
+dependency):
+
+* `apps/flutter/lib/features/settings/settings_workstation.dart`: a dedicated `invalidRequest` branch
+  (`code == 'INVALID_REQUEST'`) — title `Management-Anfrage abgelehnt` and a request-side message
+  (`HTTP 400: Der Core hat diese Anfrage gegen den Management-Vertrag abgelehnt. Es wird kein
+  Ersatzwert geraten und kein v1-Snapshot verwendet.`). The contract branch
+  (`CONTRACT_ERROR` / `INVALID_RESPONSE`) keeps its exact original message; the generic catch-all now
+  carries a message consistent with its own title — `Die autorisierte Management-Antwort fehlt oder
+  ist unvollständig. Kein v1-Snapshot und keine Fixture ersetzen den gelesenen Wert.` — instead of
+  reusing the malformed-response wording.
+* `apps/flutter/test/settings_workstation_test.dart`: two widget tests — **K** asserts the precise
+  400 state (its title/message, that it is distinct from the unauthorized/connection/contract/
+  unavailable-data wording, and that the sanitized `INVALID_REQUEST`/`400` details and the retry
+  control render with no fabricated data); **L** asserts the catch-all shows the missing-data state
+  and does not reuse the contract-response wording.
+
+**Deliberately not done (recorded, not skipped silently).** The main status `Icon` and the
+`Fachlicher Status` note icon were left unchanged: the existing pattern only special-cases the
+unauthorized state, and the precision here is carried by the words the operator reads, not by an
+added glyph. No new dependency, no icon-token change, no Core error-code change was introduced.
+
+**Measured result on the isolated candidate** (`feature/oip-ui-settings-error-text`, worktree
+`…/worktrees/ui-settings-error-text`), merged with a real `git merge --ff-only` to `8bb1c1a`:
+
+```
+flutter analyze    exit 0, no issues
+flutter test       394 passed, 0 failed, 1 skipped (native_session_live: no running Core — environment skip)
+```
+
+The single skipped test is `native_session_live_test.dart`, unchanged by this iteration. The change
+is confined to the Settings workstation error state, deep in the Settings module, outside the
+protected left-shell crops of the canonical UI visual comparison
+(`docs/design/OIP_CANONICAL_UI_BASELINE.md` §5), so the shell identity and footer the gate pins are
+unchanged.
 
 **Not claimed.** The full canonical UI design-regression gate and the native macOS build were not
 re-run for this focused polish increment; the change is additive, the complete Flutter widget suite is
