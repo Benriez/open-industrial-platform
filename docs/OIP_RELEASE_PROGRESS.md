@@ -63,6 +63,12 @@ approval therefore remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`. The build wrote
 git-ignored `build/` directory; no source, product, Core, contract or dependency changed and the tree
 stayed clean.
 
+**Reproducibility confirmed (2026-11-14):** two further `flutter build web --release --web-renderer
+canvaskit` runs reproduced the identical `bundle_sha256` `3f931cb89798842ba35fba26e2759d7c137812c41022ee6a9e7a5b2c3feb273`,
+so the recorded hash is a **deterministic, reproducible provenance artifact** — a stable value the
+canonical UI gate can compare served-vs-local byte for byte (baseline §5 check #1 / R10). The builds
+wrote only to the git-ignored `build/`; the tree stayed clean.
+
 **Loop outcome — `oip-ui-polish` COMPLETE; the sole remaining verification is BLOCKED (environment).**
 The sub-loop has delivered every concrete, non-cosmetic, client-side, real-mode-reachable polish item
 (Iteration 103 license attribution; Iteration 104 Settings error-state precision) and a fresh read-only
