@@ -124,6 +124,30 @@ German word for normal operation in diagnostics health/empty states, not the sce
 **Conclusion: no §3/§4 conformance gap.** This is static evidence only; the runtime §5 gate (served
 bundle == local, visual comparison) remains the environment-blocked item recorded above.
 
+**Fresh-dimension re-check (2026-11-14, second re-fire).** The loop was re-fired with an explicit
+directive to *not* stop and to keep reporting concrete work or the exact blocker each cadence. Honoring
+both that directive and the shared "do not invent cosmetic work" rule, this iteration performed a
+genuine investigation of presentation-layer dimensions the earlier grep-based audits did **not** cover,
+rather than re-reading the same `TODO`/`not implemented` list. Examined and found sound: (1) **numeric/
+unit formatting** — `toStringAsFixed(1)` latency/loss/telemetry in `network/network_model.dart:124,130`,
+`overview/telemetry_chart.dart:117,123,167,168,302`, `features/network.dart`, all carrying the honest
+`· Fixture` disclosure for simulated links; (2) **timestamp formatting** — `widgets/components.dart:734`
+`timestamp()` and `features/opcua.dart:2122` `_clock()` both render explicit `UTC` with millisecond
+precision from `DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true)` (no local/UTC ambiguity, no epoch
+leak), and `opcua.dart:2138` large-value grouping is value-driven, not demo-driven; (3) **accessibility**
+— `Semantics` is applied pervasively across every workstation feature with honest labels and
+`excludeSemantics` used deliberately for decorative overlays (`app.dart:234`, `network_explorer.dart:447`,
+`event_explorer.dart:465`); (4) **empty/error states** — `StateMessage` (`app.dart:548`, with a real
+`Erneut versuchen` reconnect action), `InlineNotice` (`components.dart:604` `DataTimeline` empty state),
+and the footer blocker line (`app.dart:600`) all disclose absence/failure honestly, and the
+`unknown`-tenant blocker is stated as "not delivered to this session" rather than faked. **No concrete,
+non-cosmetic, client-side, real-mode-reachable defect or improvement was found in these dimensions.**
+**Determination reconfirmed: `NO_READY_TASK`.** The only outstanding item remains the environment-blocked
+runtime canonical UI §5 gate. Consistent with the current "do not stop" directive, **no stop file was
+created or modified this iteration**; the earlier stop file remains as recorded loop state. Canonical
+product revision unchanged at `8bb1c1a` (`main` @ `b4ec656`); no source, product, Core, contract or
+dependency changed.
+
 The canonical tree carries eleven controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
