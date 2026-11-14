@@ -45,6 +45,24 @@ remains.** The sub-loop is at a deliberate, documented stopping point; the canon
 is unchanged (`8bb1c1a`). Any further work would require either an out-of-scope Core/contract/localization
 change or an invented cosmetic task, both prohibited.
 
+**Build receipt (2026-11-14).** To honour the loop's explicit "report the served bundle SHA-256"
+requirement, the web bundle of the current canonical source was rebuilt with the canonical UI gate's
+exact command (`flutter build web --release --web-renderer canvaskit`). Measured artifact:
+`bundle_sha256 = 3f931cb89798842ba35fba26e2759d7c137812c41022ee6a9e7a5b2c3feb273`
+(`build/web/main.dart.js`, 3,050,940 bytes; verified with both `sha256sum` and `shasum -a 256`). The
+bundle provably contains the Iteration 103 (`Lizenz`) and Iteration 104 (`Management-Anfrage abgelehnt`)
+strings, so it is the current source, not a stale artefact. It legitimately differs from the recorded
+final-acceptance hash `d76764985bbf0c7626dea8a4090ed5bc6b6ebed64ba23d275956dd560d02703b` (revision
+`7a0c6da`, before Iterations 102–104) because those iterations changed `apps/flutter/lib`. **Honest
+limit:** only the *local* build hash (`bundle_sha256`) is produced here; the full canonical UI
+design-regression gate — which serves the bundle and proves `served_bundle_sha256 == bundle_sha256`
+byte-for-byte with the browser gate, the managed acceptance Core and the private IPC credentials
+(`tests/canonical_ui_gate.py`) — was **not** run in this environment. Per `docs/design/
+OIP_CANONICAL_UI_BASELINE.md` §4 a build hash without that gate is **not** a UI PASS; operator visual
+approval therefore remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`. The build wrote only to the
+git-ignored `build/` directory; no source, product, Core, contract or dependency changed and the tree
+stayed clean.
+
 The canonical tree carries eleven controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
