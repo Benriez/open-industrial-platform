@@ -83,6 +83,27 @@ authority, and driving the `--demo` core would risk simulated data in real mode.
 schema-7 activation, personal-database change or store publication was performed. **No further
 `oip-ui-polish` work is available; subsequent firings must not invent cosmetic tasks.**
 
+**Re-confirmation and loop stop (2026-11-14).** A further loop firing re-checked the backlog and the
+current presentation layer directly (no subagent, to avoid interrupt churn). The independent spot-check
+of `apps/flutter/lib` for unfinished, real-mode-reachable polish defects found **none**: every
+`nicht implementiert` / `not implemented` string is an honest disclosure of a genuinely-absent backend
+capability — `devices.dart:202` (server-side history endpoint), `network.dart:1732` (core capabilities),
+`device_onboarding.dart:428` (SNMP/Windows/Android/VPN monitoring), `diagnostics.dart:700,708` (persisted
+diagnostics runs) — which is exactly what `OIP_CANONICAL_UI_BASELINE.md` requires (never fabricate;
+disclose absence). Every `loading` state is a real async loader with completion (infrastructure-context
+authorization, OPC-UA node paging, device-detail fetch, diagnostics event/evidence load), not a
+"loading state without a loader". The two `PLACEHOLDER` hits are honest MCP-client-config status
+indicators (`settings_content.dart:393` `PLACEHOLDERS` metric = `NONE`/`REQUIRED`;
+`settings_workstation.dart:738` `'Placeholder required'` fallback for a null `executable`). No
+`TODO`/`FIXME` in `lib/` is user-facing or reachable in real mode. **Determination: `NO_READY_TASK` —
+no independent, safe, client-side, real-mode-reachable, non-cosmetic UI-polish item remains.** The only
+outstanding item is the environment-blocked runtime canonical UI §5 gate (owned managed acceptance Core
++ private IPC credentials unavailable; other workstreams' `oip-server` processes are off-limits per
+`AGENTS.md` §5). Per the loop stop protocol the exact blocker and required next action are recorded here
+once, and the loop stop file `.opencode/opencode-loop/oip-ui-polish.stop` is created; subsequent firings
+must read that file and stop without inventing cosmetic work. Canonical product revision unchanged at
+`8bb1c1a` (`main` @ `ed98205`); no source, product, Core, contract or dependency changed.
+
 **Canonical UI baseline conformance check (2026-11-14, static code↔contract, no running Core needed).**
 The presentation layer is contract-bound (`docs/design/OIP_CANONICAL_UI_BASELINE.md`), so the current
 client was reconciled against §3 (approved shell) and §4 (R1–R10 prohibited regressions). **§3 PASS:**
