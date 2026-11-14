@@ -4712,13 +4712,15 @@ Local and served `main.dart.js` have the same SHA-256:
 The native macOS Release build passed at the same product source, with app bundle tree SHA-256
 `6f3c172b8bede4b55d2f18580618df5634626ba98af685e3f1125b8ff29f84a6` (97,233,327 bytes).
 
-The app copy in `~/Applications` is still the earlier installed bundle, and its login process is
-currently running; it was not replaced under that process. The verified updated bundle is in the
-isolated worktree at `apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app`. The Pi Core
-was not contacted or deployed. Touch ID must be paired with a code login against a Pi Core that
-supports the pairing endpoints; a Core restart clears the in-memory server pairing. Physical Pi
-Touch-ID acceptance remains unverified, and operator visual approval remains
-`VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
+The verified updated bundle was copied to `~/Applications/Open Industrial Platform.app`; its tree
+hash matches the build exactly (`6f3c172b8bede4b55d2f18580618df5634626ba98af685e3f1125b8ff29f84a6`).
+The prior bundle is preserved at
+`/private/tmp/oip-bug-audit/Open Industrial Platform.before-touchid-update.app`. The app process that
+was already open at the login screen was left running and still has the previous client code in
+memory; quit and relaunch it to load the installed update. The Pi Core was not contacted or deployed.
+Touch ID must be paired with a code login against a Pi Core that supports the pairing endpoints; a
+Core restart clears the in-memory server pairing. Physical Pi Touch-ID acceptance remains unverified,
+and operator visual approval remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
 
 ## 5. Evidence index
 
