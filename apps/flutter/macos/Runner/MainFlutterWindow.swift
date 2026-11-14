@@ -69,6 +69,8 @@ private enum TouchIdKeychain {
       let context = LAContext()
       var error: NSError?
       result(context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error))
+    case "credentialExists":
+      result(credentialExists())
     case "createCredential":
       createCredential(result: result)
     case "readCredential":
@@ -88,6 +90,19 @@ private enum TouchIdKeychain {
     [kSecClass as String: kSecClassGenericPassword,
      kSecAttrService as String: service,
      kSecAttrAccount as String: account]
+  }
+
+  /// Check presence without revealing the Keychain value or prompting for
+  /// biometrics. A protected item can report interaction-not-allowed here and
+  /// still be usable by the explicit biometric read method.
+  private static func credentialExists() -> Bool {
+    var query = baseQuery
+    query[kSecReturnAttributes as String] = true
+    query[kSecMatchLimit as String] = kSecMatchLimitOne
+    query[kSecUseAuthenticationUI as String] = kSecUseAuthenticationUIFail
+    var item: CFTypeRef?
+    let status = SecItemCopyMatching(query as CFDictionary, &item)
+    return status == errSecSuccess || status == errSecInteractionNotAllowed || status == errSecAuthFailed
   }
 
   private static func createCredential(result: @escaping FlutterResult) {

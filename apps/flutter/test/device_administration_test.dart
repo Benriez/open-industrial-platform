@@ -163,7 +163,7 @@ void main() {
 
   testWidgets('A type that the client does not know is not rewritten',
       (tester) async {
-    final device = InventoryDevice(
+    const device = InventoryDevice(
       id: 'device-a1',
       name: 'Pump A1',
       // A type that the Core of today does not deliver: the administration
@@ -177,9 +177,9 @@ void main() {
       connectivity: 'unknown',
       telemetry: 'no_collector',
       health: 'not_evaluated',
-      sourceIds: const [],
+      sourceIds: [],
       revision: 1,
-      metadata: const {},
+      metadata: {},
     );
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(

@@ -124,8 +124,20 @@ class OipController extends ChangeNotifier {
           code: 'UNSUPPORTED');
     }
     final session = await boundary.login(code);
-    if (enableTouchId) await this.enableTouchId();
+    String? touchIdWarning;
+    if (enableTouchId) {
+      try {
+        await this.enableTouchId();
+      } catch (exception) {
+        touchIdWarning = apiErrorMessage(
+            exception, 'Touch ID konnte nicht eingerichtet werden.');
+      }
+    }
     await _completeLogin(session);
+    if (touchIdWarning != null) {
+      error = 'Angemeldet, aber Touch ID wurde nicht eingerichtet: $touchIdWarning';
+      notifyListeners();
+    }
   }
 
   /// Pairs a random credential stored behind this Mac's biometric policy.
@@ -140,7 +152,12 @@ class OipController extends ChangeNotifier {
     try {
       await boundary.pairDeviceCredential(credential);
     } catch (_) {
-      await deleteTouchIdCredential();
+      try {
+        await deleteTouchIdCredential();
+      } catch (_) {
+        // Preserve the pairing failure. The selected Keychain item may itself
+        // be unavailable if the enrolled biometric set changed.
+      }
       rethrow;
     }
   }
@@ -167,7 +184,6 @@ class OipController extends ChangeNotifier {
     operationalEvents = const [];
     snapshot = null;
     error = null;
-    await resyncInfrastructure();
     unawaited(start());
   }
 

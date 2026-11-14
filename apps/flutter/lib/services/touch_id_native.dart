@@ -14,6 +14,15 @@ Future<bool> touchIdAvailable() async {
   }
 }
 
+Future<bool> touchIdCredentialExists() async {
+  if (!_isMacOS) return false;
+  try {
+    return await _channel.invokeMethod<bool>('credentialExists') ?? false;
+  } on PlatformException {
+    return false;
+  }
+}
+
 Future<String?> createTouchIdCredential() async {
   if (!_isMacOS) return null;
   return _channel.invokeMethod<String>('createCredential');

@@ -5,7 +5,6 @@ import 'package:oip_dashboard/core/sse.dart';
 import 'package:oip_dashboard/features/device_connection_panel.dart';
 import 'package:oip_dashboard/models/contracts.dart';
 import 'package:oip_dashboard/models/history.dart';
-import 'package:oip_dashboard/models/infrastructure.dart';
 import 'package:oip_dashboard/models/onboarding.dart';
 import 'package:oip_dashboard/services/api.dart';
 

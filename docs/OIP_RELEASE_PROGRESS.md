@@ -4661,6 +4661,27 @@ Pi instance remains unverified; those routes must be present there before Touch 
 instance. No private SSH device, Pi service, personal database, router, Hue Bridge, push or remote
 deployment was changed.
 
+### Touch ID regression audit candidate — isolated and not yet integrated
+
+On branch `fix/oip-bug-audit` (based on `8d92f31`), a regression audit found and fixed four client-side
+failure paths around the optional Touch ID login: a failed pairing no longer strands a consumed
+one-time-code login; the successful login performs only one infrastructure bootstrap; the biometric
+login action appears only when this Mac actually has a paired Keychain item; and the login card can
+scroll on short windows. Failed pairing cleanup also preserves the original Core error if Keychain
+cleanup fails. Three widget tests cover the absent/present Keychain states and failed-pairing recovery.
+
+Measured on this isolated candidate: `flutter test --concurrency=1 --reporter compact` passed all 390
+tests with one skipped; `flutter analyze` now reports no issues after fixing two existing findings (a
+const test fixture and an unused test import); the CanvasKit web release build passed; and
+`git diff --check` passed. The native macOS build could not finish because
+the shared volume ran out of space (279 MiB free after the Flutter suite). A subsequent focused test
+retry also hit `No space left on device` while Flutter copied its test compiler output. The full
+canonical UI gate was not run, so this candidate is **not accepted or integrated**, and the `main`
+release state above is unchanged.
+Resume verification only after sufficient disk space is available; require the complete build, widget,
+browser and visual gate before a fast-forward integration. No personal installation was replaced and
+the Pi/Core was not contacted.
+
 ## 5. Evidence index
 
 | Artifact | Content |

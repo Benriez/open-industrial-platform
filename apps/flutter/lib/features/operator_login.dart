@@ -16,6 +16,7 @@ class _OperatorLoginState extends State<OperatorLogin> {
   bool busy = false;
   String? error;
   bool hasTouchId = false;
+  bool touchIdConfigured = false;
   bool enableTouchIdAfterLogin = false;
   @override
   void initState() {
@@ -25,7 +26,13 @@ class _OperatorLoginState extends State<OperatorLogin> {
 
   Future<void> _loadTouchId() async {
     final available = await touchIdAvailable();
-    if (mounted) setState(() => hasTouchId = available);
+    final configured = available && await touchIdCredentialExists();
+    if (mounted) {
+      setState(() {
+        hasTouchId = available;
+        touchIdConfigured = configured;
+      });
+    }
   }
 
   @override
@@ -73,7 +80,9 @@ class _OperatorLoginState extends State<OperatorLogin> {
 
   @override
   Widget build(BuildContext context) => Center(
-          child: ConstrainedBox(
+          child: SingleChildScrollView(
+              child: Center(
+                  child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 580),
         child: Card(
             child: Padding(
@@ -116,12 +125,13 @@ class _OperatorLoginState extends State<OperatorLogin> {
                         subtitle: const Text(
                             'Wird nach dem ersten Code-Login an deine Touch-ID gebunden.'),
                       ),
-                      OutlinedButton.icon(
-                        key: const Key('operator-login-touch-id'),
-                        onPressed: busy ? null : loginWithTouchId,
-                        icon: const Icon(Icons.fingerprint),
-                        label: const Text('Mit Touch ID anmelden'),
-                      ),
+                      if (touchIdConfigured)
+                        OutlinedButton.icon(
+                          key: const Key('operator-login-touch-id'),
+                          onPressed: busy ? null : loginWithTouchId,
+                          icon: const Icon(Icons.fingerprint),
+                          label: const Text('Mit Touch ID anmelden'),
+                        ),
                       const SizedBox(height: 8),
                     ],
                     if (error != null)
@@ -137,5 +147,5 @@ class _OperatorLoginState extends State<OperatorLogin> {
                         'Touch ID ist nur in der nativen Mac-App verfügbar. Der Schlüssel liegt in der Mac-Keychain. Die lokale Sitzung endet nach 30 Minuten, beim Abmelden oder mit einem Neustart der Instanz; die Core-Kopplung wird beim Neustart zurückgesetzt.'),
                   ],
                 ))),
-      ));
+      ))));
 }
