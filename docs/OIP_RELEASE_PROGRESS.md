@@ -13,7 +13,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `8bb1c1a` — precise Settings error-state wording (HTTP 400 and a consistent catch-all) on top of the client software-license attribution, the client About section, host telemetry and Touch ID login recovery |
+| Canonical source revision (the product: client, Core and release tooling) | `462e97d` — direct macOS GitHub OTA client and signed-release workflow on top of `8bb1c1a` |
 | The revision of the final acceptance | gate source revision `7a0c6da` with tested working-tree hash `be0fc5e40e3b08ce2b06a9781e2c1b952cee51b0`; local and served web bundle SHA-256 `d76764985bbf0c7626dea8a4090ed5bc6b6ebed64ba23d275956dd560d02703b` |
 | The revision of the Core binary of the release | `0a9b64f` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
@@ -22,7 +22,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Tracked files in the canonical source revision | 797 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
-| Push / deployment | none |
+| Push / deployment | none — GitHub release repository has not been created or populated |
 | Personal schema-6 installation | **not activated**; untouched. A separate operator-hosted instance is running per N7 |
 
 ### oip-ui-polish loop status (UI-polish sub-loop)
@@ -4999,10 +4999,48 @@ green and the shell identity and footer are unchanged. No physical device, Pi se
 database, router, Hue Bridge, push or remote deployment was changed. Operator visual approval remains
 `VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
 
+### Iteration 105 — the macOS direct build gains a GitHub Releases updater
+
+**Status: implementation and first local install verified; live release delivery is blocked by the
+GitHub publication step.** Candidate commit `462e97d`, built on isolated branch
+`fix/oip-first-macos-install` from `234e428`.
+
+The direct macOS build now checks the configured public GitHub Release endpoint, verifies an
+Ed25519-signed manifest and the SHA-256 of the universal app archive, and offers the update to the
+operator. A native macOS helper stages the replacement, rechecks its digest, bundle identifier,
+version and code signature, swaps the closed app bundle and restores the previous bundle if the new
+process does not start. The updater uses macOS SDK APIs and GitHub's own release interfaces; it has
+no updater framework or embedded GitHub token. The App Store package keeps `OIPUpdateEnabled=false`
+and its App Sandbox entitlement, so App Store updates remain App Store-managed.
+
+The native release build succeeded. `python3 tests/oip_github_ota_package.py` passed (1 test): the
+direct package is OTA-enabled and unsandboxed, the source/Store bundle remains OTA-disabled, the
+archive digest matches, its manifest signature verifies, and a modified manifest is rejected. The
+update helper passed shell syntax validation. `python3 tools/oip_mas_package.py --skip-build
+--bundle apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app --evidence
+target/oip-ota-mas-check` returned `PASS` (the package measurement only; it is not the canonical UI
+gate).
+
+Version `0.3.0+3` is installed at `/Applications/Open Industrial Platform.app`. The installed tree
+matches the signed direct package exactly: SHA-256
+`9026e33672ab8efb85761b8844e026da58bcff2c7dc78c28f3ceee34629234d4`. It was launched in the
+background from that path and process `22146` was observed running.
+
+**Not yet an end-to-end OTA:** `Benriez/open-industrial-platform` does not exist on GitHub and this
+checkout has no GitHub remote, so there is no release to fetch and no Actions signing secret is set.
+The Ed25519 private key is stored only in this Mac's login Keychain; it was not sent to GitHub.
+The repo instructions prohibit a push. Consequently no source was published and no GitHub release
+was created. Once publication is authorized, the repo must be public for the updater to fetch
+releases without putting a token in the app; configure the Actions secret
+`OIP_OTA_SIGNING_PRIVATE_KEY`, push the source and a release tag, and the installed app can receive
+subsequent releases through its GitHub updater. No Store submission, Pi/Core deployment, personal
+database change or device write was performed.
+
 ## 5. Evidence index
 
 | Artifact | Content |
 |---|---|
+| `docs/evidence/oip-github-ota/ota-receipt.json` | current direct-update implementation and local `/Applications` installation; differentiates proved package behavior from the unpublished GitHub release path (tracked) |
 | `docs/evidence/oip-canonical-acceptance/acceptance.json` | the canonical acceptance of the release: the eight functional phases, the widget gate, the browser gate, the visual comparison, the global infrastructure context, the accessibility and the device administration, with the revision and the tree of the run (tracked) |
 | `docs/evidence/oip-macos-install/macos-install.json` | the local installation of the macOS application bundle: the copy is byte-identical to the bundle of the release, the installed copy starts, is refused without a session, terminates without an orphan and starts again from the installation directory (tracked) |
 | `docs/evidence/oip003/`, `docs/evidence/oip004/`, `docs/evidence/oip004-ui/`, `docs/evidence/oip005/`, `docs/evidence/oip006/`, `docs/evidence/oip0061/`, `docs/evidence/oip007/`, `docs/evidence/oip008/`, `docs/evidence/oip0082/`, `docs/evidence/oip0084/`, `docs/evidence/oip0085/`, `docs/evidence/git-baseline/` | the receipts of the **earlier eras**: the history of the measurement and not the evidence of this release — the gate receipts of the eras 003 to 0085, the first real-device gate and the baseline of the initial commit |

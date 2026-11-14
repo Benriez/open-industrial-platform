@@ -1,0 +1,44 @@
+{
+  "schema": "oip-github-ota-v1",
+  "status": "LOCAL_INSTALL_PASS_GITHUB_RELEASE_NOT_PUBLISHED",
+  "candidate_revision": "462e97d",
+  "candidate_branch": "fix/oip-first-macos-install",
+  "build": {
+    "command": "flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18848",
+    "version": "0.3.0",
+    "build_number": "3",
+    "bundle_tree_sha256": "9026e33672ab8efb85761b8844e026da58bcff2c7dc78c28f3ceee34629234d4",
+    "ota_enabled": true,
+    "code_signature": "valid ad-hoc signature; no Developer ID identity is configured"
+  },
+  "package": {
+    "archive": "oip-macos-universal.zip",
+    "archive_sha256": "b84e1cf7c0dc785a6a6a707154af3adef337863361c2b84358d7bdb976509911",
+    "manifest_sha256": "62245e347125707892be099abce2a51dfe882aed283a0bb26c28925889725ffc",
+    "ed25519_signature": "verified",
+    "tampered_manifest": "rejected",
+    "store_build_ota_enabled": false,
+    "direct_build_app_sandbox": false
+  },
+  "checks": {
+    "native_macos_release_build": "PASS",
+    "ota_package_integration": "PASS: 1 test",
+    "update_helper_shell_syntax": "PASS",
+    "mas_package_measurement": "PASS: skip-build package measurement only",
+    "git_diff_check": "PASS",
+    "workflow_yaml_parse": "PASS"
+  },
+  "installation": {
+    "path": "/Applications/Open Industrial Platform.app",
+    "tree_matches_direct_package": true,
+    "launch": "PASS: process 22146 observed from the Applications bundle"
+  },
+  "github_delivery": {
+    "repository": "Benriez/open-industrial-platform",
+    "repository_exists": false,
+    "release_available": false,
+    "actions_signing_secret_configured": false,
+    "private_key_location": "macOS login Keychain only; not published",
+    "status": "BLOCKED: source push and public release publication have not been authorized"
+  }
+}
