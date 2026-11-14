@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/controller.dart';
 import '../../design_system/theme.dart';
+import '../../models/app_metadata.dart';
 import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
 import 'settings_models.dart';
@@ -128,7 +129,64 @@ class SettingsSectionContent extends StatelessWidget {
         'active_startup_snapshot beschreibt den laufenden Snapshot. persisted_requires_restart wäre ein Offline-Ergebnis, kein aktiver Runtime-Wert. Ein exakter Scope-Datensatz und ein geerbter effektiver Wert sind nicht dasselbe.',
         icon: Icons.restart_alt_outlined,
       ),
+      const Hairline(),
+      _about(context),
     ]));
+  }
+
+  /// The client identity: name, version/build and a local-first data note.
+  ///
+  /// A store-ready surface names the application the way it ships. The version
+  /// and build mirror `pubspec.yaml`; nothing here is a Core fact and nothing
+  /// here is invented.
+  Widget _about(BuildContext context) {
+    const info = kOipApplication;
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const SettingsSectionHeader(
+        title: 'About',
+        subtitle:
+            'App-Identität, Build-Nummer und Datenschutzerklärung. Keine Core-Konfiguration.',
+        status: 'CLIENT IDENTITY',
+        statusColor: OipTokens.cyan,
+      ),
+      const SizedBox(height: 12),
+      Semantics(
+        label: '${info.name}, Version ${info.version}, Build ${info.build}',
+        child: Text(
+          info.name,
+          style: Theme.of(context)
+              .textTheme
+              .titleMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
+        ),
+      ),
+      const SizedBox(height: 10),
+      KeyValue(
+        'Version',
+        info.version,
+        mono: false,
+        key: const Key('settings-about-version'),
+      ),
+      KeyValue(
+        'Build',
+        info.build,
+        mono: false,
+        key: const Key('settings-about-build'),
+      ),
+      KeyValue(
+        'Shell',
+        info.footer,
+        mono: false,
+        key: const Key('settings-about-shell'),
+      ),
+      const SizedBox(height: 10),
+      WorkstationNote(
+        'Lokal · keine Telemetrie',
+        info.privacyNote,
+        icon: Icons.shield_outlined,
+        color: OipTokens.cyan,
+      ),
+    ]);
   }
 
   Widget _settingRow(BuildContext context, SettingDefinition definition,
