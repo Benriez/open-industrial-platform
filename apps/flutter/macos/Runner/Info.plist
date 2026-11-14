@@ -22,6 +22,14 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<!-- GitHub OTA is enabled only by the direct-distribution packaging step.
+	     The Mac App Store build keeps this false and receives updates from Apple. -->
+	<key>OIPUpdateEnabled</key>
+	<false/>
+	<key>OIPGitHubRepository</key>
+	<string>Benriez/open-industrial-platform</string>
+	<key>OIPUpdatePublicKey</key>
+	<string>MrXzdeXXowGzn2gQMi4yGjVZIPrt4JULVjgXJucX15Y=</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LSApplicationCategoryType</key>

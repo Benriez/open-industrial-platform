@@ -218,7 +218,12 @@ def verify(bundle: pathlib.Path):
         "the_display_name": info.get("CFBundleDisplayName"),
         "the_name": info.get("CFBundleName"),
         "the_copyright": info.get("NSHumanReadableCopyright"),
+        "oip_github_ota_enabled": info.get("OIPUpdateEnabled", False),
     }
+    if info.get("OIPUpdateEnabled", False) is not False:
+        report["the_problems"].append(
+            "the Mac App Store bundle must receive updates from the App Store; "
+            "the GitHub OTA updater must be disabled")
     if info.get("LSApplicationCategoryType") != "public.app-category.utilities":
         report["the_problems"].append("the bundle names no category")
     # The name that the operator sees is the name of the listing; the name on

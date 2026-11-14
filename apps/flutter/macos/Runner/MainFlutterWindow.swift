@@ -1,4 +1,5 @@
 import Cocoa
+import CryptoKit
 import FlutterMacOS
 import LocalAuthentication
 import Security
@@ -22,6 +23,14 @@ class MainFlutterWindow: NSWindow {
     super.awakeFromNib()
 
     placeOnVisibleScreen()
+
+    // The direct build checks GitHub Releases after its window is ready. The
+    // Store package leaves OIPUpdateEnabled false and uses App Store updates.
+    DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+      if #available(macOS 10.15, *) {
+        GitHubOTAUpdater.shared.checkForUpdate()
+      }
+    }
   }
 
   /// The window of the bundle has to be visible on a screen of the machine.
@@ -56,6 +65,196 @@ class MainFlutterWindow: NSWindow {
   /// bundle. The operator sees the window; the log says where it came.
   private func report(_ message: String) {
     FileHandle.standardError.write(("OIP-WINDOW " + message + "\n").data(using: .utf8)!)
+  }
+}
+
+/// First-party GitHub Releases updater for the direct macOS distribution.
+/// Release metadata is signed with an embedded Ed25519 public key; the archive
+/// digest is covered by that signature, so GitHub's release API is only the
+/// transport and cannot authorize altered code.
+@available(macOS 10.15, *)
+private final class GitHubOTAUpdater {
+  static let shared = GitHubOTAUpdater()
+
+  private struct Manifest: Decodable {
+    let bundleIdentifier: String
+    let version: String
+    let build: String
+    let archive: String
+    let archiveSHA256: String
+
+    enum CodingKeys: String, CodingKey {
+      case bundleIdentifier = "bundle_identifier"
+      case version
+      case build
+      case archive
+      case archiveSHA256 = "archive_sha256"
+    }
+  }
+
+  private struct Release: Decodable {
+    let draft: Bool
+    let prerelease: Bool
+    let assets: [Asset]
+  }
+
+  private struct Asset: Decodable {
+    let name: String
+    let browserDownloadURL: URL
+
+    enum CodingKeys: String, CodingKey {
+      case name
+      case browserDownloadURL = "browser_download_url"
+    }
+  }
+
+  private let session = URLSession(configuration: .ephemeral)
+  private let repository = Bundle.main.object(forInfoDictionaryKey: "OIPGitHubRepository") as? String ?? ""
+  private let publicKey = Bundle.main.object(forInfoDictionaryKey: "OIPUpdatePublicKey") as? String ?? ""
+
+  func checkForUpdate() {
+    guard Bundle.main.object(forInfoDictionaryKey: "OIPUpdateEnabled") as? Bool == true,
+          !repository.isEmpty,
+          !publicKey.hasPrefix("__"),
+          ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"] == nil,
+          let url = URL(string: "https://api.github.com/repos/\(repository)/releases/latest"),
+          url.host == "api.github.com" else { return }
+
+    let defaults = UserDefaults.standard
+    let now = Date().timeIntervalSince1970
+    guard now - defaults.double(forKey: "oip.github-ota.last-check") > 21_600 else { return }
+    defaults.set(now, forKey: "oip.github-ota.last-check")
+
+    var request = URLRequest(url: url)
+    request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+    request.setValue("OpenIndustrialPlatform-macOS", forHTTPHeaderField: "User-Agent")
+    request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
+    session.dataTask(with: request) { [weak self] data, response, error in
+      guard let self, error == nil, let data,
+            (response as? HTTPURLResponse)?.statusCode == 200,
+            let release = try? JSONDecoder().decode(Release.self, from: data),
+            !release.draft, !release.prerelease else { return }
+      self.verifyRelease(release)
+    }.resume()
+  }
+
+  private func verifyRelease(_ release: Release) {
+    guard let manifestAsset = release.assets.first(where: { $0.name == "oip-macos-manifest.json" }),
+          let signatureAsset = release.assets.first(where: { $0.name == "oip-macos-manifest.sig" }) else { return }
+    getSmallAsset(manifestAsset) { [weak self] manifestData in
+      guard let self, let manifestData,
+            let manifest = try? JSONDecoder().decode(Manifest.self, from: manifestData),
+            manifest.bundleIdentifier == Bundle.main.bundleIdentifier,
+            let signatureURL = self.safeReleaseURL(signatureAsset.browserDownloadURL) else { return }
+      var request = URLRequest(url: signatureURL)
+      request.setValue("OpenIndustrialPlatform-macOS", forHTTPHeaderField: "User-Agent")
+      self.session.dataTask(with: request) { data, response, error in
+        guard error == nil, let data,
+              (response as? HTTPURLResponse)?.statusCode == 200,
+              let signatureText = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+              let signature = Data(base64Encoded: signatureText),
+              let rawKey = Data(base64Encoded: self.publicKey),
+              let key = try? Curve25519.Signing.PublicKey(rawRepresentation: rawKey),
+              key.isValidSignature(signature, for: manifestData),
+              manifest.archive == "oip-macos-universal.zip",
+              let archiveAsset = release.assets.first(where: { $0.name == manifest.archive }),
+              self.isNewer(manifest.build) else { return }
+        self.offer(manifest, archiveAsset: archiveAsset)
+      }.resume()
+    }
+  }
+
+  private func getSmallAsset(_ asset: Asset, completion: @escaping (Data?) -> Void) {
+    guard let url = safeReleaseURL(asset.browserDownloadURL) else { completion(nil); return }
+    var request = URLRequest(url: url)
+    request.setValue("OpenIndustrialPlatform-macOS", forHTTPHeaderField: "User-Agent")
+    session.dataTask(with: request) { data, response, error in
+      completion(error == nil && (response as? HTTPURLResponse)?.statusCode == 200 ? data : nil)
+    }.resume()
+  }
+
+  private func safeReleaseURL(_ url: URL) -> URL? {
+    ["github.com", "objects.githubusercontent.com"].contains(url.host ?? "") && url.scheme == "https" ? url : nil
+  }
+
+  private func isNewer(_ remoteBuild: String) -> Bool {
+    guard let current = Int(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""),
+          let remote = Int(remoteBuild) else { return false }
+    return remote > current
+  }
+
+  private func offer(_ manifest: Manifest, archiveAsset: Asset) {
+    DispatchQueue.main.async {
+      let alert = NSAlert()
+      alert.messageText = "OIP-Update verfügbar"
+      alert.informativeText = "Version \(manifest.version) ist verfügbar. Die signierte Aktualisierung wird heruntergeladen und nach dem Neustart installiert."
+      alert.addButton(withTitle: "Jetzt aktualisieren")
+      alert.addButton(withTitle: "Später")
+      guard alert.runModal() == .alertFirstButtonReturn else { return }
+      self.downloadAndInstall(manifest, archiveAsset: archiveAsset)
+    }
+  }
+
+  private func downloadAndInstall(_ manifest: Manifest, archiveAsset: Asset) {
+    guard let url = safeReleaseURL(archiveAsset.browserDownloadURL) else {
+      showFailure("Der Download-Link des signierten Updates ist ungültig.")
+      return
+    }
+    let appURL = Bundle.main.bundleURL
+    guard FileManager.default.isWritableFile(atPath: appURL.deletingLastPathComponent().path) else {
+      showFailure("Der App-Ordner ist nicht beschreibbar. Installiere OIP unter /Applications mit Schreibrechten.")
+      return
+    }
+    var request = URLRequest(url: url)
+    request.setValue("OpenIndustrialPlatform-macOS", forHTTPHeaderField: "User-Agent")
+    session.downloadTask(with: request) { [weak self] temporaryURL, response, error in
+      guard let self, error == nil, let temporaryURL,
+            (response as? HTTPURLResponse)?.statusCode == 200,
+            let archiveData = try? Data(contentsOf: temporaryURL),
+            SHA256.hash(data: archiveData).map({ String(format: "%02x", $0) }).joined() == manifest.archiveSHA256 else {
+        self?.showFailure("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.")
+        return
+      }
+      let directory = FileManager.default.temporaryDirectory.appendingPathComponent("OIP-OTA-\(UUID().uuidString)", isDirectory: true)
+      do {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+        let archive = directory.appendingPathComponent(manifest.archive)
+        try FileManager.default.moveItem(at: temporaryURL, to: archive)
+        self.launchInstaller(archive: archive, appURL: appURL, manifest: manifest)
+      } catch {
+        self.showFailure("Das geprüfte Update konnte nicht vorbereitet werden.")
+      }
+    }.resume()
+  }
+
+  private func launchInstaller(archive: URL, appURL: URL, manifest: Manifest) {
+    guard let helper = Bundle.main.url(forResource: "oip_ota_install_helper", withExtension: "sh") else {
+      showFailure("Der Update-Installer fehlt im App-Bundle.")
+      return
+    }
+    DispatchQueue.main.async {
+      let process = Process()
+      process.executableURL = URL(fileURLWithPath: "/bin/sh")
+      process.arguments = [helper.path, String(ProcessInfo.processInfo.processIdentifier), archive.path,
+                          appURL.path, manifest.archiveSHA256, manifest.bundleIdentifier, manifest.build]
+      do {
+        try process.run()
+        NSApp.terminate(nil)
+      } catch {
+        self.showFailure("Der Update-Installer konnte nicht gestartet werden.")
+      }
+    }
+  }
+
+  private func showFailure(_ message: String) {
+    DispatchQueue.main.async {
+      let alert = NSAlert()
+      alert.messageText = "OIP konnte nicht aktualisiert werden"
+      alert.informativeText = message
+      alert.addButton(withTitle: "OK")
+      alert.runModal()
+    }
   }
 }
 
