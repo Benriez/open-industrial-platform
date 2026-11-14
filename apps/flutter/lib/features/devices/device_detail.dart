@@ -24,6 +24,7 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
   final VoidCallback onRetry;
   final VoidCallback onClose;
   final void Function(int) navigate;
+  final ValueChanged<List<Observation>>? onConnectionObservations;
   final InfrastructureContext? infrastructure;
 
   /// The inventory record of the selected device.
@@ -50,6 +51,7 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
     required this.onRetry,
     required this.onClose,
     required this.navigate,
+    this.onConnectionObservations,
     this.infrastructure,
     this.inventoryDevice,
     this.controller,
@@ -235,7 +237,6 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
             spacing: 8,
             runSpacing: 6,
             children: observations
-                .take(3)
                 .map((item) => _metricChip(context, item))
                 .toList(),
           ),
@@ -253,7 +254,9 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
           const Hairline(vertical: 4),
           const PanelLabel('Connection & Monitoring'),
           DeviceConnectionPanel(
-              controller: controller!, deviceId: device.id),
+              controller: controller!,
+              deviceId: device.id,
+              onObservations: onConnectionObservations),
           const Hairline(vertical: 4),
           const PanelLabel('Persistierte Messhistorie'),
           DeviceHistorySection(

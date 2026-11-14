@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../app/controller.dart';
 import '../services/api.dart';
+import '../services/touch_id.dart';
 
-/// One-use grant from the authenticated local CLI. No persistent browser token.
+/// Initial one-use grant, with optional native macOS Touch ID pairing.
 class OperatorLogin extends StatefulWidget {
   final OipController controller;
   const OperatorLogin(this.controller, {super.key});
@@ -14,6 +15,19 @@ class _OperatorLoginState extends State<OperatorLogin> {
   final code = TextEditingController();
   bool busy = false;
   String? error;
+  bool hasTouchId = false;
+  bool enableTouchIdAfterLogin = false;
+  @override
+  void initState() {
+    super.initState();
+    _loadTouchId();
+  }
+
+  Future<void> _loadTouchId() async {
+    final available = await touchIdAvailable();
+    if (mounted) setState(() => hasTouchId = available);
+  }
+
   @override
   void dispose() {
     code.dispose();
@@ -28,11 +42,29 @@ class _OperatorLoginState extends State<OperatorLogin> {
     final value = code.text.trim();
     code.clear();
     try {
-      await widget.controller.login(value);
+      await widget.controller
+          .login(value, enableTouchId: enableTouchIdAfterLogin && hasTouchId);
     } catch (e) {
       if (mounted) {
         setState(() =>
             error = apiErrorMessage(e, 'Lokale Anmeldung fehlgeschlagen.'));
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> loginWithTouchId() async {
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      await widget.controller.loginWithTouchId();
+    } catch (e) {
+      if (mounted) {
+        setState(() =>
+            error = apiErrorMessage(e, 'Touch-ID-Anmeldung fehlgeschlagen.'));
       }
     } finally {
       if (mounted) setState(() => busy = false);
@@ -71,6 +103,27 @@ class _OperatorLoginState extends State<OperatorLogin> {
                         onSubmitted: (_) {
                           if (!busy) login();
                         }),
+                    if (hasTouchId) ...[
+                      CheckboxListTile(
+                        key: const Key('enable-touch-id'),
+                        contentPadding: EdgeInsets.zero,
+                        value: enableTouchIdAfterLogin,
+                        onChanged: busy
+                            ? null
+                            : (value) => setState(
+                                () => enableTouchIdAfterLogin = value ?? false),
+                        title: const Text('Touch ID auf diesem Mac einrichten'),
+                        subtitle: const Text(
+                            'Wird nach dem ersten Code-Login an deine Touch-ID gebunden.'),
+                      ),
+                      OutlinedButton.icon(
+                        key: const Key('operator-login-touch-id'),
+                        onPressed: busy ? null : loginWithTouchId,
+                        icon: const Icon(Icons.fingerprint),
+                        label: const Text('Mit Touch ID anmelden'),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     if (error != null)
                       Text(error!, key: const Key('login-error')),
                     FilledButton(
@@ -81,7 +134,7 @@ class _OperatorLoginState extends State<OperatorLogin> {
                             : 'Operator-Sitzung autorisieren')),
                     const SizedBox(height: 8),
                     const Text(
-                        'Keine langfristigen Zugangsdaten im Browser. Die lokale Sitzung endet nach 30 Minuten, beim Abmelden oder mit einem Neustart der Instanz — die Sitzung liegt im Speicher des Core.'),
+                        'Touch ID ist nur in der nativen Mac-App verfügbar. Der Schlüssel liegt in der Mac-Keychain. Die lokale Sitzung endet nach 30 Minuten, beim Abmelden oder mit einem Neustart der Instanz; die Core-Kopplung wird beim Neustart zurückgesetzt.'),
                   ],
                 ))),
       ));

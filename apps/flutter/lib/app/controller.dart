@@ -5,6 +5,7 @@ import '../models/contracts.dart';
 import '../models/infrastructure.dart';
 import '../models/onboarding.dart';
 import '../services/api.dart';
+import '../services/touch_id.dart';
 import 'workspaces.dart';
 
 export 'workspaces.dart' show WorkspaceId;
@@ -115,7 +116,7 @@ class OipController extends ChangeNotifier {
   }
 
   /// Authorizes the local operator session with a single-use code.
-  Future<void> login(String code) async {
+  Future<void> login(String code, {bool enableTouchId = false}) async {
     final boundary = management;
     if (boundary == null) {
       throw const ApiFailure(
@@ -123,6 +124,40 @@ class OipController extends ChangeNotifier {
           code: 'UNSUPPORTED');
     }
     final session = await boundary.login(code);
+    if (enableTouchId) await this.enableTouchId();
+    await _completeLogin(session);
+  }
+
+  /// Pairs a random credential stored behind this Mac's biometric policy.
+  /// The credential itself is never persisted by Flutter or the Core.
+  Future<void> enableTouchId() async {
+    final boundary = api is TouchIdManagementApi
+        ? api as TouchIdManagementApi
+        : null;
+    if (boundary == null) throw const ApiFailure('Touch ID nicht verfügbar.');
+    final credential = await createTouchIdCredential();
+    if (credential == null) throw const ApiFailure('Touch ID nicht verfügbar.');
+    try {
+      await boundary.pairDeviceCredential(credential);
+    } catch (_) {
+      await deleteTouchIdCredential();
+      rethrow;
+    }
+  }
+
+  Future<void> loginWithTouchId() async {
+    final boundary = api is TouchIdManagementApi
+        ? api as TouchIdManagementApi
+        : null;
+    if (boundary == null) throw const ApiFailure('Touch ID nicht verfügbar.');
+    final credential = await readTouchIdCredential();
+    if (credential == null) {
+      throw const ApiFailure('Für diesen Mac ist Touch ID nicht eingerichtet.');
+    }
+    await _completeLogin(await boundary.loginWithDeviceCredential(credential));
+  }
+
+  Future<void> _completeLogin(BrowserSession session) async {
     _sessionPrincipal = session.authenticated ? session.principalId : null;
     contextRevision++;
     history.clear();

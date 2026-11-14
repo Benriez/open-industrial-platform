@@ -184,6 +184,14 @@ pub fn router_with_identity(
             "/api/v2/browser/login",
             post(browser_login).layer(axum::extract::DefaultBodyLimit::max(1024)),
         )
+        .route(
+            "/api/v2/browser/pairing",
+            post(browser_pair_device).layer(axum::extract::DefaultBodyLimit::max(1024)),
+        )
+        .route(
+            "/api/v2/browser/device-login",
+            post(browser_device_login).layer(axum::extract::DefaultBodyLimit::max(1024)),
+        )
         .route("/api/v2/installation/status", get(installation_status))
         .route("/api/v2/inventory/devices", get(inventory_read))
         .route("/api/v2/services", get(services_read))
@@ -741,6 +749,63 @@ async fn browser_login(
 #[serde(deny_unknown_fields)]
 struct BrowserLogin {
     code: String,
+}
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BrowserDeviceCredential {
+    credential: String,
+}
+async fn browser_pair_device(
+    axum::extract::State(s): axum::extract::State<ApiContext>,
+    headers: axum::http::HeaderMap,
+    body: Result<Json<BrowserDeviceCredential>, axum::extract::rejection::JsonRejection>,
+) -> Result<Response, CapabilityErrorResponse> {
+    crate::browser_session::require_origin(&headers).map_err(CapabilityErrorResponse)?;
+    let token = crate::browser_session::cookie(&headers)
+        .ok_or_else(|| CapabilityErrorResponse(denied()))?;
+    let csrf = headers
+        .get("x-oip-csrf")
+        .and_then(|v| v.to_str().ok())
+        .ok_or_else(|| CapabilityErrorResponse(denied()))?;
+    let Json(body) = body.map_err(|_| CapabilityErrorResponse(denied()))?;
+    s.state
+        .browser_sessions
+        .pair_device(token, csrf, &body.credential)
+        .map_err(CapabilityErrorResponse)?;
+    let mut response = Json(json!({"paired":true})).into_response();
+    response.headers_mut().insert(
+        axum::http::header::CACHE_CONTROL,
+        HeaderValue::from_static("no-store"),
+    );
+    Ok(response)
+}
+async fn browser_device_login(
+    axum::extract::State(s): axum::extract::State<ApiContext>,
+    headers: axum::http::HeaderMap,
+    body: Result<Json<BrowserDeviceCredential>, axum::extract::rejection::JsonRejection>,
+) -> Result<Response, CapabilityErrorResponse> {
+    crate::browser_session::require_origin(&headers).map_err(CapabilityErrorResponse)?;
+    let Json(body) = body.map_err(|_| CapabilityErrorResponse(denied()))?;
+    let (token, info) = s
+        .state
+        .browser_sessions
+        .device_login(&body.credential)
+        .map_err(CapabilityErrorResponse)?;
+    let mut response = Json(info).into_response();
+    response.headers_mut().insert(
+        axum::http::header::SET_COOKIE,
+        format!(
+            "{}={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800",
+            crate::browser_session::COOKIE
+        )
+        .parse()
+        .map_err(|_| CapabilityErrorResponse(denied()))?,
+    );
+    response.headers_mut().insert(
+        axum::http::header::CACHE_CONTROL,
+        HeaderValue::from_static("no-store"),
+    );
+    Ok(response)
 }
 async fn browser_logout(
     Authorized(s): Authorized,

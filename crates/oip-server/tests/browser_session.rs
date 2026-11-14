@@ -291,6 +291,58 @@ async fn login_requires_the_exact_origin_and_a_single_use_code() {
 }
 
 #[tokio::test]
+async fn touch_id_pairing_requires_the_session_csrf_and_reissues_the_bound_principal() {
+    let state = state();
+    let app = api::router(state.clone(), "missing");
+    let (session_cookie, csrf) = login(&app, &state).await;
+    let credential = "a7".repeat(32);
+    let headers = vec![
+        ("origin", ORIGIN.to_string()),
+        ("cookie", session_cookie.clone()),
+        ("x-oip-csrf", csrf.clone()),
+    ];
+    let (status, body, _) = send(
+        app.clone(),
+        "POST",
+        "/api/v2/browser/pairing",
+        headers,
+        Some(json!({"credential":credential})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    assert_eq!(body["paired"], true);
+
+    let (status, _, _) = send(
+        app.clone(),
+        "POST",
+        "/api/v2/browser/pairing",
+        vec![
+            ("origin", ORIGIN.to_string()),
+            ("cookie", session_cookie.clone()),
+            ("x-oip-csrf", "forged".to_string()),
+        ],
+        Some(json!({"credential":"b8".repeat(32)})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+
+    let (status, body, headers) = send(
+        app.clone(),
+        "POST",
+        "/api/v2/browser/device-login",
+        vec![("origin", ORIGIN.to_string())],
+        Some(json!({"credential":credential})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    assert_eq!(body["principal_id"], "platform-reader");
+    assert_eq!(body["authenticated"], true);
+    let cookie = headers.get("set-cookie").unwrap().to_str().unwrap();
+    assert!(cookie.contains("HttpOnly"), "{cookie}");
+    assert!(cookie.contains("Max-Age=1800"), "{cookie}");
+}
+
+#[tokio::test]
 async fn an_unauthenticated_session_query_never_exposes_a_csrf_value() {
     let state = state();
     let app = api::router(state.clone(), "missing");

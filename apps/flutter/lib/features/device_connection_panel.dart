@@ -11,8 +11,12 @@ import 'device_onboarding.dart';
 class DeviceConnectionPanel extends StatefulWidget {
   final OipController controller;
   final String deviceId;
+  final ValueChanged<List<Observation>>? onObservations;
   const DeviceConnectionPanel(
-      {super.key, required this.controller, required this.deviceId});
+      {super.key,
+      required this.controller,
+      required this.deviceId,
+      this.onObservations});
   @override
   State<DeviceConnectionPanel> createState() => _DeviceConnectionPanelState();
 }
@@ -46,6 +50,8 @@ class _DeviceConnectionPanelState extends State<DeviceConnectionPanel> {
           result = value;
           error = null;
         });
+        final observations = value.connection?.observations ?? const [];
+        if (observations.isNotEmpty) widget.onObservations?.call(observations);
       }
     } catch (e) {
       if (mounted) {

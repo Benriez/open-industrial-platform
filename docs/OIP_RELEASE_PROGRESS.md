@@ -4628,6 +4628,36 @@ No personal database change, no schema-7 activation of the personal installation
 of the operator, no published port, no firewall change, no request for a device credential, no
 modification of the router or the bridge, no push, no deployment.
 
+### Iteration 101 — verified host telemetry and native macOS Touch ID login
+
+**Status: verified on the isolated candidate; merged into canonical `main` only after the fast-forward.**
+The managed Devices Telemetry tab now renders the same authorized SSH connection observations when the
+device-detail projection has no metric rows. It waits for the connection result for the selected device;
+it does not add simulator measurements. The complete acceptance uses an owned loopback OpenSSH fixture,
+so its observed `Darwin` host and 16 GiB memory are test-host measurements, not readings from the Pi.
+
+The native macOS login can pair Touch ID after an ordinary, authorized one-time-code login. The random
+256-bit credential is held in the Mac Keychain with the current biometric set and device-only unlocked
+access; the Core stores its digest and Principal binding in memory and redeems it for the existing
+30-minute session. Pairing requires the authenticated cookie, exact Origin and CSRF. The first pairing
+still needs the existing operator-issued code. A Core restart clears pairings, and a changed Touch ID
+set requires re-pairing. The web client never offers Touch ID.
+
+Measured evidence: `target/oip-host-telemetry-ui-gate-touchid-final/report.json` is **PASS** with all
+8/8 managed acceptance phases, 387 Flutter tests, 189 browser checks with zero failures, 13 screenshots,
+and `own_processes_stopped: true`. Local and served web bundles match byte for byte at SHA-256
+`d76764985bbf0c7626dea8a4090ed5bc6b6ebed64ba23d275956dd560d02703b`; the tested source tree was
+`be0fc5e40e3b08ce2b06a9781e2c1b952cee51b0`. The stable-shell visual result passes; operator visual
+acceptance remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`. The native Release bundle builds successfully
+for arm64 with `OIP_API_URL=http://127.0.0.1:18848`. The Keychain biometric ceremony itself is completed
+by the operator when enabling Touch ID on the Mac.
+
+The local Mac app bundle was replaced on disk after the verified build; any already-running process was
+left untouched. Its verified bundle tree SHA-256 is
+`91919451510d8beb5d5737bf4654861b266e53859435f6b22746af005594ab76`; it needs a launch to use Touch ID.
+No private SSH device, Pi service, personal database, router, Hue Bridge, push or remote deployment was
+changed.
+
 ## 5. Evidence index
 
 | Artifact | Content |

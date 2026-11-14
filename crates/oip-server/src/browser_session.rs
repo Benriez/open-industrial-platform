@@ -12,6 +12,7 @@ const SESSION_TTL: Duration = Duration::from_secs(1800);
 const GRANT_TTL: Duration = Duration::from_secs(120);
 const MAX_SESSIONS: usize = 64;
 const MAX_GRANTS: usize = 32;
+const MAX_DEVICE_CREDENTIALS: usize = 32;
 /// Bounded record of rejected codes. The counter never blocks a valid single-use
 /// grant; it only keeps the rejection state itself bounded.
 const MAX_FAILED: usize = 16;
@@ -25,10 +26,14 @@ struct Session {
     csrf: String,
     expires: Instant,
 }
+struct DeviceCredential {
+    principal: PrincipalId,
+}
 #[derive(Default)]
 struct Entries {
     grants: BTreeMap<String, Grant>,
     sessions: BTreeMap<String, Session>,
+    device_credentials: BTreeMap<String, DeviceCredential>,
     failed: Vec<Instant>,
 }
 #[derive(Default)]
@@ -149,6 +154,75 @@ impl BrowserSessions {
         }
         Ok(context(s.principal.clone()))
     }
+    /// Pair a native device credential with the currently authenticated
+    /// principal. The caller stores the raw random credential in the platform
+    /// keychain; only its digest is retained by the Core.
+    pub fn pair_device(
+        &self,
+        token: &str,
+        csrf: &str,
+        credential: &str,
+    ) -> Result<(), CapabilityError> {
+        let mut e = self.entries.lock().map_err(|_| denied())?;
+        e.prune();
+        if credential.len() != 64 || !credential.bytes().all(|b| b.is_ascii_hexdigit()) {
+            return Err(denied());
+        }
+        let session = e.sessions.get(&digest(token)).ok_or_else(denied)?;
+        if csrf.len() != session.csrf.len()
+            || csrf
+                .bytes()
+                .zip(session.csrf.bytes())
+                .fold(0u8, |d, (a, b)| d | (a ^ b))
+                != 0
+        {
+            return Err(denied());
+        }
+        let principal = session.principal.clone();
+        if !e.device_credentials.contains_key(&digest(credential))
+            && e.device_credentials.len() >= MAX_DEVICE_CREDENTIALS
+        {
+            return Err(denied());
+        }
+        e.device_credentials
+            .insert(digest(credential), DeviceCredential { principal });
+        Ok(())
+    }
+    /// Redeem a paired credential for a normal bounded browser session.
+    pub fn device_login(&self, credential: &str) -> Result<(String, SessionInfo), CapabilityError> {
+        let mut e = self.entries.lock().map_err(|_| denied())?;
+        e.prune();
+        if credential.len() != 64
+            || !credential.bytes().all(|b| b.is_ascii_hexdigit())
+            || e.sessions.len() >= MAX_SESSIONS
+        {
+            return Err(denied());
+        }
+        let Some(device) = e.device_credentials.get(&digest(credential)) else {
+            if e.failed.len() < MAX_FAILED {
+                e.failed.push(Instant::now());
+            }
+            return Err(denied());
+        };
+        let principal = device.principal.clone();
+        let token = random_token().map_err(|_| denied())?;
+        let csrf = random_token().map_err(|_| denied())?;
+        let info = SessionInfo {
+            authenticated: true,
+            principal_id: Some(principal.clone()),
+            csrf_token: Some(csrf.clone()),
+            mode: "local_operator_session",
+        };
+        e.sessions.insert(
+            digest(&token),
+            Session {
+                principal,
+                csrf,
+                expires: Instant::now() + SESSION_TTL,
+            },
+        );
+        Ok((token, info))
+    }
     pub fn info(&self, token: Option<&str>, legacy: bool) -> SessionInfo {
         let mut e = match self.entries.lock() {
             Ok(e) => e,
@@ -267,6 +341,35 @@ mod tests {
         assert_eq!(info.principal_id, Some(p));
         // The grant is still single use.
         assert!(sessions.login(&code).is_err());
+    }
+    #[test]
+    fn paired_device_credential_reissues_only_a_bounded_session_for_its_principal() {
+        let sessions = BrowserSessions::default();
+        let principal = PrincipalId::new("touch-id-principal").unwrap();
+        let code = sessions.issue(principal.clone()).unwrap();
+        let (initial_token, initial) = sessions.login(&code).unwrap();
+        let credential = "ab".repeat(32);
+        sessions
+            .pair_device(
+                &initial_token,
+                initial.csrf_token.as_deref().unwrap(),
+                &credential,
+            )
+            .unwrap();
+        assert!(sessions
+            .pair_device(&initial_token, "forged", &"cd".repeat(32))
+            .is_err());
+        sessions.logout(&initial_token);
+        let (token, info) = sessions.device_login(&credential).unwrap();
+        assert_eq!(info.principal_id, Some(principal.clone()));
+        assert_eq!(
+            sessions
+                .authenticate(&token, info.csrf_token.as_deref())
+                .unwrap()
+                .principal,
+            Some(principal)
+        );
+        assert!(sessions.device_login(&"ef".repeat(32)).is_err());
     }
     #[test]
     fn a_full_session_table_does_not_consume_the_grant() {

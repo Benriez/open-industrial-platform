@@ -163,6 +163,13 @@ abstract class DeviceManagementApi {
       {required String deviceId, String? cursor, int limit = 20});
 }
 
+/// Optional native-only pairing operations, kept separate from the existing
+/// management seam so test and legacy clients do not claim Touch ID support.
+abstract class TouchIdManagementApi {
+  Future<void> pairDeviceCredential(String credential);
+  Future<BrowserSession> loginWithDeviceCredential(String credential);
+}
+
 class ApiFailure implements Exception {
   final String message;
   final String? code;
@@ -180,7 +187,7 @@ String apiErrorMessage(Object error, String fallback) {
   return '${error.message}$code';
 }
 
-class RestApi implements OipApi, DeviceManagementApi {
+class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
   final Uri base;
   final http.Client _rest;
   final bool _dedicatedNodeClients;
@@ -225,6 +232,16 @@ class RestApi implements OipApi, DeviceManagementApi {
   @override
   Future<BrowserSession> login(String code) async =>
       _session(await _change('/api/v2/browser/login', {'code': code}) as Json);
+
+  @override
+  Future<void> pairDeviceCredential(String credential) async {
+    await _change('/api/v2/browser/pairing', {'credential': credential});
+  }
+
+  @override
+  Future<BrowserSession> loginWithDeviceCredential(String credential) async =>
+      _session(await _change(
+          '/api/v2/browser/device-login', {'credential': credential}) as Json);
 
   @override
   Future<void> logout() async {

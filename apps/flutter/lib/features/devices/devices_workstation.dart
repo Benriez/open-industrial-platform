@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../app/controller.dart';
@@ -5,6 +6,7 @@ import '../device_onboarding.dart';
 import '../../design_system/theme.dart';
 import '../../models/contracts.dart';
 import '../../models/infrastructure.dart';
+import '../../services/api.dart';
 import '../../widgets/adaptive_workspace.dart';
 import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
@@ -40,6 +42,7 @@ class _DevicesPageState extends State<DevicesPage> {
   List<Observation> detailMetrics = const [];
   bool detailLoading = false;
   Object? detailError;
+  Timer? detailMetricRetry;
   int requestGeneration = 0;
   String? compareMessage;
 
@@ -77,6 +80,8 @@ class _DevicesPageState extends State<DevicesPage> {
     if (scopeSignature != null && scopeSignature != signature) {
       // A new authorization scope invalidates every selection and request.
       requestGeneration++;
+      detailMetricRetry?.cancel();
+      detailMetricRetry = null;
       widget.controller.api.cancelDeviceRequests();
       session.selectedId = null;
       session.pinned.clear();
@@ -104,6 +109,7 @@ class _DevicesPageState extends State<DevicesPage> {
   @override
   void dispose() {
     requestGeneration++;
+    detailMetricRetry?.cancel();
     widget.controller.api.cancelDeviceRequests();
     searchController.dispose();
     searchFocus.dispose();
@@ -219,7 +225,27 @@ class _DevicesPageState extends State<DevicesPage> {
     if (!searchFocus.hasFocus) pageFocus.requestFocus();
   }
 
+  void _adoptConnectionObservations(
+      String deviceId, List<Observation> observations) {
+    if (!mounted ||
+        !widget.controller.managed ||
+        session.selectedId != deviceId ||
+        observations.isEmpty ||
+        detailMetrics.isNotEmpty) {
+      return;
+    }
+    detailMetricRetry?.cancel();
+    detailMetricRetry = null;
+    setState(() {
+      detailMetrics = observations;
+      detailError = null;
+      detailLoading = false;
+    });
+  }
+
   Future<void> _loadMetrics(Device device) async {
+    detailMetricRetry?.cancel();
+    detailMetricRetry = null;
     final generation = ++requestGeneration;
     widget.controller.api.cancelDeviceRequests();
     setState(() {
@@ -228,12 +254,37 @@ class _DevicesPageState extends State<DevicesPage> {
       detailLoading = true;
     });
     try {
-      final values = await widget.controller.api
-          .contextDeviceMetrics(device.id, widget.controller.infrastructure);
+      var values = const <Observation>[];
+      var collectorIsActive = false;
+      try {
+        values = await widget.controller.api
+            .contextDeviceMetrics(device.id, widget.controller.infrastructure);
+      } on ApiFailure catch (error) {
+        // Registered SSH hosts live in the managed inventory, while the
+        // DeviceDetail projection can omit their observations or return
+        // an empty list. Only a missing device is eligible for a second read;
+        // auth, policy, transport and other API failures stay visible.
+        if (error.statusCode != 404) rethrow;
+      }
+      final management = widget.controller.management;
+      if (values.isEmpty && widget.controller.managed && management != null) {
+        // Connection observations are the authoritative live path for managed
+        // SSH inventory. Use them when DeviceDetail has no samples, so extra
+        // host metrics such as GPU and temperature are visible in Telemetry.
+        final result = await management.connection(deviceId: device.id);
+        values = result.connection?.observations ?? const [];
+        collectorIsActive = result.connection?.status == 'collecting';
+      }
       if (!mounted ||
           generation != requestGeneration ||
           session.selectedId != device.id) {
         return;
+      }
+      // A concurrent refresh of the selected device's Connection & Monitoring
+      // panel may have delivered the first collector sample while this detail
+      // request was in flight. Keep that exact-device observation list.
+      if (values.isEmpty && detailMetrics.isNotEmpty) {
+        values = detailMetrics;
       }
       setState(() {
         detailMetrics = values;
@@ -242,6 +293,21 @@ class _DevicesPageState extends State<DevicesPage> {
         detailError = null;
         detailLoading = false;
       });
+      if (values.isEmpty && widget.controller.managed && collectorIsActive) {
+        // The first detail read can race the initial collector sample. Keep
+        // checking this exact selected device until its real observation
+        // arrives; an empty response must not strand Telemetry in a blank
+        // state after Monitoring becomes active.
+        detailMetricRetry = Timer(const Duration(seconds: 5), () {
+          if (mounted &&
+              generation == requestGeneration &&
+              session.selectedId == device.id &&
+              detailMetrics.isEmpty &&
+              detailError == null) {
+            unawaited(_loadMetrics(device));
+          }
+        });
+      }
     } catch (error) {
       if (!mounted ||
           generation != requestGeneration ||
@@ -258,6 +324,8 @@ class _DevicesPageState extends State<DevicesPage> {
 
   void _closeDetails() {
     requestGeneration++;
+    detailMetricRetry?.cancel();
+    detailMetricRetry = null;
     widget.controller.api.cancelDeviceRequests();
     setState(() {
       session.selectedId = null;
@@ -546,8 +614,9 @@ class _DevicesPageState extends State<DevicesPage> {
           onOpen: _openSelectedDevice,
           infrastructure: widget.controller.infrastructure,
         );
+        final workspaceDevice = selectedDevice;
         final workspace = DeviceEngineeringWorkspace(
-          device: selectedDevice,
+          device: workspaceDevice,
           snapshot: snapshot,
           sources: sources,
           metrics: displayMetrics,
@@ -557,6 +626,11 @@ class _DevicesPageState extends State<DevicesPage> {
           onRetry: () {
             final current = selectedDevice;
             if (current != null) _loadMetrics(current);
+          },
+          onConnectionObservations: (observations) {
+            if (workspaceDevice != null) {
+              _adoptConnectionObservations(workspaceDevice.id, observations);
+            }
           },
           onClose: _closeDetails,
           navigate: widget.navigate,

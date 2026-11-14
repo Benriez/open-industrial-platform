@@ -372,6 +372,35 @@ try {
   for(let i=0;i<60;i++){ rendered=await page.locator('body').ariaSnapshot(); if(rendered.includes('host.os')&&rendered.includes(os.value.text)&&rendered.includes('host.memory_total_bytes')&&rendered.includes(String(memory.value.unsigned_integer)))break; if(i===59)throw Error('The rendered panel does not show the collected measurements'); await page.waitForTimeout(250); }
   assert(rendered.includes(os.value.text));
   assert(rendered.includes(String(memory.value.unsigned_integer)));
+  // Flutter exposes these Material tabs as tappable semantic text nodes, not
+  // ARIA role=tab nodes. Target the rendered Telemetry node itself.
+  const telemetryTab=page.locator('flt-semantics[role="text"][flt-tappable]')
+    .filter({hasText:/^Telemetry\s+Tab 2 of 3$/});
+  assert.equal(await telemetryTab.count(),1,'the rendered Telemetry tab is missing or ambiguous');
+  await telemetryTab.click({force:true});
+  // Let the TabBarView finish its slide before inspecting the active pane;
+  // otherwise its previous page may still contribute hidden semantics.
+  await page.waitForTimeout(600);
+  let telemetryRendered='';
+  for(let i=0;i<120;i++){
+    telemetryRendered=await page.locator('body').ariaSnapshot();
+    if(telemetryRendered.includes(os.metric_id)&&
+       telemetryRendered.includes(os.value.text)&&
+       telemetryRendered.includes(memory.metric_id)&&
+       telemetryRendered.includes(String(memory.value.unsigned_integer)))break;
+    if(i===119)throw Error('DeviceDetail Telemetry does not show the authorized connection observations');
+    await page.mouse.move(850,800);
+    await page.mouse.wheel(0,400);
+    await page.waitForTimeout(250);
+  }
+  assert(telemetryRendered.includes(os.metric_id));
+  assert(telemetryRendered.includes(memory.metric_id));
+  await capture('06b-device-detail-telemetry');
+  const engineeringTab=page.locator('flt-semantics[role="text"][flt-tappable]')
+    .filter({hasText:/^Engineering\s+Tab 1 of 3$/});
+  assert.equal(await engineeringTab.count(),1,'the rendered Engineering tab is missing or ambiguous');
+  await engineeringTab.click({force:true});
+  await page.waitForTimeout(600);
   // The persisted history of the device must be reachable in the device view.
   // The samples are read back from the Core, never invented here, and the
   // receive times on the screen must be the receive times the Core stored.
@@ -493,7 +522,7 @@ try {
   await page.getByRole('button',{name:'Operator abmelden',exact:true}).click();
   await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_administration:{device_id:manualId,revision_before:manualRevision,revision_after:updated.items[0].record.revision,display_name_updated:true,online_archive_refused:'OFFLINE_ARCHIVE_REQUIRED',archive_is_offline_operation:true,note_written:true,the_note:NOTE,the_note_is_dropped_by_a_write_without_the_merge:true},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[1]+'/'+sources[2],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'device engineering workspace of the approved UI',demo_coordinates_absent:true},rendered_diagnostics:{approved_surface:'persisted_evidence',persisted_evidence_section:true,diagnosis_history_status:status,health_transitions:healthPage.items.length,documented_gaps:gapsPage.items.length},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
+  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,device_detail_telemetry_tab:true,device_detail_metrics:[os.metric_id,memory.metric_id],all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_administration:{device_id:manualId,revision_before:manualRevision,revision_after:updated.items[0].record.revision,display_name_updated:true,online_archive_refused:'OFFLINE_ARCHIVE_REQUIRED',archive_is_offline_operation:true,note_written:true,the_note:NOTE,the_note_is_dropped_by_a_write_without_the_merge:true},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[1]+'/'+sources[2],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'DeviceDetail Telemetry tab and connection monitoring panel of the approved UI',demo_coordinates_absent:true},rendered_diagnostics:{approved_surface:'persisted_evidence',persisted_evidence_section:true,diagnosis_history_status:status,health_transitions:healthPage.items.length,documented_gaps:gapsPage.items.length},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
 } catch(e) {
   await writeFile(resolve(out,'ssh-requests.json'),JSON.stringify(sshRequests,null,2));
   await capture('failure');
