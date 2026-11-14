@@ -77,6 +77,26 @@ authority, and driving the `--demo` core would risk simulated data in real mode.
 schema-7 activation, personal-database change or store publication was performed. **No further
 `oip-ui-polish` work is available; subsequent firings must not invent cosmetic tasks.**
 
+**Canonical UI baseline conformance check (2026-11-14, static code↔contract, no running Core needed).**
+The presentation layer is contract-bound (`docs/design/OIP_CANONICAL_UI_BASELINE.md`), so the current
+client was reconciled against §3 (approved shell) and §4 (R1–R10 prohibited regressions). **§3 PASS:**
+the six workstations exist (`features/{overview,devices,network,opcua,diagnostics,settings}.dart`); the
+global infrastructure context selector is present (`widgets/infrastructure_selector.dart`, key
+`infrastructure-context-selector`); context-sensitive inspectors exist (`app/workspaces.dart`: `enum
+WorkspaceId { overview, devices, network, opcua, diagnostics, settings }` + `AdaptiveWorkspaces`); the
+three themes exist (`design_system/theme.dart`: `enum OipThemeVariant { spectrum, graphite, daylight }`);
+the footer identity is `OIP · SPECTRUM 2027` (`models/app_metadata.dart`). **§4 PASS (real mode):** the
+prohibited literals `Deine Infrastruktur. Ein Bild.`, `Erfasste/Erreichbare Geräte`, `Tailnet`,
+`Remote Site`, `OIP / 005 UI` are absent from `lib/`. The four remaining hits are all compliant:
+`scenario-select` (`app/app.dart`) renders only under `snapshot.system.demoControls` (demo-only, never
+in real mode, beside the real selector — R5); `AGENT-FIRST` (`settings_workstation.dart`) is a
+technical status pill in the Settings capability context, the one location R6 permits (not a sidebar
+card); `M-01` appears only demo-gated (`features/opcua.dart` `if system.simulated`) or as code-level
+defaults/contract comparisons, never a real-mode primary measurement (R3); `Normalbetrieb` is the
+German word for normal operation in diagnostics health/empty states, not the scenario selector (R5).
+**Conclusion: no §3/§4 conformance gap.** This is static evidence only; the runtime §5 gate (served
+bundle == local, visual comparison) remains the environment-blocked item recorded above.
+
 The canonical tree carries eleven controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
