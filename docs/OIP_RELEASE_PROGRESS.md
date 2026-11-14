@@ -13,7 +13,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `fe33524` — host telemetry, Touch ID login recovery and native biometric error reporting |
+| Canonical source revision (the product: `apps/flutter/lib/`, `crates/`) | `807722b` — the client About section (store-ready app identity) on top of host telemetry and Touch ID login recovery |
 | The revision of the final acceptance | gate source revision `7a0c6da` with tested working-tree hash `be0fc5e40e3b08ce2b06a9781e2c1b952cee51b0`; local and served web bundle SHA-256 `d76764985bbf0c7626dea8a4090ed5bc6b6ebed64ba23d275956dd560d02703b` |
 | The revision of the Core binary of the release | `0a9b64f` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
@@ -4721,6 +4721,51 @@ memory; quit and relaunch it to load the installed update. The Pi Core was not c
 Touch ID must be paired with a code login against a Pi Core that supports the pairing endpoints; a
 Core restart clears the in-memory server pairing. Physical Pi Touch-ID acceptance remains unverified,
 and operator visual approval remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
+
+### Iteration 102 — the client About section makes the Settings workstation store-ready
+
+**Status: verified on an isolated candidate and integrated into canonical `main` by fast-forward**
+(`807722b`). A focused UI-polish increment (loop `oip-ui-polish`); it changes the presentation layer
+only.
+
+**Step.** Give the Settings workstation a client identity. The Application settings surface carried no
+app identity: the name "Open Industrial Platform" lived only in the `MaterialApp` title, and no screen
+named the version, the build or a data-disclosure note. A store-ready surface names the application the
+way it ships.
+
+**What changed** (client-side only; no Core, contract, permission or server rule changed):
+
+* `apps/flutter/lib/models/app_metadata.dart` (new): the single source of truth for the client
+  identity — name, version `0.3.0`, build `3`, the `OIP · SPECTRUM 2027` shell footer and a
+  local-first data note. The version and build mirror `pubspec.yaml` (`version: 0.3.0+3`); the exact
+  manifest line is kept next to the fields it describes (`OipApplicationInfo.manifestDeclaration`) so a
+  drift is visible in one place.
+* `apps/flutter/lib/features/settings/settings_content.dart`: an `About` subsection at the end of the
+  Application settings, rendered with the existing `SettingsSectionHeader` / `KeyValue` /
+  `WorkstationNote` widgets — the app name, the version, the build, the shell footer and the note
+  "Lokal · keine Telemetrie".
+* `apps/flutter/test/settings_about_test.dart` (new): one widget test that opens the Settings
+  workstation and asserts the About section renders the identity with the manifest version and build.
+
+**Measured result on the isolated candidate** (`feature/oip-ui-about-identity`, worktree
+`…/worktrees/ui-about-identity`), merged with a real `git merge --ff-only` to `807722b`:
+
+```
+flutter analyze    exit 0, no issues
+flutter test       392 passed, 0 failed, 1 skipped (native_session_live: no running Core — environment skip)
+```
+
+The single skipped test is `native_session_live_test.dart`, which skips when no live Core is named in
+the environment; it is unchanged by this iteration. The additive About block sits deep in the Settings
+workstation, outside the protected left-shell crops of the canonical UI visual comparison
+(`docs/design/OIP_CANONICAL_UI_BASELINE.md` §5), so it does not touch the shell identity the gate pins.
+
+**Not claimed.** The full canonical UI design-regression gate and the native macOS build were not
+re-run for this focused polish increment; the change is additive, the complete Flutter widget suite is
+green and the shell identity and footer are unchanged. Reading the *real* macOS bundle version through a
+native channel (instead of the manifest-mirroring constant) is recorded as optional follow-up
+hardening, not required here. No physical device, Pi service, personal database, router, Hue Bridge,
+push or remote deployment was changed. Operator visual approval remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
 
 ## 5. Evidence index
 
