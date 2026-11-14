@@ -4661,26 +4661,37 @@ Pi instance remains unverified; those routes must be present there before Touch 
 instance. No private SSH device, Pi service, personal database, router, Hue Bridge, push or remote
 deployment was changed.
 
-### Touch ID regression audit candidate — isolated and not yet integrated
+### Touch ID regression audit — verified candidate, ready for fast-forward integration
 
-On branch `fix/oip-bug-audit` at `62e6ec2` (based on `8d92f31`), a regression audit found and fixed four client-side
-failure paths around the optional Touch ID login: a failed pairing no longer strands a consumed
-one-time-code login; the successful login performs only one infrastructure bootstrap; the biometric
-login action appears only when this Mac actually has a paired Keychain item; and the login card can
-scroll on short windows. Failed pairing cleanup also preserves the original Core error if Keychain
-cleanup fails. Three widget tests cover the absent/present Keychain states and failed-pairing recovery.
+On isolated branch `fix/oip-bug-audit` (fix commit `62e6ec2`, progress receipt `5afe4e4`), a
+regression audit found and fixed failure paths around optional Touch ID login: a failed pairing no
+longer strands a consumed one-time-code login; successful login performs only one infrastructure
+bootstrap; the biometric login action appears only when this Mac actually has a paired Keychain item;
+and the login card can scroll on short windows. Failed pairing cleanup preserves the original Core
+error if Keychain cleanup fails. Three widget tests cover the absent/present Keychain states and
+failed-pairing recovery. Two pre-existing analyzer findings were also fixed.
 
-Measured on this isolated candidate: `flutter test --concurrency=1 --reporter compact` passed all 390
-tests with one skipped; `flutter analyze` now reports no issues after fixing two existing findings (a
-const test fixture and an unused test import); the CanvasKit web release build passed; and
-`git diff --check` passed. The native macOS build could not finish because
-the shared volume ran out of space (279 MiB free after the Flutter suite). A subsequent focused test
-retry also hit `No space left on device` while Flutter copied its test compiler output. The full
-canonical UI gate was not run, so this candidate is **not accepted or integrated**, and the `main`
-release state above is unchanged.
-Resume verification only after sufficient disk space is available; require the complete build, widget,
-browser and visual gate before a fast-forward integration. No personal installation was replaced and
-the Pi/Core was not contacted.
+**Canonical UI acceptance: PASS** on tested source revision `5afe4e4d99894752e2599868b88585e5f92b09fd`,
+tree `b73c998076045cabb951e4f4df1178357816ba3e`. The run was
+`python3 tests/canonical_regression.py --only oip_canonical_ui_gate --evidence target/oip-canonical-regression-bugaudit-retry`.
+The current-source Rust Core/MCP build, CanvasKit web release build and complete Flutter widget gate
+passed; 390 tests passed, 0 failed, 1 skipped. The owned managed Core acceptance passed all 8/8
+functional phases. Browser acceptance passed 189 findings with 0 failures; all 13 workstation and
+authentication captures were produced and the technical visual comparison passed. The served browser
+bundle SHA-256 equals the local build at
+`948a96696e8b51b9c31df56e99f4a27364690750ca6b7315dbfe4324615f3556`. The acceptance reports
+`own_processes_stopped: true`. Its inner build/widget precheck is intentionally labelled `PARTIAL`
+because the enclosing managed acceptance runs the browser and visual gates against its owned Core;
+the enclosing canonical acceptance receipt is the complete `PASS`.
+
+The native macOS Release build also passed after disk space recovered:
+`flutter build macos --release --dart-define=OIP_API_URL=http://127.0.0.1:18848`, producing a 55.3 MB
+`oip_dashboard.app` with tree SHA-256
+`7d4d853c96eefcac77288031a80d0628f10a95e0a6242645fc76e4ac23c060a8`. The three Touch ID regression
+tests passed, `flutter analyze` reported no issues, and `git diff --check` passed. The browser/Core
+acceptance used an owned loopback SSH fixture, not the physical Pi. No personal installation was
+replaced, and no Pi/Core deployment or remote device change was performed. Operator visual approval
+remains `VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
 
 ## 5. Evidence index
 
