@@ -438,6 +438,53 @@ void main() {
         findsOneWidget);
   });
 
+  testWidgets('K HTTP 400 request rejection is its own precise state',
+      (tester) async {
+    final api = FixtureSettingsApi()
+      ..settingsFailure =
+          const ApiFailure('Bad request', code: 'INVALID_REQUEST', statusCode: 400);
+    await bootstrapSettings(tester, api: api);
+    // A 400 is the Core rejecting the request against the management contract;
+    // it is neither an authorization failure, nor offline, nor a malformed
+    // response, nor unavailable data — so the surface names it precisely and the
+    // title and message agree instead of contradicting each other.
+    expect(find.text('Management-Anfrage abgelehnt'), findsOneWidget);
+    expect(find.textContaining('HTTP 400'), findsOneWidget);
+    expect(find.text('Management-Daten nicht verfügbar'), findsNothing);
+    expect(find.text('Core-Vertrag nicht erfüllt'), findsNothing);
+    expect(find.text('Management-Zugriff nicht autorisiert'), findsNothing);
+    expect(find.text('Core / Management-Endpunkt nicht erreichbar'),
+        findsNothing);
+    // The technical details carry the exact sanitized code and status, and no
+    // fabricated data renders: the retry control is present.
+    await tester.tap(find.text('Technische Fehlerdetails'));
+    await tester.pumpAndSettle();
+    expect(find.text('INVALID_REQUEST'), findsOneWidget);
+    expect(find.text('400'), findsOneWidget);
+    expect(find.byKey(const Key('settings-retry')), findsOneWidget);
+    expect(find.byKey(const Key('settings-error-state')), findsOneWidget);
+  });
+
+  testWidgets(
+      'L unknown management status shows a missing-data state, not a contract one',
+      (tester) async {
+    final api = FixtureSettingsApi()
+      ..settingsFailure =
+          const ApiFailure('Server error', code: 'HTTP_500', statusCode: 500);
+    await bootstrapSettings(tester, api: api);
+    // The catch-all is a missing/incomplete authorized response, so its title
+    // and message agree and it does not reuse the malformed-response contract
+    // wording reserved for CONTRACT_ERROR / INVALID_RESPONSE.
+    expect(find.text('Management-Daten nicht verfügbar'), findsOneWidget);
+    expect(find.textContaining('Kein v1-Snapshot und keine Fixture'),
+        findsOneWidget);
+    expect(find.textContaining('gültiger OIP-008.4-Vertrag'), findsNothing);
+    expect(find.text('Management-Anfrage abgelehnt'), findsNothing);
+    await tester.tap(find.text('Technische Fehlerdetails'));
+    await tester.pumpAndSettle();
+    expect(find.text('HTTP_500'), findsOneWidget);
+  });
+
   testWidgets('I existing source/device data renders without fake onboarding',
       (tester) async {
     await bootstrapSettings(tester);

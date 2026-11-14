@@ -585,22 +585,35 @@ class _SettingsPageState extends State<SettingsPage> {
         code == 'PERMISSION_DENIED' || code == 'UNAUTHENTICATED';
     final connection = code == 'CONNECTION_FAILED';
     final unsupported = code == 'UNSUPPORTED';
+    // HTTP 400 / INVALID_REQUEST: the Core rejected the request against the
+    // management contract (bad scope/key or an unsupported read). That is a
+    // request-side rejection — distinct from an unauthorized session, an offline
+    // transport, an unsupported function, a malformed response or unavailable
+    // data — so it needs its own precise wording instead of collapsing into the
+    // generic fallback, whose title and message previously disagreed.
+    final invalidRequest = code == 'INVALID_REQUEST';
     final title = unauthorized
         ? 'Management-Zugriff nicht autorisiert'
         : connection
             ? 'Core / Management-Endpunkt nicht erreichbar'
             : unsupported
                 ? 'Management-Funktion nicht unterstützt'
-                : code == 'CONTRACT_ERROR' || code == 'INVALID_RESPONSE'
-                    ? 'Core-Vertrag nicht erfüllt'
-                    : 'Management-Daten nicht verfügbar';
+                : invalidRequest
+                    ? 'Management-Anfrage abgelehnt'
+                    : code == 'CONTRACT_ERROR' || code == 'INVALID_RESPONSE'
+                        ? 'Core-Vertrag nicht erfüllt'
+                        : 'Management-Daten nicht verfügbar';
     final message = unauthorized
         ? 'HTTP 401/403 ist ein Identitäts- oder Berechtigungsproblem, nicht „Core offline“. Lokale UI-Präferenzen bleiben funktionsfähig. Eine sichere Browser-Session und die zentrale Platform-Policy sind erforderlich.'
         : connection
             ? 'Netzwerk- oder Transportfehler. Keine Management-Werte werden aus dem v1-Snapshot oder aus Fixtures ersetzt.'
             : unsupported
                 ? 'Dieser API-Client oder Core unterstützt den Read nicht. Es wird keine Ersatzfunktion vorgetäuscht.'
-                : 'Die Antwort wird nicht als gültiger OIP-008.4-Vertrag akzeptiert. Es werden keine Teilwerte geraten.';
+                : invalidRequest
+                    ? 'HTTP 400: Der Core hat diese Anfrage gegen den Management-Vertrag abgelehnt. Es wird kein Ersatzwert geraten und kein v1-Snapshot verwendet.'
+                    : code == 'CONTRACT_ERROR' || code == 'INVALID_RESPONSE'
+                        ? 'Die Antwort wird nicht als gültiger OIP-008.4-Vertrag akzeptiert. Es werden keine Teilwerte geraten.'
+                        : 'Die autorisierte Management-Antwort fehlt oder ist unvollständig. Kein v1-Snapshot und keine Fixture ersetzen den gelesenen Wert.';
     return ListView(
       key: const Key('settings-error-state'),
       children: [
