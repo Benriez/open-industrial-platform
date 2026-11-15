@@ -30,7 +30,26 @@
     "manifest_signature": "PASS",
     "app_code_signature": "PASS",
     "actions_signing_secret_configured": true,
-    "private_key_location": "macOS login Keychain and encrypted GitHub Actions secret"
+    "private_key_location": "macOS login Keychain and encrypted GitHub Actions secret",
+    "published_release_updater_state": {
+      "finding": "The published PUBLIC release v0.3.1 ships the PRE-FIX updater, not the fixed OIPGitHubOTA client. The fix (apps/flutter/macos/Runner/OIPGitHubOTA.swift, revision 1143e4c at 04:07 +0100) is NOT an ancestor of the release and is absent from the shipped binary.",
+      "tag_target_commit": "45e09015",
+      "tag_target_commit_subject": "docs(record): initialize GitHub OTA repository (2026-11-15 00:54 +0100)",
+      "ci_recorded_revision": "6a77133",
+      "ci_recorded_subject": "ci(macos): allow manual GitHub OTA release dispatch (2026-11-15 01:00 +0100)",
+      "fix_revision": "1143e4c",
+      "fix_ahead_of_release": "the fix landed ~3h after both the tag target and the CI record; neither tree contains OIPGitHubOTA.swift",
+      "release_tree_has_OIPGitHubOTA_swift": false,
+      "release_MainFlutterWindow_manifest_lookup": "oip-macos-manifest.sig",
+      "release_MainFlutterWindow_note": "the never-published asset name the pre-fix updater searched for; v0.3.1 publishes oip-macos-manifest.json.sig",
+      "shipped_binary_OIPGitHubOTA_symbols": 0,
+      "shipped_binary_sha256": "d341348c952c63e1c013f09e6fba5f06f0f21c68d153f8113b85964e6cc90502",
+      "fixed_candidate_sha256": "f84b61f009a324bd3275a0d73352c12a15773229ca71b4392d1ed111ba853760",
+      "impact_on_task4": "The operator's G12 offer check still succeeds: the FIXED local candidate (0.3.0+3, 254 OIPGitHubOTA symbols) discovers and OFFERS v0.3.1+4 because build 4>3 and the manifest/archive/signature all validate. But completing that update installs a v0.3.1 bundle whose OWN updater is still the broken pre-fix code, so it will fail its next update check (looks for oip-macos-manifest.sig). A public download of v0.3.1 carries the same latent bug into the next release.",
+      "required_operator_action": "Re-publish the fixed client as a new signed GitHub release (e.g. v0.3.2, or re-tag v0.3.1 from a post-fix commit such as e0300c8) so the shipped artifact contains OIPGitHubOTA.swift. The loop cannot push or publish (out of scope); this is an operator/external decision.",
+      "verified_by": "git tree of 45e09015/6a77133 (no OIPGitHubOTA.swift), git show of their MainFlutterWindow.swift (oip-macos-manifest.sig), and nm of the freshly downloaded shipped binary (0 OIPGitHubOTA symbols).",
+      "checked_at": "2026-11-15"
+    }
   },
   "release_app": {
     "bundle_identifier": "org.openindustrial.oipDashboard",

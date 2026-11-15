@@ -87,6 +87,25 @@ installed `0.3.0+3` candidate is therefore guaranteed, from the delivery side, t
 `docs/evidence/oip-github-ota/ota-receipt.json` (`checks.live_release_delivery_crosscheck`). `/Applications`
 and the running state were not touched.
 
+**Published `v0.3.1` ships the pre-fix updater (2026-11-15, loop `e0300c8` finding).** While
+re-verifying the live OTA target, the shipped `v0.3.1+4` bundle was inspected directly and found to
+contain the **pre-fix** updater, not the fixed `OIPGitHubOTA` client. Evidence from three angles:
+(1) tag `v0.3.1` points to `45e09015` (the initial commit, `00:54 +0100`) and the CI record is
+`6a77133` (`01:00 +0100`) — both ~3h **before** the fix `1143e4c` (`04:07 +0100`); (2) neither
+release tree contains `apps/flutter/macos/Runner/OIPGitHubOTA.swift`, and their `MainFlutterWindow.swift`
+still searches the never-published `oip-macos-manifest.sig`; (3) the freshly downloaded shipped binary
+(version `0.3.1` build `4`) has **0 `OIPGitHubOTA` symbols** (sha256 `d341348c…0502`, versus the fixed
+candidate's `f84b61f…853760`, 254 symbols). **Consequence for Task 4:** the operator's G12 offer check
+still succeeds — the fixed local candidate (`0.3.0+3`, 254 symbols) discovers and **offers** `v0.3.1+4`
+(build `4 > 3`, manifest/archive/signature all validate) — but **completing** that update installs a
+`v0.3.1` bundle whose own updater is still broken, so it will fail its next update check; a public
+download of `v0.3.1` carries the same latent bug into the next release. **Required operator action:**
+re-publish the fixed client as a new signed GitHub release (e.g. `v0.3.2`, or re-tag `v0.3.1` from a
+post-fix commit such as `e0300c8`) so the shipped artifact contains `OIPGitHubOTA.swift`. The loop
+cannot push or publish (out of scope). Recorded in
+`docs/evidence/oip-github-ota/ota-receipt.json` (`github_delivery.published_release_updater_state`).
+`/Applications` and the running state were not touched.
+
 The open first-release software tasks are tracked in [`docs/OIP_OPEN_RELEASE_TASKS.md`](OIP_OPEN_RELEASE_TASKS.md)
 and are the checklist for the `oip-open-release-tasks` OpenCode loop. Operator-only acceptance gates
 remain recorded in the release ledger and must not be treated as software work the loop can fabricate.

@@ -42,6 +42,21 @@ the installed app is still `0.3.0+3` at `/Applications`. Task 4 (G12) stays `BLO
 regardless — the loop must not trigger a live self-install from a build; the install and the offer
 observation remain the operator's acceptance action.
 
+**Published `v0.3.1` ships the pre-fix updater — new operator/external blocker (loop `e0300c8`,
+2026-11-15).** Re-verifying the live OTA target, the shipped `v0.3.1+4` bundle was found to contain the
+**pre-fix** updater, not the fixed `OIPGitHubOTA` client. Tag `v0.3.1` → `45e09015` and CI record
+`6a77133` both predate the fix `1143e4c` by ~3h; neither release tree contains
+`apps/flutter/macos/Runner/OIPGitHubOTA.swift`, their `MainFlutterWindow.swift` still searches the
+never-published `oip-macos-manifest.sig`, and the freshly downloaded shipped binary (`0.3.1+4`) has
+**0 `OIPGitHubOTA` symbols** (sha256 `d341348c…0502` vs the fixed candidate `f84b61f…853760`, 254
+symbols). The operator's G12 offer check still succeeds (the fixed candidate offers `v0.3.1+4`), but
+completing that update installs a bundle whose own updater is still broken, and a public download of
+`v0.3.1` carries the same latent bug forward. **New required operator action (BLOCKED_OPERATOR /
+external):** re-publish the fixed client as a signed GitHub release (`v0.3.2`, or re-tag `v0.3.1` from a
+post-fix commit such as `e0300c8`) so the shipped artifact contains `OIPGitHubOTA.swift`; the loop
+cannot push or publish. Evidence: `docs/evidence/oip-github-ota/ota-receipt.json`
+(`github_delivery.published_release_updater_state`).
+
 | Gate | Status | Basis and gap |
 |---|---|---|
 | G1 integrated Core + six workstations | DONE | The Spectrum-2027 Engineering Workstations are the canonical application of `main` since `ddb446e` (contract `docs/design/OIP_CANONICAL_UI_BASELINE.md`). The managed diagnostics capability of `feature/oip-managed-diagnostics` (`55d4f50`) is reconciled into the approved workspace: the capability was carried over, the opaque continuation and the limits of the answer were restored in `7fc612e`. All six workstations render against the real authorized backend; the browser gate proves 189 findings with zero failures over them (`docs/evidence/oip-canonical-acceptance/browser-gate.json`, counted by `docs/evidence/oip-canonical-acceptance/acceptance.json`). |
