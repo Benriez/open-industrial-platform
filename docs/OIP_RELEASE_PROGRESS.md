@@ -67,7 +67,11 @@ live downloader calls them, so the network path and the regression test share on
 **254 `OIPGitHubOTA` symbols** (up from 251; fresh canonical binary sha256
 `f84b61f009a324bd3275a0d73352c12a15773229ca71b4392d1ed111ba853760`) and all 7 OTA tests pass. The
 operator candidate was re-staged from this canonical build (same `0.3.0+3` label, unchanged runtime
-offer/install behavior). `/Applications` and pid 33826 untouched. Task 4 stays operator-driven.
+offer/install behavior). `/Applications` was not touched by the loop. **Process-state note (2665891):**
+the recorded installed-app pid 33826 is no longer running (the operator quit it); the installed app is
+still `0.3.0+3` at `/Applications`. Task 4 stays `BLOCKED_OPERATOR` regardless — the loop must not
+trigger a live self-install from a build; the install and the offer observation remain the operator's
+acceptance action.
 
 The open first-release software tasks are tracked in [`docs/OIP_OPEN_RELEASE_TASKS.md`](OIP_OPEN_RELEASE_TASKS.md)
 and are the checklist for the `oip-open-release-tasks` OpenCode loop. Operator-only acceptance gates

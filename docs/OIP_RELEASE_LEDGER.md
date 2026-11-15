@@ -36,7 +36,11 @@ helpers `sha256Hex(of:)` / `verifyArchiveDigest(sha256Hex:manifest:)`, called by
 and by `tests/oip_ota_logic.py` (matching digest accepted, tampered digest returns
 `.archiveDigestMismatch(got, expected)`). Native release build compiles with 254 `OIPGitHubOTA`
 symbols (fresh binary sha256 `f84b61f009a324bd3275a0d73352c12a15773229ca71b4392d1ed111ba853760);
-all 7 OTA tests pass; the operator candidate was re-staged from this build.
+all 7 OTA tests pass; the operator candidate was re-staged from this build. **Process-state note
+(loop `2665891`):** the recorded installed-app pid 33826 is no longer running (the operator quit it);
+the installed app is still `0.3.0+3` at `/Applications`. Task 4 (G12) stays `BLOCKED_OPERATOR`
+regardless — the loop must not trigger a live self-install from a build; the install and the offer
+observation remain the operator's acceptance action.
 
 | Gate | Status | Basis and gap |
 |---|---|---|

@@ -44,6 +44,7 @@
     "installed_build_number": "3",
     "process_launch": "PASS",
     "process_pid": 33826,
+    "process_state_note": "As of revision 2665891 the recorded pid 33826 is NOT running: the installed app (still 0.3.0+3 at /Applications) has no live process. Task 4 stays BLOCKED_OPERATOR regardless — the loop must not trigger a live self-install from a build; the install and the offer observation remain the operator's acceptance action.",
     "fresh_updater_check_timestamp_advanced": true,
     "update_prompt_observed": false,
     "live_ota_installation": "NOT VERIFIED; AUTO OFFER OPEN"
