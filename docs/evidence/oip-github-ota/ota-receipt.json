@@ -3,6 +3,14 @@
   "status": "GITHUB_RELEASE_PUBLISHED_AUTO_OFFER_PENDING",
   "candidate_revision": "30d6bcc",
   "candidate_branch": "main",
+  "client_updater_fix": {
+    "root_cause": "The installed 0.3.0+3 client's updater looked for the signature asset 'oip-macos-manifest.sig', which the release never publishes (it publishes 'oip-macos-manifest.json.sig'), so the offer failed silently.",
+    "fix_revision": "1143e4c",
+    "fix_branch": "fix/oip-github-ota-asset-name",
+    "fix_summary": "Decision logic extracted into OIPGitHubOTA.swift (manifestAssetName/signatureAssetName/archiveAssetName constants, safe URL, build compare, verify()); the live updater now uses the shared OIPGitHubOTA.* types, logs every reject reason, and the installer helper got an OIP_OTA_APP_NAME test seam.",
+    "native_macos_release_build": "PASS: flutter build macos --release succeeds; 251 OIPGitHubOTA symbols compiled into the universal (x86_64+arm64) oip_dashboard binary (sha256 2cf06734d07157cfb76dba4b7e82b4019324539dffc9f18843399d3d0184c2f5).",
+    "regression_tests": "PASS: tests/oip_ota_logic.py (2, decision logic + asset-name agreement), tests/oip_ota_install_helper.py (4, refuse-without-touching on exit 21/22/23 and byte-for-byte rollback on forced post-swap launch failure), tests/oip_github_ota_package.py (1, direct/Store isolation)."
+  },
   "github_delivery": {
     "repository": "Benriez/open-industrial-platform",
     "visibility": "PUBLIC",
@@ -34,6 +42,7 @@
     "installed_version": "0.3.0",
     "installed_build_number": "3",
     "process_launch": "PASS",
+    "process_pid": 33826,
     "fresh_updater_check_timestamp_advanced": true,
     "update_prompt_observed": false,
     "live_ota_installation": "NOT VERIFIED; AUTO OFFER OPEN"
@@ -49,5 +58,5 @@
     "update_helper_shell_syntax": "PASS",
     "workflow_yaml_parse": "PASS"
   },
-  "open_issue": "Installed v0.3.0 app completed a fresh scheduled check but showed no update prompt; inspect updater runtime path and installer relaunch behavior before claiming end-to-end OTA."
+  "open_issue": "Client updater root cause fixed and verified to build (native release build compiles with the OTA module; helper rollback proved). The installed v0.3.0+3 app was NOT run through a real update: its updater check showed no prompt on a fresh launch and the live install is left unverified to avoid disturbing the running product. End-to-end OTA against the installed app therefore remains NOT VERIFIED / AUTO OFFER OPEN and needs an operator to install the fixed build and trigger the offer."
 }

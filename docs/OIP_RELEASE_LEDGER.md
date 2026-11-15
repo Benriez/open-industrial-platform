@@ -11,6 +11,19 @@ application. The binding rules come from `AGENTS.md`,
 `docs/design/OIP_CANONICAL_UI_BASELINE.md` (the binding canonical UI contract),
 `docs/OIP_RELEASE_PROGRESS.md`, `docs/decisions/*` and `docs/architecture/*`.
 
+**GitHub OTA client updater fix (2026-11-15).** The silent offer failure of the installed
+`0.3.0+3` app against the signed `v0.3.1+4` release is diagnosed and fixed on the isolated branch
+`fix/oip-github-ota-asset-name` (product `1143e4c`): the client looked for the never-published
+asset `oip-macos-manifest.sig` instead of the published `oip-macos-manifest.json.sig`. The decision
+logic is now the shared, unit-tested `OIPGitHubOTA` module, the live updater uses its types and
+logs every reject reason, and the installer helper's replace/verify/rollback/relaunch path is
+reviewed and regression-tested. Verified: `flutter build macos --release` compiles with 251
+`OIPGitHubOTA` symbols in the universal binary, and `tests/oip_ota_logic.py` (2),
+`tests/oip_ota_install_helper.py` (4) and `tests/oip_github_ota_package.py` (1) pass. This is a
+software-ready fix; the **live** end-to-end OTA install against the running `0.3.0+3` app (pid 33826)
+stays **BLOCKED_OPERATOR** — an operator must install the fixed build and trigger the offer
+(`docs/evidence/oip-github-ota/ota-receipt.json`).
+
 | Gate | Status | Basis and gap |
 |---|---|---|
 | G1 integrated Core + six workstations | DONE | The Spectrum-2027 Engineering Workstations are the canonical application of `main` since `ddb446e` (contract `docs/design/OIP_CANONICAL_UI_BASELINE.md`). The managed diagnostics capability of `feature/oip-managed-diagnostics` (`55d4f50`) is reconciled into the approved workspace: the capability was carried over, the opaque continuation and the limits of the answer were restored in `7fc612e`. All six workstations render against the real authorized backend; the browser gate proves 189 findings with zero failures over them (`docs/evidence/oip-canonical-acceptance/browser-gate.json`, counted by `docs/evidence/oip-canonical-acceptance/acceptance.json`). |

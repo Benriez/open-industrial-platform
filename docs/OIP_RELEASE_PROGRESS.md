@@ -27,6 +27,23 @@ automatic offer and live install therefore remain **OPEN**; the signed release's
 verified, but end-to-end OTA installation is not claimed. The installer helper's launch path also
 needs a separate review before relying on it for the live installation.
 
+**GitHub OTA updater fix (2026-11-15, branch `fix/oip-github-ota-asset-name`, product `1143e4c`).**
+The silent offer failure is diagnosed and fixed. The installed `0.3.0+3` client's updater looked for
+the signature asset `oip-macos-manifest.sig`, which the release never publishes — the packager signs
+`oip-macos-manifest.json` and publishes the detached signature as `oip-macos-manifest.json.sig`, so
+the lookup returned nil and the offer failed silently. The decision logic is extracted into
+`apps/flutter/macos/Runner/OIPGitHubOTA.swift` (the exact asset-name constants, the trusted-URL and
+build-compare helpers, and one `verify()` the network path and the tests both call), the live updater
+now uses those shared types and logs every reject reason, and the installer helper gained an
+`OIP_OTA_APP_NAME` test seam. The helper's replace/verify/rollback/relaunch-without-premature-success
+behavior is confirmed and regression-tested. **Verified:** `flutter build macos --release` compiles
+with 251 `OIPGitHubOTA` symbols in the universal `oip_dashboard` binary, and the focused suites pass
+(`tests/oip_ota_logic.py` 2, `tests/oip_ota_install_helper.py` 4 — refuse-without-touching on exit
+21/22/23 and byte-for-byte rollback on a forced post-swap launch failure — `tests/oip_github_ota_package.py`
+1). The installed `0.3.0+3` app was deliberately not run through a real update (it is running, pid
+33826, and a live self-install must not be triggered from the loop), so end-to-end OTA stays
+`NOT VERIFIED; AUTO OFFER OPEN` and needs an operator to install the fixed build and trigger the offer.
+
 The open first-release software tasks are tracked in [`docs/OIP_OPEN_RELEASE_TASKS.md`](OIP_OPEN_RELEASE_TASKS.md)
 and are the checklist for the `oip-open-release-tasks` OpenCode loop. Operator-only acceptance gates
 remain recorded in the release ledger and must not be treated as software work the loop can fabricate.
