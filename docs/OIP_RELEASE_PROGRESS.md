@@ -102,7 +102,10 @@ still succeeds — the fixed local candidate (`0.3.0+3`, 254 symbols) discovers 
 download of `v0.3.1` carries the same latent bug into the next release. **Required operator action:**
 re-publish the fixed client as a new signed GitHub release (e.g. `v0.3.2`, or re-tag `v0.3.1` from a
 post-fix commit such as `e0300c8`) so the shipped artifact contains `OIPGitHubOTA.swift`. The loop
-cannot push or publish (out of scope). Recorded in
+cannot push or publish (out of scope). **Re-publish path verified against the CI**
+(`.github/workflows/macos-ota-release.yml`): it checks out the tag's commit and builds `apps/flutter`
+from it, so a `v0.3.2` tag on a post-fix commit ships the fixed client (VERSION `0.3.2`, BUILD
+`RUN_NUMBER+3` = 5 on the next run), and the `0.3.0+3` candidate offers it (`0.3.2 > 0.3.0`). Recorded in
 `docs/evidence/oip-github-ota/ota-receipt.json` (`github_delivery.published_release_updater_state`).
 `/Applications` and the running state were not touched.
 

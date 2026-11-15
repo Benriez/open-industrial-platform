@@ -47,6 +47,11 @@
       "fixed_candidate_sha256": "f84b61f009a324bd3275a0d73352c12a15773229ca71b4392d1ed111ba853760",
       "impact_on_task4": "The operator's G12 offer check still succeeds: the FIXED local candidate (0.3.0+3, 254 OIPGitHubOTA symbols) discovers and OFFERS v0.3.1+4 because build 4>3 and the manifest/archive/signature all validate. But completing that update installs a v0.3.1 bundle whose OWN updater is still the broken pre-fix code, so it will fail its next update check (looks for oip-macos-manifest.sig). A public download of v0.3.1 carries the same latent bug into the next release.",
       "required_operator_action": "Re-publish the fixed client as a new signed GitHub release (e.g. v0.3.2, or re-tag v0.3.1 from a post-fix commit such as e0300c8) so the shipped artifact contains OIPGitHubOTA.swift. The loop cannot push or publish (out of scope); this is an operator/external decision.",
+      "republish_path_verified_against_ci": ".github/workflows/macos-ota-release.yml",
+      "ci_builds_from_tag_commit": true,
+      "ci_reason": "the workflow checks out ref: inputs.release_tag || github.ref (line 23) and runs flutter build macos --release in apps/flutter from that commit (lines 32-43), so tagging a post-fix commit ships the fixed OIPGitHubOTA client; v0.3.1 was built from tag 45e09015 (run 1, build = RUN_NUMBER+3 = 4), which is why it is pre-fix.",
+      "verified_republish_steps": "1) git tag v0.3.2 <post-fix commit e.g. main HEAD>; 2) git push origin v0.3.2 -> the workflow builds apps/flutter from that commit (VERSION=0.3.2, BUILD=RUN_NUMBER+3 = 5 on run 2), packages the signed bundle with OIP_OTA_SIGNING_PRIVATE_KEY and publishes release v0.3.2; 3) the fixed installed candidate (0.3.0+3) offers 0.3.2 build 5 because version 0.3.2 > 0.3.0.",
+      "republish_would_ship_fixed_symbols": true,
       "verified_by": "git tree of 45e09015/6a77133 (no OIPGitHubOTA.swift), git show of their MainFlutterWindow.swift (oip-macos-manifest.sig), and nm of the freshly downloaded shipped binary (0 OIPGitHubOTA symbols).",
       "checked_at": "2026-11-15"
     }
