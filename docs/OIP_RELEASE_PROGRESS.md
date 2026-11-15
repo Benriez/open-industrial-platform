@@ -5373,9 +5373,11 @@ Touch ID setup did not complete: the macOS LocalAuthentication log explicitly re
 `UI lost focus` for the Touch ID enrollment prompt, and the Touch ID Keychain item is absent.
 The code flow in source correctly requests biometric authentication before keychain storage;
 the earlier backgrounded GUI automation caused macOS to cancel that request, so this is not
-evidence of a remaining Core-route failure. The LaunchAgent tunnel on port 18848 remains
-intermittent (session and pairing GET probes timed out during the later logout attempt, while the
-device-login route responded), so the app currently also displays Core connection recovery.
+evidence of a remaining Core-route failure. The LaunchAgent tunnel on port 18848 had intermittent
+stalls (session and pairing GET probes timed out during the later logout attempt, while the
+device-login route responded); restarting the owned LaunchAgent restored three consecutive rounds
+of 200/405/405 route responses. The native app is back at the code-login panel; its current
+permission-required banner is expected while logged out.
 **Remaining verification:** make the OIP window foreground, establish the tunnel/app connection,
 then perform a fresh code login with the Touch ID checkbox selected and approve the macOS biometric
 prompt. Do not claim Touch ID configured until the Keychain item exists and the login screen offers
