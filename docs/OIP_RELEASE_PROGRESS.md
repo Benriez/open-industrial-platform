@@ -10,10 +10,27 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 
 ## 1. Canonical state
 
+### GitHub repository and first OTA release (2026-11-15)
+
+The previously local repository is now connected to the public GitHub repository
+`Benriez/open-industrial-platform`. The `main` branch and annotated tag `v0.3.1` are published.
+The `macos-ota-release.yml` workflow was manually dispatched for that tag after the tag push
+did not start the workflow automatically; GitHub Actions run `43656017421` completed successfully.
+The release contains the universal macOS archive, JSON manifest and detached Ed25519 signature.
+The downloaded archive's SHA-256 matches the signed manifest, the signature verifies against the
+embedded release public key, and the extracted app passes strict code-signature verification with
+bundle ID `org.openindustrial.oipDashboard`, version `0.3.1`, build `4`, and OTA enabled.
+
+The `/Applications/Open Industrial Platform.app` installation remains version `0.3.0` build `3`.
+Its updater check timestamp advanced after a fresh launch, but no update prompt appeared. The
+automatic offer and live install therefore remain **OPEN**; the signed release's correctness is
+verified, but end-to-end OTA installation is not claimed. The installer helper's launch path also
+needs a separate review before relying on it for the live installation.
+
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
-| Canonical source revision (the product: client, Core and release tooling) | `462e97d` — direct macOS GitHub OTA client and signed-release workflow on top of `8bb1c1a` |
+| Canonical source revision (the product: client, Core and release tooling) | `30d6bcc` — direct macOS GitHub OTA client and signed-release workflow; public release workflow dispatch was added in `6a77133` |
 | The revision of the final acceptance | gate source revision `7a0c6da` with tested working-tree hash `be0fc5e40e3b08ce2b06a9781e2c1b952cee51b0`; local and served web bundle SHA-256 `d76764985bbf0c7626dea8a4090ed5bc6b6ebed64ba23d275956dd560d02703b` |
 | The revision of the Core binary of the release | `0a9b64f` — the binary names its own revision; the same revision yields the same bytes |
 | The build of the Core of the release | `cargo build --locked --release --workspace --bin oip-server --example mcp_probe` |
@@ -22,7 +39,7 @@ real monitoring, consistent Spectrum UX and reliable macOS operation.
 | Tracked files in the canonical source revision | 797 — the digest of the listing is named by the manifest of the release (`docs/release/oip-release-manifest.json`), which is recomputed with every release |
 | Documentation commit on top | the ledger, the runbook, the receipts of `docs/evidence/` and the release manifest `docs/release/` are the only artefacts of the state of the release; the source of the Core and of the client is unchanged by them, so the manifest above stays the manifest of the source revision |
 | Working tree | the **product** of the release is committed — the checker of the record proves it — and the receipts are published with the record, so a measurement that is published leaves the working tree changed until the publication is committed. The loop state directory is ignored |
-| Push / deployment | none — public GitHub repository and Actions secret exist; source and release remain unpublished |
+| Push / deployment | `main` published to [Benriez/open-industrial-platform](https://github.com/Benriez/open-industrial-platform); signed macOS OTA release `v0.3.1` published (Actions run `43656017421`). The installed `0.3.0+3` app's fresh check did not present the update prompt, so live OTA installation remains unverified and open. |
 | Personal schema-6 installation | **not activated**; untouched. A separate operator-hosted instance is running per N7 |
 
 ### oip-ui-polish loop status (UI-polish sub-loop)
