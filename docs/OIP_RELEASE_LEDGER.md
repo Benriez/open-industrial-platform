@@ -22,7 +22,14 @@ reviewed and regression-tested. Verified: `flutter build macos --release` compil
 `tests/oip_ota_install_helper.py` (4) and `tests/oip_github_ota_package.py` (1) pass. This is a
 software-ready fix; the **live** end-to-end OTA install against the running `0.3.0+3` app (pid 33826)
 stays **BLOCKED_OPERATOR** — an operator must install the fixed build and trigger the offer
-(`docs/evidence/oip-github-ota/ota-receipt.json`).
+(`docs/evidence/oip-github-ota/ota-receipt.json`). **Staged candidate (loop `9751d2a`, 2026-11-15):**
+the canonical worktree's on-disk `.app` is a stale pre-fix build, so the verified fixed build
+(`fix/oip-github-ota-asset-name` HEAD `c3e5d91`; 251 `OIPGitHubOTA` symbols; binary sha256
+`2cf06734d07157cfb76dba4b7e82b4019324539dffc9f18843399d3d0184c2f5`, ad-hoc, version `0.3.0` build `3`
+with the fixed updater) was copied byte-identically to `/private/tmp/oip-ota-candidate/oip_dashboard.app`
+for the operator; `/Applications` and pid 33826 untouched. The receipt records the path and the
+operator install steps; gate G9 (macOS build / local operations) is the gate this closes once the
+operator runs the live install.
 
 | Gate | Status | Basis and gap |
 |---|---|---|

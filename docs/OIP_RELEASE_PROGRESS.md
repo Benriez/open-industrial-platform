@@ -44,6 +44,18 @@ with 251 `OIPGitHubOTA` symbols in the universal `oip_dashboard` binary, and the
 33826, and a live self-install must not be triggered from the loop), so end-to-end OTA stays
 `NOT VERIFIED; AUTO OFFER OPEN` and needs an operator to install the fixed build and trigger the offer.
 
+**Staged fixed OTA candidate (2026-11-15, loop `9751d2a`).** The canonical worktree's on-disk
+`oip_dashboard.app` is a stale pre-fix build (Nov 13), so no ready fixed artifact existed for the
+operator. The verified fixed build (branch `fix/oip-github-ota-asset-name`, HEAD `c3e5d91`; 251
+`OIPGitHubOTA` symbols) was copied byte-identically to
+`/private/tmp/oip-ota-candidate/oip_dashboard.app` (binary sha256
+`2cf06734d07157cfb76dba4b7e82b4019324539dffc9f18843399d3d0184c2f5`, ad-hoc signed, version `0.3.0`
+build `3` but carrying the fixed updater). It is the correct client for Task 4: at the installed
+version with the corrected asset-name lookup, so its updater check should discover and offer the
+published `v0.3.1+4`, producing the real `0.3.0+3 → 0.3.1+4` change. The `/Applications` app and pid
+33826 were not touched. Task 4 stays operator-driven; the receipt records the staged candidate and its
+operator install steps, and the ledger gate G9/OTA row reflects the same.
+
 The open first-release software tasks are tracked in [`docs/OIP_OPEN_RELEASE_TASKS.md`](OIP_OPEN_RELEASE_TASKS.md)
 and are the checklist for the `oip-open-release-tasks` OpenCode loop. Operator-only acceptance gates
 remain recorded in the release ledger and must not be treated as software work the loop can fabricate.
