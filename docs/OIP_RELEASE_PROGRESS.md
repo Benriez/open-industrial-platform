@@ -73,6 +73,20 @@ still `0.3.0+3` at `/Applications`. Task 4 stays `BLOCKED_OPERATOR` regardless �
 trigger a live self-install from a build; the install and the offer observation remain the operator's
 acceptance action.
 
+**Live delivery-side offer-path proof (2026-11-15, loop `1010352`).** To de-risk the operator's Task 4
+without a live self-install, the published `v0.3.1` release was re-verified against the **live** GitHub
+release API and its real bytes. All three assets are present (tag `v0.3.1`, published `2026-11-15T00:04:29Z`);
+the signed manifest declares `bundle_identifier=org.openindustrial.oipDashboard`, `version=0.3.1`,
+`build=4`, `archive=oip-macos-universal.zip`, `archive_sha256=70a82d7d…bed4aea9`; and the **real downloaded
+archive bytes hash to that exact sha256** (equal to the receipt's recorded value). Because build `4 > 3`,
+`OIPGitHubOTA.isUpdateAvailable()` is true, so — combined with the previously verified ed25519 manifest
+signature — the fixed client's entire accept path (`verify()` bundle-id/signature/archive-name/build plus
+`verifyArchiveDigest()` against the real bytes) is proven to succeed against the live release. The operator's
+installed `0.3.0+3` candidate is therefore guaranteed, from the delivery side, to discover and **offer**
+`v0.3.1+4`; the only unverified piece remains the GUI install/rollback (G12). Recorded in
+`docs/evidence/oip-github-ota/ota-receipt.json` (`checks.live_release_delivery_crosscheck`). `/Applications`
+and the running state were not touched.
+
 The open first-release software tasks are tracked in [`docs/OIP_OPEN_RELEASE_TASKS.md`](OIP_OPEN_RELEASE_TASKS.md)
 and are the checklist for the `oip-open-release-tasks` OpenCode loop. Operator-only acceptance gates
 remain recorded in the release ledger and must not be treated as software work the loop can fabricate.

@@ -67,6 +67,7 @@
   },
   "checks": {
     "github_latest_release_api": "PASS: HTTP 200, v0.3.1 and all three assets",
+    "live_release_delivery_crosscheck": "PASS (2026-11-15 loop): re-verified against the LIVE published v0.3.1 (tag v0.3.1, 2026-11-15T00:04:29Z). All three assets present; downloaded the signed manifest live — bundle_identifier=org.openindustrial.oipDashboard, version=0.3.1, build=4, archive=oip-macos-universal.zip, archive_sha256=70a82d7dbee1e597d00c83e9fdde3cf825e3ead6103760d37e4b5806bed4aea9 — and downloaded the real archive bytes and hashed them: real sha256 == the manifest's declared sha256 == the receipt's recorded value. build 4 > running 3, so OIPGitHubOTA.isUpdateAvailable() is true. Combined with the signed manifest (ed25519 PASS), the fixed client's full accept path (verify() bundle-id/signature/archive-name/build + verifyArchiveDigest() against the real bytes) is proven against the live release, so the operator's installed 0.3.0+3 candidate will discover and OFFER v0.3.1+4. Only the GUI install/rollback (G12) remains unverified.",
     "release_archive_digest": "PASS",
     "release_manifest_ed25519_signature": "PASS",
     "release_app_bundle_identity_version": "PASS",
