@@ -47,6 +47,22 @@
     "update_prompt_observed": false,
     "live_ota_installation": "NOT VERIFIED; AUTO OFFER OPEN"
   },
+  "operator_candidate": {
+    "purpose": "Verified fixed-updater build staged for the operator to install and trigger the OTA offer (Task 4), so the blocked live install has a ready, integrity-checkable artifact. Does not touch /Applications or the running pid 33826.",
+    "path": "/private/tmp/oip-ota-candidate/oip_dashboard.app",
+    "source": "Byte-identical copy of the fix worktree build (branch fix/oip-github-ota-asset-name, HEAD c3e5d91). The canonical worktree on-disk .app was stale (Nov 13, pre-fix), so this staged copy is the verified fixed artifact.",
+    "bundle_identifier": "org.openindustrial.oipDashboard",
+    "version": "0.3.0",
+    "build_number": "3",
+    "note": "Labeled 0.3.0+3 (same as the installed client) but carries the FIXED updater; when installed and its updater check runs it should discover and offer published v0.3.1+4, producing the real 0.3.0+3 -> 0.3.1+4 installed-version change Task 4 measures.",
+    "binary_sha256": "2cf06734d07157cfb76dba4b7e82b4019324539dffc9f18843399d3d0184c2f5",
+    "binary_sha256_matches_receipt": true,
+    "oipgithubota_symbols": 251,
+    "signature_asset_name_fixed": "oip-macos-manifest.json.sig",
+    "signature": "adhoc (local launchable; NOT a distribution-signed artifact)",
+    "staged_at": "2026-11-15",
+    "operator_action": "Quit the running /Applications app, replace it with this .app, launch, trigger the updater fresh check, then record the observed v0.3.1+4 offer/install, strict code signature, /Applications process path, and clean rollback state (no backup left) in this receipt, release progress, and ledger."
+  },
   "checks": {
     "github_latest_release_api": "PASS: HTTP 200, v0.3.1 and all three assets",
     "release_archive_digest": "PASS",
