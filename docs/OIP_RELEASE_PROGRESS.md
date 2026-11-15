@@ -5177,19 +5177,24 @@ release was made.
 
 ### Iteration 106 — the installed Mac client can authenticate through its persistent Core tunnel
 
-**Status: tunnel repaired and live API path verified; native UI acceptance remains open.** The
-installed app at `/Applications/Open Industrial Platform.app` was stuck at operator login. Its
-Mac LaunchAgent forwards `127.0.0.1:18848` to the operator's Pi Core on `127.0.0.1:18808`. The
-`bodi-pi` SSH profile enables `ControlMaster auto`; the LaunchAgent did not opt out, and its
-persistent connection accepted GET requests but hung on `POST /api/v2/browser/login`. A fresh
-non-multiplexed tunnel authenticated, identifying SSH connection sharing as the failure path.
+**Status: SSH options corrected; live API path passes short checks but has shown intermittent stalls;
+native UI acceptance remains open.** The installed app at `/Applications/Open Industrial Platform.app`
+was stuck at operator login. Its Mac LaunchAgent forwards `127.0.0.1:18848` to the operator's Pi
+Core on `127.0.0.1:18808`. The `bodi-pi` SSH profile enables `ControlMaster auto`; the LaunchAgent
+did not opt out, and its persistent connection accepted GET requests but hung on
+`POST /api/v2/browser/login`. A fresh non-multiplexed tunnel authenticated, identifying SSH
+connection sharing as one failure path.
 
 The operator-owned `com.oip.platform-tunnel` LaunchAgent now passes `ControlMaster=no` and
 `ControlPath=none`. It was restarted cleanly, with one listener on the app's configured port.
 **Verified through that exact port:** a fresh one-time code authenticated with HTTP 200, and the
 authorized `/api/v2/snapshot` returned HTTP 200 with 27 non-simulated observations. The source
 snapshot contained 15 fresh observations for `bodi-pc` and 12 for `bodi-pi`; the Pi briefly aged
-past the Core's freshness bound during the probe, then supplied fresh observations again. No host
+past the Core's freshness bound during the probe, then supplied fresh observations again. Later,
+the LaunchAgent tunnel stalled again while a direct read of the Pi Core still returned HTTP 200.
+A temporary non-multiplexed tunnel passed repeated post-login session reads; after restarting the
+LaunchAgent and hidden relaunching the native app, the app-port session endpoint passed three
+consecutive probes. This short recovery check does not establish long-run tunnel stability. No host
 service, collection configuration, host database or device was written. The authorized hierarchy,
 inventory and diagnostics read routes also returned HTTP 200.
 
