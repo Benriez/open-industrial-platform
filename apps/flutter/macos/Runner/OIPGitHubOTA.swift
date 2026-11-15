@@ -125,6 +125,29 @@ enum OIPGitHubOTA {
     compareBuilds(current: currentBuild, remote: remoteBuild) > 0
   }
 
+  /// Hex-encodes the archive's SHA-256 exactly as the live updater renders it, so
+  /// the digest bytes and the comparison the test proves are one path. Pure
+  /// (Foundation only): no CryptoKit lives in this module, so the decision logic
+  /// still compiles and runs in the standalone, network-free logic test.
+  static func sha256Hex(of bytes: [UInt8]) -> String {
+    bytes.map { String(format: "%02x", $0) }.joined()
+  }
+
+  /// Archive digest verification as a pure, unit-tested branch. The caller hashes
+  /// the downloaded archive bytes with CryptoKit and passes the hex here; the
+  /// helper returns the tamper rejection with the got/expected digests when they
+  /// differ, else nil. The live downloader and the regression test both call this,
+  /// so the digest check can neither diverge from the tested logic nor remain a
+  /// dead enum case. `verify()` above only sees the signed expected digest (the
+  /// downloaded bytes are not available until the live download), so this is the
+  /// branch that enforces the digest against the real bytes.
+  static func verifyArchiveDigest(sha256Hex: String, manifest: Manifest) -> Rejection? {
+    guard sha256Hex == manifest.archiveSHA256 else {
+      return .archiveDigestMismatch(got: sha256Hex, expected: manifest.archiveSHA256)
+    }
+    return nil
+  }
+
   /// The full verification of a signed release against the running bundle and
   /// the manifest. Returns the first reason it is rejected, or `nil` when the
   /// manifest is authentic, the archive matches and the build is newer. This is
@@ -150,8 +173,10 @@ enum OIPGitHubOTA {
           archiveAsset(in: release, named: manifest.archive) != nil else {
       return .archiveAssetMissing
     }
-    // The archive digest is checked against the downloaded archive bytes in the
-    // live downloader; here we only know the signed expected digest.
+    // The archive asset NAME is checked here; the archive DIGEST is checked
+    // against the downloaded bytes in the live downloader via
+    // verifyArchiveDigest(sha256Hex:manifest:), because those bytes are not
+    // available until the download completes.
     let comparison = compareBuilds(current: runningBuild, remote: manifest.build)
     guard comparison > 0 else {
       return .versionNotNewer(current: runningBuild, remote: manifest.build)

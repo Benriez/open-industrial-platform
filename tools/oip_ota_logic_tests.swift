@@ -110,6 +110,19 @@ struct OIPGitHubOTALogicTests {
     check(verify(release, manifestData: wrongId) == .bundleIdentifierMismatch(got: "org.openindustrial.oipDashboardX"),
       "manifest bundle id mismatch rejected")
 
+    // --- Archive digest: the tamper check the signed digest enforces. The live
+    // downloader hashes the downloaded bytes and calls the same pure helper the
+    // test drives, so a wrong digest is returned with its got/expected values.
+
+    let manifest = try! JSONDecoder().decode(OIPGitHubOTA.Manifest.self, from: manifestData)
+    let goodHex = OIPGitHubOTA.sha256Hex(of: [0xde, 0xad, 0xbe, 0xef])
+    check(goodHex == "deadbeef", "sha256 hex is lowercase, zero-padded")
+    check(OIPGitHubOTA.verifyArchiveDigest(sha256Hex: goodHex, manifest: manifest) == nil,
+      "matching archive digest accepted")
+    check(OIPGitHubOTA.verifyArchiveDigest(sha256Hex: "feedface", manifest: manifest)
+      == .archiveDigestMismatch(got: "feedface", expected: "deadbeef"),
+      "tampered archive digest rejected (got/expected logged)")
+
     print(failures == 0 ? "\nALL OTA LOGIC TESTS PASSED" : "\n\(failures) OTA LOGIC TEST(S) FAILED")
     exit(failures == 0 ? 0 : 1)
   }

@@ -256,8 +256,8 @@ private final class GitHubOTAUpdater {
         self.showFailure("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.")
         return
       }
-      let actual = SHA256.hash(data: archiveData).map({ String(format: "%02x", $0) }).joined()
-      guard actual == manifest.archiveSHA256 else {
+      let actual = OIPGitHubOTA.sha256Hex(of: Array(SHA256.hash(data: archiveData)))
+      guard OIPGitHubOTA.verifyArchiveDigest(sha256Hex: actual, manifest: manifest) == nil else {
         OIPGitHubOTA.log("archive digest mismatch: got \(actual) expected \(manifest.archiveSHA256)")
         self.showFailure("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.")
         return
