@@ -5354,3 +5354,32 @@ current repository safety boundary.
 * No demo data is presented as real evidence. Inventory registration is still not a
   connection, and device connectivity stays `Unknown` / `NoCollector` until a real, confirmed
   host binding exists.
+
+### Live Touch ID Core repair (2026-11-15)
+
+The operator explicitly authorized deploying the Touch ID route repair after the prior read-only
+audit found that the live Pi Core returned 404 for `/api/v2/browser/pairing` and
+`/api/v2/browser/device-login`. The app source already contained both routes; the Pi binary was
+stale. The Core was cross-built from isolated branch `fix/oip-live-touchid-core` for Linux ARM64
+(SHA-256 `51f095bd12ddf08bf5b48f679e7a100a71c2670627bb7f204c76246f5340fdf5`), and the exact
+previous binary was retained at `~/oip-platform/bin/oip-server.pre-touchid-20261115` (SHA-256
+`a8087238b490b2cd07c023b10c1dc2d30ccc168d6923d2338dee1ac69b65aae9`). The service is active on
+the candidate; direct Pi probes return 405 for GET on both POST-only Touch ID routes and 200 for
+the browser-session route. Pi SQLite `user_version` remained 8; no schema activation or manual
+database modification was performed. The focused session suite passed 7/7 tests, including Touch ID pairing.
+
+The running native Mac app accepted a fresh one-time code and loaded the live infrastructure.
+Touch ID setup did not complete: the macOS LocalAuthentication log explicitly records
+`UI lost focus` for the Touch ID enrollment prompt, and the Touch ID Keychain item is absent.
+The code flow in source correctly requests biometric authentication before keychain storage;
+the earlier backgrounded GUI automation caused macOS to cancel that request, so this is not
+evidence of a remaining Core-route failure. The LaunchAgent tunnel on port 18848 remains
+intermittent (session and pairing GET probes timed out during the later logout attempt, while the
+device-login route responded), so the app currently also displays Core connection recovery.
+**Remaining verification:** make the OIP window foreground, establish the tunnel/app connection,
+then perform a fresh code login with the Touch ID checkbox selected and approve the macOS biometric
+prompt. Do not claim Touch ID configured until the Keychain item exists and the login screen offers
+“Mit Touch ID anmelden”.
+
+This deployment is a user-authorized exception to the earlier read-only/no-deployment status above;
+it did not change the personal Mac installation database, alter schema 7, or push repository code.
