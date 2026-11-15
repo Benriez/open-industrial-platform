@@ -5207,6 +5207,31 @@ connection state. No full canonical UI gate, app rebuild/install, Pi/Core deploy
 personal database change, push or release was performed. Operator visual approval remains
 `VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
 
+### Touch ID re-login root cause — the live Pi Core does not expose pairing
+
+**Read-only live finding (2026-11-15).** The operator reported that Touch ID had already been
+activated. The native app screenshot still showed only “Touch ID auf diesem Mac einrichten” and no
+“Mit Touch ID anmelden” action. The app's own login code only shows that action when its Keychain
+credential check succeeds. Source inspection confirms that native session cookies are held in
+process memory only; restarting the app therefore drops its authorized session.
+
+The first-party pairing flow creates a biometric Keychain credential and posts it to
+`/api/v2/browser/pairing`; when that API call fails, Flutter deletes the just-created Keychain item.
+The credential-login route is `/api/v2/browser/device-login`. Read-only GET probes against the live
+Pi Core returned **404 for both routes**, while `/api/v2/browser/session` returned 200. Thus the
+Mac's biometric step may have been completed previously, but the live Core could not register or
+reuse that credential; the app then had no paired item to offer after restart. The CLI Keychain
+query run in the prior audit was not conclusive because it ran outside the app's signing context and
+is not used as evidence here.
+
+The latest OIP app process restart in the tunnel investigation was the direct cause of the current
+code prompt: the native cookie is memory-only. The missing Pi Core routes explain why the reported
+Touch ID activation did not survive as a usable pairing. No one-time code was generated for this
+audit, and no Core deployment, host change, Keychain value read, personal database write, or device
+write was performed. Enabling Touch ID on this installation requires a Core build with both routes
+and a successful first code login plus biometric pairing; that deployment remains forbidden by the
+current repository safety boundary.
+
 ## 5. Evidence index
 
 | Artifact | Content |
