@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing version tag to package and publish
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -13,6 +19,8 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
 
       - name: Install pinned Flutter SDK
         env:
@@ -24,10 +32,10 @@ jobs:
       - name: Build direct macOS app
         working-directory: apps/flutter
         env:
-          TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
           RUN_NUMBER: ${{ github.run_number }}
         run: |
-          VERSION="${TAG#v}"
+          VERSION="${RELEASE_TAG#v}"
           BUILD=$((RUN_NUMBER + 3))
           flutter build macos --release \
             --build-name="$VERSION" --build-number="$BUILD" \
@@ -47,11 +55,11 @@ jobs:
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         run: |
-          gh release create "$TAG" \
+          gh release create "$RELEASE_TAG" \
             target/oip-github-ota-release/oip-macos-universal.zip \
             target/oip-github-ota-release/oip-macos-manifest.json \
             target/oip-github-ota-release/oip-macos-manifest.json.sig \
-            --title "Open Industrial Platform ${TAG#v}" \
+            --title "Open Industrial Platform ${RELEASE_TAG#v}" \
             --generate-notes
