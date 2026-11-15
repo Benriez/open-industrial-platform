@@ -5175,6 +5175,33 @@ the release-signing Actions secret directly from the Keychain without displaying
 read-only check confirms zero remote refs and `GET /releases/latest` returns 404. No source push or
 release was made.
 
+### Iteration 106 — the installed Mac client can authenticate through its persistent Core tunnel
+
+**Status: tunnel repaired and live API path verified; native UI acceptance remains open.** The
+installed app at `/Applications/Open Industrial Platform.app` was stuck at operator login. Its
+Mac LaunchAgent forwards `127.0.0.1:18848` to the operator's Pi Core on `127.0.0.1:18808`. The
+`bodi-pi` SSH profile enables `ControlMaster auto`; the LaunchAgent did not opt out, and its
+persistent connection accepted GET requests but hung on `POST /api/v2/browser/login`. A fresh
+non-multiplexed tunnel authenticated, identifying SSH connection sharing as the failure path.
+
+The operator-owned `com.oip.platform-tunnel` LaunchAgent now passes `ControlMaster=no` and
+`ControlPath=none`. It was restarted cleanly, with one listener on the app's configured port.
+**Verified through that exact port:** a fresh one-time code authenticated with HTTP 200, and the
+authorized `/api/v2/snapshot` returned HTTP 200 with 27 non-simulated observations. The source
+snapshot contained 15 fresh observations for `bodi-pc` and 12 for `bodi-pi`; the Pi briefly aged
+past the Core's freshness bound during the probe, then supplied fresh observations again. No host
+service, collection configuration, host database or device was written. The authorized hierarchy,
+inventory and diagnostics read routes also returned HTTP 200.
+
+**Remaining findings.** The installed app itself remains at its login panel; the UI session was not
+authorized or visually accepted in this check. The real data omit CPU utilization on both hosts;
+the Pi also has no separate GPU-load or GPU-temperature reading. Device details render raw metric
+IDs such as `host.memory_used_percent`, which need clearer operator-facing labels. The separate
+services and device-connections registries are empty, so they do not establish any additional
+connection state. No full canonical UI gate, app rebuild/install, Pi/Core deployment, device write,
+personal database change, push or release was performed. Operator visual approval remains
+`VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
+
 ## 5. Evidence index
 
 | Artifact | Content |
