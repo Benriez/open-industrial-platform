@@ -29,7 +29,14 @@ the canonical worktree's on-disk `.app` is a stale pre-fix build, so the verifie
 with the fixed updater) was copied byte-identically to `/private/tmp/oip-ota-candidate/oip_dashboard.app`
 for the operator; `/Applications` and pid 33826 untouched. The receipt records the path and the
 operator install steps; gate G9 (macOS build / local operations) is the gate this closes once the
-operator runs the live install.
+operator runs the live install. **OTA archive-digest rejection unit-tested (loop `2665891`,
+2026-11-15):** the digest check that acceptance requires was inline in the live downloader with a
+dead `archiveDigestMismatch` enum case, so no test covered it. It is now the pure `OIPGitHubOTA`
+helpers `sha256Hex(of:)` / `verifyArchiveDigest(sha256Hex:manifest:)`, called by the live downloader
+and by `tests/oip_ota_logic.py` (matching digest accepted, tampered digest returns
+`.archiveDigestMismatch(got, expected)`). Native release build compiles with 254 `OIPGitHubOTA`
+symbols (fresh binary sha256 `f84b61f009a324bd3275a0d73352c12a15773229ca71b4392d1ed111ba853760);
+all 7 OTA tests pass; the operator candidate was re-staged from this build.
 
 | Gate | Status | Basis and gap |
 |---|---|---|

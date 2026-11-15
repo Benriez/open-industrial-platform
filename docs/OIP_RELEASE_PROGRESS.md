@@ -56,6 +56,19 @@ published `v0.3.1+4`, producing the real `0.3.0+3 → 0.3.1+4` change. The `/App
 33826 were not touched. Task 4 stays operator-driven; the receipt records the staged candidate and its
 operator install steps, and the ledger gate G9/OTA row reflects the same.
 
+**OTA archive-digest rejection now unit-tested (2026-11-15, loop `2665891`).** Acceptance requires
+the updater to reject invalid archive digests with automated test coverage. That check previously
+lived only inline in the live downloader (`MainFlutterWindow.swift`) and the `archiveDigestMismatch`
+enum case was dead code, so no test covered it. The hex encoding and the digest comparison are now
+pure `OIPGitHubOTA` helpers (`sha256Hex(of:)`, `verifyArchiveDigest(sha256Hex:manifest:)`) and the
+live downloader calls them, so the network path and the regression test share one implementation.
+`tests/oip_ota_logic.py` proves the matching digest is accepted and a tampered digest returns
+`.archiveDigestMismatch(got, expected)`. **Verified:** `flutter build macos --release` compiles with
+**254 `OIPGitHubOTA` symbols** (up from 251; fresh canonical binary sha256
+`f84b61f009a324bd3275a0d73352c12a15773229ca71b4392d1ed111ba853760`) and all 7 OTA tests pass. The
+operator candidate was re-staged from this canonical build (same `0.3.0+3` label, unchanged runtime
+offer/install behavior). `/Applications` and pid 33826 untouched. Task 4 stays operator-driven.
+
 The open first-release software tasks are tracked in [`docs/OIP_OPEN_RELEASE_TASKS.md`](OIP_OPEN_RELEASE_TASKS.md)
 and are the checklist for the `oip-open-release-tasks` OpenCode loop. Operator-only acceptance gates
 remain recorded in the release ledger and must not be treated as software work the loop can fabricate.

@@ -1,15 +1,16 @@
 {
   "schema": "oip-github-ota-v1",
   "status": "GITHUB_RELEASE_PUBLISHED_AUTO_OFFER_PENDING",
-  "candidate_revision": "30d6bcc",
+  "candidate_revision": "2665891",
   "candidate_branch": "main",
   "client_updater_fix": {
     "root_cause": "The installed 0.3.0+3 client's updater looked for the signature asset 'oip-macos-manifest.sig', which the release never publishes (it publishes 'oip-macos-manifest.json.sig'), so the offer failed silently.",
     "fix_revision": "1143e4c",
     "fix_branch": "fix/oip-github-ota-asset-name",
     "fix_summary": "Decision logic extracted into OIPGitHubOTA.swift (manifestAssetName/signatureAssetName/archiveAssetName constants, safe URL, build compare, verify()); the live updater now uses the shared OIPGitHubOTA.* types, logs every reject reason, and the installer helper got an OIP_OTA_APP_NAME test seam.",
-    "native_macos_release_build": "PASS: flutter build macos --release succeeds; 251 OIPGitHubOTA symbols compiled into the universal (x86_64+arm64) oip_dashboard binary (sha256 2cf06734d07157cfb76dba4b7e82b4019324539dffc9f18843399d3d0184c2f5).",
-    "regression_tests": "PASS: tests/oip_ota_logic.py (2, decision logic + asset-name agreement), tests/oip_ota_install_helper.py (4, refuse-without-touching on exit 21/22/23 and byte-for-byte rollback on forced post-swap launch failure), tests/oip_github_ota_package.py (1, direct/Store isolation)."
+    "native_macos_release_build": "PASS: flutter build macos --release succeeds; 254 OIPGitHubOTA symbols compiled into the universal (x86_64+arm64) oip_dashboard binary (sha256 f84b61f009a324bd3275a0d73352c12a15773229ca71b4392d1ed111ba853760), up from 251 after the archive-digest helper below was added.",
+    "archive_digest_coverage": "ADDED (revision 2665891): acceptance requires rejecting invalid archive digests with automated test coverage. The digest check previously existed only inline in the live downloader (MainFlutterWindow.swift) and the archiveDigestMismatch enum case was dead code, so no test covered it. Extracted pure OIPGitHubOTA helpers sha256Hex(of:) and verifyArchiveDigest(sha256Hex:manifest:); the live downloader now calls them, so the network path and the unit test share one implementation. tests/oip_ota_logic.py now proves the matching digest is accepted and a tampered digest returns .archiveDigestMismatch(got, expected).",
+    "regression_tests": "PASS: tests/oip_ota_logic.py (2, decision logic incl. the new archive-digest matching/mismatch cases + asset-name agreement), tests/oip_ota_install_helper.py (4, refuse-without-touching on exit 21/22/23 and byte-for-byte rollback on forced post-swap launch failure), tests/oip_github_ota_package.py (1, direct/Store isolation). 7 OTA tests total, all green."
   },
   "github_delivery": {
     "repository": "Benriez/open-industrial-platform",
@@ -50,14 +51,14 @@
   "operator_candidate": {
     "purpose": "Verified fixed-updater build staged for the operator to install and trigger the OTA offer (Task 4), so the blocked live install has a ready, integrity-checkable artifact. Does not touch /Applications or the running pid 33826.",
     "path": "/private/tmp/oip-ota-candidate/oip_dashboard.app",
-    "source": "Byte-identical copy of the fix worktree build (branch fix/oip-github-ota-asset-name, HEAD c3e5d91). The canonical worktree on-disk .app was stale (Nov 13, pre-fix), so this staged copy is the verified fixed artifact.",
+    "source": "Byte-identical copy of the fresh canonical build (main HEAD 2665891, the archive-digest coverage revision). Built in the canonical worktree with CODE_SIGNING_ALLOWED=NO; the earlier fix-worktree copy (2cf06734, 251 symbols) was superseded because the canonical OTA code advanced.",
     "bundle_identifier": "org.openindustrial.oipDashboard",
     "version": "0.3.0",
     "build_number": "3",
-    "note": "Labeled 0.3.0+3 (same as the installed client) but carries the FIXED updater; when installed and its updater check runs it should discover and offer published v0.3.1+4, producing the real 0.3.0+3 -> 0.3.1+4 installed-version change Task 4 measures.",
-    "binary_sha256": "2cf06734d07157cfb76dba4b7e82b4019324539dffc9f18843399d3d0184c2f5",
+    "note": "Labeled 0.3.0+3 (same as the installed client) but carries the FIXED updater (now with the unit-tested archive-digest rejection); when installed and its updater check runs it should discover and offer published v0.3.1+4, producing the real 0.3.0+3 -> 0.3.1+4 installed-version change Task 4 measures. Runtime offer/install behavior is unchanged by the digest refactor (same comparison, same rejection).",
+    "binary_sha256": "f84b61f009a324bd3275a0d73352c12a15773229ca71b4392d1ed111ba853760",
     "binary_sha256_matches_receipt": true,
-    "oipgithubota_symbols": 251,
+    "oipgithubota_symbols": 254,
     "signature_asset_name_fixed": "oip-macos-manifest.json.sig",
     "signature": "adhoc (local launchable; NOT a distribution-signed artifact)",
     "staged_at": "2026-11-15",
