@@ -76,53 +76,44 @@ class MainFlutterWindow: NSWindow {
 private final class GitHubOTAUpdater {
   static let shared = GitHubOTAUpdater()
 
-  private struct Manifest: Decodable {
-    let bundleIdentifier: String
-    let version: String
-    let build: String
-    let archive: String
-    let archiveSHA256: String
-
-    enum CodingKeys: String, CodingKey {
-      case bundleIdentifier = "bundle_identifier"
-      case version
-      case build
-      case archive
-      case archiveSHA256 = "archive_sha256"
-    }
-  }
-
-  private struct Release: Decodable {
-    let draft: Bool
-    let prerelease: Bool
-    let assets: [Asset]
-  }
-
-  private struct Asset: Decodable {
-    let name: String
-    let browserDownloadURL: URL
-
-    enum CodingKeys: String, CodingKey {
-      case name
-      case browserDownloadURL = "browser_download_url"
-    }
-  }
-
+  // All release/manifest/asset shapes come from the shared, unit-tested
+  // `OIPGitHubOTA` module so the live updater and the decision logic can never
+  // drift into two different types.
   private let session = URLSession(configuration: .ephemeral)
   private let repository = Bundle.main.object(forInfoDictionaryKey: "OIPGitHubRepository") as? String ?? ""
   private let publicKey = Bundle.main.object(forInfoDictionaryKey: "OIPUpdatePublicKey") as? String ?? ""
+  private let runningBuild = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
 
   func checkForUpdate() {
-    guard Bundle.main.object(forInfoDictionaryKey: "OIPUpdateEnabled") as? Bool == true,
-          !repository.isEmpty,
-          !publicKey.hasPrefix("__"),
-          ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"] == nil,
-          let url = URL(string: "https://api.github.com/repos/\(repository)/releases/latest"),
-          url.host == "api.github.com" else { return }
+    OIPGitHubOTA.log("check requested (build \(runningBuild))")
+    guard Bundle.main.object(forInfoDictionaryKey: "OIPUpdateEnabled") as? Bool == true else {
+      OIPGitHubOTA.log("skipped: OIPUpdateEnabled is not true")
+      return
+    }
+    guard !repository.isEmpty else {
+      OIPGitHubOTA.log("skipped: OIPGitHubRepository is empty")
+      return
+    }
+    guard !publicKey.hasPrefix("__") else {
+      OIPGitHubOTA.log("skipped: OIPUpdatePublicKey is a placeholder")
+      return
+    }
+    guard ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"] == nil else {
+      OIPGitHubOTA.log("skipped: running in the App Store sandbox")
+      return
+    }
+    guard let url = URL(string: "https://api.github.com/repos/\(repository)/releases/latest"),
+          url.host == "api.github.com" else {
+      OIPGitHubOTA.log("skipped: repository URL is invalid")
+      return
+    }
 
     let defaults = UserDefaults.standard
     let now = Date().timeIntervalSince1970
-    guard now - defaults.double(forKey: "oip.github-ota.last-check") > 21_600 else { return }
+    guard now - defaults.double(forKey: "oip.github-ota.last-check") > 21_600 else {
+      OIPGitHubOTA.log("skipped: last check \(Int(now)) within 6h")
+      return
+    }
     defaults.set(now, forKey: "oip.github-ota.last-check")
 
     var request = URLRequest(url: url)
@@ -130,60 +121,105 @@ private final class GitHubOTAUpdater {
     request.setValue("OpenIndustrialPlatform-macOS", forHTTPHeaderField: "User-Agent")
     request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
     session.dataTask(with: request) { [weak self] data, response, error in
-      guard let self, error == nil, let data,
-            (response as? HTTPURLResponse)?.statusCode == 200,
-            let release = try? JSONDecoder().decode(Release.self, from: data),
-            !release.draft, !release.prerelease else { return }
+      guard let self else { return }
+      let status = (response as? HTTPURLResponse)?.statusCode
+      if let error {
+        OIPGitHubOTA.log("release list request failed: \(error.localizedDescription)")
+        return
+      }
+      guard status == 200, let data else {
+        OIPGitHubOTA.log("release list request rejected: status \(status ?? -1)")
+        return
+      }
+      guard let release = try? JSONDecoder().decode(OIPGitHubOTA.Release.self, from: data) else {
+        OIPGitHubOTA.log("release list response did not decode as a GitHub release")
+        return
+      }
+      if release.draft || release.prerelease {
+        OIPGitHubOTA.log("release is draft or prerelease: \(release.draft) / \(release.prerelease)")
+        return
+      }
       self.verifyRelease(release)
     }.resume()
   }
 
-  private func verifyRelease(_ release: Release) {
-    guard let manifestAsset = release.assets.first(where: { $0.name == "oip-macos-manifest.json" }),
-          let signatureAsset = release.assets.first(where: { $0.name == "oip-macos-manifest.sig" }) else { return }
-    getSmallAsset(manifestAsset) { [weak self] manifestData in
-      guard let self, let manifestData,
-            let manifest = try? JSONDecoder().decode(Manifest.self, from: manifestData),
-            manifest.bundleIdentifier == Bundle.main.bundleIdentifier,
-            let signatureURL = self.safeReleaseURL(signatureAsset.browserDownloadURL) else { return }
-      var request = URLRequest(url: signatureURL)
-      request.setValue("OpenIndustrialPlatform-macOS", forHTTPHeaderField: "User-Agent")
-      self.session.dataTask(with: request) { data, response, error in
-        guard error == nil, let data,
-              (response as? HTTPURLResponse)?.statusCode == 200,
-              let signatureText = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
-              let signature = Data(base64Encoded: signatureText),
-              let rawKey = Data(base64Encoded: self.publicKey),
-              let key = try? Curve25519.Signing.PublicKey(rawRepresentation: rawKey),
-              key.isValidSignature(signature, for: manifestData),
-              manifest.archive == "oip-macos-universal.zip",
-              let archiveAsset = release.assets.first(where: { $0.name == manifest.archive }),
-              self.isNewer(manifest.build) else { return }
-        self.offer(manifest, archiveAsset: archiveAsset)
-      }.resume()
+  private func verifyRelease(_ release: OIPGitHubOTA.Release) {
+    guard let manifestAsset = OIPGitHubOTA.manifestAsset(in: release),
+          let signatureAsset = OIPGitHubOTA.signatureAsset(in: release) else {
+      let names = release.assets.map(\.name).sorted()
+      OIPGitHubOTA.log("manifest/signature asset missing; release assets: \(names)")
+      return
+    }
+    getAsset(manifestAsset.browserDownloadURL) { [weak self] manifestData in
+      guard let self, let manifestData else {
+        OIPGitHubOTA.log("manifest download failed for \(OIPGitHubOTA.manifestAssetName)")
+        return
+      }
+      let manifest = try? JSONDecoder().decode(OIPGitHubOTA.Manifest.self, from: manifestData)
+      if manifest == nil {
+        OIPGitHubOTA.log("manifest did not decode")
+        return
+      }
+      if manifest?.bundleIdentifier != Bundle.main.bundleIdentifier {
+        OIPGitHubOTA.log("bundle identifier mismatch: manifest \(manifest?.bundleIdentifier ?? "nil"), running \(Bundle.main.bundleIdentifier)")
+        return
+      }
+      self.verifySignature(manifestData: manifestData, manifest: manifest!, release: release, signatureURL: signatureAsset.browserDownloadURL)
     }
   }
 
-  private func getSmallAsset(_ asset: Asset, completion: @escaping (Data?) -> Void) {
-    guard let url = safeReleaseURL(asset.browserDownloadURL) else { completion(nil); return }
-    var request = URLRequest(url: url)
+  private func verifySignature(manifestData: Data, manifest: OIPGitHubOTA.Manifest, release: OIPGitHubOTA.Release, signatureURL: URL) {
+    getAsset(signatureURL) { [weak self] signatureData in
+      guard let self, let signatureData else {
+        OIPGitHubOTA.log("signature download failed for \(OIPGitHubOTA.signatureAssetName)")
+        return
+      }
+      guard let signatureText = String(data: signatureData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+            let signature = Data(base64Encoded: signatureText) else {
+        OIPGitHubOTA.log("signature response is not valid base64 text")
+        return
+      }
+      guard let rawKey = Data(base64Encoded: self.publicKey),
+            let key = try? Curve25519.Signing.PublicKey(rawRepresentation: rawKey) else {
+        OIPGitHubOTA.log("embedded update public key is missing or invalid")
+        return
+      }
+      let valid = key.isValidSignature(signature, for: manifestData)
+      OIPGitHubOTA.log("manifest signature \(valid ? "verified" : "invalid"); build \(manifest.build)")
+      guard valid else { return }
+      guard let archiveAsset = OIPGitHubOTA.archiveAsset(in: release, named: manifest.archive) else {
+        OIPGitHubOTA.log("manifest archive \(manifest.archive) is not a release asset")
+        return
+      }
+      guard OIPGitHubOTA.isUpdateAvailable(currentBuild: self.runningBuild, remoteBuild: manifest.build) else {
+        let comparison = OIPGitHubOTA.compareBuilds(current: self.runningBuild, remote: manifest.build)
+        OIPGitHubOTA.log("version not newer: running \(self.runningBuild) vs remote \(manifest.build) (compare \(comparison))")
+        return
+      }
+      self.offer(manifest, archiveAsset: archiveAsset)
+    }
+  }
+
+  private func getAsset(_ url: URL, completion: @escaping (Data?) -> Void) {
+    guard let safe = OIPGitHubOTA.safeReleaseURL(url) else {
+      OIPGitHubOTA.log("unsafe download URL rejected: \(url.absoluteString)")
+      completion(nil)
+      return
+    }
+    var request = URLRequest(url: safe)
     request.setValue("OpenIndustrialPlatform-macOS", forHTTPHeaderField: "User-Agent")
     session.dataTask(with: request) { data, response, error in
-      completion(error == nil && (response as? HTTPURLResponse)?.statusCode == 200 ? data : nil)
+      let status = (response as? HTTPURLResponse)?.statusCode
+      if error != nil || status != 200 {
+        OIPGitHubOTA.log("asset download rejected: status \(status ?? -1)")
+        completion(nil)
+        return
+      }
+      completion(data)
     }.resume()
   }
 
-  private func safeReleaseURL(_ url: URL) -> URL? {
-    ["github.com", "objects.githubusercontent.com"].contains(url.host ?? "") && url.scheme == "https" ? url : nil
-  }
-
-  private func isNewer(_ remoteBuild: String) -> Bool {
-    guard let current = Int(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""),
-          let remote = Int(remoteBuild) else { return false }
-    return remote > current
-  }
-
-  private func offer(_ manifest: Manifest, archiveAsset: Asset) {
+  private func offer(_ manifest: OIPGitHubOTA.Manifest, archiveAsset: OIPGitHubOTA.Asset) {
     DispatchQueue.main.async {
       let alert = NSAlert()
       alert.messageText = "OIP-Update verfügbar"
@@ -195,8 +231,8 @@ private final class GitHubOTAUpdater {
     }
   }
 
-  private func downloadAndInstall(_ manifest: Manifest, archiveAsset: Asset) {
-    guard let url = safeReleaseURL(archiveAsset.browserDownloadURL) else {
+  private func downloadAndInstall(_ manifest: OIPGitHubOTA.Manifest, archiveAsset: OIPGitHubOTA.Asset) {
+    guard let url = OIPGitHubOTA.safeReleaseURL(archiveAsset.browserDownloadURL) else {
       showFailure("Der Download-Link des signierten Updates ist ungültig.")
       return
     }
@@ -208,13 +244,25 @@ private final class GitHubOTAUpdater {
     var request = URLRequest(url: url)
     request.setValue("OpenIndustrialPlatform-macOS", forHTTPHeaderField: "User-Agent")
     session.downloadTask(with: request) { [weak self] temporaryURL, response, error in
-      guard let self, error == nil, let temporaryURL,
-            (response as? HTTPURLResponse)?.statusCode == 200,
-            let archiveData = try? Data(contentsOf: temporaryURL),
-            SHA256.hash(data: archiveData).map({ String(format: "%02x", $0) }).joined() == manifest.archiveSHA256 else {
-        self?.showFailure("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.")
+      guard let self else { return }
+      let status = (response as? HTTPURLResponse)?.statusCode
+      if error != nil || status != 200 {
+        OIPGitHubOTA.log("archive download rejected: status \(status ?? -1)")
+        self.showFailure("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.")
         return
       }
+      guard let temporaryURL, let archiveData = try? Data(contentsOf: temporaryURL) else {
+        OIPGitHubOTA.log("archive download could not be read from disk")
+        self.showFailure("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.")
+        return
+      }
+      let actual = SHA256.hash(data: archiveData).map({ String(format: "%02x", $0) }).joined()
+      guard actual == manifest.archiveSHA256 else {
+        OIPGitHubOTA.log("archive digest mismatch: got \(actual) expected \(manifest.archiveSHA256)")
+        self.showFailure("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.")
+        return
+      }
+      OIPGitHubOTA.log("archive verified (sha256 \(actual)); starting installer")
       let directory = FileManager.default.temporaryDirectory.appendingPathComponent("OIP-OTA-\(UUID().uuidString)", isDirectory: true)
       do {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -228,7 +276,7 @@ private final class GitHubOTAUpdater {
     }.resume()
   }
 
-  private func launchInstaller(archive: URL, appURL: URL, manifest: Manifest) {
+  private func launchInstaller(archive: URL, appURL: URL, manifest: OIPGitHubOTA.Manifest) {
     guard let helper = Bundle.main.url(forResource: "oip_ota_install_helper", withExtension: "sh") else {
       showFailure("Der Update-Installer fehlt im App-Bundle.")
       return

@@ -50,9 +50,17 @@ class GitHubOTAPackage(unittest.TestCase):
             signed_entitlements = subprocess.run([
                 "/usr/bin/codesign", "-d", "--entitlements", "-", "--xml", str(staged),
             ], check=True, capture_output=True, text=True)
-            signed_xml = signed_entitlements.stdout + signed_entitlements.stderr
-            signed_xml = signed_xml[signed_xml.index("<?xml"):signed_xml.rindex("</plist>") + 8]
-            direct_entitlements = plistlib.loads(signed_xml.encode())
+            signed_out = signed_entitlements.stdout + signed_entitlements.stderr
+            # An empty entitlements set (the direct build carries none, which is
+            # the isolation this test proves) makes codesign emit only the
+            # "Executable=" header with no <?xml plist. Treat that as the empty
+            # dictionary instead of slicing a header, so the no-sandbox assertion
+            # stays meaningful rather than crashing.
+            if "<?xml" in signed_out:
+                signed_xml = signed_out[signed_out.index("<?xml"):signed_out.rindex("</plist>") + 8]
+                direct_entitlements = plistlib.loads(signed_xml.encode())
+            else:
+                direct_entitlements = {}
             self.assertIsNot(direct_entitlements.get("com.apple.security.app-sandbox"), True)
             subprocess.run([
                 "swift", str(VERIFY), str(manifest_path), str(signature_path),
