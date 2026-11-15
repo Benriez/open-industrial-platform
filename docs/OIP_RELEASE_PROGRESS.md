@@ -109,6 +109,15 @@ from it, so a `v0.3.2` tag on a post-fix commit ships the fixed client (VERSION 
 `docs/evidence/oip-github-ota/ota-receipt.json` (`github_delivery.published_release_updater_state`).
 `/Applications` and the running state were not touched.
 
+**OTA loop terminal state (2026-11-15).** The `oip-open-release-tasks` job completed 100
+successful turns, reached its configured `--max-runs 100` cap, and disabled itself with zero
+execution failures. The checklist still counted its one operator-blocked OTA acceptance item as
+pending, so it repeated that already-documented blocker until the cap. That item is now marked
+software-scope complete and `BLOCKED_OPERATOR`, with the publication and live-install steps
+preserved explicitly below; this **does not** change `NOT VERIFIED; AUTO OFFER OPEN` or claim OTA
+acceptance. The loop must be resumed only for the final checklist-completion check, then remain
+stopped until the operator publishes the fixed signed release and performs the live acceptance.
+
 The open first-release software tasks are tracked in [`docs/OIP_OPEN_RELEASE_TASKS.md`](OIP_OPEN_RELEASE_TASKS.md)
 and are the checklist for the `oip-open-release-tasks` OpenCode loop. Operator-only acceptance gates
 remain recorded in the release ledger and must not be treated as software work the loop can fabricate.
