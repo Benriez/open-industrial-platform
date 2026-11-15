@@ -27,6 +27,10 @@ automatic offer and live install therefore remain **OPEN**; the signed release's
 verified, but end-to-end OTA installation is not claimed. The installer helper's launch path also
 needs a separate review before relying on it for the live installation.
 
+The open first-release software tasks are tracked in [`docs/OIP_OPEN_RELEASE_TASKS.md`](OIP_OPEN_RELEASE_TASKS.md)
+and are the checklist for the `oip-open-release-tasks` OpenCode loop. Operator-only acceptance gates
+remain recorded in the release ledger and must not be treated as software work the loop can fabricate.
+
 | Item | Value |
 |---|---|
 | Canonical branch | `main` |
