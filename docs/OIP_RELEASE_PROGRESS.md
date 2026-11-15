@@ -169,6 +169,30 @@ created or modified this iteration**; the earlier stop file remains as recorded 
 product revision unchanged at `8bb1c1a` (`main` @ `b4ec656`); no source, product, Core, contract or
 dependency changed.
 
+**Contract-trace verification (2026-11-15, third re-fire).** A fresh cadence ran a *behavioural*
+defect hunt (not a TODO grep): a delegated read-only review raised one HIGH-severity candidate —
+a claimed key mismatch in `features/opcua.dart` where `_resolve`/`_samplesFor` look up by
+`node.name` while `_liveMap`/`_ingest` key by `observation.metricId`, asserted to fail for any real
+OPC-UA node whose BrowseName differs from the metric id. Model Router traced the full contract and
+**proved the claim is a false positive**: the server sets `Node.name` to the source's browse name
+(`application_services.rs:434-438`) and then reads that node's value with `MetricId::new(&name)`
+(`:467`), and `data_value_to_observation` stamps the returned observation's `metric_id` from that
+**same** name (`oip-opcua/.../mapping.rs:318`); `MetricId::new` only trims whitespace and never
+re-cases (`oip-core/src/model.rs:20-27`). Therefore, for every node that *carries* a live
+observation, `node.name == metricId` **by construction**, so `liveById[node.name]` and
+`sessionHistory[_sampleKey(source, node.name)]` resolve correctly; a node whose browse name is not a
+valid metric id simply carries no observation (disclosed, not faked). The review's second concrete
+claim (unreachable `return` in `widgets/opcua_compare.dart:245`) was likewise a misread — line 244
+`return value.toString()` is the reachable fall-through for normal-range finite values. The remaining
+leads were unreachable defensive concerns (`overview.dart:432` `value[0]` is fed only by the total,
+non-empty `_coreLabel` switch over `CoreLifecycle`). Independently re-verified this cadence as sound:
+`features/network/network_model.dart:121-131` RTT/loss formatting (honest `Nicht gemessen`/
+`Nicht verfügbar` + `· Fixture` disclosure) and the OPC value localized/scientific/engineering
+formatter in `features/opcua_value.dart` (traced for 0.5, 0.0001234, 1234000, ±0 — all round-trip
+exact). **Determination: `NO_READY_TASK` — reconfirmed with deeper, contract-level evidence than the
+prior grep audits.** No real-mode-reachable, non-cosmetic, client-side defect exists; none was
+invented. `flutter analyze` → `No issues found!`; canonical product revision unchanged at `8bb1c1a`.
+
 The canonical tree carries eleven controlled integrations: iteration 1 integrated the reviewed
 real device onboarding candidate `ae4c6ba` (tree `f72cb66`) unchanged, iteration 2 integrated
 the isolated conformance branch `feature/oip-real-device-conformance` (`fc828ac`), iteration 3
