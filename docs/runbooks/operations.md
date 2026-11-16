@@ -448,7 +448,7 @@ not have.
 
 **The port of the bundle and the port of the instance.** The address is baked
 into the bundle, so the two must agree. The managed Mac OTA release targets
-`127.0.0.1:18857`; the direct macOS app maintains an SSH forward from that
+`127.0.0.1:18858`; the direct macOS app maintains an SSH forward from that
 local port to the Pi Core at `127.0.0.1:18808`. For a different self-hosted
 instance, build the bundle with that instance's reachable URL in `OIP_API_URL`.
 

@@ -5595,3 +5595,23 @@ local app passes strict code-signature verification. Executable SHA-256:
 no app update was installed. The operator's installed `0.3.2+5` client must offer `0.3.3+6` in-app
 for the operator to click; after it restarts, establish the Touch ID session and re-check authorized
 telemetry and OPC-UA responses before marking runtime recovery complete.
+
+**Correction after the `0.3.3` ControlMaster trial; standalone tunnel candidate `0.3.4+7` (2026-11-16).**
+The operator's app reached `0.3.3+6`, but the shared SSH ControlMaster (`bodi-pi`, over six hours
+old) returned a short run of successful forwarded requests and later stalled; both direct SSH commands
+using that master and its `18857` forward then timed out. The independent SSH processes on existing
+OIP ports `18852` and `18855` responded with HTTP 200 in 10–26 ms. A fresh, standalone SSH forward
+using the app's original no-multiplexing arguments on unused port `18858` returned ten consecutive
+HTTP 200 session responses in 8–17 ms and was stopped after the probe. This supersedes the earlier
+inference that the shared ControlMaster should be the durable tunnel.
+
+The `0.3.4+7` candidate restores a directly owned SSH child (`ControlMaster=no`, `ControlPath=none`),
+keeps the three-failure health restart, and moves the API/tunnel to unused local port `18858`; the
+manager can terminate and replace its own stuck connection. This avoids reusing the stale 18857
+master listener. **Build receipt:** isolated branch `fix/oip-pi-controlmaster`; local macOS release
+build succeeded for `0.3.4` build `7`, bundle code signature verifies, and executable SHA-256 is
+`503a0c76e9f2aa7775d606e461c24a326d441793a141f829af7eca4ed00a1a60`. The source plist/shell syntax
+and `git diff --check` pass. No tests were run. GitHub publication is pending; the installed
+`0.3.3+6` app remains untouched while the signed release is prepared. After publication, refresh the
+in-app updater prompt and leave its button for the operator. Authenticated telemetry and OPC-UA reads
+remain unverified until the operator's Touch ID session is restored.

@@ -79,7 +79,7 @@ private final class OIPPiTunnelManager: NSObject {
   static let shared = OIPPiTunnelManager()
 
   private let host = Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelHost") as? String ?? "bodi-pi"
-  private let localPort = Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelLocalPort") as? Int ?? 18857
+  private let localPort = Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelLocalPort") as? Int ?? 18858
   private let remotePort = Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelRemotePort") as? Int ?? 18808
   private var process: Process?
   private var timer: Timer?
@@ -153,10 +153,8 @@ private final class OIPPiTunnelManager: NSObject {
       "-o", "ServerAliveInterval=15",
       "-o", "ServerAliveCountMax=2",
       "-o", "IPQoS=none",
-      // Reuse the operator's configured SSH control socket. A standalone
-      // connection bypassed the stable control-master route and left an
-      // unresponsive listener after an OTA restart.
-      "-o", "ControlMaster=auto",
+      "-o", "ControlMaster=no",
+      "-o", "ControlPath=none",
       "-L", "127.0.0.1:\(localPort):127.0.0.1:\(remotePort)",
       host,
     ]
@@ -182,43 +180,15 @@ private final class OIPPiTunnelManager: NSObject {
 
   private func restartTunnel() {
     failedProbes = 0
-    if let current = process {
-      process = nil
-      current.terminationHandler = nil
-      if current.isRunning { current.terminate() }
+    guard let current = process else {
+      launchTunnel()
+      return
     }
-    cancelMasterForwardAndRestart()
-  }
-
-  /// A ControlMaster owns forwarded listeners after a one-shot `ssh -N`
-  /// client exits. Cancel only this app's local forward before re-attaching;
-  /// otherwise a stale listener can keep returning timeouts while every new
-  /// client fails with `Address already in use`.
-  private func cancelMasterForwardAndRestart() {
-    let cancel = Process()
-    cancel.executableURL = URL(fileURLWithPath: "/usr/bin/ssh")
-    cancel.arguments = [
-      "-O", "cancel",
-      "-o", "BatchMode=yes",
-      "-o", "ControlMaster=auto",
-      "-L", "127.0.0.1:\(localPort):127.0.0.1:\(remotePort)",
-      host,
-    ]
-    cancel.standardOutput = FileHandle.nullDevice
-    cancel.standardError = FileHandle.nullDevice
-    DispatchQueue.global(qos: .utility).async { [weak self] in
-      do {
-        try cancel.run()
-        cancel.waitUntilExit()
-      } catch {
-        // If no control master exists, the regular SSH launch below creates
-        // one from the host's normal SSH configuration.
-      }
-      DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-        guard let self, !self.stopping else { return }
-        self.log("restarting the Pi Core forward through the configured SSH control master")
-        self.launchTunnel()
-      }
+    process = nil
+    current.terminationHandler = nil
+    if current.isRunning { current.terminate() }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+      self?.launchTunnel()
     }
   }
 
