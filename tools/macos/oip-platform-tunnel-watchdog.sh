@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-session_url="http://127.0.0.1:18853/api/v2/browser/session"
+session_url="http://127.0.0.1:18855/api/v2/browser/session"
 launch_domain="gui/$(/usr/bin/id -u)"
 launch_label="com.oip.platform-tunnel"
 

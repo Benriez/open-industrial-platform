@@ -23,6 +23,7 @@ class MainFlutterWindow: NSWindow {
     super.awakeFromNib()
 
     placeOnVisibleScreen()
+    OIPPiTunnelManager.shared.startIfEnabled()
 
     // The direct build checks GitHub Releases after its window is ready. The
     // Store package leaves OIPUpdateEnabled false and uses App Store updates.
@@ -65,6 +66,171 @@ class MainFlutterWindow: NSWindow {
   /// bundle. The operator sees the window; the log says where it came.
   private func report(_ message: String) {
     FileHandle.standardError.write(("OIP-WINDOW " + message + "\n").data(using: .utf8)!)
+  }
+}
+
+/// Keeps the Pi Core's SSH local forward with the direct macOS application.
+///
+/// A LaunchAgent runs with background resource limits and was observed to
+/// leave its forwarding channels stalled while its SSH process remained alive.
+/// The OTA app owns this child process instead, so the tunnel has the same
+/// lifetime and scheduling class as the operator's visible client.
+private final class OIPPiTunnelManager: NSObject {
+  static let shared = OIPPiTunnelManager()
+
+  private let host = Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelHost") as? String ?? "bodi-pi"
+  private let localPort = Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelLocalPort") as? Int ?? 18855
+  private let remotePort = Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelRemotePort") as? Int ?? 18808
+  private var process: Process?
+  private var timer: Timer?
+  private var observer: NSObjectProtocol?
+  private var requestInFlight = false
+  private var failedProbes = 0
+  private var legacyAgentsRetired = false
+  private var lastStart = Date.distantPast
+  private var stopping = false
+  private lazy var session: URLSession = {
+    let config = URLSessionConfiguration.ephemeral
+    config.timeoutIntervalForRequest = 3
+    config.timeoutIntervalForResource = 4
+    config.waitsForConnectivity = false
+    return URLSession(configuration: config)
+  }()
+
+  func startIfEnabled() {
+    guard Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelEnabled") as? Bool == true else {
+      return
+    }
+    observer = NotificationCenter.default.addObserver(
+      forName: NSApplication.willTerminateNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in self?.stop() }
+    timer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { [weak self] _ in
+      self?.probe()
+    }
+    probe()
+  }
+
+  private func probe() {
+    guard !stopping, !requestInFlight,
+          let url = URL(string: "http://127.0.0.1:\(localPort)/api/v2/browser/session") else {
+      return
+    }
+    requestInFlight = true
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    request.timeoutInterval = 3
+    session.dataTask(with: request) { [weak self] _, response, error in
+      DispatchQueue.main.async {
+        guard let self, !self.stopping else { return }
+        self.requestInFlight = false
+        if error == nil, (response as? HTTPURLResponse)?.statusCode == 200 {
+          self.failedProbes = 0
+          self.retireLegacyAgentsIfNeeded()
+          return
+        }
+        self.failedProbes += 1
+        if self.process?.isRunning == true {
+          if self.failedProbes >= 3 { self.restartTunnel() }
+        } else {
+          self.launchTunnel()
+        }
+      }
+    }.resume()
+  }
+
+  private func launchTunnel() {
+    guard !stopping, Date().timeIntervalSince(lastStart) >= 5 else { return }
+    lastStart = Date()
+    let tunnel = Process()
+    tunnel.executableURL = URL(fileURLWithPath: "/usr/bin/ssh")
+    tunnel.arguments = [
+      "-N",
+      "-o", "BatchMode=yes",
+      "-o", "ConnectTimeout=8",
+      "-o", "ExitOnForwardFailure=yes",
+      "-o", "ServerAliveInterval=15",
+      "-o", "ServerAliveCountMax=2",
+      "-o", "IPQoS=none",
+      "-o", "ControlMaster=no",
+      "-o", "ControlPath=none",
+      "-L", "127.0.0.1:\(localPort):127.0.0.1:\(remotePort)",
+      host,
+    ]
+    tunnel.standardOutput = FileHandle.nullDevice
+    tunnel.standardError = FileHandle.nullDevice
+    tunnel.terminationHandler = { [weak self] task in
+      DispatchQueue.main.async {
+        guard let self, self.process === task else { return }
+        self.process = nil
+        self.log("SSH forward exited (status \(task.terminationStatus)); health checks will retry")
+      }
+    }
+    do {
+      try tunnel.run()
+      process = tunnel
+      failedProbes = 0
+      log("started Pi Core forward on 127.0.0.1:\(localPort)")
+    } catch {
+      process = nil
+      log("could not start SSH forward: \(error.localizedDescription)")
+    }
+  }
+
+  private func restartTunnel() {
+    failedProbes = 0
+    guard let current = process else {
+      launchTunnel()
+      return
+    }
+    process = nil
+    current.terminationHandler = nil
+    if current.isRunning { current.terminate() }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+      self?.launchTunnel()
+    }
+  }
+
+  /// The old standalone tunnel jobs use port 18854 and are superseded by this
+  /// app-owned forward. Unload only the two OIP-owned user LaunchAgents after
+  /// this app has proved its own Core route is healthy; no other SSH jobs or
+  /// user LaunchAgents are touched.
+  private func retireLegacyAgentsIfNeeded() {
+    guard !legacyAgentsRetired else { return }
+    legacyAgentsRetired = true
+    let domain = "gui/\(getuid())"
+    DispatchQueue.global(qos: .utility).async {
+      for label in ["com.oip.platform-tunnel-watchdog", "com.oip.platform-tunnel"] {
+        let command = Process()
+        command.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        command.arguments = ["bootout", "\(domain)/\(label)"]
+        command.standardOutput = FileHandle.nullDevice
+        command.standardError = FileHandle.nullDevice
+        do {
+          try command.run()
+          command.waitUntilExit()
+        } catch {
+          // The job may already be unloaded; the app-owned tunnel is healthy.
+        }
+      }
+    }
+  }
+
+  private func stop() {
+    stopping = true
+    timer?.invalidate()
+    timer = nil
+    session.invalidateAndCancel()
+    process?.terminate()
+    process = nil
+    if let observer { NotificationCenter.default.removeObserver(observer) }
+    observer = nil
+  }
+
+  private func log(_ message: String) {
+    let line = "OIP-TUNNEL \(message)\n"
+    FileHandle.standardError.write(line.data(using: .utf8)!)
   }
 }
 

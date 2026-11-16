@@ -26,6 +26,14 @@
 	     The Mac App Store build keeps this false and receives updates from Apple. -->
 	<key>OIPUpdateEnabled</key>
 	<false/>
+	<key>OIPPiTunnelEnabled</key>
+	<false/>
+	<key>OIPPiTunnelHost</key>
+	<string>bodi-pi</string>
+	<key>OIPPiTunnelLocalPort</key>
+	<integer>18855</integer>
+	<key>OIPPiTunnelRemotePort</key>
+	<integer>18808</integer>
 	<key>OIPGitHubRepository</key>
 	<string>Benriez/open-industrial-platform</string>
 	<key>OIPUpdatePublicKey</key>

@@ -36,10 +36,10 @@ void main() {
     expect(find.text('Lokal · keine Telemetrie'), findsOneWidget);
     // The rendered identity mirrors the package manifest exactly; the version
     // and build are the single source of truth, not invented values.
-    expect(kOipApplication.version, '0.3.0');
-    expect(kOipApplication.build, '3');
+    expect(kOipApplication.version, '0.3.2');
+    expect(kOipApplication.build, '5');
     expect(kOipApplication.license, 'Apache-2.0');
-    expect(OipApplicationInfo.manifestDeclaration, '0.3.0+3');
+    expect(OipApplicationInfo.manifestDeclaration, '0.3.2+5');
     expect(tester.takeException(), isNull);
   });
 }

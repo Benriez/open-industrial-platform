@@ -447,14 +447,10 @@ behaviour of the real mode: the bundle never shows data of a session it does
 not have.
 
 **The port of the bundle and the port of the instance.** The address is baked
-into the bundle, so the two must agree. The release bundle is built for the
-port **18808** — the port of the example configuration of an instance
-(`examples/multi-infrastructure-core.json`). The operator therefore either
-
-* keeps the port 18808 for the instance and uses the bundle as it is, or
-* builds the bundle for the port of the own instance (the Flutter SDK is
-  needed for that), or
-* asks for a bundle that is built for the port of the instance.
+into the bundle, so the two must agree. The managed Mac OTA release targets
+`127.0.0.1:18855`; the direct macOS app maintains an SSH forward from that
+local port to the Pi Core at `127.0.0.1:18808`. For a different self-hosted
+instance, build the bundle with that instance's reachable URL in `OIP_API_URL`.
 
 The rehearsal `tests/oip_macos_app.py` proves the bundle **of the release**:
 it builds it for the documented port, puts a witness on that port, and shows

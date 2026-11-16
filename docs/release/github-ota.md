@@ -35,11 +35,15 @@ secret value is never printed or committed. The repository still needs the
 source push and a version tag to run the release workflow and publish the first
 OTA release.
 
-To prepare a release, push a tag such as `v0.3.1`. The workflow builds a
+To prepare a release, push a tag such as `v0.3.2`. The workflow builds a
 universal macOS bundle, signs the manifest and publishes the archive, manifest
 and detached signature as assets of that GitHub Release. The app accepts only a
 signed manifest whose archive digest matches; an unsigned or edited release
 cannot authorize an installation.
+
+The managed Mac release uses `http://127.0.0.1:18855`. The direct macOS app
+keeps an SSH forward to the Pi Core at `127.0.0.1:18808` while the app is open.
+The release workflow and app tunnel manager use the same local port.
 
 The first updater-enabled app must be installed locally. Subsequent versions are
 delivered through the GitHub release check.

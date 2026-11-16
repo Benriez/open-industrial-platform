@@ -46,6 +46,7 @@ def main() -> int:
     info_path = staged_bundle / "Contents/Info.plist"
     info = plistlib.loads(info_path.read_bytes())
     info["OIPUpdateEnabled"] = True
+    info["OIPPiTunnelEnabled"] = True
     info_path.write_bytes(plistlib.dumps(info, fmt=plistlib.FMT_XML, sort_keys=False))
     helper = ROOT / "apps/flutter/macos/Runner/oip_ota_install_helper.sh"
     shutil.copy2(helper, staged_bundle / "Contents/Resources/oip_ota_install_helper.sh")
