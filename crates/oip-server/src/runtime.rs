@@ -242,10 +242,15 @@ pub struct CoreRuntime {
 }
 impl CoreRuntime {
     pub async fn start(
-        config: CoreConfig,
+        mut config: CoreConfig,
         scenario: Option<tokio::sync::watch::Sender<String>>,
     ) -> Result<Self, RuntimeError> {
         config.validate().map_err(RuntimeError::Configuration)?;
+        if config.browser_credentials_file.is_none() {
+            let mut sidecar = config.database.as_os_str().to_os_string();
+            sidecar.push(".browser-credentials.json");
+            config.browser_credentials_file = Some(sidecar.into());
+        }
         let ownership = oip_storage::DatabaseOwnership::acquire(&config.database)?;
         let mut store = SqliteStore::open(&config.database)?;
         if store.hierarchy()?.is_none() && !config.sources.is_empty() {

@@ -4,19 +4,19 @@ use crate::{
     demo,
 };
 use oip_core::*;
-use oip_opcua::{async_opcua::AsyncOpcUaClient, BrowseEntry};
+use oip_opcua::{BrowseEntry, async_opcua::AsyncOpcUaClient};
 use oip_storage::SqliteStore;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
     sync::{
-        atomic::{AtomicBool, AtomicI64, AtomicU64, Ordering},
         Arc, Mutex,
+        atomic::{AtomicBool, AtomicI64, AtomicU64, Ordering},
     },
     thread::JoinHandle,
     time::Duration,
 };
-use tokio::sync::{mpsc, oneshot, watch, RwLock};
+use tokio::sync::{RwLock, mpsc, oneshot, watch};
 #[path = "writer.rs"]
 mod writer;
 
@@ -299,9 +299,14 @@ impl AppState {
         let worker = writer::spawn(app, rx, view_tx, notifications, weak, registry_tx)
             .map_err(|_| "writer_thread_start")?;
         *inner.thread.lock().map_err(|_| "thread lock")? = Some(worker);
+        let browser_sessions = match &config.browser_credentials_file {
+            Some(path) => crate::browser_session::BrowserSessions::open(path)
+                .map_err(|_| "browser credential store unavailable")?,
+            None => crate::browser_session::BrowserSessions::default(),
+        };
         Ok(Self {
             ssh,
-            browser_sessions: Arc::new(crate::browser_session::BrowserSessions::default()),
+            browser_sessions: Arc::new(browser_sessions),
             settings,
             settings_loaded_ms,
             management,

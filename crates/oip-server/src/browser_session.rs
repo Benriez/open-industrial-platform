@@ -1,10 +1,12 @@
 //! Local operator-issued, one-use pairing grants. No IPC credential enters the browser.
-use oip_core::{denied, CapabilityError, ExecutionContext, PrincipalId, SourceScope};
-use serde::Serialize;
+use oip_core::{CapabilityError, ExecutionContext, PrincipalId, SourceScope, denied};
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
     collections::BTreeMap,
-    io::Read,
+    fs::{self, File, OpenOptions},
+    io::{self, Read, Write},
+    path::{Path, PathBuf},
     sync::Mutex,
     time::{Duration, Instant},
 };
@@ -26,8 +28,16 @@ struct Session {
     csrf: String,
     expires: Instant,
 }
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct DeviceCredential {
     principal: PrincipalId,
+}
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PersistedDeviceCredentials {
+    version: u8,
+    credentials: BTreeMap<String, DeviceCredential>,
 }
 #[derive(Default)]
 struct Entries {
@@ -36,9 +46,9 @@ struct Entries {
     device_credentials: BTreeMap<String, DeviceCredential>,
     failed: Vec<Instant>,
 }
-#[derive(Default)]
 pub struct BrowserSessions {
     entries: Mutex<Entries>,
+    credential_store: Option<PathBuf>,
 }
 #[derive(Clone, Serialize)]
 pub struct SessionInfo {
@@ -79,6 +89,20 @@ impl Entries {
     }
 }
 impl BrowserSessions {
+    /// Open a Core-owned store for device pairings. Browser sessions and
+    /// one-use grants remain process-local and are never restored on restart.
+    pub fn open(credential_store: impl Into<PathBuf>) -> io::Result<Self> {
+        let credential_store = credential_store.into();
+        let credentials = load_credentials(&credential_store)?;
+        Ok(Self {
+            entries: Mutex::new(Entries {
+                device_credentials: credentials,
+                ..Default::default()
+            }),
+            credential_store: Some(credential_store),
+        })
+    }
+
     pub fn issue(&self, principal: PrincipalId) -> Result<String, CapabilityError> {
         let mut e = self.entries.lock().map_err(|_| denied())?;
         e.prune();
@@ -184,8 +208,12 @@ impl BrowserSessions {
         {
             return Err(denied());
         }
-        e.device_credentials
-            .insert(digest(credential), DeviceCredential { principal });
+        let mut credentials = e.device_credentials.clone();
+        credentials.insert(digest(credential), DeviceCredential { principal });
+        if let Some(path) = &self.credential_store {
+            persist_credentials(path, &credentials).map_err(|_| denied())?;
+        }
+        e.device_credentials = credentials;
         Ok(())
     }
     /// Redeem a paired credential for a normal bounded browser session.
@@ -232,7 +260,7 @@ impl BrowserSessions {
                     principal_id: None,
                     csrf_token: None,
                     mode: "unavailable",
-                }
+                };
             }
         };
         e.prune();
@@ -260,6 +288,153 @@ impl BrowserSessions {
             e.sessions.remove(&digest(token));
         }
     }
+}
+
+impl Default for BrowserSessions {
+    fn default() -> Self {
+        Self {
+            entries: Mutex::new(Entries::default()),
+            credential_store: None,
+        }
+    }
+}
+
+fn load_credentials(path: &Path) -> io::Result<BTreeMap<String, DeviceCredential>> {
+    let before = match fs::symlink_metadata(path) {
+        Ok(metadata) => metadata,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(BTreeMap::new()),
+        Err(error) => return Err(error),
+    };
+    validate_store_metadata(&before)?;
+    let file = File::open(path)?;
+    let after = file.metadata()?;
+    validate_store_metadata(&after)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        if before.ino() != after.ino() || before.dev() != after.dev() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "credential store changed while opening",
+            ));
+        }
+    }
+    let mut bytes = Vec::new();
+    file.take(64 * 1024 + 1).read_to_end(&mut bytes)?;
+    if bytes.len() > 64 * 1024 {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "credential store too large",
+        ));
+    }
+    let stored: PersistedDeviceCredentials = serde_json::from_slice(&bytes)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    validate_credentials(stored.version, &stored.credentials)?;
+    Ok(stored.credentials)
+}
+
+fn validate_credentials(
+    version: u8,
+    credentials: &BTreeMap<String, DeviceCredential>,
+) -> io::Result<()> {
+    if version != 1
+        || credentials.len() > MAX_DEVICE_CREDENTIALS
+        || credentials
+            .keys()
+            .any(|key| key.len() != 64 || !key.bytes().all(|byte| byte.is_ascii_hexdigit()))
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "invalid credential store",
+        ));
+    }
+    Ok(())
+}
+
+fn persist_credentials(
+    path: &Path,
+    credentials: &BTreeMap<String, DeviceCredential>,
+) -> io::Result<()> {
+    validate_credentials(1, credentials)?;
+    if let Ok(metadata) = fs::symlink_metadata(path) {
+        validate_store_metadata(&metadata)?;
+    }
+    let parent = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    fs::create_dir_all(parent)?;
+    let filename = path.file_name().ok_or_else(|| {
+        io::Error::new(io::ErrorKind::InvalidInput, "invalid credential store path")
+    })?;
+    let temp_name = format!(
+        ".{}.{}.{}.tmp",
+        filename.to_string_lossy(),
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos()
+    );
+    let temp = parent.join(temp_name);
+    let stored = PersistedDeviceCredentials {
+        version: 1,
+        credentials: credentials.clone(),
+    };
+    let bytes = serde_json::to_vec(&stored).map_err(io::Error::other)?;
+    let mut options = OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let result = (|| {
+        let mut file = options.open(&temp)?;
+        file.write_all(&bytes)?;
+        file.sync_all()?;
+        fs::rename(&temp, path)?;
+        File::open(parent)?.sync_all()?;
+        Ok(())
+    })();
+    if result.is_err() {
+        let _ = fs::remove_file(&temp);
+    }
+    result
+}
+
+fn validate_store_metadata(metadata: &fs::Metadata) -> io::Result<()> {
+    if !metadata.is_file() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "credential store must be a regular file",
+        ));
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        if metadata.nlink() != 1 || metadata.mode() & 0o077 != 0 {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "credential store must be private",
+            ));
+        }
+        let output = std::process::Command::new("/usr/bin/id")
+            .arg("-u")
+            .output()?;
+        let uid = std::str::from_utf8(&output.stdout)
+            .ok()
+            .and_then(|text| text.trim().parse::<u32>().ok())
+            .filter(|_| output.status.success())
+            .ok_or_else(|| io::Error::other("cannot establish Core user"))?;
+        if metadata.uid() != uid {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "credential store owner mismatch",
+            ));
+        }
+    }
+    Ok(())
 }
 pub fn cookie(headers: &axum::http::HeaderMap) -> Option<&str> {
     headers

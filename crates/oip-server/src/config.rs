@@ -117,6 +117,11 @@ pub struct CoreConfig {
     pub ssh: Option<crate::ssh::SshSettings>,
     pub legacy_single_infrastructure: bool,
     pub database: PathBuf,
+    /// Private sidecar that persists only digests of native device credentials
+    /// and their authorized principals. Session cookies and login grants remain
+    /// ephemeral. If omitted, CoreRuntime derives it beside the database.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub browser_credentials_file: Option<PathBuf>,
     pub http_port: u16,
     pub sources: Vec<SourceConfig>,
     #[serde(default)]
@@ -132,6 +137,7 @@ impl Default for CoreConfig {
             ssh: None,
             legacy_single_infrastructure: false,
             database: "oip.sqlite".into(),
+            browser_credentials_file: None,
             http_port: 8080,
             sources: Vec::new(),
             opcua_browse_sources: Vec::new(),
@@ -145,6 +151,10 @@ impl Default for CoreConfig {
 impl CoreConfig {
     pub fn validate(&self) -> Result<(), String> {
         if self.http_port == 0
+            || self
+                .browser_credentials_file
+                .as_ref()
+                .is_some_and(|path| path.as_os_str().is_empty())
             || self.sources.len() > 32
             || self.opcua_browse_sources.len() > 64
             || !(1..=4096).contains(&self.queue_capacity)
