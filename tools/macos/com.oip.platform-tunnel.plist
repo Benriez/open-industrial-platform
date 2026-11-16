@@ -32,6 +32,8 @@
 	<true/>
 	<key>KeepAlive</key>
 	<true/>
+	<key>ProcessType</key>
+	<string>Interactive</string>
 	<key>StandardOutPath</key>
 	<string>/Users/benny/Library/Logs/OIP/platform-tunnel.log</string>
 	<key>StandardErrorPath</key>
