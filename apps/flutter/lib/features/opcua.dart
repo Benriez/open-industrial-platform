@@ -749,8 +749,8 @@ class _OpcuaPageState extends State<OpcuaPage> {
         ToolButton(
           key: const Key('refresh-nodes'),
           icon: Icons.refresh,
-          tooltip: 'Nodes aktualisieren',
-          onPressed: loading ? null : _load,
+          tooltip: 'Source und Nodes aktualisieren',
+          onPressed: loading ? null : _reloadContext,
         ),
       ],
       status: [
