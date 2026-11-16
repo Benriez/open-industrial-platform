@@ -63,7 +63,10 @@ class OipController extends ChangeNotifier {
   OipController(
     this.api, {
     this.retryDelay = const Duration(seconds: 1),
-    this.streamTimeout = const Duration(seconds: 6),
+    // The managed Core emits one authorized snapshot per second. Give the
+    // tunneled stream room for brief SSH/Tailscale stalls before treating the
+    // connection as closed and starting another stream.
+    this.streamTimeout = const Duration(seconds: 20),
   }) {
     infrastructure.addListener(_infrastructureChanged);
   }

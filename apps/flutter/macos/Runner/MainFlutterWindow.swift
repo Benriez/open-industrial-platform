@@ -91,8 +91,8 @@ private final class OIPPiTunnelManager: NSObject {
   private var stopping = false
   private lazy var session: URLSession = {
     let config = URLSessionConfiguration.ephemeral
-    config.timeoutIntervalForRequest = 3
-    config.timeoutIntervalForResource = 4
+    config.timeoutIntervalForRequest = 8
+    config.timeoutIntervalForResource = 10
     config.waitsForConnectivity = false
     return URLSession(configuration: config)
   }()
@@ -107,9 +107,9 @@ private final class OIPPiTunnelManager: NSObject {
       queue: .main
     ) { [weak self] _ in self?.stop() }
     // OpenSSH ServerAlive checks only the SSH transport. A forwarded Core
-    // channel can still stop responding while the SSH socket stays open, so
-    // keep the HTTP probe short and recycle the tunnel after two misses.
-    timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
+    // channel can still stop responding while the SSH socket stays open. Allow
+    // short network stalls to recover before recycling the channel.
+    timer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { [weak self] _ in
       self?.probe()
     }
     probe()
@@ -123,7 +123,7 @@ private final class OIPPiTunnelManager: NSObject {
     requestInFlight = true
     var request = URLRequest(url: url)
     request.httpMethod = "GET"
-    request.timeoutInterval = 3
+    request.timeoutInterval = 8
     request.setValue("close", forHTTPHeaderField: "Connection")
     session.dataTask(with: request) { [weak self] _, response, error in
       DispatchQueue.main.async {
@@ -136,7 +136,10 @@ private final class OIPPiTunnelManager: NSObject {
         }
         self.failedProbes += 1
         if self.process?.isRunning == true {
-          if self.failedProbes >= 2 { self.restartTunnel() }
+          if self.failedProbes >= 3,
+             Date().timeIntervalSince(self.lastStart) >= 30 {
+            self.restartTunnel()
+          }
         } else {
           self.recoverOrphanedTunnelThenLaunch()
         }
