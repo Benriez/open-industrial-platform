@@ -5565,3 +5565,33 @@ session; it is not a successful telemetry or browse result. After the operator c
 and completes the app's Touch ID sign-in, re-check the real metrics and OPC-UA nodes before claiming
 those functions work. The updated `0.3.2+5` backup is preserved, so restoring it does not discard the
 signed release or its OTA tunnel changes.
+
+**ControlMaster tunnel recovery and OPC-UA read-only confirmation (2026-11-16, candidate `0.3.3+6`).**
+After the operator reported that telemetry and OPC-UA were still unreachable on `0.3.2`, the stale
+app tunnel on `18855` was observed timing out and resetting while the Pi Core remained reachable
+through `ssh bodi-pi`. The app's tunnel arguments explicitly set `ControlMaster=no` and
+`ControlPath=none`, bypassing the existing SSH control socket configured for the operator's
+Tailscale host. A forwarding request through that configured ControlMaster returned ten consecutive
+HTTP 200 session responses on a free local port; the app's standalone tunnel did not. The new
+candidate uses the configured ControlMaster and a fresh local port `18857` (remote Core remains
+`127.0.0.1:18808`), and on repeated health failure cancels only that exact app-owned local forward
+before reattaching. This avoids inheriting the stale `18855` listener and allows recovery through the
+existing master. A local trial using the candidate's exact SSH arguments on `18857` returned ten
+HTTP 200 responses in 14–274 ms; the temporary forward was canceled afterwards.
+
+The operator also reported the OPC-UA browser was not read-only. Source and Core route review
+confirms the existing browser is read-only: its header says `ADRESSRAUM-EXPLORER · READ-ONLY`, its
+status includes `READ-ONLY ANALYSE`, the node inspector says `Schreibpfad: Nicht vorhanden ·
+read-only by design`, and the Rust API exposes only `GET /api/v2/opcua/nodes` mapped to
+`CapabilityRequest::OpcuaNodesRead`. No OPC-UA write route or write capability is exposed. The
+runtime browser remains unavailable while the app uses the stalled tunnel; verify its UI after the
+OTA change arrives.
+
+**Candidate build receipt:** isolated branch `fix/oip-pi-controlmaster`; `flutter build macos
+--release --build-name=0.3.3 --build-number=6` with API URL `http://127.0.0.1:18857` succeeded. The
+local app passes strict code-signature verification. Executable SHA-256:
+`100f8d670f79d84b2812fb25857ffcef9410201a498e724b0787265efc9224e9`. Plist/shell syntax and
+`git diff --check` pass; automated tests were not run. The GitHub tag/release is still pending, and
+no app update was installed. The operator's installed `0.3.2+5` client must offer `0.3.3+6` in-app
+for the operator to click; after it restarts, establish the Touch ID session and re-check authorized
+telemetry and OPC-UA responses before marking runtime recovery complete.

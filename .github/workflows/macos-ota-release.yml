@@ -39,7 +39,7 @@ jobs:
           BUILD=$((RUN_NUMBER + 3))
           flutter build macos --release \
             --build-name="$VERSION" --build-number="$BUILD" \
-            --dart-define=OIP_API_URL=http://127.0.0.1:18855 \
+            --dart-define=OIP_API_URL=http://127.0.0.1:18857 \
             --dart-define=OIP_APP_VERSION="$VERSION" \
             --dart-define=OIP_APP_BUILD="$BUILD"
           echo "OIP_BUILD=$BUILD" >> "$GITHUB_ENV"
