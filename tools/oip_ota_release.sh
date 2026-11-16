@@ -94,7 +94,6 @@ fi
 echo "Building $TAG as macOS build $BUILD with Flutter $FLUTTER_VERSION"
 cd "$ROOT/apps/flutter"
 flutter pub get
-cd "$ROOT"
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "dependency resolution changed tracked or untracked source files" >&2
   exit 1
@@ -104,6 +103,7 @@ flutter build macos --release \
   --dart-define=OIP_API_URL=http://127.0.0.1:18858 \
   --dart-define=OIP_APP_VERSION="$VERSION" \
   --dart-define=OIP_APP_BUILD="$BUILD"
+cd "$ROOT"
 
 python3 tools/oip_github_ota_package.py \
   --bundle apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app \
