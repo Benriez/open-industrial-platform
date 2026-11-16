@@ -510,10 +510,18 @@ class _PageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final snapshot = controller.snapshot;
+    // A retained snapshot lets the workstation stay usable during a short
+    // transport interruption. The header already reports API STALE / RECONNECT,
+    // so inserting transient notices here would only push the whole workspace
+    // down and back up on every retry.
+    final transientReconnectWithSnapshot =
+        snapshot != null && controller.connection == 'reconnecting';
+    final showConnectionError =
+        controller.error != null && !transientReconnectWithSnapshot;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (controller.error != null)
+        if (showConnectionError)
           Padding(
             padding: const EdgeInsets.only(bottom: OipTokens.s4),
             child: InlineNotice(
@@ -533,7 +541,7 @@ class _PageContent extends StatelessWidget {
               color: OipTokens.statusColor(context, 'degraded'),
             ),
           ),
-        if (controller.error != null && !controller.loginRequired)
+        if (showConnectionError && !controller.loginRequired)
           Padding(
             padding: const EdgeInsets.only(bottom: OipTokens.s4),
             child: Align(
@@ -545,7 +553,9 @@ class _PageContent extends StatelessWidget {
               ),
             ),
           ),
-        if (snapshot != null && controller.stale)
+        if (snapshot != null &&
+            controller.stale &&
+            !transientReconnectWithSnapshot)
           Padding(
             padding: const EdgeInsets.only(bottom: OipTokens.s4),
             child: Align(
