@@ -18,7 +18,7 @@ abstract class OipApi {
   Future<void> scenario(String name);
   Future<List<SourceInfo>> sources();
   Future<NodePage> nodes(String search, String folder, int offset,
-      {String? source});
+      {String? source, int limit = 40});
   Future<void> contextWriteNode(String source, String nodeId, Json value,
       InfrastructureContext context) async {
     throw const ApiFailure(
@@ -57,8 +57,9 @@ abstract class OipApi {
     int offset,
     InfrastructureContext context, {
     String? source,
+    int limit = 40,
   }) =>
-      nodes(search, folder, offset, source: source);
+      nodes(search, folder, offset, source: source, limit: limit);
   Future<List<Observation>> contextDeviceMetrics(
           String id, InfrastructureContext context) =>
       deviceMetrics(id);
@@ -537,7 +538,7 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
 
   @override
   Future<NodePage> nodes(String search, String folder, int offset,
-      {String? source}) async {
+      {String? source, int limit = 40}) async {
     // A new production client aborts the previous in-flight node request when
     // supported by the platform. The page-level generation guard additionally
     // prevents every stale response from changing UI state. Injected test
@@ -558,7 +559,7 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
                   'q': search,
                   'folder': folder,
                   'offset': '$offset',
-                  'limit': '40',
+                  'limit': '$limit',
                   if (source != null) 'source': source,
                 }),
                 headers: _sessionHeaders()));
@@ -1035,10 +1036,12 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
     int offset,
     InfrastructureContext context, {
     String? source,
+    int limit = 40,
   }) async {
     final selectedSource = source ?? context.selection.sourceId;
     if (!context.ready) {
-      return nodes(search, folder, offset, source: selectedSource);
+      return nodes(search, folder, offset,
+          source: selectedSource, limit: limit);
     }
     if (selectedSource == null) {
       throw const ApiFailure(
@@ -1052,7 +1055,7 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
         'q': search,
         'folder': folder,
         'offset': '$offset',
-        'limit': '40',
+        'limit': '$limit',
         'source': selectedSource,
       });
       _checkContextOrigin(context, result.$2, path);

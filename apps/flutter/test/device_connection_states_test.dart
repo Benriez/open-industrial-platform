@@ -68,7 +68,7 @@ class _ConnectionApi extends OipApi implements DeviceManagementApi {
 
   @override
   Future<NodePage> nodes(String search, String folder, int offset,
-          {String? source}) =>
+          {String? source, int limit = 40}) =>
       throw UnimplementedError();
 
   @override

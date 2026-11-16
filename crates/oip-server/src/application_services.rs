@@ -1,14 +1,14 @@
 //! Canonical application queries and simulation control. Axum and future MCP are adapters.
 use crate::{
     demo::SCENARIOS,
-    state::{AppState, now_ms},
+    state::{now_ms, AppState},
 };
-use futures::{StreamExt, stream};
+use futures::{stream, StreamExt};
 use oip_core::*;
 use oip_opcua::ReadOnlyOpcUaAdapter;
 use std::sync::{
-    Arc,
     atomic::{AtomicU64, Ordering},
+    Arc,
 };
 
 // Preserve an execution outcome when a transport cancels a read future.
@@ -386,6 +386,11 @@ impl ApplicationServices {
         let offset = q.offset.unwrap_or(0);
         let limit = q.limit.unwrap_or(40).clamp(1, 100);
         let search = q.q.unwrap_or_default().to_lowercase();
+        // A normal browser page is address-space metadata. Reading every row
+        // turns one click into dozens of OPC-UA service calls (up to eight in
+        // flight) and can starve the source collector. A limit=1 query is the
+        // explicit on-demand value read for the selected node.
+        let read_value = limit == 1;
         let source = q.source.or(s.primary.clone()).ok_or_else(|| {
             CapabilityError::new(
                 CapabilityErrorCode::SourceUnavailable,
@@ -468,18 +473,22 @@ impl ApplicationServices {
                     // **node id of the server** — not to a node that is
                     // reconstructed from its name — and it is bound to the
                     // entity that the source declares.
-                    let observation = if let Some(client) = client {
-                        match MetricId::new(&name) {
-                            Ok(metric) => {
-                                match client.read_node(&node_id, &metric, &entity).await {
-                                    Ok(mut o) => {
-                                        o.data_source_id = source.clone();
-                                        Some(o)
+                    let observation = if read_value {
+                        if let Some(client) = client {
+                            match MetricId::new(&name) {
+                                Ok(metric) => {
+                                    match client.read_node(&node_id, &metric, &entity).await {
+                                        Ok(mut o) => {
+                                            o.data_source_id = source.clone();
+                                            Some(o)
+                                        }
+                                        Err(_) => None,
                                     }
-                                    Err(_) => None,
                                 }
+                                Err(_) => None,
                             }
-                            Err(_) => None,
+                        } else {
+                            None
                         }
                     } else {
                         None

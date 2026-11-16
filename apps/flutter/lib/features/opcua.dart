@@ -47,6 +47,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
   _ViewMode view = _ViewMode.list;
   OpcValueFormat valueFormat = OpcValueFormat.original;
   int offset = 0, generation = 0;
+  int selectedReadGeneration = 0;
   Timer? debounce;
 
   /// Every identity includes its source. NodeIds are not globally unique.
@@ -303,6 +304,10 @@ class _OpcuaPageState extends State<OpcuaPage> {
         selectedNodeSource = selected == null ? null : requestSource;
         loading = false;
       });
+      final node = selected;
+      if (node != null) {
+        unawaited(_readSelectedNode(node, requestSource));
+      }
     } catch (exception) {
       if (mounted && gen == generation) {
         setState(() {
@@ -315,11 +320,12 @@ class _OpcuaPageState extends State<OpcuaPage> {
   }
 
   void _select(OpcNode node, {bool focusList = false, String? source}) {
+    final sourceId = source ?? _currentSource;
     setState(() {
       final previous = selected;
       final previousSource = selectedNodeSource;
       selected = node;
-      selectedNodeSource = source ?? _currentSource;
+      selectedNodeSource = sourceId;
       if (previous != null &&
           previousSource != null &&
           _nodeKey(previous, previousSource) !=
@@ -334,8 +340,39 @@ class _OpcuaPageState extends State<OpcuaPage> {
       }
     });
     nodeSelectionExplicit = true;
+    unawaited(_readSelectedNode(node, sourceId));
     widget.controller.revealInspector(WorkspaceId.opcua);
     if (focusList) listFocus.requestFocus();
+  }
+
+  Future<void> _readSelectedNode(OpcNode node, String? source) async {
+    if (source == null || node.access == 'Browse') return;
+    final request = ++selectedReadGeneration;
+    try {
+      final currentPage = page;
+      final index =
+          currentPage?.items.indexWhere((item) => item.id == node.id) ?? -1;
+      if (index < 0 || currentPage == null) return;
+      final result = await widget.controller.api.contextNodes(
+        search,
+        folder,
+        currentPage.offset + index,
+        widget.controller.infrastructure,
+        source: source,
+        limit: 1,
+      );
+      if (!mounted ||
+          request != selectedReadGeneration ||
+          selected?.id != node.id ||
+          selectedNodeSource != source) {
+        return;
+      }
+      final updated = result.items.firstOrNull;
+      if (updated?.id == node.id) setState(() => selected = updated);
+    } catch (_) {
+      // Browsing remains useful when a live value read is unavailable. The
+      // inspector reports that value as unavailable without staling telemetry.
+    }
   }
 
   Future<void> _writeNode(OpcNode node) async {

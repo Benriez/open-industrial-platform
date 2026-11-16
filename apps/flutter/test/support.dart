@@ -206,7 +206,7 @@ class FakeApi extends OipApi {
 
   @override
   Future<NodePage> nodes(String search, String folder, int offset,
-      {String? source}) async {
+      {String? source, int limit = 40}) async {
     if (failNodes) throw Exception('nodes unavailable');
     nodeRequests
         .add((source: source, search: search, folder: folder, offset: offset));
