@@ -406,7 +406,12 @@ class _DevicesPageState extends State<DevicesPage> {
     );
   }
 
-  Widget _header() => AdaptiveWorkspaceHeader(
+  Widget _header() {
+    final simulation = snapshot.system.simulated;
+    final operatorActionsAvailable = widget.controller.managed &&
+        !widget.controller.loginRequired &&
+        widget.controller.management != null;
+    return AdaptiveWorkspaceHeader(
         key: const Key('devices-page-header'),
         eyebrow: 'DEVICES & SERVICES · OBJECT WORKSPACE',
         title: 'Geräte & Dienste',
@@ -415,8 +420,11 @@ class _DevicesPageState extends State<DevicesPage> {
         primaryAction: WorkspacePrimaryAction(
           buttonKey: const Key('devices-add-primary'),
           label: 'Gerät hinzufügen',
-          tooltip:
-              'Sicheren lokalen Registrierungsweg anzeigen; kein Browser-Write',
+          tooltip: simulation
+              ? 'Simuliertes Gerät zur Vorschau hinzufügen.'
+              : operatorActionsAvailable
+                  ? 'Gerät registrieren oder die sichere SSH-Einrichtung starten. Der Core prüft die Berechtigung für den gewählten Bereich.'
+                  : 'Melde dich an, um die für dein Operator-Profil erlaubten Geräteaktionen zu öffnen.',
           icon: Icons.add,
           onPressed: _showDeviceOnboarding,
         ),
@@ -444,7 +452,23 @@ class _DevicesPageState extends State<DevicesPage> {
                 ? Icons.science_outlined
                 : Icons.cloud_done_outlined,
           ),
-          const StatusPill('READ-ONLY', icon: Icons.lock_outline),
+          Tooltip(
+            message: simulation
+                ? 'Simulation only; no real infrastructure changes.'
+                : !operatorActionsAvailable
+                    ? 'Sign in to access the actions permitted to your operator profile.'
+                    : 'Register or update inventory, configure SSH onboarding and monitoring when the Core authorizes the target. Telemetry remains read-only.',
+            child: StatusPill(
+              simulation
+                  ? 'SIMULATION'
+                  : operatorActionsAvailable
+                      ? 'OPERATOR WORKFLOWS'
+                      : 'SIGN IN TO MANAGE',
+              icon: simulation || !operatorActionsAvailable
+                  ? Icons.lock_outline
+                  : Icons.admin_panel_settings_outlined,
+            ),
+          ),
           if (mode == DevicesWorkspaceMode.devices)
             Text(
               '${filteredDevices(snapshot, session).length} von '
@@ -454,6 +478,7 @@ class _DevicesPageState extends State<DevicesPage> {
             ),
         ],
       );
+  }
 
   void _showDeviceOnboarding() {
     // An authorized session provides a secure browser write path for the

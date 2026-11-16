@@ -365,6 +365,10 @@ class _TopBar extends StatelessWidget {
             final snapshot = controller.snapshot;
             final scenario = snapshot?.system.scenario;
             final knownScenario = scenarios.containsKey(scenario);
+            final simulation = snapshot?.system.simulated ?? false;
+            final operatorActionsAvailable = controller.managed &&
+                !controller.loginRequired &&
+                controller.management != null;
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -461,8 +465,21 @@ class _TopBar extends StatelessWidget {
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2)),
                     if (!narrow)
-                      Text('Read-only · Self-hosted',
-                          style: Theme.of(context).textTheme.bodySmall),
+                      Tooltip(
+                        message: simulation
+                            ? 'Simulation only; no real infrastructure changes.'
+                            : !operatorActionsAvailable
+                                ? 'Authorize a managed operator session to open actions permitted for its scope.'
+                                : 'Inventory registration and updates, SSH onboarding and monitoring configuration are available when permitted by the current scope. Telemetry and OPC-UA inspection remain read-only.',
+                        child: Text(
+                          simulation
+                              ? 'Simulation · Self-hosted'
+                              : !operatorActionsAvailable
+                                  ? 'Sign in to manage · Self-hosted'
+                                  : 'Operator actions · Self-hosted',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
                   ],
                 ),
               ],

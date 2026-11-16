@@ -5385,3 +5385,31 @@ prompt. Do not claim Touch ID configured until the Keychain item exists and the 
 
 This deployment is a user-authorized exception to the earlier read-only/no-deployment status above;
 it did not change the personal Mac installation database, alter schema 7, or push repository code.
+
+### Operator write access in the Mac app (2026-11-16)
+
+The operator requested that the product not present itself as read-only. The canonical client
+already has typed, Core-authorized write paths for device registration and updates plus SSH
+onboarding and monitoring configuration. Those actions use the browser session, same-origin and
+CSRF checks; the Core evaluates each requested target against the operator's grants. They are
+available in the Devices workstation. The whole-app header and its inventory status pill had
+incorrectly labelled the product `Read-only`, obscuring those existing actions. On the isolated
+branch `feature/oip-operator-write-surface`, both labels now say `Operator actions` / `OPERATOR
+WORKFLOWS` for the managed client, direct an unauthenticated operator to sign in, and identify
+simulation mode separately. Their tooltip describes the supported, permission-checked actions and
+keeps telemetry/OPC-UA inspection clearly read-only.
+
+This does not introduce an unrestricted write mode. Arbitrary shell commands, direct OPC-UA
+writes, OpenWrt administration, Hue Bridge configuration and remote runtime Settings changes are
+not exposed by the current product contracts; these need their own typed, authorized workflows.
+
+**Verified on the isolated candidate tree** `6abaf63df9258993a63a97bf53e77bb99fb915be`,
+derived from `d39fdbf0350945842821e13c5b0e071fae184168`: the full
+`python3 tests/canonical_regression.py --only oip_canonical_ui_gate` case passed, including
+8/8 managed acceptance phases, 394 Flutter tests (one skipped), 189 browser findings with zero
+failures, 13 captures and the stable-shell visual comparison. The browser receipt confirms the
+served bundle is byte-identical to the local build, SHA-256
+`9b535e2c61f34f4ca36bf7ee2241926a91bb1e215251e78546ec73a80505307a`. The evidence is under
+`target/oip-operator-write-ui-gate-final/oip_canonical_ui_gate/`; its manifest binds the precheck,
+browser and visual receipt hashes. Operator visual acceptance remains pending. The UI change has
+not been installed in `/Applications` or deployed; no push was made.
