@@ -5517,3 +5517,33 @@ not evidence of OTA delivery. GitHub publication and signature verification are 
 existing `/Applications` bundle has not been changed by this OTA work; end-to-end update, authenticated
 telemetry values and OPC-UA node reads remain **NOT VERIFIED** until the signed release is installed,
 the app's updater is enabled, and an authorized live session can read both paths.
+
+**`v0.3.2` OTA release and installation (2026-11-16).** The operator asked to receive the
+telemetry/OPC-UA repair through OTA. Commit `54189f4` and tag `v0.3.2` were pushed to
+`Benriez/open-industrial-platform`; macOS OTA workflow run `43893563791` completed successfully
+(build, signed packaging, and GitHub publication). Release asset `oip-macos-universal.zip` is
+21,582,372 bytes; downloaded SHA-256 `73c0e2005a6ae5b121e021869b3b83736f522b0e0bb7e0aee4dec476c70479a2`
+exactly matches the signed manifest. The Ed25519 signature verifies against the app's embedded
+update public key. The extracted bundle passes `codesign --verify --deep --strict` and contains
+version `0.3.2`, build `5`, `OIPUpdateEnabled=true`, and `OIPPiTunnelEnabled=true`.
+
+The old `/Applications` bundle had `OIPUpdateEnabled=false` and was missing
+`Contents/Resources/oip_ota_install_helper.sh`, so it could not initiate or complete an update.
+Before changing it, the exact 0.3.0 bundle was copied to
+`/private/tmp/oip-ota-bootstrap-backup-0.3.0.app`. The old updater switch was enabled, the helper
+was copied from the verified signed release bundle, and the bundle was re-signed and strictly
+verified. Its own updater then found build 5, verified the signature and archive digest, and
+installed/relaunched the release. **Verified installed state:** `/Applications/Open Industrial
+Platform.app` is `0.3.2` build `5`, both OTA and Pi-tunnel flags are true, and strict code-signature
+verification passes. This was an OTA app replacement; the small bootstrap edits were needed only
+because the previous installation had disabled OTA and lacked the installer helper.
+
+**Transport proof:** the new visible-app-owned SSH listener is on `127.0.0.1:18855`; ten consecutive
+GETs of `/api/v2/browser/session` returned HTTP 200 in 7–12 ms. The endpoint body currently says
+`{"authenticated":false,...,"mode":"login_required"}`. The process-local browser session was
+cleared when the updater restarted the app. A Touch ID Keychain entry exists, but no authenticated
+session was restored and no protected telemetry sample or OPC-UA source/node response has been
+read after the OTA. Therefore OTA delivery and tunnel recovery are **VERIFIED**, the OPC-UA refresh
+recovery change is included, and authenticated telemetry/OPC-UA runtime acceptance remains
+**PENDING operator Touch ID login**. Do not report metric or node reads as passing until they are
+observed in that authorized session. No tests were run during this delivery step.
