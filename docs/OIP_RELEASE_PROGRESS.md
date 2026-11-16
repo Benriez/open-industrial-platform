@@ -5615,3 +5615,19 @@ and `git diff --check` pass. No tests were run. GitHub publication is pending; t
 `0.3.3+6` app remains untouched while the signed release is prepared. After publication, refresh the
 in-app updater prompt and leave its button for the operator. Authenticated telemetry and OPC-UA reads
 remain unverified until the operator's Touch ID session is restored.
+
+**`v0.3.4` published; in-app offer ready for the operator (2026-11-16).** GitHub OTA run
+`43909920987` completed successfully for tag `v0.3.4`. The published archive SHA-256
+`56e91dc266750155ee8800f070986ab804fa02cd47487486296932aca2a69312` matches the signed manifest;
+its Ed25519 signature verifies with the embedded release public key, the app passes strict code-signature
+verification, and the package is `0.3.4` build `7` with local tunnel port `18858` and both OTA/tunnel
+flags enabled. The running `/Applications` bundle remains `0.3.3` build `6`. After resetting only the
+updater's six-hour check timestamp and relaunching the app, the live client verified manifest build
+7 and displays **“Version 0.3.4 ist verfügbar” / “Jetzt aktualisieren”**. The button has not been
+pressed by the agent; operator click is pending. The signed update itself has not been installed.
+
+The candidate's standalone port-18858 SSH forward was independently exercised with ten HTTP 200
+responses in 8–17 ms, then stopped. The app's current authenticated telemetry and OPC-UA views are
+still unverified until the operator clicks the in-app update, Touch ID login is complete, and real
+protected source/device/node responses are read. The OPC-UA core/browser remains read-only as recorded
+above; no write capability was added.
