@@ -5220,6 +5220,31 @@ database, device, or configuration was changed. Resolving this runtime blocker r
 the operator-owned tunnel/Core path; no client-side data or feature change can repair a Core endpoint
 that returns no HTTP response.
 
+**Tunnel recovery and disk cleanup (2026-11-16).** The operator explicitly lifted the private-SSH
+restriction; `AGENTS.md` now permits SSH diagnostics and reversible runtime recovery on `bodi-pi`
+and `bodi-pc`, while still forbidding deployment, schema activation, database changes and device
+writes. Read-only SSH inspection found the Pi Core listening on `127.0.0.1:18808`; its session route
+answered HTTP 200 directly. The existing Mac forward on port 18848 continued to time out even after
+restarting its LaunchAgent, while fresh forwards on 18849, 18850 and 18851 returned the same session
+route in ~10–90 ms. The persistent `com.oip.platform-tunnel` LaunchAgent now forwards through port
+18851. **Verified:** the app port returns `/api/v2/browser/session` HTTP 200; unauthenticated
+`/api/v2/snapshot` and `/api/v2/opcua/nodes` return HTTP 403 quickly, confirming the endpoints are
+reachable and require an operator session. The Mac app was rebuilt with
+`OIP_API_URL=http://127.0.0.1:18851`, installed in `/Applications`, and the running app process opened
+an established connection to port 18851. Its executable SHA-256 is
+`16e8eaec503a8f1cc0d811111997c7019885157f71f943389b85531dfeb7d86f`; strict signature verification
+passed. **Operator acceptance remains open:** this runtime session is unauthenticated, so fresh
+telemetry and OPC-UA data have not yet been verified. The operator must sign in with Touch ID before
+those protected reads can be checked. No one-time code, Core deployment, Pi/Pc service change,
+database write, device write, push or release was performed.
+
+The repository occupied about 11 GB before cleanup. Its largest disposable item was the ignored
+Flutter compiler cache `apps/flutter/.dart_tool/flutter_build` (4.6 GB); ignored local macOS build
+products (555 MB) and test cache (42 MB) were also removed. These paths had no open file handles, and
+the active preview's `apps/flutter/build/web` assets were preserved. The checkout now occupies
+5.8 GB. The remaining 5.5 GB `target/` was left intact because a workspace `cargo test` process was
+active and shared OIP binaries/build artifacts must not be disturbed.
+
 ### Touch ID re-login root cause — the live Pi Core does not expose pairing
 
 **Read-only live finding (2026-11-15).** The operator reported that Touch ID had already been
