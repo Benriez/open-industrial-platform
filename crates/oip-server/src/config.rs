@@ -18,6 +18,19 @@ pub struct SourceConfig {
     #[serde(default)]
     pub entity_id: Option<String>,
 }
+/// An OPC-UA browser binding for a source already registered by another OIP
+/// integration (for example the SSH host collector). It never provisions a
+/// source or changes its identity; the endpoint must be a loopback address,
+/// normally reached through a local SSH forward.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct OpcUaBrowseSource {
+    pub id: String,
+    pub endpoint: String,
+    #[serde(default = "namespace")]
+    pub namespace: u16,
+    pub entity_id: String,
+}
 fn namespace() -> u16 {
     2
 }
@@ -55,10 +68,8 @@ impl SourceConfig {
         Ok(SourceDefinition {
             id: DataSourceId::new(&self.id).map_err(|_| "source id")?,
             name: self.name.clone(),
-            entity_id: EntityId::new(
-                self.entity_id.as_deref().unwrap_or("M-01"),
-            )
-            .map_err(|_| "entity")?,
+            entity_id: EntityId::new(self.entity_id.as_deref().unwrap_or("M-01"))
+                .map_err(|_| "entity")?,
             binding: self.endpoint.clone(),
             origin_class: oip_core::OriginClass::Simulation,
             simulation_origin_id: oip_simulator::SIMULATION_ORIGIN_ID.into(),
@@ -79,13 +90,21 @@ mod tests {
         let mut source = SourceConfig::primary(4840);
         // The legacy default: the entity of the demo machine.
         assert_eq!(
-            source.definition().expect("the definition").entity_id.as_str(),
+            source
+                .definition()
+                .expect("the definition")
+                .entity_id
+                .as_str(),
             "M-01"
         );
         // An instance of the operator names its own entity.
         source.entity_id = Some("pi-simulation".to_owned());
         assert_eq!(
-            source.definition().expect("the definition").entity_id.as_str(),
+            source
+                .definition()
+                .expect("the definition")
+                .entity_id
+                .as_str(),
             "pi-simulation"
         );
     }
@@ -100,6 +119,8 @@ pub struct CoreConfig {
     pub database: PathBuf,
     pub http_port: u16,
     pub sources: Vec<SourceConfig>,
+    #[serde(default)]
+    pub opcua_browse_sources: Vec<OpcUaBrowseSource>,
     pub queue_capacity: usize,
     pub stale_after_ms: i64,
     pub shutdown_timeout_ms: u64,
@@ -113,6 +134,7 @@ impl Default for CoreConfig {
             database: "oip.sqlite".into(),
             http_port: 8080,
             sources: Vec::new(),
+            opcua_browse_sources: Vec::new(),
             queue_capacity: 64,
             stale_after_ms: 5000,
             shutdown_timeout_ms: 10000,
@@ -124,6 +146,7 @@ impl CoreConfig {
     pub fn validate(&self) -> Result<(), String> {
         if self.http_port == 0
             || self.sources.len() > 32
+            || self.opcua_browse_sources.len() > 64
             || !(1..=4096).contains(&self.queue_capacity)
             || self.stale_after_ms <= 0
             || self.shutdown_timeout_ms < 100
@@ -152,6 +175,24 @@ impl CoreConfig {
                 "source must be a literal loopback OPC-UA simulation endpoint without credentials"
             })?;
             s.definition()?;
+        }
+        let mut browse_ids = BTreeSet::new();
+        for source in &self.opcua_browse_sources {
+            if source.id.is_empty()
+                || source.id.len() > 128
+                || !source
+                    .id
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b"-_:.".contains(&b))
+                || source.namespace == 0
+                || source.entity_id.is_empty()
+                || source.entity_id.len() > 128
+                || !browse_ids.insert(&source.id)
+            {
+                return Err("duplicate or invalid OPC-UA browser source binding".into());
+            }
+            oip_opcua::validate_client_endpoint(&source.endpoint, true)
+                .map_err(|_| "OPC-UA browser source must use a literal loopback endpoint")?;
         }
         Ok(())
     }

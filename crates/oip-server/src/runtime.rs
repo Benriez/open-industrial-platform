@@ -1,11 +1,11 @@
 //! Supervised executor and protocol integration; no UI or web-server dependency.
 use crate::{
-    config::{CoreConfig, SourceConfig},
-    state::{now_ms, AppState, ShutdownReport},
+    config::{CoreConfig, OpcUaBrowseSource, SourceConfig},
+    state::{AppState, ShutdownReport, now_ms},
 };
-use futures::{future::BoxFuture, FutureExt};
+use futures::{FutureExt, future::BoxFuture};
 use oip_core::*;
-use oip_opcua::{async_opcua::AsyncOpcUaClient, ClientOptions, ReadOnlyOpcUaAdapter};
+use oip_opcua::{ClientOptions, ReadOnlyOpcUaAdapter, async_opcua::AsyncOpcUaClient};
 use oip_storage::SqliteStore;
 use std::{collections::VecDeque, panic::AssertUnwindSafe, sync::Arc, time::Duration};
 use thiserror::Error;
@@ -294,6 +294,13 @@ impl CoreRuntime {
                 cancel.clone(),
             )));
         }
+        for source in config.opcua_browse_sources {
+            workers.push(tokio::spawn(opcua_browser_source_worker(
+                state.clone(),
+                source,
+                cancel.clone(),
+            )));
+        }
         workers.push(tokio::spawn(crate::connection_service::supervise(
             state.clone(),
             cancel.clone(),
@@ -378,6 +385,80 @@ impl CoreRuntime {
             }
         }
     }
+}
+
+async fn opcua_browser_source_worker(
+    state: AppState,
+    source: OpcUaBrowseSource,
+    cancel: CancellationToken,
+) -> Result<(), RuntimeError> {
+    let id = DataSourceId::new(&source.id)
+        .map_err(|_| RuntimeError::Configuration("OPC-UA browser source id".into()))?;
+    let entity = oip_core::EntityId::new(&source.entity_id)
+        .map_err(|_| RuntimeError::Configuration("OPC-UA browser entity id".into()))?;
+    loop {
+        if cancel.is_cancelled() {
+            break;
+        }
+        let registered = state
+            .view()
+            .sources
+            .iter()
+            .any(|candidate| candidate.id == id);
+        if !registered {
+            tracing::error!(source_id=%id,code="opcua_browser_source_unregistered","OPC-UA browser binding must reference a registered source");
+            tokio::select! { _ = cancel.cancelled() => break, _ = tokio::time::sleep(Duration::from_secs(30)) => continue }
+        }
+        let client = match AsyncOpcUaClient::connect(&ClientOptions::local_host_service(
+            &source.endpoint,
+            source.namespace,
+            entity.clone(),
+        ))
+        .await
+        {
+            Ok(client) => Arc::new(client),
+            Err(error) => {
+                tracing::warn!(source_id=%id,code="opcua_browser_connect_failed",%error,"OPC-UA browser source unavailable");
+                tokio::select! { _ = cancel.cancelled() => break, _ = tokio::time::sleep(Duration::from_secs(5)) => continue }
+            }
+        };
+        let mut catalog = match client.browse().await {
+            Ok(catalog) => catalog,
+            Err(error) => {
+                tracing::warn!(source_id=%id,code="opcua_browser_browse_failed",%error,"OPC-UA browse failed");
+                let _ = client.shutdown().await;
+                tokio::select! { _ = cancel.cancelled() => break, _ = tokio::time::sleep(Duration::from_secs(5)) => continue }
+            }
+        };
+        state
+            .clients
+            .write()
+            .await
+            .insert(id.clone(), client.clone());
+        state
+            .catalogs
+            .write()
+            .await
+            .insert(id.clone(), catalog.clone());
+        tracing::info!(source_id=%id,node_count=catalog.len(),code="opcua_browser_connected","registered OPC-UA address space loaded");
+        loop {
+            tokio::select! {
+                _ = cancel.cancelled() => break,
+                _ = tokio::time::sleep(Duration::from_secs(10)) => match client.browse().await {
+                    Ok(next) => { catalog = next; state.catalogs.write().await.insert(id.clone(), catalog.clone()); }
+                    Err(error) => { tracing::warn!(source_id=%id,code="opcua_browser_connection_lost",%error,"OPC-UA browser connection lost"); break; }
+                }
+            }
+        }
+        state.clients.write().await.remove(&id);
+        state.catalogs.write().await.remove(&id);
+        let _ = client.shutdown().await;
+        if cancel.is_cancelled() {
+            break;
+        }
+        tokio::select! { _ = cancel.cancelled() => break, _ = tokio::time::sleep(Duration::from_secs(5)) => {} }
+    }
+    Ok(())
 }
 
 impl Drop for CoreRuntime {

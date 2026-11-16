@@ -1,14 +1,14 @@
 //! Canonical application queries and simulation control. Axum and future MCP are adapters.
 use crate::{
     demo::SCENARIOS,
-    state::{now_ms, AppState},
+    state::{AppState, now_ms},
 };
-use futures::{stream, StreamExt};
+use futures::{StreamExt, stream};
 use oip_core::*;
 use oip_opcua::ReadOnlyOpcUaAdapter;
 use std::sync::{
-    atomic::{AtomicU64, Ordering},
     Arc,
+    atomic::{AtomicU64, Ordering},
 };
 
 // Preserve an execution outcome when a transport cancels a read future.
@@ -78,6 +78,7 @@ impl ApplicationServices {
             Permission::TelemetryRead,
             Permission::EventsRead,
             Permission::OpcuaRead,
+            Permission::InventoryManage,
         ]
         .into_iter()
         .collect::<std::collections::BTreeSet<_>>();
@@ -106,6 +107,7 @@ impl ApplicationServices {
             | CapabilityRequest::EventsRead(q) => q.source.clone(),
             CapabilityRequest::DevicesRead(q) => q.source.clone(),
             CapabilityRequest::OpcuaNodesRead(q) => q.source.clone().or(self.state.primary.clone()),
+            CapabilityRequest::OpcuaNodeWrite(q) => Some(q.source.clone()),
             CapabilityRequest::DeviceRead(q) => {
                 self.state
                     .snapshot()
@@ -321,6 +323,7 @@ impl ApplicationServices {
                 }))
             }
             OpcuaNodesRead(q) => self.nodes(q).await.map(CapabilityOutput::Nodes),
+            OpcuaNodeWrite(body) => self.write_node(body).await.map(CapabilityOutput::NodeWrite),
             SimulationScenarioSet(body) => {
                 if s.stopping.is_cancelled() {
                     return Err(CapabilityError::new(
@@ -399,7 +402,7 @@ impl ApplicationServices {
                     CapabilityErrorCode::ResourceNotFound,
                     "SOURCE_NOT_FOUND",
                     "Source not registered",
-                ))
+                ));
             }
         };
         let catalog = s
@@ -437,12 +440,14 @@ impl ApplicationServices {
                     entry.browse_name.clone()
                 };
                 let folder = entry.folder.clone();
-                if q.folder.as_ref().is_some_and(|f| f != "all" && *f != folder)
+                if q.folder
+                    .as_ref()
+                    .is_some_and(|f| f != "all" && *f != folder)
                     || !name.to_lowercase().contains(&search)
                 {
                     return None;
                 }
-                Some((entry.node_id, name, folder, entry.node_class))
+                Some((entry.node_id, name, folder, entry.node_class, entry.access))
             })
             .collect();
         found.sort_by(|a, b| a.1.cmp(&b.1));
@@ -450,7 +455,7 @@ impl ApplicationServices {
         let selected: Vec<_> = found.into_iter().skip(offset).take(limit).collect();
         let client = s.clients.read().await.get(&source).cloned();
         let items = stream::iter(selected)
-            .map(|(node_id, name, folder, node_class)| {
+            .map(|(node_id, name, folder, _node_class, access)| {
                 let client = client.clone();
                 let source = source.clone();
                 let entity = entity.clone();
@@ -465,13 +470,15 @@ impl ApplicationServices {
                     // entity that the source declares.
                     let observation = if let Some(client) = client {
                         match MetricId::new(&name) {
-                            Ok(metric) => match client.read_node(&node_id, &metric, &entity).await {
-                                Ok(mut o) => {
-                                    o.data_source_id = source.clone();
-                                    Some(o)
+                            Ok(metric) => {
+                                match client.read_node(&node_id, &metric, &entity).await {
+                                    Ok(mut o) => {
+                                        o.data_source_id = source.clone();
+                                        Some(o)
+                                    }
+                                    Err(_) => None,
                                 }
-                                Err(_) => None,
-                            },
+                            }
                             Err(_) => None,
                         }
                     } else {
@@ -503,11 +510,7 @@ impl ApplicationServices {
                         namespace,
                         folder,
                         data_type,
-                        access: if node_class.eq_ignore_ascii_case("Variable") {
-                            "Read".into()
-                        } else {
-                            "Browse".into()
-                        },
+                        access,
                         observation,
                     })
                 }
@@ -523,6 +526,63 @@ impl ApplicationServices {
             offset,
             limit,
             folders,
+        })
+    }
+
+    async fn write_node(
+        &self,
+        request: NodeWriteRequest,
+    ) -> Result<NodeWriteResult, CapabilityError> {
+        if request.node_id.is_empty() || request.node_id.len() > 256 {
+            return Err(CapabilityError::new(
+                CapabilityErrorCode::InvalidInput,
+                "INVALID_NODE_ID",
+                "The OPC-UA node id is invalid",
+            ));
+        }
+        let catalog = self.state.catalogs.read().await;
+        let writable = catalog
+            .get(&request.source)
+            .and_then(|entries| {
+                entries
+                    .iter()
+                    .find(|entry| entry.node_id == request.node_id)
+            })
+            .is_some_and(|entry| entry.access == "ReadWrite");
+        drop(catalog);
+        if !writable {
+            return Err(CapabilityError::new(
+                CapabilityErrorCode::OperationNotSupported,
+                "NODE_NOT_WRITABLE",
+                "The selected server node does not grant write access",
+            ));
+        }
+        let client = self
+            .state
+            .clients
+            .read()
+            .await
+            .get(&request.source)
+            .cloned()
+            .ok_or_else(|| {
+                CapabilityError::new(
+                    CapabilityErrorCode::SourceUnavailable,
+                    "OPCUA_SOURCE_UNAVAILABLE",
+                    "The selected OPC-UA source is not connected",
+                )
+            })?;
+        client.write_node(&request.node_id, &request.value).await.map_err(|error| {
+            tracing::warn!(source_id=%request.source,node_id=%request.node_id,code="opcua_write_failed",%error,"authorized OPC-UA write was rejected");
+            CapabilityError::new(
+                CapabilityErrorCode::OperationNotSupported,
+                "OPCUA_WRITE_REJECTED",
+                "The OPC-UA server rejected the requested value",
+            )
+        })?;
+        Ok(NodeWriteResult {
+            source: request.source,
+            node_id: request.node_id,
+            accepted: true,
         })
     }
 }

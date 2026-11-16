@@ -1,0 +1,15 @@
+[Unit]
+Description=Loopback SSH tunnel to bodi-pc OIP OPC-UA service
+After=network-online.target oip-host-opcua.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ssh -F /dev/null -N -i %h/.ssh/hermes_kipc_ed25519 -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -L 127.0.0.1:4840:127.0.0.1:4840 bodi@100.76.9.100
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+
+[Install]
+WantedBy=default.target

@@ -1,15 +1,15 @@
 use crate::{application_services::ApplicationServices, state::AppState};
 use axum::extract::FromRequestParts;
 use axum::{
+    Json, Router,
     extract::{Path, Query, Request},
     http::{HeaderValue, StatusCode},
     middleware::{self, Next},
     response::{
-        sse::{Event, KeepAlive},
         IntoResponse, Response, Sse,
+        sse::{Event, KeepAlive},
     },
     routing::{get, post},
-    Json, Router,
 };
 use futures::stream;
 use oip_core::*;
@@ -221,6 +221,7 @@ pub fn router_with_identity(
         .route("/api/v2/diagnostics/findings", get(findings))
         .route("/api/v2/observations/history", get(observation_history))
         .route("/api/v2/opcua/nodes", get(nodes))
+        .route("/api/v2/opcua/write", post(opcua_write))
         .route("/api/v2/snapshot", get(scoped_snapshot))
         .route("/api/v2/stream", get(scoped_sse))
         .route("/api/v1/system/status", get(status))
@@ -402,6 +403,26 @@ async fn nodes(
         .map_err(IntoResponse::into_response)?
     {
         CapabilityOutput::Nodes(v) => Ok(Json(v)),
+        _ => Err(mismatch().into_response()),
+    }
+}
+async fn opcua_write(
+    Authorized(s): Authorized,
+    body: Result<Json<NodeWriteRequest>, axum::extract::rejection::JsonRejection>,
+) -> Result<Json<NodeWriteResult>, Response> {
+    let Json(request) = body.map_err(|_| {
+        ApiError(
+            StatusCode::BAD_REQUEST,
+            "INVALID_JSON",
+            "Expected source, node_id, and typed value",
+        )
+        .into_response()
+    })?;
+    match call(s, CapabilityRequest::OpcuaNodeWrite(request))
+        .await
+        .map_err(IntoResponse::into_response)?
+    {
+        CapabilityOutput::NodeWrite(result) => Ok(Json(result)),
         _ => Err(mismatch().into_response()),
     }
 }

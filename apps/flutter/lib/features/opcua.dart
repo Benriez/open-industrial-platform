@@ -16,9 +16,9 @@ import '../core/keyboard.dart';
 
 /// OPC UA workstation: context rail, node explorer and value inspector.
 ///
-/// Everything shown comes from `/api/v1/opcua/nodes` and the live snapshot.
-/// Pins, recents, density, view mode and the per-metric session history are
-/// local UI state only; nothing is written to the Core.
+/// The address space is read through the selected authorized source. Writes
+/// are offered only when the Core reports the server's effective write right
+/// for that node and the user has an authorized operator session.
 class OpcuaPage extends StatefulWidget {
   final OipController controller;
   const OpcuaPage(this.controller, {super.key});
@@ -42,6 +42,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
   String? error, loadedFolder, loadedSource, selectedNodeSource;
   String? selectedSource, sourcesError, typeFilter, qualityFilter;
   bool loading = false, dense = false, showCompare = false, showFilters = false;
+  bool writeBusy = false;
   bool nodeSelectionExplicit = false;
   _ViewMode view = _ViewMode.list;
   OpcValueFormat valueFormat = OpcValueFormat.original;
@@ -337,6 +338,84 @@ class _OpcuaPageState extends State<OpcuaPage> {
     if (focusList) listFocus.requestFocus();
   }
 
+  Future<void> _writeNode(OpcNode node) async {
+    final source = selectedNodeSource ?? _currentSource;
+    if (source == null || node.access != 'ReadWrite' || writeBusy) return;
+    final input =
+        TextEditingController(text: originalObservationValue(node.observation));
+    final value = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('OPC-UA-Wert schreiben'),
+        content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('${node.name} · ${node.dataType}'),
+              const SizedBox(height: 8),
+              Text(node.id,
+                  style:
+                      const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+              const SizedBox(height: 12),
+              TextField(
+                  key: const Key('opcua-write-value'),
+                  controller: input,
+                  autofocus: true,
+                  decoration: const InputDecoration(labelText: 'Neuer Wert')),
+            ]),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Abbrechen')),
+          FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, input.text),
+              child: const Text('Schreiben')),
+        ],
+      ),
+    );
+    input.dispose();
+    if (value == null || !mounted) return;
+    Json typed;
+    try {
+      final type = node.dataType.toLowerCase();
+      if (type == 'boolean') {
+        if (value.toLowerCase() != 'true' && value.toLowerCase() != 'false') {
+          throw const FormatException();
+        }
+        typed = {'boolean': value.toLowerCase() == 'true'};
+      } else if (type == 'string') {
+        typed = {'text': value};
+      } else if (type.contains('int') && type.startsWith('u')) {
+        typed = {'unsigned_integer': int.parse(value)};
+      } else if (type.contains('int')) {
+        typed = {'signed_integer': int.parse(value)};
+      } else {
+        final number = double.parse(value);
+        if (!number.isFinite) throw const FormatException();
+        typed = {'float': number};
+      }
+    } on FormatException {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Wert passt nicht zum OPC-UA-Datentyp.')));
+      return;
+    }
+    setState(() => writeBusy = true);
+    try {
+      await widget.controller.api.contextWriteNode(
+          source, node.id, typed, widget.controller.infrastructure);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${node.name} wurde geschrieben.')));
+      await _load();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Schreiben fehlgeschlagen: ${error.toString()}')));
+    } finally {
+      if (mounted) setState(() => writeBusy = false);
+    }
+  }
+
   void _togglePin(OpcNode node, {String? source}) => setState(() {
         final sourceId = source ?? _sourceFor(node);
         final key = _nodeKey(node, sourceId);
@@ -583,89 +662,90 @@ class _OpcuaPageState extends State<OpcuaPage> {
       child: Focus(
         onKeyEvent: _pageKey,
         child: Semantics(
-        container: true,
-        explicitChildNodes: true,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _header(context, snapshot),
-            const SizedBox(height: OipTokens.s4),
-            LayoutBuilder(builder: (context, box) {
-              final hasExplicitSelection =
-                  node != null && nodeSelectionExplicit;
-              final showInspector = widget.controller
-                  .inspectorVisible(WorkspaceId.opcua, hasExplicitSelection);
-              Widget inspectorArea({required bool bounded}) =>
-                  AdaptiveInspector(
-                    controller: widget.controller,
-                    workspace: WorkspaceId.opcua,
-                    label: 'Node-Wert & technische Attribute',
-                    hasSelection: hasExplicitSelection,
-                    child: _inspectorArea(context, snapshot, node, observation,
-                        live, alarm, primary,
-                        bounded: bounded),
-                  );
-              if (box.maxWidth >= OipTokens.workstation) {
-                final railWidth = box.maxWidth >= 1400 ? 252.0 : 220.0;
-                final height = (viewport - 290).clamp(540.0, 1200.0);
-                return SizedBox(
-                  height: height,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(
-                          width: railWidth,
-                          child: _rail(context, snapshot, liveById, primary,
-                              bounded: true)),
-                      const SizedBox(width: OipTokens.s3),
-                      Expanded(
-                          flex: 11,
-                          child: _explorer(context, liveById, primary, alarm,
-                              autofocus: true)),
-                      if (showInspector) ...[
-                        const SizedBox(width: OipTokens.s3),
-                        Expanded(flex: 13, child: inspectorArea(bounded: true)),
-                      ],
-                    ],
-                  ),
-                );
-              }
-              if (box.maxWidth >= OipTokens.tablet) {
-                final height = (viewport - 420).clamp(480.0, 900.0);
-                return Column(children: [
-                  _contextStrip(context, snapshot, liveById, primary),
-                  const SizedBox(height: OipTokens.s3),
-                  SizedBox(
+          container: true,
+          explicitChildNodes: true,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _header(context, snapshot),
+              const SizedBox(height: OipTokens.s4),
+              LayoutBuilder(builder: (context, box) {
+                final hasExplicitSelection =
+                    node != null && nodeSelectionExplicit;
+                final showInspector = widget.controller
+                    .inspectorVisible(WorkspaceId.opcua, hasExplicitSelection);
+                Widget inspectorArea({required bool bounded}) =>
+                    AdaptiveInspector(
+                      controller: widget.controller,
+                      workspace: WorkspaceId.opcua,
+                      label: 'Node-Wert & technische Attribute',
+                      hasSelection: hasExplicitSelection,
+                      child: _inspectorArea(context, snapshot, node,
+                          observation, live, alarm, primary,
+                          bounded: bounded),
+                    );
+                if (box.maxWidth >= OipTokens.workstation) {
+                  final railWidth = box.maxWidth >= 1400 ? 252.0 : 220.0;
+                  final height = (viewport - 290).clamp(540.0, 1200.0);
+                  return SizedBox(
                     height: height,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        SizedBox(
+                            width: railWidth,
+                            child: _rail(context, snapshot, liveById, primary,
+                                bounded: true)),
+                        const SizedBox(width: OipTokens.s3),
                         Expanded(
-                            child:
-                                _explorer(context, liveById, primary, alarm)),
+                            flex: 11,
+                            child: _explorer(context, liveById, primary, alarm,
+                                autofocus: true)),
                         if (showInspector) ...[
                           const SizedBox(width: OipTokens.s3),
-                          Expanded(child: inspectorArea(bounded: true)),
+                          Expanded(
+                              flex: 13, child: inspectorArea(bounded: true)),
                         ],
                       ],
                     ),
-                  ),
-                ]);
-              }
-              return Column(children: [
-                _contextStrip(context, snapshot, liveById, primary),
-                const SizedBox(height: OipTokens.s3),
-                SizedBox(
-                    height: 480,
-                    child: _explorer(context, liveById, primary, alarm)),
-                if (showInspector) ...[
+                  );
+                }
+                if (box.maxWidth >= OipTokens.tablet) {
+                  final height = (viewport - 420).clamp(480.0, 900.0);
+                  return Column(children: [
+                    _contextStrip(context, snapshot, liveById, primary),
+                    const SizedBox(height: OipTokens.s3),
+                    SizedBox(
+                      height: height,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                              child:
+                                  _explorer(context, liveById, primary, alarm)),
+                          if (showInspector) ...[
+                            const SizedBox(width: OipTokens.s3),
+                            Expanded(child: inspectorArea(bounded: true)),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ]);
+                }
+                return Column(children: [
+                  _contextStrip(context, snapshot, liveById, primary),
                   const SizedBox(height: OipTokens.s3),
-                  SizedBox(height: 560, child: inspectorArea(bounded: true)),
-                ],
-              ]);
-            }),
-          ],
-        ),
+                  SizedBox(
+                      height: 480,
+                      child: _explorer(context, liveById, primary, alarm)),
+                  if (showInspector) ...[
+                    const SizedBox(height: OipTokens.s3),
+                    SizedBox(height: 560, child: inspectorArea(bounded: true)),
+                  ],
+                ]);
+              }),
+            ],
+          ),
         ),
       ),
     );
@@ -708,7 +788,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
         : 'unknown';
     final stale = widget.controller.stale;
     return AdaptiveWorkspaceHeader(
-      eyebrow: 'ADRESSRAUM-EXPLORER · READ-ONLY',
+      eyebrow: 'ADRESSRAUM-EXPLORER · SERVERRECHTE',
       title: 'OPC-UA-Browser',
       subtitle: 'Source wählen · Node suchen · Wert und Attribute untersuchen',
       accent: OipTokens.violet,
@@ -765,7 +845,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
           color: OipTokens.statusColor(context, sourceSubscription),
           showDot: true,
         ),
-        const StatusPill('READ-ONLY ANALYSE',
+        const StatusPill('SERVER-GESTEUERTER ZUGRIFF',
             color: OipTokens.lime, icon: Icons.lock_outline),
         const KbdHint('Ctrl K · / Suche · F6 Bereich'),
       ],
@@ -1056,7 +1136,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
         const SizedBox(height: OipTokens.s3),
         const Align(
           alignment: Alignment.centerLeft,
-          child: StatusPill('READ-ONLY · RUST-CAPABILITIES',
+          child: StatusPill('ZUGRIFF · SERVER + OIP-POLICY',
               color: OipTokens.lime, icon: Icons.lock_outline),
         ),
       ],
@@ -1981,8 +2061,25 @@ class _OpcuaPageState extends State<OpcuaPage> {
               '${node.dataType} · ${nodeTypeCode(node.dataType)}'),
           KeyValue('Zugriff · Core-Angabe', _accessLabel(node.access)),
           KeyValue('Wertetyp', _valueKind(observation)),
-          const KeyValue('Schreibpfad', 'Nicht vorhanden · read-only by design',
-              mono: false),
+          if (node.access == 'ReadWrite')
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                  key: const Key('opcua-write-node'),
+                  onPressed:
+                      writeBusy || !widget.controller.infrastructure.ready
+                          ? null
+                          : () => _writeNode(node),
+                  icon: const Icon(Icons.edit_outlined, size: 16),
+                  label: Text(writeBusy ? 'Schreibe …' : 'Wert schreiben'),
+                ),
+              ),
+            )
+          else
+            const KeyValue('Schreiben', 'Vom OPC-UA-Server nicht freigegeben',
+                mono: false),
         ]),
         const ExpansionTile(
           key: Key('technical-details'),
@@ -2000,7 +2097,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
               KeyValue('ArrayDimensions', 'Nicht von API geliefert',
                   mono: false),
               KeyValue('AccessLevel / UserAccessLevel',
-                  'Nicht von Serverattributen geliefert',
+                  'Effektives Schreibrecht vom Server geliefert; Rohattribute nicht geliefert',
                   mono: false),
               KeyValue('Historizing', 'Nicht von API geliefert', mono: false),
             ]),
@@ -2085,8 +2182,12 @@ class _OpcuaPageState extends State<OpcuaPage> {
 
   // --------------------------------------------------------------- helpers
 
-  String _accessLabel(String access) =>
-      access == 'Read' ? 'Read · lesend' : access;
+  String _accessLabel(String access) => switch (access) {
+        'Read' => 'Read · lesend',
+        'ReadWrite' => 'Read + Write · serverseitig freigegeben',
+        'Browse' => 'Browse · strukturell',
+        _ => access,
+      };
 
   String _valueKind(Observation? observation) {
     if (observation == null) return 'Unbekannt';

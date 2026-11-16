@@ -314,6 +314,14 @@ impl ApplicationServices {
                 .await
                 .map(CapabilityOutput::InventoryPlan);
         }
+        if let OpcuaNodeWrite(body) = &request {
+            let target = AccessScope::Source(body.source.clone());
+            if !h.allowed_sources(p, id).contains(&body.source) || !h.permits(p, id, &target, false)
+            {
+                return Err(inaccessible());
+            }
+            return self.run(request).await;
+        }
         if id.descriptor().mutating {
             return Err(denied());
         }
@@ -443,7 +451,7 @@ impl ApplicationServices {
                             CapabilityErrorCode::InvalidInput,
                             "SOURCE_REQUIRED",
                             "Select an authorized source",
-                        ))
+                        ));
                     }
                 };
                 HierarchyQuery {
@@ -462,6 +470,7 @@ impl ApplicationServices {
                 q.source = Some(source);
                 self.nodes(q).await.map(CapabilityOutput::Nodes)
             }
+            OpcuaNodeWrite(_) => Err(inaccessible()),
             SourcesRead(q) => {
                 let allowed = self.tenant_sources(h, p, id, &q)?;
                 let (o, l) = source_bounds(&q)?;

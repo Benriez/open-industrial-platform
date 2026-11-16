@@ -1,5 +1,5 @@
-use crate::adapter::FreshnessPolicy;
 use crate::AdapterError;
+use crate::adapter::FreshnessPolicy;
 use oip_core::{
     CollectionError, DataQuality, DataSourceId, EntityId, Freshness, MetricId, MetricValue,
     ObservationEnvelope, SimulationOrigin, Timestamp, Timestamps, Unit,
@@ -8,8 +8,9 @@ use oip_simulator::{MACHINE_ID, SIMULATION_ORIGIN_ID};
 use opcua::types::{DataValue, DateTime, StatusCode, Variant};
 
 /// Source metadata of the local simulation, read from the address space.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub(crate) struct SimulationMetadata {
+    pub simulation_origin_required: bool,
     pub origin_id: Option<String>,
     pub seed: Option<u64>,
     pub scenario: Option<String>,
@@ -17,6 +18,19 @@ pub(crate) struct SimulationMetadata {
     pub epoch_unix_ms: Option<i64>,
     /// Virtual tick duration in milliseconds.
     pub tick_duration_ms: Option<u64>,
+}
+
+impl Default for SimulationMetadata {
+    fn default() -> Self {
+        Self {
+            simulation_origin_required: true,
+            origin_id: None,
+            seed: None,
+            scenario: None,
+            epoch_unix_ms: None,
+            tick_duration_ms: None,
+        }
+    }
 }
 
 impl SimulationMetadata {
@@ -296,7 +310,7 @@ pub(crate) fn data_value_to_observation(
                     }),
             })
     } else {
-        if collection_error.is_none() {
+        if metadata.simulation_origin_required && collection_error.is_none() {
             collection_error = Some(CollectionError::InvalidProvenance);
         }
         None

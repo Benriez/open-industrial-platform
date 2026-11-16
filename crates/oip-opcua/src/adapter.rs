@@ -19,6 +19,9 @@ pub struct BrowseEntry {
     pub browse_name: String,
     pub display_name: String,
     pub node_class: String,
+    /// Effective UserAccessLevel reported by the OPC-UA server. Unknown
+    /// values fail closed and are treated as read-only by the client.
+    pub access: String,
     /// The folder the node lives in: the browse name of its parent.
     ///
     /// It is the **structure of the address space of the server** and not a
@@ -140,6 +143,9 @@ pub struct ClientOptions {
     pub freshness: FreshnessPolicy,
     /// Maximum number of nodes the adapter traverses while browsing.
     pub max_browse_nodes: usize,
+    /// Whether absent/mismatched simulator-origin metadata invalidates values.
+    /// Physical host services set this false; simulation connectors keep it true.
+    pub simulation_origin_required: bool,
     /// The entity of the source: the machine the measurements of the source
     /// belong to. The adapter delivers the observations with **this** entity
     /// — the machine id of a simulation is a property of the simulation, not
@@ -168,8 +174,22 @@ impl ClientOptions {
             session_retry_limit: 20,
             freshness: FreshnessPolicy::default(),
             max_browse_nodes: 5_000,
+            simulation_origin_required: true,
             entity_id: None,
         }
+    }
+
+    /// Local, loopback-only connection to a real host OPC-UA service.
+    /// Transport security is provided by the loopback boundary or an
+    /// authenticated SSH tunnel; simulator-origin metadata is not required.
+    pub fn local_host_service(
+        endpoint: impl Into<String>,
+        namespace: u16,
+        entity_id: oip_core::EntityId,
+    ) -> Self {
+        let mut options = Self::local_simulation_of(endpoint, namespace, entity_id);
+        options.simulation_origin_required = false;
+        options
     }
 }
 

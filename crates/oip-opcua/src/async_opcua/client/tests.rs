@@ -500,6 +500,7 @@ async fn untrusted_origin_id_is_not_adopted_as_provenance() {
 
     let metric = MetricId::new("temperature").expect("metric");
     let metadata = SimulationMetadata {
+        simulation_origin_required: true,
         origin_id: Some("   ".to_owned()),
         seed: Some(1),
         scenario: Some("normal".to_owned()),

@@ -1,6 +1,6 @@
 use crate::async_opcua::mapping::{
-    data_value_to_observation, datetime_to_timestamp, external_datetime_is_valid,
-    variant_to_metric_value, SimulationMetadata,
+    SimulationMetadata, data_value_to_observation, datetime_to_timestamp,
+    external_datetime_is_valid, metric_value_to_variant, variant_to_metric_value,
 };
 use crate::endpoint::validate_client_endpoint;
 use crate::{
@@ -13,9 +13,9 @@ use oip_core::{MetricId, MetricValue, Timestamp};
 use opcua::client::{ClientBuilder, DataChangeCallback, IdentityToken, Session, SessionPollResult};
 use opcua::crypto::SecurityPolicy;
 use opcua::types::{
-    BrowseDescription, BrowseDescriptionResultMask, BrowseDirection, DataValue,
+    AttributeId, BrowseDescription, BrowseDescriptionResultMask, BrowseDirection, DataValue,
     MessageSecurityMode, MonitoredItemCreateRequest, NodeClassMask, NodeId, ReadValueId,
-    ReferenceTypeId, StatusCode, TimestampsToReturn, UserTokenPolicy,
+    ReferenceTypeId, StatusCode, TimestampsToReturn, UserTokenPolicy, WriteValue,
 };
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -56,6 +56,66 @@ impl AsyncOpcUaClient {
                     "OPC UA connection/security handshake timed out".to_owned(),
                 )
             })?
+    }
+
+    /// Writes one typed value to the server node. The caller must already
+    /// restrict this operation to a browsed node whose UserAccessLevel grants
+    /// CurrentWrite; the server remains the final authority and rejects any
+    /// node or type that it does not permit.
+    pub async fn write_node(&self, node_id: &str, value: &MetricValue) -> Result<(), AdapterError> {
+        let node = node_id
+            .parse::<NodeId>()
+            .map_err(|_| AdapterError::InvalidValue("invalid OPC-UA node id".to_owned()))?;
+        if let MetricValue::Float(value) = value {
+            if !value.is_finite() {
+                return Err(AdapterError::InvalidValue(
+                    "non-finite floating point values are forbidden".to_owned(),
+                ));
+            }
+        }
+        if let MetricValue::Text(value) = value {
+            if value.len() > 256 || value.contains('\0') {
+                return Err(AdapterError::InvalidValue(
+                    "text write exceeds the bounded value limit".to_owned(),
+                ));
+            }
+        }
+        let result = self
+            .session
+            .write(&[WriteValue::value_attr(node, metric_value_to_variant(value))])
+            .await
+            .map_err(|error| AdapterError::Protocol(error.to_string()))?;
+        match result.first() {
+            Some(status) if status.is_good() => Ok(()),
+            Some(status) => Err(AdapterError::Protocol(format!(
+                "OPC-UA server rejected write: {status}"
+            ))),
+            None => Err(AdapterError::Protocol(
+                "OPC-UA server returned no write status".to_owned(),
+            )),
+        }
+    }
+
+    async fn user_can_write(&self, node_id: &NodeId) -> Result<bool, AdapterError> {
+        let mut values = self
+            .session
+            .read(
+                &[ReadValueId::new(
+                    node_id.clone(),
+                    AttributeId::UserAccessLevel,
+                )],
+                TimestampsToReturn::Neither,
+                0.0,
+            )
+            .await
+            .map_err(|error| AdapterError::Protocol(error.to_string()))?;
+        let Some(value) = values.pop().and_then(|value| value.value) else {
+            return Ok(false);
+        };
+        let opcua::types::Variant::Byte(level) = value else {
+            return Ok(false);
+        };
+        Ok(level & 0x02 != 0)
     }
 
     async fn connect_inner(options: &ClientOptions) -> Result<Self, AdapterError> {
@@ -148,13 +208,13 @@ impl AsyncOpcUaClient {
             .await
             .map_err(|error| AdapterError::Connection(error.to_string()))?;
         let (event_sender, event_receiver) = mpsc::channel(EVENT_CHANNEL_CAPACITY);
-        let state =
-            CollectionState::new(
-                options.namespace,
-                options.entity_id.clone(),
-                event_sender,
-                options.freshness.clone(),
-            );
+        let state = CollectionState::new(
+            options.namespace,
+            options.entity_id.clone(),
+            options.simulation_origin_required,
+            event_sender,
+            options.freshness.clone(),
+        );
         let subscribed_metrics = Arc::new(Mutex::new(Vec::new()));
         let event_task = OwnedEventTask(spawn_event_loop(
             event_loop,
@@ -167,7 +227,12 @@ impl AsyncOpcUaClient {
                 "session did not reach connected state".to_owned(),
             ));
         }
-        let discovered_metadata = read_simulation_metadata(&session, options.namespace).await?;
+        let discovered_metadata = read_simulation_metadata(
+            &session,
+            options.namespace,
+            options.simulation_origin_required,
+        )
+        .await?;
         *state
             .metadata
             .lock()
@@ -340,11 +405,21 @@ impl ReadOnlyOpcUaAdapter for AsyncOpcUaClient {
                         if visited.insert(target.clone()) && target.namespace == self.namespace {
                             pending.push((target.clone(), browse_name.clone()));
                         }
+                        let access = if reference.node_class == opcua::types::NodeClass::Variable
+                            && self.user_can_write(&target).await.unwrap_or(false)
+                        {
+                            "ReadWrite"
+                        } else if reference.node_class == opcua::types::NodeClass::Variable {
+                            "Read"
+                        } else {
+                            "Browse"
+                        };
                         entries.push(BrowseEntry {
                             node_id: target.to_string(),
                             browse_name,
                             display_name: reference.display_name.to_string(),
                             node_class: format!("{:?}", reference.node_class),
+                            access: access.to_owned(),
                             folder: parent_name.clone(),
                         });
                     }
@@ -472,7 +547,14 @@ async fn read_data_value_at(
 async fn read_simulation_metadata(
     session: &Arc<Session>,
     namespace: u16,
+    simulation_origin_required: bool,
 ) -> Result<SimulationMetadata, AdapterError> {
+    if !simulation_origin_required {
+        return Ok(SimulationMetadata {
+            simulation_origin_required: false,
+            ..Default::default()
+        });
+    }
     let origin = read_data_value(
         session,
         namespace,
@@ -503,37 +585,21 @@ async fn read_simulation_metadata(
         &MetricId::new("simulation.tick_duration_ms").expect("static metric id"),
     )
     .await?;
+    // Simulation metadata is optional. A physical OPC-UA server does not need
+    // to fabricate simulation nodes for the general browse/read contract.
+    let optional_metric = |data: &DataValue| -> Result<Option<MetricValue>, AdapterError> {
+        match data.value.as_ref() {
+            None | Some(opcua::types::Variant::Empty) => Ok(None),
+            Some(value) => variant_to_metric_value(value).map(Some),
+        }
+    };
     Ok(SimulationMetadata {
-        origin_id: origin
-            .value
-            .as_ref()
-            .map(variant_to_metric_value)
-            .transpose()?
-            .and_then(text_value),
-        seed: seed
-            .value
-            .as_ref()
-            .map(variant_to_metric_value)
-            .transpose()?
-            .and_then(unsigned_value),
-        scenario: scenario
-            .value
-            .as_ref()
-            .map(variant_to_metric_value)
-            .transpose()?
-            .and_then(text_value),
-        epoch_unix_ms: epoch
-            .value
-            .as_ref()
-            .map(variant_to_metric_value)
-            .transpose()?
-            .and_then(signed_value),
-        tick_duration_ms: tick_duration
-            .value
-            .as_ref()
-            .map(variant_to_metric_value)
-            .transpose()?
-            .and_then(unsigned_value),
+        simulation_origin_required: true,
+        origin_id: optional_metric(&origin)?.and_then(text_value),
+        seed: optional_metric(&seed)?.and_then(unsigned_value),
+        scenario: optional_metric(&scenario)?.and_then(text_value),
+        epoch_unix_ms: optional_metric(&epoch)?.and_then(signed_value),
+        tick_duration_ms: optional_metric(&tick_duration)?.and_then(unsigned_value),
     })
 }
 
@@ -566,6 +632,7 @@ fn signed_value(value: MetricValue) -> Option<i64> {
 #[derive(Clone)]
 struct CollectionState {
     namespace: u16,
+    simulation_origin_required: bool,
     /// The entity of the source: the measurements of the source belong to it,
     /// whatever the machine id of the simulation is.
     entity_id: Option<oip_core::EntityId>,
@@ -583,11 +650,13 @@ impl CollectionState {
     fn new(
         namespace: u16,
         entity_id: Option<oip_core::EntityId>,
+        simulation_origin_required: bool,
         event_sender: mpsc::Sender<ClientEvent>,
         freshness: FreshnessPolicy,
     ) -> Self {
         Self {
             namespace,
+            simulation_origin_required,
             entity_id,
             event_sender,
             metadata: Arc::new(Mutex::new(SimulationMetadata::default())),
@@ -851,7 +920,13 @@ where
                                     active.clear();
                                 }
                             }
-                            match read_simulation_metadata(&session, namespace).await {
+                            match read_simulation_metadata(
+                                &session,
+                                namespace,
+                                state.simulation_origin_required,
+                            )
+                            .await
+                            {
                                 Ok(discovered) => {
                                     if let Ok(mut timestamps) =
                                         state.latest_source_timestamps.lock()

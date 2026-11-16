@@ -19,6 +19,7 @@ pub enum CapabilityId {
     ObservationsRead,
     EventsRead,
     OpcuaNodesRead,
+    OpcuaNodeWrite,
     SnapshotRead,
     SimulationScenarioSet,
     OrganizationsRead,
@@ -70,7 +71,7 @@ pub struct CapabilityDescriptor {
     pub audit: String,
 }
 impl CapabilityId {
-    pub const ALL: [Self; 33] = [
+    pub const ALL: [Self; 34] = [
         Self::CoreHealthRead,
         Self::CoreLivenessRead,
         Self::CoreReadinessRead,
@@ -82,6 +83,7 @@ impl CapabilityId {
         Self::ObservationsRead,
         Self::EventsRead,
         Self::OpcuaNodesRead,
+        Self::OpcuaNodeWrite,
         Self::SnapshotRead,
         Self::SimulationScenarioSet,
         Self::OrganizationsRead,
@@ -130,11 +132,7 @@ impl CapabilityId {
             // The service registry is a **read** of what the operator declared: the same
             // permission that the inventory read carries, so the readers of the inventory
             // read the services of the same scope.
-            ServiceRegistryRead => (
-                vec![Permission::DevicesRead],
-                "ServiceQuery",
-                "ServicePage",
-            ),
+            ServiceRegistryRead => (vec![Permission::DevicesRead], "ServiceQuery", "ServicePage"),
             InventoryPlanRead => (
                 vec![Permission::InventoryManage],
                 "InventoryPlanQuery",
@@ -245,6 +243,11 @@ impl CapabilityId {
                 "NodeQuery",
                 "NodePage",
             ),
+            OpcuaNodeWrite => (
+                vec![Permission::OpcuaRead, Permission::InventoryManage],
+                "NodeWriteRequest",
+                "NodeWriteResult",
+            ),
             SnapshotRead => (
                 vec![
                     Permission::CoreRead,
@@ -271,6 +274,7 @@ impl CapabilityId {
                     | SettingsChange
                     | InventoryChange
                     | DeviceConnectionConfigure
+                    | OpcuaNodeWrite
             ),
             input_type: input.into(),
             output_type: output.into(),
@@ -280,6 +284,7 @@ impl CapabilityId {
                     | SettingsChange
                     | InventoryChange
                     | DeviceConnectionConfigure
+                    | OpcuaNodeWrite
             ) {
                 "decision_and_outcome_local_log"
             } else {
@@ -327,6 +332,21 @@ pub struct NodeQuery {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
+pub struct NodeWriteRequest {
+    pub source: DataSourceId,
+    pub node_id: String,
+    pub value: MetricValue,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
+pub struct NodeWriteResult {
+    pub source: DataSourceId,
+    pub node_id: String,
+    pub accepted: bool,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
+#[serde(deny_unknown_fields)]
 pub struct ScenarioRequest {
     pub scenario: String,
 }
@@ -350,6 +370,7 @@ pub enum CapabilityRequest {
     ObservationsRead(SourceQuery),
     EventsRead(SourceQuery),
     OpcuaNodesRead(NodeQuery),
+    OpcuaNodeWrite(NodeWriteRequest),
     SnapshotRead,
     SimulationScenarioSet(ScenarioRequest),
     OrganizationsRead(HierarchyQuery),
@@ -403,6 +424,7 @@ impl CapabilityRequest {
             Self::ObservationsRead(_) => CapabilityId::ObservationsRead,
             Self::EventsRead(_) => CapabilityId::EventsRead,
             Self::OpcuaNodesRead(_) => CapabilityId::OpcuaNodesRead,
+            Self::OpcuaNodeWrite(_) => CapabilityId::OpcuaNodeWrite,
             Self::SnapshotRead => CapabilityId::SnapshotRead,
             Self::SimulationScenarioSet(_) => CapabilityId::SimulationScenarioSet,
             Self::OrganizationsRead(_) => CapabilityId::OrganizationsRead,
@@ -434,6 +456,7 @@ pub enum CapabilityOutput {
     Observations(Vec<ObservationEnvelope>),
     Events(EventsResponse),
     Nodes(NodePage),
+    NodeWrite(NodeWriteResult),
     Snapshot(Box<Snapshot>),
     Scenario(ScenarioResponse),
     Organizations(Page<Organization>),

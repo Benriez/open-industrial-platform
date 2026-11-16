@@ -579,9 +579,12 @@ class SettingsSectionContent extends StatelessWidget {
             color: OipTokens.cyan,
           ),
           if (section == SettingsSection.organizations)
-            for (final item in controller.infrastructure.hierarchy.organizations.where(
-                (item) => controller.infrastructure.selection.organizationId == null ||
-                    item.id == controller.infrastructure.selection.organizationId))
+            for (final item in controller.infrastructure.hierarchy.organizations
+                .where((item) =>
+                    controller.infrastructure.selection.organizationId ==
+                        null ||
+                    item.id ==
+                        controller.infrastructure.selection.organizationId))
               ListTile(
                 dense: true,
                 leading: const Icon(Icons.business_outlined),
@@ -589,15 +592,17 @@ class SettingsSectionContent extends StatelessWidget {
                 subtitle: Text(item.id),
               ),
           if (section == SettingsSection.infrastructures)
-            for (final item in controller.infrastructure.hierarchy.infrastructures.where(
-                (item) => controller.infrastructure.selection.matches(
+            for (final item in controller
+                .infrastructure.hierarchy.infrastructures
+                .where((item) => controller.infrastructure.selection.matches(
                     organizationId: item.organizationId,
                     infrastructureId: item.id)))
               ListTile(
                 dense: true,
                 leading: const Icon(Icons.hub_outlined),
                 title: Text(item.name),
-                subtitle: Text('${item.id} · Organization ${item.organizationId}'),
+                subtitle:
+                    Text('${item.id} · Organization ${item.organizationId}'),
               ),
           if (section == SettingsSection.sites)
             for (final item in controller.infrastructure.hierarchy.sites.where(
@@ -607,7 +612,8 @@ class SettingsSectionContent extends StatelessWidget {
                 dense: true,
                 leading: const Icon(Icons.location_on_outlined),
                 title: Text(item.name),
-                subtitle: Text('${item.id} · Infrastructure ${item.infrastructureId}'),
+                subtitle: Text(
+                    '${item.id} · Infrastructure ${item.infrastructureId}'),
               ),
           if (controller.infrastructure.isFixture)
             const StatusPill('CONTRACT FIXTURE · NICHT LIVE',
@@ -632,10 +638,9 @@ class SettingsSectionContent extends StatelessWidget {
     return ListView(children: [
       SettingsSectionHeader(
         title: 'Sources & Devices',
-        subtitle:
-            controller.infrastructure.ready
-                ? 'Autorisierter v2-Kontext inklusive Devices ohne Collector. Keine Browser-Mutation.'
-                : 'Nur bereits vorhandene autorisierte v1-Snapshot-Daten. Keine konkurrierende Geräteverwaltung.',
+        subtitle: controller.infrastructure.ready
+            ? 'Autorisierter v2-Kontext inklusive Devices ohne Collector. Keine Inventar- oder Geräteverwaltung in diesem Bereich.'
+            : 'Nur bereits vorhandene autorisierte v1-Snapshot-Daten. Keine konkurrierende Geräteverwaltung.',
         status: 'EXISTING READ CONTRACT',
       ),
       const SizedBox(height: 12),
@@ -661,7 +666,7 @@ class SettingsSectionContent extends StatelessWidget {
           KeyValue('Devices ohne Source / NoCollector',
               '${snapshot.devices.where((device) => device.sourceId == null).length}'),
           const KeyValue('Monitoring Configuration',
-              'existing read capabilities only; browser mutation unsupported'),
+              'OPC-UA writes are limited to server-enabled nodes in the OPC-UA workstation'),
         ]),
         const Hairline(),
         const PanelLabel('Gelieferte Source-IDs'),

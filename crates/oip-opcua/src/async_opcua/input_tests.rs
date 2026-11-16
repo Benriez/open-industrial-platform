@@ -9,6 +9,7 @@ use proptest::prelude::*;
 
 fn metadata() -> SimulationMetadata {
     SimulationMetadata {
+        simulation_origin_required: true,
         origin_id: Some(SIMULATION_ORIGIN_ID.to_owned()),
         seed: Some(1),
         scenario: Some("normal".to_owned()),
