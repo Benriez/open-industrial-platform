@@ -5547,3 +5547,21 @@ read after the OTA. Therefore OTA delivery and tunnel recovery are **VERIFIED**,
 recovery change is included, and authenticated telemetry/OPC-UA runtime acceptance remains
 **PENDING operator Touch ID login**. Do not report metric or node reads as passing until they are
 observed in that authorized session. No tests were run during this delivery step.
+
+**Operator-controlled OTA prompt and auth-gated browser check (2026-11-16).** The operator clarified
+that they want to see and click the in-app update offer themselves. The previously installed
+`0.3.2+5` app was preserved at `/private/tmp/oip-ota-v032-user-approved.app`; the exact previous
+`0.3.0+3` bundle was restored from its preserved copy, its updater flag enabled, and the verified
+release installer helper added. The restored bundle passes strict signature verification. Its
+updater found signed release `0.3.2+5`, verified the manifest and archive digest, and the app now
+has the visible **“OIP-Update verfügbar” / “Jetzt aktualisieren”** dialog. The operator's button
+has deliberately not been pressed. The next app update is pending the operator's click.
+
+The app-owned Pi forward on port `18855` remains available. Direct session check returns HTTP 200
+with `authenticated:false` and `mode=login_required`; unauthenticated GETs to `/api/v2/sources`,
+`/api/v2/devices`, and `/api/v2/opcua/nodes` each return HTTP 403. This confirms Core reachability
+and that the protected telemetry/OPC-UA requests are currently blocked by the absent browser
+session; it is not a successful telemetry or browse result. After the operator clicks the update
+and completes the app's Touch ID sign-in, re-check the real metrics and OPC-UA nodes before claiming
+those functions work. The updated `0.3.2+5` backup is preserved, so restoring it does not discard the
+signed release or its OTA tunnel changes.
