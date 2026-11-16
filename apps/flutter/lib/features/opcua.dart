@@ -346,7 +346,12 @@ class _OpcuaPageState extends State<OpcuaPage> {
   }
 
   Future<void> _readSelectedNode(OpcNode node, String? source) async {
-    if (source == null || node.access == 'Browse') return;
+    // Older Pi Cores still include values in every page. Do not issue a second
+    // read against those releases; metadata-only pages from the fixed Core
+    // have no observation, so the selected node is read on demand.
+    if (source == null || node.access == 'Browse' || node.observation != null) {
+      return;
+    }
     final request = ++selectedReadGeneration;
     try {
       final currentPage = page;
