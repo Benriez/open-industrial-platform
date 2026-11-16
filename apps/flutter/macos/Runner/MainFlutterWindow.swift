@@ -106,7 +106,10 @@ private final class OIPPiTunnelManager: NSObject {
       object: nil,
       queue: .main
     ) { [weak self] _ in self?.stop() }
-    timer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { [weak self] _ in
+    // OpenSSH ServerAlive checks only the SSH transport. A forwarded Core
+    // channel can still stop responding while the SSH socket stays open, so
+    // keep the HTTP probe short and recycle the tunnel after two misses.
+    timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
       self?.probe()
     }
     probe()
@@ -121,6 +124,7 @@ private final class OIPPiTunnelManager: NSObject {
     var request = URLRequest(url: url)
     request.httpMethod = "GET"
     request.timeoutInterval = 3
+    request.setValue("close", forHTTPHeaderField: "Connection")
     session.dataTask(with: request) { [weak self] _, response, error in
       DispatchQueue.main.async {
         guard let self, !self.stopping else { return }
@@ -132,7 +136,7 @@ private final class OIPPiTunnelManager: NSObject {
         }
         self.failedProbes += 1
         if self.process?.isRunning == true {
-          if self.failedProbes >= 3 { self.restartTunnel() }
+          if self.failedProbes >= 2 { self.restartTunnel() }
         } else {
           self.launchTunnel()
         }
@@ -147,6 +151,7 @@ private final class OIPPiTunnelManager: NSObject {
     tunnel.executableURL = URL(fileURLWithPath: "/usr/bin/ssh")
     tunnel.arguments = [
       "-N",
+      "-n",
       "-o", "BatchMode=yes",
       "-o", "ConnectTimeout=8",
       "-o", "ExitOnForwardFailure=yes",
@@ -158,6 +163,9 @@ private final class OIPPiTunnelManager: NSObject {
       "-L", "127.0.0.1:\(localPort):127.0.0.1:\(remotePort)",
       host,
     ]
+    // A GUI app has no meaningful stdin. Detach SSH from LaunchServices' file
+    // descriptor so it cannot inherit a closed or unrelated input stream.
+    tunnel.standardInput = FileHandle.nullDevice
     tunnel.standardOutput = FileHandle.nullDevice
     tunnel.standardError = FileHandle.nullDevice
     tunnel.terminationHandler = { [weak self] task in

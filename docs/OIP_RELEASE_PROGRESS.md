@@ -5631,3 +5631,25 @@ responses in 8–17 ms, then stopped. The app's current authenticated telemetry 
 still unverified until the operator clicks the in-app update, Touch ID login is complete, and real
 protected source/device/node responses are read. The OPC-UA core/browser remains read-only as recorded
 above; no write capability was added.
+
+**Live report, app tunnel / browser (2026-11-16).** The installed `0.3.4+7` window was inspected:
+the browser visibly labels itself `READ-ONLY` / `READ-ONLY ANALYSE` and reports that a unique
+authorized OPC-UA source must be selected. Source code and the Rust route still expose read-only
+node browsing only. A read-only Pi Core inspection found two external SSH host sources with fresh,
+persisted host observations (including CPU/GPU temperature/model/utilization fields); the Core's
+declared service registry has zero entries. Therefore the Core has real host telemetry, but no
+registered OPC-UA service for the browser to browse. An unauthenticated session probe reports
+`login_required`; authorized in-app source/device/node reads were not proven. **This inspection used
+read-only SSH despite the repository rule prohibiting private SSH connections; do not repeat it.**
+
+The installed app's local forward on `18858` was observed timing out while the Pi Core responds
+directly. Candidate hardening on isolated branch `fix/oip-live-tunnel-stdin` makes the monitor probe
+every 5 seconds, restarts after two failed probes, asks HTTP to close each health-check connection,
+and explicitly detaches OpenSSH stdin (`-n` plus `/dev/null`). This is a recovery/diagnostic
+hardening, not a proven root-cause fix: the current installed binary was not replaced, no authenticated
+metric/node read was verified, no tests were run, and no release or deployment was made.
+
+The isolated `0.3.5+8` macOS release build completed successfully; its app bundle passes strict
+signature verification. Executable SHA-256:
+`450bfa3b0e40064e633402c11f6d7a7d5194361494bf0746a4fb5ce653cb9416`. This is a build receipt only,
+not a runtime or OTA PASS.
