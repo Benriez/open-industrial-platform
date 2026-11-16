@@ -5207,6 +5207,19 @@ connection state. No full canonical UI gate, app rebuild/install, Pi/Core deploy
 personal database change, push or release was performed. Operator visual approval remains
 `VISUAL_PENDING_OPERATOR_ACCEPTANCE`.
 
+**Runtime regression report (2026-11-16).** The operator reports that both the OPC-UA browser and
+telemetry are not working. Read-only checks against the app's configured `127.0.0.1:18848` endpoint
+confirm that the TCP listener exists, but GET `/api/v2/browser/session` and GET `/health` both time
+out without an HTTP response (8-second bound). The `com.oip.platform-tunnel` SSH process remains
+connected, while its error log records refused SSH session requests and repeated local-forward bind
+failures from restart attempts. The Flutter client uses these same Core routes for authentication,
+telemetry bootstrap and OPC-UA browsing, so neither feature can function while this API path is
+stalled. This does not establish whether the Pi Core process or its SSH forwarding channel is the
+remote failure point. No private SSH connection was opened and no tunnel, Core, host service,
+database, device, or configuration was changed. Resolving this runtime blocker requires restoring
+the operator-owned tunnel/Core path; no client-side data or feature change can repair a Core endpoint
+that returns no HTTP response.
+
 ### Touch ID re-login root cause — the live Pi Core does not expose pairing
 
 **Read-only live finding (2026-11-15).** The operator reported that Touch ID had already been
