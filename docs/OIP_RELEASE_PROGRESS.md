@@ -5497,3 +5497,23 @@ The visible OPC-UA failure also exposed a recovery bug: its “Nodes aktualisier
 **Post-install authentication check (2026-11-16).** Restarting the app dropped the process-local browser session, as documented in the existing session contract. The installed build shows `Browser-Identität fehlt`; the Touch ID registration checkbox is unchecked and says pairing occurs after a code login. Pressing “Mit Touch ID anmelden” returned to the idle sign-in form without authenticating, so authenticated telemetry and OPC-UA remain unverified. Do not interpret the successful tunnel probes as proof of authorized reads. The application requires its operator identity to be restored before those two paths can be confirmed.
 
 **Tunnel stability correction (2026-11-16).** Further live probing showed the forwarding channel can still stall even though the Pi Core remains responsive. `IPQoS=none` on a foreground SSH tunnel improved a ten-request sample (9–73 ms), but longer samples through both the LaunchAgent and a manually started tunnel still included 3-second timeouts/resets. The OIP LaunchAgent and watchdog were therefore left unloaded to stop their repeated restart/bind-conflict loop; the restored independent tunnel on port `18852` was left running. An OIP foreground tunnel on `18853` currently answers but is still intermittent (latest three probes: 1.88 s, 0.29 s, 0.015 s). **Do not claim telemetry/OPC-UA runtime recovery or durable tunnel health.** The app remains installed at `/Applications/Open Industrial Platform.app`, but is at its operator sign-in screen after restart; the protected metrics and node catalogue have not been re-read. The user-visible OPC-UA refresh now reloads sources, and the app build targets the Pi through `18853`; those software changes do not remove the observed transport/authentication blockers.
+
+**OTA delivery repair for telemetry/OPC-UA (2026-11-16, source `2674f82`).** The operator requested
+that subsequent fixes arrive through OTA after the prior manual install produced no user-visible
+change. Inspection of `/Applications/Open Industrial Platform.app` found version `0.3.0` build `3`
+with `OIPUpdateEnabled=false`; this installation could not discover GitHub releases at all. The
+released `v0.3.1` also predates the corrected updater. The new `0.3.2` candidate fixes both delivery
+and transport: it enables OTA in the packaged app, points the direct API client at the Pi tunnel on
+`127.0.0.1:18855`, and starts/monitors that SSH tunnel as a child of the visible app so launchd
+background throttling cannot strand requests. It also retains the OPC-UA refresh fix that reloads
+authorized sources before reloading nodes. No UI contract or Core protocol was changed.
+
+**Build evidence:** isolated branch `fix/oip-restore-opcua-telemetry`, source revision `2674f82`;
+`flutter build macos --release --build-name=0.3.2 --build-number=5` with API URL and version/build
+defines for port 18855 succeeded. Local executable SHA-256 is
+`d1c6f80e98f8cdea0581a019c1c75501d735f8983c1a709f5fb751438a60f3a7`. Info.plist and shell syntax
+checks plus `git diff --check` passed; no automated tests were run. This is a local build receipt,
+not evidence of OTA delivery. GitHub publication and signature verification are pending. The
+existing `/Applications` bundle has not been changed by this OTA work; end-to-end update, authenticated
+telemetry values and OPC-UA node reads remain **NOT VERIFIED** until the signed release is installed,
+the app's updater is enabled, and an authorized live session can read both paths.
