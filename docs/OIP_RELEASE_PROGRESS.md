@@ -5245,6 +5245,16 @@ the active preview's `apps/flutter/build/web` assets were preserved. The checkou
 5.8 GB. The remaining 5.5 GB `target/` was left intact because a workspace `cargo test` process was
 active and shared OIP binaries/build artifacts must not be disturbed.
 
+**Automatic tunnel recovery (2026-11-16).** The port-18851 SSH process remained alive while its
+forwarding channel intermittently stopped returning HTTP. A `com.oip.platform-tunnel-watchdog`
+LaunchAgent now checks the unauthenticated session endpoint every 20 seconds and restarts only the
+existing local SSH tunnel if the endpoint times out or returns a non-success response. The first
+manual watchdog run completed with exit code 0 and left the healthy tunnel PID unchanged; five
+consecutive session requests then returned HTTP 200 in 9–21 ms. `tools/macos/` contains the watchdog
+script and its LaunchAgent template. The app's current Core session is still `login_required` until
+the operator completes Touch ID, so protected telemetry and OPC-UA data still need an authenticated
+runtime check.
+
 ### Touch ID re-login root cause — the live Pi Core does not expose pairing
 
 **Read-only live finding (2026-11-15).** The operator reported that Touch ID had already been
