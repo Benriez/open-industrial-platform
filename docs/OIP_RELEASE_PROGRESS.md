@@ -5232,6 +5232,34 @@ write was performed. Enabling Touch ID on this installation requires a Core buil
 and a successful first code login plus biometric pairing; that deployment remains forbidden by the
 current repository safety boundary.
 
+### Touch ID restart fix — Keychain fallback and session preflight (2026-11-16)
+
+The live operator session was established through the existing local tunnel. Pairing from the app
+succeeded and the server reported an authenticated session. The native credential store then exposed
+a separate direct-distribution issue: this installed ad-hoc-signed app has no Keychain access-group
+entitlement, so the data-protection Keychain rejected the add with `errSecMissingEntitlement`
+(`-34018`). The app now keeps the preferred biometric-protected data-protection Keychain for
+provisioned builds, and falls back on direct ad-hoc builds to the login Keychain with an ACL trusting
+only the installed OIP executable. LocalAuthentication is still evaluated before every credential
+read. The fallback does not claim Keychain-enforced biometric protection; that requires a properly
+team-signed build with its keychain entitlement.
+
+A second restart defect was in startup ordering. With no browser cookie after app restart, the client
+requested `/api/v2/organizations` before checking `/api/v2/browser/session`; the expected 403 was
+rendered as “Server nicht erreichbar”, hiding both login options. Startup now checks the session first,
+clears authorized display state and opens the login panel directly when the session is unauthenticated.
+The existing login view discovers the installed Keychain item and offers “Mit Touch ID anmelden”.
+
+**Verified:** release macOS build succeeded with
+`OIP_API_URL=http://127.0.0.1:18848`; the built and installed executable hashes both equal
+`fd91210a62970a0b6a67797afdb9362d4e60a694e7cf518f5d91807dc3188704`; strict code-signature
+verification passed. The installed app was restarted and its startup now begins with the session
+preflight against the live tunnel (`/api/v2/browser/session` returns 200 with `authenticated:false`).
+No one-time code was generated during the restart check. Touch ID read and biometric approval still
+require the operator's physical fingerprint, so a post-restart biometric acceptance is not claimed.
+The pre-existing login-keychain fallback and session cookie remain local to this Mac; no Core deploy,
+host change, push, store release, personal database write, or device write was performed.
+
 ## 5. Evidence index
 
 | Artifact | Content |

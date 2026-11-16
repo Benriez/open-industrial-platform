@@ -135,7 +135,8 @@ class OipController extends ChangeNotifier {
     }
     await _completeLogin(session);
     if (touchIdWarning != null) {
-      error = 'Angemeldet, aber Touch ID wurde nicht eingerichtet: $touchIdWarning';
+      error =
+          'Angemeldet, aber Touch ID wurde nicht eingerichtet: $touchIdWarning';
       notifyListeners();
     }
   }
@@ -143,9 +144,8 @@ class OipController extends ChangeNotifier {
   /// Pairs a random credential stored behind this Mac's biometric policy.
   /// The credential itself is never persisted by Flutter or the Core.
   Future<void> enableTouchId() async {
-    final boundary = api is TouchIdManagementApi
-        ? api as TouchIdManagementApi
-        : null;
+    final boundary =
+        api is TouchIdManagementApi ? api as TouchIdManagementApi : null;
     if (boundary == null) throw const ApiFailure('Touch ID nicht verfügbar.');
     final credential = await createTouchIdCredential();
     if (credential == null) throw const ApiFailure('Touch ID nicht verfügbar.');
@@ -163,9 +163,8 @@ class OipController extends ChangeNotifier {
   }
 
   Future<void> loginWithTouchId() async {
-    final boundary = api is TouchIdManagementApi
-        ? api as TouchIdManagementApi
-        : null;
+    final boundary =
+        api is TouchIdManagementApi ? api as TouchIdManagementApi : null;
     if (boundary == null) throw const ApiFailure('Touch ID nicht verfügbar.');
     final credential = await readTouchIdCredential();
     if (credential == null) {
@@ -193,7 +192,7 @@ class OipController extends ChangeNotifier {
     String? failure;
     try {
       if (boundary != null) await boundary.logout();
-    _sessionPrincipal = null;
+      _sessionPrincipal = null;
     } catch (exception) {
       failure = apiErrorMessage(exception,
           'Lokale Ansicht abgemeldet. Die serverseitige Abmeldung ist nicht bestätigt; die Sitzung läuft spätestens nach 30 Minuten ab.');
@@ -285,6 +284,8 @@ class OipController extends ChangeNotifier {
         notifyListeners();
 
         if (_transport != _TransportMode.legacyDemo) {
+          if (!await _preflightBrowserSession()) return;
+          if (_closed || epoch != _epoch) return;
           try {
             infrastructure.markLoading();
             final bootstrap = await api.infrastructureBootstrap();
@@ -375,6 +376,51 @@ class OipController extends ChangeNotifier {
         await Future<void>.delayed(retryDelay * (1 << attempt.clamp(0, 3)));
         attempt++;
       }
+    }
+  }
+
+  /// Check identity before requesting protected tenant data. On a fresh app
+  /// launch the session can be absent even though the API itself is healthy;
+  /// treating that 403 as a connection failure hides the login and Touch ID
+  /// controls behind an endless reconnect state.
+  Future<bool> _preflightBrowserSession() async {
+    final boundary = management;
+    if (boundary == null) return true;
+    try {
+      final session = await boundary.session();
+      if (session.mode == 'explicit_legacy_demo') return true;
+      if (!session.authenticated) {
+        api.disconnect();
+        _sessionPrincipal = null;
+        snapshot = null;
+        _authorizedSnapshot = null;
+        history.clear();
+        telemetryKey = null;
+        operationalSources = const [];
+        operationalEvents = const [];
+        final unauthenticated = const ApiFailure(
+          'Für diese Installation ist eine Operator-Anmeldung erforderlich.',
+          code: 'UNAUTHENTICATED',
+          path: '/api/v2/browser/session',
+          statusCode: 401,
+        );
+        infrastructure.markIdentityFailure(unauthenticated);
+        connection = 'login_required';
+        error = null;
+        notifyListeners();
+        return false;
+      }
+      _sessionPrincipal = session.principalId;
+      return true;
+    } on ApiFailure catch (exception) {
+      // Older explicit demo cores do not implement browser sessions. Preserve
+      // the existing version negotiation for those cores.
+      if (exception.statusCode == 404 ||
+          exception.statusCode == 405 ||
+          exception.code == 'UNSUPPORTED') {
+        return true;
+      }
+      rethrow;
     }
   }
 
@@ -584,11 +630,14 @@ class OipController extends ChangeNotifier {
     }
     final groups = <String, List<Observation>>{};
     for (final item in value.metrics) {
-      if (item.sourceId == null || item.number == null || item.sourceMs == null) {
+      if (item.sourceId == null ||
+          item.number == null ||
+          item.sourceMs == null) {
         continue;
       }
       groups
-          .putIfAbsent('${item.sourceId}|${item.entityId}|${item.metricId}', () => [])
+          .putIfAbsent(
+              '${item.sourceId}|${item.entityId}|${item.metricId}', () => [])
           .add(item);
     }
     if (groups.isEmpty) return value.metrics.firstOrNull;

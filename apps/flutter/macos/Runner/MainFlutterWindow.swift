@@ -324,10 +324,8 @@ private enum TouchIdKeychain {
       readCredential(result: result)
     case "deleteCredential":
       let context = LAContext()
-      var query = baseQuery
-      query[kSecUseAuthenticationContext as String] = context
-      let status = SecItemDelete(query as CFDictionary)
-      result(status == errSecSuccess || status == errSecItemNotFound ? nil : keychainError(status))
+      let status = deleteCredentials(context: context)
+      result(status == errSecSuccess ? nil : keychainError(status))
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -339,11 +337,23 @@ private enum TouchIdKeychain {
      kSecAttrAccount as String: account]
   }
 
+  private static func query(dataProtection: Bool) -> [String: Any] {
+    var query = baseQuery
+    if #available(macOS 10.15, *) {
+      query[kSecUseDataProtectionKeychain as String] = dataProtection
+    }
+    return query
+  }
+
   /// Check presence without revealing the Keychain value or prompting for
   /// biometrics. A protected item can report interaction-not-allowed here and
   /// still be usable by the explicit biometric read method.
   private static func credentialExists() -> Bool {
-    var query = baseQuery
+    credentialExists(dataProtection: true) || credentialExists(dataProtection: false)
+  }
+
+  private static func credentialExists(dataProtection: Bool) -> Bool {
+    var query = query(dataProtection: dataProtection)
     query[kSecReturnAttributes as String] = true
     query[kSecMatchLimit as String] = kSecMatchLimitOne
     query[kSecUseAuthenticationUI as String] = kSecUseAuthenticationUIFail
@@ -378,18 +388,28 @@ private enum TouchIdKeychain {
           result(FlutterError(code: "KEYCHAIN_POLICY_FAILED", message: "Touch-ID-Keychain konnte nicht vorbereitet werden.", details: nil))
           return
         }
-        var oldItem = baseQuery
-        oldItem[kSecUseAuthenticationContext as String] = context
-        let oldStatus = SecItemDelete(oldItem as CFDictionary)
-        guard oldStatus == errSecSuccess || oldStatus == errSecItemNotFound else {
-          result(keychainError(oldStatus))
+        let deleteStatus = deleteCredentials(context: context)
+        guard deleteStatus == errSecSuccess else {
+          result(keychainError(deleteStatus))
           return
         }
-        var item = baseQuery
+
+        // A Team-signed build with a provisioning profile uses the data
+        // protection Keychain and enforces biometryCurrentSet on the item. The
+        // direct Mac build is ad-hoc signed, so it has no application-identifier
+        // or keychain-access-groups entitlement; macOS rejects that store with
+        // errSecMissingEntitlement (-34018). For that build, keep the credential
+        // in the traditional login Keychain behind an app-executable ACL. This
+        // method has already authenticated with Touch ID, and every later read
+        // does the same before retrieving the credential.
+        var item = query(dataProtection: true)
         item[kSecValueData as String] = secret
         item[kSecAttrAccessControl as String] = access
         item[kSecUseAuthenticationContext as String] = context
-        let status = SecItemAdd(item as CFDictionary, nil)
+        let protectedStatus = SecItemAdd(item as CFDictionary, nil)
+        let status = protectedStatus == errSecMissingEntitlement || protectedStatus == errSecParam
+            ? addFileKeychainCredential(secret)
+            : protectedStatus
         guard status == errSecSuccess else {
           result(keychainError(status))
           return
@@ -397,6 +417,32 @@ private enum TouchIdKeychain {
         result(secret.map { String(format: "%02x", $0) }.joined())
       }
     }
+  }
+
+  /// File-based Keychain fallback for the ad-hoc direct build. Only this
+  /// installed executable is trusted by the item's ACL.
+  private static func addFileKeychainCredential(_ secret: Data) -> OSStatus {
+    guard let executablePath = Bundle.main.executableURL?.path else { return errSecParam }
+    var trustedApplication: SecTrustedApplication?
+    let trustedStatus = executablePath.withCString {
+      SecTrustedApplicationCreateFromPath($0, &trustedApplication)
+    }
+    guard trustedStatus == errSecSuccess, let trustedApplication else {
+      return trustedStatus
+    }
+
+    var access: SecAccess?
+    let accessStatus = SecAccessCreate(
+      "Open Industrial Platform Touch ID" as CFString,
+      [trustedApplication] as CFArray,
+      &access
+    )
+    guard accessStatus == errSecSuccess, let access else { return accessStatus }
+
+    var item = query(dataProtection: false)
+    item[kSecValueData as String] = secret
+    item[kSecAttrAccess as String] = access
+    return SecItemAdd(item as CFDictionary, nil)
   }
 
   private static func readCredential(result: @escaping FlutterResult) {
@@ -412,19 +458,47 @@ private enum TouchIdKeychain {
           result(FlutterError(code: "TOUCH_ID_CANCELLED", message: error?.localizedDescription ?? "Touch ID wurde abgebrochen.", details: nil))
           return
         }
-        var query = baseQuery
-        query[kSecReturnData as String] = true
-        query[kSecMatchLimit as String] = kSecMatchLimitOne
-        query[kSecUseAuthenticationContext as String] = context
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
-        guard status == errSecSuccess, let secret = item as? Data else {
-          result(keychainError(status))
+        let protected = readItem(dataProtection: true, context: context)
+        let fileBased: (data: Data?, status: OSStatus) = protected.data == nil
+            ? readItem(dataProtection: false, context: context)
+            : (data: nil, status: errSecItemNotFound)
+        guard let secret = protected.data ?? fileBased.data else {
+          result(keychainError(fileBased.data == nil ? fileBased.status : protected.status))
           return
         }
         result(secret.map { String(format: "%02x", $0) }.joined())
       }
     }
+  }
+
+  private static func readItem(dataProtection: Bool, context: LAContext) -> (data: Data?, status: OSStatus) {
+    var query = query(dataProtection: dataProtection)
+    query[kSecReturnData as String] = true
+    query[kSecMatchLimit as String] = kSecMatchLimitOne
+    query[kSecUseAuthenticationContext as String] = context
+    if !dataProtection {
+      query[kSecUseAuthenticationUI as String] = kSecUseAuthenticationUIFail
+    }
+    var item: CFTypeRef?
+    let status = SecItemCopyMatching(query as CFDictionary, &item)
+    return (item as? Data, status)
+  }
+
+  private static func deleteCredentials(context: LAContext) -> OSStatus {
+    let protectedStatus = deleteItem(dataProtection: true, context: context)
+    let fileStatus = deleteItem(dataProtection: false, context: context)
+    for status in [protectedStatus, fileStatus] {
+      if status != errSecSuccess && status != errSecItemNotFound && status != errSecMissingEntitlement {
+        return status
+      }
+    }
+    return errSecSuccess
+  }
+
+  private static func deleteItem(dataProtection: Bool, context: LAContext) -> OSStatus {
+    var query = query(dataProtection: dataProtection)
+    query[kSecUseAuthenticationContext as String] = context
+    return SecItemDelete(query as CFDictionary)
   }
 
   private static func keychainError(_ status: OSStatus) -> FlutterError {
