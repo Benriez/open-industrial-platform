@@ -138,10 +138,100 @@ private final class OIPPiTunnelManager: NSObject {
         if self.process?.isRunning == true {
           if self.failedProbes >= 2 { self.restartTunnel() }
         } else {
-          self.launchTunnel()
+          self.recoverOrphanedTunnelThenLaunch()
         }
       }
     }.resume()
+  }
+
+  /// A previous app crash can leave its SSH child reparented to launchd. The
+  /// new app instance has no Process handle for that child, so simply starting
+  /// another forward fails with EADDRINUSE forever. Reclaim only a listener on
+  /// our exact local port whose full SSH command line matches this app's
+  /// configured host and remote Core port.
+  private func recoverOrphanedTunnelThenLaunch() {
+    guard !stopping, Date().timeIntervalSince(lastStart) >= 5 else { return }
+    let lsof = Process()
+    lsof.executableURL = URL(fileURLWithPath: "/usr/sbin/lsof")
+    lsof.arguments = ["-nP", "-t", "-iTCP:\(localPort)", "-sTCP:LISTEN"]
+    let output = Pipe()
+    lsof.standardOutput = output
+    lsof.standardError = FileHandle.nullDevice
+    do {
+      try lsof.run()
+      lsof.waitUntilExit()
+    } catch {
+      log("could not inspect local tunnel listener: \(error.localizedDescription)")
+      launchTunnel()
+      return
+    }
+
+    let bytes = output.fileHandleForReading.readDataToEndOfFile()
+    let listenerPids = String(data: bytes, encoding: .utf8)?
+      .split(whereSeparator: \.isNewline)
+      .compactMap { Int32($0) } ?? []
+    guard !listenerPids.isEmpty else {
+      launchTunnel()
+      return
+    }
+
+    let expectedForward = "127.0.0.1:\(localPort):127.0.0.1:\(remotePort)"
+    var reclaimed = false
+    for pid in listenerPids where pid != ProcessInfo.processInfo.processIdentifier {
+      guard let command = processCommandLine(pid: pid),
+            isOwnedTunnelCommand(command, forward: expectedForward) else {
+        log("port \(localPort) is held by an unrelated process; leaving it untouched")
+        continue
+      }
+      log("reclaiming orphaned OIP SSH forward (pid \(pid)) after failed Core probes")
+      let terminate = Process()
+      terminate.executableURL = URL(fileURLWithPath: "/bin/kill")
+      terminate.arguments = ["-TERM", "\(pid)"]
+      terminate.standardOutput = FileHandle.nullDevice
+      terminate.standardError = FileHandle.nullDevice
+      do {
+        try terminate.run()
+        terminate.waitUntilExit()
+        reclaimed = true
+      } catch {
+        log("could not stop orphaned OIP SSH forward (pid \(pid)): \(error.localizedDescription)")
+      }
+    }
+
+    guard reclaimed else { return }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+      self?.launchTunnel()
+    }
+  }
+
+  private func processCommandLine(pid: Int32) -> String? {
+    let command = Process()
+    command.executableURL = URL(fileURLWithPath: "/bin/ps")
+    command.arguments = ["-p", "\(pid)", "-o", "command="]
+    let output = Pipe()
+    command.standardOutput = output
+    command.standardError = FileHandle.nullDevice
+    do {
+      try command.run()
+      command.waitUntilExit()
+    } catch {
+      return nil
+    }
+    return String(data: output.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8)?
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  private func isOwnedTunnelCommand(_ command: String, forward: String) -> Bool {
+    let arguments = command.split(whereSeparator: \.isWhitespace).map(String.init)
+    guard arguments.count >= 2,
+          arguments[0] == "/usr/bin/ssh",
+          arguments.contains("-N"),
+          arguments.contains("-L"),
+          arguments.contains(forward),
+          arguments.last == host else {
+      return false
+    }
+    return true
   }
 
   private func launchTunnel() {
