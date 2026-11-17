@@ -82,17 +82,51 @@ private final class OIPPiTunnelManager: NSObject {
   private let tunnelLabel = "com.oip.platform-tunnel"
   private let watchdogLabel = "com.oip.platform-tunnel-watchdog"
   private var agentsConfigured = false
+  private var tunnelMonitor: DispatchSourceTimer?
 
   func startIfEnabled() {
     guard Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelEnabled") as? Bool == true else {
       return
     }
-    ensureLaunchAgents()
+    guard removeObsoleteAgents() else { return }
+    guard let tunnelPlist = writeTunnelAgent() else { return }
+
+    var request = URLRequest(
+      url: URL(string: "http://127.0.0.1:\(localPort)/api/v2/browser/session")!,
+      timeoutInterval: 2.5
+    )
+    request.httpMethod = "GET"
+    URLSession.shared.dataTask(with: request) { [weak self] _, response, _ in
+      guard let self else { return }
+      let status = (response as? HTTPURLResponse)?.statusCode
+      DispatchQueue.main.async {
+        if status == 200 || self.localPortIsListening() {
+          self.log("reusing existing local OIP tunnel on :\(self.localPort) (HTTP \(status.map { String($0) } ?? "no response"))")
+        } else {
+          self.startManagedTunnel(tunnelPlist)
+        }
+        self.monitorTunnelIfNeeded(tunnelPlist)
+      }
+    }.resume()
   }
 
-  private func ensureLaunchAgents() {
-    guard !agentsConfigured else { return }
+  private func removeObsoleteAgents() -> Bool {
     let domain = "gui/\(getuid())"
+    let home = FileManager.default.homeDirectoryForCurrentUser
+    let launchAgents = home.appendingPathComponent("Library/LaunchAgents", isDirectory: true)
+    for label in [tunnelLabel, watchdogLabel] where launchAgentIsLoaded(domain: domain, label: label) {
+      guard runLaunchctl(["bootout", "\(domain)/\(label)"]) else {
+        log("could not unload existing OIP LaunchAgent \(label)")
+        return false
+      }
+    }
+    // Older releases used an HTTP watchdog that killed a healthy SSH process
+    // after a slow API response. It is no longer part of tunnel recovery.
+    try? FileManager.default.removeItem(at: launchAgents.appendingPathComponent("\(watchdogLabel).plist"))
+    return true
+  }
+
+  private func writeTunnelAgent() -> URL? {
     let home = FileManager.default.homeDirectoryForCurrentUser
     let launchAgents = home.appendingPathComponent("Library/LaunchAgents", isDirectory: true)
     let logs = home.appendingPathComponent("Library/Logs/OIP", isDirectory: true)
@@ -100,22 +134,8 @@ private final class OIPPiTunnelManager: NSObject {
       try FileManager.default.createDirectory(at: launchAgents, withIntermediateDirectories: true)
       try FileManager.default.createDirectory(at: logs, withIntermediateDirectories: true)
       let tunnelPlist = launchAgents.appendingPathComponent("\(tunnelLabel).plist")
-      let watchdogPlist = launchAgents.appendingPathComponent("\(watchdogLabel).plist")
       let tunnelLog = logs.appendingPathComponent("platform-tunnel.log").path
       let tunnelError = logs.appendingPathComponent("platform-tunnel.err").path
-      for label in [tunnelLabel, watchdogLabel] where launchAgentIsLoaded(domain: domain, label: label) {
-        guard runLaunchctl(["bootout", "\(domain)/\(label)"]) else {
-          log("could not unload existing OIP LaunchAgent \(label)")
-          return
-        }
-      }
-      // Older releases used an HTTP watchdog that killed the whole SSH tunnel
-      // after a few slow API responses. This reset unrelated API and SSE
-      // connections and could make a transient server delay look like an
-      // outage. Remove its stale job after unloading it; transport keepalives
-      // and launchd now own recovery.
-      try? FileManager.default.removeItem(at: watchdogPlist)
-
       try writePropertyList([
         "Label": tunnelLabel,
         "ProgramArguments": [
@@ -137,12 +157,47 @@ private final class OIPPiTunnelManager: NSObject {
         "StandardOutPath": tunnelLog,
         "StandardErrorPath": tunnelError,
       ], to: tunnelPlist)
-
-      let tunnelStarted = runLaunchctl(["bootstrap", domain, tunnelPlist.path])
-      agentsConfigured = tunnelStarted
-      log("configured managed Pi tunnel (local :\(localPort), remote :\(remotePort)); launchd tunnel=\(tunnelStarted); HTTP watchdog disabled")
+      return tunnelPlist
     } catch {
       log("could not configure managed Pi tunnel: \(error.localizedDescription)")
+      return nil
+    }
+  }
+
+  private func startManagedTunnel(_ tunnelPlist: URL) {
+    guard !agentsConfigured else { return }
+    let domain = "gui/\(getuid())"
+    let tunnelStarted = runLaunchctl(["bootstrap", domain, tunnelPlist.path])
+    agentsConfigured = tunnelStarted || launchAgentIsLoaded(domain: domain, label: tunnelLabel)
+    log("started managed Pi tunnel (local :\(localPort), remote :\(remotePort)); launchd=\(agentsConfigured)")
+  }
+
+  private func monitorTunnelIfNeeded(_ tunnelPlist: URL) {
+    guard tunnelMonitor == nil else { return }
+    let timer = DispatchSource.makeTimerSource(queue: .global(qos: .utility))
+    timer.schedule(deadline: .now() + 10, repeating: 10, leeway: .seconds(2))
+    timer.setEventHandler { [weak self] in
+      guard let self, !self.localPortIsListening() else { return }
+      DispatchQueue.main.async { [weak self] in
+        self?.startManagedTunnel(tunnelPlist)
+      }
+    }
+    timer.resume()
+    tunnelMonitor = timer
+  }
+
+  private func localPortIsListening() -> Bool {
+    let probe = Process()
+    probe.executableURL = URL(fileURLWithPath: "/usr/bin/nc")
+    probe.arguments = ["-z", "-G", "1", "127.0.0.1", String(localPort)]
+    probe.standardOutput = FileHandle.nullDevice
+    probe.standardError = FileHandle.nullDevice
+    do {
+      try probe.run()
+      probe.waitUntilExit()
+      return probe.terminationStatus == 0
+    } catch {
+      return false
     }
   }
 

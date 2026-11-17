@@ -31,7 +31,7 @@
 	<key>OIPPiTunnelHost</key>
 	<string>bodi-pi</string>
 	<key>OIPPiTunnelLocalPort</key>
-	<integer>18859</integer>
+	<integer>18855</integer>
 	<key>OIPPiTunnelRemotePort</key>
 	<integer>18808</integer>
 	<key>OIPGitHubRepository</key>
