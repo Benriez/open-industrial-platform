@@ -638,11 +638,11 @@ pub async fn authenticate(
 const QUERY: &str = r#"PATH=/usr/bin:/bin:/usr/sbin:/sbin; export PATH
 LC_ALL=C; export LC_ALL
 printf '\n__OIP_OS__\n'; uname -s
-printf '\n__OIP_HOSTNAME__\n'; hostname
+printf '\n__OIP_HOSTNAME__\n'; if command -v hostname >/dev/null 2>&1; then hostname; elif [ -r /proc/sys/kernel/hostname ]; then cat /proc/sys/kernel/hostname; fi
 printf '\n__OIP_ARCH__\n'; uname -m
 case "$(uname -s)" in
  Linux)
- printf '\n__OIP_CPU__\n'; sed -n 's/^model name[[:space:]]*: //p;s/^Hardware[[:space:]]*: //p' /proc/cpuinfo | head -n 1
+ printf '\n__OIP_CPU__\n'; sed -n 's/^model name[[:space:]]*: //p;s/^Hardware[[:space:]]*: //p;s/^system type[[:space:]]*: //p;s/^cpu model[[:space:]]*: //p' /proc/cpuinfo | head -n 1
  printf '\n__OIP_MODEL__\n'; if [ -r /proc/device-tree/model ]; then tr '\000' ' ' </proc/device-tree/model; elif [ -r /sys/class/dmi/id/product_name ]; then cat /sys/class/dmi/id/product_name; fi
  printf '\n__OIP_MEMORY__\n'; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo
  printf '\n__OIP_UPTIME__\n'; cat /proc/uptime
@@ -684,7 +684,7 @@ case "$(uname -s)" in
  ;;
  *) printf 'OIP_UNSUPPORTED_OS\n' >&2; exit 42 ;;
 esac
-printf '\n__OIP_DISKS__\n'; df -Pkl
+printf '\n__OIP_DISKS__\n'; df -Pk
 printf '\n__OIP_END__\n'
 "#;
 pub async fn collect(
