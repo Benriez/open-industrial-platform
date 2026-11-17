@@ -62,7 +62,9 @@ class _NetworkPageState extends State<NetworkPage> {
   bool neighborsOnly = false;
   bool showEdgeLabels = true;
   bool showFilters = false;
-  bool tabletExplorer = false;
+  // The registered-device explorer is the primary content when a narrower
+  // window cannot keep its desktop-side explorer alongside the workspace.
+  bool tabletExplorer = true;
   bool tabletInspector = false;
   Size graphViewport = Size.zero;
   bool fitRequested = true;
@@ -1496,13 +1498,16 @@ class _NetworkPageState extends State<NetworkPage> {
         Divider(height: 1, color: Theme.of(context).colorScheme.outlineVariant),
         Expanded(
           child: visible.isEmpty
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: WorkstationNote('Keine gelieferten Pfade im Filter',
-                        'Suche oder Filter ändern. Ein leeres Ergebnis wird nicht als Offline-Zustand interpretiert.'),
-                  ),
-                )
+              ? edges.isEmpty && snapshot.devices.isNotEmpty
+                  ? _registeredDevicesWithoutPaths(snapshot)
+                  : const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: WorkstationNote(
+                            'Keine gelieferten Pfade im Filter',
+                            'Suche oder Filter ändern. Ein leeres Ergebnis wird nicht als Offline-Zustand interpretiert.'),
+                      ),
+                    )
               : ListView.separated(
                   key: const Key('connections-list'),
                   itemCount: visible.length,
@@ -1516,6 +1521,49 @@ class _NetworkPageState extends State<NetworkPage> {
       ]),
     );
   }
+
+  Widget _registeredDevicesWithoutPaths(Snapshot snapshot) => ListView(
+        key: const Key('network-registered-devices-without-paths'),
+        padding: const EdgeInsets.fromLTRB(18, 16, 18, 10),
+        children: [
+          NetworkSectionHeader(
+            'Registrierte Geräte',
+            '${snapshot.devices.length} Geräte · keine gelieferten Verbindungspfade',
+          ),
+          const SizedBox(height: 8),
+          NetworkHint(
+            snapshot.topologyDelivered
+                ? 'Topologiebeziehungen nicht geliefert'
+                : 'Topologie im Snapshot nicht enthalten',
+            snapshot.topologyDelivered
+                ? 'Die Geräte sind registriert. Der Core hat für diesen Kontext keine logischen Netzwerkbeziehungen geliefert; das bedeutet weder offline noch isoliert.'
+                : 'Die Geräte sind registriert. Der aktuelle Snapshot enthält keine Topologiebeziehungen; Erreichbarkeit oder Verbindung werden daraus nicht abgeleitet.',
+          ),
+          const NetworkDivider(),
+          for (final device in snapshot.devices)
+            ListTile(
+              key: Key('network-unlinked-device-${device.id}'),
+              contentPadding: EdgeInsets.zero,
+              leading:
+                  Icon(networkKindIcon(device.kind), color: OipTokens.cyan),
+              title: Text(device.name,
+                  maxLines: 1, overflow: TextOverflow.ellipsis),
+              subtitle: Text(
+                '${networkDeviceCategory(device.kind)} · ${device.location}',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: NetworkBadge(
+                transportLive
+                    ? known(device.health.reachability).toUpperCase()
+                    : 'DATEN VERALTET',
+                transportLive ? device.health.reachability : 'stale',
+                showDot: true,
+              ),
+              onTap: () => _selectFromExplorer(device),
+            ),
+        ],
+      );
 
   Widget _connectionFilter(String label, String? value, List<String> values,
       ValueChanged<String?> onChanged,
@@ -1623,9 +1671,7 @@ class _NetworkPageState extends State<NetworkPage> {
   }
 
   Widget _vpnWorkspace(Snapshot snapshot, List<NetworkEdge> edges) {
-    final reports = snapshot.devices
-        .where((device) => device.health.vpn != 'not_applicable')
-        .toList();
+    final devices = snapshot.devices;
     final logicalVpnPaths = edges
         .where((edge) => networkEdgeKind(edge.link).contains('VPN'))
         .toList();
@@ -1706,10 +1752,16 @@ class _NetworkPageState extends State<NetworkPage> {
           'DIAGNOSTICS · DELIVERED DEVICE HEALTH',
           Icons.troubleshoot_outlined,
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            if (reports.isEmpty)
-              const NetworkHint('Keine VPN-Felder gemeldet',
-                  'Es gibt keine darstellbaren Geräte-VPN-Zustände.'),
-            for (final device in reports)
+            if (devices.isEmpty)
+              const NetworkHint('Keine registrierten Geräte',
+                  'Der autorisierte Snapshot enthält aktuell kein Device-Inventar.'),
+            if (devices.isNotEmpty)
+              NetworkHint(
+                '${devices.length} registrierte Geräte',
+                'Die Liste stammt aus dem autorisierten Device-Inventar. VPN-Status wird pro Gerät nur angezeigt, wenn der Snapshot ihn liefert.',
+                status: 'info',
+              ),
+            for (final device in devices)
               ListTile(
                 key: Key('vpn-report-${device.id}'),
                 dense: true,
@@ -1717,8 +1769,14 @@ class _NetworkPageState extends State<NetworkPage> {
                 leading: Icon(networkKindIcon(device.kind), size: 20),
                 title: Text(device.name),
                 subtitle: Text(
-                    '${known(device.health.vpn)} · ${device.simulated ? 'Demo-Health' : 'API-Health'} · ${device.connection}'),
-                trailing: StatusDot(device.health.vpn),
+                    '${networkDeviceCategory(device.kind)} · ${device.location} · VPN: ${known(device.health.vpn)}'),
+                trailing: NetworkBadge(
+                  transportLive
+                      ? known(device.health.vpn).toUpperCase()
+                      : 'DATEN VERALTET',
+                  transportLive ? device.health.vpn : 'stale',
+                  showDot: true,
+                ),
                 onTap: () => _selectNodeFromInspector(device),
               ),
             for (final incident in snapshot.incidents)
