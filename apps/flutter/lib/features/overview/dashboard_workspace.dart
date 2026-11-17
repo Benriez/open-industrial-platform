@@ -10,23 +10,71 @@ import '../../models/contracts.dart';
 import '../../widgets/workstation.dart';
 import 'telemetry_chart.dart';
 
+part 'dashboard_visuals.dart';
+
 /// The visualisations of a dashboard panel. `value` is the stored name of the
 /// stat panel and stays readable for layouts saved by earlier versions.
-enum _PanelKind { gauge, value, bar, trend }
+enum _PanelKind {
+  gauge('Gauge', Icons.speed),
+  ring('Ring', Icons.donut_large),
+  value('Stat', Icons.pin_outlined),
+  bar('Balken', Icons.linear_scale),
+  tank('Füllstand', Icons.battery_std),
+  spark('Linie', Icons.area_chart),
+  bars('Säulen', Icons.bar_chart),
+  histogram('Histogramm', Icons.equalizer),
+  timeline('Zustand', Icons.view_timeline_outlined),
+  stats('Statistik', Icons.functions),
+  trend('Verlauf', Icons.show_chart),
+  table('Tabelle', Icons.table_rows_outlined),
+  compare('Vergleich', Icons.align_horizontal_left),
+  devices('Gerätestatus', Icons.grid_view),
+  heading('Abschnitt', Icons.title);
 
-const _kindLabels = {
-  _PanelKind.gauge: 'Gauge',
-  _PanelKind.value: 'Stat',
-  _PanelKind.bar: 'Balken',
-  _PanelKind.trend: 'Verlauf',
-};
+  final String label;
+  final IconData icon;
+  const _PanelKind(this.label, this.icon);
 
-const _kindIcons = {
-  _PanelKind.gauge: Icons.speed,
-  _PanelKind.value: Icons.pin_outlined,
-  _PanelKind.bar: Icons.linear_scale,
-  _PanelKind.trend: Icons.show_chart,
-};
+  /// Device status and section rows are not bound to a measurement.
+  bool get needsSignal => this != devices && this != heading;
+
+  /// Kinds whose picture depends on a display range or thresholds.
+  bool get usesScale =>
+      needsSignal && this != table && this != trend && this != stats;
+
+  /// Kinds that take the height of their content instead of the tile height.
+  bool get naturalHeight =>
+      this == trend ||
+      this == table ||
+      this == compare ||
+      this == devices ||
+      this == heading;
+
+  /// Columns a panel spans unless the user chose a width; 0 is the full row.
+  int get defaultSpan => switch (this) {
+        trend || heading || devices => 0,
+        table || compare => 2,
+        _ => 1,
+      };
+
+  String get hint => switch (this) {
+        gauge => 'Bogen mit Schwellenband',
+        ring => 'Geschlossener Ring',
+        value => 'Großer Wert mit Sparkline',
+        bar => 'Segmentierter Balken',
+        tank => 'Vertikaler Füllstand',
+        spark => 'Kompakte Flächenlinie der Sitzung',
+        bars => 'Sitzungswerte als Säulen',
+        histogram => 'Verteilung der Sitzungswerte',
+        timeline => 'Schwellen- oder Heat-Streifen über die Zeit',
+        stats => 'Aktuell, Ø, Min und Max der Sitzung',
+        trend => 'Interaktiver Verlauf in voller Breite',
+        table => 'Alle Signale des Geräts mit Balken',
+        compare => 'Dieselbe Metrik über alle Geräte',
+        devices => 'Erreichbarkeit aller Geräte im Kontext',
+        heading => 'Überschrift zum Gliedern',
+      };
+}
 
 const _layoutVersion = 2;
 const _sessionSamples = 120;
@@ -41,6 +89,12 @@ class _PanelSpec {
   final bool custom;
   final double? min, max, warn, crit;
 
+  /// Width in columns; null follows the kind, 0 is the full row.
+  final int? span;
+
+  /// The text of a section row.
+  final String? title;
+
   const _PanelSpec(
     this.observationKey,
     this.kind, {
@@ -49,10 +103,18 @@ class _PanelSpec {
     this.max,
     this.warn,
     this.crit,
+    this.span,
+    this.title,
   });
 
   _PanelSpec withKind(_PanelKind next) => _PanelSpec(observationKey, next,
-      custom: custom, min: min, max: max, warn: warn, crit: crit);
+      custom: custom,
+      min: min,
+      max: max,
+      warn: warn,
+      crit: crit,
+      span: span,
+      title: title);
 
   Map<String, Object> toJson() => {
         'observation': observationKey,
@@ -62,6 +124,8 @@ class _PanelSpec {
         if (max != null) 'max': max!,
         if (warn != null) 'warn': warn!,
         if (crit != null) 'crit': crit!,
+        if (span != null) 'span': span!,
+        if (title != null) 'title': title!,
       };
 
   static _PanelSpec? fromJson(Object? value) {
@@ -74,6 +138,8 @@ class _PanelSpec {
       return raw is num && raw.isFinite ? raw.toDouble() : null;
     }
 
+    final span = value['span'];
+    final title = value['title'];
     return _PanelSpec(
       observation,
       kind.first,
@@ -82,6 +148,8 @@ class _PanelSpec {
       max: number('max'),
       warn: number('warn'),
       crit: number('crit'),
+      span: span is int && span >= 0 && span <= 4 ? span : null,
+      title: title is String ? title : null,
     );
   }
 }
@@ -307,9 +375,79 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
   }
 
   static _PanelKind _defaultKind(Observation observation) =>
-      observation.unit == '%' || observation.unit == 'celsius'
-          ? _PanelKind.gauge
-          : _PanelKind.value;
+      switch (observation.unit) {
+        '%' => _PanelKind.gauge,
+        'celsius' => _PanelKind.tank,
+        _ => _PanelKind.value,
+      };
+
+  /// A starting layout built only from what this authorized context delivers:
+  /// the device status, then per device its signals in fitting visualisations,
+  /// a table of all its signals and one session line.
+  List<_PanelSpec> _autoLayout() {
+    final devices = controller.snapshot?.devices ?? const <Device>[];
+    final groups = <String, List<Observation>>{};
+    final seen = <String>{};
+    for (final item in observations) {
+      if (item.number == null || !seen.add(observationKey(item))) continue;
+      groups
+          .putIfAbsent('${item.sourceId ?? ''}\u001f${item.entityId}', () => [])
+          .add(item);
+    }
+    const percentKinds = [_PanelKind.gauge, _PanelKind.ring, _PanelKind.bar];
+    return [
+      if (devices.isNotEmpty) const _PanelSpec('', _PanelKind.devices),
+      for (final signals in groups.values.take(4)) ...[
+        if (groups.length > 1)
+          _PanelSpec('', _PanelKind.heading,
+              title: devices
+                      .where((device) => device.id == signals.first.entityId)
+                      .firstOrNull
+                      ?.name ??
+                  signals.first.entityId),
+        for (final (index, item) in signals.take(6).indexed)
+          _PanelSpec(
+              observationKey(item),
+              item.unit == '%'
+                  ? percentKinds[signals
+                          .take(index)
+                          .where((other) => other.unit == '%')
+                          .length %
+                      percentKinds.length]
+                  : _defaultKind(item)),
+        if (signals.length > 2)
+          _PanelSpec(observationKey(signals.first), _PanelKind.table),
+        _PanelSpec(
+            observationKey(
+                signals.where((item) => item.unit == '%').firstOrNull ??
+                    signals.first),
+            _PanelKind.spark),
+      ],
+    ];
+  }
+
+  Future<void> _applyAutoLayout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Auto-Layout anwenden?'),
+        content: const Text(
+            'Das aktuelle Layout dieses Kontexts wird durch ein automatisch '
+            'aus den gelieferten Geräten und Messpunkten erzeugtes ersetzt.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Abbrechen')),
+          FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Ersetzen')),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => panels = _autoLayout());
+    await _save();
+  }
 
   Future<void> _loadForCurrentScope() async {
     final key = currentStorageKey;
@@ -370,17 +508,9 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
         restored = [];
       }
     } else {
-      // First view is useful immediately, but only from measurements actually
+      // First view is useful immediately, but only from data actually
       // supplied by this authorized context.
-      final seen = <String>{};
-      for (final observation in observations) {
-        if (restored.length >= 6) break;
-        if (observation.number != null &&
-            seen.add(observationKey(observation))) {
-          restored.add(_PanelSpec(
-              observationKey(observation), _defaultKind(observation)));
-        }
-      }
+      restored = _autoLayout();
       store = true;
     }
     if (store) await preferences.setString(key, _encode(restored));
@@ -409,7 +539,6 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
 
   Future<void> _addPanel() async {
     final candidates = observations;
-    if (candidates.isEmpty) return;
     final selected = await showDialog<_PanelSpec>(
       context: context,
       builder: (context) => _AddPanelDialog(observations: candidates),
@@ -453,7 +582,7 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
       else if (panels.isEmpty)
         const WorkstationNote(
           'Noch keine Panels',
-          'Füge ein Live-Messsignal als Gauge, Stat, Balken oder Verlauf hinzu. Angezeigt werden nur Daten des aktuellen Infrastrukturkontexts.',
+          'Füge Panels hinzu oder wähle unter „Anpassen“ das Auto-Layout. Angezeigt werden nur Daten des aktuellen Infrastrukturkontexts.',
           icon: Icons.dashboard_customize_outlined,
         )
       else
@@ -481,13 +610,20 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
             children: [
               for (var index = 0; index < panels.length; index++)
                 SizedBox(
-                  width: panels[index].kind == _PanelKind.trend
-                      ? constraints.maxWidth
-                      : tileWidth,
+                  width: () {
+                    final span =
+                        panels[index].span ?? panels[index].kind.defaultSpan;
+                    return span == 0 || span >= effectiveColumns
+                        ? constraints.maxWidth
+                        : tileWidth * span + gap * (span - 1);
+                  }(),
                   child: _DashboardPanel(
                     observation: byKey[panels[index].observationKey],
                     spec: panels[index],
                     samples: session[panels[index].observationKey] ?? const [],
+                    all: observations,
+                    session: session,
+                    devices: controller.snapshot?.devices ?? const [],
                     editing: editing,
                     onRemove: () async {
                       setState(() => panels.removeAt(index));
@@ -548,6 +684,13 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
         );
         final controls = Wrap(spacing: 8, runSpacing: 8, children: [
           if (editing)
+            OutlinedButton.icon(
+              key: const Key('overview-dashboard-auto-layout'),
+              onPressed: _applyAutoLayout,
+              icon: const Icon(Icons.auto_awesome_mosaic_outlined, size: 17),
+              label: const Text('Auto-Layout'),
+            ),
+          if (editing)
             PopupMenuButton<int>(
               tooltip: 'Spaltenbreite',
               initialValue: columns,
@@ -585,8 +728,7 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
           ),
           FilledButton.icon(
             key: const Key('overview-dashboard-add-panel'),
-            onPressed:
-                activeKey == null || observations.isEmpty ? null : _addPanel,
+            onPressed: activeKey == null ? null : _addPanel,
             icon: const Icon(Icons.add, size: 17),
             label: const Text('Panel hinzufügen'),
           ),
@@ -712,6 +854,9 @@ class _DashboardPanel extends StatelessWidget {
   final Observation? observation;
   final _PanelSpec spec;
   final List<Observation> samples;
+  final List<Observation> all;
+  final Map<String, List<Observation>> session;
+  final List<Device> devices;
   final bool editing;
   final VoidCallback onRemove;
   final ValueChanged<int> onMove;
@@ -721,6 +866,9 @@ class _DashboardPanel extends StatelessWidget {
     required this.observation,
     required this.spec,
     required this.samples,
+    required this.all,
+    required this.session,
+    required this.devices,
     required this.editing,
     required this.onRemove,
     required this.onMove,
@@ -742,7 +890,8 @@ class _DashboardPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final item = observation;
-    final trend = spec.kind == _PanelKind.trend;
+    final kind = spec.kind;
+    final height = kind.naturalHeight ? null : _tileHeight;
     final actions = [
       if (editing) ...[
         _action('Panel nach vorne verschieben', Icons.chevron_left,
@@ -753,21 +902,53 @@ class _DashboardPanel extends StatelessWidget {
         _action('Panel entfernen', Icons.close, onRemove),
       ],
     ];
+    final parts = spec.observationKey.split('\u001f');
+
+    if (kind == _PanelKind.heading) {
+      return _HeadingPanel(
+          title: spec.title?.trim().isNotEmpty == true
+              ? spec.title!.trim()
+              : 'Abschnitt',
+          actions: actions);
+    }
+    if (kind == _PanelKind.devices) {
+      return _PanelFrame(
+        title: 'Gerätestatus',
+        subtitle: '${devices.length} Geräte · Erreichbarkeit laut Core',
+        actions: actions,
+        child: _DevicesBody(devices: devices),
+      );
+    }
+    if (kind == _PanelKind.compare) {
+      return _PanelFrame(
+        title: parts.last,
+        subtitle: 'Vergleich über Geräte',
+        actions: actions,
+        child: _CompareBody(spec: spec, metricId: parts.last, all: all),
+      );
+    }
     if (item == null) {
-      final parts = spec.observationKey.split('\u001f');
       return _PanelFrame(
         title: parts.last,
         subtitle: parts.length > 1 ? parts[1] : null,
         stateColor: OipTokens.statusColor(context, 'unknown'),
         badge: 'KEIN SIGNAL',
         actions: actions,
-        height: trend ? null : _tileHeight,
+        height: height,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
           child: Text(
               'Das konfigurierte Signal ist in diesem Kontext nicht verfügbar.',
               style: Theme.of(context).textTheme.bodySmall),
         ),
+      );
+    }
+    if (kind == _PanelKind.table) {
+      return _PanelFrame(
+        title: item.entityId,
+        subtitle: item.sourceId ?? 'Quelle nicht angegeben',
+        actions: actions,
+        child: _TableBody(anchor: item, all: all, session: session),
       );
     }
 
@@ -784,7 +965,7 @@ class _DashboardPanel extends StatelessWidget {
         : _levelColor(context, scale.level(number));
 
     final Widget body;
-    if (trend) {
+    if (kind == _PanelKind.trend) {
       body = Padding(
         padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
         child: Column(
@@ -820,11 +1001,28 @@ class _DashboardPanel extends StatelessWidget {
                 ?.copyWith(color: OipTokens.muted(context))),
       );
     } else {
-      body = switch (spec.kind) {
-        _PanelKind.gauge =>
-          _GaugeBody(item: item, value: number, scale: scale, color: color),
+      body = switch (kind) {
+        _PanelKind.gauge || _PanelKind.ring => _GaugeBody(
+            item: item,
+            value: number,
+            scale: scale,
+            color: color,
+            ring: kind == _PanelKind.ring),
         _PanelKind.bar =>
           _BarBody(item: item, value: number, scale: scale, color: color),
+        _PanelKind.tank =>
+          _TankBody(item: item, value: number, scale: scale, color: color),
+        _PanelKind.spark || _PanelKind.bars => _SeriesBody(
+            item: item,
+            samples: samples,
+            color: color,
+            bars: kind == _PanelKind.bars),
+        _PanelKind.histogram =>
+          _HistogramBody(item: item, samples: samples, color: color),
+        _PanelKind.timeline => _TimelineBody(
+            item: item, samples: samples, scale: scale, color: color),
+        _PanelKind.stats =>
+          _StatsBody(item: item, value: number, samples: samples, color: color),
         _ => _StatBody(item: item, samples: samples, color: color),
       };
     }
@@ -838,7 +1036,7 @@ class _DashboardPanel extends StatelessWidget {
       stateColor: stateColor,
       badge: fresh ? null : item.freshness.toUpperCase(),
       actions: actions,
-      height: trend ? null : _tileHeight,
+      height: height,
       child: body,
     );
   }
@@ -885,11 +1083,13 @@ class _GaugeBody extends StatelessWidget {
   final double value;
   final _Scale scale;
   final Color color;
+  final bool ring;
   const _GaugeBody({
     required this.item,
     required this.value,
     required this.scale,
     required this.color,
+    this.ring = false,
   });
 
   @override
@@ -905,6 +1105,7 @@ class _GaugeBody extends StatelessWidget {
               Positioned.fill(
                 child: CustomPaint(
                   painter: _GaugePainter(
+                    ring: ring,
                     fraction: scale.fraction(value),
                     color: color,
                     track: WorkstationTokens.hairline(context),
@@ -920,9 +1121,10 @@ class _GaugeBody extends StatelessWidget {
                 ),
               ),
               Align(
-                alignment: const Alignment(0, .5),
+                alignment: Alignment(0, ring ? 0 : .5),
                 child: SizedBox(
-                  width: math.min(box.maxWidth, box.maxHeight * 1.3) * .56,
+                  width: math.min(box.maxWidth, box.maxHeight * 1.3) *
+                      (ring ? .42 : .56),
                   child: _ValueText(
                       item: item,
                       color: color,
@@ -965,13 +1167,17 @@ List<({double from, double to, int? level})> _bands(_Scale scale) {
 }
 
 class _GaugePainter extends CustomPainter {
-  static const _start = math.pi * 5 / 6; // 150°
-  static const _sweep = math.pi * 4 / 3; // 240°
+  /// A ring is a closed circle starting at twelve o'clock; the gauge is a
+  /// 240° arc starting at 150°.
+  final bool ring;
+  double get _start => ring ? -math.pi / 2 : math.pi * 5 / 6;
+  double get _sweep => ring ? math.pi * 2 : math.pi * 4 / 3;
 
   final double fraction;
   final Color color, track;
   final List<({double from, double to, Color color})> bands;
   const _GaugePainter({
+    this.ring = false,
     required this.fraction,
     required this.color,
     required this.track,
@@ -982,12 +1188,15 @@ class _GaugePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (size.width <= 0 || size.height <= 0) return;
     // The 240° arc is 2r wide and 1.5r high.
-    final outer = math.min(size.width / 2, size.height / 1.5) - 1;
+    final outer = ring
+        ? math.min(size.width, size.height) / 2 - 1
+        : math.min(size.width / 2, size.height / 1.5) - 1;
     if (outer < 12) return;
     final thickness = (outer * .2).clamp(6.0, 18.0);
     const band = 3.0;
-    final center =
-        Offset(size.width / 2, (size.height - outer * 1.5) / 2 + outer);
+    final center = ring
+        ? size.center(Offset.zero)
+        : Offset(size.width / 2, (size.height - outer * 1.5) / 2 + outer);
     final bandRect = Rect.fromCircle(center: center, radius: outer - band / 2);
     final valueRadius = outer - band - 3 - thickness / 2;
     final valueRect = Rect.fromCircle(center: center, radius: valueRadius);
@@ -1027,6 +1236,7 @@ class _GaugePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _GaugePainter old) =>
+      old.ring != ring ||
       old.fraction != fraction ||
       old.color != color ||
       old.track != track ||
@@ -1248,19 +1458,32 @@ class _LiveIndicator extends StatelessWidget {
       );
 }
 
-Widget _kindSelector(_PanelKind kind, ValueChanged<_PanelKind> onChanged) =>
-    SegmentedButton<_PanelKind>(
-      showSelectedIcon: false,
-      segments: [
-        for (final value in _PanelKind.values)
-          ButtonSegment(
-              value: value,
-              icon: Icon(_kindIcons[value], size: 16),
-              label: Text(_kindLabels[value]!)),
-      ],
-      selected: {kind},
-      onSelectionChanged: (value) => onChanged(value.first),
-    );
+/// The visualisation picker: every kind as a chip with its icon.
+class _KindPicker extends StatelessWidget {
+  final _PanelKind kind;
+  final ValueChanged<_PanelKind> onChanged;
+  const _KindPicker({required this.kind, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(spacing: 6, runSpacing: 6, children: [
+            for (final value in _PanelKind.values)
+              ChoiceChip(
+                showCheckmark: false,
+                visualDensity: VisualDensity.compact,
+                avatar: Icon(value.icon, size: 16),
+                label: Text(value.label),
+                selected: value == kind,
+                onSelected: (_) => onChanged(value),
+              ),
+          ]),
+          const SizedBox(height: 8),
+          Text(kind.hint, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      );
+}
 
 class _AddPanelDialog extends StatefulWidget {
   final List<Observation> observations;
@@ -1273,6 +1496,13 @@ class _AddPanelDialog extends StatefulWidget {
 class _AddPanelDialogState extends State<_AddPanelDialog> {
   String? selectedKey;
   _PanelKind kind = _PanelKind.gauge;
+  final title = TextEditingController();
+
+  @override
+  void dispose() {
+    title.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1284,40 +1514,63 @@ class _AddPanelDialogState extends State<_AddPanelDialog> {
     return AlertDialog(
       title: const Text('Dashboard-Panel hinzufügen'),
       content: SizedBox(
-          width: 460,
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            DropdownButtonFormField<String>(
-              value: selectedKey,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Live-Messsignal'),
-              items: choices.entries
-                  .map((entry) => DropdownMenuItem(
-                        value: entry.key,
-                        child: Text(
-                            '${entry.value.sourceId ?? 'Quelle'} · ${entry.value.entityId} · ${entry.value.metricId}',
-                            overflow: TextOverflow.ellipsis),
-                      ))
-                  .toList(),
-              onChanged: (value) => setState(() => selectedKey = value),
-            ),
-            const SizedBox(height: 14),
-            _kindSelector(kind, (value) => setState(() => kind = value)),
-          ])),
+          width: 520,
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _KindPicker(
+                    kind: kind,
+                    onChanged: (value) => setState(() => kind = value)),
+                const SizedBox(height: 14),
+                if (kind == _PanelKind.heading)
+                  TextField(
+                    controller: title,
+                    decoration: const InputDecoration(labelText: 'Überschrift'),
+                  )
+                else if (!kind.needsSignal)
+                  Text('Dieses Panel benötigt kein Messsignal.',
+                      style: Theme.of(context).textTheme.bodySmall)
+                else if (choices.isEmpty)
+                  Text('Dieser Kontext liefert derzeit keine Messsignale.',
+                      style: Theme.of(context).textTheme.bodySmall)
+                else
+                  DropdownButtonFormField<String>(
+                    value: selectedKey,
+                    isExpanded: true,
+                    decoration:
+                        const InputDecoration(labelText: 'Live-Messsignal'),
+                    items: choices.entries
+                        .map((entry) => DropdownMenuItem(
+                              value: entry.key,
+                              child: Text(
+                                  '${entry.value.sourceId ?? 'Quelle'} · ${entry.value.entityId} · ${entry.value.metricId}',
+                                  overflow: TextOverflow.ellipsis),
+                            ))
+                        .toList(),
+                    onChanged: (value) => setState(() => selectedKey = value),
+                  ),
+              ])),
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Abbrechen')),
         FilledButton(
-            onPressed: selectedKey == null
+            onPressed: kind.needsSignal && selectedKey == null
                 ? null
-                : () => Navigator.pop(context, _PanelSpec(selectedKey!, kind)),
+                : () => Navigator.pop(
+                    context,
+                    _PanelSpec(kind.needsSignal ? selectedKey! : '', kind,
+                        title: kind == _PanelKind.heading
+                            ? title.text.trim()
+                            : null)),
             child: const Text('Hinzufügen')),
       ],
     );
   }
 }
 
-/// Visualisation, display range and thresholds of one panel.
+/// Visualisation, width, display range and thresholds of one panel.
 class _PanelOptionsDialog extends StatefulWidget {
   final _PanelSpec spec;
   final Observation? observation;
@@ -1334,7 +1587,8 @@ class _PanelOptionsDialog extends StatefulWidget {
 
 class _PanelOptionsDialogState extends State<_PanelOptionsDialog> {
   late _PanelKind kind = widget.spec.kind;
-  late final TextEditingController min, max, warn, crit;
+  late int? span = widget.spec.span;
+  late final TextEditingController min, max, warn, crit, title;
   String? error;
 
   @override
@@ -1353,17 +1607,38 @@ class _PanelOptionsDialogState extends State<_PanelOptionsDialog> {
         text: text(spec.custom ? spec.warn : scale?.warn));
     crit = TextEditingController(
         text: text(spec.custom ? spec.crit : scale?.crit));
+    title = TextEditingController(text: spec.title ?? '');
   }
 
   @override
   void dispose() {
-    for (final field in [min, max, warn, crit]) {
+    for (final field in [min, max, warn, crit, title]) {
       field.dispose();
     }
     super.dispose();
   }
 
+  /// A panel can only become a kind that fits what it is bound to.
+  bool _allowed(_PanelKind next) =>
+      next.needsSignal == widget.spec.kind.needsSignal;
+
+  String? get _title =>
+      kind == _PanelKind.heading ? title.text.trim() : widget.spec.title;
+
   void _submit() {
+    if (!kind.usesScale) {
+      Navigator.pop(
+          context,
+          _PanelSpec(widget.spec.observationKey, kind,
+              custom: widget.spec.custom,
+              min: widget.spec.min,
+              max: widget.spec.max,
+              warn: widget.spec.warn,
+              crit: widget.spec.crit,
+              span: span,
+              title: _title));
+      return;
+    }
     final parsed = <double?>[];
     for (final field in [min, max, warn, crit]) {
       final raw = field.text.trim().replaceAll(',', '.');
@@ -1394,7 +1669,9 @@ class _PanelOptionsDialogState extends State<_PanelOptionsDialog> {
           min: parsed[0],
           max: parsed[1],
           warn: parsed[2],
-          crit: parsed[3]),
+          crit: parsed[3],
+          span: span,
+          title: _title),
     );
   }
 
@@ -1415,44 +1692,81 @@ class _PanelOptionsDialogState extends State<_PanelOptionsDialog> {
     return AlertDialog(
       title: const Text('Panel konfigurieren'),
       content: SizedBox(
-        width: 460,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _kindSelector(kind, (value) => setState(() => kind = value)),
-            const SizedBox(height: 16),
-            Row(children: [
-              _field(min, 'Minimum$unit', 'automatisch'),
-              const SizedBox(width: 12),
-              _field(max, 'Maximum$unit', 'automatisch'),
-            ]),
-            const SizedBox(height: 12),
-            Row(children: [
-              _field(warn, 'Warnung ab$unit', 'keine'),
-              const SizedBox(width: 12),
-              _field(crit, 'Kritisch ab$unit', 'keine'),
-            ]),
-            const SizedBox(height: 10),
-            Text(
-              error ??
-                  'Skala und Schwellen sind reine Darstellung dieses Panels. Leere Felder: automatische Skala bzw. keine Schwelle.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: error == null
-                      ? null
-                      : Theme.of(context).colorScheme.error),
-            ),
-          ],
+        width: 520,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (widget.spec.kind.needsSignal) ...[
+                _KindPicker(
+                    kind: kind,
+                    onChanged: (value) {
+                      if (_allowed(value)) setState(() => kind = value);
+                    }),
+                const SizedBox(height: 16),
+              ],
+              if (kind == _PanelKind.heading) ...[
+                TextField(
+                  controller: title,
+                  decoration: const InputDecoration(labelText: 'Überschrift'),
+                ),
+                const SizedBox(height: 16),
+              ],
+              if (kind != _PanelKind.heading) ...[
+                Text('Breite', style: Theme.of(context).textTheme.labelMedium),
+                const SizedBox(height: 6),
+                SegmentedButton<int>(
+                  showSelectedIcon: false,
+                  segments: const [
+                    ButtonSegment(value: -1, label: Text('Auto')),
+                    ButtonSegment(value: 1, label: Text('1 Spalte')),
+                    ButtonSegment(value: 2, label: Text('2 Spalten')),
+                    ButtonSegment(value: 0, label: Text('Volle Zeile')),
+                  ],
+                  selected: {span ?? -1},
+                  onSelectionChanged: (value) => setState(
+                      () => span = value.first == -1 ? null : value.first),
+                ),
+              ],
+              if (kind.usesScale) ...[
+                const SizedBox(height: 16),
+                Row(children: [
+                  _field(min, 'Minimum$unit', 'automatisch'),
+                  const SizedBox(width: 12),
+                  _field(max, 'Maximum$unit', 'automatisch'),
+                ]),
+                const SizedBox(height: 12),
+                Row(children: [
+                  _field(warn, 'Warnung ab$unit', 'keine'),
+                  const SizedBox(width: 12),
+                  _field(crit, 'Kritisch ab$unit', 'keine'),
+                ]),
+                const SizedBox(height: 10),
+                Text(
+                  error ??
+                      'Skala und Schwellen sind reine Darstellung dieses Panels. Leere Felder: automatische Skala bzw. keine Schwelle.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: error == null
+                          ? null
+                          : Theme.of(context).colorScheme.error),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Abbrechen')),
-        TextButton(
-            onPressed: () => Navigator.pop(
-                context, _PanelSpec(widget.spec.observationKey, kind)),
-            child: const Text('Standard')),
+        if (kind.usesScale)
+          TextButton(
+              onPressed: () => Navigator.pop(
+                  context,
+                  _PanelSpec(widget.spec.observationKey, kind,
+                      span: span, title: _title)),
+              child: const Text('Standard')),
         FilledButton(onPressed: _submit, child: const Text('Übernehmen')),
       ],
     );

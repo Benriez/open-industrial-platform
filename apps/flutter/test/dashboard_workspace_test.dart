@@ -114,33 +114,40 @@ Future<void> loadPreviewFonts() async {
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('first view renders gauges for bounded units and stats otherwise',
+  testWidgets('first view is an auto layout built from the delivered data',
       (tester) async {
     await loadPreviewFonts();
     final controller = dashboardController();
     await pumpDashboard(tester, controller);
 
-    expect(find.text('host.memory_used_percent'), findsOneWidget);
-    expect(find.text('host.cpu_temperature_c'), findsOneWidget);
+    expect(find.text('Gerätestatus'), findsOneWidget);
+    expect(find.text('AMD EVO-X2'), findsOneWidget);
+    expect(find.text('host.cpu_temperature_c'), findsWidgets);
     // Byte and duration units are shortened, not printed raw.
-    expect(find.textContaining('3 GiB', findRichText: true), findsOneWidget);
-    expect(find.textContaining('3d 4h', findRichText: true), findsOneWidget);
-    // Percent and temperature get the gauge with its unit range.
-    expect(find.text('100 %'), findsNWidgets(2));
-    expect(find.text('100 °C'), findsOneWidget);
+    expect(find.textContaining('3 GiB', findRichText: true), findsWidgets);
+    expect(find.textContaining('3d 4h', findRichText: true), findsWidgets);
     // A stale signal is named and not shown as live.
     expect(find.text('STALE'), findsOneWidget);
 
-    final stored = SharedPreferences.getInstance();
-    final saved = jsonDecode((await stored).getString(
+    final saved = jsonDecode((await SharedPreferences.getInstance()).getString(
             'oip.dashboard.v1.fixture-operator.'
             '${Uri.encodeComponent(controller.infrastructure.selection.scopeKey)}')!)
         as Json;
     expect(saved['version'], 2);
-    expect([for (final panel in saved['panels'] as List) panel['kind']],
-        ['gauge', 'gauge', 'value', 'value', 'gauge']);
+    expect([
+      for (final panel in saved['panels'] as List) panel['kind']
+    ], [
+      'devices',
+      'gauge',
+      'tank',
+      'value',
+      'value',
+      'ring',
+      'table',
+      'spark'
+    ]);
 
-    // New samples feed the session sparkline without a selection.
+    // New samples feed the session charts without a selection.
     for (var tick = 1; tick <= 12; tick++) {
       controller.snapshot = hostSnapshot(
           memory: 42.5 + 6 * (tick % 5), at: 1800000000000 + tick * 1000);
@@ -149,8 +156,96 @@ void main() {
       await tester.pump();
     }
     expect(tester.takeException(), isNull);
-    await writePreview(tester, 'dashboard-dark');
+    await writePreview(tester, 'dashboard-auto');
   });
+
+  for (final brightness in Brightness.values) {
+    testWidgets('every visualisation renders (${brightness.name})',
+        (tester) async {
+      await loadPreviewFonts();
+      final controller = dashboardController();
+      // A second device delivering the same metrics, for the comparison.
+      final data = fixture();
+      data['metrics'] = [
+        for (final entity in ['device-pi', 'device-pc'])
+          for (final metric in [
+            hostMetric('memory_used_percent',
+                entity == 'device-pi' ? 42.5 : 81.0, {'custom': '%'}),
+            hostMetric('cpu_temperature_c', 61.0, 'celsius'),
+            hostMetric('memory_used_bytes', 3221225472, {'custom': 'bytes'}),
+          ])
+            metric..['entity_id'] = entity,
+      ];
+      Snapshot tick(int index) {
+        final metrics = data['metrics'] as List;
+        for (final metric in metrics.cast<Json>()) {
+          (metric['timestamps'] as Json)['source'] =
+              1800000000000 + index * 1000;
+        }
+        (metrics[0] as Json)['value'] = {
+          'float': 42 + 38 * ((index * 7) % 11) / 10
+        };
+        return Snapshot.fromJson(data);
+      }
+
+      controller.snapshot = tick(0);
+      final percent = observationKey(controller.snapshot!.metrics.first);
+      final key = 'oip.dashboard.v1.fixture-operator.'
+          '${Uri.encodeComponent(controller.infrastructure.selection.scopeKey)}';
+      const kinds = [
+        'heading',
+        'devices',
+        'gauge',
+        'ring',
+        'value',
+        'bar',
+        'tank',
+        'spark',
+        'bars',
+        'histogram',
+        'timeline',
+        'stats',
+        'table',
+        'compare',
+        'trend',
+      ];
+      SharedPreferences.setMockInitialValues({
+        key: jsonEncode({
+          'version': 2,
+          'columns': 4,
+          'panels': [
+            for (final kind in kinds)
+              {
+                'observation':
+                    kind == 'heading' || kind == 'devices' ? '' : percent,
+                'kind': kind,
+                if (kind == 'heading') 'title': 'Raspberry Pi',
+              },
+          ],
+        }),
+      });
+      await pumpDashboard(tester, controller,
+          size: const Size(1500, 1500), brightness: brightness);
+      for (var index = 1; index <= 40; index++) {
+        controller.snapshot = tick(index);
+        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        controller.notifyListeners();
+        await tester.pump();
+      }
+      expect(tester.takeException(), isNull);
+      expect(find.text('Raspberry Pi'), findsOneWidget);
+      expect(find.text('Vergleich über Geräte'), findsOneWidget);
+      expect(find.textContaining('Verteilung · '), findsOneWidget);
+      expect(find.textContaining('Normal '), findsOneWidget);
+      expect(find.text('Ø SITZUNG'), findsOneWidget);
+      await writePreview(tester, 'dashboard-all-${brightness.name}');
+
+      // Narrow width: one column, no overflow.
+      tester.view.physicalSize = const Size(390, 3000);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('a layout saved before gauges existed is upgraded once',
       (tester) async {
@@ -165,7 +260,10 @@ void main() {
         'panels': [
           {'observation': percent, 'kind': 'value'},
           {'observation': bytes, 'kind': 'value'},
-          {'observation': 'gone\u001fdevice\u001fhost.missing', 'kind': 'value'},
+          {
+            'observation': 'gone\u001fdevice\u001fhost.missing',
+            'kind': 'value'
+          },
         ],
       }),
     });
@@ -187,7 +285,7 @@ void main() {
     await pumpDashboard(tester, controller, brightness: Brightness.light);
     await tester.tap(find.byKey(const Key('overview-dashboard-edit')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Panel konfigurieren').first);
+    await tester.tap(find.byTooltip('Panel konfigurieren').at(1));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Balken'));
     await tester.enterText(find.widgetWithText(TextField, 'Maximum (%)'), '50');
@@ -209,7 +307,7 @@ void main() {
             'oip.dashboard.v1.fixture-operator.'
             '${Uri.encodeComponent(controller.infrastructure.selection.scopeKey)}')!)
         as Json;
-    expect((saved['panels'] as List).first, {
+    expect((saved['panels'] as List)[1], {
       'observation': observationKey(controller.snapshot!.metrics.first),
       'kind': 'bar',
       'custom': true,
@@ -228,5 +326,16 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1280, 900));
     await tester.pumpAndSettle();
     await writePreview(tester, 'dashboard-light-edit');
+
+    // The auto layout can be re-applied from the edit mode.
+    await tester.tap(find.byKey(const Key('overview-dashboard-auto-layout')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ersetzen'));
+    await tester.pumpAndSettle();
+    final reset = jsonDecode((await SharedPreferences.getInstance()).getString(
+            'oip.dashboard.v1.fixture-operator.'
+            '${Uri.encodeComponent(controller.infrastructure.selection.scopeKey)}')!)
+        as Json;
+    expect(((reset['panels'] as List)[1] as Json)['kind'], 'gauge');
   });
 }

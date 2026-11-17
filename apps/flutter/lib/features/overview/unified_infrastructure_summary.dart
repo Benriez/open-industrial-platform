@@ -64,7 +64,8 @@ class UnifiedInfrastructureSummary extends StatelessWidget {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(fact.$1, style: WorkstationTokens.eyebrow(context)),
+                          Text(fact.$1,
+                              style: WorkstationTokens.eyebrow(context)),
                           Text(fact.$2,
                               style: WorkstationTokens.mono(context,
                                   size: 11, weight: FontWeight.w700)),
@@ -101,7 +102,8 @@ class UnifiedInfrastructureSummary extends StatelessWidget {
 
   Widget _infrastructureRow(
       BuildContext context, AuthorizedInfrastructure infrastructure) {
-    final organization = model.hierarchy.organization(infrastructure.organizationId);
+    final organization =
+        model.hierarchy.organization(infrastructure.organizationId);
     final sites = model.hierarchy.sites
         .where((item) => item.infrastructureId == infrastructure.id)
         .length;
@@ -133,8 +135,7 @@ class UnifiedInfrastructureSummary extends StatelessWidget {
         minTileHeight: 52,
         contentPadding: const EdgeInsets.symmetric(horizontal: 8),
         leading: Icon(Icons.hub_outlined,
-            size: 18,
-            color: OipTokens.readableAccent(context, OipTokens.cyan)),
+            size: 18, color: OipTokens.readableAccent(context, OipTokens.cyan)),
         title: Text(
           '${organization?.name ?? infrastructure.organizationId} / ${infrastructure.name}',
           maxLines: 1,
