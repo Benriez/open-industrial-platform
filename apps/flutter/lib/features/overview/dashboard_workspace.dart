@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../app/controller.dart';
 import '../../design_system/theme.dart';
 import '../../models/contracts.dart';
-import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
 import 'telemetry_chart.dart';
 
@@ -45,6 +44,8 @@ class DashboardWorkspace extends StatefulWidget {
 
 class _DashboardWorkspaceState extends State<DashboardWorkspace> {
   List<_PanelSpec> panels = [];
+  int columns = 3;
+  bool editing = false;
   bool loaded = false;
   String? storageKey;
 
@@ -93,7 +94,20 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
     if (encoded != null) {
       try {
         final decoded = jsonDecode(encoded);
-        if (decoded is List) {
+        if (decoded is Map<String, dynamic>) {
+          final savedPanels = decoded['panels'];
+          if (savedPanels is List) {
+            restored = savedPanels
+                .map(_PanelSpec.fromJson)
+                .whereType<_PanelSpec>()
+                .toList();
+          }
+          final savedColumns = decoded['columns'];
+          if (savedColumns is int && savedColumns >= 1 && savedColumns <= 4) {
+            columns = savedColumns;
+          }
+        } else if (decoded is List) {
+          // Read the original v1 list layout and upgrade it on next edit.
           restored =
               decoded.map(_PanelSpec.fromJson).whereType<_PanelSpec>().toList();
         }
@@ -113,7 +127,12 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
             _PanelSpec(observationKey(observation), _PanelKind.value),
       ];
       await preferences.setString(
-          key, jsonEncode(restored.map((p) => p.toJson()).toList()));
+        key,
+        jsonEncode({
+          'columns': columns,
+          'panels': restored.map((p) => p.toJson()).toList(),
+        }),
+      );
     }
     if (!mounted || storageKey != key) return;
     setState(() {
@@ -128,7 +147,10 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
     final preferences = await SharedPreferences.getInstance();
     await preferences.setString(
       key,
-      jsonEncode(panels.map((panel) => panel.toJson()).toList()),
+      jsonEncode({
+        'columns': columns,
+        'panels': panels.map((panel) => panel.toJson()).toList(),
+      }),
     );
   }
 
@@ -159,39 +181,92 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
     final activeKey = currentStorageKey;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       WorkstationPanel(
-        accent: OipTokens.violet,
-        padding: const EdgeInsets.all(14),
-        child: LayoutBuilder(
-            builder: (context, box) => Row(
-                  children: [
-                    Expanded(
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                          const PanelLabel('PERSÖNLICHES DASHBOARD'),
-                          Text(scopeLabel,
-                              style: WorkstationTokens.mono(context, size: 11),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 3),
-                          Text(
-                            activeKey == null
-                                ? 'Zum Bearbeiten anmelden und eine Infrastruktur auswählen.'
-                                : 'Layout wird auf diesem Gerät je Benutzer und Kontext gespeichert.',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ])),
-                    const SizedBox(width: 10),
-                    FilledButton.icon(
-                      key: const Key('overview-dashboard-add-panel'),
-                      onPressed: activeKey == null || observations.isEmpty
-                          ? null
-                          : _addPanel,
-                      icon: const Icon(Icons.add, size: 17),
-                      label: const Text('Panel hinzufügen'),
-                    ),
-                  ],
-                )),
+        accent: OipTokens.cyan,
+        padding: const EdgeInsets.fromLTRB(18, 16, 16, 14),
+        child: LayoutBuilder(builder: (context, box) {
+          final heading = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                const Icon(Icons.monitor_heart_outlined,
+                    color: OipTokens.cyan, size: 18),
+                const SizedBox(width: 7),
+                Text('LIVE DASHBOARD',
+                    style: WorkstationTokens.eyebrow(context,
+                        color: OipTokens.cyan)),
+                const SizedBox(width: 10),
+                _LiveIndicator(live: controller.connection == 'live'),
+              ]),
+              const SizedBox(height: 6),
+              Text(scopeLabel,
+                  style: Theme.of(context).textTheme.titleLarge,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis),
+              const SizedBox(height: 5),
+              Text(
+                activeKey == null
+                    ? 'Zum Bearbeiten anmelden und eine Infrastruktur auswählen.'
+                    : '${panels.length} Panels · ${observations.length} gelieferte Messpunkte · persönliches Layout',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          );
+          final controls = Wrap(spacing: 8, runSpacing: 8, children: [
+            if (editing)
+              PopupMenuButton<int>(
+                tooltip: 'Spaltenbreite',
+                initialValue: columns,
+                onSelected: (value) async {
+                  setState(() => columns = value);
+                  await _save();
+                },
+                itemBuilder: (context) => const [
+                  PopupMenuItem(value: 1, child: Text('1 Spalte')),
+                  PopupMenuItem(value: 2, child: Text('2 Spalten')),
+                  PopupMenuItem(value: 3, child: Text('3 Spalten')),
+                  PopupMenuItem(value: 4, child: Text('4 Spalten')),
+                ],
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: WorkstationTokens.line(context)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(Icons.view_column_outlined, size: 18),
+                    const SizedBox(width: 7),
+                    Text('$columns Spalten'),
+                  ]),
+                ),
+              ),
+            OutlinedButton.icon(
+              key: const Key('overview-dashboard-edit'),
+              onPressed: activeKey == null
+                  ? null
+                  : () => setState(() => editing = !editing),
+              icon: Icon(editing ? Icons.check : Icons.tune, size: 17),
+              label: Text(editing ? 'Fertig' : 'Anpassen'),
+            ),
+            FilledButton.icon(
+              key: const Key('overview-dashboard-add-panel'),
+              onPressed:
+                  activeKey == null || observations.isEmpty ? null : _addPanel,
+              icon: const Icon(Icons.add, size: 17),
+              label: const Text('Panel hinzufügen'),
+            ),
+          ]);
+          return box.maxWidth < 780
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [heading, const SizedBox(height: 14), controls],
+                )
+              : Row(children: [
+                  Expanded(child: heading),
+                  const SizedBox(width: 12),
+                  controls,
+                ]);
+        }),
       ),
       const SizedBox(height: OipTokens.s2),
       if (!loaded)
@@ -209,49 +284,66 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
           icon: Icons.dashboard_customize_outlined,
         )
       else
-        ReorderableListView.builder(
-          key: const Key('overview-modular-dashboard-panels'),
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: panels.length,
-          onReorder: (oldIndex, newIndex) async {
-            setState(() {
-              if (newIndex > oldIndex) newIndex--;
-              final panel = panels.removeAt(oldIndex);
-              panels.insert(newIndex, panel);
-            });
-            await _save();
-          },
-          itemBuilder: (context, index) {
-            final spec = panels[index];
-            final observation = observations
-                .where((item) => observationKey(item) == spec.observationKey)
-                .firstOrNull;
-            return Padding(
-              key: ValueKey(
-                  'dashboard-panel-${spec.observationKey}-${spec.kind.name}-$index'),
-              padding: const EdgeInsets.only(bottom: OipTokens.s2),
-              child: _DashboardPanel(
-                observation: observation,
-                spec: spec,
-                history: controller.history,
-                selected: controller.telemetryKey == spec.observationKey,
-                onSelect: observation == null
-                    ? null
-                    : () => controller.selectTelemetry(spec.observationKey),
-                onRemove: () async {
-                  setState(() => panels.removeAt(index));
-                  await _save();
-                },
-                onKindChanged: (kind) async {
-                  setState(() =>
-                      panels[index] = _PanelSpec(spec.observationKey, kind));
-                  await _save();
-                },
-              ),
-            );
-          },
-        ),
+        LayoutBuilder(builder: (context, constraints) {
+          final effectiveColumns = constraints.maxWidth < 580
+              ? 1
+              : constraints.maxWidth < 1000
+                  ? columns.clamp(1, 2)
+                  : columns;
+          const gap = OipTokens.s2;
+          final tileWidth =
+              (constraints.maxWidth - gap * (effectiveColumns - 1)) /
+                  effectiveColumns;
+          return Wrap(
+            key: const Key('overview-modular-dashboard-panels'),
+            spacing: gap,
+            runSpacing: gap,
+            children: [
+              for (var index = 0; index < panels.length; index++)
+                Builder(builder: (context) {
+                  final spec = panels[index];
+                  final observation = observations
+                      .where(
+                          (item) => observationKey(item) == spec.observationKey)
+                      .firstOrNull;
+                  final wide = spec.kind == _PanelKind.trend;
+                  final width = wide ? constraints.maxWidth : tileWidth;
+                  return SizedBox(
+                    width: width,
+                    child: _DashboardPanel(
+                      observation: observation,
+                      spec: spec,
+                      history: controller.history,
+                      selected: controller.telemetryKey == spec.observationKey,
+                      editing: editing,
+                      onSelect: observation == null
+                          ? null
+                          : () =>
+                              controller.selectTelemetry(spec.observationKey),
+                      onRemove: () async {
+                        setState(() => panels.removeAt(index));
+                        await _save();
+                      },
+                      onMove: (direction) async {
+                        final target = index + direction;
+                        if (target < 0 || target >= panels.length) return;
+                        setState(() {
+                          final panel = panels.removeAt(index);
+                          panels.insert(target, panel);
+                        });
+                        await _save();
+                      },
+                      onKindChanged: (kind) async {
+                        setState(() => panels[index] =
+                            _PanelSpec(spec.observationKey, kind));
+                        await _save();
+                      },
+                    ),
+                  );
+                }),
+            ],
+          );
+        }),
     ]);
   }
 }
@@ -261,8 +353,10 @@ class _DashboardPanel extends StatelessWidget {
   final _PanelSpec spec;
   final List<Observation> history;
   final bool selected;
+  final bool editing;
   final VoidCallback? onSelect;
   final VoidCallback onRemove;
+  final ValueChanged<int> onMove;
   final ValueChanged<_PanelKind> onKindChanged;
 
   const _DashboardPanel({
@@ -270,8 +364,10 @@ class _DashboardPanel extends StatelessWidget {
     required this.spec,
     required this.history,
     required this.selected,
+    required this.editing,
     required this.onSelect,
     required this.onRemove,
+    required this.onMove,
     required this.onKindChanged,
   });
 
@@ -279,53 +375,120 @@ class _DashboardPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final item = observation;
     return WorkstationPanel(
-      accent: OipTokens.cyan,
-      padding: const EdgeInsets.fromLTRB(14, 10, 10, 12),
+      accent: item == null
+          ? OipTokens.yellow
+          : OipTokens.statusColor(context, item.freshness),
+      padding: EdgeInsets.fromLTRB(
+          spec.kind == _PanelKind.value ? 16 : 14, 14, 14, 14),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Row(children: [
           Expanded(
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                PanelLabel(item == null
-                    ? 'SIGNAL NICHT IM KONTEXT'
-                    : '${item.entityId} · ${item.metricId}'),
+                Row(children: [
+                  Expanded(
+                    child: Text(
+                      item == null ? 'SIGNAL NICHT VERFÜGBAR' : item.metricId,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: WorkstationTokens.eyebrow(context),
+                    ),
+                  ),
+                  if (editing) ...[
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      tooltip: 'Panel nach links/oben verschieben',
+                      onPressed: () => onMove(-1),
+                      icon: const Icon(Icons.arrow_upward, size: 17),
+                    ),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      tooltip: 'Panel nach rechts/unten verschieben',
+                      onPressed: () => onMove(1),
+                      icon: const Icon(Icons.arrow_downward, size: 17),
+                    ),
+                  ],
+                ]),
                 if (item != null)
                   Text(
-                      '${item.sourceId ?? 'Quelle nicht angegeben'} · ${item.quality.toUpperCase()} · ${item.freshness.toUpperCase()}',
-                      style: WorkstationTokens.mono(context, size: 10),
+                      '${item.entityId} · ${item.sourceId ?? 'Quelle nicht angegeben'}',
+                      style: WorkstationTokens.mono(context,
+                          size: 10, color: OipTokens.muted(context)),
                       overflow: TextOverflow.ellipsis),
               ])),
-          PopupMenuButton<_PanelKind>(
-            tooltip: 'Darstellung ändern',
-            icon: const Icon(Icons.tune),
-            onSelected: onKindChanged,
-            itemBuilder: (context) => const [
-              PopupMenuItem(
-                  value: _PanelKind.value, child: Text('Aktueller Wert')),
-              PopupMenuItem(
-                  value: _PanelKind.trend, child: Text('Session-Verlauf')),
-            ],
-          ),
-          IconButton(
-              tooltip: 'Panel entfernen',
-              onPressed: onRemove,
-              icon: const Icon(Icons.close)),
-          const Icon(Icons.drag_indicator, size: 20),
+          if (editing)
+            PopupMenuButton<_PanelKind>(
+              tooltip: 'Darstellung ändern',
+              icon: const Icon(Icons.more_horiz),
+              onSelected: onKindChanged,
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                    value: _PanelKind.value, child: Text('Aktueller Wert')),
+                PopupMenuItem(
+                    value: _PanelKind.trend, child: Text('Session-Verlauf')),
+              ],
+            ),
+          if (editing)
+            IconButton(
+                tooltip: 'Panel entfernen',
+                onPressed: onRemove,
+                icon: const Icon(Icons.close)),
         ]),
         if (item == null)
           const Text(
               'Das konfigurierte Signal ist in diesem Kontext nicht verfügbar.')
-        else if (spec.kind == _PanelKind.value)
+        else if (spec.kind == _PanelKind.value) ...[
           Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
             Expanded(
                 child: Text('${item.display} ${item.symbol}',
-                    style: Theme.of(context).textTheme.headlineMedium)),
-            StatusPill(item.freshness.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineMedium
+                        ?.copyWith(fontSize: 31, fontWeight: FontWeight.w700))),
+            Tooltip(
+              message: 'Messqualität ${item.quality}',
+              child: Icon(
+                item.freshness == 'fresh'
+                    ? Icons.check_circle_outline
+                    : Icons.warning_amber_outlined,
                 color: OipTokens.statusColor(context, item.freshness),
-                showDot: true),
-          ])
-        else ...[
+                size: 20,
+              ),
+            ),
+          ]),
+          const SizedBox(height: 7),
+          Row(children: [
+            _FreshnessBadge(value: item.freshness),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                item.receivedMs == null
+                    ? 'Empfangszeit nicht geliefert'
+                    : 'Empfangen ${DateTime.fromMillisecondsSinceEpoch(item.receivedMs!, isUtc: true).toLocal().toString().substring(11, 19)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            if (selected)
+              const Icon(Icons.show_chart, size: 16, color: OipTokens.cyan)
+            else
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                tooltip: 'Session-Verlauf dieses Signals aufnehmen',
+                onPressed: onSelect,
+                icon: const Icon(Icons.show_chart, size: 17),
+              ),
+          ]),
+          if (selected && history.length > 1)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _MiniTrend(samples: history, color: OipTokens.cyan),
+            ),
+        ] else ...[
           Row(children: [
             Expanded(
                 child: Text('Messwert ${item.display} ${item.symbol}',
@@ -348,13 +511,122 @@ class _DashboardPanel extends StatelessWidget {
                 samples: history,
                 unit: item.symbol,
                 simulated: item.simulated,
-                height: 190),
-          Text('Session-Verlauf · keine persistierte Historie',
+                height: 236),
+          Text(
+              'Session-Verlauf · ${history.length} Samples · keine persistierte Historie',
               style: Theme.of(context).textTheme.bodySmall),
         ],
       ]),
     );
   }
+}
+
+class _LiveIndicator extends StatelessWidget {
+  final bool live;
+  const _LiveIndicator({required this.live});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: OipTokens.statusColor(context, live ? 'fresh' : 'stale')
+              .withOpacity(.12),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: OipTokens.statusColor(context, live ? 'fresh' : 'stale'),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(live ? 'LIVE' : 'VERBINDUNG PRÜFEN',
+              style: WorkstationTokens.eyebrow(context,
+                  color: OipTokens.statusColor(
+                      context, live ? 'fresh' : 'stale'))),
+        ]),
+      );
+}
+
+class _FreshnessBadge extends StatelessWidget {
+  final String value;
+  const _FreshnessBadge({required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = OipTokens.statusColor(context, value);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(.12),
+        border: Border.all(color: color.withOpacity(.35)),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Text(value.toUpperCase(),
+          style: WorkstationTokens.eyebrow(context, color: color)),
+    );
+  }
+}
+
+class _MiniTrend extends StatelessWidget {
+  final List<Observation> samples;
+  final Color color;
+  const _MiniTrend({required this.samples, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final values = samples
+        .where((sample) => sample.number != null)
+        .map((sample) => sample.number!)
+        .toList();
+    if (values.length < 2) return const SizedBox.shrink();
+    return SizedBox(
+      height: 34,
+      width: double.infinity,
+      child: CustomPaint(painter: _MiniTrendPainter(values, color)),
+    );
+  }
+}
+
+class _MiniTrendPainter extends CustomPainter {
+  final List<double> values;
+  final Color color;
+  const _MiniTrendPainter(this.values, this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.length < 2 || size.width <= 0 || size.height <= 0) return;
+    final min = values.reduce((a, b) => a < b ? a : b);
+    final max = values.reduce((a, b) => a > b ? a : b);
+    final range = max - min;
+    final line = Path();
+    for (var index = 0; index < values.length; index++) {
+      final x = size.width * index / (values.length - 1);
+      final normalized = range == 0 ? .5 : (values[index] - min) / range;
+      final y = size.height - normalized * (size.height - 4) - 2;
+      if (index == 0) {
+        line.moveTo(x, y);
+      } else {
+        line.lineTo(x, y);
+      }
+    }
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(line, stroke);
+    final end = line.getBounds().centerRight;
+    canvas.drawCircle(end, 3, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniTrendPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.values != values;
 }
 
 class _AddPanelDialog extends StatefulWidget {
