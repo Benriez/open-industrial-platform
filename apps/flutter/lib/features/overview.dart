@@ -9,6 +9,7 @@ import '../widgets/workstation.dart';
 import 'devices.dart';
 import 'overview/activity_workspace.dart';
 import 'overview/context_inspector.dart';
+import 'overview/dashboard_workspace.dart';
 import 'overview/infrastructure_explorer.dart';
 import 'overview/overview_selection.dart';
 import 'overview/telemetry_chart.dart';
@@ -30,6 +31,7 @@ class _OverviewPageState extends State<OverviewPage> {
   final GlobalKey<OverviewTrendChartState> chartKey = GlobalKey();
   _OverviewMobilePane mobilePane = _OverviewMobilePane.focus;
   String? scopeSignature;
+  bool dashboardMode = false;
 
   OipController get controller => widget.controller;
 
@@ -114,7 +116,12 @@ class _OverviewPageState extends State<OverviewPage> {
                 UnifiedInfrastructureSummary(controller: controller),
               ],
               const SizedBox(height: OipTokens.s3),
-              if (!controller.workspaces
+              if (dashboardMode)
+                DashboardWorkspace(
+                  key: ValueKey(controller.contextScopeSignature),
+                  controller: controller,
+                )
+              else if (!controller.workspaces
                       .layout(WorkspaceId.overview)
                       .expertWorkspace &&
                   selection.kind == OverviewSelectionKind.none)
@@ -248,10 +255,15 @@ class _OverviewPageState extends State<OverviewPage> {
   }
 
   Widget _header() => AdaptiveWorkspaceHeader(
-        eyebrow: 'INFRASTRUCTURE COMMAND CENTER · READ-ONLY',
-        title: 'Operations Workstation',
-        subtitle:
-            'Zustand erkennen · Auffälligkeiten auswählen · technisch vertiefen',
+        eyebrow: dashboardMode
+            ? 'VISUALISIERUNG · AUTORISIERTE MESSWERTE'
+            : 'INFRASTRUCTURE COMMAND CENTER · READ-ONLY',
+        title: dashboardMode
+            ? 'Infrastruktur-Dashboard'
+            : 'Operations Workstation',
+        subtitle: dashboardMode
+            ? 'Panels je Benutzer und Infrastruktur zusammenstellen'
+            : 'Zustand erkennen · Auffälligkeiten auswählen · technisch vertiefen',
         accent: OipTokens.cyan,
         primaryAction: WorkspacePrimaryAction(
           buttonKey: const Key('overview-primary-diagnostics'),
@@ -262,6 +274,17 @@ class _OverviewPageState extends State<OverviewPage> {
           onPressed: () => widget.navigate(4),
         ),
         actions: [
+          WorkspacePrimaryAction(
+            buttonKey: const Key('overview-dashboard-toggle'),
+            label: dashboardMode ? 'Übersicht' : 'Dashboard öffnen',
+            tooltip: dashboardMode
+                ? 'Zur Operations-Übersicht zurückkehren'
+                : 'Persönliche Live-Panels für diesen Infrastrukturkontext öffnen',
+            icon: dashboardMode
+                ? Icons.arrow_back
+                : Icons.dashboard_customize_outlined,
+            onPressed: () => setState(() => dashboardMode = !dashboardMode),
+          ),
           InspectorOpenAction(
             controller: controller,
             workspace: WorkspaceId.overview,
