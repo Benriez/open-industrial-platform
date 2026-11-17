@@ -1090,3 +1090,13 @@ public key of the instance is the only thing the host ever sees.
 * The tool does not manage the **data store** of the instance: a schema change
   is a separate operator step with its own rehearsal (the activation of schema
   7 on a copy of the store).
+
+### 16.6 Local Tailscale membership read
+
+An instance may opt in with `"tailscale_peer_status": true` in its Core
+configuration. The Core reads `tailscale status --json` locally every 30
+seconds and joins peer hostnames or Tailscale addresses against the devices
+already present in the authorized inventory. It returns only each authorized
+device's membership state (`online`, `offline`, `not in tailnet`, or `unknown`);
+it never returns unrelated tailnet peers or their addresses. The default is
+`false`. The read does not probe devices, change routes, or write the database.

@@ -116,6 +116,10 @@ pub struct CoreConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ssh: Option<crate::ssh::SshSettings>,
     pub legacy_single_infrastructure: bool,
+    /// Read local Tailscale peer membership and project only matches onto the
+    /// authorized device inventory. Disabled unless the operator opts in.
+    #[serde(default)]
+    pub tailscale_peer_status: bool,
     pub database: PathBuf,
     /// Private sidecar that persists only digests of native device credentials
     /// and their authorized principals. Session cookies and login grants remain
@@ -136,6 +140,7 @@ impl Default for CoreConfig {
         Self {
             ssh: None,
             legacy_single_infrastructure: false,
+            tailscale_peer_status: false,
             database: "oip.sqlite".into(),
             browser_credentials_file: None,
             http_port: 8080,

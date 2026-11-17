@@ -105,6 +105,7 @@ pub struct AppState {
     pub client: Arc<RwLock<Option<Arc<AsyncOpcUaClient>>>>,
     pub clients: Arc<RwLock<BTreeMap<DataSourceId, Arc<AsyncOpcUaClient>>>>,
     pub catalogs: Arc<RwLock<BTreeMap<DataSourceId, Vec<BrowseEntry>>>>,
+    pub tailscale_status: Arc<Mutex<Option<crate::network_services::TailscaleSnapshot>>>,
     pub scenario_tx: Option<watch::Sender<String>>,
     pub primary: Option<DataSourceId>,
     pub stopping: tokio_util::sync::CancellationToken,
@@ -327,6 +328,7 @@ impl AppState {
             client: Arc::new(RwLock::new(None)),
             clients: Arc::new(RwLock::new(BTreeMap::new())),
             catalogs: Arc::new(RwLock::new(BTreeMap::new())),
+            tailscale_status: Arc::new(Mutex::new(None)),
             scenario_tx,
             stopping: tokio_util::sync::CancellationToken::new(),
             primary: config
@@ -715,9 +717,53 @@ impl AppState {
                 }
             }
         }
+        let inventory = self.inventory();
+        let connections = self.connections();
+        let tailscale_status = if self.scenario_tx.is_none() {
+            self.tailscale_status
+                .lock()
+                .ok()
+                .and_then(|status| status.clone())
+                .filter(|status| status.is_fresh(now_ms()))
+        } else {
+            None
+        };
         for device in &mut devices {
-            if let Some(c) = self
-                .connections()
+            if self.scenario_tx.is_none() {
+                device.health.vpn_transport = tailscale_status
+                    .as_ref()
+                    .map(|status| {
+                        let record = inventory
+                            .iter()
+                            .find(|record| record.device.id.as_str() == device.id);
+                        let connection = connections
+                            .iter()
+                            .find(|connection| connection.device_id.as_str() == device.id);
+                        let mut names = vec![device.id.as_str(), device.name.as_str()];
+                        let mut addresses = Vec::new();
+                        if let Some(record) = record {
+                            if let Some(hostname) = record.device.metadata.hostname.as_deref() {
+                                names.push(hostname);
+                            }
+                            if let Some(address) = record.device.metadata.ip_address.as_deref() {
+                                addresses.push(address);
+                            }
+                        }
+                        if let Some(connection) = connection {
+                            names.push(&connection.identity.hostname);
+                            names.push(&connection.endpoint.host);
+                            if let Some(alias) = connection.endpoint.alias.as_deref() {
+                                names.push(alias);
+                            }
+                            for interface in &connection.identity.interfaces {
+                                addresses.extend(interface.addresses.iter().map(String::as_str));
+                            }
+                        }
+                        status.device_status(names, addresses).to_owned()
+                    })
+                    .unwrap_or_else(|| "unknown".into());
+            }
+            if let Some(c) = connections
                 .iter()
                 .find(|c| c.device_id.as_str() == device.id)
             {

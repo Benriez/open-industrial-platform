@@ -113,6 +113,7 @@ abstract final class OipTokens {
         return dark ? red : const Color(0xffb32635);
       case 'degraded':
       case 'stale':
+      case 'tailscale_offline':
       case 'connecting':
       case 'waiting':
       case 'reconnecting':
@@ -121,9 +122,11 @@ abstract final class OipTokens {
         return dark ? yellow : const Color(0xff7a4500);
       case 'unknown':
       case 'not_applicable':
+      case 'tailscale_not_in_tailnet':
       case null:
         return muted(context);
       case 'connected':
+      case 'tailscale_online':
       case 'active':
       case 'reachable':
       case 'fresh':
@@ -144,6 +147,7 @@ abstract final class OipTokens {
           Icons.error_outline,
         'degraded' ||
         'stale' ||
+        'tailscale_offline' ||
         'connecting' ||
         'waiting' ||
         'reconnecting' ||
@@ -157,6 +161,7 @@ abstract final class OipTokens {
         'good' =>
           Icons.check_circle_outline,
         'unknown' || 'not_applicable' || null => Icons.help_outline,
+        'tailscale_not_in_tailnet' => Icons.router_outlined,
         _ => Icons.info_outline,
       };
 
@@ -177,6 +182,9 @@ abstract final class OipTokens {
         'fresh' => 'Aktuell',
         'stale' => 'Veraltet',
         'good' => 'Gut',
+        'tailscale_online' => 'Tailscale · online',
+        'tailscale_offline' => 'Tailscale · offline',
+        'tailscale_not_in_tailnet' => 'Nicht im Tailscale-Netz',
         'bad' => 'Ungültig',
         'alarm' => 'Alarm',
         'unknown' || null => 'Unbekannt',

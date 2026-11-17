@@ -310,6 +310,12 @@ impl CoreRuntime {
             state.clone(),
             cancel.clone(),
         )));
+        if config.tailscale_peer_status {
+            workers.push(tokio::spawn(crate::network_services::supervise(
+                state.clone(),
+                cancel.clone(),
+            )));
+        }
         if let Err(error) = state.started().await {
             cancel.cancel();
             for task in workers {

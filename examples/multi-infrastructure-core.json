@@ -1,6 +1,7 @@
 {
   "database": "target/oip008-local.sqlite",
   "http_port": 18808,
+  "tailscale_peer_status": false,
   "sources": [
     {
       "id": "source-a",

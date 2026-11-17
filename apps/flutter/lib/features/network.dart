@@ -703,6 +703,17 @@ class _NetworkPageState extends State<NetworkPage> {
     final unknown = snapshot.devices
         .where((device) => device.health.reachability == 'unknown')
         .length;
+    final tailnetDevices = snapshot.devices
+        .where((device) =>
+            device.health.vpn == 'tailscale_online' ||
+            device.health.vpn == 'tailscale_offline')
+        .length;
+    final tailnetOnline = snapshot.devices
+        .where((device) => device.health.vpn == 'tailscale_online')
+        .length;
+    final tailnetKnown = snapshot.devices
+        .where((device) => device.health.vpn != 'unknown')
+        .length;
     final demoLinks = edges.where((edge) => edge.link.simulated).length;
     return NetworkSurface(
       key: const Key('network-summary'),
@@ -721,13 +732,13 @@ class _NetworkPageState extends State<NetworkPage> {
             status: 'unknown'),
         NetworkSummaryItem('DEMO-PFADE', '$demoLinks', Icons.science_outlined,
             status: demoLinks > 0 ? 'info' : 'unknown'),
-        // The Core delivers **no** VPN telemetry: no peer, no endpoint, no
-        // handshake, no route and no tunnel health. The summary says that,
-        // and it does not claim a state of the connection that the Core never
-        // measured.
-        const NetworkSummaryItem(
-            'VPN-TELEMETRIE', 'NICHT GELIEFERT', Icons.vpn_lock_outlined,
-            status: 'unknown'),
+        NetworkSummaryItem(
+            'TAILNET-MITGLIEDER',
+            tailnetKnown == 0
+                ? 'NICHT GELIEFERT'
+                : '$tailnetDevices / ${snapshot.devices.length} · $tailnetOnline online',
+            Icons.vpn_lock_outlined,
+            status: tailnetKnown == 0 ? 'unknown' : 'info'),
       ]),
     );
   }
@@ -1672,6 +1683,8 @@ class _NetworkPageState extends State<NetworkPage> {
 
   Widget _vpnWorkspace(Snapshot snapshot, List<NetworkEdge> edges) {
     final devices = snapshot.devices;
+    final tailnetKnown =
+        devices.where((device) => device.health.vpn != 'unknown').length;
     final logicalVpnPaths = edges
         .where((edge) => networkEdgeKind(edge.link).contains('VPN'))
         .toList();
@@ -1691,26 +1704,53 @@ class _NetworkPageState extends State<NetworkPage> {
             NetworkKeyValue(
                 'Network Status · System DTO', known(snapshot.system.network),
                 status: snapshot.system.network),
-            const NetworkKeyValue(
-                'Provider', 'Kein Provider-Datensatz verfügbar'),
+            NetworkKeyValue(
+                'Provider',
+                tailnetKnown == 0
+                    ? 'Status nicht verfügbar'
+                    : 'Tailscale · Core-Host'),
             const NetworkKeyValue(
                 'Datenquelle', 'Snapshot.system + Device Health'),
             NetworkKeyValue(
                 'Snapshot erzeugt', timestamp(snapshot.system.generatedMs)),
-            const NetworkKeyValue('Telemetrieverfügbarkeit', 'NICHT GELIEFERT'),
-            const NetworkHint('Keine VPN-Telemetrie geliefert',
-                'Der Core liefert keine Peer-, Endpoint-, Handshake-, Route- oder Tunnel-Health-Datensätze. Vorhandene Transport-Strings sind keine Peer-Telemetrie.'),
+            NetworkKeyValue('Mitgliedschaft bekannt',
+                '${devices.where((device) => device.health.vpn != 'unknown').length} von ${devices.length}'),
+            const NetworkHint('Tailscale-Mitgliedschaft vom Core erkannt',
+                'Der Core liest die lokale Tailscale-Peerliste und ordnet deren Mitglieder dem autorisierten Geräteinventar zu. Nicht zugeordnete Geräte gelten nur dann als nicht im Tailnet, wenn die lokale Peerliste aktuell verfügbar ist.',
+                status: 'info'),
           ]),
         ),
         _vpnSection(
           context,
           'PEER EXPLORER',
           Icons.people_outline,
-          const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            NetworkKeyValue('Gelieferte Peer-Datensätze', '0'),
-            NetworkHint('Keine VPN-Peer-Telemetrie verfügbar',
-                'Keine Tailscale- oder WireGuard-Peers, Allowed IPs, Endpoints oder Handshake-Zeiten werden erfunden.'),
-            NetworkBadge('PEERS · NICHT VERFÜGBAR', 'unknown'),
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            NetworkKeyValue('Zugeordnete Geräte',
+                '${devices.where((device) => device.health.vpn == 'tailscale_online' || device.health.vpn == 'tailscale_offline').length}'),
+            for (final device in devices)
+              ListTile(
+                key: Key('tailnet-device-${device.id}'),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(
+                  device.health.vpn == 'tailscale_online' ||
+                          device.health.vpn == 'tailscale_offline'
+                      ? Icons.vpn_lock_outlined
+                      : networkKindIcon(device.kind),
+                  size: 20,
+                ),
+                title: Text(device.name),
+                subtitle: Text(networkDeviceCategory(device.kind)),
+                trailing: NetworkBadge(
+                    known(device.health.vpn).toUpperCase(), device.health.vpn,
+                    showDot: true),
+                onTap: () => _selectNodeFromInspector(device),
+              ),
+            if (tailnetKnown == 0)
+              const NetworkHint('Tailscale-Status nicht verfügbar',
+                  'Der Core konnte keine aktuelle Antwort von tailscale status lesen. Der Geräte-Mitgliedschaftsstatus bleibt deshalb unbekannt.'),
+            const NetworkHint('Weitere Peer-Messwerte fehlen',
+                'Peer-Endpoints, Handshake-Zeiten, Routes, Allowed IPs und Tunnel-Health werden nicht geliefert.'),
           ]),
         ),
         _vpnSection(
@@ -1786,9 +1826,8 @@ class _NetworkPageState extends State<NetworkPage> {
                   status: incident.simulated ? 'info' : 'degraded'),
           ]),
         ),
-        const NetworkHint(
-            'Core-Capabilities erforderlich · nicht implementiert',
-            'Tailscale/WireGuard Read, Peer Health, Handshake Age, Routes, Allowed IPs, Reachability, RTT/Loss, Traffic und Collection Errors sind Anforderungen an den Core, keine vorhandenen UI-Funktionen.'),
+        const NetworkHint('Weitere VPN-Messwerte nicht verfügbar',
+            'Die Mitgliedschaft stammt aus der lokalen Tailscale-Peerliste. Peer Health, Handshake Age, Routes, Allowed IPs, RTT/Loss, Traffic und VPN-Collection-Errors werden nicht geliefert.'),
       ]),
     );
   }
