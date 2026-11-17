@@ -283,13 +283,13 @@ void main() {
           find.byKey(const Key('network-search')), 'bulk-$index');
       await tester.pumpAndSettle();
       expect(find.byKey(Key('explorer-device-bulk-$index')), findsOneWidget);
-      expect(find.byKey(Key('topology-bulk-$index')), findsNothing);
+      expect(find.byKey(Key('topology-bulk-$index')), findsOneWidget);
     }
     expect(find.byKey(const Key('network-device-explorer')), findsOneWidget);
     expect(find.byKey(const Key('network-unlinked-inventory')), findsNothing);
     expect(find.text('RELATION UNBEKANNT 14'), findsOneWidget);
-    expect(find.byKey(const Key('topology-canvas')), findsNothing);
-    expect(find.textContaining('Keine bekannten Topologie-Endpunkte'),
+    expect(find.byKey(const Key('topology-canvas')), findsOneWidget);
+    expect(find.textContaining('Keine bestätigten Verbindungspfade'),
         findsOneWidget);
     expect(tester.takeException(), isNull);
   });

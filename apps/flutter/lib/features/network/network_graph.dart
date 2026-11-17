@@ -7,10 +7,9 @@ import '../../models/contracts.dart';
 import 'network_model.dart';
 import '../../widgets/device_kind.dart';
 
-/// Geometry for the *known* logical topology. Only devices that occur in a
-/// delivered link belong here; relation-unknown devices are rendered by the
-/// separate inventory workspace. No position or edge is inferred from a name,
-/// location, transport annotation or device type.
+/// Geometry for the network view. Registered devices remain visible even when
+/// no links were delivered; only actual snapshot links create edges. No edge
+/// is inferred from a name, location, transport annotation or device type.
 class TopologyLayout {
   static const nodeWidth = 180.0;
   static const nodeHeight = 64.0;
@@ -364,7 +363,7 @@ class _NetworkTopologyGraphState extends State<NetworkTopologyGraph> {
                       child: Padding(
                         padding: EdgeInsets.all(24),
                         child: Text(
-                          'Keine bekannten Topologie-Endpunkte im aktuellen Filter.\nRegistrierte Geräte mit unbekannter Relation bleiben im Device Explorer verfügbar.',
+                          'Keine registrierten Geräte im aktuellen Kontext oder Filter.',
                           textAlign: TextAlign.center,
                         ),
                       ),

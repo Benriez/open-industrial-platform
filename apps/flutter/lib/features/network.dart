@@ -423,10 +423,9 @@ class _NetworkPageState extends State<NetworkPage> {
 
   TopologyLayout _topologyLayout(Snapshot snapshot) {
     final edges = networkEdges(snapshot);
-    final linked = networkLinkedDeviceIds(edges);
-    final devices = _visibleDevices(snapshot, edges)
-        .where((device) => linked.contains(device.id))
-        .toList();
+    // Keep every registered device in the network view. A missing link is
+    // unknown topology, not a reason to hide the device or imply it is absent.
+    final devices = _visibleDevices(snapshot, edges);
     return TopologyLayout.build(devices, _visibleEdges(snapshot, edges));
   }
 
@@ -997,9 +996,9 @@ class _NetworkPageState extends State<NetworkPage> {
                         style: TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 ),
+                NetworkBadge('${layout.devices.length} GERÄTE', 'unknown'),
                 NetworkBadge(
-                    '${layout.devices.length} TOPOLOGIE-NODES', 'unknown'),
-                NetworkBadge('${visibleEdges.length} PFADE', 'unknown'),
+                    '${visibleEdges.length} BESTÄTIGTE PFADE', 'unknown'),
                 ToolButton(
                     icon: Icons.remove,
                     tooltip: 'Verkleinern',
@@ -1067,6 +1066,16 @@ class _NetworkPageState extends State<NetworkPage> {
             ),
           ),
         Divider(height: 1, color: Theme.of(context).colorScheme.outlineVariant),
+        if (visibleEdges.isEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+            child: NetworkHint(
+              snapshot.topologyDelivered
+                  ? 'Keine bestätigten Verbindungspfade'
+                  : 'Verbindungspfade nicht mitgeliefert',
+              'Die Knoten zeigen registrierte Geräte. Verbindungen werden nicht aus Namen, Standort oder VPN-Status abgeleitet.',
+            ),
+          ),
         Expanded(
           child: NetworkTopologyGraph(
             layout: layout,

@@ -593,7 +593,9 @@ void main() {
       await _bootstrap(tester, data: data);
       await _navigate(tester);
       expect(find.text('Keine Geräte im Filter'), findsOneWidget);
-      expect(find.textContaining('Keine bekannten Topologie-Endpunkte'),
+      expect(
+          find.textContaining(
+              'Keine registrierten Geräte im aktuellen Kontext'),
           findsOneWidget);
       expect(find.bySemanticsLabel('REGISTRIERTE NODES 0'), findsOneWidget);
       expect(tester.takeException(), isNull);

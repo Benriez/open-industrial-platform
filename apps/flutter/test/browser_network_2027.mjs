@@ -300,11 +300,11 @@ try {
   await page.getByRole('button', {name: /Vergleich schließen/}).click({force: true});
   await page.waitForTimeout(800);
 
-  // 8. the graph names its empty state.
+  // 8. the graph shows inventory nodes and names the missing path evidence.
   await clickName('Topologie');
-  await page.getByText(/Keine bekannten Topologie-Endpunkte im aktuellen Filter/)
+  await page.getByText(/Keine bestätigten Verbindungspfade/)
     .first().waitFor({timeout: bootTimeout});
-  await pass('the graph names its empty state');
+  await pass('the graph keeps registered devices visible without inventing paths');
   await capture('topology');
 
   // 9. the markers of the demo of the generation 2027 are absent.
