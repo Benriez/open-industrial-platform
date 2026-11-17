@@ -100,7 +100,7 @@ if [[ -n "$(git status --porcelain)" ]]; then
 fi
 flutter build macos --release \
   --build-name="$VERSION" --build-number="$BUILD" \
-  --dart-define=OIP_API_URL=http://127.0.0.1:18855 \
+  --dart-define=OIP_API_URL=http://127.0.0.1:18852 \
   --dart-define=OIP_APP_VERSION="$VERSION" \
   --dart-define=OIP_APP_BUILD="$BUILD"
 cd "$ROOT"

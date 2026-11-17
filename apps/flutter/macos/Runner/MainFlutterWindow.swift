@@ -83,6 +83,8 @@ private final class OIPPiTunnelManager: NSObject {
   private let watchdogLabel = "com.oip.platform-tunnel-watchdog"
   private var agentsConfigured = false
   private var tunnelMonitor: DispatchSourceTimer?
+  private var failedHealthProbes = 0
+  private var lastTunnelRestart: Date?
 
   func startIfEnabled() {
     guard Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelEnabled") as? Bool == true else {
@@ -100,8 +102,14 @@ private final class OIPPiTunnelManager: NSObject {
       guard let self else { return }
       let status = (response as? HTTPURLResponse)?.statusCode
       DispatchQueue.main.async {
-        if status == 200 || self.localPortIsListening() {
-          self.log("reusing existing local OIP tunnel on :\(self.localPort) (HTTP \(status.map { String($0) } ?? "no response"))")
+        if status == 200 {
+          self.log("reusing healthy local OIP API on :\(self.localPort)")
+        } else if self.localPortIsListening() {
+          // A listening socket is not enough: SSH can accept TCP locally while
+          // its forwarding channel no longer returns API responses. Keep the
+          // existing owner untouched, report the failed HTTP health check and
+          // let the operator's next app build use the known responding route.
+          self.log("local port :\(self.localPort) is open but the OIP API did not answer HTTP (\(status.map { String($0) } ?? "no response"))")
         } else {
           self.startManagedTunnel(tunnelPlist)
         }
@@ -177,13 +185,48 @@ private final class OIPPiTunnelManager: NSObject {
     let timer = DispatchSource.makeTimerSource(queue: .global(qos: .utility))
     timer.schedule(deadline: .now() + 10, repeating: 10, leeway: .seconds(2))
     timer.setEventHandler { [weak self] in
-      guard let self, !self.localPortIsListening() else { return }
-      DispatchQueue.main.async { [weak self] in
-        self?.startManagedTunnel(tunnelPlist)
-      }
+      self?.probeApiAndRecoverIfNeeded(tunnelPlist)
     }
     timer.resume()
     tunnelMonitor = timer
+  }
+
+  private func probeApiAndRecoverIfNeeded(_ tunnelPlist: URL) {
+    var request = URLRequest(
+      url: URL(string: "http://127.0.0.1:\(localPort)/api/v2/browser/session")!,
+      timeoutInterval: 2.5
+    )
+    request.httpMethod = "GET"
+    URLSession.shared.dataTask(with: request) { [weak self] _, response, _ in
+      guard let self else { return }
+      let status = (response as? HTTPURLResponse)?.statusCode
+      DispatchQueue.main.async {
+        if status == 200 {
+          self.failedHealthProbes = 0
+          return
+        }
+        self.failedHealthProbes += 1
+        guard self.failedHealthProbes >= 3 else { return }
+
+        if self.agentsConfigured {
+          let now = Date()
+          guard self.lastTunnelRestart.map({ now.timeIntervalSince($0) >= 60 }) ?? true else {
+            return
+          }
+          self.lastTunnelRestart = now
+          self.failedHealthProbes = 0
+          let domain = "gui/\(getuid())"
+          let restarted = self.runLaunchctl(["kickstart", "-k", "\(domain)/\(self.tunnelLabel)"])
+          self.log("OIP API failed three HTTP health probes; restarted managed tunnel=\(restarted)")
+        } else if !self.localPortIsListening() {
+          self.failedHealthProbes = 0
+          self.startManagedTunnel(tunnelPlist)
+        } else {
+          self.log("OIP API failed three HTTP health probes on an externally owned listener; left that process untouched")
+          self.failedHealthProbes = 0
+        }
+      }
+    }.resume()
   }
 
   private func localPortIsListening() -> Bool {
