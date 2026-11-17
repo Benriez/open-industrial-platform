@@ -22,8 +22,9 @@ macOS app. It replaces the obsolete `0.3.10+13` / port `18858` loop. Read
 
 - [ ] **Live installation acceptance:** the installed app was observed as `0.3.26+29`.
   Candidate `0.3.27+30` is local only and has not been installed or offered through
-  the in-app update dialog. No deployment or personal installation change is
-  authorized by the repository instructions for this run.
+  the in-app update dialog. The current `AGENTS.md` authorizes OIP OTA publication
+  and updating the personal app when explicitly requested; this completion goal
+  supplies that request.
 - [ ] **Physical-device acceptance on the current app:** observe fresh `bodi-pi` and
   `bodi-pc` telemetry in the installed UI and record metric names, values, and
   observation timestamps. Earlier source/probe results do not prove the current
@@ -41,10 +42,15 @@ macOS app. It replaces the obsolete `0.3.10+13` / port `18858` loop. Read
 
 - Do not use GitHub Actions; use the local OTA tooling only if a release is
   authorized.
-- Do not push, deploy, install over the personal app, change its database, perform
-  private SSH, or activate schema 7 under the current repository instructions.
+- Do not start GitHub Actions. For requested OIP work, the current `AGENTS.md`
+  authorizes pushing the verified branch, publishing through the local OTA release
+  script, SSH to the configured OIP hosts, and updating the installed app. Preserve
+  existing app and service state before replacement and verify after restart.
+- Do not modify the personal installation database or activate schema 7 without
+  an explicit request. Do not touch unrelated hosts, services, worktrees, or
+  processes.
 - Do not label the app complete based on the local candidate or managed fixture.
-- The next local work should close product defects found by source review or add
-  repeatable acceptance coverage without touching the personal installation. The
-  remaining live-device and rollout checks require a permitted operator-run
-  acceptance window.
+- Next: push the verified `main` source (the inspected workflows are manual-only),
+  publish `0.3.27+30` using `tools/oip_ota_release.sh`, then install via the app's
+  updater and verify telemetry and OPC-UA against the physical devices. Preserve
+  the prior app and LaunchAgent configuration and record measured results.
