@@ -216,7 +216,10 @@ try {
       const shot = workstation.slug === 'overview'
         ? `${outDir}/canonical-ui-${width}.png`
         : `${outDir}/canonical-ui-${workstation.slug}-${width}.png`;
-      await page.screenshot({ path: shot, fullPage: true });
+      // The visual gate compares fixed viewport references (1440x900 and
+      // 1920x1080), so do not extend screenshots to the document's scroll
+      // height. Workspace content may be taller than the viewport.
+      await page.screenshot({ path: shot, fullPage: false });
       screenshots.push(shot);
       findings.push({ check: `screenshot ${workstation.slug} ${width}px`, ok: true, detail: shot });
     }
