@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,17 +10,58 @@ import '../../models/contracts.dart';
 import '../../widgets/workstation.dart';
 import 'telemetry_chart.dart';
 
-enum _PanelKind { value, trend }
+/// The visualisations of a dashboard panel. `value` is the stored name of the
+/// stat panel and stays readable for layouts saved by earlier versions.
+enum _PanelKind { gauge, value, bar, trend }
+
+const _kindLabels = {
+  _PanelKind.gauge: 'Gauge',
+  _PanelKind.value: 'Stat',
+  _PanelKind.bar: 'Balken',
+  _PanelKind.trend: 'Verlauf',
+};
+
+const _kindIcons = {
+  _PanelKind.gauge: Icons.speed,
+  _PanelKind.value: Icons.pin_outlined,
+  _PanelKind.bar: Icons.linear_scale,
+  _PanelKind.trend: Icons.show_chart,
+};
+
+const _layoutVersion = 2;
+const _sessionSamples = 120;
+const _tileHeight = 196.0;
 
 class _PanelSpec {
   final String observationKey;
   final _PanelKind kind;
 
-  const _PanelSpec(this.observationKey, this.kind);
+  /// Display range and thresholds. With [custom] false they follow the unit
+  /// convention of the signal; with [custom] true a null means "not set".
+  final bool custom;
+  final double? min, max, warn, crit;
+
+  const _PanelSpec(
+    this.observationKey,
+    this.kind, {
+    this.custom = false,
+    this.min,
+    this.max,
+    this.warn,
+    this.crit,
+  });
+
+  _PanelSpec withKind(_PanelKind next) => _PanelSpec(observationKey, next,
+      custom: custom, min: min, max: max, warn: warn, crit: crit);
 
   Map<String, Object> toJson() => {
         'observation': observationKey,
         'kind': kind.name,
+        if (custom) 'custom': true,
+        if (min != null) 'min': min!,
+        if (max != null) 'max': max!,
+        if (warn != null) 'warn': warn!,
+        if (crit != null) 'crit': crit!,
       };
 
   static _PanelSpec? fromJson(Object? value) {
@@ -27,8 +69,160 @@ class _PanelSpec {
     final observation = value['observation'];
     final kind = _PanelKind.values.where((item) => item.name == value['kind']);
     if (observation is! String || kind.isEmpty) return null;
-    return _PanelSpec(observation, kind.first);
+    double? number(String key) {
+      final raw = value[key];
+      return raw is num && raw.isFinite ? raw.toDouble() : null;
+    }
+
+    return _PanelSpec(
+      observation,
+      kind.first,
+      custom: value['custom'] == true,
+      min: number('min'),
+      max: number('max'),
+      warn: number('warn'),
+      crit: number('crit'),
+    );
   }
+}
+
+/// The resolved scale of one panel: where the gauge starts and ends and at
+/// which values the colour changes.
+class _Scale {
+  final double min, max;
+  final double? warn, crit;
+
+  /// True when the range was derived from the unit or the session values and
+  /// not set by the user.
+  final bool auto;
+  const _Scale(this.min, this.max, this.warn, this.crit, {required this.auto});
+
+  double fraction(double value) =>
+      max <= min ? 0 : ((value - min) / (max - min)).clamp(0.0, 1.0);
+
+  /// 0 = normal, 1 = warning, 2 = critical; null without thresholds.
+  int? level(double value) {
+    if (warn == null && crit == null) return null;
+    if (crit != null && value >= crit!) return 2;
+    if (warn != null && value >= warn!) return 1;
+    return 0;
+  }
+}
+
+double _niceCeil(double value) {
+  if (value <= 0) return 1;
+  final magnitude = math.pow(10, (math.log(value) / math.ln10).floor());
+  for (final step in const [1, 2, 2.5, 5, 10]) {
+    if (value <= step * magnitude) return (step * magnitude).toDouble();
+  }
+  return (10 * magnitude).toDouble();
+}
+
+_Scale _resolveScale(
+    _PanelSpec spec, Observation item, List<Observation> samples) {
+  final numbers = [
+    if (item.number != null) item.number!,
+    for (final sample in samples)
+      if (sample.number != null) sample.number!,
+  ];
+  final seenMin = numbers.isEmpty ? 0.0 : numbers.reduce(math.min);
+  final seenMax = numbers.isEmpty ? 0.0 : numbers.reduce(math.max);
+
+  // Unit conventions: a percentage and a temperature have a natural 0–100
+  // display range; every other unit is scaled to the values seen so far.
+  final bounded = item.unit == '%' || item.unit == 'celsius';
+  var min = math.min(0.0, seenMin);
+  var max = bounded && seenMax <= 100 ? 100.0 : _niceCeil(seenMax * 1.15);
+  double? warn, crit;
+  if (item.unit == '%') {
+    warn = 70;
+    crit = 90;
+  } else if (item.unit == 'celsius') {
+    warn = 70;
+    crit = 85;
+  }
+  // Only a range derived from the session values is labelled as automatic;
+  // the 0–100 convention of a bounded unit needs no remark.
+  var auto = !(bounded && seenMax <= 100);
+  if (spec.custom) {
+    warn = spec.warn;
+    crit = spec.crit;
+    if (spec.min != null) min = spec.min!;
+    if (spec.max != null) max = spec.max!;
+    if (spec.min != null && spec.max != null) auto = false;
+  }
+  if (max <= min) max = min + 1;
+  return _Scale(min, max, warn, crit, auto: auto);
+}
+
+String _trim(double value, int digits) {
+  final text = value.toStringAsFixed(digits);
+  return text.contains('.')
+      ? text.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '')
+      : text;
+}
+
+/// A number in the unit of [item], shortened the way a monitoring panel
+/// expects it (binary byte prefixes, durations, one decimal).
+({String text, String unit}) _formatValue(double value, Observation item) {
+  switch (item.unit) {
+    case 'bytes':
+      const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
+      var scaled = value;
+      var index = 0;
+      while (scaled.abs() >= 1024 && index < units.length - 1) {
+        scaled /= 1024;
+        index++;
+      }
+      return (
+        text: _trim(scaled, scaled.abs() < 10 && index > 0 ? 2 : 1),
+        unit: units[index]
+      );
+    case 'seconds':
+      final total = value.round();
+      if (total >= 86400) {
+        return (
+          text: '${total ~/ 86400}d ${(total % 86400) ~/ 3600}h',
+          unit: ''
+        );
+      }
+      if (total >= 3600) {
+        return (text: '${total ~/ 3600}h ${(total % 3600) ~/ 60}m', unit: '');
+      }
+      if (total >= 60) {
+        return (text: '${total ~/ 60}m ${total % 60}s', unit: '');
+      }
+      return (text: '$total', unit: 's');
+    default:
+      return (
+        text: value == value.roundToDouble() && value.abs() < 1e12
+            ? value.round().toString()
+            : _trim(value, value.abs() < 10 ? 2 : 1),
+        unit: item.symbol
+      );
+  }
+}
+
+({String text, String unit}) _formatObservation(Observation item) =>
+    item.number == null
+        ? (text: item.display, unit: item.number == null ? '' : item.symbol)
+        : _formatValue(item.number!, item);
+
+String _formatBound(double value, Observation item) {
+  final formatted = _formatValue(value, item);
+  return formatted.unit.isEmpty
+      ? formatted.text
+      : '${formatted.text} ${formatted.unit}';
+}
+
+Color _levelColor(BuildContext context, int? level) {
+  final dark = Theme.of(context).brightness == Brightness.dark;
+  return switch (level) {
+    2 => dark ? const Color(0xfff2495c) : const Color(0xffc4162a),
+    1 => dark ? const Color(0xffffb357) : const Color(0xffb35c00),
+    0 => dark ? const Color(0xff73bf69) : const Color(0xff2f7d32),
+    _ => dark ? const Color(0xff5794f2) : const Color(0xff1f60c4),
+  };
 }
 
 /// A personal modular dashboard. Its key is bound to the authenticated
@@ -49,6 +243,10 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
   bool loaded = false;
   String? storageKey;
 
+  /// Fresh samples received while this dashboard is open, per signal. This is
+  /// a session buffer for sparklines and trends, not the persisted history.
+  final Map<String, List<Observation>> session = {};
+
   OipController get controller => widget.controller;
   String? get principal => controller.infrastructure.principalIdentity;
 
@@ -61,21 +259,57 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
   @override
   void initState() {
     super.initState();
-    controller.addListener(_contextChanged);
+    controller.addListener(_controllerChanged);
+    _recordSession();
     _loadForCurrentScope();
   }
 
   @override
   void dispose() {
-    controller.removeListener(_contextChanged);
+    controller.removeListener(_controllerChanged);
     super.dispose();
   }
 
-  void _contextChanged() {
+  void _controllerChanged() {
+    if (!mounted) return;
     final next = currentStorageKey;
-    if (next == storageKey) return;
-    _loadForCurrentScope();
+    if (next != storageKey) {
+      session.clear();
+      _recordSession();
+      _loadForCurrentScope();
+      return;
+    }
+    if (_recordSession()) setState(() {});
   }
+
+  bool _recordSession() {
+    var changed = false;
+    for (final observation in observations) {
+      final at = observation.sourceMs ?? observation.receivedMs;
+      if (observation.number == null ||
+          observation.freshness != 'fresh' ||
+          at == null) {
+        continue;
+      }
+      final samples =
+          session.putIfAbsent(observationKey(observation), () => []);
+      if (samples.isNotEmpty) {
+        final last = samples.last;
+        final lastAt = (last.sourceMs ?? last.receivedMs)!;
+        if (at < lastAt) samples.clear();
+        if (at == lastAt && last.value == observation.value) continue;
+      }
+      samples.add(observation);
+      if (samples.length > _sessionSamples) samples.removeAt(0);
+      changed = true;
+    }
+    return changed;
+  }
+
+  static _PanelKind _defaultKind(Observation observation) =>
+      observation.unit == '%' || observation.unit == 'celsius'
+          ? _PanelKind.gauge
+          : _PanelKind.value;
 
   Future<void> _loadForCurrentScope() async {
     final key = currentStorageKey;
@@ -91,9 +325,11 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
     final preferences = await SharedPreferences.getInstance();
     final encoded = preferences.getString(key);
     var restored = <_PanelSpec>[];
+    var store = false;
     if (encoded != null) {
       try {
         final decoded = jsonDecode(encoded);
+        var version = 1;
         if (decoded is Map<String, dynamic>) {
           final savedPanels = decoded['panels'];
           if (savedPanels is List) {
@@ -106,10 +342,29 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
           if (savedColumns is int && savedColumns >= 1 && savedColumns <= 4) {
             columns = savedColumns;
           }
+          final savedVersion = decoded['version'];
+          if (savedVersion is int) version = savedVersion;
         } else if (decoded is List) {
-          // Read the original v1 list layout and upgrade it on next edit.
+          // Read the original v1 list layout and upgrade it below.
           restored =
               decoded.map(_PanelSpec.fromJson).whereType<_PanelSpec>().toList();
+        }
+        // Layouts saved before the gauge panels existed only knew the plain
+        // value tile. Show bounded signals as gauges once; the user can switch
+        // every panel back afterwards.
+        if (version < _layoutVersion && observations.isNotEmpty) {
+          final byKey = {
+            for (final item in observations) observationKey(item): item
+          };
+          restored = [
+            for (final panel in restored)
+              if (panel.kind == _PanelKind.value &&
+                  byKey[panel.observationKey] != null)
+                panel.withKind(_defaultKind(byKey[panel.observationKey]!))
+              else
+                panel,
+          ];
+          store = true;
         }
       } catch (_) {
         restored = [];
@@ -118,22 +373,17 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
       // First view is useful immediately, but only from measurements actually
       // supplied by this authorized context.
       final seen = <String>{};
-      restored = [
-        for (final observation
-            in controller.snapshot?.metrics ?? const <Observation>[])
-          if (observation.number != null &&
-              seen.add(observationKey(observation)) &&
-              restored.length < 4)
-            _PanelSpec(observationKey(observation), _PanelKind.value),
-      ];
-      await preferences.setString(
-        key,
-        jsonEncode({
-          'columns': columns,
-          'panels': restored.map((p) => p.toJson()).toList(),
-        }),
-      );
+      for (final observation in observations) {
+        if (restored.length >= 6) break;
+        if (observation.number != null &&
+            seen.add(observationKey(observation))) {
+          restored.add(_PanelSpec(
+              observationKey(observation), _defaultKind(observation)));
+        }
+      }
+      store = true;
     }
+    if (store) await preferences.setString(key, _encode(restored));
     if (!mounted || storageKey != key) return;
     setState(() {
       panels = restored;
@@ -141,17 +391,17 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
     });
   }
 
+  String _encode(List<_PanelSpec> value) => jsonEncode({
+        'version': _layoutVersion,
+        'columns': columns,
+        'panels': value.map((panel) => panel.toJson()).toList(),
+      });
+
   Future<void> _save() async {
     final key = storageKey;
     if (key == null) return;
     final preferences = await SharedPreferences.getInstance();
-    await preferences.setString(
-      key,
-      jsonEncode({
-        'columns': columns,
-        'panels': panels.map((panel) => panel.toJson()).toList(),
-      }),
-    );
+    await preferences.setString(key, _encode(panels));
   }
 
   List<Observation> get observations =>
@@ -160,16 +410,26 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
   Future<void> _addPanel() async {
     final candidates = observations;
     if (candidates.isEmpty) return;
-    final selected =
-        await showDialog<({Observation observation, _PanelKind kind})>(
+    final selected = await showDialog<_PanelSpec>(
       context: context,
       builder: (context) => _AddPanelDialog(observations: candidates),
     );
     if (selected == null || !mounted) return;
-    final key = observationKey(selected.observation);
-    setState(() {
-      panels.add(_PanelSpec(key, selected.kind));
-    });
+    setState(() => panels.add(selected));
+    await _save();
+  }
+
+  Future<void> _configure(int index, Observation? observation) async {
+    final updated = await showDialog<_PanelSpec>(
+      context: context,
+      builder: (context) => _PanelOptionsDialog(
+        spec: panels[index],
+        observation: observation,
+        samples: session[panels[index].observationKey] ?? const [],
+      ),
+    );
+    if (updated == null || !mounted || index >= panels.length) return;
+    setState(() => panels[index] = updated);
     await _save();
   }
 
@@ -180,94 +440,7 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
         scope.ready ? scope.selectedBreadcrumb : 'Kein autorisierter Kontext';
     final activeKey = currentStorageKey;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      WorkstationPanel(
-        accent: OipTokens.cyan,
-        padding: const EdgeInsets.fromLTRB(18, 16, 16, 14),
-        child: LayoutBuilder(builder: (context, box) {
-          final heading = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                const Icon(Icons.monitor_heart_outlined,
-                    color: OipTokens.cyan, size: 18),
-                const SizedBox(width: 7),
-                Text('LIVE DASHBOARD',
-                    style: WorkstationTokens.eyebrow(context,
-                        color: OipTokens.cyan)),
-                const SizedBox(width: 10),
-                _LiveIndicator(live: controller.connection == 'live'),
-              ]),
-              const SizedBox(height: 6),
-              Text(scopeLabel,
-                  style: Theme.of(context).textTheme.titleLarge,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis),
-              const SizedBox(height: 5),
-              Text(
-                activeKey == null
-                    ? 'Zum Bearbeiten anmelden und eine Infrastruktur auswählen.'
-                    : '${panels.length} Panels · ${observations.length} gelieferte Messpunkte · persönliches Layout',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          );
-          final controls = Wrap(spacing: 8, runSpacing: 8, children: [
-            if (editing)
-              PopupMenuButton<int>(
-                tooltip: 'Spaltenbreite',
-                initialValue: columns,
-                onSelected: (value) async {
-                  setState(() => columns = value);
-                  await _save();
-                },
-                itemBuilder: (context) => const [
-                  PopupMenuItem(value: 1, child: Text('1 Spalte')),
-                  PopupMenuItem(value: 2, child: Text('2 Spalten')),
-                  PopupMenuItem(value: 3, child: Text('3 Spalten')),
-                  PopupMenuItem(value: 4, child: Text('4 Spalten')),
-                ],
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: WorkstationTokens.line(context)),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.view_column_outlined, size: 18),
-                    const SizedBox(width: 7),
-                    Text('$columns Spalten'),
-                  ]),
-                ),
-              ),
-            OutlinedButton.icon(
-              key: const Key('overview-dashboard-edit'),
-              onPressed: activeKey == null
-                  ? null
-                  : () => setState(() => editing = !editing),
-              icon: Icon(editing ? Icons.check : Icons.tune, size: 17),
-              label: Text(editing ? 'Fertig' : 'Anpassen'),
-            ),
-            FilledButton.icon(
-              key: const Key('overview-dashboard-add-panel'),
-              onPressed:
-                  activeKey == null || observations.isEmpty ? null : _addPanel,
-              icon: const Icon(Icons.add, size: 17),
-              label: const Text('Panel hinzufügen'),
-            ),
-          ]);
-          return box.maxWidth < 780
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [heading, const SizedBox(height: 14), controls],
-                )
-              : Row(children: [
-                  Expanded(child: heading),
-                  const SizedBox(width: 12),
-                  controls,
-                ]);
-        }),
-      ),
+      _toolbar(context, scopeLabel, activeKey),
       const SizedBox(height: OipTokens.s2),
       if (!loaded)
         const LinearProgressIndicator()
@@ -280,244 +453,768 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
       else if (panels.isEmpty)
         const WorkstationNote(
           'Noch keine Panels',
-          'Füge ein Live-Messsignal als Wert oder Verlauf hinzu. Angezeigt werden nur Daten des aktuellen Infrastrukturkontexts.',
+          'Füge ein Live-Messsignal als Gauge, Stat, Balken oder Verlauf hinzu. Angezeigt werden nur Daten des aktuellen Infrastrukturkontexts.',
           icon: Icons.dashboard_customize_outlined,
         )
       else
         LayoutBuilder(builder: (context, constraints) {
-          final effectiveColumns = constraints.maxWidth < 580
+          final effectiveColumns = constraints.maxWidth < 520
               ? 1
-              : constraints.maxWidth < 1000
+              : constraints.maxWidth < 900
                   ? columns.clamp(1, 2)
                   : columns;
           const gap = OipTokens.s2;
+          // Floor the tile width so rounding never pushes the last tile of a
+          // row into the next one.
           final tileWidth =
-              (constraints.maxWidth - gap * (effectiveColumns - 1)) /
-                  effectiveColumns;
+              ((constraints.maxWidth - gap * (effectiveColumns - 1)) /
+                      effectiveColumns)
+                  .floorToDouble();
+          final byKey = <String, Observation>{};
+          for (final item in observations) {
+            byKey.putIfAbsent(observationKey(item), () => item);
+          }
           return Wrap(
             key: const Key('overview-modular-dashboard-panels'),
             spacing: gap,
             runSpacing: gap,
             children: [
               for (var index = 0; index < panels.length; index++)
-                Builder(builder: (context) {
-                  final spec = panels[index];
-                  final observation = observations
-                      .where(
-                          (item) => observationKey(item) == spec.observationKey)
-                      .firstOrNull;
-                  final wide = spec.kind == _PanelKind.trend;
-                  final width = wide ? constraints.maxWidth : tileWidth;
-                  return SizedBox(
-                    width: width,
-                    child: _DashboardPanel(
-                      observation: observation,
-                      spec: spec,
-                      history: controller.history,
-                      selected: controller.telemetryKey == spec.observationKey,
-                      editing: editing,
-                      onSelect: observation == null
-                          ? null
-                          : () =>
-                              controller.selectTelemetry(spec.observationKey),
-                      onRemove: () async {
-                        setState(() => panels.removeAt(index));
-                        await _save();
-                      },
-                      onMove: (direction) async {
-                        final target = index + direction;
-                        if (target < 0 || target >= panels.length) return;
-                        setState(() {
-                          final panel = panels.removeAt(index);
-                          panels.insert(target, panel);
-                        });
-                        await _save();
-                      },
-                      onKindChanged: (kind) async {
-                        setState(() => panels[index] =
-                            _PanelSpec(spec.observationKey, kind));
-                        await _save();
-                      },
-                    ),
-                  );
-                }),
+                SizedBox(
+                  width: panels[index].kind == _PanelKind.trend
+                      ? constraints.maxWidth
+                      : tileWidth,
+                  child: _DashboardPanel(
+                    observation: byKey[panels[index].observationKey],
+                    spec: panels[index],
+                    samples: session[panels[index].observationKey] ?? const [],
+                    editing: editing,
+                    onRemove: () async {
+                      setState(() => panels.removeAt(index));
+                      await _save();
+                    },
+                    onMove: (direction) async {
+                      final target = index + direction;
+                      if (target < 0 || target >= panels.length) return;
+                      setState(() {
+                        final panel = panels.removeAt(index);
+                        panels.insert(target, panel);
+                      });
+                      await _save();
+                    },
+                    onConfigure: () =>
+                        _configure(index, byKey[panels[index].observationKey]),
+                  ),
+                ),
             ],
           );
         }),
     ]);
+  }
+
+  Widget _toolbar(BuildContext context, String scopeLabel, String? activeKey) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+      decoration: BoxDecoration(
+        color: WorkstationTokens.panel(context),
+        border: Border.all(color: WorkstationTokens.hairline(context)),
+        borderRadius: BorderRadius.circular(_PanelFrame.radius),
+      ),
+      child: LayoutBuilder(builder: (context, box) {
+        final heading = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              const Icon(Icons.dashboard_outlined,
+                  color: OipTokens.cyan, size: 17),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(scopeLabel,
+                    style: Theme.of(context).textTheme.titleMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+              ),
+              const SizedBox(width: 10),
+              _LiveIndicator(live: controller.connection == 'live'),
+            ]),
+            const SizedBox(height: 4),
+            Text(
+              activeKey == null
+                  ? 'Zum Bearbeiten anmelden und eine Infrastruktur auswählen.'
+                  : '${panels.length} Panels · ${observations.length} gelieferte Messpunkte · persönliches Layout',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        );
+        final controls = Wrap(spacing: 8, runSpacing: 8, children: [
+          if (editing)
+            PopupMenuButton<int>(
+              tooltip: 'Spaltenbreite',
+              initialValue: columns,
+              onSelected: (value) async {
+                setState(() => columns = value);
+                await _save();
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: 1, child: Text('1 Spalte')),
+                PopupMenuItem(value: 2, child: Text('2 Spalten')),
+                PopupMenuItem(value: 3, child: Text('3 Spalten')),
+                PopupMenuItem(value: 4, child: Text('4 Spalten')),
+              ],
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                decoration: BoxDecoration(
+                  border: Border.all(color: WorkstationTokens.line(context)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  const Icon(Icons.view_column_outlined, size: 18),
+                  const SizedBox(width: 7),
+                  Text('$columns Spalten'),
+                ]),
+              ),
+            ),
+          OutlinedButton.icon(
+            key: const Key('overview-dashboard-edit'),
+            onPressed: activeKey == null
+                ? null
+                : () => setState(() => editing = !editing),
+            icon: Icon(editing ? Icons.check : Icons.tune, size: 17),
+            label: Text(editing ? 'Fertig' : 'Anpassen'),
+          ),
+          FilledButton.icon(
+            key: const Key('overview-dashboard-add-panel'),
+            onPressed:
+                activeKey == null || observations.isEmpty ? null : _addPanel,
+            icon: const Icon(Icons.add, size: 17),
+            label: const Text('Panel hinzufügen'),
+          ),
+        ]);
+        return box.maxWidth < 780
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [heading, const SizedBox(height: 10), controls],
+              )
+            : Row(children: [
+                Expanded(child: heading),
+                const SizedBox(width: 12),
+                controls,
+              ]);
+      }),
+    );
+  }
+}
+
+/// The flat, tightly framed panel chrome of a monitoring dashboard: a title
+/// row with the state of the signal and the visualisation below.
+class _PanelFrame extends StatelessWidget {
+  static const radius = 5.0;
+
+  final String title;
+  final String? subtitle;
+  final String? tooltip;
+  final Color? stateColor;
+  final String? badge;
+  final List<Widget> actions;
+  final Widget child;
+  final double? height;
+
+  const _PanelFrame({
+    required this.title,
+    required this.child,
+    this.subtitle,
+    this.tooltip,
+    this.stateColor,
+    this.badge,
+    this.actions = const [],
+    this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final header = Row(children: [
+      if (stateColor != null) ...[
+        Container(
+          width: 7,
+          height: 7,
+          decoration: BoxDecoration(shape: BoxShape.circle, color: stateColor),
+        ),
+        const SizedBox(width: 7),
+      ],
+      Flexible(
+        child: Text(title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(fontSize: 12.5, fontWeight: FontWeight.w600)),
+      ),
+      if (subtitle != null) ...[
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(subtitle!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: WorkstationTokens.mono(context,
+                  size: 10, color: OipTokens.muted(context))),
+        ),
+      ] else
+        const Spacer(),
+      if (badge != null && stateColor != null)
+        Container(
+          margin: const EdgeInsets.only(left: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+          decoration: BoxDecoration(
+            color: stateColor!.withOpacity(.12),
+            border: Border.all(color: stateColor!.withOpacity(.4)),
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: Text(badge!,
+              style: WorkstationTokens.mono(context,
+                  size: 9, color: stateColor, weight: FontWeight.w700)),
+        ),
+      ...actions,
+    ]);
+    return Container(
+      height: height,
+      decoration: BoxDecoration(
+        color: WorkstationTokens.panel(context),
+        border: Border.all(color: WorkstationTokens.hairline(context)),
+        borderRadius: BorderRadius.circular(radius),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: height == null ? MainAxisSize.min : MainAxisSize.max,
+        children: [
+          SizedBox(
+            height: 34,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12, right: 6),
+              child: tooltip == null
+                  ? header
+                  : Tooltip(
+                      message: tooltip!,
+                      waitDuration: const Duration(milliseconds: 500),
+                      child: header),
+            ),
+          ),
+          if (height == null) child else Expanded(child: child),
+        ],
+      ),
+    );
   }
 }
 
 class _DashboardPanel extends StatelessWidget {
   final Observation? observation;
   final _PanelSpec spec;
-  final List<Observation> history;
-  final bool selected;
+  final List<Observation> samples;
   final bool editing;
-  final VoidCallback? onSelect;
   final VoidCallback onRemove;
   final ValueChanged<int> onMove;
-  final ValueChanged<_PanelKind> onKindChanged;
+  final VoidCallback onConfigure;
 
   const _DashboardPanel({
     required this.observation,
     required this.spec,
-    required this.history,
-    required this.selected,
+    required this.samples,
     required this.editing,
-    required this.onSelect,
     required this.onRemove,
     required this.onMove,
-    required this.onKindChanged,
+    required this.onConfigure,
   });
+
+  Widget _action(String tooltip, IconData icon, VoidCallback onPressed) =>
+      SizedBox(
+        width: 26,
+        height: 26,
+        child: IconButton(
+          padding: EdgeInsets.zero,
+          tooltip: tooltip,
+          onPressed: onPressed,
+          icon: Icon(icon, size: 15),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     final item = observation;
-    return WorkstationPanel(
-      accent: item == null
-          ? OipTokens.yellow
-          : OipTokens.statusColor(context, item.freshness),
-      padding: EdgeInsets.fromLTRB(
-          spec.kind == _PanelKind.value ? 16 : 14, 14, 14, 14),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Row(children: [
-          Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                Row(children: [
-                  Expanded(
-                    child: Text(
-                      item == null ? 'SIGNAL NICHT VERFÜGBAR' : item.metricId,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: WorkstationTokens.eyebrow(context),
-                    ),
-                  ),
-                  if (editing) ...[
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      tooltip: 'Panel nach links/oben verschieben',
-                      onPressed: () => onMove(-1),
-                      icon: const Icon(Icons.arrow_upward, size: 17),
-                    ),
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      tooltip: 'Panel nach rechts/unten verschieben',
-                      onPressed: () => onMove(1),
-                      icon: const Icon(Icons.arrow_downward, size: 17),
-                    ),
-                  ],
-                ]),
-                if (item != null)
-                  Text(
-                      '${item.entityId} · ${item.sourceId ?? 'Quelle nicht angegeben'}',
-                      style: WorkstationTokens.mono(context,
-                          size: 10, color: OipTokens.muted(context)),
-                      overflow: TextOverflow.ellipsis),
-              ])),
-          if (editing)
-            PopupMenuButton<_PanelKind>(
-              tooltip: 'Darstellung ändern',
-              icon: const Icon(Icons.more_horiz),
-              onSelected: onKindChanged,
-              itemBuilder: (context) => const [
-                PopupMenuItem(
-                    value: _PanelKind.value, child: Text('Aktueller Wert')),
-                PopupMenuItem(
-                    value: _PanelKind.trend, child: Text('Session-Verlauf')),
-              ],
-            ),
-          if (editing)
-            IconButton(
-                tooltip: 'Panel entfernen',
-                onPressed: onRemove,
-                icon: const Icon(Icons.close)),
+    final trend = spec.kind == _PanelKind.trend;
+    final actions = [
+      if (editing) ...[
+        _action('Panel nach vorne verschieben', Icons.chevron_left,
+            () => onMove(-1)),
+        _action('Panel nach hinten verschieben', Icons.chevron_right,
+            () => onMove(1)),
+        _action('Panel konfigurieren', Icons.settings_outlined, onConfigure),
+        _action('Panel entfernen', Icons.close, onRemove),
+      ],
+    ];
+    if (item == null) {
+      final parts = spec.observationKey.split('\u001f');
+      return _PanelFrame(
+        title: parts.last,
+        subtitle: parts.length > 1 ? parts[1] : null,
+        stateColor: OipTokens.statusColor(context, 'unknown'),
+        badge: 'KEIN SIGNAL',
+        actions: actions,
+        height: trend ? null : _tileHeight,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+          child: Text(
+              'Das konfigurierte Signal ist in diesem Kontext nicht verfügbar.',
+              style: Theme.of(context).textTheme.bodySmall),
+        ),
+      );
+    }
+
+    final fresh = item.freshness == 'fresh';
+    final stateColor = OipTokens.statusColor(context, item.freshness);
+    final received = item.receivedMs == null
+        ? 'Empfangszeit nicht geliefert'
+        : 'Empfangen ${DateTime.fromMillisecondsSinceEpoch(item.receivedMs!, isUtc: true).toLocal().toString().substring(11, 19)}';
+    final scale = _resolveScale(spec, item, samples);
+    final number = item.number;
+    // A value that is not fresh is never drawn in a live threshold colour.
+    final color = !fresh || number == null
+        ? OipTokens.muted(context)
+        : _levelColor(context, scale.level(number));
+
+    final Widget body;
+    if (trend) {
+      body = Padding(
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (samples.length < 2)
+              const SizedBox(
+                height: 120,
+                child: Center(
+                  child: Text(
+                      'Sammle Verlauf – mindestens zwei frische Samples erforderlich.'),
+                ),
+              )
+            else
+              OverviewTrendChart(
+                  samples: samples,
+                  unit: item.symbol,
+                  simulated: item.simulated,
+                  height: 220),
+            const SizedBox(height: 4),
+            Text(
+                'Session-Verlauf · ${samples.length} Samples seit Öffnen des Dashboards · keine persistierte Historie',
+                style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
+      );
+    } else if (number == null) {
+      body = Center(
+        child: Text(item.display,
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.copyWith(color: OipTokens.muted(context))),
+      );
+    } else {
+      body = switch (spec.kind) {
+        _PanelKind.gauge =>
+          _GaugeBody(item: item, value: number, scale: scale, color: color),
+        _PanelKind.bar =>
+          _BarBody(item: item, value: number, scale: scale, color: color),
+        _ => _StatBody(item: item, samples: samples, color: color),
+      };
+    }
+
+    return _PanelFrame(
+      title: item.metricId,
+      subtitle: item.entityId,
+      tooltip:
+          '${item.sourceId ?? 'Quelle nicht angegeben'} · ${item.entityId}\n'
+          '$received · Qualität ${item.quality} · ${item.freshness}',
+      stateColor: stateColor,
+      badge: fresh ? null : item.freshness.toUpperCase(),
+      actions: actions,
+      height: trend ? null : _tileHeight,
+      child: body,
+    );
+  }
+}
+
+TextStyle _valueStyle(BuildContext context, Color color, double size) =>
+    TextStyle(
+      fontSize: size,
+      height: 1.05,
+      fontWeight: FontWeight.w600,
+      letterSpacing: -.5,
+      color: color,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+
+class _ValueText extends StatelessWidget {
+  final Observation item;
+  final Color color;
+  final double size;
+  const _ValueText(
+      {required this.item, required this.color, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    final formatted = _formatObservation(item);
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text.rich(
+        TextSpan(text: formatted.text, children: [
+          if (formatted.unit.isNotEmpty)
+            TextSpan(
+                text: ' ${formatted.unit}',
+                style: TextStyle(fontSize: size * .5, letterSpacing: 0)),
         ]),
-        if (item == null)
-          const Text(
-              'Das konfigurierte Signal ist in diesem Kontext nicht verfügbar.')
-        else if (spec.kind == _PanelKind.value) ...[
-          Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Expanded(
-                child: Text('${item.display} ${item.symbol}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium
-                        ?.copyWith(fontSize: 31, fontWeight: FontWeight.w700))),
-            Tooltip(
-              message: 'Messqualität ${item.quality}',
-              child: Icon(
-                item.freshness == 'fresh'
-                    ? Icons.check_circle_outline
-                    : Icons.warning_amber_outlined,
-                color: OipTokens.statusColor(context, item.freshness),
-                size: 20,
+        maxLines: 1,
+        style: _valueStyle(context, color, size),
+      ),
+    );
+  }
+}
+
+class _GaugeBody extends StatelessWidget {
+  final Observation item;
+  final double value;
+  final _Scale scale;
+  final Color color;
+  const _GaugeBody({
+    required this.item,
+    required this.value,
+    required this.scale,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bounds = WorkstationTokens.mono(context,
+        size: 10, color: OipTokens.muted(context));
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 2, 12, 8),
+      child: Column(children: [
+        Expanded(
+          child: LayoutBuilder(builder: (context, box) {
+            return Stack(alignment: Alignment.center, children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _GaugePainter(
+                    fraction: scale.fraction(value),
+                    color: color,
+                    track: WorkstationTokens.hairline(context),
+                    bands: [
+                      for (final band in _bands(scale))
+                        (
+                          from: band.from,
+                          to: band.to,
+                          color: _levelColor(context, band.level)
+                        ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ]),
-          const SizedBox(height: 7),
-          Row(children: [
-            _FreshnessBadge(value: item.freshness),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                item.receivedMs == null
-                    ? 'Empfangszeit nicht geliefert'
-                    : 'Empfangen ${DateTime.fromMillisecondsSinceEpoch(item.receivedMs!, isUtc: true).toLocal().toString().substring(11, 19)}',
+              Align(
+                alignment: const Alignment(0, .5),
+                child: SizedBox(
+                  width: math.min(box.maxWidth, box.maxHeight * 1.3) * .56,
+                  child: _ValueText(
+                      item: item,
+                      color: color,
+                      size: (box.maxHeight * .24).clamp(18.0, 34.0)),
+                ),
+              ),
+            ]);
+          }),
+        ),
+        Row(children: [
+          Text(_formatBound(scale.min, item), style: bounds),
+          Expanded(
+            child: Text(scale.auto ? 'Skala automatisch' : '',
+                textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-            if (selected)
-              const Icon(Icons.show_chart, size: 16, color: OipTokens.cyan)
-            else
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                tooltip: 'Session-Verlauf dieses Signals aufnehmen',
-                onPressed: onSelect,
-                icon: const Icon(Icons.show_chart, size: 17),
-              ),
-          ]),
-          if (selected && history.length > 1)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: _MiniTrend(samples: history, color: OipTokens.cyan),
-            ),
-        ] else ...[
-          Row(children: [
-            Expanded(
-                child: Text('Messwert ${item.display} ${item.symbol}',
-                    style: Theme.of(context).textTheme.titleMedium)),
-            TextButton.icon(
-                onPressed: onSelect,
-                icon: Icon(selected ? Icons.check : Icons.show_chart),
-                label: Text(selected ? 'Aktive Reihe' : 'Reihe laden')),
-          ]),
-          if (!selected)
-            const WorkstationNote('Verlauf auswählen',
-                'Der Verlauf basiert auf den seit Auswahl empfangenen Samples dieser Sitzung.',
-                icon: Icons.timeline)
-          else if (history.length < 2)
-            const WorkstationNote('Sammle Verlauf',
-                'Mindestens zwei gültige, zeitlich geordnete Samples sind erforderlich.',
-                icon: Icons.hourglass_empty)
-          else
-            OverviewTrendChart(
-                samples: history,
-                unit: item.symbol,
-                simulated: item.simulated,
-                height: 236),
-          Text(
-              'Session-Verlauf · ${history.length} Samples · keine persistierte Historie',
-              style: Theme.of(context).textTheme.bodySmall),
-        ],
+                style: bounds),
+          ),
+          Text(_formatBound(scale.max, item), style: bounds),
+        ]),
       ]),
     );
+  }
+}
+
+/// The threshold segments of a scale as fractions of its range.
+List<({double from, double to, int? level})> _bands(_Scale scale) {
+  if (scale.warn == null && scale.crit == null) {
+    return [(from: 0, to: 1, level: null)];
+  }
+  final warn = scale.warn == null ? null : scale.fraction(scale.warn!);
+  final crit = scale.crit == null ? null : scale.fraction(scale.crit!);
+  final normalEnd = warn ?? crit!;
+  return [
+    if (normalEnd > 0) (from: 0, to: normalEnd, level: 0),
+    if (warn != null && (crit ?? 1) > warn)
+      (from: warn, to: crit ?? 1, level: 1),
+    if (crit != null && crit < 1) (from: crit, to: 1, level: 2),
+  ];
+}
+
+class _GaugePainter extends CustomPainter {
+  static const _start = math.pi * 5 / 6; // 150°
+  static const _sweep = math.pi * 4 / 3; // 240°
+
+  final double fraction;
+  final Color color, track;
+  final List<({double from, double to, Color color})> bands;
+  const _GaugePainter({
+    required this.fraction,
+    required this.color,
+    required this.track,
+    required this.bands,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0) return;
+    // The 240° arc is 2r wide and 1.5r high.
+    final outer = math.min(size.width / 2, size.height / 1.5) - 1;
+    if (outer < 12) return;
+    final thickness = (outer * .2).clamp(6.0, 18.0);
+    const band = 3.0;
+    final center =
+        Offset(size.width / 2, (size.height - outer * 1.5) / 2 + outer);
+    final bandRect = Rect.fromCircle(center: center, radius: outer - band / 2);
+    final valueRadius = outer - band - 3 - thickness / 2;
+    final valueRect = Rect.fromCircle(center: center, radius: valueRadius);
+
+    final stroke = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.butt;
+    for (final segment in bands) {
+      canvas.drawArc(
+          bandRect,
+          _start + _sweep * segment.from,
+          _sweep * (segment.to - segment.from),
+          false,
+          stroke
+            ..strokeWidth = band
+            ..color = segment.color);
+    }
+    canvas.drawArc(
+        valueRect,
+        _start,
+        _sweep,
+        false,
+        stroke
+          ..strokeWidth = thickness
+          ..color = track.withOpacity(.55));
+    if (fraction > 0) {
+      canvas.drawArc(
+          valueRect,
+          _start,
+          _sweep * fraction,
+          false,
+          stroke
+            ..strokeWidth = thickness
+            ..color = color);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _GaugePainter old) =>
+      old.fraction != fraction ||
+      old.color != color ||
+      old.track != track ||
+      old.bands.length != bands.length ||
+      [for (var i = 0; i < bands.length; i++) old.bands[i] != bands[i]]
+          .contains(true);
+}
+
+class _BarBody extends StatelessWidget {
+  final Observation item;
+  final double value;
+  final _Scale scale;
+  final Color color;
+  const _BarBody({
+    required this.item,
+    required this.value,
+    required this.scale,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bounds = WorkstationTokens.mono(context,
+        size: 10, color: OipTokens.muted(context));
+    final live = color != OipTokens.muted(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 2, 12, 8),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _ValueText(item: item, color: color, size: 34),
+          ),
+        ),
+        SizedBox(
+          height: 30,
+          child: CustomPaint(
+            painter: _BarPainter(
+              fraction: scale.fraction(value),
+              unlit: WorkstationTokens.hairline(context),
+              colorAt: (position) => live
+                  ? _levelColor(
+                      context,
+                      scale.level(
+                          scale.min + (scale.max - scale.min) * position))
+                  : color,
+            ),
+          ),
+        ),
+        const SizedBox(height: 5),
+        Row(children: [
+          Text(_formatBound(scale.min, item), style: bounds),
+          Expanded(
+            child: Text(scale.auto ? 'Skala automatisch' : '',
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: bounds),
+          ),
+          Text(_formatBound(scale.max, item), style: bounds),
+        ]),
+      ]),
+    );
+  }
+}
+
+/// A segmented ("LCD") horizontal bar: lit cells up to the value, each cell in
+/// the colour of the threshold range it lies in.
+class _BarPainter extends CustomPainter {
+  final double fraction;
+  final Color unlit;
+  final Color Function(double position) colorAt;
+  const _BarPainter({
+    required this.fraction,
+    required this.unlit,
+    required this.colorAt,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0) return;
+    const cell = 7.0, gap = 2.0;
+    final count = math.max(1, ((size.width + gap) / (cell + gap)).floor());
+    final width = (size.width - gap * (count - 1)) / count;
+    final lit = fraction <= 0 ? 0 : math.max(1, (fraction * count).round());
+    final paint = Paint();
+    for (var index = 0; index < count; index++) {
+      paint.color =
+          index < lit ? colorAt(index / count) : unlit.withOpacity(.55);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            Rect.fromLTWH(index * (width + gap), 0, width, size.height),
+            const Radius.circular(1.5)),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BarPainter old) => true;
+}
+
+class _StatBody extends StatelessWidget {
+  final Observation item;
+  final List<Observation> samples;
+  final Color color;
+  const _StatBody(
+      {required this.item, required this.samples, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final values = [
+      for (final sample in samples)
+        if (sample.number != null) sample.number!,
+    ];
+    return Stack(children: [
+      if (values.length > 1)
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 64,
+          child: CustomPaint(painter: _SparklinePainter(values, color)),
+        ),
+      Positioned.fill(
+        bottom: values.length > 1 ? 54 : 10,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Center(child: _ValueText(item: item, color: color, size: 40)),
+        ),
+      ),
+    ]);
+  }
+}
+
+/// The session samples of a stat panel as a line with a faded area below.
+class _SparklinePainter extends CustomPainter {
+  final List<double> values;
+  final Color color;
+  _SparklinePainter(List<double> values, this.color) : values = List.of(values);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.length < 2 || size.width <= 0 || size.height <= 0) return;
+    final min = values.reduce(math.min);
+    final max = values.reduce(math.max);
+    final range = max - min;
+    final line = Path();
+    for (var index = 0; index < values.length; index++) {
+      final x = size.width * index / (values.length - 1);
+      final normalized = range == 0 ? .5 : (values[index] - min) / range;
+      final y = size.height - 6 - normalized * (size.height - 12);
+      if (index == 0) {
+        line.moveTo(x, y);
+      } else {
+        line.lineTo(x, y);
+      }
+    }
+    final area = Path.from(line)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(
+      area,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [color.withOpacity(.28), color.withOpacity(.03)],
+        ).createShader(Offset.zero & size),
+    );
+    canvas.drawPath(
+      line,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _SparklinePainter old) {
+    if (old.color != color || old.values.length != values.length) return true;
+    for (var index = 0; index < values.length; index++) {
+      if (old.values[index] != values[index]) return true;
+    }
+    return false;
   }
 }
 
@@ -551,83 +1248,19 @@ class _LiveIndicator extends StatelessWidget {
       );
 }
 
-class _FreshnessBadge extends StatelessWidget {
-  final String value;
-  const _FreshnessBadge({required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = OipTokens.statusColor(context, value);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withOpacity(.12),
-        border: Border.all(color: color.withOpacity(.35)),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Text(value.toUpperCase(),
-          style: WorkstationTokens.eyebrow(context, color: color)),
+Widget _kindSelector(_PanelKind kind, ValueChanged<_PanelKind> onChanged) =>
+    SegmentedButton<_PanelKind>(
+      showSelectedIcon: false,
+      segments: [
+        for (final value in _PanelKind.values)
+          ButtonSegment(
+              value: value,
+              icon: Icon(_kindIcons[value], size: 16),
+              label: Text(_kindLabels[value]!)),
+      ],
+      selected: {kind},
+      onSelectionChanged: (value) => onChanged(value.first),
     );
-  }
-}
-
-class _MiniTrend extends StatelessWidget {
-  final List<Observation> samples;
-  final Color color;
-  const _MiniTrend({required this.samples, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    final values = samples
-        .where((sample) => sample.number != null)
-        .map((sample) => sample.number!)
-        .toList();
-    if (values.length < 2) return const SizedBox.shrink();
-    return SizedBox(
-      height: 34,
-      width: double.infinity,
-      child: CustomPaint(painter: _MiniTrendPainter(values, color)),
-    );
-  }
-}
-
-class _MiniTrendPainter extends CustomPainter {
-  final List<double> values;
-  final Color color;
-  const _MiniTrendPainter(this.values, this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (values.length < 2 || size.width <= 0 || size.height <= 0) return;
-    final min = values.reduce((a, b) => a < b ? a : b);
-    final max = values.reduce((a, b) => a > b ? a : b);
-    final range = max - min;
-    final line = Path();
-    for (var index = 0; index < values.length; index++) {
-      final x = size.width * index / (values.length - 1);
-      final normalized = range == 0 ? .5 : (values[index] - min) / range;
-      final y = size.height - normalized * (size.height - 4) - 2;
-      if (index == 0) {
-        line.moveTo(x, y);
-      } else {
-        line.lineTo(x, y);
-      }
-    }
-    final stroke = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(line, stroke);
-    final end = line.getBounds().centerRight;
-    canvas.drawCircle(end, 3, Paint()..color = color);
-  }
-
-  @override
-  bool shouldRepaint(covariant _MiniTrendPainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.values != values;
-}
 
 class _AddPanelDialog extends StatefulWidget {
   final List<Observation> observations;
@@ -639,7 +1272,7 @@ class _AddPanelDialog extends StatefulWidget {
 
 class _AddPanelDialogState extends State<_AddPanelDialog> {
   String? selectedKey;
-  _PanelKind kind = _PanelKind.value;
+  _PanelKind kind = _PanelKind.gauge;
 
   @override
   Widget build(BuildContext context) {
@@ -651,7 +1284,7 @@ class _AddPanelDialogState extends State<_AddPanelDialog> {
     return AlertDialog(
       title: const Text('Dashboard-Panel hinzufügen'),
       content: SizedBox(
-          width: 440,
+          width: 460,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             DropdownButtonFormField<String>(
               value: selectedKey,
@@ -667,21 +1300,8 @@ class _AddPanelDialogState extends State<_AddPanelDialog> {
                   .toList(),
               onChanged: (value) => setState(() => selectedKey = value),
             ),
-            const SizedBox(height: 12),
-            SegmentedButton<_PanelKind>(
-              segments: const [
-                ButtonSegment(
-                    value: _PanelKind.value,
-                    icon: Icon(Icons.speed),
-                    label: Text('Wert')),
-                ButtonSegment(
-                    value: _PanelKind.trend,
-                    icon: Icon(Icons.show_chart),
-                    label: Text('Verlauf')),
-              ],
-              selected: {kind},
-              onSelectionChanged: (value) => setState(() => kind = value.first),
-            ),
+            const SizedBox(height: 14),
+            _kindSelector(kind, (value) => setState(() => kind = value)),
           ])),
       actions: [
         TextButton(
@@ -690,9 +1310,150 @@ class _AddPanelDialogState extends State<_AddPanelDialog> {
         FilledButton(
             onPressed: selectedKey == null
                 ? null
-                : () => Navigator.pop(
-                    context, (observation: choices[selectedKey]!, kind: kind)),
+                : () => Navigator.pop(context, _PanelSpec(selectedKey!, kind)),
             child: const Text('Hinzufügen')),
+      ],
+    );
+  }
+}
+
+/// Visualisation, display range and thresholds of one panel.
+class _PanelOptionsDialog extends StatefulWidget {
+  final _PanelSpec spec;
+  final Observation? observation;
+  final List<Observation> samples;
+  const _PanelOptionsDialog({
+    required this.spec,
+    required this.observation,
+    required this.samples,
+  });
+
+  @override
+  State<_PanelOptionsDialog> createState() => _PanelOptionsDialogState();
+}
+
+class _PanelOptionsDialogState extends State<_PanelOptionsDialog> {
+  late _PanelKind kind = widget.spec.kind;
+  late final TextEditingController min, max, warn, crit;
+  String? error;
+
+  @override
+  void initState() {
+    super.initState();
+    final spec = widget.spec;
+    final item = widget.observation;
+    // Prefill with what the panel currently shows so that saving without a
+    // change keeps the picture.
+    final scale =
+        item == null ? null : _resolveScale(spec, item, widget.samples);
+    String text(double? value) => value == null ? '' : _trim(value, 3);
+    min = TextEditingController(text: text(spec.custom ? spec.min : null));
+    max = TextEditingController(text: text(spec.custom ? spec.max : null));
+    warn = TextEditingController(
+        text: text(spec.custom ? spec.warn : scale?.warn));
+    crit = TextEditingController(
+        text: text(spec.custom ? spec.crit : scale?.crit));
+  }
+
+  @override
+  void dispose() {
+    for (final field in [min, max, warn, crit]) {
+      field.dispose();
+    }
+    super.dispose();
+  }
+
+  void _submit() {
+    final parsed = <double?>[];
+    for (final field in [min, max, warn, crit]) {
+      final raw = field.text.trim().replaceAll(',', '.');
+      if (raw.isEmpty) {
+        parsed.add(null);
+        continue;
+      }
+      final value = double.tryParse(raw);
+      if (value == null || !value.isFinite) {
+        setState(() => error = 'Bitte nur Zahlen eingeben.');
+        return;
+      }
+      parsed.add(value);
+    }
+    if (parsed[0] != null && parsed[1] != null && parsed[1]! <= parsed[0]!) {
+      setState(() => error = 'Maximum muss größer als Minimum sein.');
+      return;
+    }
+    if (parsed[2] != null && parsed[3] != null && parsed[3]! < parsed[2]!) {
+      setState(
+          () => error = 'Kritisch darf nicht unter der Warnschwelle liegen.');
+      return;
+    }
+    Navigator.pop(
+      context,
+      _PanelSpec(widget.spec.observationKey, kind,
+          custom: true,
+          min: parsed[0],
+          max: parsed[1],
+          warn: parsed[2],
+          crit: parsed[3]),
+    );
+  }
+
+  Widget _field(TextEditingController controller, String label, String hint) =>
+      Expanded(
+        child: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(
+              decimal: true, signed: true),
+          decoration: InputDecoration(labelText: label, hintText: hint),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final symbol = widget.observation?.symbol ?? '';
+    final unit = symbol.isEmpty ? '' : ' ($symbol)';
+    return AlertDialog(
+      title: const Text('Panel konfigurieren'),
+      content: SizedBox(
+        width: 460,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _kindSelector(kind, (value) => setState(() => kind = value)),
+            const SizedBox(height: 16),
+            Row(children: [
+              _field(min, 'Minimum$unit', 'automatisch'),
+              const SizedBox(width: 12),
+              _field(max, 'Maximum$unit', 'automatisch'),
+            ]),
+            const SizedBox(height: 12),
+            Row(children: [
+              _field(warn, 'Warnung ab$unit', 'keine'),
+              const SizedBox(width: 12),
+              _field(crit, 'Kritisch ab$unit', 'keine'),
+            ]),
+            const SizedBox(height: 10),
+            Text(
+              error ??
+                  'Skala und Schwellen sind reine Darstellung dieses Panels. Leere Felder: automatische Skala bzw. keine Schwelle.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: error == null
+                      ? null
+                      : Theme.of(context).colorScheme.error),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Abbrechen')),
+        TextButton(
+            onPressed: () => Navigator.pop(
+                context, _PanelSpec(widget.spec.observationKey, kind)),
+            child: const Text('Standard')),
+        FilledButton(onPressed: _submit, child: const Text('Übernehmen')),
       ],
     );
   }
