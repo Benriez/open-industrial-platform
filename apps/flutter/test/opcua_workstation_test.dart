@@ -38,6 +38,34 @@ void main() {
     expect(find.text('Live M-01'), findsNothing);
   });
 
+  testWidgets('Opening an authorized OPC-UA browser loads its first page once',
+      (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1440, 1000);
+    await tester.binding.setSurfaceSize(const Size(1440, 1000));
+    final api = FakeApi()..infrastructure = infrastructureFixture();
+    final controller = OipController(api)
+      ..snapshot = api.infrastructure!.snapshot.toSnapshot()
+      ..connection = 'live'
+      ..infrastructure
+          .accept(api.infrastructure!, sessionPrincipal: 'fixture-operator');
+    await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
+    await tester.pumpAndSettle();
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      await tester.binding.setSurfaceSize(null);
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await _navigate(tester, 1440);
+
+    expect(api.nodeRequests.where((request) => request.source == 'source-a1'),
+        hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Explorer renders a full 40-node page with pins and keyboard',
       (tester) async {
     final app = await _bootstrap(tester, const Size(1440, 1000),

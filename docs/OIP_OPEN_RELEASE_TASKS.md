@@ -24,6 +24,14 @@ next iteration.
   comparison passed at both sizes with negative controls. Receipt:
   `target/oip-canonical-gate-current-b0ad575-complete/oip_canonical_ui_gate/report.json`.
   Its SSH onboarding used an owned loopback fixture, not the physical devices.
+- [x] Removed a duplicate first-page request when opening OPC-UA in an
+  authenticated context. The full OPC-UA workstation suite passes 31/31, and
+  its new regression asserts one initial node-page request. The full canonical
+  gate passes on the changed source tree (`fc11cbdd4ede775f08f5bbb53888dc1e9c46a74f`):
+  402 Flutter tests passed, 0 failed, 1 skipped; browser 189/189; served bundle
+  SHA-256 `10f06e9fbb637bea85f5e9896d7a930a83ef1c532bb7fa0b0631177d9bd7590d`,
+  equal to the local build. Receipt:
+  `target/oip-canonical-gate-opcua-single-load-2026-11-18/oip_canonical_ui_gate/report.json`.
 
 ## Still open
 
@@ -49,6 +57,11 @@ next iteration.
   `opcua_browse_sources` separately binds browse clients to registered
   sources. Therefore an empty simulation `sources` list alone does not explain
   missing Pi/PC telemetry.
+- The OPC-UA workstation previously launched its initial node-page request from
+  both `_loadSources()` and its caller, causing duplicate browse and selected
+  value-read traffic on entry. The two callers now own sequencing and issue one
+  page request. This removes unnecessary load but does not yet prove it was the
+  only cause of the reported live API staleness.
 - The running app's Flutter window could not be inspected: the available
   accessibility snapshot was only 90×97 pixels and contained no Flutter
   content. Do not infer whether the app itself is authenticated from a separate

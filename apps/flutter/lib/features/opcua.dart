@@ -217,11 +217,6 @@ class _OpcuaPageState extends State<OpcuaPage> {
           selectedSource ??= result.firstOrNull?.id;
         }
       });
-      if (widget.controller.infrastructure.ready &&
-          _currentSource != null &&
-          loadedSource != _currentSource) {
-        _load();
-      }
     } catch (exception) {
       if (!mounted) return;
       setState(() {
