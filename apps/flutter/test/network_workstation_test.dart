@@ -49,6 +49,22 @@ void main() {
       expect(first.size, const Size(476, 180));
     });
 
+    test('Unlinked inventory is laid out together in one visible row', () {
+      final data = _demoData();
+      data['devices'] = (data['devices'] as List).take(3).toList();
+      data['topology'] = <Json>[];
+      final snapshot = Snapshot.fromJson(data);
+      final layout = TopologyLayout.build(snapshot.devices, const []);
+
+      expect(layout.devices, hasLength(3));
+      expect(layout.edges, isEmpty);
+      expect(layout.positions.values.map((position) => position.dy).toSet(),
+          {TopologyLayout.padding});
+      expect(layout.positions.values.map((position) => position.dx).toSet(),
+          hasLength(3));
+      expect(layout.size.height, 180);
+    });
+
     test('Demo geometry has three relationship layers and eleven unlinked IDs',
         () {
       final snapshot = _demoSnapshot();
@@ -160,6 +176,26 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(find.byKey(const Key('topology-evo'))), canvas);
     expect(find.byKey(const Key('node-inspector')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Unlinked registered devices remain visible in the topology',
+      (tester) async {
+    final data = _demoData();
+    data['devices'] = (data['devices'] as List).take(3).toList();
+    data['topology'] = <Json>[];
+    await _bootstrap(tester, data: data);
+    await _navigate(tester);
+
+    final viewport = tester.getRect(find.byKey(const Key('network-viewer')));
+    for (final id in ['evo', 'pi3', 'pi4']) {
+      final node = tester.getRect(find.byKey(Key('topology-$id')));
+      expect(viewport.contains(node.topLeft), isTrue, reason: id);
+      expect(viewport.contains(node.bottomRight), isTrue, reason: id);
+    }
+    expect(find.text('3 GERÄTE'), findsOneWidget);
+    expect(find.text('0 BESTÄTIGTE PFADE'), findsOneWidget);
+    expect(find.text('Keine bestätigten Verbindungspfade'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -302,9 +338,7 @@ void main() {
     await tester.tap(find.byKey(const Key('network-tab-vpn')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('network-vpn-empty')), findsOneWidget);
-    expect(find.text('Keine VPN-Telemetrie geliefert'), findsOneWidget);
-    expect(find.text('PEERS · NICHT VERFÜGBAR'), findsOneWidget);
-    expect(find.text('Keine VPN-Peer-Telemetrie verfügbar'), findsOneWidget);
+    expect(find.text('Weitere Peer-Messwerte fehlen'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -434,7 +468,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('explorer-device-pi3')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('topology-pi3')), findsNothing);
+      expect(find.byKey(const Key('topology-pi3')), findsOneWidget);
       expect(find.byKey(const Key('node-inspector')), findsOneWidget);
       expect(find.text('Relation unbekannt · keine bekannten Pfade'),
           findsOneWidget);
@@ -443,8 +477,8 @@ void main() {
       expect(focus.onPressed, isNull);
       final graph = tester
           .widget<NetworkTopologyGraph>(find.byType(NetworkTopologyGraph));
-      expect(graph.selectedDeviceId, isNull);
-      expect(graph.highlightedDeviceIds, isEmpty);
+      expect(graph.selectedDeviceId, 'pi3');
+      expect(graph.highlightedDeviceIds, {'pi3'});
       expect(find.byKey(const Key('neighbors-only')), findsNothing);
       expect(tester.takeException(), isNull);
     });
@@ -458,7 +492,7 @@ void main() {
       await tester.tap(find.text('Relation: Relation unbekannt').last);
       await tester.pumpAndSettle();
       expect(find.text('11/17 Geräte'), findsOneWidget);
-      expect(find.byKey(const Key('network-viewer')), findsNothing);
+      expect(find.byKey(const Key('network-viewer')), findsOneWidget);
       await tester.enterText(find.byKey(const Key('network-search')), 'pi4');
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('explorer-device-pi4')), findsOneWidget);

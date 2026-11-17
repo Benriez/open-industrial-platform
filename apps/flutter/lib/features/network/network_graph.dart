@@ -17,6 +17,7 @@ class TopologyLayout {
   static const layerGap = 60.0;
   static const padding = 28.0;
   static const componentGap = 40.0;
+  static const maxComponentRowWidth = 960.0;
 
   final List<Device> devices;
   final List<NetworkEdge> edges;
@@ -75,6 +76,8 @@ class TopologyLayout {
 
     final positions = <String, Offset>{};
     var componentTop = 0.0;
+    var componentLeft = padding;
+    var rowHeight = 0.0;
     var canvasWidth = 320.0;
     for (final component in components) {
       final componentEdges =
@@ -131,18 +134,29 @@ class TopologyLayout {
       for (final position in local.values) {
         componentBottom = math.max(componentBottom, position.dy + nodeHeight);
       }
-      for (final entry in local.entries) {
-        positions[entry.key] = entry.value + Offset(0, componentTop);
-      }
       final componentWidth =
           padding * 2 + (maxRank + 1) * nodeWidth + maxRank * layerGap;
-      canvasWidth = math.max(canvasWidth, componentWidth);
-      componentTop += componentBottom + padding + componentGap;
+      final componentHeight = componentBottom + padding;
+      final rowHasContent = componentLeft > padding;
+      final wouldOverflowRow =
+          componentLeft + componentWidth + padding > maxComponentRowWidth;
+      if (rowHasContent && wouldOverflowRow) {
+        componentTop += rowHeight + componentGap;
+        componentLeft = padding;
+        rowHeight = 0;
+      }
+      for (final entry in local.entries) {
+        positions[entry.key] =
+            entry.value + Offset(componentLeft - padding, componentTop);
+      }
+      canvasWidth =
+          math.max(canvasWidth, componentLeft - padding + componentWidth);
+      rowHeight = math.max(rowHeight, componentHeight);
+      componentLeft += componentWidth + componentGap;
     }
 
-    final canvasHeight = components.isEmpty
-        ? 180.0
-        : math.max(180.0, componentTop - componentGap);
+    final canvasHeight =
+        components.isEmpty ? 180.0 : math.max(180.0, componentTop + rowHeight);
     final size = Size(canvasWidth, canvasHeight);
     final nodeSignature = devices
         .map((device) =>

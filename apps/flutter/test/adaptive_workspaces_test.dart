@@ -171,9 +171,11 @@ void main() {
       await tester.tap(find.byKey(const Key('network-tab-topology')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('fit-topology')), findsOneWidget);
+      expect(find.byKey(const Key('topology-canvas')), findsOneWidget);
       final fit =
           tester.widget<ToolButton>(find.byKey(const Key('fit-topology')));
-      expect(fit.onPressed, isNull);
+      expect(fit.onPressed, isNotNull,
+          reason: 'registered devices remain visible when paths are absent');
       expect(tester.takeException(), isNull);
     });
 
