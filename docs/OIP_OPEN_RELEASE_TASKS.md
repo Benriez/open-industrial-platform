@@ -1,30 +1,50 @@
-# OIP live stability acceptance loop
+# OIP app completion: current acceptance state
 
-This is a focused build-and-verify loop for the live OIP app. Do not search for unrelated issues, write issue lists, repeat completed audits, or switch to a different model. Read `AGENTS.md`, `docs/OIP_RELEASE_PROGRESS.md`, and this file before every run. Preserve the current `model-router` agent and its selected `bodi-benny/ornith-122b` model.
+This file tracks completion of the app against the current source and the installed
+macOS app. It replaces the obsolete `0.3.10+13` / port `18858` loop. Read
+`AGENTS.md` and `docs/OIP_RELEASE_PROGRESS.md` before the next run.
 
-## Goal
+## Verified
 
-Make the installed OIP app's API connection stable enough to use the OPC-UA browser, then verify real telemetry from `bodi-pi` and `bodi-pc`. Continue with concrete implementation or measured acceptance work until the items below are proven complete. Do not treat a published build, a single HTTP 200, or a simulated/demo result as acceptance.
+- [x] The canonical UI build, widget, authenticated browser, functional, and visual
+  gate passes on source revision `b15053b64f728e6b182758ec686b8870fd9ec71c`.
+  Receipt: `target/oip-canonical-regression-final-20261117/oip_canonical_ui_gate/report.json`.
+  Flutter tests: 401 passed, 0 failed, 1 skipped. Served browser bundle matches the
+  local build (SHA-256 `60ed7cc13a822d7fccc234b31bd16858fdeff7c999f8d8b03ed05a8fdff6a254`).
+- [x] Network topology now lays out isolated registered devices without inventing
+  network links. The UI gate passed after integration.
+- [x] A local macOS OTA candidate `0.3.27+30` was packaged from the verified source;
+  universal architecture, bundle ID, updater flags, strict bundle signature check,
+  manifest signature, and archive digest were verified. Archive SHA-256:
+  `17d3c418014fab7253bea39e16f4c3693bc0f937f5448b2d0e323fb30f1586e1`.
 
-## Tasks
+## Still open
 
-- [x] Reproduce the live API stall and isolate it to the macOS app-owned SSH tunnel. Evidence: repeated `18858` timeouts/resets/no-listener while Pi Core remained healthy; independent `18859` tunnel returned 12/12 HTTP 200; installed OIP LaunchAgent plist was stale on port `18854`.
-- [x] Fix tunnel ownership/configuration in the macOS app. The app now generates its OIP tunnel and watchdog LaunchAgents from its configured ports and keeps the tunnel under `launchd`. Source revision: `dfd58ff`.
-- [x] Publish OTA `v0.3.10` build `13` locally, without GitHub Actions. Signed archive SHA-256: `cf07581a34316019dc7c0b2aa245ac137d9783806fbf0e47948090611894cd33`.
-- [ ] Install `0.3.10+13` through the app's OTA flow and restart the installed app. Never force-quit or self-install over a running app without explicit operator authorization. Current evidence: `/Applications` still runs `0.3.9+12`; the restart/install confirmation is pending in the operator conversation.
-- [ ] After installation, verify the generated LaunchAgent forwards `127.0.0.1:18858` to `bodi-pi:18808`, confirm the watchdog is loaded, and probe the API repeatedly over at least ten minutes. Record status, response codes, latency, process restarts, and logs in `docs/OIP_RELEASE_PROGRESS.md`.
-- [ ] In the installed app, choose one authorized OPC-UA source and verify browsing, selected-node reads, and live telemetry for both `bodi-pi` and `bodi-pc`. Record actual values and observation timestamps; no fixture or simulated data counts.
-- [ ] If a measured check fails, fix that specific client/Core defect, build and publish through the local OTA publisher (never GitHub Actions), install only through the approved app update flow, and repeat the failed acceptance checks.
+- [ ] **Live installation acceptance:** the installed app was observed as `0.3.26+29`.
+  Candidate `0.3.27+30` is local only and has not been installed or offered through
+  the in-app update dialog. No deployment or personal installation change is
+  authorized by the repository instructions for this run.
+- [ ] **Physical-device acceptance on the current app:** observe fresh `bodi-pi` and
+  `bodi-pc` telemetry in the installed UI and record metric names, values, and
+  observation timestamps. Earlier source/probe results do not prove the current
+  installed build's UI behavior.
+- [ ] **OPC-UA acceptance on the current app:** browse an authorized live source,
+  read a selected node, and verify its live value and timestamp. The canonical UI
+  gate uses an owned managed acceptance Core, not the user's physical devices.
+- [ ] **Operator visual acceptance:** the technical visual comparison passes, but
+  the baseline still does not record operator acceptance.
+- [ ] **Release distribution readiness:** the local candidate uses an ad-hoc app
+  signature and no Developer ID Team ID was available. A distributable signed
+  release and user-visible OTA rollout have not been demonstrated.
 
-## Run rules
+## Constraints and next safe work
 
-- Work only on the next unchecked task. Make a concrete source change or capture new runtime evidence on each run; do not repeat issue hunting.
-- Keep `model-router` with the session's selected `bodi-benny/ornith-122b` model. Do not pass an alternate provider/model to loop commands or fall back to an OpenCode model.
-- Do not start GitHub Actions. Use `tools/oip_ota_release.sh` for any needed OTA publication.
-- Respect `AGENTS.md`: isolate source edits in a worktree and merge with `git merge --ff-only`; update the authoritative progress file. Do not alter the personal installation database or schema.
-- Do not use simulation data. Do not force-quit the app, install over the running app, or claim an update is installed without explicit operator authorization and a measured installed version.
-- If a task depends on the pending restart approval, record that exact dependency once and wait for operator input; do not retry the same blocked action or invent another task.
-
-## Completion
-
-Complete the loop only after the installed app is `0.3.10+13` or later, the repeated API check passes, the OPC-UA browser works on an authorized source, and real telemetry from both hosts is observed with fresh timestamps. Update `docs/OIP_RELEASE_PROGRESS.md` with the measurements. Report any remaining blocker plainly.
+- Do not use GitHub Actions; use the local OTA tooling only if a release is
+  authorized.
+- Do not push, deploy, install over the personal app, change its database, perform
+  private SSH, or activate schema 7 under the current repository instructions.
+- Do not label the app complete based on the local candidate or managed fixture.
+- The next local work should close product defects found by source review or add
+  repeatable acceptance coverage without touching the personal installation. The
+  remaining live-device and rollout checks require a permitted operator-run
+  acceptance window.
