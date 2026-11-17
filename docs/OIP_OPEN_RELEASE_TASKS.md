@@ -9,8 +9,9 @@ next iteration.
 - [x] Installed `/Applications/Open Industrial Platform.app` is version
   `0.3.28+31`; its executable SHA-256 is
   `5285535a29e4ff138e595ed39bb0e67b5bbbb987c02c2960df837ab4f8e3915c`.
-- [x] Installed source revision is `b0ad575` (`v0.3.28`). The current repo
-  worktree is clean at that revision.
+- [x] Installed source revision is `b0ad575` (`v0.3.28`). Local `main` now
+  contains two later commits, including the OPC-UA duplicate-load fix, and is
+  clean at `42f7362`. The fix is not in the installed `0.3.28+31` app.
 - [x] Current local relay on `127.0.0.1:18856` answered ten consecutive
   anonymous `/api/v2/browser/session` requests with HTTP 200 in 11.2–107.1 ms.
   The response is `login_required`; this checks transport only and does not
