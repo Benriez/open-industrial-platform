@@ -62,3 +62,24 @@ A complete UI PASS may never use `--skip-build`, `--skip-widget` or
 * A green test run without the correct visible UI build is **not** a PASS.
 * Never label an unapproved screenshot as operator-accepted. The visual
   acceptance state lives in §8 of the baseline.
+
+## 5. Authorized OIP operations and rollout
+
+* When the operator explicitly asks to fix, verify, or roll out this OIP
+  application, that request authorizes the required OIP-scoped operations:
+  fast-forwarding the isolated, verified change to `main`, pushing `main`,
+  publishing its signed macOS OTA release, and validating the live OIP API.
+* Publish OTA releases from this Mac with `tools/oip_ota_release.sh`. Do not
+  start or rely on GitHub Actions; local builds and direct GitHub release
+  uploads are the release path.
+* For that requested live OIP work, SSH to the configured `bodi-pi` and
+  `bodi-pc` aliases is authorized. Limit remote changes to OIP-owned services
+  and files. Preserve the current service binary/configuration before replacing
+  it, and verify service health and API responses after a restart.
+* A requested app rollout authorizes updating `/Applications/Open Industrial
+  Platform.app` and its OIP-owned LaunchAgents. Preserve the previous app and
+  OIP LaunchAgent configuration before replacement, and verify the installed
+  version, signature and running API path after rollout.
+* Never start paid GitHub Actions workflows. Do not modify unrelated hosts,
+  worktrees, services or processes. Do not migrate the personal installation
+  database or activate schema 7 unless the operator explicitly requests it.
