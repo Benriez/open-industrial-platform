@@ -1,56 +1,60 @@
 # OIP app completion: current acceptance state
 
-This file tracks completion of the app against the current source and the installed
-macOS app. It replaces the obsolete `0.3.10+13` / port `18858` loop. Read
-`AGENTS.md` and `docs/OIP_RELEASE_PROGRESS.md` before the next run.
+This checklist tracks the installed macOS application against the active goal
+to finish OIP. Read `AGENTS.md` and `docs/OIP_RELEASE_PROGRESS.md` before the
+next iteration.
 
 ## Verified
 
-- [x] The canonical UI build, widget, authenticated browser, functional, and visual
-  gate passes on source revision `b15053b64f728e6b182758ec686b8870fd9ec71c`.
-  Receipt: `target/oip-canonical-regression-final-20261117/oip_canonical_ui_gate/report.json`.
-  Flutter tests: 401 passed, 0 failed, 1 skipped. Served browser bundle matches the
-  local build (SHA-256 `60ed7cc13a822d7fccc234b31bd16858fdeff7c999f8d8b03ed05a8fdff6a254`).
-- [x] Network topology now lays out isolated registered devices without inventing
-  network links. The UI gate passed after integration.
-- [x] A local macOS OTA candidate `0.3.27+30` was packaged from the verified source;
-  universal architecture, bundle ID, updater flags, strict bundle signature check,
-  manifest signature, and archive digest were verified. Archive SHA-256:
-  `17d3c418014fab7253bea39e16f4c3693bc0f937f5448b2d0e323fb30f1586e1`.
+- [x] Installed `/Applications/Open Industrial Platform.app` is version
+  `0.3.28+31`; its executable SHA-256 is
+  `5285535a29e4ff138e595ed39bb0e67b5bbbb987c02c2960df837ab4f8e3915c`.
+- [x] Installed source revision is `b0ad575` (`v0.3.28`). The current repo
+  worktree is clean at that revision.
+- [x] Current local relay on `127.0.0.1:18856` answered ten consecutive
+  anonymous `/api/v2/browser/session` requests with HTTP 200 in 11.2–107.1 ms.
+  The response is `login_required`; this checks transport only and does not
+  establish the app's own session or access to protected data.
+- [x] The canonical UI, widget, authenticated managed-browser, functional and
+  visual gate passed on source `b0ad5754e369ea5019ed0f630df6075863973fa2`,
+  tree hash `f960a5d21ca312f11f41ef56ca4c8a7f1e0ebecc`. Flutter tests: 401
+  passed, 0 failed, 1 skipped. The authenticated browser gate passed 189 checks;
+  the served `main.dart.js` matches the local build (SHA-256
+  `d4b4626728290b68501eee93c5c8f9295cc78a2d19912b5160116caa03788537`). Visual
+  comparison passed at both sizes with negative controls. Receipt:
+  `target/oip-canonical-gate-current-b0ad575-complete/oip_canonical_ui_gate/report.json`.
+  Its SSH onboarding used an owned loopback fixture, not the physical devices.
 
 ## Still open
 
-- [ ] **Live installation acceptance:** the installed app was observed as `0.3.26+29`.
-  Candidate `0.3.27+30` is local only and has not been installed or offered through
-  the in-app update dialog. The current `AGENTS.md` authorizes OIP OTA publication
-  and updating the personal app when explicitly requested; this completion goal
-  supplies that request.
-- [ ] **Physical-device acceptance on the current app:** observe fresh `bodi-pi` and
-  `bodi-pc` telemetry in the installed UI and record metric names, values, and
-  observation timestamps. Earlier source/probe results do not prove the current
-  installed build's UI behavior.
-- [ ] **OPC-UA acceptance on the current app:** browse an authorized live source,
-  read a selected node, and verify its live value and timestamp. The canonical UI
-  gate uses an owned managed acceptance Core, not the user's physical devices.
-- [ ] **Operator visual acceptance:** the technical visual comparison passes, but
-  the baseline still does not record operator acceptance.
-- [ ] **Release distribution readiness:** the local candidate uses an ad-hoc app
-  signature and no Developer ID Team ID was available. A distributable signed
-  release and user-visible OTA rollout have not been demonstrated.
+- [ ] **Authenticated physical-device acceptance:** verify fresh telemetry for
+  `bodi-pi` and `bodi-pc` in the installed app, including metric names, values
+  and observation timestamps. Current unauthenticated local probes cannot
+  verify this.
+- [ ] **Authenticated OPC-UA acceptance:** browse a live authorized source,
+  read a selected node and confirm its value and timestamp in the installed
+  app. The live Core's configured browse bindings and prior node probes do not
+  prove the current app view works.
+- [ ] **Operator visual acceptance:** technical comparison passed; the
+  canonical baseline still requires operator acceptance.
+- [ ] **Distribution readiness:** the installed app has no Developer ID Team ID
+  in its code signature. App Store or outside-Mac distribution readiness is
+  therefore not proven.
 
-## Constraints and next safe work
+## Diagnosis and constraints
 
-- Do not use GitHub Actions; use the local OTA tooling only if a release is
-  authorized.
-- Do not start GitHub Actions. For requested OIP work, the current `AGENTS.md`
-  authorizes pushing the verified branch, publishing through the local OTA release
-  script, SSH to the configured OIP hosts, and updating the installed app. Preserve
-  existing app and service state before replacement and verify after restart.
-- Do not modify the personal installation database or activate schema 7 without
-  an explicit request. Do not touch unrelated hosts, services, worktrees, or
-  processes.
-- Do not label the app complete based on the local candidate or managed fixture.
-- Next: push the verified `main` source (the inspected workflows are manual-only),
-  publish `0.3.27+30` using `tools/oip_ota_release.sh`, then install via the app's
-  updater and verify telemetry and OPC-UA against the physical devices. Preserve
-  the prior app and LaunchAgent configuration and record measured results.
+- SSH host telemetry collection is supervised from persisted device connection
+  records in `connection_service::supervise`; it is separate from
+  `CoreConfig.sources`, which configures the OPC-UA simulation collector.
+  `opcua_browse_sources` separately binds browse clients to registered
+  sources. Therefore an empty simulation `sources` list alone does not explain
+  missing Pi/PC telemetry.
+- The running app's Flutter window could not be inspected: the available
+  accessibility snapshot was only 90×97 pixels and contained no Flutter
+  content. Do not infer whether the app itself is authenticated from a separate
+  anonymous session request.
+- No private SSH, deployment, personal database change or GitHub Actions run
+  was performed during this acceptance check.
+- Keep the goal open until installed-app telemetry and OPC-UA are verified
+  against the physical infrastructure and all remaining release requirements
+  are satisfied.
