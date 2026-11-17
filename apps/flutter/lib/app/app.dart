@@ -8,6 +8,7 @@ import '../features/opcua.dart';
 import '../features/diagnostics.dart';
 import '../features/operator_login.dart';
 import '../features/settings.dart';
+import '../features/version_changelog.dart';
 import '../models/app_metadata.dart';
 import '../widgets/components.dart';
 import '../widgets/adaptive_workspace.dart';
@@ -327,15 +328,37 @@ class _DashboardShellState extends State<DashboardShell> {
           Padding(
             padding:
                 const EdgeInsets.fromLTRB(24, OipTokens.s3, 16, OipTokens.s4),
-            child: Text(
-              'VERSION ${kOipApplication.version} · BUILD ${kOipApplication.build}',
-              key: const Key('sidebar-app-version'),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: OipTokens.muted(context),
-                    letterSpacing: .35,
+            child: Semantics(
+              button: true,
+              label:
+                  'Versionshinweise öffnen. Version ${kOipApplication.version}, Build ${kOipApplication.build}',
+              child: InkWell(
+                key: const Key('sidebar-app-version'),
+                borderRadius: BorderRadius.circular(4),
+                onTap: () => showVersionChangelog(context),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'VERSION ${kOipApplication.version} · BUILD ${kOipApplication.build}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: OipTokens.muted(context),
+                                    letterSpacing: .35,
+                                  ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Icon(Icons.open_in_new,
+                          size: 13, color: OipTokens.muted(context)),
+                    ],
                   ),
+                ),
+              ),
             ),
           ),
         ],
