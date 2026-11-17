@@ -8,6 +8,7 @@ import '../features/opcua.dart';
 import '../features/diagnostics.dart';
 import '../features/operator_login.dart';
 import '../features/settings.dart';
+import '../models/app_metadata.dart';
 import '../widgets/components.dart';
 import '../widgets/adaptive_workspace.dart';
 import '../widgets/infrastructure_selector.dart';
@@ -321,6 +322,22 @@ class _DashboardShellState extends State<DashboardShell> {
           const SizedBox(height: OipTokens.s5),
           _navGroupLabel('SYSTEM'),
           navigationItem(5),
+          const Spacer(),
+          Divider(height: 1, color: scheme.outline),
+          Padding(
+            padding:
+                const EdgeInsets.fromLTRB(24, OipTokens.s3, 16, OipTokens.s4),
+            child: Text(
+              'VERSION ${kOipApplication.version} · BUILD ${kOipApplication.build}',
+              key: const Key('sidebar-app-version'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: OipTokens.muted(context),
+                    letterSpacing: .35,
+                  ),
+            ),
+          ),
         ],
       ),
     );
