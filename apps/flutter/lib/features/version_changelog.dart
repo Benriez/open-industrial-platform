@@ -15,6 +15,15 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.17',
+      build: '20',
+      date: '17. November 2026',
+      changes: [
+        'Ein Klick auf die Versionsanzeige öffnet jetzt die Änderungsübersicht, auch wenn der OIP-Server nicht erreichbar ist.',
+        'Der lokale API-Tunnel verwendet einen frischen Weiterleitungsport.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.16',
       build: '19',
       date: '17. November 2026',

@@ -64,14 +64,20 @@ mkdir -p "$LATEST_DIR"
 LATEST_TAG="$(gh release view --repo "$REPOSITORY" --json tagName --jq .tagName)"
 gh release download "$LATEST_TAG" --repo "$REPOSITORY" \
   --dir "$LATEST_DIR" --pattern oip-macos-manifest.json --clobber
-BUILD="$(python3 - "$LATEST_DIR/oip-macos-manifest.json" <<'PY'
+BUILD="$(python3 - "$LATEST_DIR/oip-macos-manifest.json" "$ROOT/apps/flutter/pubspec.yaml" <<'PY'
 import json
 import pathlib
+import re
 import sys
 
 manifest = json.loads(pathlib.Path(sys.argv[1]).read_text())
-build = int(manifest["build"])
-print(build + 1)
+published_build = int(manifest["build"])
+pubspec = pathlib.Path(sys.argv[2]).read_text()
+match = re.search(r"^version:\s*[^+\s]+\+(\d+)\s*$", pubspec, re.MULTILINE)
+if not match:
+    raise SystemExit("pubspec.yaml version must include a numeric build suffix")
+source_build = int(match.group(1))
+print(max(published_build + 1, source_build))
 PY
 )"
 LATEST_VERSION="${LATEST_TAG#v}"
@@ -100,7 +106,7 @@ if [[ -n "$(git status --porcelain)" ]]; then
 fi
 flutter build macos --release \
   --build-name="$VERSION" --build-number="$BUILD" \
-  --dart-define=OIP_API_URL=http://127.0.0.1:18861 \
+  --dart-define=OIP_API_URL=http://127.0.0.1:18862 \
   --dart-define=OIP_APP_VERSION="$VERSION" \
   --dart-define=OIP_APP_BUILD="$BUILD"
 cd "$ROOT"
