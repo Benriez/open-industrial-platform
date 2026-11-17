@@ -15,6 +15,15 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.18',
+      build: '21',
+      date: '17. November 2026',
+      changes: [
+        'Der Client verwendet wieder den stabil antwortenden lokalen OIP-Tunnel.',
+        'Ein gesunder, bereits laufender Tunnel wird weiterverwendet, statt einen zweiten SSH-Forward zu starten.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.17',
       build: '20',
       date: '17. November 2026',
