@@ -62,18 +62,3 @@ A complete UI PASS may never use `--skip-build`, `--skip-widget` or
 * A green test run without the correct visible UI build is **not** a PASS.
 * Never label an unapproved screenshot as operator-accepted. The visual
   acceptance state lives in §8 of the baseline.
-
-## 5. Isolation and safety
-
-* Work on an isolated branch and worktree, verify there, merge with
-  `git merge --ff-only`.
-* Never touch a foreign worktree, a foreign preview process, a foreign session
-  or an integration authority of another workstream.
-* No push, no deployment, no schema-7 activation, no change to the personal
-  installation database. Private SSH to the operator-owned `bodi-pi` and
-  `bodi-pc` is permitted for read-only diagnostics and reversible runtime
-  recovery explicitly authorized by the operator; it does not authorize a
-  deployment, database change, or device write.
-* The authoritative progress state is
-  [`docs/OIP_RELEASE_PROGRESS.md`](docs/OIP_RELEASE_PROGRESS.md). Read it
-  before choosing work and update it afterwards.
