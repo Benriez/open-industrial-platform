@@ -70,8 +70,9 @@ class MainFlutterWindow: NSWindow {
 }
 
 /// Keeps the Pi Core forward under launchd so it remains independent of the
-/// Flutter application's process lifetime and scheduling. The companion
-/// watchdog probes the forwarded HTTP endpoint and recycles stalled channels.
+/// Flutter application's process lifetime and scheduling. SSH keepalives and
+/// launchd's KeepAlive policy recover a dead transport without interrupting
+/// healthy requests whenever an HTTP health probe is slow.
 private final class OIPPiTunnelManager: NSObject {
   static let shared = OIPPiTunnelManager()
 
@@ -102,15 +103,18 @@ private final class OIPPiTunnelManager: NSObject {
       let watchdogPlist = launchAgents.appendingPathComponent("\(watchdogLabel).plist")
       let tunnelLog = logs.appendingPathComponent("platform-tunnel.log").path
       let tunnelError = logs.appendingPathComponent("platform-tunnel.err").path
-      let watchdogLog = logs.appendingPathComponent("platform-tunnel-watchdog.log").path
-      let watchdogError = logs.appendingPathComponent("platform-tunnel-watchdog.err").path
-
       for label in [tunnelLabel, watchdogLabel] where launchAgentIsLoaded(domain: domain, label: label) {
         guard runLaunchctl(["bootout", "\(domain)/\(label)"]) else {
           log("could not unload existing OIP LaunchAgent \(label)")
           return
         }
       }
+      // Older releases used an HTTP watchdog that killed the whole SSH tunnel
+      // after a few slow API responses. This reset unrelated API and SSE
+      // connections and could make a transient server delay look like an
+      // outage. Remove its stale job after unloading it; transport keepalives
+      // and launchd now own recovery.
+      try? FileManager.default.removeItem(at: watchdogPlist)
 
       try writePropertyList([
         "Label": tunnelLabel,
@@ -134,29 +138,9 @@ private final class OIPPiTunnelManager: NSObject {
         "StandardErrorPath": tunnelError,
       ], to: tunnelPlist)
 
-      let watchdog = """
-      attempt=1
-      while [ "$attempt" -le 3 ]; do
-        if /usr/bin/curl --fail --silent --show-error --connect-timeout 1 --max-time 3 --output /dev/null http://127.0.0.1:\(localPort)/api/v2/browser/session 2>/dev/null; then exit 0; fi
-        attempt=$((attempt + 1))
-        [ "$attempt" -le 3 ] && /bin/sleep 1
-      done
-      /usr/bin/logger -t oip-platform-tunnel-watchdog "Core API failed; restarting the managed SSH tunnel"
-      /bin/launchctl kickstart -k \(domain)/\(tunnelLabel)
-      """
-      try writePropertyList([
-        "Label": watchdogLabel,
-        "ProgramArguments": ["/bin/sh", "-c", watchdog],
-        "RunAtLoad": true,
-        "StartInterval": 20,
-        "StandardOutPath": watchdogLog,
-        "StandardErrorPath": watchdogError,
-      ], to: watchdogPlist)
-
       let tunnelStarted = runLaunchctl(["bootstrap", domain, tunnelPlist.path])
-      let watchdogStarted = runLaunchctl(["bootstrap", domain, watchdogPlist.path])
-      agentsConfigured = tunnelStarted && watchdogStarted
-      log("configured managed Pi tunnel (local :\(localPort), remote :\(remotePort)); launchd tunnel=\(tunnelStarted), watchdog=\(watchdogStarted)")
+      agentsConfigured = tunnelStarted
+      log("configured managed Pi tunnel (local :\(localPort), remote :\(remotePort)); launchd tunnel=\(tunnelStarted); HTTP watchdog disabled")
     } catch {
       log("could not configure managed Pi tunnel: \(error.localizedDescription)")
     }
