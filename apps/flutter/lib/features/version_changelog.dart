@@ -15,6 +15,15 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.19',
+      build: '22',
+      date: '17. November 2026',
+      changes: [
+        'Die Verbindung zum Pi nutzt das private Tailscale-Netz direkt.',
+        'Telemetrie und OPC-UA-Abfragen verwenden eigene Verbindungen ohne gemeinsam genutzte SSH-Kanäle.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.18',
       build: '21',
       date: '17. November 2026',

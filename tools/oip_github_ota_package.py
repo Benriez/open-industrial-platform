@@ -50,6 +50,7 @@ def main() -> int:
     info_path.write_bytes(plistlib.dumps(info, fmt=plistlib.FMT_XML, sort_keys=False))
     helper = ROOT / "apps/flutter/macos/Runner/oip_ota_install_helper.sh"
     shutil.copy2(helper, staged_bundle / "Contents/Resources/oip_ota_install_helper.sh")
+    shutil.copy2(ROOT / "tools/oip_tcp_relay.py", staged_bundle / "Contents/Resources/oip_tcp_relay.py")
     direct_entitlements = ROOT / "apps/flutter/macos/Runner/Direct.entitlements"
     run(["/usr/bin/codesign", "--force", "--deep", "--sign", "-",
          "--entitlements", str(direct_entitlements), str(staged_bundle)])

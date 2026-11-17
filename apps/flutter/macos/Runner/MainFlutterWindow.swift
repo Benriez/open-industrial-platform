@@ -69,16 +69,13 @@ class MainFlutterWindow: NSWindow {
   }
 }
 
-/// Keeps the Pi Core forward under launchd so it remains independent of the
-/// Flutter application's process lifetime and scheduling. SSH keepalives and
-/// launchd's KeepAlive policy recover a dead transport without interrupting
-/// healthy requests whenever an HTTP health probe is slow.
+/// Keeps the private tailnet API relay independent of the Flutter process.
+/// The loopback origin and browser session contract remain unchanged. Each
+/// HTTP/SSE connection has its own TCP stream, with no shared SSH transport.
 private final class OIPPiTunnelManager: NSObject {
   static let shared = OIPPiTunnelManager()
 
-  private let host = Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelHost") as? String ?? "bodi-pi"
   private let localPort = Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelLocalPort") as? Int ?? 18858
-  private let remotePort = Bundle.main.object(forInfoDictionaryKey: "OIPPiTunnelRemotePort") as? Int ?? 18808
   private let tunnelLabel = "com.oip.platform-tunnel"
   private let watchdogLabel = "com.oip.platform-tunnel-watchdog"
   private var agentsConfigured = false
@@ -141,23 +138,21 @@ private final class OIPPiTunnelManager: NSObject {
     do {
       try FileManager.default.createDirectory(at: launchAgents, withIntermediateDirectories: true)
       try FileManager.default.createDirectory(at: logs, withIntermediateDirectories: true)
+      guard let relayScript = Bundle.main.url(forResource: "oip_tcp_relay", withExtension: "py") else {
+        log("private API relay is missing from the application bundle")
+        return nil
+      }
       let tunnelPlist = launchAgents.appendingPathComponent("\(tunnelLabel).plist")
       let tunnelLog = logs.appendingPathComponent("platform-tunnel.log").path
       let tunnelError = logs.appendingPathComponent("platform-tunnel.err").path
       try writePropertyList([
         "Label": tunnelLabel,
         "ProgramArguments": [
-          "/usr/bin/ssh", "-N", "-n",
-          "-o", "BatchMode=yes",
-          "-o", "ConnectTimeout=8",
-          "-o", "ExitOnForwardFailure=yes",
-          "-o", "ServerAliveInterval=15",
-          "-o", "ServerAliveCountMax=2",
-          "-o", "IPQoS=none",
-          "-o", "ControlMaster=no",
-          "-o", "ControlPath=none",
-          "-L", "127.0.0.1:\(localPort):127.0.0.1:\(remotePort)",
-          host,
+          "/usr/bin/python3", relayScript.path,
+          "--listen-host", "127.0.0.1",
+          "--listen-port", String(localPort),
+          "--target-host", Bundle.main.object(forInfoDictionaryKey: "OIPPrivateAPIHost") as? String ?? "100.127.113.104",
+          "--target-port", "18809",
         ],
         "RunAtLoad": true,
         "KeepAlive": true,
@@ -177,7 +172,7 @@ private final class OIPPiTunnelManager: NSObject {
     let domain = "gui/\(getuid())"
     let tunnelStarted = runLaunchctl(["bootstrap", domain, tunnelPlist.path])
     agentsConfigured = tunnelStarted || launchAgentIsLoaded(domain: domain, label: tunnelLabel)
-    log("started managed Pi tunnel (local :\(localPort), remote :\(remotePort)); launchd=\(agentsConfigured)")
+    log("started private tailnet API relay (local :\(localPort)); launchd=\(agentsConfigured)")
   }
 
   private func monitorTunnelIfNeeded(_ tunnelPlist: URL) {

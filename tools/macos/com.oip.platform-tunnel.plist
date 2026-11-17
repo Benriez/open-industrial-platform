@@ -2,41 +2,30 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>KeepAlive</key>
+	<true/>
 	<key>Label</key>
 	<string>com.oip.platform-tunnel</string>
+	<key>ProcessType</key>
+	<string>Interactive</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/bin/ssh</string>
-		<string>-N</string>
-		<string>-o</string>
-		<string>BatchMode=yes</string>
-		<string>-o</string>
-		<string>ConnectTimeout=8</string>
-		<string>-o</string>
-		<string>IPQoS=none</string>
-		<string>-o</string>
-		<string>ExitOnForwardFailure=yes</string>
-		<string>-o</string>
-		<string>ServerAliveInterval=15</string>
-		<string>-o</string>
-		<string>ServerAliveCountMax=2</string>
-		<string>-o</string>
-		<string>ControlMaster=no</string>
-		<string>-o</string>
-		<string>ControlPath=none</string>
-		<string>-L</string>
-		<string>127.0.0.1:18856:127.0.0.1:18808</string>
-		<string>bodi-pi</string>
+		<string>/usr/bin/python3</string>
+		<string>/Applications/Open Industrial Platform.app/Contents/Resources/oip_tcp_relay.py</string>
+		<string>--listen-host</string>
+		<string>127.0.0.1</string>
+		<string>--listen-port</string>
+		<string>18856</string>
+		<string>--target-host</string>
+		<string>100.127.113.104</string>
+		<string>--target-port</string>
+		<string>18809</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
-	<key>KeepAlive</key>
-	<true/>
-	<key>ProcessType</key>
-	<string>Interactive</string>
-	<key>StandardOutPath</key>
-	<string>/Users/benny/Library/Logs/OIP/platform-tunnel.log</string>
 	<key>StandardErrorPath</key>
 	<string>/Users/benny/Library/Logs/OIP/platform-tunnel.err</string>
+	<key>StandardOutPath</key>
+	<string>/Users/benny/Library/Logs/OIP/platform-tunnel.log</string>
 </dict>
 </plist>

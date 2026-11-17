@@ -1,7 +1,7 @@
 name: oip_dashboard
 description: Local, read-only Open Industrial Platform dashboard.
 publish_to: none
-version: 0.3.18+21
+version: 0.3.19+22
 environment:
   sdk: '>=3.4.0 <4.0.0'
   flutter: '>=3.22.0'
