@@ -33,6 +33,18 @@ next iteration.
   SHA-256 `10f06e9fbb637bea85f5e9896d7a930a83ef1c532bb7fa0b0631177d9bd7590d`,
   equal to the local build. Receipt:
   `target/oip-canonical-gate-opcua-single-load-2026-11-18/oip_canonical_ui_gate/report.json`.
+- [x] Hardened the macOS main window against undersized resize states: startup
+  now clamps the minimum to the hosting display and immediately expands an
+  existing frame below that minimum. The app's strict signed release build
+  succeeds. The full canonical gate passed: 402 Flutter tests, 189 authenticated
+  browser checks, both visual comparisons, all six accessibility scans, global
+  context and eight managed acceptance phases. Source `ab9212a`, tested tree
+  `6ad88dc85cd4658c2e34d91c86a18dbe49d4b8c9`, served bundle SHA-256
+  `10f06e9fbb637bea85f5e9896d7a930a83ef1c532bb7fa0b0631177d9bd7590d`.
+  Receipt:
+  `target/oip-window-min-size-final-gate-2026-11-18/oip_canonical_ui_gate/report.json`.
+  This is not yet live resize/crash acceptance; the installed app remains
+  `0.3.28+31` until a new build is rolled out and exercised.
 
 ## Still open
 
@@ -49,6 +61,11 @@ next iteration.
 - [ ] **Distribution readiness:** the installed app has no Developer ID Team ID
   in its code signature. App Store or outside-Mac distribution readiness is
   therefore not proven.
+- [ ] **Live resize/crash acceptance:** install the hardened build, resize its
+  native window repeatedly, and verify the app stays responsive and does not
+  crash. The supplied crash stack is inside FlutterMacOS and does not identify
+  the root cause; the minimum-size guard is a defensive fix, not a proven
+  engine-level diagnosis.
 
 ## Diagnosis and constraints
 

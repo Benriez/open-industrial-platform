@@ -40,26 +40,34 @@ class MainFlutterWindow: NSWindow {
   /// bundle was generated for. On a smaller display the window opens above
   /// the visible area and the operator sees nothing at all. When the frame
   /// touches no visible screen, the window is placed in the centre of the
-  /// visible frame of the main screen and fitted into it.
+  /// visible frame of the main screen and fitted into it. Keep the minimum
+  /// size within the screen that will host the window; without this lower
+  /// bound AppKit can resize the Flutter surface below a usable layout size.
   private func placeOnVisibleScreen() {
-    let visibleFrames = NSScreen.screens.map { $0.visibleFrame }
-    let visible = visibleFrames.contains(where: { $0.intersects(frame) })
-    report("frames=\(visibleFrames) window=\(frame) visible=\(visible)")
-    if visible {
-      return
-    }
-    guard let screen = NSScreen.main ?? NSScreen.screens.first else {
+    let screen = NSScreen.screens.first(where: { $0.visibleFrame.intersects(frame) })
+      ?? NSScreen.main
+      ?? NSScreen.screens.first
+    guard let screen else {
       report("no screen of the machine")
       return
     }
     let visibleFrame = screen.visibleFrame
+    minSize = NSSize(
+      width: min(640, visibleFrame.width),
+      height: min(480, visibleFrame.height)
+    )
+    let visible = visibleFrame.intersects(frame)
     var target = frame
-    target.size.width = min(target.size.width, visibleFrame.width)
-    target.size.height = min(target.size.height, visibleFrame.height)
-    target.origin.x = visibleFrame.midX - target.width / 2
-    target.origin.y = visibleFrame.midY - target.height / 2
-    setFrame(target, display: true)
-    report("placed=\(frame)")
+    target.size.width = min(max(target.size.width, minSize.width), visibleFrame.width)
+    target.size.height = min(max(target.size.height, minSize.height), visibleFrame.height)
+    if !visible {
+      target.origin.x = visibleFrame.midX - target.width / 2
+      target.origin.y = visibleFrame.midY - target.height / 2
+    }
+    if target != frame {
+      setFrame(target, display: true)
+    }
+    report("screen=\(visibleFrame) window=\(frame) visible=\(visible) minimum=\(minSize)")
   }
 
   /// One line of the placement of the window on the standard error of the
