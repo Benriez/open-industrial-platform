@@ -57,7 +57,7 @@ void main() {
     expect(find.text('Namespace 2'), findsOneWidget);
     expect(find.byKey(const Key('node-alarm_active')), findsOneWidget);
     expect(find.byKey(const Key('node-temperature')), findsOneWidget);
-    expect(find.text('READ-ONLY ANALYSE'), findsOneWidget);
+    expect(find.text('ADRESSRAUM-EXPLORER · SERVERRECHTE'), findsOneWidget);
 
     // Selecting a row focuses the list; arrow keys move the selection.
     await tester.tap(find.byKey(const Key('node-alarm_active')));

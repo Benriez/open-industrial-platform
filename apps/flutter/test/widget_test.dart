@@ -82,7 +82,8 @@ void main() {
       await tester.binding.setSurfaceSize(null);
     });
   }
-  testWidgets('Initial error and stale data stay explicit', (tester) async {
+  testWidgets('Initial error and reconnect state stay explicit',
+      (tester) async {
     final controller = OipController(FakeApi())
       ..error = 'OIP-Server nicht erreichbar';
     await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
@@ -92,7 +93,8 @@ void main() {
     controller.connection = 'reconnecting';
     controller.notifyListeners();
     await tester.pump();
-    expect(find.textContaining('VERALTET / UNBEKANNT'), findsOneWidget);
+    expect(find.text('API STALE / RECONNECT'), findsOneWidget);
+    expect(find.textContaining('VERALTET / UNBEKANNT'), findsNothing);
     await tester.pumpWidget(const SizedBox());
     controller.dispose();
   });

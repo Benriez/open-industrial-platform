@@ -26,7 +26,7 @@ void main() {
     expect(find.text('CLIENT IDENTITY'), findsOneWidget);
     // Version and build are exposed with stable keys and mirror the manifest.
     expect(find.byKey(const Key('settings-about-version')), findsOneWidget);
-    expect(find.text('0.3.0'), findsOneWidget);
+    expect(find.text(kOipApplication.version), findsOneWidget);
     expect(find.byKey(const Key('settings-about-build')), findsOneWidget);
     expect(find.byKey(const Key('settings-about-shell')), findsOneWidget);
     // The software license is attributed for store-ready provenance.
@@ -36,10 +36,10 @@ void main() {
     expect(find.text('Lokal · keine Telemetrie'), findsOneWidget);
     // The rendered identity mirrors the package manifest exactly; the version
     // and build are the single source of truth, not invented values.
-    expect(kOipApplication.version, '0.3.4');
-    expect(kOipApplication.build, '7');
+    expect(kOipApplication.version, '0.3.19');
+    expect(kOipApplication.build, '22');
     expect(kOipApplication.license, 'Apache-2.0');
-    expect(OipApplicationInfo.manifestDeclaration, '0.3.4+7');
+    expect(OipApplicationInfo.manifestDeclaration, '0.3.19+22');
     expect(tester.takeException(), isNull);
   });
 }

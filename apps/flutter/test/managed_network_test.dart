@@ -60,10 +60,13 @@ void main() {
     expect(find.text('Remote Site'), findsNothing);
     expect(find.text('DEMO-PFADE'), findsOneWidget);
     expect(find.text('0'), findsWidgets);
-    // An empty result is not an offline state.
+    // Missing topology is reported as missing data; it is not turned into an
+    // offline or isolated state.
+    expect(find.text('Topologie im Snapshot nicht enthalten'), findsOneWidget);
     expect(
-        find.textContaining(
-            'Ein leeres Ergebnis wird nicht als Offline-Zustand interpretiert'),
-        findsOneWidget);
+      find.textContaining(
+          'Erreichbarkeit oder Verbindung werden daraus nicht abgeleitet'),
+      findsOneWidget,
+    );
   });
 }

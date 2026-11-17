@@ -31,6 +31,14 @@ class _PairingFailureApi extends RestApi {
       });
 
   @override
+  Future<BrowserSession> session() async => BrowserSession.fromJson({
+        'principal_id': 'operator-a',
+        'authenticated': true,
+        'mode': 'local_operator_session',
+        'csrf_token': 'csrf-a',
+      });
+
+  @override
   Future<void> pairDeviceCredential(String credential) async {
     pairAttempted = true;
     throw const ApiFailure('Core-Endpunkt nicht verfügbar.',

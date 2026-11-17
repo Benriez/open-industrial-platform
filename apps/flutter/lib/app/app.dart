@@ -510,7 +510,7 @@ class _TopBar extends StatelessWidget {
                             ? 'Simulation only; no real infrastructure changes.'
                             : !operatorActionsAvailable
                                 ? 'Authorize a managed operator session to open actions permitted for its scope.'
-                                : 'Inventory registration and updates, SSH onboarding and monitoring configuration are available when permitted by the current scope. Telemetry and OPC-UA inspection remain read-only.',
+                                : 'Inventory registration and updates, SSH onboarding and monitoring configuration are available when permitted by the current scope. Telemetry is collector-owned; OPC-UA writes require server-reported ReadWrite access and an authorized scope.',
                         child: Text(
                           simulation
                               ? 'Simulation · Self-hosted'

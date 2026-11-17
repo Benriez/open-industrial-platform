@@ -43,7 +43,7 @@ const workstations = [
   { name: 'Übersicht', slug: 'overview', marker: 'INFRASTRUCTURE COMMAND CENTER · READ-ONLY' },
   { name: 'Geräte & Dienste', slug: 'devices', marker: 'DEVICES & SERVICES · OBJECT WORKSPACE' },
   { name: 'Netzwerk & VPN', slug: 'network', marker: 'NETWORK ENGINEERING EXPLORER · READ-ONLY' },
-  { name: 'OPC-UA-Browser', slug: 'opcua', marker: 'ADRESSRAUM-EXPLORER · READ-ONLY' },
+  { name: 'OPC-UA-Browser', slug: 'opcua', marker: 'ADRESSRAUM-EXPLORER · SERVERRECHTE' },
   { name: 'Diagnose & Ereignisse', slug: 'diagnostics', marker: 'EVENTS · UNTERSUCHUNGSKONTEXT' },
   { name: 'Einstellungen', slug: 'settings', marker: 'SETTINGS · APPLICATION MANAGEMENT' },
 ];

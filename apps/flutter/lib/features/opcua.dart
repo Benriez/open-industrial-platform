@@ -2202,9 +2202,9 @@ class _OpcuaPageState extends State<OpcuaPage> {
         ]),
         const SizedBox(height: OipTokens.s3),
         const WorkstationNote(
-          'Sicherer Analysemodus',
-          'Lesender Adressraumzugriff über typisierte Rust-Capabilities. Die Messung entsteht im Kollektor; der Browser liest den Adressraum des Servers, ohne zu messen und ohne zu schreiben. Kein Schreibpfad – by design.',
-          icon: Icons.lock_outline,
+          'Zugriff nach Serverrechten',
+          'Die Messung entsteht im Kollektor. Der Browser liest den Serveradressraum; Schreibaktionen erscheinen nur bei serverseitiger ReadWrite-Freigabe und zulässigem Operator-Kontext.',
+          icon: Icons.admin_panel_settings_outlined,
           color: OipTokens.lime,
         ),
       ],
