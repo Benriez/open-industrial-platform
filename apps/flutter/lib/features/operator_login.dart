@@ -18,6 +18,7 @@ class _OperatorLoginState extends State<OperatorLogin> {
   bool hasTouchId = false;
   bool touchIdConfigured = false;
   bool enableTouchIdAfterLogin = false;
+  bool _touchIdChoiceMade = false;
   @override
   void initState() {
     super.initState();
@@ -31,6 +32,12 @@ class _OperatorLoginState extends State<OperatorLogin> {
       setState(() {
         hasTouchId = available;
         touchIdConfigured = configured;
+        if (!_touchIdChoiceMade) {
+          // Touch ID is the operator's requested way to restore a session
+          // after restart. Make the one-time enrollment step visible and
+          // selected when this Mac supports it but has no OIP credential yet.
+          enableTouchIdAfterLogin = available && !configured;
+        }
       });
     }
   }
@@ -119,11 +126,14 @@ class _OperatorLoginState extends State<OperatorLogin> {
                         value: enableTouchIdAfterLogin,
                         onChanged: busy
                             ? null
-                            : (value) => setState(
-                                () => enableTouchIdAfterLogin = value ?? false),
-                        title: const Text('Touch ID auf diesem Mac einrichten'),
+                            : (value) => setState(() {
+                                  _touchIdChoiceMade = true;
+                                  enableTouchIdAfterLogin = value ?? false;
+                                }),
+                        title: const Text(
+                            'Touch ID für künftige Anmeldungen einrichten'),
                         subtitle: const Text(
-                            'Wird nach dem ersten Code-Login an deine Touch-ID gebunden.'),
+                            'Für die erste Anmeldung brauchst du einen Einmalcode und bestätigst deinen Fingerabdruck. Danach kannst du dich mit Touch ID erneut anmelden.'),
                       ),
                       if (touchIdConfigured)
                         OutlinedButton.icon(
@@ -144,7 +154,7 @@ class _OperatorLoginState extends State<OperatorLogin> {
                             : 'Operator-Sitzung autorisieren')),
                     const SizedBox(height: 8),
                     const Text(
-                        'Touch ID ist nur in der nativen Mac-App verfügbar. Der Schlüssel liegt in der Mac-Keychain. Die lokale Sitzung endet nach 30 Minuten, beim Abmelden oder mit einem Neustart der Instanz; die Core-Kopplung wird beim Neustart zurückgesetzt.'),
+                        'Die lokale Sitzung endet nach 30 Minuten, beim Abmelden oder mit einem Neustart der Instanz. Mit eingerichteter Touch ID kannst du danach eine neue Sitzung öffnen; ohne Touch ID brauchst du einen neuen Einmalcode.'),
                   ],
                 ))),
       ))));

@@ -85,6 +85,14 @@ void main() {
 
     expect(find.byKey(const Key('enable-touch-id')), findsOneWidget);
     expect(find.byKey(const Key('operator-login-touch-id')), findsNothing);
+    expect(
+      tester
+          .widget<CheckboxListTile>(find.byKey(const Key('enable-touch-id')))
+          .value,
+      isTrue,
+      reason:
+          'a supported Mac should select Touch ID enrollment for first login',
+    );
     controller.dispose();
   }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
 
@@ -104,6 +112,14 @@ void main() {
 
     expect(find.byKey(const Key('enable-touch-id')), findsOneWidget);
     expect(find.byKey(const Key('operator-login-touch-id')), findsOneWidget);
+    expect(
+      tester
+          .widget<CheckboxListTile>(find.byKey(const Key('enable-touch-id')))
+          .value,
+      isFalse,
+      reason:
+          'an already paired credential should not trigger another enrollment',
+    );
     controller.dispose();
   }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
 
