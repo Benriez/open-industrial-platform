@@ -1,21 +1,23 @@
 use crate::{application_services::ApplicationServices, state::AppState};
 use axum::extract::FromRequestParts;
 use axum::{
-    Json, Router,
+    body::Body,
     extract::{Path, Query, Request},
-    http::{HeaderValue, StatusCode},
+    http::{header, HeaderValue, StatusCode},
     middleware::{self, Next},
     response::{
-        IntoResponse, Response, Sse,
         sse::{Event, KeepAlive},
+        IntoResponse, Response, Sse,
     },
     routing::{get, post},
+    Json, Router,
 };
-use futures::stream;
+use flate2::{write::GzEncoder, Compression};
+use futures::{stream, StreamExt};
 use oip_core::*;
 use serde_json::json;
 use sha2::{Digest, Sha256};
-use std::{convert::Infallible, sync::Arc, time::Duration};
+use std::{convert::Infallible, io::Write, sync::Arc, time::Duration};
 
 #[derive(Clone)]
 struct ApiContext {
@@ -222,8 +224,14 @@ pub fn router_with_identity(
         .route("/api/v2/observations/history", get(observation_history))
         .route("/api/v2/opcua/nodes", get(nodes))
         .route("/api/v2/opcua/write", post(opcua_write))
-        .route("/api/v2/snapshot", get(scoped_snapshot))
-        .route("/api/v2/stream", get(scoped_sse))
+        .route(
+            "/api/v2/snapshot",
+            get(scoped_snapshot).layer(middleware::from_fn(compress_live_projection)),
+        )
+        .route(
+            "/api/v2/stream",
+            get(scoped_sse).layer(middleware::from_fn(compress_live_projection)),
+        )
         .route("/api/v1/system/status", get(status))
         .route("/api/v1/core/health", get(core_health))
         .route("/api/v1/sources", get(source_health))
@@ -260,6 +268,62 @@ pub fn router_with_identity(
             credentials,
             browser_token: None,
         })
+}
+
+async fn compress_live_projection(request: Request, next: Next) -> Response {
+    let accepts_gzip = request
+        .headers()
+        .get_all(header::ACCEPT_ENCODING)
+        .iter()
+        .filter_map(|value| value.to_str().ok())
+        .flat_map(|value| value.split(','))
+        .any(|encoding| {
+            let (name, weight) = encoding.split_once(';').unwrap_or((encoding, "q=1"));
+            name.trim().eq_ignore_ascii_case("gzip")
+                && weight
+                    .trim()
+                    .strip_prefix("q=")
+                    .and_then(|quality| quality.parse::<f32>().ok())
+                    .is_some_and(|quality| quality > 0.0 && quality <= 1.0)
+        });
+    let mut response = next.run(request).await;
+    if response.status() != StatusCode::OK {
+        return response;
+    }
+    response
+        .headers_mut()
+        .append(header::VARY, HeaderValue::from_static("Accept-Encoding"));
+    if !accepts_gzip {
+        return response;
+    }
+    let (mut parts, body) = response.into_parts();
+    parts.headers.remove(header::CONTENT_LENGTH);
+    parts
+        .headers
+        .insert(header::CONTENT_ENCODING, HeaderValue::from_static("gzip"));
+    let encoded = stream::try_unfold(
+        (
+            body.into_data_stream(),
+            Some(GzEncoder::new(Vec::new(), Compression::fast())),
+        ),
+        |(mut body, encoder)| async move {
+            let Some(mut encoder) = encoder else {
+                return Ok::<_, axum::Error>(None);
+            };
+            if let Some(chunk) = body.next().await {
+                encoder.write_all(&chunk?).map_err(axum::Error::new)?;
+                // Flush every SSE frame (including keepalives) so compression
+                // cannot delay the next visible update.
+                encoder.flush().map_err(axum::Error::new)?;
+                let bytes = std::mem::take(encoder.get_mut());
+                Ok(Some((bytes, (body, Some(encoder)))))
+            } else {
+                let trailer = encoder.finish().map_err(axum::Error::new)?;
+                Ok(Some((trailer, (body, None))))
+            }
+        },
+    );
+    Response::from_parts(parts, Body::from_stream(encoded))
 }
 
 async fn local_origin(request: Request, next: Next) -> Response {
