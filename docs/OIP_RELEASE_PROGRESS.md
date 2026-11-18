@@ -40,6 +40,8 @@ though that framework binary is present in the archive. Treat this as unresolved
 packaging evidence, not a Store-ready result. Apple Distribution signing and
 Store upload are still unverified; no Actions workflow ran.
 
+**Touch ID pairing diagnosis (2026-11-18).** A read-only inspection found one Core-side device credential associated with principal `device-operator`, plus the local OIP Touch ID item in the macOS login Keychain. The login-Keychain ACL currently matches the installed app descriptor. This rules out a plainly absent pairing or an app-path mismatch, but it does not prove the keychain item contains the same raw credential as the Core digest, nor that the biometric read or `/browser/device-login` exchange succeeds. The secret was not read or printed. No biometric approval was simulated. The installed authenticated views therefore remain unverified; the next decisive evidence is the native login result after a real Touch ID approval, including any Keychain OSStatus or Core response.
+
 **Still open:** an authenticated installed-app session and the resulting live
 telemetry/OPC-UA/topology screens; correcting the stale router inventory note;
 registering the verified Hue Bridge (identity only until physically paired);

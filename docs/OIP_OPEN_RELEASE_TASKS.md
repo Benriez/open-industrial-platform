@@ -14,6 +14,8 @@ local/served `main.dart.js` SHA-256
 200 session responses over three minutes while signed out. The app correctly
 shows `ANMELDUNG ERFORDERLICH` instead of a false stale-API warning.
 
+**Touch ID diagnosis:** the Core has one persisted device credential for `device-operator`; the Mac login Keychain contains the OIP credential item, and its ACL includes the installed app descriptor. This proves the pairing objects exist, but not that their secret values match or that biometric-backed read and Core redemption succeed. No credential was read or printed.
+
 **Still open:** authenticated Touch ID/session proof and the installed-app
 telemetry, OPC-UA and topology views; router inventory wording; Hue Bridge
 identity registration; operator visual acceptance and native resize/crash
