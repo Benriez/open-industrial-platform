@@ -779,6 +779,7 @@ impl ApplicationServices {
 }
 pub async fn monitor(state: AppState, c: DeviceConnectionRecord, stop: CancellationToken) {
     let mut failures = 0u32;
+    let mut needs_connection = true;
     loop {
         if stop.is_cancelled() {
             break;
@@ -807,7 +808,9 @@ pub async fn monitor(state: AppState, c: DeviceConnectionRecord, stop: Cancellat
                     _ = stop.cancelled() => break,
                     result = state.ssh.admission.clone().acquire_owned() => match result { Ok(p) => p, Err(_) => break },
                 };
-                state.connecting(&c.source_id).await;
+                if needs_connection {
+                    state.connecting(&c.source_id).await;
+                }
                 let result = ssh::collect(&c.endpoint, &profile, &c.host_key, work, &stop).await;
                 drop(permit);
                 result
@@ -824,8 +827,13 @@ pub async fn monitor(state: AppState, c: DeviceConnectionRecord, stop: Cancellat
         match result {
             Ok(info) => {
                 failures = 0;
-                if state.connected(&c.source_id).await.is_err() {
-                    break;
+                // Each SSH poll opens a transport, but only startup or recovery
+                // starts a new collection session and resets source health.
+                if needs_connection {
+                    if state.connected(&c.source_id).await.is_err() {
+                        break;
+                    }
+                    needs_connection = false;
                 }
                 for o in ssh::observations(&c, &info) {
                     if state
@@ -854,6 +862,7 @@ pub async fn monitor(state: AppState, c: DeviceConnectionRecord, stop: Cancellat
                 if stop.is_cancelled() {
                     break;
                 }
+                needs_connection = true;
                 failures = failures.saturating_add(1);
                 let at = now_ms();
                 let _ = state
