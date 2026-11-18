@@ -48,6 +48,10 @@ class _OpcuaPageState extends State<OpcuaPage> {
   OpcValueFormat valueFormat = OpcValueFormat.original;
   int offset = 0, generation = 0;
   int selectedReadGeneration = 0;
+  int sourceGeneration = 0;
+  bool loadingSources = false;
+  bool retryableFailure = false;
+  bool retriedDuringConnection = false;
   Timer? debounce;
 
   /// Every identity includes its source. NodeIds are not globally unique.
@@ -80,17 +84,17 @@ class _OpcuaPageState extends State<OpcuaPage> {
         _ViewMode.list;
     widget.controller.addListener(_ingest);
     _ingest();
-    _initialize();
-  }
-
-  Future<void> _initialize() async {
-    await _loadSources();
-    _load();
+    unawaited(_reloadContext());
   }
 
   Future<void> _reloadContext() async {
-    await _loadSources();
-    _load();
+    final gen = ++sourceGeneration;
+    loadingSources = true;
+    retryableFailure = false;
+    await _loadSources(gen);
+    if (!mounted || gen != sourceGeneration) return;
+    loadingSources = false;
+    await _load();
   }
 
   @override
@@ -119,6 +123,8 @@ class _OpcuaPageState extends State<OpcuaPage> {
       loadedFolder = null;
       loadedSource = null;
       error = null;
+      sourcesError = null;
+      retriedDuringConnection = false;
       offset = 0;
       pinned.clear();
       compared.clear();
@@ -129,10 +135,21 @@ class _OpcuaPageState extends State<OpcuaPage> {
       // scope belong to a source that is no longer shown.
       theFolders = const [];
       folder = 'all';
-      _reloadContext();
+      unawaited(_reloadContext());
     }
     scopeSignature = nextScope;
     final snapshot = widget.controller.snapshot;
+    if (widget.controller.connection != 'live') {
+      retriedDuringConnection = false;
+    } else if (retryableFailure &&
+        !retriedDuringConnection &&
+        !loadingSources &&
+        !loading &&
+        snapshot != null &&
+        !identical(snapshot, ingested)) {
+      retriedDuringConnection = true;
+      unawaited(_retryBrowse());
+    }
     if (snapshot == null || identical(snapshot, ingested)) return;
     ingested = snapshot;
     selectedSource ??= snapshot.primarySourceId;
@@ -194,11 +211,19 @@ class _OpcuaPageState extends State<OpcuaPage> {
       _currentSource ??
       'unknown';
 
-  Future<void> _loadSources() async {
+  bool _isRetryable(Object error) =>
+      error is ApiFailure &&
+      (error.code == 'CONNECTION_FAILED' || (error.statusCode ?? 0) >= 500);
+
+  Future<void> _retryBrowse() => sourcesError != null || _currentSource == null
+      ? _reloadContext()
+      : _load();
+
+  Future<void> _loadSources(int gen) async {
     try {
       final result = await widget.controller.api
           .contextSources(widget.controller.infrastructure);
-      if (!mounted) return;
+      if (!mounted || gen != sourceGeneration) return;
       setState(() {
         sources = result;
         sourcesError = null;
@@ -218,10 +243,11 @@ class _OpcuaPageState extends State<OpcuaPage> {
         }
       });
     } catch (exception) {
-      if (!mounted) return;
+      if (!mounted || gen != sourceGeneration) return;
       setState(() {
-        sourcesError = apiErrorMessage(exception,
-            'Quellenliste nicht verfügbar. Der Browser nutzt die Primärquelle.');
+        retryableFailure = _isRetryable(exception);
+        sourcesError =
+            apiErrorMessage(exception, 'Quellenliste nicht verfügbar.');
       });
     }
   }
@@ -235,11 +261,12 @@ class _OpcuaPageState extends State<OpcuaPage> {
         page = null;
         selected = null;
         loading = false;
-        error =
+        error = sourcesError ??
             'Eine eindeutige autorisierte OPC-UA-Source muss ausgewählt werden.';
       });
       return;
     }
+    retryableFailure = sourcesError != null && retryableFailure;
     final requestFolder = folder;
     final requestSearch = search;
     setState(() {
@@ -306,6 +333,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
     } catch (exception) {
       if (mounted && gen == generation) {
         setState(() {
+          retryableFailure = retryableFailure || _isRetryable(exception);
           error = apiErrorMessage(exception,
               'OPC-UA-Nodes konnten nicht geladen werden. Bitte erneut versuchen.');
           loading = false;
@@ -1557,7 +1585,8 @@ class _OpcuaPageState extends State<OpcuaPage> {
                   'Browser nicht verfügbar', error!,
                   color: OipTokens.statusColor(context, 'degraded'),
                   action: TextButton(
-                      onPressed: _load, child: const Text('Erneut versuchen'))),
+                      onPressed: _retryBrowse,
+                      child: const Text('Erneut versuchen'))),
             ),
           if (!loading && error == null && page != null && items.isEmpty)
             Padding(

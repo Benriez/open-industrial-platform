@@ -1012,7 +1012,9 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
       final frames = StreamIterator(connection.events);
       try {
         while (await frames.moveNext().timeout(const Duration(seconds: 7))) {
-          yield frames.current;
+          final frame = frames.current;
+          if (frame.type == 'error') break;
+          yield frame;
         }
       } on Exception {
         // A REST request below checks identity and reports the real HTTP

@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oip_dashboard/app/app.dart';
 import 'package:oip_dashboard/app/controller.dart';
 import 'package:oip_dashboard/models/contracts.dart';
+import 'package:oip_dashboard/models/infrastructure.dart';
+import 'package:oip_dashboard/services/api.dart';
 import 'package:oip_dashboard/widgets/workstation.dart';
 
 import 'infrastructure_support.dart';
@@ -64,6 +66,43 @@ void main() {
     expect(api.nodeRequests.where((request) => request.source == 'source-a1'),
         hasLength(1));
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('OPC UA recovers from a failed source read on the next snapshot',
+      (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1440, 1000);
+    await tester.binding.setSurfaceSize(const Size(1440, 1000));
+    final api = _FlakySourcesApi()..infrastructure = infrastructureFixture();
+    final controller = OipController(api)
+      ..snapshot = api.infrastructure!.snapshot.toSnapshot()
+      ..connection = 'reconnecting'
+      ..infrastructure
+          .accept(api.infrastructure!, sessionPrincipal: 'fixture-operator');
+    await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
+    await tester.pumpAndSettle();
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      await tester.binding.setSurfaceSize(null);
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await _navigate(tester, 1440);
+    expect(find.text('Browser nicht verfügbar'), findsOneWidget);
+    expect(api.nodeRequests, isEmpty);
+
+    controller
+      ..snapshot = api.infrastructure!.snapshot.toSnapshot()
+      ..connection = 'live'
+      ..setWorkspaceOption(WorkspaceId.opcua, 'test-snapshot', null);
+    await tester.pumpAndSettle();
+
+    expect(api.sourceRequests, 2);
+    expect(api.nodeRequests.where((request) => request.source == 'source-a1'),
+        hasLength(1));
+    expect(find.text('Browser nicht verfügbar'), findsNothing);
   });
 
   testWidgets('Explorer renders a full 40-node page with pins and keyboard',
@@ -387,4 +426,17 @@ class _TestApp {
   final FakeApi api;
   final OipController controller;
   const _TestApp(this.api, this.controller);
+}
+
+class _FlakySourcesApi extends FakeApi {
+  int sourceRequests = 0;
+
+  @override
+  Future<List<SourceInfo>> contextSources(InfrastructureContext context) async {
+    if (++sourceRequests == 1) {
+      throw const ApiFailure('Connection interrupted',
+          code: 'CONNECTION_FAILED');
+    }
+    return super.contextSources(context);
+  }
 }

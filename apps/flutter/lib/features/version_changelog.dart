@@ -16,6 +16,15 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.36',
+      build: '39',
+      date: '18. November 2026',
+      changes: [
+        'Der OPC-UA-Browser lädt Quellen und Knoten nach einer kurzen Verbindungsstörung erneut.',
+        'Bei einem Fehler im Live-Stream lädt die Mac-App den aktuellen Stand über die bestehende Anmeldung.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.35',
       build: '38',
       date: '18. November 2026',
