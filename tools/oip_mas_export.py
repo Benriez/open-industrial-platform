@@ -17,9 +17,8 @@ Three rules bind it:
   2. **The rendered file never enters the release.** The options are written
      into the build tree of the machine, which is not part of the release;
      the template with its placeholders stays the tracked artefact. The
-     directory that the tool writes into is **checked before** anything is
-     written: the tool removes it, so a directory that the operator names by
-     mistake must never be a directory of the release or of the machine.
+     output root must be inside the build tree. Every invocation gets a new
+     directory, so previous exports and other build outputs are preserved.
   3. **The upload is the operator's action.** Without `--execute` the tool
      renders the options, proves them and prints the command that would run;
      with `--execute` it runs the export. The upload itself
@@ -44,9 +43,12 @@ import json
 import os
 import pathlib
 import plistlib
-import shutil
+import re
+import shlex
 import subprocess
-import sys
+import tempfile
+from xml.parsers.expat import ExpatError
+from xml.sax.saxutils import escape
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "docs/release/mac-app-store/ExportOptions.plist.template"
@@ -74,36 +76,31 @@ OPERATOR_VALUES = {
 # the operator while the export ignores it. The recipe is therefore the
 # manual one, and the tool refuses another style with that reason.
 SIGNING_STYLE = "manual"
+PLACEHOLDER = re.compile(r"<string>__([A-Z_]+)__</string>")
 
 
 def the_inside_of_the_build_tree(path: pathlib.Path) -> bool:
     """Whether a path lies inside the build tree of the machine.
 
-    The rendered options never leave the build tree: the tool removes the
-    directory that it writes into, and a directory that the operator names by
-    mistake must never be a directory of the release or of the machine.
+    The build tree root itself is reserved for tool-specific directories.
     """
-    return path == BUILD_TREE or BUILD_TREE in path.parents
+    return BUILD_TREE in path.parents
 
 
 def the_placeholders(template: pathlib.Path):
     """The placeholders of the template, read out of the file itself."""
-    text = template.read_text()
-    found = []
-    for line in text.splitlines():
-        line = line.strip()
-        if line.startswith("<string>__") and line.endswith("__</string>"):
-            found.append(line[len("<string>__"):-len("__</string>")])
-    return found
+    return PLACEHOLDER.findall(template.read_text())
 
 
 def render(template: pathlib.Path, values: dict, out: pathlib.Path):
     """The rendered options: the template with its placeholders replaced."""
-    text = template.read_text()
-    for name, value in values.items():
-        text = text.replace(f"__{name}__", value)
-    out.write_text(text)
-    return out
+    text = PLACEHOLDER.sub(
+        lambda match: f"<string>{escape(values[match[1]])}</string>",
+        template.read_text(),
+    )
+    payload = plistlib.loads(text.encode("utf-8"))
+    out.write_text(text, encoding="utf-8")
+    return payload
 
 
 def the_missing(values: dict, template: pathlib.Path):
@@ -122,7 +119,7 @@ def the_missing(values: dict, template: pathlib.Path):
     return missing
 
 
-def the_named(values: dict, missing: list):
+def the_named(missing: list):
     """The missing values with the flag and the variable that carry them."""
     named = []
     for name in missing:
@@ -156,6 +153,12 @@ def main() -> int:
     args = parser.parse_args()
 
     report = {"schema": "oip-mas-export-v1", "the_problems": [], "the_steps": []}
+    if args.execute and args.destination != "export":
+        report["the_problems"].append("--execute supports only a local export. "
+                                      "The operator must perform the upload separately.")
+        report["the_status"] = "FAIL"
+        print(json.dumps(report, indent=2))
+        return 2
     if not TEMPLATE.is_file():
         report["the_problems"].append(f"the template is missing: {TEMPLATE}")
         print(json.dumps(report, indent=2))
@@ -184,32 +187,51 @@ def main() -> int:
         # supply and stops.
         report["the_problems"].append(
             "the identity of the operator is incomplete: "
-            + ", ".join(the_named(values, missing)))
+            + ", ".join(the_named(missing)))
         report["the_status"] = "FAIL"
         print(json.dumps(report, indent=2))
         return 2
 
-    # The rendered options never leave the build tree. The tool removes the
-    # directory that it writes into, so the directory is checked **before**
-    # anything is written: a path that the operator names by mistake must
-    # never be a directory of the release or of the machine.
-    work = pathlib.Path(args.out).resolve()
-    if not the_inside_of_the_build_tree(work):
+    output_root = pathlib.Path(args.out).resolve()
+    if not the_inside_of_the_build_tree(output_root):
         report["the_problems"].append(
             f"the directory of the rendered options must lie inside the build tree "
-            f"of the machine ({BUILD_TREE}): {work}")
+            f"of the machine ({BUILD_TREE}): {output_root}")
         report["the_status"] = "FAIL"
         print(json.dumps(report, indent=2))
         return 2
-    if work.exists():
-        shutil.rmtree(work)
-    work.mkdir(parents=True, exist_ok=True)
-    options = work / "ExportOptions.plist"
-    render(TEMPLATE, values, options)
 
+    archive = pathlib.Path(args.archive).resolve()
+    report["the_archive"] = {"the_path": str(archive),
+                             "the_present": archive.is_dir()}
+    if not archive.is_dir():
+        report["the_problems"].append(
+            f"the archive is missing: {archive} — build it with "
+            "tools/oip_mas_package.py first")
+    elif any(path.suffix.lower() in {".xcarchive", ".app"}
+             for path in (output_root, *output_root.parents)):
+        report["the_problems"].append(
+            f"the export directory must lie outside app and archive bundles: {output_root}")
+    elif output_root == archive or archive in output_root.parents:
+        report["the_problems"].append(
+            f"the export directory must lie outside the input archive: {output_root}")
+    if report["the_problems"]:
+        report["the_status"] = "FAIL"
+        print(json.dumps(report, indent=2))
+        return 2
+
+    try:
+        output_root.mkdir(parents=True, exist_ok=True)
+        work = pathlib.Path(tempfile.mkdtemp(prefix="export-", dir=output_root))
+        options = work / "ExportOptions.plist"
+        payload = render(TEMPLATE, values, options)
+    except (ExpatError, KeyError, OSError, ValueError, plistlib.InvalidFileException) as error:
+        report["the_problems"].append(f"could not render the export options: {error}")
+        report["the_status"] = "FAIL"
+        print(json.dumps(report, indent=2))
+        return 1
     # The rendered file is proven: it parses, it carries every key of the
     # export and it carries no placeholder any more.
-    payload = plistlib.loads(options.read_bytes())
     report["the_options"] = {
         "the_path": str(options),
         "the_outside_of_the_release": the_inside_of_the_build_tree(options.parent),
@@ -220,10 +242,6 @@ def main() -> int:
         "the_profile_of_the_bundle": (payload.get("provisioningProfiles") or {})
         .get(BUNDLE_IDENTIFIER),
     }
-    left = [name for name in the_placeholders(TEMPLATE)
-            if f"__{name}__" in options.read_text()]
-    if left:
-        report["the_problems"].append(f"the rendered options carry placeholders: {left}")
     for key in REQUIRED_KEYS:
         if key not in payload:
             report["the_problems"].append(f"the rendered options carry no {key}")
@@ -233,19 +251,9 @@ def main() -> int:
         return 1
     report["the_steps"].append("the export options are rendered and proven")
 
-    archive = pathlib.Path(args.archive).resolve()
     export_path = work / "export"
     command = the_command(archive, options, export_path)
-    report["the_command"] = " ".join(command)
-    report["the_archive"] = {"the_path": str(archive),
-                             "the_present": archive.is_dir()}
-    if not archive.is_dir():
-        report["the_problems"].append(
-            f"the archive is missing: {archive} — build it with "
-            "tools/oip_mas_package.py first")
-        report["the_status"] = "FAIL"
-        print(json.dumps(report, indent=2))
-        return 2
+    report["the_command"] = shlex.join(command)
 
     if not args.execute:
         report["the_status"] = "PASS"

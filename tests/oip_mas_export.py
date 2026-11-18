@@ -17,9 +17,8 @@ recipe in the repository: no `xcodebuild -exportArchive`, no
      release);
   4. the command that the tool prints names the archive, the export path and
      the options file, and the default export **uploads nothing**;
-  5. the tool writes only into the **build tree** and refuses any other
-     directory — it removes the directory it writes into, so a path that the
-     operator names by mistake must never be a directory of the release;
+  5. the tool writes only into a new directory inside the **build tree**,
+     preserving archives and other build outputs on repeated runs;
   6. the tool refuses a signing style that `xcodebuild` would ignore the
      profile and the certificate of the operator with;
   7. the tool leaves the **checkout** untouched: the tree stays clean.
@@ -34,8 +33,10 @@ import argparse
 import json
 import pathlib
 import plistlib
+import shlex
 import subprocess
 import sys
+import tempfile
 import time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -112,12 +113,25 @@ def main() -> int:
             assert variable in problems, f"the refusal names no {variable}: {problems}"
         report["the_steps"].append("the tool invents no credential and names what is missing")
 
+        build_tree = ROOT / "target"
+        build_tree.mkdir(exist_ok=True)
+        fixtures = pathlib.Path(tempfile.mkdtemp(prefix="oip-mas-export-test-", dir=build_tree))
+        archive = fixtures / "Store Build" / "oip_dashboard.xcarchive"
+        archive.mkdir(parents=True)
+        output = fixtures / "Previous Builds"
+        output.mkdir()
+        other_build = output / "Existing.app"
+        other_build.mkdir()
+        marker = other_build / "Info.plist"
+        marker.write_text("existing output")
+        export_args = ("--archive", str(archive), "--out", str(output))
+
         # 3. the rendered options with a fake identity
-        code, rendered = the_tool(*FAKE)
+        code, rendered = the_tool(*FAKE, *export_args)
         report["the_render"] = {"the_code": code, "the_options": rendered.get("the_options"),
                                 "the_command": rendered.get("the_command"),
                                 "the_problems": rendered.get("the_problems")}
-        assert code in (0, 2), f"the tool answered {code}: {rendered}"
+        assert code == 0, f"the tool answered {code}: {rendered}"
         options = rendered.get("the_options") or {}
         keys = options.get("the_keys") or []
         for key in REQUIRED_KEYS:
@@ -137,12 +151,14 @@ def main() -> int:
 
         # 4. the command that the tool prints
         command = rendered.get("the_command") or ""
+        arguments = shlex.split(command)
         assert "-exportArchive" in command, command
         assert "-exportOptionsPlist" in command, command
         assert "oip_dashboard.xcarchive" in command, command
         # The command names the export path and the options file themselves.
         assert "-exportPath" in command, command
-        assert str(rendered_path) in command, command
+        assert arguments[arguments.index("-archivePath") + 1] == str(archive), command
+        assert arguments[arguments.index("-exportOptionsPlist") + 1] == str(rendered_path), command
         assert "export" in command, command
         # The default export writes the product; it does not upload it.
         assert "upload" not in command.lower() or options.get("the_destination") == "export"
@@ -156,7 +172,27 @@ def main() -> int:
         assert code == 2, f"the tool wrote outside the build tree: {refused_outside}"
         assert refused_outside.get("the_status") == "FAIL", refused_outside
         assert not outside.exists(), "the tool created a directory outside the build tree"
-        report["the_steps"].append("the tool writes only into the build tree")
+        for unsafe_path in (build_tree, archive / "inside", other_build / "inside"):
+            code, refusal = the_tool(*FAKE, "--archive", str(archive), "--out", str(unsafe_path))
+            assert code == 2 and refusal.get("the_status") == "FAIL", refusal
+        assert not (archive / "inside").exists()
+        assert not (other_build / "inside").exists()
+
+        profile = "OIP & QA <Export> __SIGNING_CERTIFICATE__"
+        code, repeated = the_tool(*FAKE, "--profile", profile, *export_args)
+        assert code == 0, repeated
+        repeated_path = pathlib.Path(repeated["the_options"]["the_path"])
+        assert repeated_path != rendered_path and rendered_path.is_file(), repeated
+        repeated_payload = plistlib.loads(repeated_path.read_bytes())
+        assert repeated_payload["provisioningProfiles"]["org.openindustrial.oipDashboard"] == profile
+        assert marker.read_text() == "existing output"
+        report["the_steps"].append("repeat exports preserve existing builds and render profile names literally")
+
+        before_upload = set(output.iterdir())
+        code, refusal = the_tool(*FAKE, *export_args, "--destination", "upload", "--execute")
+        assert code == 2 and "--execute" in " ".join(refusal["the_problems"]), refusal
+        assert set(output.iterdir()) == before_upload
+        report["the_steps"].append("executing an upload is refused before writing options")
 
         # 6. the signing style that xcodebuild would ignore the profile with
         code, refused_style = the_tool(*FAKE, "--signing-style", "automatic")

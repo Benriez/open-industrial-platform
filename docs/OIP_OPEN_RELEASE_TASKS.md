@@ -1,6 +1,28 @@
 # OIP app completion: current acceptance state
 
-## Latest snapshot — 2026-11-18, v0.3.35+38 published
+## Latest snapshot — 2026-11-18, v0.3.35+38 installed
+
+The installed app completed the GitHub OTA update to build 38. The updater
+verified the manifest and archive, and strict code-signature verification
+passed on the installed bundle. The running app connects to the OIP relay at
+`127.0.0.1:18856`. The operator reported that login works again. A fresh
+biometric sign-in and the native workstation views still need verification.
+
+An authenticated live check returned 38 fresh metrics across bodi-pc, bodi-pi
+and OpenWrt, three LAN topology links, and 18 OPC UA nodes on each host with
+successful temperature reads. The stream delivered 23 snapshots over 53.7
+seconds with zero errors and a longest gap of 12.025 seconds. The Hue Bridge
+is registered and returned zero metrics.
+
+The Mac App Store export tool now creates a separate directory for each run
+inside the build tree, preserves earlier builds and rejects upload execution.
+The export rehearsal passed eight checks. The local 0.3.35+38 Store bundle
+passed the package preflight for signing structure, sandbox, privacy
+metadata, listing assets and disabling GitHub OTA in that bundle. A signed
+Store export remains pending. The Mac reported no Apple Distribution signing
+identity.
+
+## Previous snapshot — 2026-11-18, v0.3.35+38 published
 
 [OIP 0.3.35](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.35)
 was built, signed and published from the Mac. GitHub Actions did not run.
