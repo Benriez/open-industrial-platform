@@ -37,10 +37,29 @@ void main() {
     expect(find.text('Lokal · keine Telemetrie'), findsOneWidget);
     // The rendered identity mirrors the package manifest exactly; the version
     // and build are the single source of truth, not invented values.
-    expect(kOipApplication.version, '0.3.19');
-    expect(kOipApplication.build, '22');
+    expect(kOipApplication.version, '0.3.32');
+    expect(kOipApplication.build, '35');
     expect(kOipApplication.license, 'Apache-2.0');
-    expect(OipApplicationInfo.manifestDeclaration, '0.3.19+22');
+    expect(OipApplicationInfo.manifestDeclaration, '0.3.32+35');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('The version link opens a changelog with the installed release',
+      (tester) async {
+    await bootstrapSettings(tester);
+
+    await tester.tap(find.byKey(const Key('sidebar-app-version')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('version-changelog-dialog')), findsOneWidget);
+    expect(find.text('Version 0.3.32 · Build 35'), findsOneWidget);
+    expect(find.text('Version 0.3.31 · Build 34'), findsOneWidget);
+    expect(find.text('INSTALLIERT'), findsOneWidget);
+    expect(
+      find.textContaining(
+          'bestätigte LAN-Nachbarn zwischen registrierten Geräten'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 

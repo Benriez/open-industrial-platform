@@ -43,15 +43,15 @@ class OipApplicationInfo {
   /// The exact `version:` value of `pubspec.yaml`, kept next to the fields it
   /// describes so a drift between the manifest and the rendered identity is
   /// visible in one place.
-  static const String manifestDeclaration = '0.3.19+22';
+  static const String manifestDeclaration = '0.3.32+35';
 }
 
 /// The single source of truth for the client identity, rendered in the
 /// Settings workstation's About section.
 const OipApplicationInfo kOipApplication = OipApplicationInfo(
   name: 'Open Industrial Platform',
-  version: String.fromEnvironment('OIP_APP_VERSION', defaultValue: '0.3.19'),
-  build: String.fromEnvironment('OIP_APP_BUILD', defaultValue: '22'),
+  version: String.fromEnvironment('OIP_APP_VERSION', defaultValue: '0.3.32'),
+  build: String.fromEnvironment('OIP_APP_BUILD', defaultValue: '35'),
   footer: 'OIP · SPECTRUM 2027',
   privacyNote:
       'Lokal betrieben. OIP sammelt keine Telemetrie und sendet keine Daten nach '

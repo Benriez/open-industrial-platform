@@ -15,6 +15,113 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.32',
+      build: '35',
+      date: '18. November 2026',
+      changes: [
+        'Das Änderungsprotokoll enthält jetzt auch die aktuellen App-Versionen.',
+      ],
+    ),
+    _ReleaseNotes(
+      version: '0.3.31',
+      build: '34',
+      date: '18. November 2026',
+      changes: [
+        'Die Netzwerktopologie zeigt bestätigte LAN-Nachbarn zwischen registrierten Geräten.',
+        'SSH-Abfragen aktualisieren Nachbarschaftsdaten, damit neue Verbindungen erscheinen.',
+      ],
+    ),
+    _ReleaseNotes(
+      version: '0.3.30',
+      build: '33',
+      date: '18. November 2026',
+      changes: [
+        'Direkte macOS-Installationen können in Einstellungen → About manuell nach signierten OTA-Updates suchen.',
+      ],
+    ),
+    _ReleaseNotes(
+      version: '0.3.29',
+      build: '32',
+      date: '17. November 2026',
+      changes: [
+        'Das native Fenster öffnet sich mit einer nutzbaren Mindestgröße.',
+        'Der OPC-UA-Browser vermeidet doppelte Leseabfragen beim Öffnen.',
+      ],
+    ),
+    _ReleaseNotes(
+      version: '0.3.28',
+      build: '31',
+      date: '17. November 2026',
+      changes: [
+        'Die erste Anmeldung schlägt Touch ID standardmäßig zur Einrichtung vor, wenn noch kein OIP-Schlüssel gespeichert ist.',
+      ],
+    ),
+    _ReleaseNotes(
+      version: '0.3.27',
+      build: '30',
+      date: '17. November 2026',
+      changes: [
+        'Netzwerkknoten bleiben sichtbar, wenn für sie keine frischen Verbindungsdaten vorliegen.',
+      ],
+    ),
+    _ReleaseNotes(
+      version: '0.3.26',
+      build: '29',
+      date: '17. November 2026',
+      changes: [
+        'Die Netzwerkansicht zeigt registrierte Geräte und ihre belegte Tailnet-Zugehörigkeit.',
+      ],
+    ),
+    _ReleaseNotes(
+      version: '0.3.25',
+      build: '28',
+      date: '17. November 2026',
+      changes: [
+        'Autorisierte Tailscale-Peers werden den passenden registrierten Geräten zugeordnet.',
+      ],
+    ),
+    _ReleaseNotes(
+      version: '0.3.24',
+      build: '27',
+      date: '17. November 2026',
+      changes: [
+        'Die Netzwerkansicht zeigt den autorisierten Gerätebestand statt einer leeren Topologie.',
+      ],
+    ),
+    _ReleaseNotes(
+      version: '0.3.23',
+      build: '26',
+      date: '17. November 2026',
+      changes: [
+        'Dashboards bieten weitere Darstellungen und ein automatisch erzeugtes Layout für verfügbare Messwerte.',
+      ],
+    ),
+    _ReleaseNotes(
+      version: '0.3.22',
+      build: '25',
+      date: '17. November 2026',
+      changes: [
+        'Dashboard-Panels zeigen Messwerte als Anzeigen, Statistiken und Balken.',
+      ],
+    ),
+    _ReleaseNotes(
+      version: '0.3.21',
+      build: '24',
+      date: '17. November 2026',
+      changes: [
+        'Dashboard-Panels passen sich als Kacheln an die verfügbare Fensterbreite an.',
+      ],
+    ),
+    _ReleaseNotes(
+      version: '0.3.20',
+      build: '23',
+      date: '17. November 2026',
+      changes: [
+        'Persönliche Dashboards lassen sich je Benutzer und Infrastruktur zusammenstellen.',
+        'OpenWrt liefert echte SSH-Messwerte für seine unterstützten Systemdaten.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.19',
       build: '22',
       date: '17. November 2026',

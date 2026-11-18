@@ -1,5 +1,63 @@
 # OIP app completion: current acceptance state
 
+## Current snapshot — 2026-11-18
+
+This section supersedes the older version and topology counts below. Those
+entries are retained as dated evidence and are not current-state claims.
+
+### Verified on this iteration
+
+- The source checkout is `main` at `77697c430c76162d75dbc77776a1af392fdc6142`.
+  The changelog source now covers published OTA builds `0.3.20+23` through
+  `0.3.31+34` and declares the pending release `0.3.32+35`.
+- The full canonical regression passed for this change. Receipt:
+  `target/oip-changelog-0.3.32-canonical-gate/oip_canonical_ui_gate/report.json`.
+  It includes the authenticated managed browser, all eight acceptance phases,
+  and Flutter tests (405 passed, 0 failed, 1 skipped). Browser checks passed
+  189/189 with 13 screenshots and no console errors. Visual comparisons passed.
+  The served `main.dart.js` matches the local build byte for byte; SHA-256:
+  `3f3cb71e3d7954bd0ba477792028f7ff5452c4594565c959112b187a6d226057`.
+  Source revision: `77697c430c76162d75dbc77776a1af392fdc6142`.
+- Focused Settings/About tests passed 3/3. The version page now has entries
+  through the installed 0.3.31 release, including the topology, dashboard,
+  telemetry, OPC-UA, Touch ID, and manual OTA work.
+- On the live Pi Core, read-only DB inspection showed fresh observations for
+  `bodi-pi`, `bodi-pc`, and the OpenWrt router. SSH host telemetry includes CPU,
+  memory, disk, network, temperature, and GPU fields where the host exports
+  them; the Pi reported SoC temperature and GPU identity but not a separate GPU
+  temperature. Physical OPC-UA services on both hosts responded, with live
+  telemetry variables marked read-only and designated operator variables
+  writable. These direct service/DB checks do not prove the current installed
+  app's authenticated screens.
+- Installed app before this pending release: `0.3.31+34`; signature and local
+  relay health were verified after the previous rollout. The earlier app and
+  LaunchAgent backup is at
+  `~/Library/Application Support/OIP/rollbacks/0.3.30-build33-20261118`.
+- The biometric keychain item exists and macOS reports biometric capability.
+  An end-to-end Touch ID sign-in after the Core restart has not been observed.
+  The current local browser session is `login_required`; protected app data
+  still requires an authenticated session.
+- No GitHub Actions workflow was started. No personal database or schema was
+  changed.
+
+### Remaining acceptance
+
+- [ ] Publish and install the signed `0.3.32+35` OTA through the local release
+  tool; verify installed version, signature, and live relay after restart.
+- [ ] Confirm actual Touch ID sign-in in the app and protected session state.
+- [ ] Confirm physical Pi/PC telemetry and live OPC-UA browsing in the
+  authenticated installed app.
+- [ ] Operator visual acceptance and repeated native window resize/crash check.
+- [ ] App Store upload readiness is prepared in source/docs, but cannot be
+  proven for distribution until an Apple Distribution identity and required
+  store credentials are available. The keychain currently has no such signing
+  identity.
+- [ ] Goal remains open until the product acceptance items above are verified.
+
+---
+
+## Prior snapshots (historical; do not treat as current)
+
 This checklist tracks the installed macOS application against the active goal
 to finish OIP. Read `AGENTS.md` and `docs/OIP_RELEASE_PROGRESS.md` before the
 next iteration.

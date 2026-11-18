@@ -57,9 +57,10 @@ what to do, and the operator decides how the reviewer gets that instance.
 
 **Notes for the reviewer (proposed):**
 
-> OIP is a read-only operations workstation for industrial infrastructure. It shows the devices,
+> OIP is an authorized operations workstation for industrial infrastructure. It shows the devices,
 > the services, the measurements and the diagnostics that a **local Core** of OIP collects; it
-> never writes to a device and it never sends data off the machine.
+> authorized OPC-UA writes are limited to nodes the server marks writable, and it never sends
+> data to the developer.
 >
 > * **The Core runs on the machine of the reviewer.** It is a local server that answers on the
 >   loopback (`127.0.0.1`) — the client is configured for that address. The Core is started by
@@ -85,13 +86,15 @@ what to do, and the operator decides how the reviewer gets that instance.
 >   their reachability and their health.
 > * **Network & VPN** — the network state that the Core knows; the absences are named,
 >   not filled.
-> * **OPC-UA Browser** — the address space of an OPC-UA server as the server delivers
->   it, read without measuring.
+> * **OPC-UA Browser** — browse and read the address space of an OPC-UA server. Write
+>   controls appear only for nodes the server marks writable and when the operator has
+>   permission to change them.
 > * **Diagnostics & Events** — the persisted evidence of the Core: documented gaps,
 >   health transitions and the diagnosis history.
 > * **Settings** — the settings of the instance, offline where the Core demands it.
 >
-> The client never writes to a device. Every value it shows comes from the Core of OIP,
+> The client reads device measurements through the OIP Core. Authorized OPC-UA writes are
+> limited to nodes the server marks writable. Every value it shows comes from the Core of OIP,
 > and every value it cannot obtain is named as missing — never as zero.
 
 ## The keywords (100 characters)
