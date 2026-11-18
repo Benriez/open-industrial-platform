@@ -11,10 +11,12 @@ EventConnection openEvents(Uri uri, {String? cookieHeader}) {
       // The stream carries the identity of the session. The browser sends the
       // cookie on its own; the native client sends the cookie it holds.
       if (cookieHeader != null) request.headers['cookie'] = cookieHeader;
-      final response = await client
-          .send(request)
-          .timeout(const Duration(seconds: 8));
-      if (response.statusCode != 200) throw StateError('SSE rejected');
+      final response =
+          await client.send(request).timeout(const Duration(seconds: 8));
+      if (response.statusCode != 200) {
+        throw http.ClientException(
+            'SSE rejected (HTTP ${response.statusCode})', uri);
+      }
       yield* decodeEvents(response.stream
           .transform(utf8.decoder)
           .transform(const LineSplitter()));

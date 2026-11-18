@@ -15,6 +15,14 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.34',
+      build: '37',
+      date: '18. November 2026',
+      changes: [
+        'Wenn der Live-Stream stockt, lädt die Mac-App den aktuellen Stand über dieselbe Anmeldung nach.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.33',
       build: '36',
       date: '18. November 2026',

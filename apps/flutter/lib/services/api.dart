@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import '../core/sse.dart';
@@ -615,10 +618,14 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
       });
 
   Future<(dynamic, SettingsDataOrigin, String?)> _authorizedGet(
-      String path, Map<String, String> query) async {
+    String path,
+    Map<String, String> query, {
+    bool cancelWithContext = true,
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
     http.Client? dedicated;
     final client = _dedicatedNodeClients ? (dedicated = http.Client()) : _rest;
-    if (dedicated != null) _settingsClients.add(dedicated);
+    if (dedicated != null && cancelWithContext) _settingsClients.add(dedicated);
     try {
       // Deliberately no Authorization header, URL credential, storage token or
       // legacy-access fallback. OIP-009 must provide the secure browser identity.
@@ -627,7 +634,7 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
             uri(path, query),
             headers: _sessionHeaders(const {'Accept': 'application/json'}),
           )
-          .timeout(const Duration(seconds: 8));
+          .timeout(timeout);
       if (response.statusCode != 200) {
         String? serverCode;
         try {
@@ -995,9 +1002,41 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
         openEvents(uri('/api/v2/stream'), cookieHeader: sessionCookieHeader());
     _events = connection;
     try {
-      yield* connection.events;
+      if (kIsWeb || defaultTargetPlatform != TargetPlatform.macOS) {
+        yield* connection.events;
+        return;
+      }
+      // On a slow link the stream can stop delivering complete frames even
+      // when the same authorized snapshot is available over a new connection.
+      // Switch before the controller's outer timeout expires.
+      final frames = StreamIterator(connection.events);
+      try {
+        while (await frames.moveNext().timeout(const Duration(seconds: 7))) {
+          yield frames.current;
+        }
+      } on Exception {
+        // A REST request below checks identity and reports the real HTTP
+        // error if the session expired or the Core is unreachable.
+      } finally {
+        connection.close();
+        // The stream may still be waiting for a frame. Cleanup must not
+        // hold up a fresh request on the independent REST connection.
+        unawaited(frames.cancel().catchError((Object _) {}));
+      }
+      while (identical(_events, connection)) {
+        final (snapshot, _, _) = await _authorizedGet(
+          '/api/v2/snapshot',
+          {},
+          cancelWithContext: false,
+          timeout: const Duration(seconds: 12),
+        );
+        if (!identical(_events, connection)) return;
+        yield ServerEvent('snapshot', jsonEncode(snapshot));
+        await Future<void>.delayed(const Duration(seconds: 3));
+      }
     } finally {
       connection.close();
+      if (identical(_events, connection)) _events = null;
     }
   }
 

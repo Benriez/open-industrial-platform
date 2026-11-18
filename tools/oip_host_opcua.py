@@ -5,9 +5,12 @@ import asyncio
 import os
 import socket
 import time
+from dataclasses import replace
+from datetime import datetime, timezone
 from pathlib import Path
 
 from asyncua import Server, ua
+from asyncua.common.callback import CallbackType
 
 
 def cpu_ticks():
@@ -125,6 +128,22 @@ async def main():
     # measurements above remain read-only at the OPC-UA server itself.
     maintenance = await variable(operator, "operator.maintenance", False, writable=True)
     note = await variable(operator, "operator.note", "", writable=True)
+    operator_nodes = {maintenance.nodeid, note.nodeid}
+
+    def stamp_operator_write(event, _service):
+        if not event.is_external:
+            return
+        writes = event.request_params.NodesToWrite
+        for index, write in enumerate(writes):
+            if write.NodeId in operator_nodes and write.AttributeId == ua.AttributeIds.Value:
+                # The service owns these variables. Timestamp the value at the
+                # host so an ordinary OPC-UA write can be read back by OIP.
+                value = replace(
+                    write.Value, SourceTimestamp=datetime.now(timezone.utc), SourcePicoseconds=None
+                )
+                writes[index] = replace(write, Value=value)
+
+    server.subscribe_server_callback(CallbackType.PreWrite, stamp_operator_write)
 
     started = time.monotonic()
     previous_total, previous_idle = cpu_ticks()
