@@ -1024,6 +1024,7 @@ mod tests {
                 name: "en0".into(),
                 addresses,
             }],
+            neighbors: Vec::new(),
             captured_at_ms: 1,
             unavailable: Vec::new(),
             provenance: "unit".into(),

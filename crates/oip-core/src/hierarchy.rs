@@ -463,6 +463,10 @@ pub struct ScopedSnapshot {
     pub observations: Vec<ObservationEnvelope>,
     pub events: Vec<EventRecord>,
     pub locations: Vec<HierarchyLocation>,
+    /// Observed links between authorized devices. Empty means no usable
+    /// neighbor evidence was available; it is not a global network census.
+    #[serde(default)]
+    pub topology: Vec<Link>,
     pub resync_required: bool,
     pub replay_supported: bool,
 }

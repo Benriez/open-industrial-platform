@@ -127,6 +127,34 @@ void main() {
     expect(snapshot.incidentsDelivered, isFalse);
     expect(snapshot.topologyDelivered, isFalse);
   });
+  test('An authorized snapshot preserves only topology links delivered by Core',
+      () {
+    final snapshot = AuthorizedSnapshot.fromJson({
+      'sources': <dynamic>[],
+      'devices': <dynamic>[],
+      'observations': <dynamic>[],
+      'events': <dynamic>[],
+      'locations': <dynamic>[],
+      'topology': [
+        {
+          'from': 'router',
+          'to': 'host',
+          'transport': 'LAN kernel neighbor',
+          'latency_ms': null,
+          'packet_loss_percent': null,
+          'status': 'reachable',
+          'simulated': false,
+        }
+      ],
+      'resync_required': true,
+      'replay_supported': false,
+    }).toSnapshot();
+    expect(snapshot.topologyDelivered, isTrue);
+    expect(snapshot.topology, hasLength(1));
+    expect(snapshot.topology.single.from, 'router');
+    expect(snapshot.topology.single.to, 'host');
+    expect(snapshot.topology.single.simulated, isFalse);
+  });
   test(
       'Pairing uses fixed endpoint and CSRF header without identity claims or URL tokens',
       () async {

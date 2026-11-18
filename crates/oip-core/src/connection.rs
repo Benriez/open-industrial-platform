@@ -136,6 +136,17 @@ pub struct NetworkInterfaceInformation {
     pub name: String,
     pub addresses: Vec<String>,
 }
+/// A neighbor observed by the host's kernel neighbor table. This is direct
+/// network evidence; it is kept separate from addresses and never inferred
+/// from inventory names or shared subnets.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
+#[serde(deny_unknown_fields)]
+pub struct NetworkNeighborInformation {
+    pub address: String,
+    pub link_address: Option<String>,
+    pub state: String,
+}
 /// Upper bound of the stored connection record in bytes. The storage schema and
 /// the server use the same value, so a verified host report is either storable
 /// or rejected with an explicit fault before any write.
@@ -170,6 +181,8 @@ pub struct HostInformation {
     pub uptime_seconds: Option<f64>,
     pub disks: Vec<DiskInformation>,
     pub interfaces: Vec<NetworkInterfaceInformation>,
+    #[serde(default)]
+    pub neighbors: Vec<NetworkNeighborInformation>,
     pub captured_at_ms: i64,
     pub unavailable: Vec<String>,
     pub provenance: String,

@@ -371,6 +371,7 @@ class AuthorizedSnapshot {
   final List<Observation> observations;
   final List<CollectionEvent> events;
   final List<HierarchyLocation> locations;
+  final List<NetworkLink> topology;
   final bool resyncRequired, replaySupported;
   final Json raw;
 
@@ -380,6 +381,7 @@ class AuthorizedSnapshot {
     required this.observations,
     required this.events,
     required this.locations,
+    required this.topology,
     required this.resyncRequired,
     required this.replaySupported,
     required this.raw,
@@ -400,6 +402,9 @@ class AuthorizedSnapshot {
             .toList(),
         locations: (json['locations'] as List)
             .map((item) => HierarchyLocation.fromJson(item as Json))
+            .toList(),
+        topology: (json['topology'] as List? ?? const [])
+            .map((item) => NetworkLink.fromJson(item as Json))
             .toList(),
         resyncRequired: json['resync_required'] as bool,
         replaySupported: json['replay_supported'] as bool,
@@ -438,9 +443,19 @@ class AuthorizedSnapshot {
       'devices': devices.map(_deviceJson).toList(),
       'metrics': observations.map(_observationJson).toList(),
       'incidents': const [],
-      'topology': const [],
+      'topology': topology
+          .map((link) => {
+                'from': link.from,
+                'to': link.to,
+                'transport': link.transport,
+                'latency_ms': link.latency,
+                'packet_loss_percent': link.loss,
+                'status': link.status,
+                'simulated': link.simulated,
+              })
+          .toList(),
       '_incidents_delivered': false,
-      '_topology_delivered': false,
+      '_topology_delivered': raw.containsKey('topology'),
       'sources': sources.map(_sourceJson).toList(),
       'records': events.map(_eventJson).toList(),
     });

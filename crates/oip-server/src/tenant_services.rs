@@ -552,6 +552,9 @@ impl ApplicationServices {
             ScopedSnapshotRead => {
                 let allowed = h.allowed_sources(p, id);
                 let s = self.state.snapshot().map_err(storage)?;
+                let inventory = self.state.inventory();
+                let connections = self.state.connections();
+                let topology = observed_network_links(&inventory, &connections, &allowed, now_ms());
                 Ok(CapabilityOutput::ScopedSnapshot(ScopedSnapshot {
                     sources: s
                         .sources
@@ -597,6 +600,7 @@ impl ApplicationServices {
                         .iter()
                         .filter_map(|s| h.location(s).cloned())
                         .collect(),
+                    topology,
                     resync_required: true,
                     replay_supported: false,
                 }))
@@ -605,6 +609,80 @@ impl ApplicationServices {
         }
     }
 }
+
+fn observed_network_links(
+    inventory: &[InventoryRecord],
+    connections: &[DeviceConnectionRecord],
+    allowed_sources: &BTreeSet<DataSourceId>,
+    now: i64,
+) -> Vec<Link> {
+    let mut links = Vec::new();
+    let mut seen = BTreeSet::new();
+    for observer in connections.iter().filter(|connection| {
+        allowed_sources.contains(&connection.source_id)
+            && connection.enabled
+            && connection
+                .last_success_ms
+                .is_some_and(|at| now.saturating_sub(at) <= 300_000)
+    }) {
+        for neighbor in observer.identity.neighbors.iter().filter(|neighbor| {
+            matches!(
+                neighbor.state.as_str(),
+                "reachable" | "stale" | "delay" | "probe"
+            )
+        }) {
+            for target in connections.iter().filter(|candidate| {
+                candidate.device_id != observer.device_id
+                    && allowed_sources.contains(&candidate.source_id)
+                    && candidate.enabled
+                    && candidate
+                        .last_success_ms
+                        .is_some_and(|at| now.saturating_sub(at) <= 300_000)
+                    && candidate.identity.interfaces.iter().any(|interface| {
+                        interface.addresses.iter().any(|address| {
+                            address.split('/').next() == Some(neighbor.address.as_str())
+                        })
+                    })
+            }) {
+                let observer_site = inventory
+                    .iter()
+                    .find(|record| record.device.id == observer.device_id)
+                    .map(|r| &r.device.site_id);
+                let target_site = inventory
+                    .iter()
+                    .find(|record| record.device.id == target.device_id)
+                    .map(|r| &r.device.site_id);
+                if observer_site != target_site || observer_site.is_none() {
+                    continue;
+                }
+                let (from, to) = if observer.device_id < target.device_id {
+                    (observer.device_id.to_string(), target.device_id.to_string())
+                } else {
+                    (target.device_id.to_string(), observer.device_id.to_string())
+                };
+                if !seen.insert((from.clone(), to.clone())) {
+                    continue;
+                }
+                links.push(Link {
+                    from,
+                    to,
+                    transport: "LAN kernel neighbor".into(),
+                    latency_ms: None,
+                    packet_loss_percent: None,
+                    status: if neighbor.state == "reachable" {
+                        "reachable"
+                    } else {
+                        "observed"
+                    }
+                    .into(),
+                    simulated: false,
+                });
+            }
+        }
+    }
+    links
+}
+
 fn source_bounds(q: &SourceQuery) -> Result<(usize, usize), CapabilityError> {
     HierarchyQuery {
         offset: q.offset,
@@ -612,4 +690,164 @@ fn source_bounds(q: &SourceQuery) -> Result<(usize, usize), CapabilityError> {
         ..Default::default()
     }
     .bounds()
+}
+
+#[cfg(test)]
+mod topology_tests {
+    use super::observed_network_links;
+    use oip_core::*;
+    use std::collections::BTreeSet;
+
+    fn host(addresses: &[&str], neighbors: &[(&str, &str)]) -> HostInformation {
+        HostInformation {
+            hostname: "fixture".into(),
+            operating_system: "Linux".into(),
+            architecture: "x86_64".into(),
+            cpu_info: None,
+            model: None,
+            stable_host_id_sha256: None,
+            memory_total_bytes: None,
+            memory_used_bytes: None,
+            gpu_model: None,
+            gpu_utilization_percent: None,
+            gpu_temperature_c: None,
+            cpu_temperature_c: None,
+            soc_temperature_c: None,
+            memory_used_percent: None,
+            uptime_seconds: None,
+            disks: vec![],
+            interfaces: vec![NetworkInterfaceInformation {
+                name: "eth0".into(),
+                addresses: addresses.iter().map(|address| (*address).into()).collect(),
+            }],
+            neighbors: neighbors
+                .iter()
+                .map(|(address, state)| NetworkNeighborInformation {
+                    address: (*address).into(),
+                    link_address: None,
+                    state: (*state).into(),
+                })
+                .collect(),
+            captured_at_ms: 10_000,
+            unavailable: vec![],
+            provenance: "ssh_verified_host_report".into(),
+        }
+    }
+
+    fn connection(
+        device: &str,
+        source: &str,
+        identity: HostInformation,
+        last_success_ms: i64,
+    ) -> DeviceConnectionRecord {
+        DeviceConnectionRecord {
+            device_id: DeviceId::new(device).unwrap(),
+            source_id: DataSourceId::new(source).unwrap(),
+            authorized_principal: PrincipalId::new("operator").unwrap(),
+            endpoint: SshEndpoint {
+                host: "192.168.1.10".into(),
+                port: 22,
+                user: "operator".into(),
+                identity_profile: "fixture".into(),
+                alias: None,
+            },
+            host_key: "fixture-key".into(),
+            fingerprint: "SHA256:fixture".into(),
+            identity,
+            verified_at_ms: 10_000,
+            enabled: true,
+            poll_seconds: 30,
+            revision: 1,
+            last_attempt_ms: Some(last_success_ms),
+            last_success_ms: Some(last_success_ms),
+            last_error: None,
+        }
+    }
+
+    fn inventory(device: &str, site: &str) -> InventoryRecord {
+        InventoryRecord {
+            device: DeviceRegistration {
+                id: DeviceId::new(device).unwrap(),
+                display_name: device.into(),
+                device_type: DeviceType::Server,
+                site_id: SiteId::new(site).unwrap(),
+                metadata: DeviceMetadata::default(),
+            },
+            registration: RegistrationStatus::Registered,
+            origin: InventoryOrigin::ManualOperator,
+            created_ms: None,
+            updated_ms: None,
+            registered_by: None,
+            revision: 1,
+        }
+    }
+
+    #[test]
+    fn projects_only_fresh_authorized_same_site_exact_ip_neighbors() {
+        let inventory = vec![
+            inventory("router", "home"),
+            inventory("pc", "home"),
+            inventory("remote", "other"),
+        ];
+        let router = connection(
+            "router",
+            "router-source",
+            host(
+                &["192.168.1.1/24"],
+                &[
+                    ("192.168.1.20", "reachable"),
+                    ("192.168.1.30", "stale"),
+                    ("192.168.1.99", "FAILED"),
+                ],
+            ),
+            9_900,
+        );
+        let pc = connection("pc", "pc-source", host(&["192.168.1.20/24"], &[]), 9_950);
+        let remote = connection(
+            "remote",
+            "remote-source",
+            host(&["192.168.1.30/24"], &[]),
+            9_950,
+        );
+        let connections = vec![router, pc, remote];
+        let allowed = ["router-source", "pc-source", "remote-source"]
+            .into_iter()
+            .map(|source| DataSourceId::new(source).unwrap())
+            .collect::<BTreeSet<_>>();
+
+        let links = observed_network_links(&inventory, &connections, &allowed, 10_000);
+        assert_eq!(
+            links.len(),
+            1,
+            "cross-site and FAILED neighbor evidence must not become links"
+        );
+        assert_eq!(links[0].from, "pc");
+        assert_eq!(links[0].to, "router");
+        assert_eq!(links[0].transport, "LAN kernel neighbor");
+        assert_eq!(links[0].status, "reachable");
+        assert!(!links[0].simulated);
+        assert_eq!(links[0].latency_ms, None);
+        assert_eq!(links[0].packet_loss_percent, None);
+
+        let only_router = [DataSourceId::new("router-source").unwrap()]
+            .into_iter()
+            .collect();
+        assert!(
+            observed_network_links(&inventory, &connections, &only_router, 10_000).is_empty(),
+            "a neighbor does not reveal a target whose source is unauthorized"
+        );
+
+        let stale = connections
+            .iter()
+            .cloned()
+            .map(|mut connection| {
+                connection.last_success_ms = Some(1);
+                connection
+            })
+            .collect::<Vec<_>>();
+        assert!(
+            observed_network_links(&inventory, &stale, &allowed, 400_000).is_empty(),
+            "stale host reports must not contribute topology"
+        );
+    }
 }

@@ -673,6 +673,7 @@ case "$(uname -s)" in
   printf '%s|%s|%s|%s\n' "$_oip_driver" "$_oip_vendor" "$_oip_device_id" "$_oip_busy"
  done
  printf '\n__OIP_NETWORK__\n'; _oip_net=''; if command -v ip >/dev/null 2>&1; then _oip_net="$(ip -j address show 2>/dev/null)"; if [ -z "$_oip_net" ]; then _oip_net="$(ip -o address show 2>/dev/null)"; fi; fi; if [ -z "$_oip_net" ] && command -v ifconfig >/dev/null 2>&1; then _oip_net="$(ifconfig -a 2>/dev/null)"; fi; printf '%s\n' "$_oip_net"
+ printf '\n__OIP_NEIGHBORS__\n'; if command -v ip >/dev/null 2>&1; then ip neigh show 2>/dev/null | head -n 64; fi
  ;;
  Darwin)
  printf '\n__OIP_CPU__\n'; sysctl -n machdep.cpu.brand_string
@@ -1021,6 +1022,49 @@ pub fn parse(bytes: &[u8], at: i64) -> Result<HostInformation, ConnectionFault> 
     if interfaces.len() > 32 {
         return Err(fault("SSH_OUTPUT_LIMIT"));
     }
+    let mut neighbors = Vec::new();
+    for line in field("__OIP_NEIGHBORS__").lines().take(65) {
+        let p: Vec<&str> = line.split_whitespace().collect();
+        let Some(address) = p.first().filter(|v| v.parse::<std::net::IpAddr>().is_ok()) else {
+            continue;
+        };
+        let state = p
+            .iter()
+            .rev()
+            .find(|v| {
+                matches!(
+                    v.to_ascii_uppercase().as_str(),
+                    "REACHABLE"
+                        | "STALE"
+                        | "DELAY"
+                        | "PROBE"
+                        | "FAILED"
+                        | "INCOMPLETE"
+                        | "PERMANENT"
+                        | "NOARP"
+                )
+            })
+            .copied()
+            .unwrap_or("UNKNOWN");
+        let link_address = p
+            .windows(2)
+            .find(|pair| pair[0] == "lladdr")
+            .map(|pair| pair[1].chars().take(64).collect::<String>());
+        budget = budget.saturating_sub(
+            address.len() + state.len() + link_address.as_deref().unwrap_or("").len(),
+        );
+        if budget == 0 {
+            return Err(fault("SSH_OUTPUT_LIMIT"));
+        }
+        neighbors.push(NetworkNeighborInformation {
+            address: (*address).to_string(),
+            link_address,
+            state: state.to_ascii_lowercase(),
+        });
+    }
+    if neighbors.len() > 64 {
+        return Err(fault("SSH_OUTPUT_LIMIT"));
+    }
     for (name, missing) in [
         ("memory_total", memory_total_bytes.is_none()),
         ("memory_used", memory_used_bytes.is_none()),
@@ -1057,6 +1101,7 @@ pub fn parse(bytes: &[u8], at: i64) -> Result<HostInformation, ConnectionFault> 
         uptime_seconds,
         disks,
         interfaces,
+        neighbors,
         captured_at_ms: at,
         unavailable,
         provenance: "authenticated SSH host report; fixed read-only query; capture time is Core time, remote measurement clocks unknown; no hardware attestation or inferred sensors".into(),
@@ -1340,6 +1385,20 @@ __OIP_END__
             report.unavailable
         );
         assert!(!report.unavailable.iter().any(|item| item == "disks"));
+    }
+
+    #[test]
+    fn parses_only_ip_neighbor_rows_and_keeps_the_kernel_state() {
+        let text = b"__OIP_OS__\nLinux\n__OIP_HOSTNAME__\nrouter\n__OIP_ARCH__\naarch64\n__OIP_NEIGHBORS__\n192.168.1.207 dev br-lan lladdr 84:47:09:88:ed:b8 REACHABLE\nnot-an-ip lladdr ignored REACHABLE\n192.168.1.132 dev br-lan lladdr dc:a6:32:15:74:a1 STALE\n__OIP_END__\n";
+        let report = parse(text, 1).expect("bounded host report parses");
+        assert_eq!(report.neighbors.len(), 2);
+        assert_eq!(report.neighbors[0].address, "192.168.1.207");
+        assert_eq!(
+            report.neighbors[0].link_address.as_deref(),
+            Some("84:47:09:88:ed:b8")
+        );
+        assert_eq!(report.neighbors[0].state, "reachable");
+        assert_eq!(report.neighbors[1].state, "stale");
     }
 
     #[test]

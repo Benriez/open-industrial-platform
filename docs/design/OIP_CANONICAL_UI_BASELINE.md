@@ -189,6 +189,7 @@ re-applied on top of it and are part of the baseline:
 | Authorized multi-infrastructure projection | `lib/models/infrastructure.dart`, `controller.infrastructure` |
 | Device registration and SSH onboarding | `lib/features/device_onboarding.dart`, `lib/features/device_connection_panel.dart`, `lib/models/onboarding.dart`, action in `lib/features/devices/devices_workstation.dart` |
 | Host monitoring measurements | `lib/features/device_connection_panel.dart` |
+| Verified network-neighbor links in managed Network & VPN | only Core-delivered links backed by fresh authenticated neighbor-table evidence; the UI never infers edges from names, address ranges or VPN membership |
 | Persisted observation history | `lib/features/device_history.dart`, `lib/models/history.dart`, `api.observationHistory` |
 | Managed diagnostics evidence (documented gaps, health transitions, the Core's own diagnosis-history state) | `lib/models/diagnostics.dart`, `api.diagnosticGaps`, `api.healthHistory`, section in `lib/features/diagnostics.dart` |
 | Deterministic managed metric choice (no `M-01` preference) | `controller._defaultTelemetry` |

@@ -18,7 +18,7 @@ Add/Edit/Archive/Import are currently **local offline administration**, not HTTP
 
 ## Other views
 
-Overview: counts from authorized returned inventory, sources from actual source registry; no fake host CPU/RAM/network metrics. Network & VPN: registered nodes only, no automatically guessed links/topology or green reachability. Diagnostics: actual scoped historical/live collection evidence only; no demo incidents in normal mode, no inferred cause from a gap. Settings → Infrastructure links the inventory/hierarchy/source capabilities and actual management information; there is no global active-infrastructure setting or source-reconfiguration toggle.
+Overview: counts from authorized returned inventory, sources from actual source registry; no fake host CPU/RAM/network metrics. Network & VPN: registered nodes only unless an authorized Core snapshot delivers observed links. A link may be delivered only when a fresh, authenticated SSH host report contains an IP neighbor-table entry that exactly matches an interface address on another registered device in the same site; the snapshot must scope both endpoints to the caller. No link is derived from names, shared subnets, inventory placement alone or VPN membership, and no green reachability is inferred from a merely stale entry. Diagnostics: actual scoped historical/live collection evidence only; no demo incidents in normal mode, no inferred cause from a gap. Settings → Infrastructure links the inventory/hierarchy/source capabilities and actual management information; there is no global active-infrastructure setting or source-reconfiguration toggle.
 
 ## The managed overview shows the authorized infrastructure
 
@@ -32,7 +32,7 @@ The gap limit of a measured series follows the cadence the series itself showed:
 
 ## The managed network view shows the authorized placement
 
-The network view shows the registered nodes and the paths that the API delivered. The scoped projection of a managed session carries no topology at all, so a loading state for the topology would promise data that never arrives. The managed network view therefore states that fact, draws no path, and colours no reachability green. The zones of the legacy demo are not shown in the managed mode; the zone of a node is the authorized site of the session.
+The network view shows the registered nodes and the paths that the API delivered. The managed scoped projection may carry only the observed neighbor links defined above; when it carries no such evidence, the UI says paths are unavailable and draws none. It never derives links from shared addresses or VPN membership and does not colour reachability green without a fresh reachable report. The zones of the legacy demo are not shown in managed mode; the zone of a node is the authorized site of the session.
 
 The authorized placement of the session is shown with the identifiers the Core delivered for it: organization, infrastructure, site and source, with the registered nodes of that site. Nothing is derived from a name, an address or a device identifier, and no link between two placements is invented.
 
