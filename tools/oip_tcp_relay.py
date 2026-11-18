@@ -20,8 +20,11 @@ def keepalive(sock):
 
 class Relay(socketserver.BaseRequestHandler):
     def handle(self):
+        self.relay_to(self.server.target)
+
+    def relay_to(self, target):
         try:
-            upstream = socket.create_connection(self.server.target, timeout=5)
+            upstream = socket.create_connection(target, timeout=5)
         except OSError:
             return
         upstream.settimeout(None)
