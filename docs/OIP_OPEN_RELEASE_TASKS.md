@@ -1,6 +1,33 @@
 # OIP app completion: current acceptance state
 
-## Latest snapshot — 2026-11-18, v0.3.36+39 installed
+## Latest snapshot — 2026-11-18, v0.3.37+40 published
+
+[OIP 0.3.37](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.37)
+is available as a signed OTA. The local release script built and verified the
+package. After a GitHub upload timeout, the missing assets were uploaded to
+the existing draft and all three GitHub digests matched before publication.
+The archive SHA-256 is
+`5cfe3317705cd555eb58dde50488b3a3170f890622d6bbec18531339ea38567e`.
+The installed Mac app was still on build 39.
+
+The macOS window frame continues to follow the drag. The Flutter surface keeps
+its previous size until the AppKit event tracking loop ends, then resizes
+once on the default run loop. An AppKit test verified 20 size changes,
+back-to-back drags, a no-op drag, and subsequent immediate resizing. An
+isolated native release app launched and reached the loopback relay. Repeated
+physical drags and authenticated views on installed build 40 await verification.
+
+The full canonical gate passed on revision
+`80851a710c6437472dd0607b26f1d06e76491211`, tree
+`f411bf542be98e32cc83f8c4adeeda7212d40cc7`. The local and served
+`main.dart.js` match at SHA-256
+`23c01ec883d587b3106c5d262515c81f38c02e939bff68bb29bf6f10e4882eb3`.
+The gate recorded 409 Flutter passes, one skip, 191 browser checks without
+failure, 13 screenshots, two visual comparisons and eight acceptance phases.
+The receipt is `target/oip-0.3.37-canonical/oip_canonical_ui_gate/report.json`
+in the `fix/oip-macos-deferred-live-resize` worktree.
+
+## Previous snapshot — 2026-11-18, v0.3.36+39 installed
 
 [OIP 0.3.36](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.36)
 was published from the Mac as a signed OTA. GitHub's archive digest matched the local hash
