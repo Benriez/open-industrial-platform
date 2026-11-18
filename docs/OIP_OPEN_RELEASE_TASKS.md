@@ -10,17 +10,21 @@ biometric sign-in and the native workstation views still need verification.
 
 An authenticated live check returned 38 fresh metrics across bodi-pc, bodi-pi
 and OpenWrt, three LAN topology links, and 18 OPC UA nodes on each host with
-successful temperature reads. The stream delivered 23 snapshots over 53.7
-seconds with zero errors and a longest gap of 12.025 seconds. The Hue Bridge
-is registered and returned zero metrics.
+successful temperature reads. A follow-up stream check delivered 62 snapshots
+over 114.2 seconds with zero errors and a longest gap of 8.138 seconds. The
+Hue Bridge is registered. From bodi-pi its public configuration returned
+HTTP 200 over TLS with the pinned certificate. Hue telemetry awaits physical
+pairing.
 
 The Mac App Store export tool now creates a separate directory for each run
 inside the build tree, preserves earlier builds and rejects upload execution.
-The export rehearsal passed eight checks. The local 0.3.35+38 Store bundle
-passed the package preflight for signing structure, sandbox, privacy
-metadata, listing assets and disabling GitHub OTA in that bundle. A signed
-Store export remains pending. The Mac reported no Apple Distribution signing
-identity.
+The export rehearsal passed nine checks. The local 0.3.35+38 Store bundle
+passed the package preflight for signing structure, sandbox, privacy metadata,
+listing assets and disabling GitHub OTA in that bundle. The hardened ad-hoc
+archive passed strict code-signature verification and preserved a previous
+archive in the rehearsal. The hardened archive launch was outside this
+preflight. A signed Store export remains pending. The Mac reported no Apple
+Distribution signing identity.
 
 ## Previous snapshot — 2026-11-18, v0.3.35+38 published
 
