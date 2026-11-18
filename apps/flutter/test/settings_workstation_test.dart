@@ -414,12 +414,24 @@ void main() {
           code: 'PERMISSION_DENIED', statusCode: 403);
     await bootstrapSettings(tester, api: api);
     expect(find.text('Management-Zugriff nicht autorisiert'), findsOneWidget);
-    expect(find.textContaining('nicht „Core offline“'), findsOneWidget);
+    expect(
+        find.text('Die aktuelle Sitzung hat keine Freigabe für diese Ansicht.'),
+        findsOneWidget);
     await tester.tap(find.text('Technische Fehlerdetails'));
     await tester.pumpAndSettle();
     expect(find.text('403'), findsOneWidget);
     expect(
         find.text('Core / Management-Endpunkt nicht erreichbar'), findsNothing);
+  });
+
+  testWidgets('HTTP 401 asks for a session before reading Management',
+      (tester) async {
+    final api = FixtureSettingsApi()
+      ..settingsFailure = const ApiFailure('Sign-in required',
+          code: 'UNAUTHENTICATED', statusCode: 401);
+    await bootstrapSettings(tester, api: api);
+    expect(find.text('Anmeldung für Management erforderlich'), findsOneWidget);
+    expect(find.text('Management-Zugriff nicht autorisiert'), findsNothing);
   });
 
   testWidgets('Network failure is distinct and retry clears stale error',

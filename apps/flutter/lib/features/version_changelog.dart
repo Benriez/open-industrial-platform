@@ -16,6 +16,15 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.38',
+      build: '41',
+      date: '18. November 2026',
+      changes: [
+        'App-Version und Updates sind in den Einstellungen ohne Plattformrechte zugänglich.',
+        'Bei verweigertem Management-Zugriff führt ein Link direkt zu den lokalen Updates.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.37',
       build: '40',
       date: '18. November 2026',

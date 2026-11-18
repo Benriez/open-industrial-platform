@@ -1,15 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oip_dashboard/features/version_changelog.dart';
 import 'package:oip_dashboard/models/app_metadata.dart';
+import 'package:oip_dashboard/services/api.dart';
 
 // Reuses the fixture harness of the Settings workstation suite: it wires a
 // contract fixture controller, logs the shell in and opens the Settings
 // workstation, whose default section is "Application" — where the About block
 // lives. Only the bootstrap helper is imported so this file keeps its own
 // main().
-import 'settings_workstation_test.dart' show bootstrapSettings;
+import 'settings_workstation_test.dart'
+    show FixtureSettingsApi, bootstrapSettings;
 
 void main() {
   testWidgets('The Settings workstation shows the client identity (About)',
@@ -38,10 +42,14 @@ void main() {
     expect(find.text('Lokal · keine Telemetrie'), findsOneWidget);
     // The rendered identity mirrors the package manifest exactly; the version
     // and build are the single source of truth, not invented values.
-    expect(kOipApplication.version, '0.3.35');
-    expect(kOipApplication.build, '38');
+    final declaration = File('pubspec.yaml')
+        .readAsLinesSync()
+        .singleWhere((line) => line.startsWith('version:'))
+        .substring('version:'.length)
+        .trim();
+    expect('${kOipApplication.version}+${kOipApplication.build}', declaration);
     expect(kOipApplication.license, 'Apache-2.0');
-    expect(OipApplicationInfo.manifestDeclaration, '0.3.35+38');
+    expect(OipApplicationInfo.manifestDeclaration, declaration);
     expect(tester.takeException(), isNull);
   });
 
@@ -54,7 +62,10 @@ void main() {
 
     final dialog = find.byKey(const Key('version-changelog-dialog'));
     expect(dialog, findsOneWidget);
-    expect(find.text('Version 0.3.35 · Build 38'), findsOneWidget);
+    expect(
+        find.text(
+            'Version ${kOipApplication.version} · Build ${kOipApplication.build}'),
+        findsOneWidget);
     expect(find.text('INSTALLIERT'), findsOneWidget);
     final historicalVersion = find.text('Version 0.3.31 · Build 34');
     await tester.scrollUntilVisible(
@@ -130,5 +141,33 @@ void main() {
 
     expect(calls, ['isAvailable', 'checkForUpdates']);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('A Management denial links to the local OTA controls',
+      (tester) async {
+    const channel = MethodChannel('org.openindustrial.oip/ota');
+    final calls = <String>[];
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      calls.add(call.method);
+      return call.method == 'isAvailable' ? true : 'current';
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+    final api = FixtureSettingsApi()
+      ..settingsFailure = const ApiFailure('Denied',
+          code: 'PERMISSION_DENIED', statusCode: 403);
+    await bootstrapSettings(tester, api: api);
+    expect(find.text('Management-Zugriff nicht autorisiert'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('settings-open-local-versions')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('settings-about-version')), findsOneWidget);
+    expect(find.text('Management-Zugriff nicht autorisiert'), findsNothing);
+    await tester.tap(find.byKey(const Key('settings-check-for-updates')));
+    await tester.pumpAndSettle();
+    expect(calls, ['isAvailable', 'checkForUpdates']);
+    expect(api.settingsCalls, hasLength(1));
+    expect(api.managementCalls, isEmpty);
   });
 }

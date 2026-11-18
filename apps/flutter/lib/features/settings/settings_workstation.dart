@@ -53,7 +53,8 @@ class _SettingsPageState extends State<SettingsPage> {
       widget.session.section == SettingsSection.organizations ||
       widget.session.section == SettingsSection.infrastructures ||
       widget.session.section == SettingsSection.sites ||
-      widget.session.section == SettingsSection.sourcesDevices;
+      widget.session.section == SettingsSection.sourcesDevices ||
+      widget.session.section == SettingsSection.versions;
 
   SettingsDataOrigin? get dataOrigin =>
       settings?.origin ?? report?.origin ?? secondary?.origin ?? extra?.origin;
@@ -167,7 +168,6 @@ class _SettingsPageState extends State<SettingsPage> {
         case SettingsSection.auditSecurity:
           loadedReport = await api.management('security');
         case SettingsSection.runtime:
-        case SettingsSection.versions:
           loadedReport = await api.management('system');
           loadedSecondary = await optional(api.management('server'));
         case SettingsSection.capabilities:
@@ -179,6 +179,7 @@ class _SettingsPageState extends State<SettingsPage> {
         case SettingsSection.infrastructures:
         case SettingsSection.sites:
         case SettingsSection.sourcesDevices:
+        case SettingsSection.versions:
           break;
       }
       if (!mounted ||
@@ -581,8 +582,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _error(Object error) {
     final code = error is ApiFailure ? error.code : null;
-    final unauthorized =
-        code == 'PERMISSION_DENIED' || code == 'UNAUTHENTICATED';
+    final missingSession = code == 'UNAUTHENTICATED';
+    final unauthorized = code == 'PERMISSION_DENIED' || missingSession;
     final connection = code == 'CONNECTION_FAILED';
     final unsupported = code == 'UNSUPPORTED';
     // HTTP 400 / INVALID_REQUEST: the Core rejected the request against the
@@ -593,7 +594,9 @@ class _SettingsPageState extends State<SettingsPage> {
     // generic fallback, whose title and message previously disagreed.
     final invalidRequest = code == 'INVALID_REQUEST';
     final title = unauthorized
-        ? 'Management-Zugriff nicht autorisiert'
+        ? (missingSession
+            ? 'Anmeldung für Management erforderlich'
+            : 'Management-Zugriff nicht autorisiert')
         : connection
             ? 'Core / Management-Endpunkt nicht erreichbar'
             : unsupported
@@ -604,7 +607,9 @@ class _SettingsPageState extends State<SettingsPage> {
                         ? 'Core-Vertrag nicht erfüllt'
                         : 'Management-Daten nicht verfügbar';
     final message = unauthorized
-        ? 'HTTP 401/403 ist ein Identitäts- oder Berechtigungsproblem, nicht „Core offline“. Lokale UI-Präferenzen bleiben funktionsfähig. Eine sichere Browser-Session und die zentrale Platform-Policy sind erforderlich.'
+        ? (missingSession
+            ? 'Melde dich an, um diese Management-Ansicht aufzurufen.'
+            : 'Die aktuelle Sitzung hat keine Freigabe für diese Ansicht.')
         : connection
             ? 'Netzwerk- oder Transportfehler. Keine Management-Werte werden aus dem v1-Snapshot oder aus Fixtures ersetzt.'
             : unsupported
@@ -649,6 +654,18 @@ class _SettingsPageState extends State<SettingsPage> {
           icon: const Icon(Icons.refresh, size: 17),
           label: const Text('Autorisierten Read erneut versuchen'),
         ),
+        if (unauthorized) ...[
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            key: const Key('settings-open-local-versions'),
+            onPressed: () {
+              widget.session.selectCategory(SettingsCategory.system);
+              _selectSection(SettingsSection.versions);
+            },
+            icon: const Icon(Icons.system_update_alt_outlined, size: 17),
+            label: const Text('App-Version und Updates öffnen'),
+          ),
+        ],
         const SizedBox(height: 8),
         ExpansionTile(
           key: const Key('settings-error-details'),

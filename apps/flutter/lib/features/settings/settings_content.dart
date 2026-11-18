@@ -86,7 +86,8 @@ class SettingsSectionContent extends StatelessWidget {
         SettingsSection.currentIdentity ||
         SettingsSection.auditSecurity =>
           _security(context),
-        SettingsSection.runtime || SettingsSection.versions => _system(context),
+        SettingsSection.runtime => _system(context),
+        SettingsSection.versions => ListView(children: [_about(context)]),
         SettingsSection.capabilities => _capabilities(context),
       };
 

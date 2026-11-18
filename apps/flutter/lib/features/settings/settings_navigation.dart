@@ -106,7 +106,7 @@ String settingsSectionLabel(SettingsSection section) => switch (section) {
       SettingsSection.effectivePermissions => 'Permissions',
       SettingsSection.auditSecurity => 'Audit & Security',
       SettingsSection.runtime => 'Runtime',
-      SettingsSection.versions => 'Versions',
+      SettingsSection.versions => 'Versionen & Updates',
       SettingsSection.capabilities => 'Capabilities',
     };
 
