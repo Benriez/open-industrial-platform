@@ -1,6 +1,34 @@
 # OIP app completion: current acceptance state
 
-## Latest snapshot — 2026-11-18, v0.3.37+40 published
+## Latest snapshot — 2026-11-18, v0.3.38+41 installed
+
+[OIP 0.3.38](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.38)
+was published as a signed OTA and installed on this Mac. The published asset
+digests matched the installed package. The archive SHA-256 is
+`74fae7e33389e9c160ed81b00a5967388ec158ea3b557586fd34cfd54260ae6f`.
+Strict app signature verification passed, the running app connected to the
+relay at `127.0.0.1:18856`, and the LaunchAgent configurations matched their
+backups. The previous app is saved in
+`/private/tmp/oip-rollout-0.3.38.qufXdq`.
+
+An authenticated `device-operator` session successfully read the live
+snapshot while the platform Settings and Management reads returned HTTP 403.
+Settings now starts with local preferences. Core settings retain their
+authorization checks and a separate entry. The local Versions & Updates
+section works independently of Management. An in-app check after a fresh
+operator sign-in remains pending.
+
+The full canonical gate passed on revision
+`3a80fa8abd8039c8c45da91ae4c86dc2bcb9a50b`, tree
+`3b9b87cd800b0bc2aa3007167338958a8e0cc089`. Local and served
+`main.dart.js` match at SHA-256
+`22094b895425ea542bc13a2a8fa25b3410c62358639afb67ea6a261a1ed684b7`.
+The gate recorded 412 Flutter passes, one skip, 191 browser checks without
+failure, two visual comparisons and eight acceptance phases. The measured
+report is `target/oip-0.3.38-release-gate/oip_canonical_ui_gate/report.json`
+in the `fix/oip-local-updates-in-settings` worktree.
+
+## Previous snapshot — 2026-11-18, v0.3.37+40 published
 
 [OIP 0.3.37](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.37)
 is available as a signed OTA. The local release script built and verified the
