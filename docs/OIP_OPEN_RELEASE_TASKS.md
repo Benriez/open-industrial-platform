@@ -1,6 +1,37 @@
 # OIP app completion: current acceptance state
 
-## Latest snapshot — 2026-11-18, v0.3.35+38 installed
+## Latest snapshot — 2026-11-18, v0.3.36+39 published
+
+[OIP 0.3.36](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.36)
+was published from the Mac as a signed OTA. The installed bundle still reported
+`0.3.35+38` after publication. GitHub's archive digest matched the local hash
+`c2913660268f174d323fb0b9c5e256b8247bb6a322ba4e7860f91915832368ac`.
+
+The authenticated installed app reproduced the stale OPC UA view and empty
+source selector during an intermittent connection. An independent native API
+check on the same local relay read 38 observations and received 25 live
+snapshots in 47.3 seconds, with a longest gap of 3.8 seconds. The new build retries
+failed authorized source and node reads after a fresh snapshot. The macOS
+transport also polls an authorized snapshot when the live stream returns an
+error event. Regression tests cover both cases.
+
+The full canonical gate passed on revision
+`d44cf21783cf9b53375626d3357ccc518467b8fe`, tree
+`81ec3e1f4adf1672f371b0a65d0060c311aa9e7d`. The local and served
+`main.dart.js` match at SHA-256
+`acf45179ac24b5901c95b9a789ff8d08858ca5e5df33b77c00886993077ce73b`.
+The gate recorded 409 Flutter passes, one skip, 191 browser checks with no
+failures, 13 screenshots, two visual comparisons and eight acceptance phases.
+The receipt is in `target/oip-0.3.36-canonical/oip_canonical_ui_gate/report.json`
+in the `fix/oip-live-opcua-source-recovery` worktree.
+
+A separate build 38 crash recurred while dragging the window edge. The
+macOS report records `EXC_BAD_ACCESS` at `0x50` during AppKit live resize.
+The matching FlutterMacOS binary places frame 2 inside
+`-[FlutterViewController updateSemantics:]`. Native resize and the live
+workstation views on installed build 39 remain open for acceptance.
+
+## Previous snapshot — 2026-11-18, v0.3.35+38 installed
 
 The installed app completed the GitHub OTA update to build 38. The updater
 verified the manifest and archive, and strict code-signature verification
