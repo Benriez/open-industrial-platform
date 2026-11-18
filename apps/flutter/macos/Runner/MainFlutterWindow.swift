@@ -19,6 +19,26 @@ class MainFlutterWindow: NSWindow {
     touchId.setMethodCallHandler { call, result in
       TouchIdKeychain.handle(call: call, result: result)
     }
+    let ota = FlutterMethodChannel(
+      name: "org.openindustrial.oip/ota",
+      binaryMessenger: flutterViewController.engine.binaryMessenger
+    )
+    ota.setMethodCallHandler { call, result in
+      guard #available(macOS 10.15, *) else {
+        result(false)
+        return
+      }
+      switch call.method {
+      case "isAvailable":
+        result(GitHubOTAUpdater.shared.isAvailable)
+      case "checkForUpdates":
+        GitHubOTAUpdater.shared.checkForUpdate(manual: true) { status in
+          result(status)
+        }
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
 
     super.awakeFromNib()
 
@@ -287,6 +307,13 @@ private final class OIPPiTunnelManager: NSObject {
 private final class GitHubOTAUpdater {
   static let shared = GitHubOTAUpdater()
 
+  var isAvailable: Bool {
+    Bundle.main.object(forInfoDictionaryKey: "OIPUpdateEnabled") as? Bool == true &&
+      !repository.isEmpty &&
+      !publicKey.isEmpty && !publicKey.hasPrefix("__") &&
+      ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"] == nil
+  }
+
   // All release/manifest/asset shapes come from the shared, unit-tested
   // `OIPGitHubOTA` module so the live updater and the decision logic can never
   // drift into two different types.
@@ -295,34 +322,48 @@ private final class GitHubOTAUpdater {
   private let publicKey = Bundle.main.object(forInfoDictionaryKey: "OIPUpdatePublicKey") as? String ?? ""
   private let runningBuild = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
 
-  func checkForUpdate() {
+  func checkForUpdate(manual: Bool = false, completion: ((String) -> Void)? = nil) {
+    let finish: (String) -> Void = { status in
+      guard let completion else { return }
+      DispatchQueue.main.async { completion(status) }
+    }
     OIPGitHubOTA.log("check requested (build \(runningBuild))")
     guard Bundle.main.object(forInfoDictionaryKey: "OIPUpdateEnabled") as? Bool == true else {
       OIPGitHubOTA.log("skipped: OIPUpdateEnabled is not true")
+      finish("unavailable")
       return
     }
     guard !repository.isEmpty else {
       OIPGitHubOTA.log("skipped: OIPGitHubRepository is empty")
+      finish("failed")
       return
     }
     guard !publicKey.hasPrefix("__") else {
       OIPGitHubOTA.log("skipped: OIPUpdatePublicKey is a placeholder")
+      finish("failed")
       return
     }
     guard ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"] == nil else {
       OIPGitHubOTA.log("skipped: running in the App Store sandbox")
+      finish("unavailable")
       return
     }
     guard let url = URL(string: "https://api.github.com/repos/\(repository)/releases/latest"),
           url.host == "api.github.com" else {
       OIPGitHubOTA.log("skipped: repository URL is invalid")
+      finish("failed")
       return
     }
 
     let defaults = UserDefaults.standard
     let now = Date().timeIntervalSince1970
-    guard now - defaults.double(forKey: "oip.github-ota.last-check") > 21_600 else {
+    guard OIPGitHubOTA.shouldCheckForUpdate(
+      manual: manual,
+      lastCheck: defaults.double(forKey: "oip.github-ota.last-check"),
+      now: now
+    ) else {
       OIPGitHubOTA.log("skipped: last check \(Int(now)) within 6h")
+      finish("current")
       return
     }
     defaults.set(now, forKey: "oip.github-ota.last-check")
@@ -336,78 +377,91 @@ private final class GitHubOTAUpdater {
       let status = (response as? HTTPURLResponse)?.statusCode
       if let error {
         OIPGitHubOTA.log("release list request failed: \(error.localizedDescription)")
+        finish("failed")
         return
       }
       guard status == 200, let data else {
         OIPGitHubOTA.log("release list request rejected: status \(status ?? -1)")
+        finish("failed")
         return
       }
       guard let release = try? JSONDecoder().decode(OIPGitHubOTA.Release.self, from: data) else {
         OIPGitHubOTA.log("release list response did not decode as a GitHub release")
+        finish("failed")
         return
       }
       if release.draft || release.prerelease {
         OIPGitHubOTA.log("release is draft or prerelease: \(release.draft) / \(release.prerelease)")
+        finish("failed")
         return
       }
-      self.verifyRelease(release)
+      self.verifyRelease(release, completion: completion == nil ? nil : finish)
     }.resume()
   }
 
-  private func verifyRelease(_ release: OIPGitHubOTA.Release) {
+  private func verifyRelease(_ release: OIPGitHubOTA.Release, completion: ((String) -> Void)?) {
     guard let manifestAsset = OIPGitHubOTA.manifestAsset(in: release),
           let signatureAsset = OIPGitHubOTA.signatureAsset(in: release) else {
       let names = release.assets.map(\.name).sorted()
       OIPGitHubOTA.log("manifest/signature asset missing; release assets: \(names)")
+      completion?("failed")
       return
     }
     getAsset(manifestAsset.browserDownloadURL) { [weak self] manifestData in
       guard let self, let manifestData else {
         OIPGitHubOTA.log("manifest download failed for \(OIPGitHubOTA.manifestAssetName)")
+        completion?("failed")
         return
       }
       let manifest = try? JSONDecoder().decode(OIPGitHubOTA.Manifest.self, from: manifestData)
       if manifest == nil {
         OIPGitHubOTA.log("manifest did not decode")
+        completion?("failed")
         return
       }
       if manifest?.bundleIdentifier != Bundle.main.bundleIdentifier {
         OIPGitHubOTA.log("bundle identifier mismatch: manifest \(manifest?.bundleIdentifier ?? "nil"), running \(Bundle.main.bundleIdentifier)")
+        completion?("failed")
         return
       }
-      self.verifySignature(manifestData: manifestData, manifest: manifest!, release: release, signatureURL: signatureAsset.browserDownloadURL)
+      self.verifySignature(manifestData: manifestData, manifest: manifest!, release: release, signatureURL: signatureAsset.browserDownloadURL, completion: completion)
     }
   }
 
-  private func verifySignature(manifestData: Data, manifest: OIPGitHubOTA.Manifest, release: OIPGitHubOTA.Release, signatureURL: URL) {
+  private func verifySignature(manifestData: Data, manifest: OIPGitHubOTA.Manifest, release: OIPGitHubOTA.Release, signatureURL: URL, completion: ((String) -> Void)?) {
     getAsset(signatureURL) { [weak self] signatureData in
       guard let self, let signatureData else {
         OIPGitHubOTA.log("signature download failed for \(OIPGitHubOTA.signatureAssetName)")
+        completion?("failed")
         return
       }
       guard let signatureText = String(data: signatureData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
             let signature = Data(base64Encoded: signatureText) else {
         OIPGitHubOTA.log("signature response is not valid base64 text")
+        completion?("failed")
         return
       }
       guard let rawKey = Data(base64Encoded: self.publicKey),
             let key = try? Curve25519.Signing.PublicKey(rawRepresentation: rawKey) else {
         OIPGitHubOTA.log("embedded update public key is missing or invalid")
+        completion?("failed")
         return
       }
       let valid = key.isValidSignature(signature, for: manifestData)
       OIPGitHubOTA.log("manifest signature \(valid ? "verified" : "invalid"); build \(manifest.build)")
-      guard valid else { return }
+      guard valid else { completion?("failed"); return }
       guard let archiveAsset = OIPGitHubOTA.archiveAsset(in: release, named: manifest.archive) else {
         OIPGitHubOTA.log("manifest archive \(manifest.archive) is not a release asset")
+        completion?("failed")
         return
       }
       guard OIPGitHubOTA.isUpdateAvailable(currentBuild: self.runningBuild, remoteBuild: manifest.build) else {
         let comparison = OIPGitHubOTA.compareBuilds(current: self.runningBuild, remote: manifest.build)
         OIPGitHubOTA.log("version not newer: running \(self.runningBuild) vs remote \(manifest.build) (compare \(comparison))")
+        completion?("current")
         return
       }
-      self.offer(manifest, archiveAsset: archiveAsset)
+      self.offer(manifest, archiveAsset: archiveAsset, completion: completion)
     }
   }
 
@@ -430,14 +484,18 @@ private final class GitHubOTAUpdater {
     }.resume()
   }
 
-  private func offer(_ manifest: OIPGitHubOTA.Manifest, archiveAsset: OIPGitHubOTA.Asset) {
+  private func offer(_ manifest: OIPGitHubOTA.Manifest, archiveAsset: OIPGitHubOTA.Asset, completion: ((String) -> Void)?) {
     DispatchQueue.main.async {
       let alert = NSAlert()
       alert.messageText = "OIP-Update verfügbar"
       alert.informativeText = "Version \(manifest.version) ist verfügbar. Die signierte Aktualisierung wird heruntergeladen und nach dem Neustart installiert."
       alert.addButton(withTitle: "Jetzt aktualisieren")
       alert.addButton(withTitle: "Später")
-      guard alert.runModal() == .alertFirstButtonReturn else { return }
+      guard alert.runModal() == .alertFirstButtonReturn else {
+        completion?("deferred")
+        return
+      }
+      completion?("installing")
       self.downloadAndInstall(manifest, archiveAsset: archiveAsset)
     }
   }

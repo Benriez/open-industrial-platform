@@ -9,6 +9,7 @@ import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
 import 'settings_models.dart';
 import 'settings_navigation.dart';
+import 'ota_update_control.dart';
 import 'settings_session.dart';
 import 'settings_tool_explorer.dart';
 
@@ -187,6 +188,7 @@ class SettingsSectionContent extends StatelessWidget {
         mono: false,
         key: const Key('settings-about-license'),
       ),
+      const OipOtaUpdateControl(),
       const SizedBox(height: 10),
       WorkstationNote(
         'Lokal · keine Telemetrie',

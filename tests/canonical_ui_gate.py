@@ -174,20 +174,26 @@ def main():
             else:
                 code = json.loads(minted.stdout)['login_code']
                 receipt['browser_login_code_minted'] = True
+        # Keep browser evidence in its own initially empty directory. The gate
+        # already writes build/widget receipts to `out`; passing `out` directly
+        # makes the browser harness reject every otherwise valid full run.
+        browser_out = out / 'browser'
+        browser_out.mkdir(exist_ok=True)
         command = ['node', str(APPS / 'test/browser_canonical_ui_gate.mjs'),
-                   a.base_url, str(out.resolve())]
+                   a.base_url, str(browser_out.resolve())]
         if code:
             env['OIP_BROWSER_LOGIN_CODE'] = code
         result = subprocess.run(command, cwd=str(APPS), env=env,
                                 capture_output=True, text=True, timeout=1800)
         (out / 'browser-gate.log').write_text(result.stdout + result.stderr)
-        receipt['browser_gate'] = json.loads((out / 'browser-canonical-ui-gate.json').read_text()) \
-            if (out / 'browser-canonical-ui-gate.json').is_file() else None
+        browser_receipt = browser_out / 'browser-canonical-ui-gate.json'
+        receipt['browser_gate'] = json.loads(browser_receipt.read_text()) \
+            if browser_receipt.is_file() else None
         record('browser gate', result.returncode == 0, 'browser_canonical_ui_gate.mjs')
 
         visual = subprocess.run(
             [sys.executable, str(ROOT / 'tests/canonical_ui_visual.py'),
-             '--actual-root', str(out.resolve()), '--out', str(out / 'visual-comparison.json')],
+             '--actual-root', str(browser_out.resolve()), '--out', str(out / 'visual-comparison.json')],
             cwd=str(ROOT), capture_output=True, text=True, timeout=120)
         (out / 'visual-gate.log').write_text(visual.stdout + visual.stderr)
         receipt['visual_comparison'] = json.loads((out / 'visual-comparison.json').read_text()) \

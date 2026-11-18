@@ -11,8 +11,9 @@ silent against the signed v0.3.1+4 release:
    invalid signature, wrong archive name, non-newer build) is returned.
 
 2. names: the asset names the client looks for are the exact names the packager
-   and the release workflow publish, so the silent-failure asset-name mismatch
-   cannot regress.
+   and local release script publish, so the silent-failure asset-name mismatch
+   cannot regress. Releases are published directly from this Mac; no GitHub
+   Actions workflow is required.
 """
 from __future__ import annotations
 
@@ -27,7 +28,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 LOGIC = ROOT / "tools/oip_ota_logic_tests.swift"
 UPDATER = ROOT / "apps/flutter/macos/Runner/OIPGitHubOTA.swift"
 PACKAGER = ROOT / "tools/oip_github_ota_package.py"
-WORKFLOW = ROOT / ".github/workflows/macos-ota-release.yml"
+RELEASE_SCRIPT = ROOT / "tools/oip_ota_release.sh"
 
 
 class OIPGitHubOTALogic(unittest.TestCase):
@@ -57,17 +58,17 @@ class OIPGitHubOTALogic(unittest.TestCase):
         manifest_name, signature_name, archive_name = (m.group(1) for m in (manifest, signature, archive))
 
         packager = PACKAGER.read_text()
-        workflow = WORKFLOW.read_text()
+        release_script = RELEASE_SCRIPT.read_text()
         # The packager writes the manifest and derives its JSON signature path as
         # "<manifest>.sig", i.e. oip-macos-manifest.json.sig.
         self.assertIn('"oip-macos-manifest.json"', packager)
         self.assertIn('"oip-macos-universal.zip"', packager)
         signature_derived = re.search(r'"signature":\s*str\(manifest_path\) \+ "\.sig"', packager)
         self.assertIsNotNone(signature_derived, "packager does not derive the .json.sig signature name")
-        # The workflow uploads the same three assets.
-        self.assertIn("oip-macos-manifest.json", workflow)
-        self.assertIn("oip-macos-manifest.json.sig", workflow)
-        self.assertIn("oip-macos-universal.zip", workflow)
+        # The local release script uploads the same three assets directly.
+        self.assertIn('"$RELEASE_DIR/oip-macos-universal.zip"', release_script)
+        self.assertIn('"$RELEASE_DIR/oip-macos-manifest.json"', release_script)
+        self.assertIn('"$RELEASE_DIR/oip-macos-manifest.json.sig"', release_script)
         # The exact regression: the client's signature asset name is the JSON
         # signature the packager publishes, not the wrong bare ".sig" name.
         self.assertEqual(manifest_name, "oip-macos-manifest.json")

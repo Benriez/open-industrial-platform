@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oip_dashboard/models/app_metadata.dart';
 
@@ -40,6 +41,36 @@ void main() {
     expect(kOipApplication.build, '22');
     expect(kOipApplication.license, 'Apache-2.0');
     expect(OipApplicationInfo.manifestDeclaration, '0.3.19+22');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('The direct macOS About page can manually check for OTA updates',
+      (tester) async {
+    const channel = MethodChannel('org.openindustrial.oip/ota');
+    final calls = <String>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+      calls.add(call.method);
+      return switch (call.method) {
+        'isAvailable' => true,
+        'checkForUpdates' => 'current',
+        _ => null,
+      };
+    });
+    addTearDown(() => TestDefaultBinaryMessengerBinding
+        .instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, null));
+
+    await bootstrapSettings(tester);
+    final button = find.byKey(const Key('settings-check-for-updates'));
+    await tester.ensureVisible(button);
+    await tester.pumpAndSettle();
+    expect(find.text('Nach Updates suchen'), findsOneWidget);
+
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(calls, ['isAvailable', 'checkForUpdates']);
+    expect(find.text('Du verwendest die neueste Version.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

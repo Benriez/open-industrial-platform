@@ -67,6 +67,12 @@ struct OIPGitHubOTALogicTests {
     check(OIPGitHubOTA.compareBuilds(current: "3", remote: "4") == 1, "compare 3 vs 4 == 1")
     check(OIPGitHubOTA.compareBuilds(current: "4", remote: "3") == -1, "compare 4 vs 3 == -1")
     check(OIPGitHubOTA.compareBuilds(current: "4", remote: "4") == 0, "compare 4 vs 4 == 0")
+    check(OIPGitHubOTA.shouldCheckForUpdate(manual: false, lastCheck: 9_000, now: 9_000 + 21_601),
+      "automatic check runs when the six-hour window has elapsed")
+    check(!OIPGitHubOTA.shouldCheckForUpdate(manual: false, lastCheck: 9_000, now: 9_000 + 60),
+      "automatic check is throttled inside the six-hour window")
+    check(OIPGitHubOTA.shouldCheckForUpdate(manual: true, lastCheck: 9_000, now: 9_000 + 60),
+      "manual check bypasses the automatic six-hour throttle")
 
     // --- verify(): the authentic signed release is accepted, and every rejection.
 

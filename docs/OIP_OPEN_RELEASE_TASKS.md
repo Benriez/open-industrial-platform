@@ -45,8 +45,17 @@ next iteration.
   `target/oip-window-min-size-final-gate-2026-11-18/oip_canonical_ui_gate/report.json`.
   This is not yet live resize/crash acceptance; the installed app remains
   `0.3.28+31` until a new build is rolled out and exercised.
+- [x] Added a manual update check to Settings → About for direct macOS OTA
+  builds. The full canonical gate passes on this candidate and proves that the
+  served web bundle matches the local build. Receipt:
+  `target/oip-ota-manual-check-gate-2026-11-18/oip-canonical-cli-gate-fixed/canonical-ui-gate.json`.
+  The candidate is not yet published or installed.
 
 ## Still open
+
+- [ ] Publish the verified manual-check candidate through the local signed OTA
+  release path, then verify that the installed app's Settings → About button
+  finds it and the native install prompt appears.
 
 - [ ] **Authenticated physical-device acceptance:** verify fresh telemetry for
   `bodi-pi` and `bodi-pc` in the installed app, including metric names, values

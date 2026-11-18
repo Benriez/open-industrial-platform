@@ -125,6 +125,13 @@ enum OIPGitHubOTA {
     compareBuilds(current: currentBuild, remote: remoteBuild) > 0
   }
 
+  /// Manual checks always run; automatic launch checks are limited to once
+  /// every six hours. Kept pure so the in-app button cannot regress into the
+  /// startup-only throttle that previously hid newly published updates.
+  static func shouldCheckForUpdate(manual: Bool, lastCheck: TimeInterval, now: TimeInterval) -> Bool {
+    manual || now - lastCheck > 21_600
+  }
+
   /// Hex-encodes the archive's SHA-256 exactly as the live updater renders it, so
   /// the digest bytes and the comparison the test proves are one path. Pure
   /// (Foundation only): no CryptoKit lives in this module, so the decision logic
