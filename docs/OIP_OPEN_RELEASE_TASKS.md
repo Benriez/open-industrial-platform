@@ -1,6 +1,43 @@
 # OIP app completion: current acceptance state
 
-## Latest snapshot — 2026-11-18, v0.3.33+36
+## Latest snapshot — 2026-11-18, v0.3.34+37 published
+
+The signed macOS OTA is published as [v0.3.34](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.34).
+The measured installed bundle is still `0.3.33+36`. Install using the in-app
+update check. The full canonical UI gate passed on revision
+`1512bca161fd9e036a8c99984b326dc1e8ba6854`, tree
+`58154da6b783f9674de5df865b1a5cc380d72873`. The served and local
+`main.dart.js` match at SHA-256
+`dcbfaea58f3fe7e1879ab13445324d15a1eb6e9d667dc717a7a67bcac46772e8`.
+The gate recorded 406 Flutter passes, one skip, 191 browser checks with no
+failures, 13 screenshots, both visual comparisons and eight functional phases.
+The operator visual acceptance remains pending. See
+`target/oip-0.3.34-complete-gate/oip_canonical_ui_gate/report.json`.
+Verified OTA archive SHA-256
+`5c084ecb13db4015f690f3f6a3b387a3cb1c009230504fa9dbd9e18b21f227bc`.
+The release used the local publishing tool. GitHub Actions did not run.
+
+- The Pi Core preserves healthy SSH sources across routine polls and
+  compresses snapshots and the live stream when the client accepts gzip.
+  The Mac relay prefers a private forward through bodi-pc, falls back to the
+  direct Pi route, and replaces a failed forward without cutting active
+  streams on that forward. Version 0.3.34 falls back to authenticated
+  snapshot requests when its stream stalls. A focused native test verifies
+  that a context change does not cancel the global snapshot.
+- The live authenticated API returned 15 fresh metrics for bodi-pc, 12 for
+  bodi-pi, 11 for OpenWrt and three observed LAN links among those devices.
+  The router inventory note now reflects its active SSH source. The Philips
+  Hue Bridge is registered at the same site. Its collector is still unpaired.
+- The live OPC-UA API browsed 18 nodes on each host, read CPU temperature,
+  and accepted an idempotent operator write followed by successful readback
+  on both hosts. The host endpoints now timestamp accepted operator writes.
+- The one-time code restored the Mac session. macOS reported a lost-focus
+  cancellation and then a password-fallback cancellation during Touch ID.
+  The OIP keychain item exists. Successful biometric sign-in, an installed
+  0.3.34 session, and operator visual acceptance still need confirmation.
+  No Apple Distribution identity was available in the signing preflight.
+
+## Previous snapshot — 2026-11-18, v0.3.33+36
 
 The false `API STALE / RECONNECT` warning is fixed and the signed OTA is
 installed at `/Applications/Open Industrial Platform.app`. Full canonical gate
