@@ -38,6 +38,17 @@ the privacy manifest declares **no tracking** and **no collected data type**.
 The only network entitlement of the release build is `com.apple.security.network.client`:
 the client reaches the Core. It is not a server and it does not listen.
 
+## Local archive rehearsal
+
+Run `python3 tools/oip_mas_package.py` to build and check the local bundle and
+the hardened ad-hoc archive. Each rehearsal writes a new archive under
+`target/oip-mas-archive` and reports its path. Use `--launch-archive` only when
+you want the diagnostic to start the ad-hoc application.
+
+For distribution, select the intended archive explicitly with `--archive PATH`
+when running `tools/oip_mas_export.py`. The rehearsal receipt covers local
+preflight. Distribution signing uses the operator's certificate and profile.
+
 ## The steps that remain, and who does them
 
 1. **The loop**: the packaging step (the quarantine attribute, the signature check, the

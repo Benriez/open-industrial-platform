@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """The package of the macOS client for the Mac App Store.
 
-The script builds the release bundle, prepares it for the upload and
-**measures** every property that the App Store submission checks. It does not
-submit and it does not publish: the identity of the developer, the
-certificate and the profile are the operator's.
+The script builds the release bundle and runs the local App Store preflight.
+Distribution signing and submission require the developer's identity,
+certificate and profile.
 
 What it proves about the artefact:
   * the bundle is **signed** and every executable of it is signed;
@@ -26,7 +25,7 @@ archive. The receipt states that fact instead of hiding it.
 
 Usage:
   python3 tools/oip_mas_package.py [--evidence DIR] [--skip-build]
-                                   [--bundle PATH]
+                                   [--bundle PATH] [--launch-archive]
 """
 import argparse
 import hashlib
@@ -34,9 +33,9 @@ import json
 import os
 import pathlib
 import plistlib
-import shutil
 import subprocess
 import sys
+import tempfile
 import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -316,7 +315,7 @@ def verify_the_store_assets():
     return checks, problems
 
 
-def build_the_archive():
+def build_the_archive(launch_archive: bool):
     """The archive of the distribution and the measurement of its signature.
 
     The hardened runtime is enabled by the command line of the archive — not
@@ -325,29 +324,30 @@ def build_the_archive():
     inside it. In the distribution, Xcode signs every embedded framework with
     the identity of the developer.
     """
-    work = ROOT / "target/oip-mas-archive"
-    if work.exists():
-        shutil.rmtree(work)
-    work.mkdir(parents=True, exist_ok=True)
+    archive_root = ROOT / "target/oip-mas-archive"
+    archive_root.mkdir(parents=True, exist_ok=True)
+    work = pathlib.Path(tempfile.mkdtemp(prefix="rehearsal-", dir=archive_root))
+    archive = work / "oip_dashboard.xcarchive"
     command = [
         "/usr/bin/xcodebuild", "archive",
         "-workspace", str(APPS / "macos/Runner.xcworkspace"),
         "-scheme", "Runner", "-configuration", "Release",
         "-destination", "generic/platform=macOS",
-        "-archivePath", str(work / "oip_dashboard.xcarchive"),
+        "-archivePath", str(archive),
         "ENABLE_HARDENED_RUNTIME=YES",
         "CODE_SIGN_IDENTITY=-", "CODE_SIGN_STYLE=Manual",
         "DEVELOPMENT_TEAM=", "PROVISIONING_PROFILE_SPECIFIER=",
     ]
     built = run(command, cwd=APPS / "macos")
-    report = {"the_command": built["the_command"], "the_code": built["the_code"],
+    report = {"the_path": str(archive), "the_signing": "ad-hoc",
+              "the_command": built["the_command"], "the_code": built["the_code"],
               "the_error": built["the_error"][-400:], "the_problems": [],
               "the_steps": []}
     if built["the_code"] != 0:
         report["the_problems"].append("the archive of the distribution failed")
         return report
     report["the_steps"].append("the archive of the distribution is built")
-    app = work / "oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app"
+    app = archive / "Products/Applications/oip_dashboard.app"
     if not app.is_dir():
         report["the_problems"].append("the archive carries no application")
         return report
@@ -370,7 +370,15 @@ def build_the_archive():
         xml = xml[xml.index("<?xml"):] if "<?xml" in xml else xml[xml.index("<plist"):]
         xml = xml[:xml.rindex("</plist>") + len("</plist>")]
         report["the_entitlements"] = plistlib.loads(xml.encode())
-    report["the_launch_of_the_hardened_bundle"] = the_launch(app)
+    signature_check = run(["/usr/bin/codesign", "--verify", "--deep", "--strict", str(app)])
+    report["the_signature_verification"] = signature_check["the_code"]
+    if signature_check["the_code"] != 0:
+        report["the_problems"].append(
+            f"strict archive signature verification failed: {signature_check['the_error'][-400:]}")
+    else:
+        report["the_steps"].append("strict archive signature verification passed")
+    if launch_archive:
+        report["the_launch_of_the_hardened_bundle"] = the_launch(app)
     return report
 
 
@@ -428,10 +436,15 @@ def main():
     parser.add_argument("--evidence", default=str(ROOT / "target" / "oip-mas-package"))
     parser.add_argument("--skip-build", action="store_true")
     parser.add_argument("--bundle", default=str(BUNDLE))
+    parser.add_argument("--launch-archive", action="store_true",
+                        help="run the optional launch diagnostic on the ad-hoc archive")
     args = parser.parse_args()
+    if args.skip_build and args.launch_archive:
+        parser.error("--launch-archive requires a fresh archive build")
     evidence = pathlib.Path(args.evidence)
     evidence.mkdir(parents=True, exist_ok=True)
     report = {"schema": "oip-mas-package-v1", "steps": [], "the_problems": []}
+    report["the_scope"] = "existing local bundle" if args.skip_build else "local bundle and ad-hoc archive"
 
     if not args.skip_build:
         built = run(["flutter", "build", "macos", "--release",
@@ -494,7 +507,7 @@ def main():
     ]
     # The archive of the distribution: the hardened runtime is measured there.
     if not args.skip_build:
-        archive = build_the_archive()
+        archive = build_the_archive(args.launch_archive)
         report["the_archive"] = archive
         for problem in archive.get("the_problems", []):
             report["the_problems"].append(problem)
@@ -512,6 +525,8 @@ def main():
     report["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     (evidence / "mas-package.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps({"the_status": report["the_status"],
+                      "the_scope": report["the_scope"],
+                      "the_archive_path": report.get("the_archive", {}).get("the_path"),
                       "the_steps": len(report["steps"]),
                       "the_problems": report["the_problems"]}, indent=2))
     return 0 if report["the_status"] == "PASS" else 1

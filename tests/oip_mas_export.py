@@ -126,6 +126,11 @@ def main() -> int:
         marker.write_text("existing output")
         export_args = ("--archive", str(archive), "--out", str(output))
 
+        code, missing_archive = the_tool(*FAKE, "--out", str(output))
+        assert code == 2 and "--archive" in " ".join(missing_archive["the_problems"])
+        assert list(output.iterdir()) == [other_build]
+        report["the_steps"].append("the operator must explicitly choose the input archive")
+
         # 3. the rendered options with a fake identity
         code, rendered = the_tool(*FAKE, *export_args)
         report["the_render"] = {"the_code": code, "the_options": rendered.get("the_options"),

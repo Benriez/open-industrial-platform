@@ -32,7 +32,7 @@ the recipe renders both. Another style is refused with that reason.
 Usage:
   python3 tools/oip_mas_export.py --team-id TEAMID1234 \
       --profile "Mac App Distribution: Open Industrial Platform" \
-      --certificate "Apple Distribution" [--method app-store-connect] \
+      --certificate "Apple Distribution" --archive PATH [--method app-store-connect] \
       [--destination export|upload] [--execute]
 
 The values may also come from the environment: `OIP_APPLE_TEAM_ID`,
@@ -55,7 +55,6 @@ TEMPLATE = ROOT / "docs/release/mac-app-store/ExportOptions.plist.template"
 # The build tree of the machine: the rendered options never leave it.
 BUILD_TREE = (ROOT / "target").resolve()
 WORK = BUILD_TREE / "oip-mas-export"
-DEFAULT_ARCHIVE = ROOT / "target/oip-mas-archive/oip_dashboard.xcarchive"
 BUNDLE_IDENTIFIER = "org.openindustrial.oipDashboard"
 
 # The keys that the export options must carry. A file without them is not an
@@ -146,7 +145,7 @@ def main() -> int:
     parser.add_argument("--signing-style", default=SIGNING_STYLE)
     parser.add_argument("--destination", default="export",
                         choices=["export", "upload"])
-    parser.add_argument("--archive", default=str(DEFAULT_ARCHIVE))
+    parser.add_argument("--archive", help="path to the Xcode archive to export")
     parser.add_argument("--out", default=str(WORK))
     parser.add_argument("--execute", action="store_true",
                         help="run the export; without it the command is only printed")
@@ -201,13 +200,18 @@ def main() -> int:
         print(json.dumps(report, indent=2))
         return 2
 
+    if not args.archive:
+        report["the_problems"].append("choose the input Xcode archive with --archive")
+        report["the_status"] = "FAIL"
+        print(json.dumps(report, indent=2))
+        return 2
+
     archive = pathlib.Path(args.archive).resolve()
     report["the_archive"] = {"the_path": str(archive),
                              "the_present": archive.is_dir()}
     if not archive.is_dir():
         report["the_problems"].append(
-            f"the archive is missing: {archive} — build it with "
-            "tools/oip_mas_package.py first")
+            f"the archive is missing: {archive}")
     elif any(path.suffix.lower() in {".xcarchive", ".app"}
              for path in (output_root, *output_root.parents)):
         report["the_problems"].append(
