@@ -18,6 +18,10 @@ entries are retained as dated evidence and are not current-state claims.
   The served `main.dart.js` matches the local build byte for byte; SHA-256:
   `3f3cb71e3d7954bd0ba477792028f7ff5452c4594565c959112b187a6d226057`.
   Source revision: `77697c430c76162d75dbc77776a1af392fdc6142`.
+  The pre-commit source tree recorded by the gate is
+  `efe2c0988cd38a887bf4e5436e59482a15201912`; it includes the product source
+  in this release. Commit `0c086dcfbe5ab341ed67903d392d72beabb1720d` contains
+  that source plus the final acceptance checklist.
 - Focused Settings/About tests passed 3/3. The version page now has entries
   through the installed 0.3.31 release, including the topology, dashboard,
   telemetry, OPC-UA, Touch ID, and manual OTA work.
@@ -29,10 +33,18 @@ entries are retained as dated evidence and are not current-state claims.
   telemetry variables marked read-only and designated operator variables
   writable. These direct service/DB checks do not prove the current installed
   app's authenticated screens.
-- Installed app before this pending release: `0.3.31+34`; signature and local
-  relay health were verified after the previous rollout. The earlier app and
-  LaunchAgent backup is at
-  `~/Library/Application Support/OIP/rollbacks/0.3.30-build33-20261118`.
+- `v0.3.32` was published from this Mac with `tools/oip_ota_release.sh`; no
+  GitHub Actions workflow was used. OTA manifest signature and archive digest
+  verified (`f41b9eb63261499dc72898f49f48427e1200e53793cc04c518c41d46851f8418`).
+  The app is installed and running at `/Applications/Open Industrial Platform.app`
+  as `0.3.32+35`; strict bundle verification passed. Its app bundle signature
+  is ad-hoc with no Team ID, so this does not establish App Store distribution
+  signing. The previous `0.3.31+34` app and LaunchAgent are preserved at
+  `~/Library/Application Support/OIP/rollbacks/0.3.31-build34-20261118`.
+- After restart, ten consecutive local relay requests to
+  `127.0.0.1:18856/api/v2/browser/session` returned HTTP 200 (12.7–204.2 ms).
+  The response is `login_required`; transport is healthy, but this does not
+  establish authenticated access from the installed app.
 - The biometric keychain item exists and macOS reports biometric capability.
   An end-to-end Touch ID sign-in after the Core restart has not been observed.
   The current local browser session is `login_required`; protected app data
@@ -42,8 +54,8 @@ entries are retained as dated evidence and are not current-state claims.
 
 ### Remaining acceptance
 
-- [ ] Publish and install the signed `0.3.32+35` OTA through the local release
-  tool; verify installed version, signature, and live relay after restart.
+- [x] Publish and install the `0.3.32+35` OTA through the local release tool;
+  verify installed version, signature, and live relay after restart.
 - [ ] Confirm actual Touch ID sign-in in the app and protected session state.
 - [ ] Confirm physical Pi/PC telemetry and live OPC-UA browsing in the
   authenticated installed app.
