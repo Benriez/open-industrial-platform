@@ -1,7 +1,7 @@
 /// The static identity of the OIP client application.
 ///
 /// The version and the build number mirror the package manifest
-/// (`pubspec.yaml`: `version: 0.3.34+37`). They are the same source of truth the
+/// (`pubspec.yaml`: `version: 0.3.35+38`). They are the same source of truth the
 /// macOS build consumes, so they are written together with the release. The
 /// [manifestDeclaration] constant keeps the exact manifest line next to the
 /// fields it describes, so a drift between the manifest and the rendered
@@ -43,15 +43,15 @@ class OipApplicationInfo {
   /// The exact `version:` value of `pubspec.yaml`, kept next to the fields it
   /// describes so a drift between the manifest and the rendered identity is
   /// visible in one place.
-  static const String manifestDeclaration = '0.3.34+37';
+  static const String manifestDeclaration = '0.3.35+38';
 }
 
 /// The single source of truth for the client identity, rendered in the
 /// Settings workstation's About section.
 const OipApplicationInfo kOipApplication = OipApplicationInfo(
   name: 'Open Industrial Platform',
-  version: String.fromEnvironment('OIP_APP_VERSION', defaultValue: '0.3.34'),
-  build: String.fromEnvironment('OIP_APP_BUILD', defaultValue: '37'),
+  version: String.fromEnvironment('OIP_APP_VERSION', defaultValue: '0.3.35'),
+  build: String.fromEnvironment('OIP_APP_BUILD', defaultValue: '38'),
   footer: 'OIP · SPECTRUM 2027',
   privacyNote:
       'Lokal betrieben. OIP sammelt keine Telemetrie und sendet keine Daten nach '

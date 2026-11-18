@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oip_dashboard/features/version_changelog.dart';
 import 'package:oip_dashboard/models/app_metadata.dart';
 
 // Reuses the fixture harness of the Settings workstation suite: it wires a
@@ -37,10 +38,10 @@ void main() {
     expect(find.text('Lokal · keine Telemetrie'), findsOneWidget);
     // The rendered identity mirrors the package manifest exactly; the version
     // and build are the single source of truth, not invented values.
-    expect(kOipApplication.version, '0.3.34');
-    expect(kOipApplication.build, '37');
+    expect(kOipApplication.version, '0.3.35');
+    expect(kOipApplication.build, '38');
     expect(kOipApplication.license, 'Apache-2.0');
-    expect(OipApplicationInfo.manifestDeclaration, '0.3.34+37');
+    expect(OipApplicationInfo.manifestDeclaration, '0.3.35+38');
     expect(tester.takeException(), isNull);
   });
 
@@ -51,10 +52,18 @@ void main() {
     await tester.tap(find.byKey(const Key('sidebar-app-version')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('version-changelog-dialog')), findsOneWidget);
-    expect(find.text('Version 0.3.34 · Build 37'), findsOneWidget);
-    expect(find.text('Version 0.3.31 · Build 34'), findsOneWidget);
+    final dialog = find.byKey(const Key('version-changelog-dialog'));
+    expect(dialog, findsOneWidget);
+    expect(find.text('Version 0.3.35 · Build 38'), findsOneWidget);
     expect(find.text('INSTALLIERT'), findsOneWidget);
+    final historicalVersion = find.text('Version 0.3.31 · Build 34');
+    await tester.scrollUntilVisible(
+      historicalVersion,
+      150,
+      scrollable:
+          find.descendant(of: dialog, matching: find.byType(Scrollable)),
+    );
+    expect(historicalVersion, findsOneWidget);
     expect(
       find.textContaining(
           'bestätigte LAN-Nachbarn zwischen registrierten Geräten'),
@@ -90,6 +99,36 @@ void main() {
     await tester.pumpAndSettle();
     expect(calls, ['isAvailable', 'checkForUpdates']);
     expect(find.text('Du verwendest die neueste Version.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('The changelog can check for updates without a Core session',
+      (tester) async {
+    const channel = MethodChannel('org.openindustrial.oip/ota');
+    final calls = <String>[];
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      calls.add(call.method);
+      return call.method == 'isAvailable' ? true : 'deferred';
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => showVersionChangelog(context),
+            child: const Text('Versionsübersicht'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('Versionsübersicht'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Nach Updates suchen'));
+    await tester.pumpAndSettle();
+
+    expect(calls, ['isAvailable', 'checkForUpdates']);
     expect(tester.takeException(), isNull);
   });
 }

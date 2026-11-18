@@ -484,19 +484,36 @@ private final class GitHubOTAUpdater {
     }.resume()
   }
 
+  private var updateWindow: MainFlutterWindow? {
+    guard !TouchIdKeychain.isAuthenticating,
+          NSApp.isActive,
+          let window = NSApp.keyWindow as? MainFlutterWindow,
+          window.attachedSheet == nil else { return nil }
+    return window
+  }
+
   private func offer(_ manifest: OIPGitHubOTA.Manifest, archiveAsset: OIPGitHubOTA.Asset, completion: ((String) -> Void)?) {
     DispatchQueue.main.async {
+      // A modal update alert can take focus from macOS LocalAuthentication.
+      // The operator can reopen the offer from the manual update control.
+      guard let window = self.updateWindow else {
+        OIPGitHubOTA.log("update offer deferred while the application window is unavailable")
+        completion?("deferred")
+        return
+      }
       let alert = NSAlert()
       alert.messageText = "OIP-Update verfügbar"
       alert.informativeText = "Version \(manifest.version) ist verfügbar. Die signierte Aktualisierung wird heruntergeladen und nach dem Neustart installiert."
       alert.addButton(withTitle: "Jetzt aktualisieren")
       alert.addButton(withTitle: "Später")
-      guard alert.runModal() == .alertFirstButtonReturn else {
-        completion?("deferred")
-        return
+      alert.beginSheetModal(for: window) { response in
+        guard response == .alertFirstButtonReturn else {
+          completion?("deferred")
+          return
+        }
+        completion?("installing")
+        self.downloadAndInstall(manifest, archiveAsset: archiveAsset)
       }
-      completion?("installing")
-      self.downloadAndInstall(manifest, archiveAsset: archiveAsset)
     }
   }
 
@@ -566,11 +583,13 @@ private final class GitHubOTAUpdater {
 
   private func showFailure(_ message: String) {
     DispatchQueue.main.async {
+      OIPGitHubOTA.log(message)
+      guard let window = self.updateWindow else { return }
       let alert = NSAlert()
       alert.messageText = "OIP konnte nicht aktualisiert werden"
       alert.informativeText = message
       alert.addButton(withTitle: "OK")
-      alert.runModal()
+      alert.beginSheetModal(for: window, completionHandler: nil)
     }
   }
 }
@@ -578,6 +597,7 @@ private final class GitHubOTAUpdater {
 private enum TouchIdKeychain {
   private static let service = "org.openindustrial.oip.touch-id"
   private static let account = "operator-device-credential"
+  private(set) static var isAuthenticating = false
 
   static func handle(call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
@@ -631,17 +651,49 @@ private enum TouchIdKeychain {
     return status == errSecSuccess || status == errSecInteractionNotAllowed || status == errSecAuthFailed
   }
 
-  private static func createCredential(result: @escaping FlutterResult) {
+  /// Both authentication paths require a visible, focused OIP window. The
+  /// fallback for this biometric policy is the OIP one-time code form.
+  private static func authenticationContext(result: FlutterResult) -> LAContext? {
+    guard !isAuthenticating,
+          NSApp.isActive,
+          let window = NSApp.keyWindow as? MainFlutterWindow,
+          window.attachedSheet == nil else {
+      result(FlutterError(code: "TOUCH_ID_WINDOW_UNAVAILABLE",
+                          message: "Öffne das OIP-Fenster im Vordergrund und schließe andere Dialoge, bevor du Touch ID startest.",
+                          details: nil))
+      return nil
+    }
     let context = LAContext()
     var authError: NSError?
     guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &authError) else {
-      result(FlutterError(code: "TOUCH_ID_UNAVAILABLE", message: "Touch ID ist nicht verfügbar.", details: nil))
-      return
+      let detail = authError?.localizedDescription ?? "Touch ID ist nicht verfügbar."
+      result(FlutterError(code: "TOUCH_ID_UNAVAILABLE", message: detail, details: nil))
+      return nil
     }
+    context.localizedFallbackTitle = ""
+    isAuthenticating = true
+    return context
+  }
+
+  private static func authenticationError(_ error: Error?) -> FlutterError {
+    let code = (error as? LAError)?.code
+    let message: String
+    switch code {
+    case .systemCancel, .appCancel:
+      message = "macOS hat Touch ID abgebrochen. Lass OIP im Vordergrund und versuche es erneut."
+    default:
+      message = error?.localizedDescription ?? "Touch ID wurde abgebrochen."
+    }
+    return FlutterError(code: "TOUCH_ID_CANCELLED", message: message, details: nil)
+  }
+
+  private static func createCredential(result: @escaping FlutterResult) {
+    guard let context = authenticationContext(result: result) else { return }
     context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Touch ID für OIP aktivieren") { success, error in
       DispatchQueue.main.async {
+        defer { isAuthenticating = false }
         guard success else {
-          result(FlutterError(code: "TOUCH_ID_CANCELLED", message: error?.localizedDescription ?? "Touch ID wurde abgebrochen.", details: nil))
+          result(authenticationError(error))
           return
         }
         var bytes = [UInt8](repeating: 0, count: 32)
@@ -715,16 +767,12 @@ private enum TouchIdKeychain {
   }
 
   private static func readCredential(result: @escaping FlutterResult) {
-    let context = LAContext()
-    var authError: NSError?
-    guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &authError) else {
-      result(FlutterError(code: "TOUCH_ID_UNAVAILABLE", message: "Touch ID ist nicht verfügbar.", details: nil))
-      return
-    }
+    guard let context = authenticationContext(result: result) else { return }
     context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Bei OIP anmelden") { success, error in
       DispatchQueue.main.async {
+        defer { isAuthenticating = false }
         guard success else {
-          result(FlutterError(code: "TOUCH_ID_CANCELLED", message: error?.localizedDescription ?? "Touch ID wurde abgebrochen.", details: nil))
+          result(authenticationError(error))
           return
         }
         let protected = readItem(dataProtection: true, context: context)

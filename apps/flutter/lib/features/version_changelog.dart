@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../design_system/theme.dart';
 import '../models/app_metadata.dart';
+import 'settings/ota_update_control.dart';
 
 /// Opens the bundled release history without making a request to the OIP Core.
 /// This keeps version notes available when the server is offline.
@@ -14,6 +15,15 @@ class VersionChangelogDialog extends StatelessWidget {
   const VersionChangelogDialog({super.key});
 
   static const _releases = <_ReleaseNotes>[
+    _ReleaseNotes(
+      version: '0.3.35',
+      build: '38',
+      date: '18. November 2026',
+      changes: [
+        'Updateangebote warten, wenn macOS gerade Touch ID verwendet.',
+        'Die Versionsübersicht kann direkt nach signierten Updates suchen.',
+      ],
+    ),
     _ReleaseNotes(
       version: '0.3.34',
       build: '37',
@@ -248,11 +258,17 @@ class VersionChangelogDialog extends StatelessWidget {
             Divider(height: 1, color: scheme.outline),
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
-              child: Text(
-                'Die Versionshinweise sind in der App enthalten und benötigen keine Serververbindung.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: OipTokens.muted(context),
-                    ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Die Versionshinweise sind in der App enthalten und benötigen keine Serververbindung.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: OipTokens.muted(context),
+                        ),
+                  ),
+                  const OipOtaUpdateControl(),
+                ],
               ),
             ),
           ],
