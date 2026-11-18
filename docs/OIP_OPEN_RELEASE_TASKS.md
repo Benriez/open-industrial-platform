@@ -78,7 +78,13 @@ entries are retained as dated evidence and are not current-state claims.
   bundled executable signed. Its local archive carries the hardened runtime
   but cannot launch under the ad-hoc placeholder signature. The final Apple
   Distribution signed archive is still unverified and needs the operator's
-  certificate/profile.
+  certificate/profile. Persistent receipt:
+  `docs/evidence/oip-mas-package/mas-package.json`. It records source
+  `ae7dcb19dc83288ab529bc9bd9d176717a8e8e4c`, tree
+  `905742124c5d2127bc1a797c8a5e2a33a112ceb3`, App Store build `0.3.32+35`,
+  and a clean source tree at measurement time. The archive uses an ad-hoc
+  placeholder identity and its hardened launch result is not final
+  Apple-signing acceptance.
 - The biometric keychain item exists and macOS reports biometric capability.
   An end-to-end Touch ID sign-in after the Core restart has not been observed.
   The current local browser session is `login_required`; protected app data

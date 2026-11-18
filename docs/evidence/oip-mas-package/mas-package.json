@@ -19,13 +19,13 @@
       "--dart-define=OIP_API_URL=http://127.0.0.1:18808"
     ],
     "the_code": 0,
-    "the_error": "--- xcodebuild: WARNING: Using the first of multiple matching destinations:\n{ platform:macOS, arch:arm64, id:00006000-001208642121801E, name:My Mac }\n{ platform:macOS, arch:x86_64, id:00006000-001208642121801E, name:My Mac }"
+    "the_error": "ionCreateFromPath' was deprecated in macOS 10.10: SecKeychain is deprecated\n      SecTrustedApplicationCreateFromPath($0, &trustedApplication)\n      ^\n/Users/benny/Code/open-industrial-platform/apps/flutter/macos/Runner/MainFlutterWindow.swift:704:24: warning: 'SecAccessCreate' was deprecated in macOS 10.10: SecKeychain is deprecated\n    let accessStatus = SecAccessCreate(\n                       ^"
   },
   "the_quarantine_strip": {
     "the_code": 0
   },
   "the_checks": {
-    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20400 size=536 flags=0x2(adhoc) hashes=6+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=15d14c5be1f581a93b7bc720621c1bd7a3a281ad\nCandidateCDHashFull sha256=15d14c5be1f581a93b7bc720621c1bd7a3a281add8bce29de036843fda1fbabb\nHash choices=sha256\nCMSDigest=15d14c5be1f581a93b7bc720621c1bd7a3a281add8bce29de036843fda1fbabb\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=15d14c5be1f581a93b7bc720621c1bd7a3a281ad\nSignature=adhoc\nInfo.plist entries=27\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
+    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20400 size=984 flags=0x2(adhoc) hashes=20+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=635a5942e78636b92e552dd16394bb873881e2e4\nCandidateCDHashFull sha256=635a5942e78636b92e552dd16394bb873881e2e4e79c6f2205966bb2a0b02e0d\nHash choices=sha256\nCMSDigest=635a5942e78636b92e552dd16394bb873881e2e4e79c6f2205966bb2a0b02e0d\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=131072\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=635a5942e78636b92e552dd16394bb873881e2e4\nSignature=adhoc\nInfo.plist entries=34\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=25\nInternal requirements count=0 size=12",
     "the_signature_carries_the_hardened_runtime": false,
     "the_signature_is_ad_hoc": true,
     "the_signature_identity": "adhoc",
@@ -69,8 +69,8 @@
     "the_files_with_a_quarantine_attribute": [],
     "the_info_plist": {
       "the_bundle_identifier": "org.openindustrial.oipDashboard",
-      "the_version": "3",
-      "the_short_version": "0.3.0",
+      "the_version": "35",
+      "the_short_version": "0.3.32",
       "the_minimum_system": "10.14",
       "the_category": "public.app-category.utilities",
       "the_transport_security": {
@@ -78,21 +78,22 @@
       },
       "the_display_name": "Open Industrial Platform",
       "the_name": "oip_dashboard",
-      "the_copyright": "Copyright \u00a9 2026 Open Industrial Platform. All rights reserved."
+      "the_copyright": "Copyright \u00a9 2026 Open Industrial Platform. All rights reserved.",
+      "oip_github_ota_enabled": false
     },
     "the_icon_is_present": true,
     "the_unsigned_executables": []
   },
-  "the_tree_sha256": "dcc0edd46f33243695cc162dc56972832f3e200c056b646efd7a6a674c5de3ab",
-  "the_files": 44,
+  "the_tree_sha256": "83cdc527aae9a1a3e23c5a709c0356b027287084d205f79deb482c27831c45dc",
+  "the_files": 50,
   "the_store_assets": {
     "the_assets_are_present": true,
     "the_number_of_the_assets": 6,
     "the_assets": [
       {
         "the_file": "store-devices-1440x900.png",
-        "the_bytes": 116930,
-        "the_sha256": "016d067a6b91fea783f592a64f5a78aaa5bf7e1c11b00fc2e8d4258dd378c723",
+        "the_bytes": 117202,
+        "the_sha256": "bd481a4f8f3f41aba5bf17cf43f4ff52e2a5cff138481bd06a88bd2c0387d555",
         "the_width": 1440,
         "the_height": 900,
         "the_colour_type": 2,
@@ -127,8 +128,8 @@
       },
       {
         "the_file": "store-overview-1440x900.png",
-        "the_bytes": 148455,
-        "the_sha256": "6b33c54effca07a8c7f2717b17dab11c440bf466efb83d5e23e15f0f29405e5a",
+        "the_bytes": 149675,
+        "the_sha256": "01b4525b83728a8756b2f320c24124487556c6f1454e99feacc8207b75d77b77",
         "the_width": 1440,
         "the_height": 900,
         "the_colour_type": 2,
@@ -195,7 +196,7 @@
       "the archive of the distribution is built",
       "the signature of the archive carries the hardened runtime"
     ],
-    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20500 size=512 flags=0x10002(adhoc,runtime) hashes=5+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=ad0615c5c9156177c4643ee31afaa4ea3781bd43\nCandidateCDHashFull sha256=ad0615c5c9156177c4643ee31afaa4ea3781bd436ae4043a756d0d779804af4c\nHash choices=sha256\nCMSDigest=ad0615c5c9156177c4643ee31afaa4ea3781bd436ae4043a756d0d779804af4c\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=32768\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=ad0615c5c9156177c4643ee31afaa4ea3781bd43\nSignature=adhoc\nInfo.plist entries=27\nTeamIdentifier=not set\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=24\nInternal requirements count=0 size=12",
+    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20500 size=768 flags=0x10002(adhoc,runtime) hashes=13+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=86c6e0b002e62c2b9b698dfcc381de9e9106abdf\nCandidateCDHashFull sha256=86c6e0b002e62c2b9b698dfcc381de9e9106abdf57e490f5e920bf58209c0eaa\nHash choices=sha256\nCMSDigest=86c6e0b002e62c2b9b698dfcc381de9e9106abdf57e490f5e920bf58209c0eaa\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=131072\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=86c6e0b002e62c2b9b698dfcc381de9e9106abdf\nSignature=adhoc\nInfo.plist entries=34\nTeamIdentifier=not set\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=25\nInternal requirements count=0 size=12",
     "the_signature_carries_the_hardened_runtime": true,
     "the_entitlements": {
       "com.apple.security.app-sandbox": true,
@@ -206,13 +207,13 @@
       "the_present": true,
       "the_process_starts": false,
       "the_exit_code": -6,
-      "the_output": "ons/A/FlutterMacOS' (code signature in <4C4C4466-5555-3144-A10F-76C5F4F5F632> '/Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app/Contents/Frameworks/FlutterMacOS.framework/Versions/A/FlutterMacOS' not valid for use in process: mapping process and mapped file (non-platform) have different Team IDs), '/Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app/Contents/MacOS/Frameworks/FlutterMacOS.framework/Versions/A/FlutterMacOS' (no such file)\n",
+      "the_output": "ve/Products/Applications/oip_dashboard.app/Contents/MacOS/Frameworks/shared_preferences_foundation.framework/Versions/A/shared_preferences_foundation' (no such file), '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/shared_preferences_foundation.framework/Versions/A/shared_preferences_foundation' (no such file), '/System/Volumes/Preboot/Cryptexes/OS/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/shared_preferences_foundation.framework/Versions/A/shared_preferences_foundation' (no such file)\n",
       "the_note": "a hardened bundle that does not start under an ad-hoc signature needs a distribution-only build configuration"
     }
   },
   "the_status": "PASS",
-  "the_revision": "4bcfd280cfcaf9842164bf467fd997dd1100410e",
-  "the_tree": "cf40f28dda544922f810f7d0f74c264170542c47",
+  "the_revision": "ae7dcb19dc83288ab529bc9bd9d176717a8e8e4c",
+  "the_tree": "905742124c5d2127bc1a797c8a5e2a33a112ceb3",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-13T15:40:43Z"
+  "finished_utc": "2026-11-18T02:23:15Z"
 }
