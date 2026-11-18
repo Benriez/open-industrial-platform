@@ -1,11 +1,22 @@
 # OIP app completion: current acceptance state
 
-## Latest snapshot — 2026-11-18, v0.3.36+39 published
+## Latest snapshot — 2026-11-18, v0.3.36+39 installed
 
 [OIP 0.3.36](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.36)
-was published from the Mac as a signed OTA. The installed bundle still reported
-`0.3.35+38` after publication. GitHub's archive digest matched the local hash
+was published from the Mac as a signed OTA. GitHub's archive digest matched the local hash
 `c2913660268f174d323fb0b9c5e256b8247bb6a322ba4e7860f91915832368ac`.
+The authorized rollout verified the downloaded manifest against the installed
+app's pinned signing key and used the matching local archive after the archive
+download timed out. The previous app and LaunchAgent configuration are saved
+in `/private/tmp/oip-rollout-0.3.36.t6b5DB`. Strict signature verification passed
+for installed build 39. The new process connects to the existing local API
+relay at `127.0.0.1:18856`. Both LaunchAgent configurations match their backups.
+
+An authorized API check after installation returned 38 fresh metrics, three
+LAN topology links and 18 OPC UA nodes on each host. It received 25 snapshots
+in 34.2 seconds, with zero errors and a longest gap of 2.536 seconds. This was
+a separate API session. A new Touch ID sign-in and the authenticated native
+views still await verification.
 
 The authenticated installed app reproduced the stale OPC UA view and empty
 source selector during an intermittent connection. An independent native API
@@ -28,8 +39,7 @@ in the `fix/oip-live-opcua-source-recovery` worktree.
 A separate build 38 crash recurred while dragging the window edge. The
 macOS report records `EXC_BAD_ACCESS` at `0x50` during AppKit live resize.
 The matching FlutterMacOS binary places frame 2 inside
-`-[FlutterViewController updateSemantics:]`. Native resize and the live
-workstation views on installed build 39 remain open for acceptance.
+`-[FlutterViewController updateSemantics:]`. Native resize remains open.
 
 ## Previous snapshot — 2026-11-18, v0.3.35+38 installed
 
