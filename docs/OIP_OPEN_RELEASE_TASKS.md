@@ -7,11 +7,20 @@ next iteration.
 ## Verified
 
 - [x] Installed `/Applications/Open Industrial Platform.app` is version
-  `0.3.28+31`; its executable SHA-256 is
-  `5285535a29e4ff138e595ed39bb0e67b5bbbb987c02c2960df837ab4f8e3915c`.
-- [x] Installed source revision is `b0ad575` (`v0.3.28`). Local `main` now
-  contains two later commits, including the OPC-UA duplicate-load fix, and is
-  clean at `42f7362`. The fix is not in the installed `0.3.28+31` app.
+  `0.3.30+33`; its executable SHA-256 is
+  `d9d027dbe418f472bb5fe65db3032464fcc0c274cfb0259547f2a74e91fc4bf0`.
+  Strict bundle signature verification passed. Previous app and OIP
+  LaunchAgent are preserved in `/private/tmp/oip-v0330-rollout-backup/`; the
+  LaunchAgent hash is unchanged.
+- [x] Source commit `7b046e6b3f83716f747f9d4b6129b778e8783f61` is pushed to
+  `origin/main`; `v0.3.30` is published as a signed OTA release without
+  GitHub Actions. The full canonical gate passes on that exact commit/tree
+  (`565e2edc99df7c65292834656cde4cdf2338f4d0`): 403 Flutter tests passed,
+  0 failed, 1 skipped; browser 189/189; 13 screenshots; visual comparisons
+  passed; local and served `main.dart.js` SHA-256 is
+  `738fc2805322223bad7625318863cde8b21d908549ad607cbdb6791b3bccd466`.
+  Receipt:
+  `target/oip-ota-manual-check-gate-2026-11-18/commit-7b046e6/canonical-ui-gate.json`.
 - [x] Current local relay on `127.0.0.1:18856` answered ten consecutive
   anonymous `/api/v2/browser/session` requests with HTTP 200 in 11.2–107.1 ms.
   The response is `login_required`; this checks transport only and does not
@@ -46,16 +55,27 @@ next iteration.
   This is not yet live resize/crash acceptance; the installed app remains
   `0.3.28+31` until a new build is rolled out and exercised.
 - [x] Added a manual update check to Settings → About for direct macOS OTA
-  builds. The full canonical gate passes on this candidate and proves that the
-  served web bundle matches the local build. Receipt:
-  `target/oip-ota-manual-check-gate-2026-11-18/oip-canonical-cli-gate-fixed/canonical-ui-gate.json`.
-  The candidate is not yet published or installed.
+  builds. The updater bypasses its six-hour automatic check window on manual
+  requests. Unit/widget coverage passes. A live tap is still unverified because
+  the installed app reports that management access is not authorized after
+  restart.
+
+- [x] Live installed UI showed 3 registered devices and 3 connected sources.
+  The Network & VPN workstation showed 0 topology links and 3 unknown
+  relations. These counts do not prove fresh telemetry metrics.
+- [x] Ten consecutive loopback `/api/v2/browser/session` requests returned
+  HTTP 200. This proves the local transport responds; the session was
+  unauthenticated and does not prove protected telemetry or OPC-UA access.
 
 ## Still open
 
-- [ ] Publish the verified manual-check candidate through the local signed OTA
-  release path, then verify that the installed app's Settings → About button
-  finds it and the native install prompt appears.
+- [ ] **Authentication after restart:** restore the existing management
+  session with the configured Touch ID flow, without requiring a new one-time
+  code; the installed Settings screen currently reports unauthorized access.
+- [ ] **Manual OTA control live check:** authenticate, tap Settings → About →
+  “Nach Updates suchen”, and verify the current-version result. The widget and
+  updater logic pass tests; the protected Settings screen prevented this live
+  click.
 
 - [ ] **Authenticated physical-device acceptance:** verify fresh telemetry for
   `bodi-pi` and `bodi-pc` in the installed app, including metric names, values
@@ -65,6 +85,9 @@ next iteration.
   read a selected node and confirm its value and timestamp in the installed
   app. The live Core's configured browse bindings and prior node probes do not
   prove the current app view works.
+- [ ] **Infrastructure topology:** connect the three registered devices to
+  their correct source/network relationships. The live view currently reports
+  zero topology links and three unknown relations.
 - [ ] **Operator visual acceptance:** technical comparison passed; the
   canonical baseline still requires operator acceptance.
 - [ ] **Distribution readiness:** the installed app has no Developer ID Team ID
@@ -89,12 +112,12 @@ next iteration.
   value-read traffic on entry. The two callers now own sequencing and issue one
   page request. This removes unnecessary load but does not yet prove it was the
   only cause of the reported live API staleness.
-- The running app's Flutter window could not be inspected: the available
-  accessibility snapshot was only 90×97 pixels and contained no Flutter
-  content. Do not infer whether the app itself is authenticated from a separate
-  anonymous session request.
-- No private SSH, deployment, personal database change or GitHub Actions run
-  was performed during this acceptance check.
+- SSH checks on `bodi-pi` and `bodi-pc` found the `oip-server` process on the Pi;
+  the three guessed systemd unit names were inactive on both devices. This does
+  not establish whether their OIP collectors are configured under other unit
+  names.
+- No personal installation database or schema was changed. GitHub Actions was
+  not started.
 - Keep the goal open until installed-app telemetry and OPC-UA are verified
   against the physical infrastructure and all remaining release requirements
   are satisfied.
