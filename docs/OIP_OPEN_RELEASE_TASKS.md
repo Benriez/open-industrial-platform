@@ -33,6 +33,29 @@ entries are retained as dated evidence and are not current-state claims.
   telemetry variables marked read-only and designated operator variables
   writable. These direct service/DB checks do not prove the current installed
   app's authenticated screens.
+- A live recheck found the Core, private API relay, and Pi OPC-UA daemon active
+  as `systemd --user` services on the Pi (all report zero restarts); the PC
+  OPC-UA daemon is active as a user service there. System-wide `systemctl`
+  reports them inactive because they are user units; `systemctl --user` is the
+  authoritative check.
+- The live Core database has an enabled SSH connection and source placement
+  for each of `bodi-pi`, `bodi-pc`, and `OpenWrt Router`, all at site `pi-site`.
+  Their most recent verified connection records were about 30, 30, and 3
+  seconds old in the check. Applying the Core's freshness, site, address-match,
+  and neighbor-state rules to those saved records yields three LAN links:
+  Pi–PC, Pi–router, and PC–router. This proves the Core has qualifying link
+  evidence; the authenticated app projection still needs an end-to-end check.
+- Direct OPC-UA browsing over the loopback-only services succeeded on Pi port
+  4842 and PC port 4840. Pi returned live CPU/memory, CPU and SoC temperature,
+  and `vc4-drm` GPU identity; PC returned live CPU/memory, CPU temperature,
+  `amdgpu` identity, and GPU temperature. Telemetry variable `AccessLevel=1`
+  is read-only; `operator.maintenance` and `operator.note` report
+  `AccessLevel=3` (read/write). No device values were written.
+- The router's source placement and telemetry connection exist, but its stored
+  inventory description still says “SSH monitoring connection not configured
+  yet.” That stale text should be corrected through the authorized inventory
+  workflow after the installed app session is restored; no database row was
+  edited directly.
 - `v0.3.32` was published from this Mac with `tools/oip_ota_release.sh`; no
   GitHub Actions workflow was used. OTA manifest signature and archive digest
   verified (`f41b9eb63261499dc72898f49f48427e1200e53793cc04c518c41d46851f8418`).
@@ -45,6 +68,17 @@ entries are retained as dated evidence and are not current-state claims.
   `127.0.0.1:18856/api/v2/browser/session` returned HTTP 200 (12.7–204.2 ms).
   The response is `login_required`; transport is healthy, but this does not
   establish authenticated access from the installed app.
+- A longer anonymous relay check completed 90/90 HTTP 200 requests over 3m07s
+  (median 90.2 ms, maximum 102.4 ms). This argues against a persistent relay
+  stall during that window, but it did not browse OPC-UA through the
+  authenticated app session.
+- Current App Store preflight for `0.3.32+35` passed the repository package
+  checker: direct OTA disabled, sandbox and network-client entitlements
+  present, six valid listing screenshots, no quarantined files, and every
+  bundled executable signed. Its local archive carries the hardened runtime
+  but cannot launch under the ad-hoc placeholder signature. The final Apple
+  Distribution signed archive is still unverified and needs the operator's
+  certificate/profile.
 - The biometric keychain item exists and macOS reports biometric capability.
   An end-to-end Touch ID sign-in after the Core restart has not been observed.
   The current local browser session is `login_required`; protected app data
@@ -59,6 +93,8 @@ entries are retained as dated evidence and are not current-state claims.
 - [ ] Confirm actual Touch ID sign-in in the app and protected session state.
 - [ ] Confirm physical Pi/PC telemetry and live OPC-UA browsing in the
   authenticated installed app.
+- [ ] Correct the router inventory description through the authorized app
+  workflow; the live connection exists, but the saved note contradicts it.
 - [ ] Operator visual acceptance and repeated native window resize/crash check.
 - [ ] App Store upload readiness is prepared in source/docs, but cannot be
   proven for distribution until an Apple Distribution identity and required
