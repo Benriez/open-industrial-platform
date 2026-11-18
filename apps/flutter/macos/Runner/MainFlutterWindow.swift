@@ -5,6 +5,8 @@ import LocalAuthentication
 import Security
 
 class MainFlutterWindow: NSWindow {
+  private let deferredContentResize = DeferredContentResize()
+
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController()
     let windowFrame = self.frame
@@ -42,6 +44,11 @@ class MainFlutterWindow: NSWindow {
 
     super.awakeFromNib()
 
+    let notifications = NotificationCenter.default
+    notifications.addObserver(self, selector: #selector(willStartLiveResize(_:)),
+                              name: NSWindow.willStartLiveResizeNotification, object: self)
+    notifications.addObserver(self, selector: #selector(didEndLiveResize(_:)),
+                              name: NSWindow.didEndLiveResizeNotification, object: self)
     placeOnVisibleScreen()
     OIPPiTunnelManager.shared.startIfEnabled()
 
@@ -52,6 +59,16 @@ class MainFlutterWindow: NSWindow {
         GitHubOTAUpdater.shared.checkForUpdate()
       }
     }
+  }
+
+  @objc private func willStartLiveResize(_ notification: Notification) {
+    if let view = contentView {
+      deferredContentResize.begin(in: view)
+    }
+  }
+
+  @objc private func didEndLiveResize(_ notification: Notification) {
+    deferredContentResize.end()
   }
 
   /// The window of the bundle has to be visible on a screen of the machine.

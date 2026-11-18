@@ -16,6 +16,14 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.37',
+      build: '40',
+      date: '18. November 2026',
+      changes: [
+        'Auf dem Mac passt sich der Fensterinhalt an, sobald du den Fensterrand loslässt.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.36',
       build: '39',
       date: '18. November 2026',
