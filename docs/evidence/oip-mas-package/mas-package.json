@@ -19,13 +19,13 @@
       "--dart-define=OIP_API_URL=http://127.0.0.1:18808"
     ],
     "the_code": 0,
-    "the_error": "ionCreateFromPath' was deprecated in macOS 10.10: SecKeychain is deprecated\n      SecTrustedApplicationCreateFromPath($0, &trustedApplication)\n      ^\n/Users/benny/Code/open-industrial-platform/apps/flutter/macos/Runner/MainFlutterWindow.swift:704:24: warning: 'SecAccessCreate' was deprecated in macOS 10.10: SecKeychain is deprecated\n    let accessStatus = SecAccessCreate(\n                       ^"
+    "the_error": "framework/Versions/A/Resources/flutter_assets/shaders/ink_sparkle.frag' is located outside of the allowed root paths.\n\nwarning: Stale file '/Users/benny/Library/Developer/Xcode/DerivedData/Runner-fjqieohbiptgqggswwdygknokurx/Build/Intermediates.noindex/ArchiveIntermediates/Runner/BuildProductsPath/Release/FlutterMacOS.framework/Versions/A/FlutterMacOS' is located outside of the allowed root paths."
   },
   "the_quarantine_strip": {
     "the_code": 0
   },
   "the_checks": {
-    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20400 size=984 flags=0x2(adhoc) hashes=20+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=635a5942e78636b92e552dd16394bb873881e2e4\nCandidateCDHashFull sha256=635a5942e78636b92e552dd16394bb873881e2e4e79c6f2205966bb2a0b02e0d\nHash choices=sha256\nCMSDigest=635a5942e78636b92e552dd16394bb873881e2e4e79c6f2205966bb2a0b02e0d\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=131072\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=635a5942e78636b92e552dd16394bb873881e2e4\nSignature=adhoc\nInfo.plist entries=34\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=25\nInternal requirements count=0 size=12",
+    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20400 size=984 flags=0x2(adhoc) hashes=20+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=fcbb8ac53ad40d51815bd952e14a0886b5862770\nCandidateCDHashFull sha256=fcbb8ac53ad40d51815bd952e14a0886b5862770e383e6aaa273e122afe7725b\nHash choices=sha256\nCMSDigest=fcbb8ac53ad40d51815bd952e14a0886b5862770e383e6aaa273e122afe7725b\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=131072\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=fcbb8ac53ad40d51815bd952e14a0886b5862770\nSignature=adhoc\nInfo.plist entries=34\nTeamIdentifier=not set\nSealed Resources version=2 rules=13 files=25\nInternal requirements count=0 size=12",
     "the_signature_carries_the_hardened_runtime": false,
     "the_signature_is_ad_hoc": true,
     "the_signature_identity": "adhoc",
@@ -69,8 +69,8 @@
     "the_files_with_a_quarantine_attribute": [],
     "the_info_plist": {
       "the_bundle_identifier": "org.openindustrial.oipDashboard",
-      "the_version": "35",
-      "the_short_version": "0.3.32",
+      "the_version": "36",
+      "the_short_version": "0.3.33",
       "the_minimum_system": "10.14",
       "the_category": "public.app-category.utilities",
       "the_transport_security": {
@@ -84,7 +84,7 @@
     "the_icon_is_present": true,
     "the_unsigned_executables": []
   },
-  "the_tree_sha256": "83cdc527aae9a1a3e23c5a709c0356b027287084d205f79deb482c27831c45dc",
+  "the_tree_sha256": "e9821e09b1bbb43df7c7841e92736089dd1209392adfc7665f23da2fda1ffd7c",
   "the_files": 50,
   "the_store_assets": {
     "the_assets_are_present": true,
@@ -196,7 +196,7 @@
       "the archive of the distribution is built",
       "the signature of the archive carries the hardened runtime"
     ],
-    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20500 size=768 flags=0x10002(adhoc,runtime) hashes=13+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=86c6e0b002e62c2b9b698dfcc381de9e9106abdf\nCandidateCDHashFull sha256=86c6e0b002e62c2b9b698dfcc381de9e9106abdf57e490f5e920bf58209c0eaa\nHash choices=sha256\nCMSDigest=86c6e0b002e62c2b9b698dfcc381de9e9106abdf57e490f5e920bf58209c0eaa\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=131072\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=86c6e0b002e62c2b9b698dfcc381de9e9106abdf\nSignature=adhoc\nInfo.plist entries=34\nTeamIdentifier=not set\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=25\nInternal requirements count=0 size=12",
+    "the_signature_flags": "Executable=/Users/benny/Code/open-industrial-platform/target/oip-mas-archive/oip_dashboard.xcarchive/Products/Applications/oip_dashboard.app/Contents/MacOS/oip_dashboard\nIdentifier=org.openindustrial.oipDashboard\nFormat=app bundle with Mach-O universal (x86_64 arm64)\nCodeDirectory v=20500 size=768 flags=0x10002(adhoc,runtime) hashes=13+7 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=1705216\nHash type=sha256 size=32\nCandidateCDHash sha256=c2f38b060f83f4dcad63832436a33ecd26c66dd8\nCandidateCDHashFull sha256=c2f38b060f83f4dcad63832436a33ecd26c66dd89ca0c9ca13f57d54659d8c17\nHash choices=sha256\nCMSDigest=c2f38b060f83f4dcad63832436a33ecd26c66dd89ca0c9ca13f57d54659d8c17\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=131072\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=c2f38b060f83f4dcad63832436a33ecd26c66dd8\nSignature=adhoc\nInfo.plist entries=34\nTeamIdentifier=not set\nRuntime Version=26.5.0\nSealed Resources version=2 rules=13 files=25\nInternal requirements count=0 size=12",
     "the_signature_carries_the_hardened_runtime": true,
     "the_entitlements": {
       "com.apple.security.app-sandbox": true,
@@ -212,8 +212,8 @@
     }
   },
   "the_status": "PASS",
-  "the_revision": "ae7dcb19dc83288ab529bc9bd9d176717a8e8e4c",
-  "the_tree": "905742124c5d2127bc1a797c8a5e2a33a112ceb3",
+  "the_revision": "80b5666134cca03d7bb811828b7055f7f29ce49e",
+  "the_tree": "8a9f53a73812120f40cedef56f0ea8bf63735a74",
   "the_working_tree_is_clean": true,
-  "finished_utc": "2026-11-18T02:23:15Z"
+  "finished_utc": "2026-11-18T03:11:07Z"
 }

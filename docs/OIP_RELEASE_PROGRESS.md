@@ -8,6 +8,45 @@ Scope of the release goal: a fully locally usable OIP application with secure br
 a real multi-infrastructure view, working Flutter device management, verified SSH onboarding,
 real monitoring, consistent Spectrum UX and reliable macOS operation.
 
+## Latest installed state — v0.3.33+36 (2026-11-18)
+
+The false `API STALE / RECONNECT` state is fixed: `login_required` now renders as
+`ANMELDUNG ERFORDERLICH`, and reconnect is reserved for an actual reconnecting
+transport. The change is commit `80b5666134cca03d7bb811828b7055f7f29ce49e`,
+pushed to `main` and published as signed OTA `v0.3.33`; it is installed at
+`/Applications/Open Industrial Platform.app` as build 36 and passes strict
+bundle signature verification. A duplicate stale `~/Applications` copy was
+preserved under `~/Library/Application Support/OIP/rollbacks/`.
+
+The complete canonical UI gate passed on that exact source: 405 Flutter tests
+passed, 0 failed, 1 skipped; browser 191 checks passed, 0 failed; 13 screenshots;
+visual comparisons and negative controls passed. Source tree
+`8a9f53a73812120f40cedef56f0ea8bf63735a74`; local and served browser bundle
+SHA-256 `08353417420d73e46d25dea9f229f8952143eb4475351036868ba6d03bddecf9`.
+Receipt: `target/oip-login-state-regression-v0.3.33/oip_canonical_ui_gate/report.json`.
+Operator visual approval remains pending.
+
+The installed app is currently unauthenticated. The local API relay returned
+90/90 HTTP 200 session responses over three minutes, each truthfully reporting
+`login_required`; this proves transport availability while signed out, not access
+to protected telemetry or OPC-UA screens. Pi/PC telemetry and their OPC-UA
+services have separate live service/database evidence in the preceding entry,
+but the authenticated installed-app views have not been observed. No login
+code was generated or displayed.
+
+The App Store checker measured build `0.3.33+36`, but its hardened ad-hoc archive
+launch probe reported a missing `shared_preferences_foundation` path even
+though that framework binary is present in the archive. Treat this as unresolved
+packaging evidence, not a Store-ready result. Apple Distribution signing and
+Store upload are still unverified; no Actions workflow ran.
+
+**Still open:** an authenticated installed-app session and the resulting live
+telemetry/OPC-UA/topology screens; correcting the stale router inventory note;
+registering the verified Hue Bridge (identity only until physically paired);
+operator visual acceptance; native resize/crash acceptance; and resolving the
+App Store archive launch/signing evidence. No personal database migration or
+schema 7 activation was performed.
+
 ## 1. Canonical state
 
 ### GitHub repository and first OTA release (2026-11-15)

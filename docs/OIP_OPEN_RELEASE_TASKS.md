@@ -1,6 +1,30 @@
 # OIP app completion: current acceptance state
 
-## Current snapshot — 2026-11-18
+## Latest snapshot — 2026-11-18, v0.3.33+36
+
+The false `API STALE / RECONNECT` warning is fixed and the signed OTA is
+installed at `/Applications/Open Industrial Platform.app`. Full canonical gate
+passed on source `80b5666134cca03d7bb811828b7055f7f29ce49e` (tree
+`8a9f53a73812120f40cedef56f0ea8bf63735a74`): 405 Flutter tests passed, 0
+failed, 1 skipped; browser 191/191; 13 captures; visual comparisons passed;
+local/served `main.dart.js` SHA-256
+`08353417420d73e46d25dea9f229f8952143eb4475351036868ba6d03bddecf9`. OTA
+`v0.3.33` was published directly without GitHub Actions and installed as build
+36; strict code-signature verification passed. The relay returned 90/90 HTTP
+200 session responses over three minutes while signed out. The app correctly
+shows `ANMELDUNG ERFORDERLICH` instead of a false stale-API warning.
+
+**Still open:** authenticated Touch ID/session proof and the installed-app
+telemetry, OPC-UA and topology views; router inventory wording; Hue Bridge
+identity registration; operator visual acceptance and native resize/crash
+acceptance. App Store preparation is not a verified upload artifact: the
+ad-hoc hardened archive launch probe reports a missing framework path although
+the framework binary is present, and an Apple Distribution identity is not
+available in the current preflight. The checker receipt is
+`docs/evidence/oip-mas-package/mas-package.json`. No GitHub Actions run, personal
+database migration or schema 7 activation occurred.
+
+## Prior snapshot — 2026-11-18
 
 This section supersedes the older version and topology counts below. Those
 entries are retained as dated evidence and are not current-state claims.
