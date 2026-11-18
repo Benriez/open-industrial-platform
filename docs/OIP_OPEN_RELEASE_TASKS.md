@@ -56,6 +56,11 @@ entries are retained as dated evidence and are not current-state claims.
   yet.” That stale text should be corrected through the authorized inventory
   workflow after the installed app session is restored; no database row was
   edited directly.
+- A live read-only request to `http://192.168.1.131/api/config` returned a Hue
+  Bridge (`BSB002`, bridge ID `001788FFFE48E917`, software `1978688000`, API
+  `1.78.0`). The bridge is not yet registered in OIP. Inventory registration
+  can use the measured identity; reading lights requires a Hue API token
+  created by pressing the bridge button, which has not been done.
 - `v0.3.32` was published from this Mac with `tools/oip_ota_release.sh`; no
   GitHub Actions workflow was used. OTA manifest signature and archive digest
   verified (`f41b9eb63261499dc72898f49f48427e1200e53793cc04c518c41d46851f8418`).
@@ -101,6 +106,9 @@ entries are retained as dated evidence and are not current-state claims.
   authenticated installed app.
 - [ ] Correct the router inventory description through the authorized app
   workflow; the live connection exists, but the saved note contradicts it.
+- [ ] Register the verified Hue Bridge in OIP inventory. Keep it identity-only
+  until the operator pairs it with the physical bridge button; no simulated
+  lights or measurements are acceptable.
 - [ ] Operator visual acceptance and repeated native window resize/crash check.
 - [ ] App Store upload readiness is prepared in source/docs, but cannot be
   proven for distribution until an Apple Distribution identity and required
