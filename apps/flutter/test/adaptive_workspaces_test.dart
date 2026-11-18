@@ -200,6 +200,8 @@ void main() {
       await navigate(tester, 5);
       expect(
           find.byKey(const Key('settings-adaptive-inspector')), findsNothing);
+      await tester.tap(find.byKey(const Key('settings-section-application')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('settings-refresh')));
       await tester.pumpAndSettle();
       controller.selectInfrastructure(
