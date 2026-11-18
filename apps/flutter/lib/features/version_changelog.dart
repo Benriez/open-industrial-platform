@@ -15,6 +15,14 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.33',
+      build: '36',
+      date: '18. November 2026',
+      changes: [
+        'Der Verbindungsstatus unterscheidet eine erforderliche Anmeldung von einem API-Ausfall.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.32',
       build: '35',
       date: '18. November 2026',

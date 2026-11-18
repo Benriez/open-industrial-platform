@@ -112,6 +112,8 @@ try {
     .waitFor({ timeout: 120000 });
   const anonymous = await snapshot();
   check('anonymous real mode requires operator login', anonymous.includes('Lokale Operator-Anmeldung'));
+  check('healthy anonymous API identifies the required login', anonymous.includes('ANMELDUNG ERFORDERLICH'));
+  check('required login is not reported as a stale API', !anonymous.includes('API STALE / RECONNECT'));
   check('anonymous state never restores unified managed content', !anonymous.includes('UNIFIED INFRASTRUCTURE VIEW'));
   for (const marker of overviewForbidden) {
     check(`anonymous state has no legacy marker ${marker}`, !anonymous.includes(marker));

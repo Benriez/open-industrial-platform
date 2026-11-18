@@ -294,6 +294,7 @@ String apiConnectionLabel(OipController controller) =>
     switch (controller.connection) {
       'live' => 'API CONNECTED',
       'connecting' => 'API VERBINDET',
+      'login_required' => 'ANMELDUNG ERFORDERLICH',
       'identity-required' => 'IDENTITÄT ERFORDERLICH',
       'context-unsupported' => 'KEIN V2-KONTEXT',
       _ => 'API STALE / RECONNECT',
@@ -303,7 +304,13 @@ StatusPill apiConnectionStatus(
         BuildContext context, OipController controller) =>
     StatusPill(
       apiConnectionLabel(controller),
-      color: OipTokens.statusColor(
-          context, controller.connection == 'live' ? 'connected' : 'degraded'),
+      color: OipTokens.statusColor(context, switch (controller.connection) {
+        'live' => 'connected',
+        'connecting' => 'connecting',
+        'reconnecting' => 'degraded',
+        'login_required' || 'identity-required' || 'context-unsupported' =>
+          'info',
+        _ => 'degraded',
+      }),
       showDot: true,
     );

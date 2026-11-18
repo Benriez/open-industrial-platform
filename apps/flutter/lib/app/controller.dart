@@ -72,8 +72,10 @@ class OipController extends ChangeNotifier {
   }
 
   bool get stale =>
-      connection != 'live' ||
-      (!infrastructure.ready && snapshot?.system.opcua != 'connected');
+      connection == 'reconnecting' ||
+      (connection == 'live' &&
+          !infrastructure.ready &&
+          snapshot?.system.opcua != 'connected');
 
   bool get hasAuthorizedContext => infrastructure.ready;
 
