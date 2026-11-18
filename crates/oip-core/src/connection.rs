@@ -275,6 +275,11 @@ pub struct ConnectionAttempt {
     pub at_ms: i64,
     pub stage: ConnectionStage,
     pub error: Option<ConnectionFault>,
+    /// Latest bounded neighbor-table evidence from a successful host poll.
+    /// Kept on the replaceable attempt record so the verified host identity
+    /// can remain stable while observed network state refreshes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub neighbors: Option<Vec<NetworkNeighborInformation>>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]

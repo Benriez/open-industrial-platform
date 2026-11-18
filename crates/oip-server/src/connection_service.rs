@@ -186,6 +186,7 @@ impl ConnectionHub {
                 at_ms: now_ms(),
                 stage: p.stage,
                 error: p.error,
+                neighbors: None,
             };
             if state.connection_attempt(attempt, success).await.is_err() {
                 tracing::error!(
@@ -843,6 +844,7 @@ pub async fn monitor(state: AppState, c: DeviceConnectionRecord, stop: Cancellat
                             at_ms: info.captured_at_ms,
                             stage: ConnectionStage::VerificationComplete,
                             error: None,
+                            neighbors: Some(info.neighbors.clone()),
                         },
                         true,
                     )
@@ -862,6 +864,7 @@ pub async fn monitor(state: AppState, c: DeviceConnectionRecord, stop: Cancellat
                             at_ms: at,
                             stage: ConnectionStage::Failed,
                             error: Some(e.clone()),
+                            neighbors: None,
                         },
                         false,
                     )
@@ -920,6 +923,7 @@ pub async fn supervise(
                         device_id: id.clone(), endpoint: c.endpoint.clone(), at_ms: at,
                         stage: ConnectionStage::Failed,
                         error: Some(ConnectionFault {code: "SSH_COLLECTOR_STOPPED".into(), message: "Collector stopped unexpectedly; inspect and explicitly reapply monitoring configuration".into()}),
+                        neighbors: None,
                     }, false).await;
                     let _ = state
                         .ingest_for(

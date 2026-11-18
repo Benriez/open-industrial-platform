@@ -237,6 +237,9 @@ impl SqliteStore {
             c.last_error = attempt.error.clone();
             if success {
                 c.last_success_ms = Some(attempt.at_ms);
+                if let Some(neighbors) = &attempt.neighbors {
+                    c.identity.neighbors = neighbors.clone();
+                }
             }
             tx.execute(
                 "UPDATE device_connections SET payload_json=?1 WHERE device_id=?2",
