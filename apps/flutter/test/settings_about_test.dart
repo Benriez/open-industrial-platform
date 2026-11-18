@@ -8,17 +8,14 @@ import 'package:oip_dashboard/models/app_metadata.dart';
 import 'package:oip_dashboard/services/api.dart';
 
 // Reuses the fixture harness of the Settings workstation suite: it wires a
-// contract fixture controller, logs the shell in and opens the Settings
-// workstation, whose default section is "Application" — where the About block
-// lives. Only the bootstrap helper is imported so this file keeps its own
-// main().
+// contract fixture controller, logs the shell in and opens the
+// Core-Einstellungen section, where an authorized operator also sees About.
 import 'settings_workstation_test.dart'
     show FixtureSettingsApi, bootstrapSettings;
 
 void main() {
   testWidgets('The Settings workstation shows the client identity (About)',
       (tester) async {
-    // The Application settings section is the default when Settings opens.
     await bootstrapSettings(tester);
 
     final header = find.text('About');

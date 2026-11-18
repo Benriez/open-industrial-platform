@@ -44,8 +44,8 @@ IconData settingsCategoryIcon(SettingsCategory category) => switch (category) {
 List<SettingsSection> settingsSections(SettingsCategory category) =>
     switch (category) {
       SettingsCategory.general => const [
-          SettingsSection.application,
           SettingsSection.preferences,
+          SettingsSection.application,
         ],
       SettingsCategory.mcpAgents => const [
           SettingsSection.mcpServer,
@@ -84,7 +84,7 @@ List<SettingsSection> settingsSections(SettingsCategory category) =>
     };
 
 String settingsSectionLabel(SettingsSection section) => switch (section) {
-      SettingsSection.application => 'Application',
+      SettingsSection.application => 'Core-Einstellungen',
       SettingsSection.preferences => 'Appearance & Preferences',
       SettingsSection.mcpServer => 'MCP Server',
       SettingsSection.clientConfiguration => 'Client Configuration',

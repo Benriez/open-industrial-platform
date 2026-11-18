@@ -218,6 +218,9 @@ check('the answer of the Core is the same in the scope of the organization',
 // The workstation of the settings.
 await page.getByRole('button', { name: 'Navigation Einstellungen' }).click({ force: true });
 await page.waitForTimeout(4000);
+await page.getByRole('button', {name: 'Settings-Bereich Core-Einstellungen'})
+  .first().click({force: true});
+await page.waitForTimeout(1200);
 
 // The structure of the navigation, so a reader can see how the surface
 // publishes the state of the selection.

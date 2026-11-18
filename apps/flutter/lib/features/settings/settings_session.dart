@@ -43,8 +43,8 @@ enum SettingsMobilePane { navigation, workspace, inspector }
 /// is retained here. Data is re-read when the module is entered again.
 class SettingsWorkspaceSession {
   SettingsCategory category = SettingsCategory.general;
-  SettingsSection section = SettingsSection.application;
-  SettingsMobilePane mobilePane = SettingsMobilePane.navigation;
+  SettingsSection section = SettingsSection.preferences;
+  SettingsMobilePane mobilePane = SettingsMobilePane.workspace;
   String? selectedTool;
   String? selectedSetting;
   String toolSearch = '';
@@ -55,7 +55,7 @@ class SettingsWorkspaceSession {
   void selectCategory(SettingsCategory value) {
     category = value;
     section = switch (value) {
-      SettingsCategory.general => SettingsSection.application,
+      SettingsCategory.general => SettingsSection.preferences,
       SettingsCategory.mcpAgents => SettingsSection.mcpServer,
       SettingsCategory.infrastructure => SettingsSection.organizations,
       SettingsCategory.dataStorage => SettingsSection.sqlite,

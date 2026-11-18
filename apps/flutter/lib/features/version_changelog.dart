@@ -20,6 +20,7 @@ class VersionChangelogDialog extends StatelessWidget {
       build: '41',
       date: '18. November 2026',
       changes: [
+        'Die Einstellungen öffnen zuerst die lokalen App-Präferenzen.',
         'App-Version und Updates sind in den Einstellungen ohne Plattformrechte zugänglich.',
         'Bei verweigertem Management-Zugriff führt ein Link direkt zu den lokalen Updates.',
       ],

@@ -231,6 +231,7 @@ try {
   // 2. the write path does not exist: the settings are offline administration
   //    and the surface carries no save button.
   await openCategory('General');
+  await openSection('Core-Einstellungen');
   await scrollToTheTop();
   await waitForNameContaining('OFFLINE ADMINISTRATION REQUIRED');
   await waitForNameContaining('Kein Browser-Save');

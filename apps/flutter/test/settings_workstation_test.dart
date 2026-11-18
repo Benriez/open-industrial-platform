@@ -86,6 +86,7 @@ Future<({FixtureSettingsApi api, OipController controller})> bootstrapSettings(
   Size size = const Size(1440, 1000),
   FixtureSettingsApi? api,
   bool withSnapshot = true,
+  bool openCoreSettings = true,
 }) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = size;
@@ -111,6 +112,7 @@ Future<({FixtureSettingsApi api, OipController controller})> bootstrapSettings(
   }
   await tester.tap(find.byKey(const Key('nav-5')));
   await tester.pumpAndSettle();
+  if (openCoreSettings) await section(tester, SettingsSection.application);
   addTearDown(() async {
     await tester.pumpWidget(const SizedBox());
     controller.dispose();
@@ -121,22 +123,14 @@ Future<({FixtureSettingsApi api, OipController controller})> bootstrapSettings(
   return (api: client, controller: controller);
 }
 
-Future<void> category(WidgetTester tester, SettingsCategory value) async {
-  await tester
-      .ensureVisible(find.byKey(Key('settings-category-${value.name}')));
-  await tester.tap(find.byKey(Key('settings-category-${value.name}')));
-  await tester.pumpAndSettle();
-}
-
-Future<void> section(WidgetTester tester, SettingsSection value) async {
-  var target = find.byKey(Key('settings-section-${value.name}'));
+Future<void> openSettingsNavigationItem(WidgetTester tester, Key key) async {
+  final target = find.byKey(key);
   if (target.evaluate().isEmpty) {
     final chip = find.byKey(const Key('settings-mobile-navigation'));
     await tester.ensureVisible(chip);
     await tester.pumpAndSettle();
     await tester.tap(chip);
     await tester.pumpAndSettle();
-    target = find.byKey(Key('settings-section-${value.name}'));
   }
   await tester.ensureVisible(target);
   await tester.pumpAndSettle();
@@ -144,8 +138,31 @@ Future<void> section(WidgetTester tester, SettingsSection value) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> category(WidgetTester tester, SettingsCategory value) =>
+    openSettingsNavigationItem(tester, Key('settings-category-${value.name}'));
+
+Future<void> section(WidgetTester tester, SettingsSection value) =>
+    openSettingsNavigationItem(tester, Key('settings-section-${value.name}'));
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('Settings opens local preferences before any Core read',
+      (tester) async {
+    final api = FixtureSettingsApi()
+      ..settingsFailure = const ApiFailure('Denied',
+          code: 'PERMISSION_DENIED', statusCode: 403);
+    await bootstrapSettings(tester, api: api, openCoreSettings: false);
+    expect(find.byKey(const Key('settings-theme-daylight')), findsOneWidget);
+    expect(api.settingsCalls, isEmpty);
+    expect(api.managementCalls, isEmpty);
+
+    await section(tester, SettingsSection.application);
+    expect(find.text('Management-Zugriff nicht autorisiert'), findsOneWidget);
+    await category(tester, SettingsCategory.general);
+    expect(find.byKey(const Key('settings-theme-daylight')), findsOneWidget);
+    expect(api.settingsCalls, hasLength(1));
+  });
 
   testWidgets('The navigation names the status of the category of the Core',
       (tester) async {
