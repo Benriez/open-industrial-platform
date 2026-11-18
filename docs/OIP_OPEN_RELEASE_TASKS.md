@@ -1,6 +1,35 @@
 # OIP app completion: current acceptance state
 
-## Latest snapshot — 2026-11-18, v0.3.34+37 published
+## Latest snapshot — 2026-11-18, v0.3.35+38 published
+
+[OIP 0.3.35](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.35)
+was built, signed and published from the Mac. GitHub Actions did not run.
+The archive SHA-256 is
+`b0ee7c73a1cd1eaae97ecee5fdae80e25f3f4345f7aa6064c5d7bd7ce06cd68f`.
+The installed bundle was still `0.3.33+36` when the release was published.
+The local OTA check timestamp was backed up and cleared so OIP can show
+the update when the operator next opens the application.
+
+macOS logged `UI lost focus` during a biometric attempt in the installed
+OIP process. An OTA check was running at the same time. Version 0.3.35
+defers the update offer during biometric authentication and presents it
+as a sheet attached to the OIP window. Touch ID requires the focused OIP
+window, and the biometric dialog hides the password fallback that returned
+a cancellation. An OIP one-time code restored the real operator session.
+The versions dialog now offers the signed update check independently of
+the Core settings permission, which returned HTTP 403 for this operator.
+Physical Touch ID acceptance is still pending.
+
+The full canonical gate passed on revision
+`c92328d9c0914558902ded90f1fec4430693b69e`, tree
+`39ac79cc953448da744f97a40f585cb3e52534e2`.
+Local and served `main.dart.js` match at SHA-256
+`6cff2ec4299e36bed68e7a205e10379dc3ddbbe70155993a99ce46ae602ae2e7`.
+The gate recorded 407 Flutter passes, one skip, 191 browser checks without
+failure, two visual comparisons and all eight functional phases.
+See `target/oip-0.3.35-final-gate/oip_canonical_ui_gate/report.json`.
+
+## Previous snapshot — 2026-11-18, v0.3.34+37 published
 
 The signed macOS OTA is published as [v0.3.34](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.34).
 The measured installed bundle is still `0.3.33+36`. Install using the in-app
@@ -167,11 +196,10 @@ entries are retained as dated evidence and are not current-state claims.
 - [ ] Confirm actual Touch ID sign-in in the app and protected session state.
 - [ ] Confirm physical Pi/PC telemetry and live OPC-UA browsing in the
   authenticated installed app.
-- [ ] Correct the router inventory description through the authorized app
-  workflow; the live connection exists, but the saved note contradicts it.
-- [ ] Register the verified Hue Bridge in OIP inventory. Keep it identity-only
-  until the operator pairs it with the physical bridge button; no simulated
-  lights or measurements are acceptable.
+- [x] Correct the router inventory description and confirm its live SSH source.
+- [x] Register the verified Hue Bridge in OIP inventory.
+- [ ] Pair and verify the Hue Bridge with its physical link button before
+  enabling real Hue telemetry.
 - [ ] Operator visual acceptance and repeated native window resize/crash check.
 - [ ] App Store upload readiness is prepared in source/docs, but cannot be
   proven for distribution until an Apple Distribution identity and required
