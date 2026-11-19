@@ -32,6 +32,15 @@ three LAN links and 18 OPC UA nodes per host. Over five minutes it delivered
 250 stream snapshots while answering 100 OPC UA browse requests, with zero
 errors. The largest stream gap was 4.718 seconds.
 
+The release web bundle was also exercised in Chromium with a separate
+device-operator session on the live Pi Core. The dashboard displayed 25
+panels and 38 measurements. The device list showed 15 observations for
+bodi-pc, 12 for bodi-pi and 11 for OpenWrt. The topology showed all three
+LAN links. Opening the CPU temperature node returned 30.625 °C on bodi-pc
+and, after selecting the Pi source, 48.686 °C on bodi-pi. The local
+preferences page opened for this operator. Screenshots and rendered text
+are in `target/oip-0.3.39-verification/live-views/`.
+
 The local Mac App Store archive passed strict signature verification. A signed
 Store export requires an Apple Distribution identity and matching provisioning
 profile. The installed-app OTA click, Touch ID, native workstation views and
