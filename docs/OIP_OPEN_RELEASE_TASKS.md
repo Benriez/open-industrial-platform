@@ -1,6 +1,44 @@
 # OIP app completion: current acceptance state
 
-## Latest snapshot — 2026-11-18, v0.3.38+41 installed
+## Latest snapshot — 2026-11-19, v0.3.39+42 published
+
+[OIP 0.3.39](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.39)
+is available as a signed macOS OTA. All three published asset digests match
+the local files. The published manifest verifies with the Ed25519 key pinned
+by the installed app. The archive SHA-256 is
+`9e49d6fff68774f0abb3f7f120234cc9f0b25b0d62aed8089149ef6eb80016d0`.
+GitHub reports zero Actions runs for this revision. The Mac still runs build 41.
+To install build 42 in the app, open **Einstellungen → Versionen & Updates →
+Nach Updates suchen**.
+
+Starting with build 42, the installer restores the previous bundle when
+LaunchServices rejects the new app or it exits during the startup check.
+The six installer tests cover rollback and safe archive cleanup. An isolated
+copy of the actual app upgraded from build 41 to 42 and launched from its
+expected path.
+
+The full canonical gate passed on revision
+`da4087d3f36118a37ad9ed9668f3c36100ceee03`, tree
+`1f537d34dcc104a79f63ce945d8fe27627b94171`. The served `main.dart.js`
+matches the local build byte for byte at SHA-256
+`74d1e213eae6f2040570d02a295e452771d911fbe8251b67339f0ff2c3608cef`.
+The gate recorded 412 Flutter passes, one skip, 191 browser checks without
+failure, two visual comparisons and all eight acceptance phases. The native
+Dart session test passed separately against a dedicated Core. The receipts
+are in `target/oip-0.3.39-verification/`.
+
+The live Core returned 38 fresh metrics from bodi-pi, bodi-pc and OpenWrt,
+three LAN links and 18 OPC UA nodes per host. Over five minutes it delivered
+250 stream snapshots while answering 100 OPC UA browse requests, with zero
+errors. The largest stream gap was 4.718 seconds.
+
+The local Mac App Store archive passed strict signature verification. A signed
+Store export requires an Apple Distribution identity and matching provisioning
+profile. The installed-app OTA click, Touch ID, native workstation views and
+physical window resize await operator acceptance. The Hue Bridge answers its
+public configuration request and requires pairing for light data.
+
+## Previous snapshot — 2026-11-18, v0.3.38+41 installed
 
 [OIP 0.3.38](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.38)
 was published as a signed OTA and installed on this Mac. The published asset
