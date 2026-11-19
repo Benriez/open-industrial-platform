@@ -12,10 +12,8 @@ the app has already quit, and its contract is:
     running, roll the previous bundle back cleanly and never report success
     (exit 26/27).
 
-Every case runs against a disposable fake bundle in a private temp directory.
-The real installed app is never contacted; the relaunch health check targets an
-isolated fake executable through the OIP_OTA_APP_NAME seam so it can never
-match or disturb the running product.
+Every case runs against a disposable background-only bundle in a private temp
+directory. Its executable name and bundle path differ from the installed app.
 """
 from __future__ import annotations
 
@@ -58,7 +56,7 @@ def _bundle_fingerprint(app_dir: pathlib.Path, executable: str) -> str:
 
 def make_app(app_dir: pathlib.Path, *, build: str, executable: str,
              run_sleep: str = "0", binary: bool = False, sign: bool = True,
-             tamper: bool = False) -> None:
+             tamper: bool = False, minimum_system: str | None = None) -> None:
     app_dir.mkdir(parents=True)
     macos = app_dir / "Contents" / "MacOS"
     macos.mkdir(parents=True)
@@ -70,7 +68,10 @@ def make_app(app_dir: pathlib.Path, *, build: str, executable: str,
         "CFBundleShortVersionString": "0.3." + build,
         "CFBundlePackageType": "APPL",
         "CFBundleInfoDictionaryVersion": "6.0",
+        "LSBackgroundOnly": True,
     }
+    if minimum_system is not None:
+        plist["LSMinimumSystemVersion"] = minimum_system
     with open(app_dir / "Contents" / "Info.plist", "wb") as handle:
         plistlib.dump(plist, handle)
     exe = macos / executable
@@ -118,15 +119,11 @@ def dead_pid() -> int:
     return process.pid
 
 
-def run_helper(env_extra, parent_pid, archive, target, expected_sha, expected_build,
-               executable):
-    env = dict(os.environ)
-    env["OIP_OTA_APP_NAME"] = executable
-    env.update(env_extra)
+def run_helper(parent_pid, archive, target, expected_sha, expected_build):
     return subprocess.run(
         ["/bin/sh", str(HELPER), str(parent_pid), str(archive), str(target),
          str(expected_sha), BUNDLE_ID, str(expected_build)],
-        env=env, capture_output=True, text=True,
+        capture_output=True, text=True, timeout=45,
     )
 
 
@@ -175,7 +172,7 @@ class OIPOTAInstallHelperTest(unittest.TestCase):
         archive = self.sandbox / "oip-macos-universal.zip"
         make_archive(archive, self.stage)
         result = run_helper(
-            {}, dead_pid(), archive, target, "0" * 64, "4", self.executable)
+            dead_pid(), archive, target, "0" * 64, "4")
         self.assertEqual(result.returncode, 21, result.stdout + result.stderr)
         self._assert_untouched(target, before)
 
@@ -188,7 +185,7 @@ class OIPOTAInstallHelperTest(unittest.TestCase):
         # The manifest names build 9, which no candidate carries: the helper
         # refuses before it moves the installed bundle.
         result = run_helper(
-            {}, dead_pid(), archive, target, archive_sha, "9", self.executable)
+            dead_pid(), archive, target, archive_sha, "9")
         self.assertEqual(result.returncode, 22, result.stdout + result.stderr)
         self._assert_untouched(target, before)
 
@@ -199,7 +196,7 @@ class OIPOTAInstallHelperTest(unittest.TestCase):
         archive = self.sandbox / "oip-macos-universal.zip"
         archive_sha = make_archive(archive, self.stage)
         result = run_helper(
-            {}, dead_pid(), archive, target, archive_sha, "4", self.executable)
+            dead_pid(), archive, target, archive_sha, "4")
         self.assertEqual(result.returncode, 23, result.stdout + result.stderr)
         self._assert_untouched(target, before)
 
@@ -213,7 +210,7 @@ class OIPOTAInstallHelperTest(unittest.TestCase):
         archive = self.sandbox / "oip-macos-universal.zip"
         archive_sha = make_archive(archive, self.stage)
         result = run_helper(
-            {}, dead_pid(), archive, target, archive_sha, "4", self.executable)
+            dead_pid(), archive, target, archive_sha, "4")
         self.assertIn(result.returncode, (26, 27),
                       "expected a launch-failure rollback, got %d: %s%s"
                       % (result.returncode, result.stdout, result.stderr))
@@ -223,6 +220,32 @@ class OIPOTAInstallHelperTest(unittest.TestCase):
         version = plistlib.loads(
             (target / "Contents" / "Info.plist").read_bytes()).get("CFBundleVersion")
         self.assertEqual(version, "3", "the installed build after rollback is %r" % version)
+        self._assert_no_artifacts(target)
+
+    def test_launchservices_refusal_restores_the_previous_bundle(self):
+        target = self._install_target("3")
+        before = _bundle_fingerprint(target, self.executable)
+        self._build_candidate("4", run_sleep="30", binary=True,
+                              minimum_system="999.0")
+        archive = self.sandbox / "oip-macos-universal.zip"
+        archive_sha = make_archive(archive, self.stage)
+        result = run_helper(dead_pid(), archive, target, archive_sha, "4")
+        self.assertEqual(result.returncode, 26, result.stdout + result.stderr)
+        self._assert_untouched(target, before)
+
+    def test_success_keeps_the_installed_app_and_shared_download_directory(self):
+        target = self._install_target("3")
+        candidate = self._build_candidate("4", run_sleep="30", binary=True)
+        expected = _bundle_fingerprint(candidate, self.executable)
+        marker = self.sandbox / "keep.txt"
+        marker.write_text("keep")
+        archive = self.sandbox / "oip-macos-universal.zip"
+        archive_sha = make_archive(archive, self.stage)
+        result = run_helper(dead_pid(), archive, target, archive_sha, "4")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(_bundle_fingerprint(target, self.executable), expected)
+        self.assertEqual(marker.read_text(), "keep")
+        self.assertFalse(archive.exists())
         self._assert_no_artifacts(target)
 
 

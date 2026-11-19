@@ -16,6 +16,14 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.39',
+      build: '42',
+      date: '19. November 2026',
+      changes: [
+        'Der Mac-Updater stellt die vorherige App wieder her, wenn macOS den Start der neuen Version verweigert.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.38',
       build: '41',
       date: '18. November 2026',
