@@ -381,20 +381,29 @@ try {
   // Let the TabBarView finish its slide before inspecting the active pane;
   // otherwise its previous page may still contribute hidden semantics.
   await page.waitForTimeout(600);
-  let telemetryRendered='';
-  for(let i=0;i<120;i++){
-    telemetryRendered=await page.locator('body').ariaSnapshot();
-    if(telemetryRendered.includes(os.metric_id)&&
-       telemetryRendered.includes(os.value.text)&&
-       telemetryRendered.includes(memory.metric_id)&&
-       telemetryRendered.includes(String(memory.value.unsigned_integer)))break;
-    if(i===119)throw Error('DeviceDetail Telemetry does not show the authorized connection observations');
-    await page.mouse.move(850,800);
-    await page.mouse.wheel(0,400);
-    await page.waitForTimeout(250);
+  // Flutter virtualizes the telemetry rows. Validate each metric with its own
+  // value as it comes into view, since the two rows can be on different screens.
+  const memoryBytes=String(memory.value.unsigned_integer);
+  const expectedTelemetry=new Map([
+    [os.metric_id,[os.value.text]],
+    // Dart Web can format an integral JSON number as a double.
+    [memory.metric_id,[`${memoryBytes} bytes`,`${memoryBytes}.0 bytes`]],
+  ]);
+  for(let i=0;i<120&&expectedTelemetry.size;i++){
+    const rendered=await page.locator('body').ariaSnapshot();
+    for(const [metricId,values] of expectedTelemetry){
+      if(values.some(value=>rendered.includes(`browser-existing · ${metricId} ${value} `))){
+        expectedTelemetry.delete(metricId);
+      }
+    }
+    if(expectedTelemetry.size){
+      await page.mouse.move(850,800);
+      await page.mouse.wheel(0,220);
+      await page.waitForTimeout(250);
+    }
   }
-  assert(telemetryRendered.includes(os.metric_id));
-  assert(telemetryRendered.includes(memory.metric_id));
+  assert.equal(expectedTelemetry.size,0,
+    `DeviceDetail Telemetry did not render the authorized values for ${[...expectedTelemetry.keys()].join(', ')}`);
   await capture('06b-device-detail-telemetry');
   const engineeringTab=page.locator('flt-semantics[role="text"][flt-tappable]')
     .filter({hasText:/^Engineering\s+Tab 1 of 3$/});
