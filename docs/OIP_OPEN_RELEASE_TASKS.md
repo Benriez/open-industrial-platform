@@ -1,6 +1,34 @@
 # OIP app completion: current acceptance state
 
-## Latest snapshot — 2026-11-20, v0.3.40+43 installed
+## Latest snapshot — 2026-11-20, v0.3.41+44 installed
+
+[OIP 0.3.41](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.41)
+is available as a signed OTA and runs from `/Applications`. The Core on
+bodi-pi now issues local sessions without a time limit. One-use login grants
+still expire after 120 seconds. Signing out revokes the session immediately.
+The Core restart clears existing in-memory sessions and keeps device pairings.
+
+Live login through the Mac relay returned a session cookie without an expiry.
+The session read 38 observations and its cookie was rejected after logout.
+The running Pi binary has SHA-256
+`8a2ac54b3d63cad528e2d2728210c48fc9f3b6374e3e4e26a4ed65b935294192`.
+The previous Core and its configuration are preserved under
+`~/oip-platform/rollbacks/session-timer.5U9t94` on bodi-pi. The previous
+Mac bundle and LaunchAgents are under
+`~/Library/Application Support/OIP/rollbacks/0.3.40-43-before-44.LTPkvf`.
+
+The canonical gate passed 412 Flutter tests, 191 browser checks, both visual
+comparisons and all eight acceptance phases. Tested revision
+`e8129c1fdb351ae3a73c97e857be9fee19d11ab5`, tree
+`8c3a7a9101945569ead8b74fb8abb67b7db4fc0f`. The served and local
+`main.dart.js` match at SHA-256
+`64e64f03eaeba90f773fed0586dc71692c8bb1fa5a7d32da9cea98e770c0bbd9`.
+The unit test checks a session aged past the former limit. The disposable Core
+check measured one-use-code expiry and logout and skipped the 30-minute wait.
+Receipts are under `target/oip-0.3.41-session-gate/` and
+`target/oip-0.3.41-session-rollout/`.
+
+## Previous snapshot — 2026-11-20, v0.3.40+43 installed
 
 [OIP 0.3.40](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.40)
 is available as a signed macOS OTA and runs from `/Applications`. The old app
