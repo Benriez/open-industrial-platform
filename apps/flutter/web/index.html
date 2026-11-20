@@ -7,12 +7,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Open Industrial Platform — lokale, autorisierte Infrastruktur und nachvollziehbare Diagnostik.">
   <meta name="theme-color" content="#0b1723">
-  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png?v=43">
+  <link rel="manifest" href="manifest.json">
   <title>Open Industrial Platform</title>
-  <style>body{margin:0;background:#0b1723;color:#e9f2f7}#loading{font:14px system-ui;padding:40px}flutter-view{touch-action:manipulation}</style>
+  <style>
+    body { margin: 0; background: #0b1723; color: #e9f2f7; }
+    #loading { display: flex; align-items: center; gap: 8px; padding: 40px; font: 14px system-ui; }
+    flutter-view { touch-action: manipulation; }
+  </style>
 </head>
 <body>
-  <div id="loading" role="status">Open Industrial Platform · wird geladen …</div>
+  <div id="loading" role="status">
+    <img src="icons/Icon-192.png" width="40" height="40" alt="">
+    <span>Open Industrial Platform · wird geladen …</span>
+  </div>
   <script>
     // CanvasKit is packaged locally; the application has no runtime CDN dependency.
     window.addEventListener('flutter-first-frame', () => document.getElementById('loading')?.remove());

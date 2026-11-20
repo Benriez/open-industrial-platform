@@ -1,12 +1,11 @@
 {
-    "name": "oip_dashboard",
-    "short_name": "oip_dashboard",
+    "name": "Open Industrial Platform",
+    "short_name": "OIP",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#0b1723",
+    "theme_color": "#0b1723",
+    "description": "Lokale, autorisierte Infrastruktur und nachvollziehbare Diagnostik.",
     "prefer_related_applications": false,
     "icons": [
         {

@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:ui' as ui;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../design_system/theme.dart';
 import '../features/devices.dart';
@@ -14,6 +17,23 @@ import '../widgets/components.dart';
 import '../widgets/adaptive_workspace.dart';
 import '../widgets/infrastructure_selector.dart';
 import 'controller.dart';
+
+class _BrandMark extends AssetImage {
+  const _BrandMark() : super('assets/branding/oip-logo.png');
+
+  @override
+  ImageStreamCompleter loadImage(
+      AssetBundleImageKey key, ImageDecoderCallback decode) {
+    if (!kIsWeb) return super.loadImage(key, decode);
+    // A target width selects CanvasKit's PNG codec. Flutter 3.22's browser
+    // ImageDecoder path can leave WebCodecs video frames open for a static logo.
+    return super.loadImage(
+      key,
+      (buffer, {getTargetSize}) =>
+          ui.instantiateImageCodecFromBuffer(buffer, targetWidth: 128),
+    );
+  }
+}
 
 class OipApp extends StatefulWidget {
   final OipController controller;
@@ -294,8 +314,10 @@ class _DashboardShellState extends State<DashboardShell> {
                     width: 40,
                     height: 40,
                     color: OipTokens.navigation,
-                    child: const Icon(Icons.hub_outlined,
-                        color: OipTokens.cyan, size: 23),
+                    child: const Image(
+                      image: _BrandMark(),
+                      excludeFromSemantics: true,
+                    ),
                   ),
                 ),
                 const SizedBox(width: OipTokens.s3),

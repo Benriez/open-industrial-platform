@@ -1,7 +1,7 @@
 name: oip_dashboard
 description: Open Industrial Platform operations workstation.
 publish_to: none
-version: 0.3.39+42
+version: 0.3.40+43
 environment:
   sdk: '>=3.4.0 <4.0.0'
   flutter: '>=3.22.0'
@@ -18,6 +18,8 @@ dev_dependencies:
   flutter_lints: 3.0.2
 flutter:
   uses-material-design: true
+  assets:
+    - assets/branding/oip-logo.png
   fonts:
     - family: Roboto
       fonts:

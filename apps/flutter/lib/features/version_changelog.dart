@@ -16,6 +16,14 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.40',
+      build: '43',
+      date: '20. November 2026',
+      changes: [
+        'Das neue OIP-Logo erscheint in der App, im macOS-Dock, im Stage Manager und in der Web-App.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.39',
       build: '42',
       date: '19. November 2026',
