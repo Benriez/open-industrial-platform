@@ -1,6 +1,28 @@
 # OIP app completion: current acceptance state
 
-## Latest snapshot — 2026-11-19, v0.3.39+42 published
+## Latest snapshot — 2026-11-20, v0.3.40+43 installed
+
+[OIP 0.3.40](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.40)
+is available as a signed macOS OTA and runs from `/Applications`. The old app
+and its LaunchAgent configurations are saved under
+`~/Library/Application Support/OIP/rollbacks/0.3.39-42-before-43.XhuIWx`.
+macOS initially returned the cached Flutter icon. Refreshing the OIP bundle
+registration made the new logo available to both the installed bundle and
+the running process. The app signature and the local API relay passed their
+post-install checks.
+
+The new mark is visible in the Flutter sidebar and the web loading screen.
+Chromium decoded the 32 px favicon and all four web manifest icons. The full
+canonical gate passed 412 Flutter tests, 191 browser checks, both visual
+comparisons and all eight acceptance phases. The tested revision is
+`fe068649fe45be2e259bc1e8e8fc5330befbba09` and the tree is
+`0293746545c13116452b90ffb2458c044d6b3d93`. The compiled and served
+`main.dart.js` match at SHA-256
+`debf60a8acf3fa7b3244900391f66ceb4bbc20b65f40241a097bca1d7f5bc2ad`.
+The gate receipt and the verified web build are under
+`target/oip-0.3.40-brand-final/`.
+
+## Previous snapshot — 2026-11-19, v0.3.39+42 published
 
 [OIP 0.3.39](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.39)
 is available as a signed macOS OTA. All three published asset digests match
