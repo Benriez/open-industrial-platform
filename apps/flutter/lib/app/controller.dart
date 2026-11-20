@@ -200,7 +200,7 @@ class OipController extends ChangeNotifier {
       _sessionPrincipal = null;
     } catch (exception) {
       failure = apiErrorMessage(exception,
-          'Lokale Ansicht abgemeldet. Die serverseitige Abmeldung ist nicht bestätigt; die Sitzung läuft spätestens nach 30 Minuten ab.');
+          'Der Core konnte die Abmeldung nicht bestätigen. Verbinde dich erneut und wiederhole die Abmeldung.');
     }
     contextRevision++;
     snapshot = null;

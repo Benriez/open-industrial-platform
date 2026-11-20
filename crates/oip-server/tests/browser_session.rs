@@ -272,7 +272,8 @@ async fn login_requires_the_exact_origin_and_a_single_use_code() {
     assert!(cookie.contains("HttpOnly"), "{cookie}");
     assert!(cookie.contains("SameSite=Strict"), "{cookie}");
     assert!(cookie.contains("Path=/"), "{cookie}");
-    assert!(cookie.contains("Max-Age=1800"), "{cookie}");
+    assert!(!cookie.contains("Max-Age="), "{cookie}");
+    assert!(!cookie.contains("Expires="), "{cookie}");
     assert!(
         !cookie.to_lowercase().contains("domain="),
         "the cookie must stay host-only: {cookie}"
@@ -339,7 +340,8 @@ async fn touch_id_pairing_requires_the_session_csrf_and_reissues_the_bound_princ
     assert_eq!(body["authenticated"], true);
     let cookie = headers.get("set-cookie").unwrap().to_str().unwrap();
     assert!(cookie.contains("HttpOnly"), "{cookie}");
-    assert!(cookie.contains("Max-Age=1800"), "{cookie}");
+    assert!(!cookie.contains("Max-Age="), "{cookie}");
+    assert!(!cookie.contains("Expires="), "{cookie}");
 }
 
 #[tokio::test]

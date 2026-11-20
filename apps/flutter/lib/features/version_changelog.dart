@@ -16,6 +16,14 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.41',
+      build: '44',
+      date: '20. November 2026',
+      changes: [
+        'Mit einem aktualisierten OIP-Core bleibt die Anmeldung über 30 Minuten hinaus gültig.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.40',
       build: '43',
       date: '20. November 2026',

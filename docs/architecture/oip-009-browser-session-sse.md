@@ -39,9 +39,9 @@ the login view in `apps/flutter/lib/features/operator_login.dart`.
 |---|---|---|
 | Pairing code | 256 bit random, 120 s, single use, at most 32 pending grants | `crates/oip-server/src/browser_session.rs` (`issue`, `login`); `tests/real_device/acceptance.py` phase `browser_identity_online_writer` |
 | Code issuance | only through the existing authenticated local IPC path (`--browser-login`); no SQLite access, no grant creation | `crates/oip-server/src/mcp/ipc.rs`; `docs/architecture/real-device-onboarding.md:27-33` |
-| Session | 256 bit random, server side hashed index, 30 min absolute expiry, at most 64 sessions | `crates/oip-server/src/browser_session.rs` (`authenticate`, `info`) |
+| Session | 256 bit random, server side hashed index, no time-based expiry, at most 64 sessions. At capacity, a valid sign-in may replace its own principal's least recently used session. | `crates/oip-server/src/browser_session.rs` (`authenticate`, `info`) |
 | Invalid codes | bounded rejection accounting that never blocks a valid one-time grant; a full session table does not consume an issued grant | `crates/oip-server/src/browser_session.rs` unit tests |
-| Login | `POST /api/v2/browser/login` requires the exact `Origin`; the answer sets a host-only, `HttpOnly`, `SameSite=Strict`, `Path=/`, `Max-Age=1800` cookie | `crates/oip-server/tests/browser_session.rs`; `tests/real_device/acceptance.py` |
+| Login | `POST /api/v2/browser/login` requires the exact `Origin`. The answer sets a host-only, `HttpOnly`, `SameSite=Strict` session cookie with `Path=/`. | `crates/oip-server/tests/browser_session.rs`, `tests/real_device/acceptance.py` |
 | Session query | `GET /api/v2/browser/session` returns only the bound Principal and an ephemeral CSRF value, `Cache-Control: no-store`, and no CSRF value for an unauthenticated caller | `crates/oip-server/tests/browser_session.rs` |
 | Cookie authorized writes | every mutating route requires the exact `Origin` **and** `x-oip-csrf`; the value is compared in constant time | `crates/oip-server/src/api.rs` (`Authorized`), `crates/oip-server/tests/browser_session.rs` |
 | Revocation | `DELETE /api/v2/browser/session` needs the same boundary and invalidates the session immediately | `crates/oip-server/tests/browser_session.rs` |

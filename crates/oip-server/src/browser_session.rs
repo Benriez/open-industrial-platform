@@ -1,5 +1,5 @@
 //! Local operator-issued, one-use pairing grants. No IPC credential enters the browser.
-use oip_core::{CapabilityError, ExecutionContext, PrincipalId, SourceScope, denied};
+use oip_core::{denied, CapabilityError, ExecutionContext, PrincipalId, SourceScope};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
@@ -10,7 +10,6 @@ use std::{
     sync::Mutex,
     time::{Duration, Instant},
 };
-const SESSION_TTL: Duration = Duration::from_secs(1800);
 const GRANT_TTL: Duration = Duration::from_secs(120);
 const MAX_SESSIONS: usize = 64;
 const MAX_GRANTS: usize = 32;
@@ -26,7 +25,7 @@ struct Grant {
 struct Session {
     principal: PrincipalId,
     csrf: String,
-    expires: Instant,
+    last_used: Instant,
 }
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -83,9 +82,43 @@ impl Entries {
     fn prune(&mut self) {
         let now = Instant::now();
         self.grants.retain(|_, g| g.expires > now);
-        self.sessions.retain(|_, s| s.expires > now);
         self.failed
             .retain(|t| now.duration_since(*t) < Duration::from_secs(60));
+    }
+
+    fn start_session(
+        &mut self,
+        principal: PrincipalId,
+    ) -> Result<(String, SessionInfo), CapabilityError> {
+        let token = random_token().map_err(|_| denied())?;
+        let csrf = random_token().map_err(|_| denied())?;
+        if self.sessions.len() >= MAX_SESSIONS {
+            // Clients that close without logging out leave an entry behind.
+            // Only a valid sign-in can reclaim an entry of the same principal.
+            let oldest = self
+                .sessions
+                .iter()
+                .filter(|(_, session)| session.principal == principal)
+                .min_by_key(|(_, session)| session.last_used)
+                .map(|(key, _)| key.clone())
+                .ok_or_else(denied)?;
+            self.sessions.remove(&oldest);
+        }
+        let info = SessionInfo {
+            authenticated: true,
+            principal_id: Some(principal.clone()),
+            csrf_token: Some(csrf.clone()),
+            mode: "local_operator_session",
+        };
+        self.sessions.insert(
+            digest(&token),
+            Session {
+                principal,
+                csrf,
+                last_used: Instant::now(),
+            },
+        );
+        Ok((token, info))
     }
 }
 impl BrowserSessions {
@@ -125,12 +158,8 @@ impl BrowserSessions {
         if code.len() != 64 || !code.bytes().all(|b| b.is_ascii_hexdigit()) {
             return Err(denied());
         }
-        // A full session table must not destroy a valid single-use grant: the
-        // operator can still redeem the code once a session ended.
-        if e.sessions.len() >= MAX_SESSIONS {
-            return Err(denied());
-        }
-        let Some(grant) = e.grants.remove(&digest(code)) else {
+        let key = digest(code);
+        let Some(grant) = e.grants.get(&key) else {
             // Bounded rejection accounting. Earlier invalid attempts never block
             // a valid grant, and the recorded state stays capped.
             if e.failed.len() < MAX_FAILED {
@@ -138,23 +167,10 @@ impl BrowserSessions {
             }
             return Err(denied());
         };
-        let token = random_token().map_err(|_| denied())?;
-        let csrf = random_token().map_err(|_| denied())?;
-        let info = SessionInfo {
-            authenticated: true,
-            principal_id: Some(grant.principal.clone()),
-            csrf_token: Some(csrf.clone()),
-            mode: "local_operator_session",
-        };
-        e.sessions.insert(
-            digest(&token),
-            Session {
-                principal: grant.principal,
-                csrf,
-                expires: Instant::now() + SESSION_TTL,
-            },
-        );
-        Ok((token, info))
+        let principal = grant.principal.clone();
+        let session = e.start_session(principal)?;
+        e.grants.remove(&key);
+        Ok(session)
     }
     pub fn authenticate(
         &self,
@@ -166,7 +182,7 @@ impl BrowserSessions {
         }
         let mut e = self.entries.lock().map_err(|_| denied())?;
         e.prune();
-        let s = e.sessions.get(&digest(token)).ok_or_else(denied)?;
+        let s = e.sessions.get_mut(&digest(token)).ok_or_else(denied)?;
         if csrf.is_some_and(|c| {
             c.len() != s.csrf.len()
                 || c.bytes()
@@ -176,6 +192,7 @@ impl BrowserSessions {
         }) {
             return Err(denied());
         }
+        s.last_used = Instant::now();
         Ok(context(s.principal.clone()))
     }
     /// Pair a native device credential with the currently authenticated
@@ -216,14 +233,11 @@ impl BrowserSessions {
         e.device_credentials = credentials;
         Ok(())
     }
-    /// Redeem a paired credential for a normal bounded browser session.
+    /// Redeem a paired credential for a normal local browser session.
     pub fn device_login(&self, credential: &str) -> Result<(String, SessionInfo), CapabilityError> {
         let mut e = self.entries.lock().map_err(|_| denied())?;
         e.prune();
-        if credential.len() != 64
-            || !credential.bytes().all(|b| b.is_ascii_hexdigit())
-            || e.sessions.len() >= MAX_SESSIONS
-        {
+        if credential.len() != 64 || !credential.bytes().all(|b| b.is_ascii_hexdigit()) {
             return Err(denied());
         }
         let Some(device) = e.device_credentials.get(&digest(credential)) else {
@@ -233,23 +247,7 @@ impl BrowserSessions {
             return Err(denied());
         };
         let principal = device.principal.clone();
-        let token = random_token().map_err(|_| denied())?;
-        let csrf = random_token().map_err(|_| denied())?;
-        let info = SessionInfo {
-            authenticated: true,
-            principal_id: Some(principal.clone()),
-            csrf_token: Some(csrf.clone()),
-            mode: "local_operator_session",
-        };
-        e.sessions.insert(
-            digest(&token),
-            Session {
-                principal,
-                csrf,
-                expires: Instant::now() + SESSION_TTL,
-            },
-        );
-        Ok((token, info))
+        e.start_session(principal)
     }
     pub fn info(&self, token: Option<&str>, legacy: bool) -> SessionInfo {
         let mut e = match self.entries.lock() {
@@ -264,7 +262,8 @@ impl BrowserSessions {
             }
         };
         e.prune();
-        if let Some(s) = token.and_then(|t| e.sessions.get(&digest(t))) {
+        if let Some(s) = token.and_then(|t| e.sessions.get_mut(&digest(t))) {
+            s.last_used = Instant::now();
             return SessionInfo {
                 authenticated: true,
                 principal_id: Some(s.principal.clone()),
@@ -547,19 +546,56 @@ mod tests {
         assert!(sessions.device_login(&"ef".repeat(32)).is_err());
     }
     #[test]
-    fn a_full_session_table_does_not_consume_the_grant() {
+    fn a_full_session_table_does_not_consume_the_grant_or_evict_other_principals() {
         let sessions = BrowserSessions::default();
         let p = PrincipalId::new("local-principal").unwrap();
         let mut tokens = Vec::new();
-        for _ in 0..MAX_SESSIONS {
-            let code = sessions.issue(p.clone()).unwrap();
+        for n in 0..MAX_SESSIONS {
+            let other = PrincipalId::new(format!("other-{n}")).unwrap();
+            let code = sessions.issue(other).unwrap();
             let (token, _) = sessions.login(&code).unwrap();
             tokens.push(token);
         }
         let spare = sessions.issue(p.clone()).unwrap();
         assert!(sessions.login(&spare).is_err());
+        assert!(sessions.authenticate(&tokens[0], None).is_ok());
         sessions.logout(&tokens[0]);
         // The refused attempt did not destroy the single-use code.
         assert!(sessions.login(&spare).is_ok());
+    }
+
+    #[test]
+    fn sessions_outlive_the_old_timeout_and_their_principal_can_reclaim_capacity() {
+        let sessions = BrowserSessions::default();
+        let principal = PrincipalId::new("local-principal").unwrap();
+        let login = || {
+            let code = sessions.issue(principal.clone()).unwrap();
+            sessions.login(&code).unwrap().0
+        };
+        let idle = login();
+        let old = Instant::now() - Duration::from_secs(1801);
+        let age_session = || {
+            sessions
+                .entries
+                .lock()
+                .unwrap()
+                .sessions
+                .get_mut(&digest(&idle))
+                .unwrap()
+                .last_used = old;
+        };
+        age_session();
+        assert!(sessions.info(Some(&idle), false).authenticated);
+        age_session();
+        assert!(sessions.authenticate(&idle, None).is_ok());
+        age_session();
+        let tokens: Vec<_> = (1..MAX_SESSIONS).map(|_| login()).collect();
+        assert!(sessions.login(&"b".repeat(64)).is_err());
+        let replacement = login();
+        assert!(sessions.authenticate(&idle, None).is_err());
+        assert!(sessions.authenticate(&replacement, None).is_ok());
+        for token in tokens {
+            assert!(sessions.authenticate(&token, None).is_ok());
+        }
     }
 }

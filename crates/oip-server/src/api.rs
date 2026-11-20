@@ -818,7 +818,7 @@ async fn browser_login(
     response.headers_mut().insert(
         axum::http::header::SET_COOKIE,
         format!(
-            "{}={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800",
+            "{}={token}; HttpOnly; SameSite=Strict; Path=/",
             crate::browser_session::COOKIE
         )
         .parse()
@@ -880,7 +880,7 @@ async fn browser_device_login(
     response.headers_mut().insert(
         axum::http::header::SET_COOKIE,
         format!(
-            "{}={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800",
+            "{}={token}; HttpOnly; SameSite=Strict; Path=/",
             crate::browser_session::COOKIE
         )
         .parse()

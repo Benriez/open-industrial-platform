@@ -154,7 +154,7 @@ class _OperatorLoginState extends State<OperatorLogin> {
                             : 'Operator-Sitzung autorisieren')),
                     const SizedBox(height: 8),
                     const Text(
-                        'Die lokale Sitzung endet nach 30 Minuten, beim Abmelden oder mit einem Neustart der Instanz. Mit eingerichteter Touch ID kannst du danach eine neue Sitzung öffnen; ohne Touch ID brauchst du einen neuen Einmalcode.'),
+                        'Die lokale Sitzung hat kein Zeitlimit. Sie endet beim Abmelden oder mit einem Neustart der Instanz. Mit eingerichteter Touch ID kannst du danach eine neue Sitzung öffnen. Sonst brauchst du einen neuen Einmalcode.'),
                   ],
                 ))),
       ))));

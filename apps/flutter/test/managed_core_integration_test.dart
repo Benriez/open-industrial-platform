@@ -172,12 +172,11 @@ void main() {
     expect(find.byKey(const Key('operator-login-code')), findsOneWidget);
     expect(find.textContaining('Deine Infrastruktur. Ein Bild.'), findsNothing);
     expect(find.textContaining('COMMAND CENTER'), findsNothing);
-    // The panel names every cause of the end of the session: the lifetime,
-    // the sign-out and the restart of the instance. The session of the
-    // browser lives in the memory of the Core, so a restart ends it.
+    // The panel explains that sessions have no time limit and that signing
+    // out or restarting the Core ends them.
     expect(
         find.textContaining('mit einem Neustart der Instanz'), findsOneWidget);
-    expect(find.textContaining('Die lokale Sitzung endet nach 30 Minuten'),
+    expect(find.textContaining('Die lokale Sitzung hat kein Zeitlimit'),
         findsOneWidget);
     expect(find.textContaining('beim Abmelden'), findsOneWidget);
   });

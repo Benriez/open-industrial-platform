@@ -326,15 +326,16 @@ def main():
             "cache_control": headers.get("cache-control"),
             "x_frame_options": headers.get("x-frame-options"),
             "content_security_policy": headers.get("content-security-policy"),
-            "session_ttl_seconds": 1800,
+            "session_ttl_seconds": None,
             "pairing_code_ttl_seconds": 120,
         }
         if ("HttpOnly" in cookie and "SameSite=Strict" in cookie
+                and "Max-Age=" not in cookie and "Expires=" not in cookie
                 and headers.get("cache-control") == "no-store"
                 and headers.get("x-frame-options") == "DENY"
                 and "frame-ancestors 'none'" in (headers.get("content-security-policy") or "")):
             finding("the browser session cookie and the security headers", "resolved",
-                    "HttpOnly, SameSite=Strict, Max-Age=1800, Cache-Control no-store, "
+                    "HttpOnly, SameSite=Strict, browser-session cookie, Cache-Control no-store, "
                     "X-Frame-Options DENY, CSP frame-ancestors 'none'")
         else:
             finding("the browser session cookie and the security headers", "escalated",

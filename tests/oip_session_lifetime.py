@@ -1,20 +1,8 @@
 #!/usr/bin/env python3
-"""The lifetimes of the session and of the one-time code (G2, G12).
+"""Check one-time-code expiry and session revocation against a disposable Core.
 
-The operator login tells the operator two things: the one-time code is valid
-for 120 seconds and may be used once, and the session ends after 30 minutes.
-The Core keeps both lifetimes as constants; nothing proved that the promise
-of the surface holds.
-
-This rehearsal measures both against the real Core:
-
-  1. a code that was issued more than 120 seconds ago is refused;
-  2. a session that was authorized more than 30 minutes ago is refused, and
-     the Core answers the refusal with the generic identity refusal.
-
-The measurement of the session waits for the real lifetime of the Core — it is
-not shortened, because a shortened lifetime would prove nothing about the
-promise of the surface.
+The optional timed probe verifies that an untouched session stays valid past
+the former 30-minute deadline. The logout check always runs.
 
 Usage:
   python3 tests/oip_session_lifetime.py [--evidence DIR] [--skip-session-wait]
@@ -38,7 +26,7 @@ import urllib.request
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TOOL = ROOT / "tools" / "oip_ops.py"
 GRANT_TTL = 120
-SESSION_TTL = 1800
+FORMER_SESSION_TTL = 1800
 
 
 def free_port():
@@ -151,6 +139,8 @@ def main():
         status, session = request(base, "/api/v2/browser/login", "POST",
                                   {"code": fresh_code}, {"Origin": base}, opener)
         assert status == 200, session
+        cookie, = jar
+        assert cookie.discard and cookie.expires is None
         report["the_session_authorized_at"] = time.time()
         status, answer = request(base, "/api/v2/browser/session", opener=opener)
         report["the_session_before"] = {"status": status,
@@ -162,13 +152,9 @@ def main():
             report["the_session_lifetime"] = {"measured": False,
                                               "reason": "the measurement was skipped"}
         else:
-            print(f"the session is authorized; the rehearsal waits for its lifetime "
-                  f"({SESSION_TTL} s)", flush=True)
-            time.sleep(SESSION_TTL + 30)
+            print(f"checking the session beyond the former {FORMER_SESSION_TTL} s limit", flush=True)
+            time.sleep(FORMER_SESSION_TTL + 30)
             status, answer = request(base, "/api/v2/browser/session", opener=opener)
-            # The session route answers the state of the session: an expired
-            # session is reported as not authenticated. The management read
-            # is the proof that the identity is gone.
             read_status, read_answer = request(base, "/api/v2/organizations",
                                                opener=opener)
             report["the_session_after"] = {"status": status,
@@ -177,17 +163,23 @@ def main():
             report["the_management_read_after"] = {"status": read_status,
                                                     "code": read_answer.get("code")}
             report["the_session_lifetime"] = {
-                "measured": True, "the_promised_seconds": SESSION_TTL,
-                "the_checked_after_seconds": SESSION_TTL + 30,
+                "measured": True, "the_former_limit_seconds": FORMER_SESSION_TTL,
+                "the_checked_after_seconds": FORMER_SESSION_TTL + 30,
                 "the_session_is_authenticated": answer.get("authenticated"),
                 "the_management_read": read_status,
                 "the_refusal": read_answer.get("code"),
             }
-            assert answer.get("authenticated") is False, \
-                f"the expired session is still authenticated: {answer}"
-            assert read_status == 403, \
-                f"the expired session still authorizes a management read: {read_status}"
-            report["steps"].append("the expired session is refused")
+            assert status == 200 and answer.get("authenticated") is True
+            assert read_status == 200, read_answer
+            report["steps"].append("the session survives the former timeout")
+
+        status, reply = request(base, "/api/v2/browser/session", "DELETE", {},
+                                {"Origin": base, "x-oip-csrf": session["csrf_token"]}, opener)
+        assert status == 200 and reply.get("logged_out") is True
+        status, answer = request(base, "/api/v2/browser/session",
+                                 headers={"Cookie": f"{cookie.name}={cookie.value}"})
+        assert status == 200 and answer.get("authenticated") is False
+        report["steps"].append("logout revokes the previous session token")
 
         report["status"] = "PASS"
     except AssertionError as error:
