@@ -1,6 +1,38 @@
 # OIP app completion: current acceptance state
 
-## Latest snapshot — 2026-11-20, v0.3.41+44 installed
+## Latest snapshot — 2026-11-21, v0.3.42+45 installed
+
+Open Industrial Platform now offers German and English. Select a language
+at sign-in or under the local Appearance & Preferences settings. German is
+the default. The selection takes effect immediately and is saved on the
+device. Device identities, raw measurements, and technical details from
+the Core retain their original values.
+
+The signed OTA was built on this Mac and uploaded directly to GitHub.
+The bundle runs from `/Applications/Open Industrial Platform.app`. The
+installed signature passed strict verification, and the Mac relay returned
+HTTP 200 for the live Core session endpoint. The previous app and the two
+OIP LaunchAgent configurations are under
+`~/Library/Application Support/OIP/rollbacks/0.3.41-44-before-45.NIvbv3`.
+[Signed macOS release](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.42)
+
+The canonical gate passed 415 Flutter tests,
+191 browser checks, both visual comparisons, and all
+8 acceptance phases. Tested revision
+`d2123a1dca43aa789506a6fcd2d6b158e3be26cb`, tree
+`865c20e94dffe6d97c7078a3987c2ff4f78be0dc`. The served and local
+`main.dart.js` match at SHA-256
+`b3541bb2fe02c8e251ab864b2f1d81a9618e3511165af10c5e81affefc940527`. The visual comparison is a technical check and awaits
+operator acceptance.
+
+A browser session with the live Core verified the language switch in both
+directions, English navigation for all six workstations, real device and
+OPC UA data, and retained language after reload. The gate and rollout
+receipts are under `target/oip-0.3.42-language-release-proof/`,
+`target/oip-0.3.42-language-live-browser/`, and
+`target/oip-0.3.42-language-rollout/`.
+
+## Previous snapshot — 2026-11-20, v0.3.41+44 installed
 
 [OIP 0.3.41](https://github.com/Benriez/open-industrial-platform/releases/tag/v0.3.41)
 is available as a signed OTA and runs from `/Applications`. The Core on
