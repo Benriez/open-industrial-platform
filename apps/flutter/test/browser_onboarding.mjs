@@ -138,10 +138,12 @@ async function fillField(locator,text){
 async function typeInto(locator, text) { for(let n=0;!(await locator.isEditable());n++){if(n===100)throw Error('Field did not become editable');await page.waitForTimeout(100);} await locator.click({force:true}); await page.waitForTimeout(250); await page.keyboard.press('Meta+A'); await page.waitForTimeout(80); await page.keyboard.press('Backspace'); await page.waitForTimeout(120); await page.keyboard.type(text,{delay:100}); await page.waitForTimeout(150); await page.keyboard.press('Tab'); await page.waitForTimeout(100); }
 const capture=async name=>page.screenshot({path:resolve(out,name+'.png')});
 try {
-  await page.goto(base);
+  // Flutter's release bundle may take longer than the default navigation
+  // timeout on the loopback fixture. The login locator proves first paint.
+  await page.goto(base,{waitUntil:'domcontentloaded',timeout:180000});
   await page.waitForTimeout(3000);
   await writeFile(resolve(out,'initial-dom.html'),await page.content());
-  await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor({timeout:45000});
+  await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor({timeout:180000});
   await capture('01-authentication-required');
   const result=JSON.parse(execFileSync(process.env.OIP_SERVER_BIN,['--browser-login','--ipc-socket',process.env.OIP_IPC_SOCKET,'--ipc-credential',process.env.OIP_BROWSER_CREDENTIAL],{encoding:'utf8'}));
   await typeInto(page.getByRole('textbox',{name:'Einmalcode'}),result.login_code);
@@ -375,7 +377,7 @@ try {
   // Flutter exposes these Material tabs as tappable semantic text nodes, not
   // ARIA role=tab nodes. Target the rendered Telemetry node itself.
   const telemetryTab=page.locator('flt-semantics[role="text"][flt-tappable]')
-    .filter({hasText:/^Telemetry\s+Tab 2 of 3$/});
+    .filter({hasText:/^Telemetry\s+Tab 2 von 3$/});
   assert.equal(await telemetryTab.count(),1,'the rendered Telemetry tab is missing or ambiguous');
   await telemetryTab.click({force:true});
   // Let the TabBarView finish its slide before inspecting the active pane;
@@ -406,7 +408,7 @@ try {
     `DeviceDetail Telemetry did not render the authorized values for ${[...expectedTelemetry.keys()].join(', ')}`);
   await capture('06b-device-detail-telemetry');
   const engineeringTab=page.locator('flt-semantics[role="text"][flt-tappable]')
-    .filter({hasText:/^Engineering\s+Tab 1 of 3$/});
+    .filter({hasText:/^Engineering\s+Tab 1 von 3$/});
   assert.equal(await engineeringTab.count(),1,'the rendered Engineering tab is missing or ambiguous');
   await engineeringTab.click({force:true});
   await page.waitForTimeout(600);

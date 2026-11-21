@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'dart:convert';
 import 'dart:math' as math;
 
@@ -430,17 +431,16 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Auto-Layout anwenden?'),
-        content: const Text(
-            'Das aktuelle Layout dieses Kontexts wird durch ein automatisch '
-            'aus den gelieferten Geräten und Messpunkten erzeugtes ersetzt.'),
+        title: Text(context.tr("Auto-Layout anwenden?")),
+        content: Text(context.tr(
+            "Das aktuelle Layout dieses Kontexts wird durch ein automatisch aus den gelieferten Geräten und Messpunkten erzeugtes ersetzt.")),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Abbrechen')),
+              child: Text(context.tr("Abbrechen"))),
           FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Ersetzen')),
+              child: Text(context.tr("Ersetzen"))),
         ],
       ),
     );
@@ -574,15 +574,17 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
       if (!loaded)
         const LinearProgressIndicator()
       else if (activeKey == null)
-        const WorkstationNote(
-          'Dashboard schreibgeschützt',
-          'Eine angemeldete Sitzung und ein autorisierter Infrastrukturkontext sind erforderlich, damit das persönliche Layout getrennt gespeichert wird.',
+        WorkstationNote(
+          context.tr("Dashboard schreibgeschützt"),
+          context.tr(
+              "Eine angemeldete Sitzung und ein autorisierter Infrastrukturkontext sind erforderlich, damit das persönliche Layout getrennt gespeichert wird."),
           icon: Icons.lock_outline,
         )
       else if (panels.isEmpty)
-        const WorkstationNote(
-          'Noch keine Panels',
-          'Füge Panels hinzu oder wähle unter „Anpassen“ das Auto-Layout. Angezeigt werden nur Daten des aktuellen Infrastrukturkontexts.',
+        WorkstationNote(
+          context.tr("Noch keine Panels"),
+          context.tr(
+              "Füge Panels hinzu oder wähle unter „Anpassen“ das Auto-Layout. Angezeigt werden nur Daten des aktuellen Infrastrukturkontexts."),
           icon: Icons.dashboard_customize_outlined,
         )
       else
@@ -676,8 +678,11 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
             const SizedBox(height: 4),
             Text(
               activeKey == null
-                  ? 'Zum Bearbeiten anmelden und eine Infrastruktur auswählen.'
-                  : '${panels.length} Panels · ${observations.length} gelieferte Messpunkte · persönliches Layout',
+                  ? context.tr(
+                      "Zum Bearbeiten anmelden und eine Infrastruktur auswählen.")
+                  : context.tr(
+                      "{0} Panels · {1} gelieferte Messpunkte · persönliches Layout",
+                      [panels.length, observations.length]),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -688,7 +693,7 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
               key: const Key('overview-dashboard-auto-layout'),
               onPressed: _applyAutoLayout,
               icon: const Icon(Icons.auto_awesome_mosaic_outlined, size: 17),
-              label: const Text('Auto-Layout'),
+              label: Text(context.tr("Auto-Layout")),
             ),
           if (editing)
             PopupMenuButton<int>(
@@ -698,11 +703,11 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
                 setState(() => columns = value);
                 await _save();
               },
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: 1, child: Text('1 Spalte')),
-                PopupMenuItem(value: 2, child: Text('2 Spalten')),
-                PopupMenuItem(value: 3, child: Text('3 Spalten')),
-                PopupMenuItem(value: 4, child: Text('4 Spalten')),
+              itemBuilder: (context) => [
+                PopupMenuItem(value: 1, child: Text(context.tr("1 Spalte"))),
+                PopupMenuItem(value: 2, child: Text(context.tr("2 Spalten"))),
+                PopupMenuItem(value: 3, child: Text(context.tr("3 Spalten"))),
+                PopupMenuItem(value: 4, child: Text(context.tr("4 Spalten"))),
               ],
               child: Container(
                 padding:
@@ -714,7 +719,7 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   const Icon(Icons.view_column_outlined, size: 18),
                   const SizedBox(width: 7),
-                  Text('$columns Spalten'),
+                  Text(context.tr("{0} Spalten", [columns])),
                 ]),
               ),
             ),
@@ -724,13 +729,14 @@ class _DashboardWorkspaceState extends State<DashboardWorkspace> {
                 ? null
                 : () => setState(() => editing = !editing),
             icon: Icon(editing ? Icons.check : Icons.tune, size: 17),
-            label: Text(editing ? 'Fertig' : 'Anpassen'),
+            label:
+                Text(editing ? context.tr("Fertig") : context.tr("Anpassen")),
           ),
           FilledButton.icon(
             key: const Key('overview-dashboard-add-panel'),
             onPressed: activeKey == null ? null : _addPanel,
             icon: const Icon(Icons.add, size: 17),
-            label: const Text('Panel hinzufügen'),
+            label: Text(context.tr("Panel hinzufügen")),
           ),
         ]);
         return box.maxWidth < 780
@@ -938,7 +944,8 @@ class _DashboardPanel extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
           child: Text(
-              'Das konfigurierte Signal ist in diesem Kontext nicht verfügbar.',
+              context.tr(
+                  "Das konfigurierte Signal ist in diesem Kontext nicht verfügbar."),
               style: Theme.of(context).textTheme.bodySmall),
         ),
       );
@@ -972,11 +979,11 @@ class _DashboardPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (samples.length < 2)
-              const SizedBox(
+              SizedBox(
                 height: 120,
                 child: Center(
-                  child: Text(
-                      'Sammle Verlauf – mindestens zwei frische Samples erforderlich.'),
+                  child: Text(context.tr(
+                      "Sammle Verlauf – mindestens zwei frische Samples erforderlich.")),
                 ),
               )
             else
@@ -987,7 +994,9 @@ class _DashboardPanel extends StatelessWidget {
                   height: 220),
             const SizedBox(height: 4),
             Text(
-                'Session-Verlauf · ${samples.length} Samples seit Öffnen des Dashboards · keine persistierte Historie',
+                context.tr(
+                    "Session-Verlauf · {0} Samples seit Öffnen des Dashboards · keine persistierte Historie",
+                    [samples.length]),
                 style: Theme.of(context).textTheme.bodySmall),
           ],
         ),
@@ -1137,7 +1146,7 @@ class _GaugeBody extends StatelessWidget {
         Row(children: [
           Text(_formatBound(scale.min, item), style: bounds),
           Expanded(
-            child: Text(scale.auto ? 'Skala automatisch' : '',
+            child: Text(scale.auto ? context.tr("Skala automatisch") : '',
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -1290,7 +1299,7 @@ class _BarBody extends StatelessWidget {
         Row(children: [
           Text(_formatBound(scale.min, item), style: bounds),
           Expanded(
-            child: Text(scale.auto ? 'Skala automatisch' : '',
+            child: Text(scale.auto ? context.tr("Skala automatisch") : '',
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -1450,7 +1459,7 @@ class _LiveIndicator extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 6),
-          Text(live ? 'LIVE' : 'VERBINDUNG PRÜFEN',
+          Text(live ? context.tr("LIVE") : context.tr("VERBINDUNG PRÜFEN"),
               style: WorkstationTokens.eyebrow(context,
                   color: OipTokens.statusColor(
                       context, live ? 'fresh' : 'stale'))),
@@ -1512,7 +1521,7 @@ class _AddPanelDialogState extends State<_AddPanelDialog> {
     }
     selectedKey ??= choices.keys.firstOrNull;
     return AlertDialog(
-      title: const Text('Dashboard-Panel hinzufügen'),
+      title: Text(context.tr("Dashboard-Panel hinzufügen")),
       content: SizedBox(
           width: 520,
           child: Column(
@@ -1526,20 +1535,23 @@ class _AddPanelDialogState extends State<_AddPanelDialog> {
                 if (kind == _PanelKind.heading)
                   TextField(
                     controller: title,
-                    decoration: const InputDecoration(labelText: 'Überschrift'),
+                    decoration:
+                        InputDecoration(labelText: context.tr("Überschrift")),
                   )
                 else if (!kind.needsSignal)
-                  Text('Dieses Panel benötigt kein Messsignal.',
+                  Text(context.tr("Dieses Panel benötigt kein Messsignal."),
                       style: Theme.of(context).textTheme.bodySmall)
                 else if (choices.isEmpty)
-                  Text('Dieser Kontext liefert derzeit keine Messsignale.',
+                  Text(
+                      context.tr(
+                          "Dieser Kontext liefert derzeit keine Messsignale."),
                       style: Theme.of(context).textTheme.bodySmall)
                 else
                   DropdownButtonFormField<String>(
                     value: selectedKey,
                     isExpanded: true,
-                    decoration:
-                        const InputDecoration(labelText: 'Live-Messsignal'),
+                    decoration: InputDecoration(
+                        labelText: context.tr("Live-Messsignal")),
                     items: choices.entries
                         .map((entry) => DropdownMenuItem(
                               value: entry.key,
@@ -1554,7 +1566,7 @@ class _AddPanelDialogState extends State<_AddPanelDialog> {
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Abbrechen')),
+            child: Text(context.tr("Abbrechen"))),
         FilledButton(
             onPressed: kind.needsSignal && selectedKey == null
                 ? null
@@ -1564,7 +1576,7 @@ class _AddPanelDialogState extends State<_AddPanelDialog> {
                         title: kind == _PanelKind.heading
                             ? title.text.trim()
                             : null)),
-            child: const Text('Hinzufügen')),
+            child: Text(context.tr("Hinzufügen"))),
       ],
     );
   }
@@ -1690,7 +1702,7 @@ class _PanelOptionsDialogState extends State<_PanelOptionsDialog> {
     final symbol = widget.observation?.symbol ?? '';
     final unit = symbol.isEmpty ? '' : ' ($symbol)';
     return AlertDialog(
-      title: const Text('Panel konfigurieren'),
+      title: Text(context.tr("Panel konfigurieren")),
       content: SizedBox(
         width: 520,
         child: SingleChildScrollView(
@@ -1709,20 +1721,25 @@ class _PanelOptionsDialogState extends State<_PanelOptionsDialog> {
               if (kind == _PanelKind.heading) ...[
                 TextField(
                   controller: title,
-                  decoration: const InputDecoration(labelText: 'Überschrift'),
+                  decoration:
+                      InputDecoration(labelText: context.tr("Überschrift")),
                 ),
                 const SizedBox(height: 16),
               ],
               if (kind != _PanelKind.heading) ...[
-                Text('Breite', style: Theme.of(context).textTheme.labelMedium),
+                Text(context.tr("Breite"),
+                    style: Theme.of(context).textTheme.labelMedium),
                 const SizedBox(height: 6),
                 SegmentedButton<int>(
                   showSelectedIcon: false,
-                  segments: const [
-                    ButtonSegment(value: -1, label: Text('Auto')),
-                    ButtonSegment(value: 1, label: Text('1 Spalte')),
-                    ButtonSegment(value: 2, label: Text('2 Spalten')),
-                    ButtonSegment(value: 0, label: Text('Volle Zeile')),
+                  segments: [
+                    ButtonSegment(value: -1, label: Text(context.tr("Auto"))),
+                    ButtonSegment(
+                        value: 1, label: Text(context.tr("1 Spalte"))),
+                    ButtonSegment(
+                        value: 2, label: Text(context.tr("2 Spalten"))),
+                    ButtonSegment(
+                        value: 0, label: Text(context.tr("Volle Zeile"))),
                   ],
                   selected: {span ?? -1},
                   onSelectionChanged: (value) => setState(
@@ -1745,7 +1762,8 @@ class _PanelOptionsDialogState extends State<_PanelOptionsDialog> {
                 const SizedBox(height: 10),
                 Text(
                   error ??
-                      'Skala und Schwellen sind reine Darstellung dieses Panels. Leere Felder: automatische Skala bzw. keine Schwelle.',
+                      context.tr(
+                          "Skala und Schwellen sind reine Darstellung dieses Panels. Leere Felder: automatische Skala bzw. keine Schwelle."),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: error == null
                           ? null
@@ -1759,15 +1777,15 @@ class _PanelOptionsDialogState extends State<_PanelOptionsDialog> {
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Abbrechen')),
+            child: Text(context.tr("Abbrechen"))),
         if (kind.usesScale)
           TextButton(
               onPressed: () => Navigator.pop(
                   context,
                   _PanelSpec(widget.spec.observationKey, kind,
                       span: span, title: _title)),
-              child: const Text('Standard')),
-        FilledButton(onPressed: _submit, child: const Text('Übernehmen')),
+              child: Text(context.tr("Standard"))),
+        FilledButton(onPressed: _submit, child: Text(context.tr("Übernehmen"))),
       ],
     );
   }

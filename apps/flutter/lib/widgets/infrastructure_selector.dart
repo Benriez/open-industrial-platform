@@ -1,3 +1,4 @@
+import '../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -22,25 +23,30 @@ class InfrastructureSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final model = controller.infrastructure;
     final label = switch (model.status) {
-      InfrastructureContextStatus.ready => model.selectedLabel,
-      InfrastructureContextStatus.loading => 'Kontext wird autorisiert …',
+      InfrastructureContextStatus.ready => model.selection.isUnified
+          ? context.tr('Alle berechtigten Infrastrukturen')
+          : model.selectedLabel,
+      InfrastructureContextStatus.loading =>
+        context.tr('Kontext wird autorisiert …'),
       InfrastructureContextStatus.unauthenticated =>
-        'Browser-Identität fehlt',
+        context.tr('Browser-Identität fehlt'),
       InfrastructureContextStatus.permissionDenied =>
-        'Kontext nicht autorisiert',
-      InfrastructureContextStatus.unavailable => 'Lokaler Demo-Kontext',
-      InfrastructureContextStatus.idle => 'Infrastructure Context',
+        context.tr('Kontext nicht autorisiert'),
+      InfrastructureContextStatus.unavailable =>
+        context.tr('Lokaler Demo-Kontext'),
+      InfrastructureContextStatus.idle => context.tr('Infrastructure Context'),
     };
     final accent = model.ready
         ? OipTokens.readableAccent(context, OipTokens.cyan)
         : OipTokens.muted(context);
     return Tooltip(
       message: model.ready
-          ? model.selectedBreadcrumb
-          : 'Globaler Infrastructure Context · keine Szenarioauswahl',
+          ? (model.selection.isUnified ? label : model.selectedBreadcrumb)
+          : context
+              .tr("Globaler Infrastructure Context · keine Szenarioauswahl"),
       child: Semantics(
         button: true,
-        label: 'Infrastructure Context: $label',
+        label: context.tr("Infrastructure Context: {0}", [label]),
         child: InkWell(
           key: const Key('infrastructure-context-selector'),
           borderRadius: BorderRadius.circular(8),
@@ -79,7 +85,7 @@ class InfrastructureSelector extends StatelessWidget {
               ),
               if (model.isFixture) ...[
                 const SizedBox(width: 5),
-                Text('TEST',
+                Text(context.tr("TEST"),
                     style: WorkstationTokens.mono(context,
                         size: 8.5, color: OipTokens.yellow)),
               ],
@@ -133,10 +139,10 @@ class _InfrastructureContextDialogState
   List<_ContextOption> get options {
     final hierarchy = model.hierarchy;
     final result = <_ContextOption>[
-      const _ContextOption(
-        InfrastructureSelection.unified(),
-        'Alle berechtigten Infrastrukturen',
-        'Unified View · gesamter autorisierter Principal-Scope',
+      _ContextOption(
+        const InfrastructureSelection.unified(),
+        context.tr('Alle berechtigten Infrastrukturen'),
+        context.tr('Unified View · gesamter autorisierter Principal-Scope'),
         0,
         Icons.all_inclusive,
       ),
@@ -149,9 +155,10 @@ class _InfrastructureContextDialogState
         0,
         Icons.business_outlined,
       ));
-      for (final infrastructure in hierarchy.infrastructures.where(
-          (item) => item.organizationId == organization.id)) {
-        final infrastructurePath = '${organization.name} / ${infrastructure.name}';
+      for (final infrastructure in hierarchy.infrastructures
+          .where((item) => item.organizationId == organization.id)) {
+        final infrastructurePath =
+            '${organization.name} / ${infrastructure.name}';
         result.add(_ContextOption(
           InfrastructureSelection.infrastructure(
               organization.id, infrastructure.id),
@@ -172,8 +179,8 @@ class _InfrastructureContextDialogState
             Icons.location_on_outlined,
           ));
           final seen = <String>{};
-          for (final location in hierarchy.locations
-              .where((item) => item.siteId == site.id)) {
+          for (final location
+              in hierarchy.locations.where((item) => item.siteId == site.id)) {
             if (!seen.add(location.sourceId)) continue;
             result.add(_ContextOption(
               InfrastructureSelection.source(organization.id, infrastructure.id,
@@ -205,8 +212,9 @@ class _InfrastructureContextDialogState
       // A concurrent authorization refresh can remove an option between render
       // and activation. Fail closed and let the current hierarchy re-render.
       setState(() => cursor = 0);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Der Kontext ist nicht mehr autorisiert. Daten werden neu gelesen.'),
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(context.tr(
+            "Der Kontext ist nicht mehr autorisiert. Daten werden neu gelesen.")),
       ));
     }
   }
@@ -241,8 +249,8 @@ class _InfrastructureContextDialogState
       return KeyEventResult.ignored;
     }
     if (scroll.hasClients) {
-      final target = (cursor * 52.0)
-          .clamp(0.0, scroll.position.maxScrollExtent);
+      final target =
+          (cursor * 52.0).clamp(0.0, scroll.position.maxScrollExtent);
       scroll.animateTo(target,
           duration: const Duration(milliseconds: 100), curve: Curves.easeOut);
     }
@@ -256,12 +264,10 @@ class _InfrastructureContextDialogState
     final width = MediaQuery.sizeOf(context).width;
     return Dialog(
       insetPadding: EdgeInsets.symmetric(
-          horizontal: width < 600 ? 12 : 32,
-          vertical: width < 600 ? 16 : 40),
+          horizontal: width < 600 ? 12 : 32, vertical: width < 600 ? 16 : 40),
       child: SizedBox(
         width: (width - (width < 600 ? 24 : 64)).clamp(0.0, 660.0),
-        height: (MediaQuery.sizeOf(context).height -
-                (width < 600 ? 32 : 80))
+        height: (MediaQuery.sizeOf(context).height - (width < 600 ? 32 : 80))
             .clamp(0.0, 720.0),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -278,21 +284,21 @@ class _InfrastructureContextDialogState
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Infrastructure Context',
+                          Text(context.tr("Infrastructure Context"),
                               style: Theme.of(context).textTheme.titleLarge),
-                          Text('Global für alle OIP-Workstations',
+                          Text(context.tr("Global für alle OIP-Workstations"),
                               style: Theme.of(context).textTheme.bodySmall),
                         ]),
                   ),
                   if (model.isFixture && width >= 600)
-                    const StatusPill('CONTRACT FIXTURE · NICHT LIVE',
+                    StatusPill(context.tr("CONTRACT FIXTURE · NICHT LIVE"),
                         color: OipTokens.yellow, icon: Icons.science_outlined),
                   if (model.isFixture && width < 600)
-                    Text('TEST',
+                    Text(context.tr("TEST"),
                         style: WorkstationTokens.mono(context,
                             size: 9, color: OipTokens.yellow)),
                   IconButton(
-                    tooltip: 'Infrastructure Context schließen',
+                    tooltip: context.tr("Infrastructure Context schließen"),
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close),
                   ),
@@ -300,13 +306,15 @@ class _InfrastructureContextDialogState
                 const SizedBox(height: 10),
                 if (width < 600)
                   Text(
-                    'Authorization Scope ≠ Selected UI Context. Auswahl erteilt keine Berechtigung.',
+                    context.tr(
+                        "Authorization Scope ≠ Selected UI Context. Auswahl erteilt keine Berechtigung."),
                     style: Theme.of(context).textTheme.bodySmall,
                   )
                 else
-                  const WorkstationNote(
-                    'Authorization Scope ≠ Selected UI Context',
-                    'Der Core bestimmt den autorisierten Principal-Scope. Die Auswahl grenzt nur bereits autorisierte Daten ein und erteilt keine Berechtigung.',
+                  WorkstationNote(
+                    context.tr("Authorization Scope ≠ Selected UI Context"),
+                    context.tr(
+                        "Der Core bestimmt den autorisierten Principal-Scope. Die Auswahl grenzt nur bereits autorisierte Daten ein und erteilt keine Berechtigung."),
                     icon: Icons.verified_user_outlined,
                   ),
                 const SizedBox(height: 10),
@@ -319,10 +327,11 @@ class _InfrastructureContextDialogState
                     focusNode: searchFocus,
                     autofocus: true,
                     onChanged: (_) => setState(() => cursor = 0),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       isDense: true,
                       prefixIcon: Icon(Icons.search, size: 18),
-                      hintText: 'Organization, Infrastructure, Site oder Source …',
+                      hintText: context.tr(
+                          "Organization, Infrastructure, Site oder Source …"),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -331,12 +340,13 @@ class _InfrastructureContextDialogState
                     Expanded(
                       child: Text(
                         model.hasInfrastructure
-                            ? '${hierarchyCount(model.hierarchy)} · Pfeile / Enter'
-                            : 'No infrastructure configured',
+                            ? context.tr("{0} · Pfeile / Enter",
+                                [hierarchyCount(model.hierarchy)])
+                            : context.tr("No infrastructure configured"),
                         style: WorkstationTokens.mono(context, size: 9.5),
                       ),
                     ),
-                    Text('REV ${model.contextRevision}',
+                    Text(context.tr("REV {0}", [model.contextRevision]),
                         style: WorkstationTokens.mono(context, size: 9.5)),
                   ]),
                   const SizedBox(height: 6),
@@ -344,8 +354,9 @@ class _InfrastructureContextDialogState
                     child: Focus(
                       focusNode: listFocus,
                       child: items.isEmpty
-                          ? const Center(
-                              child: Text('Kein autorisierter Kontext passt zur Suche.'))
+                          ? Center(
+                              child: Text(context.tr(
+                                  "Kein autorisierter Kontext passt zur Suche.")))
                           : ListView.builder(
                               key: const Key('infrastructure-context-options'),
                               controller: scroll,
@@ -358,7 +369,9 @@ class _InfrastructureContextDialogState
                 ],
                 const SizedBox(height: 8),
                 Text(
-                  'Principal: ${model.principalIdentity ?? 'vom Core nicht geliefert'} · keine Credentials in URL oder LocalStorage',
+                  context.tr(
+                      "Principal: {0} · keine Credentials in URL oder LocalStorage",
+                      [model.principalIdentity ?? 'vom Core nicht geliefert']),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: WorkstationTokens.mono(context, size: 9),
@@ -386,7 +399,7 @@ class _InfrastructureContextDialogState
         child: Semantics(
           button: true,
           selected: selected,
-          label: 'Kontext ${option.path} auswählen',
+          label: context.tr("Kontext {0} auswählen", [option.path]),
           child: ListTile(
             key: Key(
                 'context-option-${option.selection.kind.name}-${option.selection.id}'),
@@ -396,9 +409,10 @@ class _InfrastructureContextDialogState
                 size: 17, color: selected ? accent : OipTokens.muted(context)),
             title: Text(option.label,
                 maxLines: 1, overflow: TextOverflow.ellipsis),
-            subtitle: Text(option.path,
-                maxLines: 1, overflow: TextOverflow.ellipsis),
-            trailing: selected ? Icon(Icons.check, size: 17, color: accent) : null,
+            subtitle:
+                Text(option.path, maxLines: 1, overflow: TextOverflow.ellipsis),
+            trailing:
+                selected ? Icon(Icons.check, size: 17, color: accent) : null,
             onTap: () => _choose(option),
           ),
         ),

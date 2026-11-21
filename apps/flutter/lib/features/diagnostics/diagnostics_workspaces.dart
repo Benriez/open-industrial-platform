@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/controller.dart';
@@ -27,31 +28,32 @@ class DiagnosticsEventsOverview extends StatelessWidget {
     return WorkstationPanel(
       accent: OipTokens.cyan,
       child: ListView(children: [
-        Text('EVENTS · UNTERSUCHUNGSKONTEXT',
+        Text(context.tr("EVENTS · UNTERSUCHUNGSKONTEXT"),
             style: WorkstationTokens.eyebrow(context, color: OipTokens.cyan)),
         const SizedBox(height: 4),
-        Text('Aktuelles Evidenzfenster',
+        Text(context.tr("Aktuelles Evidenzfenster"),
             style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 6),
-        const Text(
-            'Entdecken, auswählen und vergleichen Sie tatsächlich gelieferte Collection-Ereignisse. Die API bietet keine vollständige historische Suche.'),
+        Text(context.tr(
+            "Entdecken, auswählen und vergleichen Sie tatsächlich gelieferte Collection-Ereignisse. Die API bietet keine vollständige historische Suche.")),
         const SizedBox(height: 14),
         KeyValueGrid(children: [
-          KeyValue('Gelieferte fachliche Records', '${all.length}'),
-          KeyValue('Davon im lokalen Filter', '${filtered.length}'),
-          KeyValue('Mit Source + Sequenz', '$withRecords'),
-          KeyValue('Mit EventTimestamp', '$timestamped'),
-          KeyValue('Konsolidierte Mehrfachlieferungen', '$duplicates'),
+          KeyValue(context.tr("Gelieferte fachliche Records"), '${all.length}'),
+          KeyValue(context.tr("Davon im lokalen Filter"), '${filtered.length}'),
+          KeyValue(context.tr("Mit Source + Sequenz"), '$withRecords'),
+          KeyValue(context.tr("Mit EventTimestamp"), '$timestamped'),
           KeyValue(
-              'UI Transport',
+              context.tr("Konsolidierte Mehrfachlieferungen"), '$duplicates'),
+          KeyValue(
+              context.tr("UI Transport"),
               transportLive
-                  ? 'Live · kein Source-Health-Beweis'
-                  : 'Stale / Reconnecting'),
+                  ? context.tr("Live · kein Source-Health-Beweis")
+                  : context.tr("Stale / Reconnecting")),
         ]),
         const Hairline(),
-        const PanelLabel('Vorhandene Eventtypen', color: OipTokens.cyan),
+        PanelLabel(context.tr("Vorhandene Eventtypen"), color: OipTokens.cyan),
         if (kinds.isEmpty)
-          const Text('Keine Eventtypen geliefert.')
+          Text(context.tr("Keine Eventtypen geliefert."))
         else
           Wrap(spacing: 6, runSpacing: 6, children: [
             for (final kind in kinds)
@@ -60,15 +62,17 @@ class DiagnosticsEventsOverview extends StatelessWidget {
                       '${diagnosticEventTitle(kind)} · ${all.where((item) => item.event.kind == kind).length}'))
           ]),
         const Hairline(),
-        const WorkstationNote(
-          'Observed Evidence ≠ Rule-derived Finding ≠ Hypothesis',
-          'Collection-Ereignisse sind Transport-/Collection-Beobachtungen. Incidents werden separat ausgewiesen. Zeitliche Nähe erzeugt weder Korrelationsnachweis noch Ursache.',
+        WorkstationNote(
+          context.tr("Observed Evidence ≠ Rule-derived Finding ≠ Hypothesis"),
+          context.tr(
+              "Collection-Ereignisse sind Transport-/Collection-Beobachtungen. Incidents werden separat ausgewiesen. Zeitliche Nähe erzeugt weder Korrelationsnachweis noch Ursache."),
           icon: Icons.rule_outlined,
         ),
         const SizedBox(height: 10),
-        const WorkstationNote(
-          'Nur aktuell verfügbare Ereignisse',
-          'GET /api/v1/events liefert maximal 100 aktuelle Kontrollereignisse je Source. Keine vollständige Serverhistorie, kein Replay; nach SSE-Reconnect ist Resync erforderlich.',
+        WorkstationNote(
+          context.tr("Nur aktuell verfügbare Ereignisse"),
+          context.tr(
+              "GET /api/v1/events liefert maximal 100 aktuelle Kontrollereignisse je Source. Keine vollständige Serverhistorie, kein Replay; nach SSE-Reconnect ist Resync erforderlich."),
           icon: Icons.history_toggle_off_outlined,
           color: OipTokens.yellow,
         ),
@@ -94,11 +98,13 @@ class DiagnosticsIncidentsWorkspace extends StatelessWidget {
         accent: OipTokens.violet,
         child: WorkstationNote(
           snapshot.system.simulated
-              ? 'Kein aktiver Demo-Vorfall'
-              : 'Kein aktiver Vorfall',
+              ? context.tr("Kein aktiver Demo-Vorfall")
+              : context.tr("Kein aktiver Vorfall"),
           snapshot.system.demoControls
-              ? 'Normalbetrieb liefert bewusst keinen Incident. Es wird kein Befund für visuelle Vollständigkeit erzeugt.'
-              : 'Das Backend liefert aktuell keine Incidents. Collection-Ereignisse bleiben separat verfügbar.',
+              ? context.tr(
+                  "Normalbetrieb liefert bewusst keinen Incident. Es wird kein Befund für visuelle Vollständigkeit erzeugt.")
+              : context.tr(
+                  "Das Backend liefert aktuell keine Incidents. Collection-Ereignisse bleiben separat verfügbar."),
           icon: Icons.verified_user_outlined,
         ),
       );
@@ -142,22 +148,26 @@ class _IncidentFinding extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Wrap(spacing: 6, runSpacing: 5, children: [
           StatusPill(
-              incident.simulated ? 'SIMULIERTER VORFALL' : 'BACKEND-VORFALL',
+              incident.simulated
+                  ? context.tr("SIMULIERTER VORFALL")
+                  : context.tr("BACKEND-VORFALL"),
               color: tone,
               showDot: true),
-          const StatusPill('KEINE REGEL-ID / VERSION GELIEFERT',
+          StatusPill(context.tr("KEINE REGEL-ID / VERSION GELIEFERT"),
               color: OipTokens.blue),
         ]),
         const SizedBox(height: 7),
         Text(incident.title, style: Theme.of(context).textTheme.titleLarge),
         Text(
-            '${incident.category} · Device ${incident.deviceId} · ID ${incident.id}',
+            context.tr("{0} · Device {1} · ID {2}",
+                [incident.category, incident.deviceId, incident.id]),
             style: WorkstationTokens.mono(context,
                 size: 10.5, color: OipTokens.muted(context))),
         const SizedBox(height: 8),
-        const InlineNotice(
-          'Korrelation ist keine bewiesene Ursache',
-          'Observed Evidence, regelbasierte Befunde und Hypothesen bleiben getrennt. Dieser Incident enthält freie Evidenztexte und keine autoritative Regel-Evaluation.',
+        InlineNotice(
+          context.tr("Korrelation ist keine bewiesene Ursache"),
+          context.tr(
+              "Observed Evidence, regelbasierte Befunde und Hypothesen bleiben getrennt. Dieser Incident enthält freie Evidenztexte und keine autoritative Regel-Evaluation."),
           icon: Icons.rule_outlined,
         ),
         if (affected != null)
@@ -169,7 +179,8 @@ class _IncidentFinding extends StatelessWidget {
                       onPressed: () =>
                           showDevice(context, controller, affected),
                       icon: const Icon(Icons.dns_outlined, size: 17),
-                      label: Text('Betroffenes Gerät: ${affected.name}')))),
+                      label: Text(context
+                          .tr("Betroffenes Gerät: {0}", [affected.name]))))),
         const SizedBox(height: 10),
         LayoutBuilder(builder: (context, box) {
           final columns = box.maxWidth > 760 ? 3 : 1;
@@ -213,15 +224,19 @@ class _IncidentFinding extends StatelessWidget {
               borderRadius: BorderRadius.circular(8)),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('ZEITLICHE EREIGNISKETTE',
+            Text(context.tr("ZEITLICHE EREIGNISKETTE"),
                 style: WorkstationTokens.eyebrow(context,
                     color: OipTokens.violet)),
             Text(
-                '${incident.simulated ? 'Deterministische Demo-Chronologie' : 'Backend-Chronologie'} · keine realen Ereigniszeiten',
+                context.tr("{0} · keine realen Ereigniszeiten", [
+                  incident.simulated
+                      ? 'Deterministische Demo-Chronologie'
+                      : 'Backend-Chronologie'
+                ]),
                 style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 5),
             if (incident.timeline.isEmpty)
-              const Text('Keine Chronologie geliefert.')
+              Text(context.tr("Keine Chronologie geliefert."))
             else
               for (var index = 0; index < incident.timeline.length; index++)
                 Padding(
@@ -232,12 +247,13 @@ class _IncidentFinding extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
             snapshot.system.simulated
-                ? 'Diagnosehistorie: demo_only'
-                : 'Diagnosehistorie: nicht verfügbar',
+                ? context.tr("Diagnosehistorie: demo_only")
+                : context.tr("Diagnosehistorie: nicht verfügbar"),
             style: WorkstationTokens.mono(context,
                 size: 10.5, color: OipTokens.yellow)),
         Text(
-            'Kein persistierter Diagnoselauf, keine Regelversion und keine strukturierten Evidenzreferenzen. Keine Flutter-Rekonstruktion als Core-Befund.',
+            context.tr(
+                "Kein persistierter Diagnoselauf, keine Regelversion und keine strukturierten Evidenzreferenzen. Keine Flutter-Rekonstruktion als Core-Befund."),
             style: Theme.of(context).textTheme.bodySmall),
       ]),
     );
@@ -313,29 +329,37 @@ class DiagnosticsCollectionHealth extends StatelessWidget {
     return WorkstationPanel(
       accent: OipTokens.cyan,
       child: ListView(children: [
-        Text('COLLECTION HEALTH',
+        Text(context.tr("COLLECTION HEALTH"),
             style: WorkstationTokens.eyebrow(context, color: OipTokens.cyan)),
         const SizedBox(height: 3),
-        Text('Source-Diagnostik & dokumentierte Datenlücken',
+        Text(context.tr("Source-Diagnostik & dokumentierte Datenlücken"),
             style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 5),
         Text(
-            'Aktuelle Source-Datensätze + ${events.length} geladene Kontrollereignisse. Keine Source-Health-Historie.',
+            context.tr(
+                "Aktuelle Source-Datensätze + {0} geladene Kontrollereignisse. Keine Source-Health-Historie.",
+                [events.length]),
             style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 10),
         if (!transportLive)
-          const Padding(
+          Padding(
               padding: EdgeInsets.only(bottom: 8),
-              child: WorkstationNote('UI-Transport nicht live',
-                  'Letzte Source-Werte können veraltet sein. UI-Reconnect, Source-Reconnect und frische Messwerte sind verschiedene Zustände.',
+              child: WorkstationNote(
+                  context.tr("UI-Transport nicht live"),
+                  context.tr(
+                      "Letzte Source-Werte können veraltet sein. UI-Reconnect, Source-Reconnect und frische Messwerte sind verschiedene Zustände."),
                   color: OipTokens.yellow)),
         if (sourcesError != null)
-          const WorkstationNote('Source-Zustände nicht verfügbar',
-              'Die bestehende Source-API konnte nicht gelesen werden. Geladene Events bleiben separat und werden nicht als aktueller Gesundheitszustand interpretiert.',
+          WorkstationNote(
+              context.tr("Source-Zustände nicht verfügbar"),
+              context.tr(
+                  "Die bestehende Source-API konnte nicht gelesen werden. Geladene Events bleiben separat und werden nicht als aktueller Gesundheitszustand interpretiert."),
               color: OipTokens.red)
         else if (sources.isEmpty)
-          const WorkstationNote('Keine Source-Datensätze',
-              'Die API liefert keine Sources; daraus folgt kein Fehlerzustand und keine vollständige Abdeckung.')
+          WorkstationNote(
+              context.tr("Keine Source-Datensätze"),
+              context.tr(
+                  "Die API liefert keine Sources; daraus folgt kein Fehlerzustand und keine vollständige Abdeckung."))
         else
           for (final source in sources)
             _SourceHealthCard(
@@ -344,11 +368,11 @@ class DiagnosticsCollectionHealth extends StatelessWidget {
                     .where((item) => item.event.sourceId == source.id)
                     .toList()),
         const Hairline(),
-        const PanelLabel('DATA GAP INSPECTOR · GELADENES FENSTER',
+        PanelLabel(context.tr("DATA GAP INSPECTOR · GELADENES FENSTER"),
             color: OipTokens.yellow),
         if (gapEvents.isEmpty)
-          const Text(
-              'Keine Gap-Datensätze im geladenen Fenster. Das beweist keine lückenlose Historie.')
+          Text(context.tr(
+              "Keine Gap-Datensätze im geladenen Fenster. Das beweist keine lückenlose Historie."))
         else
           for (final item in gapEvents)
             Card(
@@ -356,16 +380,24 @@ class DiagnosticsCollectionHealth extends StatelessWidget {
               child: ListTile(
                 title: Text(
                     '${diagnosticEventTitle(item.event.kind)} · ${item.sourceLabel}'),
-                subtitle: Text(
-                    'Beginn ${timestamp(item.event.gapStartedMs)}\nEnde ${timestamp(item.event.gapEndedMs)}\n${item.event.gapMs == null ? 'Dauer unbekannt / inkonsistent / nicht bestimmbar' : 'Dokumentierte Dauer ${item.event.gapMs} ms'}'),
+                subtitle: Text(context.tr("Beginn {0}\nEnde {1}\n{2}", [
+                  timestamp(item.event.gapStartedMs),
+                  timestamp(item.event.gapEndedMs),
+                  item.event.gapMs == null
+                      ? 'Dauer unbekannt / inkonsistent / nicht bestimmbar'
+                      : 'Dokumentierte Dauer ${item.event.gapMs} ms'
+                ])),
                 trailing: const Icon(Icons.open_in_new, size: 17),
                 onTap: () => onSelect(item),
               ),
             ),
         const SizedBox(height: 8),
-        const WorkstationNote('Null-Dauer und Recovery',
-            '0 ms ist ein dokumentierter Wert, kein Beweis für fehlende Unterbrechung. Reconnected bedeutet nicht, dass alle Messwerte frisch oder Lücken geschlossen sind. Gap-Gründe sind im aktuellen Flutter-DTO nicht verfügbar.',
-            icon: Icons.info_outline, color: OipTokens.yellow),
+        WorkstationNote(
+            context.tr("Null-Dauer und Recovery"),
+            context.tr(
+                "0 ms ist ein dokumentierter Wert, kein Beweis für fehlende Unterbrechung. Reconnected bedeutet nicht, dass alle Messwerte frisch oder Lücken geschlossen sind. Gap-Gründe sind im aktuellen Flutter-DTO nicht verfügbar."),
+            icon: Icons.info_outline,
+            color: OipTokens.yellow),
       ]),
     );
   }
@@ -402,16 +434,22 @@ class _SourceHealthCard extends StatelessWidget {
         ]),
         const SizedBox(height: 6),
         KeyValueGrid(children: [
-          KeyValue('Reachability', known(source.reachability)),
-          KeyValue('Connection', known(source.connection)),
-          KeyValue('Service', known(source.service)),
-          KeyValue('Freshness / Validity',
+          KeyValue(context.tr("Reachability"),
+              context.tr(known(source.reachability))),
+          KeyValue(
+              context.tr("Connection"), context.tr(known(source.connection))),
+          KeyValue(context.tr("Service"), context.tr(known(source.service))),
+          KeyValue(context.tr("Freshness / Validity"),
               '${known(source.freshness)} / ${known(source.validity)}'),
-          KeyValue('Letzter Empfang', timestamp(source.lastReceivedMs)),
-          KeyValue('Collection Error', source.lastError ?? 'Nicht geliefert'),
+          KeyValue(
+              context.tr("Letzter Empfang"), timestamp(source.lastReceivedMs)),
+          KeyValue(context.tr("Collection Error"),
+              source.lastError ?? context.tr("Nicht geliefert")),
         ]),
         Text(
-            'Im geladenen Eventfenster: $losses Verbindungsverluste · $reconnects Reconnects · $gaps Gap-Datensätze',
+            context.tr(
+                "Im geladenen Eventfenster: {0} Verbindungsverluste · {1} Reconnects · {2} Gap-Datensätze",
+                [losses, reconnects, gaps]),
             style: Theme.of(context).textTheme.bodySmall),
       ]),
     );
@@ -439,24 +477,28 @@ class DiagnosticsCompareWorkspace extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text('INVESTIGATION · COMPARE',
+                Text(context.tr("INVESTIGATION · COMPARE"),
                     style: WorkstationTokens.eyebrow(context,
                         color: OipTokens.violet)),
-                Text('${events.length}/4 Ereignisse · session-lokal',
+                Text(
+                    context.tr(
+                        "{0}/4 Ereignisse · session-lokal", [events.length]),
                     style: Theme.of(context).textTheme.titleMedium)
               ])),
           TextButton(
               onPressed: events.isEmpty ? null : onClear,
-              child: const Text('Vergleich schließen')),
+              child: Text(context.tr("Vergleich schließen"))),
         ]),
-        const Text(
-            'Unabhängige EventTimestamps und Quellen. Keine Synchronisation, Interpolation, Incident-ID oder Kausalbehauptung.'),
+        Text(context.tr(
+            "Unabhängige EventTimestamps und Quellen. Keine Synchronisation, Interpolation, Incident-ID oder Kausalbehauptung.")),
         const SizedBox(height: 8),
         Expanded(
           child: events.isEmpty
-              ? const Center(
-                  child: WorkstationNote('Keine Ereignisse im Vergleich',
-                      'Im Explorer oder Inspector C beziehungsweise Compare wählen. Maximal vier; keine dauerhafte Investigation-API.',
+              ? Center(
+                  child: WorkstationNote(
+                      context.tr("Keine Ereignisse im Vergleich"),
+                      context.tr(
+                          "Im Explorer oder Inspector C beziehungsweise Compare wählen. Maximal vier; keine dauerhafte Investigation-API."),
                       icon: Icons.compare_arrows_outlined))
               : ListView.separated(
                   itemCount: events.length,
@@ -485,33 +527,41 @@ class DiagnosticsCompareWorkspace extends StatelessWidget {
                                               .textTheme
                                               .titleSmall))),
                               IconButton(
-                                  tooltip: 'Aus Compare entfernen',
+                                  tooltip: context.tr("Aus Compare entfernen"),
                                   onPressed: () => onRemove(item),
                                   icon: const Icon(Icons.close, size: 17))
                             ]),
                             KeyValueGrid(children: [
-                              KeyValue('Event ID',
-                                  item.recordId ?? 'Nicht geliefert'),
-                              KeyValue('Source', item.sourceLabel),
-                              KeyValue('Type', event.kind),
-                              KeyValue('Timestamp', timestamp(event.atMs)),
-                              const KeyValue('Severity', 'Nicht geliefert'),
-                              const KeyValue('Provenance',
-                                  'Empfangenes API-Collection-Ereignis'),
-                              KeyValue('Collection State',
-                                  _compareState(event.kind)),
                               KeyValue(
-                                  'Data Gap',
+                                  context.tr("Event ID"),
+                                  item.recordId ??
+                                      context.tr("Nicht geliefert")),
+                              KeyValue(context.tr("Source"), item.sourceLabel),
+                              KeyValue(context.tr("Type"), event.kind),
+                              KeyValue(context.tr("Timestamp"),
+                                  timestamp(event.atMs)),
+                              KeyValue(context.tr("Severity"),
+                                  context.tr("Nicht geliefert")),
+                              KeyValue(
+                                  context.tr("Provenance"),
+                                  context.tr(
+                                      "Empfangenes API-Collection-Ereignis")),
+                              KeyValue(context.tr("Collection State"),
+                                  context.tr(_compareState(event.kind))),
+                              KeyValue(
+                                  context.tr("Data Gap"),
                                   event.gapMs == null
                                       ? item.hasGapBounds
-                                          ? 'Vorhanden; Dauer unbekannt/inkonsistent'
-                                          : 'Kein Gap-Datensatz'
-                                      : '${event.gapMs} ms'),
+                                          ? context.tr(
+                                              "Vorhanden; Dauer unbekannt/inkonsistent")
+                                          : context.tr("Kein Gap-Datensatz")
+                                      : context.tr("{0} ms", [event.gapMs])),
                               KeyValue(
-                                  'Evidence',
+                                  context.tr("Evidence"),
                                   event.reason ??
                                       event.dropped?.toString() ??
-                                      'Keine zusätzliche Reason/Dropped-Evidenz'),
+                                      context.tr(
+                                          "Keine zusätzliche Reason/Dropped-Evidenz")),
                             ]),
                           ]),
                     );

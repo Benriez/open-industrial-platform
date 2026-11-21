@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../app/controller.dart';
+import '../l10n/language_picker.dart';
+import '../l10n/oip_strings.dart';
 import '../services/api.dart';
 import '../services/touch_id.dart';
 
@@ -60,8 +63,8 @@ class _OperatorLoginState extends State<OperatorLogin> {
           .login(value, enableTouchId: enableTouchIdAfterLogin && hasTouchId);
     } catch (e) {
       if (mounted) {
-        setState(() =>
-            error = apiErrorMessage(e, 'Lokale Anmeldung fehlgeschlagen.'));
+        setState(() => error =
+            apiErrorMessage(e, context.tr("Lokale Anmeldung fehlgeschlagen.")));
       }
     } finally {
       if (mounted) setState(() => busy = false);
@@ -77,8 +80,8 @@ class _OperatorLoginState extends State<OperatorLogin> {
       await widget.controller.loginWithTouchId();
     } catch (e) {
       if (mounted) {
-        setState(() =>
-            error = apiErrorMessage(e, 'Touch-ID-Anmeldung fehlgeschlagen.'));
+        setState(() => error = apiErrorMessage(
+            e, context.tr("Touch-ID-Anmeldung fehlgeschlagen.")));
       }
     } finally {
       if (mounted) setState(() => busy = false);
@@ -98,14 +101,14 @@ class _OperatorLoginState extends State<OperatorLogin> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Lokale Operator-Anmeldung',
+                    Text(context.tr("Lokale Operator-Anmeldung"),
                         style: Theme.of(context).textTheme.headlineSmall),
                     const SizedBox(height: 16),
-                    const Text(
-                        'Die reale Infrastruktur ist geschützt. Erzeuge über das autorisierte lokale Operator-Profil einen Einmalcode. Er gilt 120 Sekunden und kann genau einmal verwendet werden.'),
+                    Text(context.tr(
+                        "Die reale Infrastruktur ist geschützt. Erzeuge über das autorisierte lokale Operator-Profil einen Einmalcode. Er gilt 120 Sekunden und kann genau einmal verwendet werden.")),
                     const SizedBox(height: 12),
-                    const SelectableText(
-                        'oip-server --browser-login --ipc-socket <privater Socket> --ipc-credential <eigenes autorisiertes Profil>'),
+                    SelectableText(context.tr(
+                        "oip-server --browser-login --ipc-socket <privater Socket> --ipc-credential <eigenes autorisiertes Profil>")),
                     const SizedBox(height: 16),
                     TextField(
                         key: const Key('operator-login-code'),
@@ -114,8 +117,8 @@ class _OperatorLoginState extends State<OperatorLogin> {
                         autocorrect: false,
                         enableSuggestions: false,
                         maxLength: 64,
-                        decoration:
-                            const InputDecoration(labelText: 'Einmalcode'),
+                        decoration: InputDecoration(
+                            labelText: context.tr("Einmalcode")),
                         onSubmitted: (_) {
                           if (!busy) login();
                         }),
@@ -130,17 +133,17 @@ class _OperatorLoginState extends State<OperatorLogin> {
                                   _touchIdChoiceMade = true;
                                   enableTouchIdAfterLogin = value ?? false;
                                 }),
-                        title: const Text(
-                            'Touch ID für künftige Anmeldungen einrichten'),
-                        subtitle: const Text(
-                            'Für die erste Anmeldung brauchst du einen Einmalcode und bestätigst deinen Fingerabdruck. Danach kannst du dich mit Touch ID erneut anmelden.'),
+                        title: Text(context.tr(
+                            "Touch ID für künftige Anmeldungen einrichten")),
+                        subtitle: Text(context.tr(
+                            "Für die erste Anmeldung brauchst du einen Einmalcode und bestätigst deinen Fingerabdruck. Danach kannst du dich mit Touch ID erneut anmelden.")),
                       ),
                       if (touchIdConfigured)
                         OutlinedButton.icon(
                           key: const Key('operator-login-touch-id'),
                           onPressed: busy ? null : loginWithTouchId,
                           icon: const Icon(Icons.fingerprint),
-                          label: const Text('Mit Touch ID anmelden'),
+                          label: Text(context.tr("Mit Touch ID anmelden")),
                         ),
                       const SizedBox(height: 8),
                     ],
@@ -150,11 +153,13 @@ class _OperatorLoginState extends State<OperatorLogin> {
                         key: const Key('operator-login'),
                         onPressed: busy ? null : login,
                         child: Text(busy
-                            ? 'Anmelden …'
-                            : 'Operator-Sitzung autorisieren')),
+                            ? context.tr("Anmelden …")
+                            : context.tr("Operator-Sitzung autorisieren"))),
                     const SizedBox(height: 8),
-                    const Text(
-                        'Die lokale Sitzung hat kein Zeitlimit. Sie endet beim Abmelden oder mit einem Neustart der Instanz. Mit eingerichteter Touch ID kannst du danach eine neue Sitzung öffnen. Sonst brauchst du einen neuen Einmalcode.'),
+                    Text(context.tr(
+                        "Die lokale Sitzung hat kein Zeitlimit. Sie endet beim Abmelden oder mit einem Neustart der Instanz. Mit eingerichteter Touch ID kannst du danach eine neue Sitzung öffnen. Sonst brauchst du einen neuen Einmalcode.")),
+                    const SizedBox(height: 16),
+                    const OipLanguagePicker(),
                   ],
                 ))),
       ))));

@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -362,7 +363,8 @@ class _DevicesPageState extends State<DevicesPage> {
     Clipboard.setData(ClipboardData(text: value));
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$label kopiert: $value')));
+      ..showSnackBar(SnackBar(
+          content: Text(context.tr("{0} kopiert: {1}", [label, value]))));
   }
 
   @override
@@ -412,80 +414,87 @@ class _DevicesPageState extends State<DevicesPage> {
         !widget.controller.loginRequired &&
         widget.controller.management != null;
     return AdaptiveWorkspaceHeader(
-        key: const Key('devices-page-header'),
-        eyebrow: 'DEVICES & SERVICES · OBJECT WORKSPACE',
-        title: 'Geräte & Dienste',
-        subtitle: '',
-        accent: OipTokens.blue,
-        primaryAction: WorkspacePrimaryAction(
-          buttonKey: const Key('devices-add-primary'),
-          label: 'Gerät hinzufügen',
-          tooltip: simulation
-              ? 'Simuliertes Gerät zur Vorschau hinzufügen.'
-              : operatorActionsAvailable
-                  ? 'Gerät registrieren oder die sichere SSH-Einrichtung starten. Der Core prüft die Berechtigung für den gewählten Bereich.'
-                  : 'Melde dich an, um die für dein Operator-Profil erlaubten Geräteaktionen zu öffnen.',
-          icon: Icons.add,
-          onPressed: _showDeviceOnboarding,
+      key: const Key('devices-page-header'),
+      eyebrow: context.tr("DEVICES & SERVICES · OBJECT WORKSPACE"),
+      title: context.tr("Geräte & Dienste"),
+      subtitle: '',
+      accent: OipTokens.blue,
+      primaryAction: WorkspacePrimaryAction(
+        buttonKey: const Key('devices-add-primary'),
+        label: context.tr("Gerät hinzufügen"),
+        tooltip: simulation
+            ? context.tr("Simuliertes Gerät zur Vorschau hinzufügen.")
+            : operatorActionsAvailable
+                ? context.tr(
+                    "Gerät registrieren oder die sichere SSH-Einrichtung starten. Der Core prüft die Berechtigung für den gewählten Bereich.")
+                : context.tr(
+                    "Melde dich an, um die für dein Operator-Profil erlaubten Geräteaktionen zu öffnen."),
+        icon: Icons.add,
+        onPressed: _showDeviceOnboarding,
+      ),
+      actions: [
+        InspectorOpenAction(
+          controller: widget.controller,
+          workspace: WorkspaceId.devices,
+          hasSelection: selectedDevice != null,
+          onOpen: () {
+            if (layoutIsMobile) {
+              setState(() => mobilePane = DevicesMobilePane.inspector);
+            }
+          },
         ),
-        actions: [
-          InspectorOpenAction(
-            controller: widget.controller,
-            workspace: WorkspaceId.devices,
-            hasSelection: selectedDevice != null,
-            onOpen: () {
-              if (layoutIsMobile) {
-                setState(() => mobilePane = DevicesMobilePane.inspector);
-              }
-            },
+        WorkspaceLayoutAction(
+            controller: widget.controller, workspace: WorkspaceId.devices),
+      ],
+      status: [
+        StatusPill(
+          snapshot.system.simulated
+              ? context.tr("DEMO / SIMULIERTES INVENTAR")
+              : context.tr("API-INVENTAR"),
+          color: OipTokens.statusColor(context, 'info'),
+          icon: snapshot.system.simulated
+              ? Icons.science_outlined
+              : Icons.cloud_done_outlined,
+        ),
+        Tooltip(
+          message: simulation
+              ? context.tr("Simulation only; no real infrastructure changes.")
+              : !operatorActionsAvailable
+                  ? context.tr(
+                      "Sign in to access the actions permitted to your operator profile.")
+                  : context.tr(
+                      "Register or update inventory, configure SSH onboarding and monitoring when the Core authorizes the target. Telemetry remains read-only."),
+          child: StatusPill(
+            simulation
+                ? context.tr("SIMULATION")
+                : operatorActionsAvailable
+                    ? context.tr("OPERATOR WORKFLOWS")
+                    : context.tr("SIGN IN TO MANAGE"),
+            icon: simulation || !operatorActionsAvailable
+                ? Icons.lock_outline
+                : Icons.admin_panel_settings_outlined,
           ),
-          WorkspaceLayoutAction(
-              controller: widget.controller, workspace: WorkspaceId.devices),
-        ],
-        status: [
-          StatusPill(
-            snapshot.system.simulated
-                ? 'DEMO / SIMULIERTES INVENTAR'
-                : 'API-INVENTAR',
-            color: OipTokens.statusColor(context, 'info'),
-            icon: snapshot.system.simulated
-                ? Icons.science_outlined
-                : Icons.cloud_done_outlined,
+        ),
+        if (mode == DevicesWorkspaceMode.devices)
+          Text(
+            context.tr("{0} von {1} Geräten · {2}", [
+              filteredDevices(snapshot, session).length,
+              snapshot.devices.length,
+              snapshot.system.simulated
+                  ? 'Simuliertes Inventar'
+                  : 'API-Inventar'
+            ]),
+            style: Theme.of(context).textTheme.bodySmall,
           ),
-          Tooltip(
-            message: simulation
-                ? 'Simulation only; no real infrastructure changes.'
-                : !operatorActionsAvailable
-                    ? 'Sign in to access the actions permitted to your operator profile.'
-                    : 'Register or update inventory, configure SSH onboarding and monitoring when the Core authorizes the target. Telemetry remains read-only.',
-            child: StatusPill(
-              simulation
-                  ? 'SIMULATION'
-                  : operatorActionsAvailable
-                      ? 'OPERATOR WORKFLOWS'
-                      : 'SIGN IN TO MANAGE',
-              icon: simulation || !operatorActionsAvailable
-                  ? Icons.lock_outline
-                  : Icons.admin_panel_settings_outlined,
-            ),
-          ),
-          if (mode == DevicesWorkspaceMode.devices)
-            Text(
-              '${filteredDevices(snapshot, session).length} von '
-              '${snapshot.devices.length} Geräten · '
-              '${snapshot.system.simulated ? 'Simuliertes Inventar' : 'API-Inventar'}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-        ],
-      );
+      ],
+    );
   }
 
   void _showDeviceOnboarding() {
     // An authorized session provides a secure browser write path for the
     // Core's own connection management. Without that session the action stays
     // a local operator hint and never pretends to register a device.
-    if (widget.controller.managed &&
-        widget.controller.management != null) {
+    if (widget.controller.managed && widget.controller.management != null) {
       showDeviceOnboarding(context, widget.controller);
       return;
     }
@@ -494,22 +503,18 @@ class _DevicesPageState extends State<DevicesPage> {
       builder: (dialogContext) => AlertDialog(
         key: const Key('device-onboarding-dialog'),
         icon: const Icon(Icons.admin_panel_settings_outlined),
-        title: const Text('Gerät lokal registrieren'),
+        title: Text(context.tr("Gerät lokal registrieren")),
         content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
-          child: const Text(
-            'Ein sicherer Browser-Schreibpfad ist nicht verfügbar. '
-            'Registrierung bleibt eine Offline-Aufgabe des lokalen Operators: '
-            'Gerät mit stabiler ID und tatsächlichem Site-Placement über den '
-            'lokalen OIP-Operator-Contract erfassen, danach Core gemäß '
-            'RequiresRestart neu starten. Diese Ansicht erzeugt weder ein '
-            'Gerät noch eine Source und meldet keinen falschen Erfolg.',
+          child: Text(
+            context.tr(
+                "Ein sicherer Browser-Schreibpfad ist nicht verfügbar. Registrierung bleibt eine Offline-Aufgabe des lokalen Operators: Gerät mit stabiler ID und tatsächlichem Site-Placement über den lokalen OIP-Operator-Contract erfassen, danach Core gemäß RequiresRestart neu starten. Diese Ansicht erzeugt weder ein Gerät noch eine Source und meldet keinen falschen Erfolg."),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Schließen'),
+            child: Text(context.tr("Schließen")),
           ),
           FilledButton.icon(
             key: const Key('device-onboarding-open-settings'),
@@ -518,7 +523,7 @@ class _DevicesPageState extends State<DevicesPage> {
               widget.navigate(5);
             },
             icon: const Icon(Icons.settings_outlined),
-            label: const Text('Operator-Hinweise öffnen'),
+            label: Text(context.tr("Operator-Hinweise öffnen")),
           ),
         ],
       ),
@@ -666,7 +671,7 @@ class _DevicesPageState extends State<DevicesPage> {
         final inspector = AdaptiveInspector(
           controller: widget.controller,
           workspace: WorkspaceId.devices,
-          label: 'Gerätekontext & Provenienz',
+          label: context.tr("Gerätekontext & Provenienz"),
           hasSelection: selectedDevice != null,
           child: DeviceContextInspector(
             device: selectedDevice,

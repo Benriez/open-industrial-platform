@@ -1,3 +1,4 @@
+import '../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../app/controller.dart';
@@ -159,16 +160,16 @@ class AdaptiveInspector extends StatelessWidget {
             ToolButton(
               key: Key('${workspace.name}-inspector-pin'),
               tooltip: pinned
-                  ? 'Inspector nicht mehr anheften'
-                  : 'Inspector für diese Workstation anheften',
+                  ? context.tr("Inspector nicht mehr anheften")
+                  : context.tr("Inspector für diese Workstation anheften"),
               icon: pinned ? Icons.push_pin : Icons.push_pin_outlined,
               active: pinned,
               onPressed: () => controller.toggleInspectorPin(workspace),
             ),
             ToolButton(
               key: Key('${workspace.name}-inspector-close'),
-              tooltip:
-                  'Inspector schließen · Objekt- und Datenwahl bleibt erhalten',
+              tooltip: context.tr(
+                  "Inspector schließen · Objekt- und Datenwahl bleibt erhalten"),
               icon: Icons.close,
               onPressed: () => controller.setInspectorOpen(workspace, false),
             ),
@@ -197,7 +198,7 @@ class InspectorOpenAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ToolButton(
         key: Key('${workspace.name}-inspector-open'),
-        tooltip: 'Detail-Inspector manuell öffnen',
+        tooltip: context.tr("Detail-Inspector manuell öffnen"),
         icon: Icons.info_outline,
         active: controller.inspectorVisible(workspace, hasSelection),
         onPressed: () {
@@ -226,8 +227,8 @@ class WorkspaceLayoutAction extends StatelessWidget {
     return ToolButton(
       key: Key('${workspace.name}-workspace-toggle'),
       tooltip: enabled
-          ? '$label schließen'
-          : '$label dauerhaft für diese Sitzung öffnen',
+          ? context.tr("{0} schließen", [label])
+          : context.tr("{0} dauerhaft für diese Sitzung öffnen", [label]),
       icon: Icons.dashboard_customize_outlined,
       active: enabled,
       onPressed: () => controller.setExpertWorkspace(workspace, !enabled),
@@ -303,14 +304,18 @@ String apiConnectionLabel(OipController controller) =>
 StatusPill apiConnectionStatus(
         BuildContext context, OipController controller) =>
     StatusPill(
-      apiConnectionLabel(controller),
-      color: OipTokens.statusColor(context, switch (controller.connection) {
-        'live' => 'connected',
-        'connecting' => 'connecting',
-        'reconnecting' => 'degraded',
-        'login_required' || 'identity-required' || 'context-unsupported' =>
-          'info',
-        _ => 'degraded',
-      }),
+      context.tr(apiConnectionLabel(controller)),
+      color: OipTokens.statusColor(
+          context,
+          switch (controller.connection) {
+            'live' => 'connected',
+            'connecting' => 'connecting',
+            'reconnecting' => 'degraded',
+            'login_required' ||
+            'identity-required' ||
+            'context-unsupported' =>
+              'info',
+            _ => 'degraded',
+          }),
       showDot: true,
     );

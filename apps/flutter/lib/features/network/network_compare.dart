@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../../design_system/theme.dart';
@@ -41,9 +42,10 @@ class NetworkCompareWorkspace extends StatelessWidget {
       key: const Key('network-compare-scroll'),
       padding: EdgeInsets.zero,
       children: [
-        const WorkstationNote(
-          'Unabhängige Beobachtungskontexte',
-          'Geräte und logische Pfade werden getrennt verglichen. Fehlende oder unterschiedliche Zeitstempel bedeuten keine Zeitsynchronität; es gibt keine Interpolation oder künstliche Messreihe.',
+        WorkstationNote(
+          context.tr("Unabhängige Beobachtungskontexte"),
+          context.tr(
+              "Geräte und logische Pfade werden getrennt verglichen. Fehlende oder unterschiedliche Zeitstempel bedeuten keine Zeitsynchronität; es gibt keine Interpolation oder künstliche Messreihe."),
           icon: Icons.schedule_outlined,
           color: OipTokens.cyan,
         ),
@@ -63,10 +65,11 @@ class NetworkCompareWorkspace extends StatelessWidget {
           Expanded(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Network Compare',
+              Text(context.tr("Network Compare"),
                   style: Theme.of(context).textTheme.titleLarge),
               Text(
-                '${devices.length}/4 Geräte · ${edges.length}/4 Pfade · sitzungslokal',
+                context.tr("{0}/4 Geräte · {1}/4 Pfade · sitzungslokal",
+                    [devices.length, edges.length]),
                 style: WorkstationTokens.mono(context,
                     size: 10.5, color: OipTokens.muted(context)),
               ),
@@ -75,7 +78,7 @@ class NetworkCompareWorkspace extends StatelessWidget {
           ToolButton(
             key: const Key('network-compare-clear'),
             icon: Icons.delete_sweep_outlined,
-            tooltip: 'Network-Vergleich leeren',
+            tooltip: context.tr("Network-Vergleich leeren"),
             accent: OipTokens.cyan,
             onPressed: devices.isEmpty && edges.isEmpty ? null : onClear,
           ),
@@ -83,16 +86,17 @@ class NetworkCompareWorkspace extends StatelessWidget {
           ToolButton(
             key: const Key('network-compare-close'),
             icon: Icons.close,
-            tooltip: 'Vergleich schließen (Esc)',
+            tooltip: context.tr("Vergleich schließen (Esc)"),
             accent: OipTokens.cyan,
             onPressed: onClose,
           ),
         ]),
         const Hairline(),
         if (devices.isEmpty && edges.isEmpty)
-          const WorkstationNote(
-            'Noch keine Engineering-Auswahl',
-            'Geräte im Explorer oder Inspector mit C hinzufügen. Pfade lassen sich im Verbindungs- oder Edge-Inspector vergleichen. Maximal vier Einträge je fachlicher Kategorie.',
+          WorkstationNote(
+            context.tr("Noch keine Engineering-Auswahl"),
+            context.tr(
+                "Geräte im Explorer oder Inspector mit C hinzufügen. Pfade lassen sich im Verbindungs- oder Edge-Inspector vergleichen. Maximal vier Einträge je fachlicher Kategorie."),
             icon: Icons.compare_arrows_outlined,
             color: OipTokens.cyan,
           )
@@ -268,7 +272,8 @@ class NetworkCompareWorkspace extends StatelessWidget {
                         ),
                         ToolButton(
                           icon: Icons.close,
-                          tooltip: '${header(entry)} aus Vergleich entfernen',
+                          tooltip: context.tr(
+                              "{0} aus Vergleich entfernen", [header(entry)]),
                           accent: OipTokens.cyan,
                           onPressed: () => onRemove(entry),
                         ),

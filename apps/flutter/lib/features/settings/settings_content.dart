@@ -1,9 +1,11 @@
+import '../../l10n/oip_strings.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
 import '../../app/controller.dart';
 import '../../design_system/theme.dart';
+import '../../l10n/language_picker.dart';
 import '../../models/app_metadata.dart';
 import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
@@ -98,17 +100,18 @@ class SettingsSectionContent extends StatelessWidget {
     return SingleChildScrollView(
         child:
             Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      const SettingsSectionHeader(
-        title: 'Application Settings',
-        subtitle:
-            'Drei validierte Core-Schlüssel. Effektiver Wert, Default, Persistenz und Apply-Status bleiben getrennt.',
-        status: 'OFFLINE ADMINISTRATION REQUIRED',
+      SettingsSectionHeader(
+        title: context.tr("Application Settings"),
+        subtitle: context.tr(
+            "Drei validierte Core-Schlüssel. Effektiver Wert, Default, Persistenz und Apply-Status bleiben getrennt."),
+        status: context.tr("OFFLINE ADMINISTRATION REQUIRED"),
         statusColor: OipTokens.yellow,
       ),
       const SizedBox(height: 12),
-      const WorkstationNote(
-        'Kein Browser-Save',
-        'Der Core besitzt keinen HTTP-/MCP-Schreibpfad. Änderungen erfordern den exklusiven lokalen Operator-CLI-Prozess und werden erst beim nächsten validierten Core-Start aktiv.',
+      WorkstationNote(
+        context.tr("Kein Browser-Save"),
+        context.tr(
+            "Der Core besitzt keinen HTTP-/MCP-Schreibpfad. Änderungen erfordern den exklusiven lokalen Operator-CLI-Prozess und werden erst beim nächsten validierten Core-Start aktiv."),
         icon: Icons.offline_bolt_outlined,
         color: OipTokens.yellow,
       ),
@@ -123,12 +126,15 @@ class SettingsSectionContent extends StatelessWidget {
         const SizedBox(height: 6),
       ],
       const Hairline(),
-      KeyValue('Inheritance', snapshot.inheritance, mono: false),
-      KeyValue('Startup snapshot loaded at',
-          snapshot.loadedAtMs?.toString() ?? 'Redacted / not delivered'),
-      const WorkstationNote(
-        'Requires Restart',
-        'active_startup_snapshot beschreibt den laufenden Snapshot. persisted_requires_restart wäre ein Offline-Ergebnis, kein aktiver Runtime-Wert. Ein exakter Scope-Datensatz und ein geerbter effektiver Wert sind nicht dasselbe.',
+      KeyValue(context.tr("Inheritance"), snapshot.inheritance, mono: false),
+      KeyValue(
+          context.tr("Startup snapshot loaded at"),
+          snapshot.loadedAtMs?.toString() ??
+              context.tr("Redacted / not delivered")),
+      WorkstationNote(
+        context.tr("Requires Restart"),
+        context.tr(
+            "active_startup_snapshot beschreibt den laufenden Snapshot. persisted_requires_restart wäre ein Offline-Ergebnis, kein aktiver Runtime-Wert. Ein exakter Scope-Datensatz und ein geerbter effektiver Wert sind nicht dasselbe."),
         icon: Icons.restart_alt_outlined,
       ),
       const Hairline(),
@@ -146,16 +152,17 @@ class SettingsSectionContent extends StatelessWidget {
   Widget _about(BuildContext context) {
     const info = kOipApplication;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const SettingsSectionHeader(
-        title: 'About',
-        subtitle:
-            'App-Identität, Build-Nummer, Lizenz und Datenschutzerklärung. Keine Core-Konfiguration.',
-        status: 'CLIENT IDENTITY',
+      SettingsSectionHeader(
+        title: context.tr("About"),
+        subtitle: context.tr(
+            "App-Identität, Build-Nummer, Lizenz und Datenschutzerklärung. Keine Core-Konfiguration."),
+        status: context.tr("CLIENT IDENTITY"),
         statusColor: OipTokens.cyan,
       ),
       const SizedBox(height: 12),
       Semantics(
-        label: '${info.name}, Version ${info.version}, Build ${info.build}',
+        label: context.tr("{0}, Version {1}, Build {2}",
+            [info.name, info.version, info.build]),
         child: Text(
           info.name,
           style: Theme.of(context)
@@ -166,25 +173,25 @@ class SettingsSectionContent extends StatelessWidget {
       ),
       const SizedBox(height: 10),
       KeyValue(
-        'Version',
+        context.tr("Version"),
         info.version,
         mono: false,
         key: const Key('settings-about-version'),
       ),
       KeyValue(
-        'Build',
+        context.tr("Build"),
         info.build,
         mono: false,
         key: const Key('settings-about-build'),
       ),
       KeyValue(
-        'Shell',
+        context.tr("Shell"),
         info.footer,
         mono: false,
         key: const Key('settings-about-shell'),
       ),
       KeyValue(
-        'Lizenz',
+        context.tr("Lizenz"),
         info.license,
         mono: false,
         key: const Key('settings-about-license'),
@@ -192,7 +199,7 @@ class SettingsSectionContent extends StatelessWidget {
       const OipOtaUpdateControl(),
       const SizedBox(height: 10),
       WorkstationNote(
-        'Lokal · keine Telemetrie',
+        context.tr("Lokal · keine Telemetrie"),
         info.privacyNote,
         icon: Icons.shield_outlined,
         color: OipTokens.cyan,
@@ -207,8 +214,9 @@ class SettingsSectionContent extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label:
-          'Setting ${definition.key}. Effektiver Wert ${effective?.effective.display ?? 'Unknown'}. Offline Administration Required.',
+      label: context.tr(
+          "Setting {0}. Effektiver Wert {1}. Offline Administration Required.",
+          [definition.key, effective?.effective.display ?? 'Unknown']),
       child: Material(
         color:
             selected ? tone.withOpacity(.1) : WorkstationTokens.well(context),
@@ -227,7 +235,7 @@ class SettingsSectionContent extends StatelessWidget {
                       style: WorkstationTokens.mono(context,
                           size: 13, weight: FontWeight.w700)),
                 ),
-                const StatusPill('READ ONLY', icon: Icons.lock_outline),
+                StatusPill(context.tr("READ ONLY"), icon: Icons.lock_outline),
               ]),
               const SizedBox(height: 4),
               Text(definition.description,
@@ -291,16 +299,19 @@ class SettingsSectionContent extends StatelessWidget {
       ),
     ];
     return ListView(children: [
-      const SettingsSectionHeader(
-        title: 'Appearance & Preferences',
-        subtitle: 'Tatsächlich unterstützte Flutter-Theme-Varianten.',
-        status: 'CLIENT LOCAL',
+      SettingsSectionHeader(
+        title: context.tr("Appearance & Preferences"),
+        subtitle: context.tr("Sprache und Darstellung dieser App wählen."),
+        status: context.tr("CLIENT LOCAL"),
         statusColor: OipTokens.cyan,
       ),
       const SizedBox(height: 12),
-      const WorkstationNote(
-        'Nur diese UI-Sitzung',
-        'Die Auswahl ändert das laufende Flutter-Designsystem sofort. Sie ist keine serverweite Core-Konfiguration und wird nicht als solche persistiert.',
+      const OipLanguagePicker(),
+      const SizedBox(height: 12),
+      WorkstationNote(
+        context.tr("Nur diese UI-Sitzung"),
+        context.tr(
+            "Die Theme-Auswahl gilt bis zum Ende der laufenden App-Sitzung."),
         icon: Icons.palette_outlined,
       ),
       const SizedBox(height: 12),
@@ -310,7 +321,7 @@ class SettingsSectionContent extends StatelessWidget {
           child: Semantics(
             button: true,
             selected: themeVariant == theme.$1,
-            label: 'Theme ${theme.$2}. Lokale UI-Präferenz.',
+            label: context.tr("Theme {0}. Lokale UI-Präferenz.", [theme.$2]),
             child: Material(
               color: themeVariant == theme.$1
                   ? OipTokens.cyan.withOpacity(.11)
@@ -324,15 +335,14 @@ class SettingsSectionContent extends StatelessWidget {
                   if (value != null) onTheme(value);
                 },
                 title: Text(theme.$2),
-                subtitle: Text(theme.$3),
+                subtitle: Text(context.tr(theme.$3)),
               ),
             ),
           ),
         ),
       const Hairline(),
-      const KeyValue('Server preference synchronization', 'unsupported'),
-      const KeyValue('Additional density/language controls',
-          'not exposed by this design system'),
+      KeyValue(context.tr("Server preference synchronization"),
+          context.tr("unsupported")),
     ]);
   }
 
@@ -341,11 +351,11 @@ class SettingsSectionContent extends StatelessWidget {
     final system = secondary;
     final tools = extra;
     return ListView(children: [
-      const SettingsSectionHeader(
-        title: 'MCP Server',
-        subtitle:
-            'Reale Core-Komposition, lokale stdio-Bridges und Unix-IPC. Kein Remote-MCP-Listener.',
-        status: 'LOCAL STDIO / IPC',
+      SettingsSectionHeader(
+        title: context.tr("MCP Server"),
+        subtitle: context.tr(
+            "Reale Core-Komposition, lokale stdio-Bridges und Unix-IPC. Kein Remote-MCP-Listener."),
+        status: context.tr("LOCAL STDIO / IPC"),
       ),
       const SizedBox(height: 12),
       SettingsMetricStrip([
@@ -369,9 +379,10 @@ class SettingsSectionContent extends StatelessWidget {
       const SizedBox(height: 12),
       SettingsFacts(value.facts),
       const Hairline(),
-      const WorkstationNote(
-        'Read-only / Mutation Policy',
-        'Der Katalog enthält keine mutierenden MCP-Tools. Enable/Disable, Remote MCP und per-tool Freigaben bleiben unsupported; geschützte Startup-Konfiguration ist maßgeblich.',
+      WorkstationNote(
+        context.tr("Read-only / Mutation Policy"),
+        context.tr(
+            "Der Katalog enthält keine mutierenden MCP-Tools. Enable/Disable, Remote MCP und per-tool Freigaben bleiben unsupported; geschützte Startup-Konfiguration ist maßgeblich."),
         icon: Icons.policy_outlined,
       ),
       const SizedBox(height: 10),
@@ -382,11 +393,11 @@ class SettingsSectionContent extends StatelessWidget {
   Widget _clientConfiguration(BuildContext context) {
     final config = report!.clientConfiguration!;
     return ListView(children: [
-      const SettingsSectionHeader(
-        title: 'MCP Client Configuration',
-        subtitle:
-            'Generisches mcpServers-Template aus dem Core-Vertrag. Keine Client-spezifische Konvertierung.',
-        status: 'UNRESOLVED TEMPLATE',
+      SettingsSectionHeader(
+        title: context.tr("MCP Client Configuration"),
+        subtitle: context.tr(
+            "Generisches mcpServers-Template aus dem Core-Vertrag. Keine Client-spezifische Konvertierung."),
+        status: context.tr("UNRESOLVED TEMPLATE"),
         statusColor: OipTokens.yellow,
       ),
       const SizedBox(height: 12),
@@ -417,24 +428,25 @@ class SettingsSectionContent extends StatelessWidget {
           onPressed: () =>
               onCopy('MCP-Konfiguration', config.prettyConfiguration),
           icon: const Icon(Icons.copy_outlined, size: 17),
-          label: const Text('Copy Configuration'),
+          label: Text(context.tr("Copy Configuration")),
         ),
         OutlinedButton.icon(
           key: const Key('settings-copy-cli'),
           onPressed: () => onCopy('MCP-CLI-Template', config.cliTemplate),
           icon: const Icon(Icons.terminal, size: 17),
-          label: const Text('Copy CLI Template'),
+          label: Text(context.tr("Copy CLI Template")),
         ),
       ]),
       const SizedBox(height: 12),
-      const WorkstationNote(
-        'Vor Verwendung ersetzen',
-        'Executable, privater Socket und Credential-Datei müssen aus einem bereits autorisierten lokalen Profil stammen. Platzhalter sind keine installierte Verbindung. Kopieren führt keinen Befehl aus und erzeugt keine Grants.',
+      WorkstationNote(
+        context.tr("Vor Verwendung ersetzen"),
+        context.tr(
+            "Executable, privater Socket und Credential-Datei müssen aus einem bereits autorisierten lokalen Profil stammen. Platzhalter sind keine installierte Verbindung. Kopieren führt keinen Befehl aus und erzeugt keine Grants."),
         icon: Icons.warning_amber_outlined,
         color: OipTokens.yellow,
       ),
       const SizedBox(height: 12),
-      const PanelLabel('Setup im MCP-Client'),
+      PanelLabel(context.tr("Setup im MCP-Client")),
       ...const [
         '1. OIP Core mit geschützter lokaler IPC-Konfiguration starten.',
         '2. Vorhandenes autorisiertes Credential-Profil bereitstellen; die UI provisioniert nichts.',
@@ -452,20 +464,22 @@ class SettingsSectionContent extends StatelessWidget {
   Widget _permissions(BuildContext context) {
     final security = secondary;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      const SettingsSectionHeader(
-        title: 'MCP Permissions & Scopes',
-        subtitle:
-            'Zentrale, read-only Permission-Matrix. Keine Selbstfreigabe und keine Rollenableitung.',
-        status: 'POLICY READ ONLY',
+      SettingsSectionHeader(
+        title: context.tr("MCP Permissions & Scopes"),
+        subtitle: context.tr(
+            "Zentrale, read-only Permission-Matrix. Keine Selbstfreigabe und keine Rollenableitung."),
+        status: context.tr("POLICY READ ONLY"),
       ),
       const SizedBox(height: 10),
       if (security != null)
         KeyValueGrid(children: [
-          KeyValue('Current Principal', security.fact('principal')),
-          const KeyValue('Role', 'Nicht im Management-Vertrag geliefert'),
-          const KeyValue('Organization / Infrastructure / Site / Source',
-              'Kein Principal-Scope-Inventar geliefert'),
-          const KeyValue('Credential Management', 'unsupported'),
+          KeyValue(context.tr("Current Principal"), security.fact('principal')),
+          KeyValue(context.tr("Role"),
+              context.tr("Nicht im Management-Vertrag geliefert")),
+          KeyValue(context.tr("Organization / Infrastructure / Site / Source"),
+              context.tr("Kein Principal-Scope-Inventar geliefert")),
+          KeyValue(
+              context.tr("Credential Management"), context.tr("unsupported")),
         ]),
       Expanded(
         child: SettingsPermissionMatrix(
@@ -491,14 +505,14 @@ class SettingsSectionContent extends StatelessWidget {
     };
     return ListView(children: [
       SettingsSectionHeader(
-        title: 'MCP Connection Diagnostics',
-        subtitle:
-            'Beobachtet ausschließlich die eigene autorisierte Core-Runtime. Kein Credential-, Datei-, Remote- oder Handshake-Test.',
-        status: 'STATUS READ ONLY',
+        title: context.tr("MCP Connection Diagnostics"),
+        subtitle: context.tr(
+            "Beobachtet ausschließlich die eigene autorisierte Core-Runtime. Kein Credential-, Datei-, Remote- oder Handshake-Test."),
+        status: context.tr("STATUS READ ONLY"),
         actions: [
           ToolButton(
             icon: Icons.copy_outlined,
-            tooltip: 'Technische Diagnoseinformationen kopieren',
+            tooltip: context.tr("Technische Diagnoseinformationen kopieren"),
             onPressed: () => onCopy('MCP-Diagnose',
                 const JsonEncoder.withIndent('  ').convert(technical)),
           ),
@@ -509,22 +523,27 @@ class SettingsSectionContent extends StatelessWidget {
       const Hairline(),
       KeyValueGrid(children: [
         KeyValue(
-            'Tool Catalog Availability',
+            context.tr("Tool Catalog Availability"),
             tools == null
-                ? 'Unknown'
-                : '${tools.tools.length} registrierte Tools geliefert'),
+                ? context.tr("Unknown")
+                : context.tr(
+                    "{0} registrierte Tools geliefert", [tools.tools.length])),
         KeyValue(
-            'Config Contract',
+            context.tr("Config Contract"),
             config == null
-                ? 'Unknown'
-                : 'Valides generisches JSON; Platzhalter erforderlich'),
-        const KeyValue('Connection Test', 'Nicht durchgeführt'),
-        const KeyValue('Credential / File Probe', 'Nicht durchgeführt'),
+                ? context.tr("Unknown")
+                : context
+                    .tr("Valides generisches JSON; Platzhalter erforderlich")),
+        KeyValue(
+            context.tr("Connection Test"), context.tr("Nicht durchgeführt")),
+        KeyValue(context.tr("Credential / File Probe"),
+            context.tr("Nicht durchgeführt")),
       ]),
       const SizedBox(height: 10),
-      const WorkstationNote(
-        'Kein Verbindungsnachweis',
-        'Ein erfolgreicher Status-Read ist kein erfolgreicher MCP-Client-Handshake. Refresh wiederholt nur autorisierte GET-Reads.',
+      WorkstationNote(
+        context.tr("Kein Verbindungsnachweis"),
+        context.tr(
+            "Ein erfolgreicher Status-Read ist kein erfolgreicher MCP-Client-Handshake. Refresh wiederholt nur autorisierte GET-Reads."),
         icon: Icons.network_check_outlined,
       ),
       const SizedBox(height: 10),
@@ -533,51 +552,58 @@ class SettingsSectionContent extends StatelessWidget {
   }
 
   Widget _sessions(BuildContext context) => ListView(children: [
-        const SettingsSectionHeader(
-          title: 'MCP Client Sessions',
-          subtitle:
-              'Der Core besitzt keine verlässlich abfragbare initialized-client Registry.',
-          status: 'UNSUPPORTED',
+        SettingsSectionHeader(
+          title: context.tr("MCP Client Sessions"),
+          subtitle: context.tr(
+              "Der Core besitzt keine verlässlich abfragbare initialized-client Registry."),
+          status: context.tr("UNSUPPORTED"),
           statusColor: OipTokens.yellow,
         ),
         const SizedBox(height: 16),
         const Icon(Icons.cloud_off_outlined, size: 30, color: OipTokens.yellow),
         const SizedBox(height: 10),
         Text(
-            'Aktive MCP-Client-Sessions können derzeit nicht zentral aufgelistet werden.',
+            context.tr(
+                "Aktive MCP-Client-Sessions können derzeit nicht zentral aufgelistet werden."),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
         SettingsFacts(report!.facts),
-        const WorkstationNote(
-          'Keine Ersatzwerte',
-          'Keine Client-Namen, Session-IDs, Connected-Zustände, Last-Activity-Werte oder Connection Counts. Ein konfiguriertes Clientprofil ist keine aktive Session.',
+        WorkstationNote(
+          context.tr("Keine Ersatzwerte"),
+          context.tr(
+              "Keine Client-Namen, Session-IDs, Connected-Zustände, Last-Activity-Werte oder Connection Counts. Ein konfiguriertes Clientprofil ist keine aktive Session."),
           icon: Icons.do_not_disturb_on_outlined,
         ),
         const SizedBox(height: 10),
-        const KeyValue('Future backend requirement',
-            'Typed, authorized initialized-session registry with lifecycle timestamps and explicit scope/redaction semantics'),
+        KeyValue(
+            context.tr("Future backend requirement"),
+            context.tr(
+                "Typed, authorized initialized-session registry with lifecycle timestamps and explicit scope/redaction semantics")),
         SettingsLimitations(report!.limitations),
       ]);
 
   Widget _hierarchy(BuildContext context) => ListView(children: [
         SettingsSectionHeader(
-          title: settingsSectionLabel(section),
-          subtitle:
-              'Bestehende autorisierte Hierarchie-Reads bleiben maßgeblich; Browser-Admin-Mutationen sind nicht verfügbar.',
-          status: 'READ-ONLY / LIMITED BROWSER IDENTITY',
+          title: context.tr(settingsSectionLabel(section)),
+          subtitle: context.tr(
+              "Bestehende autorisierte Hierarchie-Reads bleiben maßgeblich; Browser-Admin-Mutationen sind nicht verfügbar."),
+          status: context.tr("READ-ONLY / LIMITED BROWSER IDENTITY"),
         ),
         const SizedBox(height: 12),
         if (!controller.infrastructure.ready)
-          const WorkstationNote(
-            'Kein autorisiertes Hierarchie-Inventar in dieser Browser-Ansicht',
-            'Der aktuelle Lauf liefert keine autorisierten Organizations, Infrastructures oder Sites. Es werden weder Namen geraten noch Nullbestände behauptet.',
+          WorkstationNote(
+            context.tr(
+                "Kein autorisiertes Hierarchie-Inventar in dieser Browser-Ansicht"),
+            context.tr(
+                "Der aktuelle Lauf liefert keine autorisierten Organizations, Infrastructures oder Sites. Es werden weder Namen geraten noch Nullbestände behauptet."),
             icon: Icons.account_tree_outlined,
           )
         else ...[
           WorkstationNote(
             controller.infrastructure.selectedBreadcrumb,
-            'Dieselbe globale Auswahl gilt in allen Workstations. Sie ist keine administrative Berechtigung.',
+            context.tr(
+                "Dieselbe globale Auswahl gilt in allen Workstations. Sie ist keine administrative Berechtigung."),
             icon: Icons.account_tree_outlined,
             color: OipTokens.cyan,
           ),
@@ -604,8 +630,8 @@ class SettingsSectionContent extends StatelessWidget {
                 dense: true,
                 leading: const Icon(Icons.hub_outlined),
                 title: Text(item.name),
-                subtitle:
-                    Text('${item.id} · Organization ${item.organizationId}'),
+                subtitle: Text(context.tr(
+                    "{0} · Organization {1}", [item.id, item.organizationId])),
               ),
           if (section == SettingsSection.sites)
             for (final item in controller.infrastructure.hierarchy.sites.where(
@@ -615,22 +641,24 @@ class SettingsSectionContent extends StatelessWidget {
                 dense: true,
                 leading: const Icon(Icons.location_on_outlined),
                 title: Text(item.name),
-                subtitle: Text(
-                    '${item.id} · Infrastructure ${item.infrastructureId}'),
+                subtitle: Text(context.tr("{0} · Infrastructure {1}",
+                    [item.id, item.infrastructureId])),
               ),
           if (controller.infrastructure.isFixture)
-            const StatusPill('CONTRACT FIXTURE · NICHT LIVE',
+            StatusPill(context.tr("CONTRACT FIXTURE · NICHT LIVE"),
                 color: OipTokens.yellow, icon: Icons.science_outlined),
         ],
         const SizedBox(height: 12),
-        const KeyValue('Browser administration',
-            'offline operator administration required'),
-        const KeyValue(
-            'OIP-008.5 integration', 'not consumed; no unfinished API assumed'),
-        const KeyValue('Required future contract',
-            'Scoped typed list/detail DTOs, stable IDs, parent references, explicit availability and permission states'),
-        const KeyValue('Creation / mutation',
-            'unsupported in this UI; no unprotected REST writes'),
+        KeyValue(context.tr("Browser administration"),
+            context.tr("offline operator administration required")),
+        KeyValue(context.tr("OIP-008.5 integration"),
+            context.tr("not consumed; no unfinished API assumed")),
+        KeyValue(
+            context.tr("Required future contract"),
+            context.tr(
+                "Scoped typed list/detail DTOs, stable IDs, parent references, explicit availability and permission states")),
+        KeyValue(context.tr("Creation / mutation"),
+            context.tr("unsupported in this UI; no unprotected REST writes")),
       ]);
 
   Widget _sourcesDevices(BuildContext context) {
@@ -640,39 +668,48 @@ class SettingsSectionContent extends StatelessWidget {
         : snapshot?.sources ?? const [];
     return ListView(children: [
       SettingsSectionHeader(
-        title: 'Sources & Devices',
+        title: context.tr("Sources & Devices"),
         subtitle: controller.infrastructure.ready
-            ? 'Autorisierter v2-Kontext inklusive Devices ohne Collector. Keine Inventar- oder Geräteverwaltung in diesem Bereich.'
-            : 'Nur bereits vorhandene autorisierte v1-Snapshot-Daten. Keine konkurrierende Geräteverwaltung.',
-        status: 'EXISTING READ CONTRACT',
+            ? context.tr(
+                "Autorisierter v2-Kontext inklusive Devices ohne Collector. Keine Inventar- oder Geräteverwaltung in diesem Bereich.")
+            : context.tr(
+                "Nur bereits vorhandene autorisierte v1-Snapshot-Daten. Keine konkurrierende Geräteverwaltung."),
+        status: context.tr("EXISTING READ CONTRACT"),
       ),
       const SizedBox(height: 12),
-      const WorkstationNote(
-        'Device onboarding requires local operator administration',
-        'Kein Browser-Onboarding, keine Demo-Datenlöschung und kein Source-Reconfigure. OIP-008.5 wird nicht verändert oder vorweggenommen.',
+      WorkstationNote(
+        context.tr("Device onboarding requires local operator administration"),
+        context.tr(
+            "Kein Browser-Onboarding, keine Demo-Datenlöschung und kein Source-Reconfigure. OIP-008.5 wird nicht verändert oder vorweggenommen."),
         icon: Icons.admin_panel_settings_outlined,
         color: OipTokens.yellow,
       ),
       const SizedBox(height: 12),
       if (snapshot == null)
-        const WorkstationNote('Snapshot nicht verfügbar',
-            'Sources, Devices und Demo/Real-Modus sind Unknown; keine Nullwerte werden ersetzt.')
+        WorkstationNote(
+            context.tr("Snapshot nicht verfügbar"),
+            context.tr(
+                "Sources, Devices und Demo/Real-Modus sind Unknown; keine Nullwerte werden ersetzt."))
       else ...[
         KeyValueGrid(children: [
           KeyValue(
-              'Demo / Real Mode',
+              context.tr("Demo / Real Mode"),
               snapshot.system.simulated
-                  ? 'simulated / demo data reported'
-                  : 'non-simulated inventory reported'),
-          KeyValue('Sources', '${sources.length} geliefert'),
-          KeyValue('Devices', '${snapshot.devices.length} geliefert'),
-          KeyValue('Devices ohne Source / NoCollector',
+                  ? context.tr("simulated / demo data reported")
+                  : context.tr("non-simulated inventory reported")),
+          KeyValue(context.tr("Sources"),
+              context.tr("{0} geliefert", [sources.length])),
+          KeyValue(context.tr("Devices"),
+              context.tr("{0} geliefert", [snapshot.devices.length])),
+          KeyValue(context.tr("Devices ohne Source / NoCollector"),
               '${snapshot.devices.where((device) => device.sourceId == null).length}'),
-          const KeyValue('Monitoring Configuration',
-              'OPC-UA writes are limited to server-enabled nodes in the OPC-UA workstation'),
+          KeyValue(
+              context.tr("Monitoring Configuration"),
+              context.tr(
+                  "OPC-UA writes are limited to server-enabled nodes in the OPC-UA workstation")),
         ]),
         const Hairline(),
-        const PanelLabel('Gelieferte Source-IDs'),
+        PanelLabel(context.tr("Gelieferte Source-IDs")),
         for (final source in sources)
           ListTile(
             dense: true,
@@ -681,40 +718,50 @@ class SettingsSectionContent extends StatelessWidget {
                 style: WorkstationTokens.mono(context, size: 11)),
             subtitle: Text(
                 '${source.name} · ${source.simulated ? 'simulated' : 'not marked simulated'}'),
-            trailing: Text(
-                '${snapshot.devices.where((device) => device.sourceId == source.id).length} Devices'),
+            trailing: Text(context.tr("{0} Devices", [
+              snapshot.devices
+                  .where((device) => device.sourceId == source.id)
+                  .length
+            ])),
           ),
         if (sources.isEmpty)
-          const WorkstationNote('Keine Source-DTOs geliefert',
-              'Das ist ein gelieferter leerer Snapshot, kein abgeleiteter Real-Mode- oder Registry-Zustand.'),
+          WorkstationNote(
+              context.tr("Keine Source-DTOs geliefert"),
+              context.tr(
+                  "Das ist ein gelieferter leerer Snapshot, kein abgeleiteter Real-Mode- oder Registry-Zustand.")),
       ],
     ]);
   }
 
   Widget _storage(BuildContext context) => ListView(children: [
-        const SettingsSectionHeader(
-          title: 'SQLite & Data Storage',
-          subtitle:
-              'Technische Storage-Fakten aus dem Management-Read. Datenbankpfade werden nicht exportiert.',
-          status: 'READ ONLY',
+        SettingsSectionHeader(
+          title: context.tr("SQLite & Data Storage"),
+          subtitle: context.tr(
+              "Technische Storage-Fakten aus dem Management-Read. Datenbankpfade werden nicht exportiert."),
+          status: context.tr("READ ONLY"),
         ),
         const SizedBox(height: 12),
         SettingsFacts(report!.facts),
         const Hairline(),
-        const KeyValue('Persisted Settings',
-            'instance_name, instance_description, history_page_size; startup snapshot'),
-        const KeyValue('Migration Status',
-            'Schema wird vom Core geliefert; keine Migration durch Flutter'),
-        const KeyValue('Retention Cleanup', 'unsupported; no data deletion'),
+        KeyValue(
+            context.tr("Persisted Settings"),
+            context.tr(
+                "instance_name, instance_description, history_page_size; startup snapshot")),
+        KeyValue(
+            context.tr("Migration Status"),
+            context.tr(
+                "Schema wird vom Core geliefert; keine Migration durch Flutter")),
+        KeyValue(context.tr("Retention Cleanup"),
+            context.tr("unsupported; no data deletion")),
         SettingsLimitations(report!.limitations),
       ]);
 
   Widget _historical(BuildContext context) => ListView(children: [
-        const SettingsSectionHeader(
-          title: 'Historical Data',
-          subtitle:
-              'Vorhandene deterministische History-/Evidence-Verträge; keine Retention- oder Root-Cause-Funktion.',
-          status: 'READ ONLY',
+        SettingsSectionHeader(
+          title: context.tr("Historical Data"),
+          subtitle: context.tr(
+              "Vorhandene deterministische History-/Evidence-Verträge; keine Retention- oder Root-Cause-Funktion."),
+          status: context.tr("READ ONLY"),
         ),
         const SizedBox(height: 12),
         if (secondary != null) SettingsFacts(secondary!.facts),
@@ -723,24 +770,30 @@ class SettingsSectionContent extends StatelessWidget {
           for (final setting in settings!.settings)
             KeyValue(setting.key,
                 '${setting.effective.display} · ${setting.applyStatus}'),
-        const KeyValue('Explicit Query Limit',
-            'Wins over configured default; existing Core request bounds remain authoritative'),
-        const KeyValue('Health History',
-            'Nur tatsächlich beobachtete Transitionen gemäß Core-Report'),
+        KeyValue(
+            context.tr("Explicit Query Limit"),
+            context.tr(
+                "Wins over configured default; existing Core request bounds remain authoritative")),
+        KeyValue(
+            context.tr("Health History"),
+            context.tr(
+                "Nur tatsächlich beobachtete Transitionen gemäß Core-Report")),
       ]);
 
   Widget _retention(BuildContext context) => ListView(children: [
-        const SettingsSectionHeader(
-          title: 'Retention',
-          subtitle: 'Der Core stellt keinen Retention-Cleanup bereit.',
-          status: 'UNSUPPORTED',
+        SettingsSectionHeader(
+          title: context.tr("Retention"),
+          subtitle:
+              context.tr("Der Core stellt keinen Retention-Cleanup bereit."),
+          status: context.tr("UNSUPPORTED"),
           statusColor: OipTokens.yellow,
         ),
         const SizedBox(height: 12),
         SettingsFacts(report!.facts),
-        const WorkstationNote(
-          'Keine Datenlöschung',
-          'Es gibt keinen aktiven Button Historie löschen und keinen Management-Export. Offline-Backups und mögliche zukünftige Retention-Funktionen bleiben Operator-/Core-Aufgaben.',
+        WorkstationNote(
+          context.tr("Keine Datenlöschung"),
+          context.tr(
+              "Es gibt keinen aktiven Button Historie löschen und keinen Management-Export. Offline-Backups und mögliche zukünftige Retention-Funktionen bleiben Operator-/Core-Aufgaben."),
           icon: Icons.delete_outline,
           color: OipTokens.yellow,
         ),
@@ -749,29 +802,30 @@ class SettingsSectionContent extends StatelessWidget {
   Widget _diagnosticRules(BuildContext context) => ListView(children: [
         SettingsSectionHeader(
           title: section == SettingsSection.evidence
-              ? 'Evidence Capabilities'
-              : 'Deterministic Diagnostic Rules',
-          subtitle:
-              'Unveränderliche Core-Regelmetadaten. Keine visuelle Rule Engine und keine KI-Kausalität.',
-          status: 'IMMUTABLE CORE RULES',
+              ? context.tr("Evidence Capabilities")
+              : context.tr("Deterministic Diagnostic Rules"),
+          subtitle: context.tr(
+              "Unveränderliche Core-Regelmetadaten. Keine visuelle Rule Engine und keine KI-Kausalität."),
+          status: context.tr("IMMUTABLE CORE RULES"),
         ),
         const SizedBox(height: 12),
         SettingsFacts(report!.facts),
         const Hairline(),
-        const WorkstationNote(
-          'Data Gap Semantics',
-          'Nur dokumentierte Gap-Marker. Ein Intervall mit Länge null beweist keine Kontinuität; Unknown bleibt von gesund, gestört und unsupported getrennt.',
+        WorkstationNote(
+          context.tr("Data Gap Semantics"),
+          context.tr(
+              "Nur dokumentierte Gap-Marker. Ein Intervall mit Länge null beweist keine Kontinuität; Unknown bleibt von gesund, gestört und unsupported getrennt."),
           icon: Icons.rule_outlined,
         ),
         SettingsLimitations(report!.limitations),
       ]);
 
   Widget _historyLimits(BuildContext context) => ListView(children: [
-        const SettingsSectionHeader(
-          title: 'History Limits',
-          subtitle:
-              'Konfigurierter Default und tatsächliche Query-Semantik ohne Browser-Mutation.',
-          status: 'OFFLINE ADMINISTRATION REQUIRED',
+        SettingsSectionHeader(
+          title: context.tr("History Limits"),
+          subtitle: context.tr(
+              "Konfigurierter Default und tatsächliche Query-Semantik ohne Browser-Mutation."),
+          status: context.tr("OFFLINE ADMINISTRATION REQUIRED"),
           statusColor: OipTokens.yellow,
         ),
         const SizedBox(height: 12),
@@ -788,31 +842,41 @@ class SettingsSectionContent extends StatelessWidget {
           SettingsFacts(secondary!.facts),
         ],
         const SizedBox(height: 10),
-        const KeyValue('history_page_size validation', '4..100 inclusive'),
-        const KeyValue('Explicit request limit',
-            'existing request range 1..100; Evidence requires at least 4'),
-        const KeyValue('Scope resolution',
-            'Source > Site > Infrastructure > Organization > Platform > built-in default'),
+        KeyValue(context.tr("history_page_size validation"),
+            context.tr("4..100 inclusive")),
+        KeyValue(
+            context.tr("Explicit request limit"),
+            context.tr(
+                "existing request range 1..100; Evidence requires at least 4")),
+        KeyValue(
+            context.tr("Scope resolution"),
+            context.tr(
+                "Source > Site > Infrastructure > Organization > Platform > built-in default")),
       ]);
 
   Widget _security(BuildContext context) => ListView(children: [
-        const SettingsSectionHeader(
-          title: 'Security & Access',
-          subtitle:
-              'Aktuelle lokale Identität und dokumentierte Produktionsgrenzen. Keine Sicherheitszertifizierung.',
-          status: 'PRODUCTION BLOCKERS OPEN',
+        SettingsSectionHeader(
+          title: context.tr("Security & Access"),
+          subtitle: context.tr(
+              "Aktuelle lokale Identität und dokumentierte Produktionsgrenzen. Keine Sicherheitszertifizierung."),
+          status: context.tr("PRODUCTION BLOCKERS OPEN"),
           statusColor: OipTokens.yellow,
         ),
         const SizedBox(height: 12),
         SettingsFacts(report!.facts),
         const Hairline(),
-        const KeyValue('Credential Management', 'unsupported in browser'),
-        const KeyValue('Role Inventory / Editor', 'unsupported'),
-        const KeyValue('Self Grants',
-            'not possible; central provisioning remains authoritative'),
-        const WorkstationNote(
-          'Nicht „Secure for Production“',
-          'RUSTSEC-2023-0071, RUSTSEC-2023-0089, RUSTSEC-2024-0449 sowie Remote-/Browser-Identity, feindliche Same-UID-Isolation, manipulationssicheres Audit und OT-Safety-Nachweise bleiben offen.',
+        KeyValue(context.tr("Credential Management"),
+            context.tr("unsupported in browser")),
+        KeyValue(
+            context.tr("Role Inventory / Editor"), context.tr("unsupported")),
+        KeyValue(
+            context.tr("Self Grants"),
+            context.tr(
+                "not possible; central provisioning remains authoritative")),
+        WorkstationNote(
+          context.tr("Nicht „Secure for Production“"),
+          context.tr(
+              "RUSTSEC-2023-0071, RUSTSEC-2023-0089, RUSTSEC-2024-0449 sowie Remote-/Browser-Identity, feindliche Same-UID-Isolation, manipulationssicheres Audit und OT-Safety-Nachweise bleiben offen."),
           icon: Icons.gpp_maybe_outlined,
           color: OipTokens.yellow,
         ),
@@ -820,37 +884,38 @@ class SettingsSectionContent extends StatelessWidget {
       ]);
 
   Widget _system(BuildContext context) => ListView(children: [
-        const SettingsSectionHeader(
-          title: 'System Information',
-          subtitle:
-              'Build-, Runtime- und Capability-Fakten ohne erfundene Host-Metriken.',
-          status: 'CORE REPORTED',
+        SettingsSectionHeader(
+          title: context.tr("System Information"),
+          subtitle: context.tr(
+              "Build-, Runtime- und Capability-Fakten ohne erfundene Host-Metriken."),
+          status: context.tr("CORE REPORTED"),
         ),
         const SizedBox(height: 12),
         SettingsFacts(report!.facts),
         if (secondary != null) ...[
           const Hairline(),
           KeyValueGrid(children: [
-            KeyValue('MCP Transport', secondary!.fact('transport')),
-            KeyValue('MCP Runtime', secondary!.fact('runtime_mode')),
-            KeyValue('Protocol', secondary!.fact('protocol')),
-            KeyValue('SDK', secondary!.fact('sdk')),
+            KeyValue(context.tr("MCP Transport"), secondary!.fact('transport')),
+            KeyValue(
+                context.tr("MCP Runtime"), secondary!.fact('runtime_mode')),
+            KeyValue(context.tr("Protocol"), secondary!.fact('protocol')),
+            KeyValue(context.tr("SDK"), secondary!.fact('sdk')),
           ]),
         ],
         const Hairline(),
-        const KeyValue('CPU / RAM / GPU',
-            'Unknown — no host collector data in this contract'),
+        KeyValue(context.tr("CPU / RAM / GPU"),
+            context.tr("Unknown — no host collector data in this contract")),
         SettingsLimitations(report!.limitations),
       ]);
 
   Widget _capabilities(BuildContext context) {
     final tools = extra;
     return ListView(children: [
-      const SettingsSectionHeader(
-        title: 'Core Capabilities',
-        subtitle:
-            'Registrierte Capability-Anzahl und tatsächliches MCP-Mapping; keine Ausführung über Settings.',
-        status: 'REGISTRY READ ONLY',
+      SettingsSectionHeader(
+        title: context.tr("Core Capabilities"),
+        subtitle: context.tr(
+            "Registrierte Capability-Anzahl und tatsächliches MCP-Mapping; keine Ausführung über Settings."),
+        status: context.tr("REGISTRY READ ONLY"),
       ),
       const SizedBox(height: 12),
       SettingsMetricStrip([
@@ -884,12 +949,13 @@ class SettingsSectionContent extends StatelessWidget {
                 style: WorkstationTokens.mono(context, size: 11)),
             subtitle: Text(tool.name),
             trailing: Text(tool.classification.contains('read_only')
-                ? 'READ ONLY'
-                : 'UNKNOWN'),
+                ? context.tr("READ ONLY")
+                : context.tr("UNKNOWN")),
           ),
-      const WorkstationNote(
-        'Supported / Unsupported',
-        '25 Reads, legacy SimulationScenarioSet und offline-only SettingsChange sind Core-Vertragsbestand. Mutierende MCP-Tools, Remote MCP, Browser-Administration und aktive Session-Inventarisierung werden nicht angeboten.',
+      WorkstationNote(
+        context.tr("Supported / Unsupported"),
+        context.tr(
+            "25 Reads, legacy SimulationScenarioSet und offline-only SettingsChange sind Core-Vertragsbestand. Mutierende MCP-Tools, Remote MCP, Browser-Administration und aktive Session-Inventarisierung werden nicht angeboten."),
         icon: Icons.fact_check_outlined,
       ),
     ]);

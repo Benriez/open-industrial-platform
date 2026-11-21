@@ -230,7 +230,7 @@ try {
 
   // 2. the write path does not exist: the settings are offline administration
   //    and the surface carries no save button.
-  await openCategory('General');
+  await openCategory('Allgemein');
   await openSection('Core-Einstellungen');
   await scrollToTheTop();
   await waitForNameContaining('OFFLINE ADMINISTRATION REQUIRED');
@@ -249,9 +249,9 @@ try {
   await capture('general-application');
 
   // 3. the appearance is explicitly client-local.
-  await openSection('Appearance & Preferences');
-  await waitForNameContaining('Appearance & Preferences');
-  await waitForNameContaining('CLIENT LOCAL');
+  await openSection('Erscheinungsbild & Sprache');
+  await waitForNameContaining('Erscheinungsbild & Sprache');
+  await waitForNameContaining('LOKAL AUF DIESEM GERÄT');
   pass('the appearance is its own client-local section of the surface');
   await capture('general-appearance');
 
@@ -274,7 +274,7 @@ try {
 
   // 5. the tool explorer reaches a tool of the Core, names its permissions
   //    and copies its schema.
-  await openSection('Tools & Capabilities');
+  await openSection('Werkzeuge & Fähigkeiten');
   await waitForNameContaining('MCP Tool & Capability Explorer');
   const wanted = coreTools.find(tool => typeof tool.input_schema_json === 'string') ?? coreTools[0];
   const search = page.getByRole('textbox', {name: /Tool, Capability/i});
@@ -286,7 +286,7 @@ try {
   await toolButton.first().click({force: true});
   await page.waitForTimeout(1200);
   await waitForNameContaining('Required Permissions');
-  await revealInSurface('Allowed Scopes', 20000);
+  await revealInSurface('Erlaubte Geltungsbereiche', 20000);
   for (const permission of wanted.permissions ?? []) {
     if (!(await revealInSurface(permission, 10000))) {
       throw Error(`the inspector does not name the permission ${permission} of ${wanted.name}`);
@@ -311,7 +311,7 @@ try {
 
   // 7. the copied client configuration is the template of the Core: the
   //    placeholders must be replaced and no credential is carried.
-  await openSection('Client Configuration');
+  await openSection('Client-Konfiguration');
   await waitForNameContaining('UNRESOLVED TEMPLATE');
   await waitForNameContaining('NOT PROVISIONED');
   assert.ok(await revealInSurface('Copy Configuration', 15000),
@@ -330,9 +330,9 @@ try {
   assert.ok(!/Bearer\s/.test(configText), 'the copied configuration carries a bearer token');
   assert.ok(!/["'][0-9a-f]{64}["']/.test(configText),
     'the copied configuration carries a credential-looking value');
-  assert.ok(await revealInSurface('Copy CLI Template', 15000),
+  assert.ok(await revealInSurface('CLI-Vorlage kopieren', 15000),
     'the copy of the CLI template is not reachable');
-  await page.getByRole('button', {name: 'Copy CLI Template', exact: true}).click({force: true});
+  await page.getByRole('button', {name: 'CLI-Vorlage kopieren', exact: true}).click({force: true});
   await page.waitForTimeout(500);
   const cliText = await clipboard();
   assert.ok(cliText.includes('--ipc-credential'), 'the CLI template names no credential file');
@@ -343,12 +343,12 @@ try {
   await capture('client-configuration');
 
   // 8. the permissions are read-only and the limits are named.
-  await openSection('Permissions & Scopes');
+  await openSection('Berechtigungen & Geltungsbereiche');
   await waitForNameContaining('POLICY READ ONLY');
-  await openSection('Client Sessions');
+  await openSection('Client-Sitzungen');
   await waitForNameContaining('MCP Client Sessions');
   await waitForNameContaining('UNSUPPORTED');
-  await openSection('Connection Diagnostics');
+  await openSection('Verbindungsdiagnose');
   await waitForNameContaining('MCP Connection Diagnostics');
   await waitForNameContaining('STATUS READ ONLY');
   await waitForNameContaining(`${coreTools.length} registrierte Tools geliefert`);
@@ -359,8 +359,8 @@ try {
   await openCategory('Data & Storage');
   await scrollToTheTop();
   await waitForNameContaining('SQLite & Data Storage');
-  await openSection('Retention');
-  await waitForNameContaining('Retention');
+  await openSection('Aufbewahrung');
+  await waitForNameContaining('Aufbewahrung');
   await waitForNameContaining('Keine Datenlöschung');
   pass('the storage category names the store and the absence of a retention cleanup');
   await capture('data-storage');

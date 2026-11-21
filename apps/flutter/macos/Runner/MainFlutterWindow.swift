@@ -4,6 +4,11 @@ import FlutterMacOS
 import LocalAuthentication
 import Security
 
+/// App language selected in Flutter's device-local preferences.
+private func oipLocalized(_ german: String, _ english: String) -> String {
+  UserDefaults.standard.string(forKey: "flutter.oip-language") == "en" ? english : german
+}
+
 class MainFlutterWindow: NSWindow {
   private let deferredContentResize = DeferredContentResize()
 
@@ -519,10 +524,10 @@ private final class GitHubOTAUpdater {
         return
       }
       let alert = NSAlert()
-      alert.messageText = "OIP-Update verfügbar"
-      alert.informativeText = "Version \(manifest.version) ist verfügbar. Die signierte Aktualisierung wird heruntergeladen und nach dem Neustart installiert."
-      alert.addButton(withTitle: "Jetzt aktualisieren")
-      alert.addButton(withTitle: "Später")
+      alert.messageText = oipLocalized("OIP-Update verfügbar", "OIP update available")
+      alert.informativeText = oipLocalized("Version \(manifest.version) ist verfügbar. Die signierte Aktualisierung wird heruntergeladen und nach dem Neustart installiert.", "Version \(manifest.version) is available. The signed update will be downloaded and installed after the app restarts.")
+      alert.addButton(withTitle: oipLocalized("Jetzt aktualisieren", "Update now"))
+      alert.addButton(withTitle: oipLocalized("Später", "Later"))
       alert.beginSheetModal(for: window) { response in
         guard response == .alertFirstButtonReturn else {
           completion?("deferred")
@@ -536,12 +541,12 @@ private final class GitHubOTAUpdater {
 
   private func downloadAndInstall(_ manifest: OIPGitHubOTA.Manifest, archiveAsset: OIPGitHubOTA.Asset) {
     guard let url = OIPGitHubOTA.safeReleaseURL(archiveAsset.browserDownloadURL) else {
-      showFailure("Der Download-Link des signierten Updates ist ungültig.")
+      showFailure(oipLocalized("Der Download-Link des signierten Updates ist ungültig.", "The signed update download link is invalid."))
       return
     }
     let appURL = Bundle.main.bundleURL
     guard FileManager.default.isWritableFile(atPath: appURL.deletingLastPathComponent().path) else {
-      showFailure("Der App-Ordner ist nicht beschreibbar. Installiere OIP unter /Applications mit Schreibrechten.")
+      showFailure(oipLocalized("Der App-Ordner ist nicht beschreibbar. Installiere OIP unter /Applications mit Schreibrechten.", "The app folder is not writable. Install OIP in /Applications with write permission."))
       return
     }
     var request = URLRequest(url: url)
@@ -551,18 +556,18 @@ private final class GitHubOTAUpdater {
       let status = (response as? HTTPURLResponse)?.statusCode
       if error != nil || status != 200 {
         OIPGitHubOTA.log("archive download rejected: status \(status ?? -1)")
-        self.showFailure("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.")
+        self.showFailure(oipLocalized("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.", "The update could not be verified and was discarded."))
         return
       }
       guard let temporaryURL, let archiveData = try? Data(contentsOf: temporaryURL) else {
         OIPGitHubOTA.log("archive download could not be read from disk")
-        self.showFailure("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.")
+        self.showFailure(oipLocalized("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.", "The update could not be verified and was discarded."))
         return
       }
       let actual = OIPGitHubOTA.sha256Hex(of: Array(SHA256.hash(data: archiveData)))
       guard OIPGitHubOTA.verifyArchiveDigest(sha256Hex: actual, manifest: manifest) == nil else {
         OIPGitHubOTA.log("archive digest mismatch: got \(actual) expected \(manifest.archiveSHA256)")
-        self.showFailure("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.")
+        self.showFailure(oipLocalized("Das Update ließ sich nicht vollständig prüfen und wurde verworfen.", "The update could not be verified and was discarded."))
         return
       }
       OIPGitHubOTA.log("archive verified (sha256 \(actual)); starting installer")
@@ -574,14 +579,14 @@ private final class GitHubOTAUpdater {
         try FileManager.default.moveItem(at: temporaryURL, to: archive)
         self.launchInstaller(archive: archive, appURL: appURL, manifest: manifest)
       } catch {
-        self.showFailure("Das geprüfte Update konnte nicht vorbereitet werden.")
+        self.showFailure(oipLocalized("Das geprüfte Update konnte nicht vorbereitet werden.", "The verified update could not be prepared."))
       }
     }.resume()
   }
 
   private func launchInstaller(archive: URL, appURL: URL, manifest: OIPGitHubOTA.Manifest) {
     guard let helper = Bundle.main.url(forResource: "oip_ota_install_helper", withExtension: "sh") else {
-      showFailure("Der Update-Installer fehlt im App-Bundle.")
+      showFailure(oipLocalized("Der Update-Installer fehlt im App-Bundle.", "The update installer is missing from the app bundle."))
       return
     }
     DispatchQueue.main.async {
@@ -593,7 +598,7 @@ private final class GitHubOTAUpdater {
         try process.run()
         NSApp.terminate(nil)
       } catch {
-        self.showFailure("Der Update-Installer konnte nicht gestartet werden.")
+        self.showFailure(oipLocalized("Der Update-Installer konnte nicht gestartet werden.", "The update installer could not be started."))
       }
     }
   }
@@ -603,7 +608,7 @@ private final class GitHubOTAUpdater {
       OIPGitHubOTA.log(message)
       guard let window = self.updateWindow else { return }
       let alert = NSAlert()
-      alert.messageText = "OIP konnte nicht aktualisiert werden"
+      alert.messageText = oipLocalized("OIP konnte nicht aktualisiert werden", "OIP could not be updated")
       alert.informativeText = message
       alert.addButton(withTitle: "OK")
       alert.beginSheetModal(for: window, completionHandler: nil)
@@ -676,14 +681,14 @@ private enum TouchIdKeychain {
           let window = NSApp.keyWindow as? MainFlutterWindow,
           window.attachedSheet == nil else {
       result(FlutterError(code: "TOUCH_ID_WINDOW_UNAVAILABLE",
-                          message: "Öffne das OIP-Fenster im Vordergrund und schließe andere Dialoge, bevor du Touch ID startest.",
+                          message: oipLocalized("Öffne das OIP-Fenster im Vordergrund und schließe andere Dialoge, bevor du Touch ID startest.", "Bring the OIP window to the foreground and close other dialogs before starting Touch ID."),
                           details: nil))
       return nil
     }
     let context = LAContext()
     var authError: NSError?
     guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &authError) else {
-      let detail = authError?.localizedDescription ?? "Touch ID ist nicht verfügbar."
+      let detail = authError?.localizedDescription ?? oipLocalized("Touch ID ist nicht verfügbar.", "Touch ID is unavailable.")
       result(FlutterError(code: "TOUCH_ID_UNAVAILABLE", message: detail, details: nil))
       return nil
     }
@@ -697,16 +702,16 @@ private enum TouchIdKeychain {
     let message: String
     switch code {
     case .systemCancel, .appCancel:
-      message = "macOS hat Touch ID abgebrochen. Lass OIP im Vordergrund und versuche es erneut."
+      message = oipLocalized("macOS hat Touch ID abgebrochen. Lass OIP im Vordergrund und versuche es erneut.", "macOS canceled Touch ID. Keep OIP in the foreground and try again.")
     default:
-      message = error?.localizedDescription ?? "Touch ID wurde abgebrochen."
+      message = error?.localizedDescription ?? oipLocalized("Touch ID wurde abgebrochen.", "Touch ID was canceled.")
     }
     return FlutterError(code: "TOUCH_ID_CANCELLED", message: message, details: nil)
   }
 
   private static func createCredential(result: @escaping FlutterResult) {
     guard let context = authenticationContext(result: result) else { return }
-    context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Touch ID für OIP aktivieren") { success, error in
+    context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: oipLocalized("Touch ID für OIP aktivieren", "Enable Touch ID for OIP")) { success, error in
       DispatchQueue.main.async {
         defer { isAuthenticating = false }
         guard success else {
@@ -715,7 +720,7 @@ private enum TouchIdKeychain {
         }
         var bytes = [UInt8](repeating: 0, count: 32)
         guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else {
-          result(FlutterError(code: "CREDENTIAL_GENERATION_FAILED", message: "Schlüssel konnte nicht erzeugt werden.", details: nil))
+          result(FlutterError(code: "CREDENTIAL_GENERATION_FAILED", message: oipLocalized("Schlüssel konnte nicht erzeugt werden.", "The key could not be generated."), details: nil))
           return
         }
         let secret = Data(bytes)
@@ -723,7 +728,7 @@ private enum TouchIdKeychain {
         guard let access = SecAccessControlCreateWithFlags(
           nil, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .biometryCurrentSet, &accessError
         ) else {
-          result(FlutterError(code: "KEYCHAIN_POLICY_FAILED", message: "Touch-ID-Keychain konnte nicht vorbereitet werden.", details: nil))
+          result(FlutterError(code: "KEYCHAIN_POLICY_FAILED", message: oipLocalized("Touch-ID-Keychain konnte nicht vorbereitet werden.", "The keychain could not be prepared for Touch ID."), details: nil))
           return
         }
         let deleteStatus = deleteCredentials(context: context)
@@ -785,7 +790,7 @@ private enum TouchIdKeychain {
 
   private static func readCredential(result: @escaping FlutterResult) {
     guard let context = authenticationContext(result: result) else { return }
-    context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Bei OIP anmelden") { success, error in
+    context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: oipLocalized("Bei OIP anmelden", "Sign in to OIP")) { success, error in
       DispatchQueue.main.async {
         defer { isAuthenticating = false }
         guard success else {
@@ -836,6 +841,6 @@ private enum TouchIdKeychain {
   }
 
   private static func keychainError(_ status: OSStatus) -> FlutterError {
-    FlutterError(code: "KEYCHAIN_ERROR", message: "Touch-ID-Schlüssel ist nicht verfügbar (\(status)).", details: nil)
+    FlutterError(code: "KEYCHAIN_ERROR", message: oipLocalized("Touch-ID-Schlüssel ist nicht verfügbar (\(status)).", "The Touch ID key is unavailable (\(status))."), details: nil)
   }
 }

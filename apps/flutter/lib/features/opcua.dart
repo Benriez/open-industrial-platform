@@ -1,3 +1,4 @@
+import '../l10n/oip_strings.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -246,8 +247,8 @@ class _OpcuaPageState extends State<OpcuaPage> {
       if (!mounted || gen != sourceGeneration) return;
       setState(() {
         retryableFailure = _isRetryable(exception);
-        sourcesError =
-            apiErrorMessage(exception, 'Quellenliste nicht verfügbar.');
+        sourcesError = apiErrorMessage(
+            exception, context.tr("Quellenliste nicht verfügbar."));
       });
     }
   }
@@ -334,8 +335,10 @@ class _OpcuaPageState extends State<OpcuaPage> {
       if (mounted && gen == generation) {
         setState(() {
           retryableFailure = retryableFailure || _isRetryable(exception);
-          error = apiErrorMessage(exception,
-              'OPC-UA-Nodes konnten nicht geladen werden. Bitte erneut versuchen.');
+          error = apiErrorMessage(
+              exception,
+              context.tr(
+                  "OPC-UA-Nodes konnten nicht geladen werden. Bitte erneut versuchen."));
           loading = false;
         });
       }
@@ -411,7 +414,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
     final value = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('OPC-UA-Wert schreiben'),
+        title: Text(context.tr("OPC-UA-Wert schreiben")),
         content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,15 +429,16 @@ class _OpcuaPageState extends State<OpcuaPage> {
                   key: const Key('opcua-write-value'),
                   controller: input,
                   autofocus: true,
-                  decoration: const InputDecoration(labelText: 'Neuer Wert')),
+                  decoration:
+                      InputDecoration(labelText: context.tr("Neuer Wert"))),
             ]),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Abbrechen')),
+              child: Text(context.tr("Abbrechen"))),
           FilledButton(
               onPressed: () => Navigator.pop(dialogContext, input.text),
-              child: const Text('Schreiben')),
+              child: Text(context.tr("Schreiben"))),
         ],
       ),
     );
@@ -460,8 +464,8 @@ class _OpcuaPageState extends State<OpcuaPage> {
         typed = {'float': number};
       }
     } on FormatException {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Wert passt nicht zum OPC-UA-Datentyp.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(context.tr("Wert passt nicht zum OPC-UA-Datentyp."))));
       return;
     }
     setState(() => writeBusy = true);
@@ -469,13 +473,14 @@ class _OpcuaPageState extends State<OpcuaPage> {
       await widget.controller.api.contextWriteNode(
           source, node.id, typed, widget.controller.infrastructure);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${node.name} wurde geschrieben.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(context.tr("{0} wurde geschrieben.", [node.name]))));
       await _load();
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Schreiben fehlgeschlagen: ${error.toString()}')));
+          content: Text(context
+              .tr("Schreiben fehlgeschlagen: {0}", [error.toString()]))));
     } finally {
       if (mounted) setState(() => writeBusy = false);
     }
@@ -743,7 +748,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
                     AdaptiveInspector(
                       controller: widget.controller,
                       workspace: WorkspaceId.opcua,
-                      label: 'Node-Wert & technische Attribute',
+                      label: context.tr("Node-Wert & technische Attribute"),
                       hasSelection: hasExplicitSelection,
                       child: _inspectorArea(context, snapshot, node,
                           observation, live, alarm, primary,
@@ -853,14 +858,15 @@ class _OpcuaPageState extends State<OpcuaPage> {
         : 'unknown';
     final stale = widget.controller.stale;
     return AdaptiveWorkspaceHeader(
-      eyebrow: 'ADRESSRAUM-EXPLORER · SERVERRECHTE',
-      title: 'OPC-UA-Browser',
-      subtitle: 'Source wählen · Node suchen · Wert und Attribute untersuchen',
+      eyebrow: context.tr("ADRESSRAUM-EXPLORER · SERVERRECHTE"),
+      title: context.tr("OPC-UA-Browser"),
+      subtitle: context
+          .tr("Source wählen · Node suchen · Wert und Attribute untersuchen"),
       accent: OipTokens.violet,
       primaryAction: WorkspacePrimaryAction(
         buttonKey: const Key('opcua-primary-search'),
-        label: 'Node suchen',
-        tooltip: 'Node-Suche fokussieren · Shortcut /',
+        label: context.tr("Node suchen"),
+        tooltip: context.tr("Node-Suche fokussieren · Shortcut /"),
         icon: Icons.search,
         onPressed: searchFocus.requestFocus,
       ),
@@ -874,7 +880,8 @@ class _OpcuaPageState extends State<OpcuaPage> {
         ToolButton(
           key: const Key('compare-open'),
           icon: Icons.compare_arrows_outlined,
-          tooltip: 'Node-Vergleich öffnen · ${compared.length}/$maxCompare',
+          tooltip: context.tr(
+              "Node-Vergleich öffnen · {0}/{1}", [compared.length, maxCompare]),
           accent: OipTokens.cyan,
           active: showCompare,
           onPressed: () => setState(() => showCompare = true),
@@ -884,7 +891,9 @@ class _OpcuaPageState extends State<OpcuaPage> {
           icon: dense
               ? Icons.density_small_outlined
               : Icons.density_medium_outlined,
-          tooltip: dense ? 'Komfortable Liste' : 'Dichte Liste',
+          tooltip: dense
+              ? context.tr("Komfortable Liste")
+              : context.tr("Dichte Liste"),
           active: dense,
           onPressed: () {
             setState(() => dense = !dense);
@@ -894,23 +903,25 @@ class _OpcuaPageState extends State<OpcuaPage> {
         ToolButton(
           key: const Key('refresh-nodes'),
           icon: Icons.refresh,
-          tooltip: 'Source und Nodes aktualisieren',
+          tooltip: context.tr("Source und Nodes aktualisieren"),
           onPressed: loading ? null : _reloadContext,
         ),
       ],
       status: [
         StatusPill(
-          stale ? 'OPC UA STALE' : 'OPC UA · ${known(sourceConnection)}',
+          stale
+              ? context.tr("OPC UA STALE")
+              : context.tr("OPC UA · {0}", [known(sourceConnection)]),
           color: OipTokens.statusColor(
               context, stale ? 'degraded' : sourceConnection),
           showDot: true,
         ),
         StatusPill(
-          'SUBSCRIPTION · ${known(sourceSubscription)}',
+          context.tr("SUBSCRIPTION · {0}", [known(sourceSubscription)]),
           color: OipTokens.statusColor(context, sourceSubscription),
           showDot: true,
         ),
-        const StatusPill('SERVER-GESTEUERTER ZUGRIFF',
+        StatusPill(context.tr("SERVER-GESTEUERTER ZUGRIFF"),
             color: OipTokens.lime, icon: Icons.lock_outline),
         const KbdHint('Ctrl K · / Suche · F6 Bereich'),
       ],
@@ -946,14 +957,14 @@ class _OpcuaPageState extends State<OpcuaPage> {
               })
           ];
     return Semantics(
-      label: 'OPC-UA-Datenquelle',
+      label: context.tr("OPC-UA-Datenquelle"),
       child: DropdownButton<String>(
         key: const Key('source-select'),
         value: items.any((item) => item.id == current) ? current : null,
         isExpanded: true,
         isDense: compact,
         underline: const SizedBox.shrink(),
-        hint: const Text('Quelle unbekannt'),
+        hint: Text(context.tr("Quelle unbekannt")),
         items: [
           for (final source in items)
             DropdownMenuItem(
@@ -1124,7 +1135,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const PanelLabel('Quelle', color: OipTokens.violet),
+        PanelLabel(context.tr("Quelle"), color: OipTokens.violet),
         _sourceSelector(context),
         if (sourcesError != null)
           Text(sourcesError!, style: Theme.of(context).textTheme.bodySmall),
@@ -1145,13 +1156,13 @@ class _OpcuaPageState extends State<OpcuaPage> {
         _statusLine(context, 'Ursprung',
             (source?.simulated ?? system.simulated) ? 'Simulation' : 'Backend'),
         const Hairline(),
-        PanelLabel('Adressraum',
+        PanelLabel(context.tr("Adressraum"),
             color: OipTokens.violet,
-            trailing: Text('${theScopes.length} Scopes',
+            trailing: Text(context.tr("{0} Scopes", [theScopes.length]),
                 style: WorkstationTokens.mono(context,
                     size: 10, color: OipTokens.muted(context)))),
         Text(_namespaceLabel(), style: Theme.of(context).textTheme.titleSmall),
-        Text('Index aus den gelieferten Nodes · flacher Katalog',
+        Text(context.tr("Index aus den gelieferten Nodes · flacher Katalog"),
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -1162,7 +1173,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
               padding: const EdgeInsets.only(bottom: 3),
               child: _scopeRow(context, value)),
         const Hairline(),
-        const PanelLabel('Datendichte', color: OipTokens.violet),
+        PanelLabel(context.tr("Datendichte"), color: OipTokens.violet),
         _statusLine(context, 'Im Scope', '$_total Nodes'),
         _statusLine(
             context, 'Sichtbar', _total == 0 ? '—' : 'Position $first–$last'),
@@ -1172,14 +1183,15 @@ class _OpcuaPageState extends State<OpcuaPage> {
             _currentEntity == null ? 'Live' : 'Live ${_currentEntity!}',
             '${liveById.length} Variablen'),
         const Hairline(),
-        PanelLabel('Angeheftet',
+        PanelLabel(context.tr("Angeheftet"),
             color: OipTokens.violet,
             trailing: Text('${pinned.length}/$maxPins',
                 style: WorkstationTokens.mono(context,
                     size: 10, color: OipTokens.muted(context)))),
         if (pinned.isEmpty)
           Text(
-              'Mit P oder dem Pin-Symbol anheften, um Werte nebeneinander zu halten.',
+              context.tr(
+                  "Mit P oder dem Pin-Symbol anheften, um Werte nebeneinander zu halten."),
               style:
                   Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11))
         else
@@ -1187,21 +1199,22 @@ class _OpcuaPageState extends State<OpcuaPage> {
             _pinnedRow(context, entry.value, liveById, _keySource(entry.key)),
         if (recent.isNotEmpty) ...[
           const Hairline(),
-          const PanelLabel('Zuletzt betrachtet', color: OipTokens.violet),
+          PanelLabel(context.tr("Zuletzt betrachtet"), color: OipTokens.violet),
           for (final entry in recent.entries)
             _recentRow(context, entry.value, _keySource(entry.key)),
         ],
         const Hairline(),
-        const WorkstationNote(
-          'Keine Referenzhierarchie verfügbar',
-          'Ordner sind die Parent-Namen des Adressraums des Servers. Parent, Children und BrowseReferences werden nicht geliefert; deshalb zeigt OIP keinen erfundenen Baum.',
+        WorkstationNote(
+          context.tr("Keine Referenzhierarchie verfügbar"),
+          context.tr(
+              "Ordner sind die Parent-Namen des Adressraums des Servers. Parent, Children und BrowseReferences werden nicht geliefert; deshalb zeigt OIP keinen erfundenen Baum."),
           icon: Icons.account_tree_outlined,
           color: OipTokens.violet,
         ),
         const SizedBox(height: OipTokens.s3),
-        const Align(
+        Align(
           alignment: Alignment.centerLeft,
-          child: StatusPill('ZUGRIFF · SERVER + OIP-POLICY',
+          child: StatusPill(context.tr("ZUGRIFF · SERVER + OIP-POLICY"),
               color: OipTokens.lime, icon: Icons.lock_outline),
         ),
       ],
@@ -1224,7 +1237,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
     return Semantics(
       button: true,
       selected: active,
-      label: 'Angeheftet ${node.name}',
+      label: context.tr("Angeheftet {0}", [node.name]),
       child: Material(
         color: active ? tone.withOpacity(.1) : Colors.transparent,
         borderRadius: BorderRadius.circular(6),
@@ -1262,7 +1275,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
               StatusIndicator(observation?.quality, size: 6),
               const SizedBox(width: 4),
               Tooltip(
-                message: 'Pin entfernen',
+                message: context.tr("Pin entfernen"),
                 child: InkWell(
                   onTap: () => _togglePin(node, source: primary),
                   borderRadius: BorderRadius.circular(4),
@@ -1283,7 +1296,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
   Widget _recentRow(BuildContext context, OpcNode node, String source) =>
       Semantics(
           button: true,
-          label: 'Zuletzt ${node.name}, Quelle $source',
+          label: context.tr("Zuletzt {0}, Quelle {1}", [node.name, source]),
           child: InkWell(
             onTap: () => _select(node, source: source),
             borderRadius: BorderRadius.circular(6),
@@ -1333,10 +1346,12 @@ class _OpcuaPageState extends State<OpcuaPage> {
                   style: Theme.of(context).textTheme.titleSmall),
               SizedBox(
                   width: 260, child: _sourceSelector(context, compact: true)),
-              Text('$_total Nodes im Scope',
+              Text(context.tr("{0} Nodes im Scope", [_total]),
                   style: WorkstationTokens.mono(context,
                       size: 11.5, color: OipTokens.muted(context))),
-              Text('${liveById.length} live · ${known(system.subscription)}',
+              Text(
+                  context.tr("{0} live · {1}",
+                      [liveById.length, known(system.subscription)]),
                   style: WorkstationTokens.mono(context,
                       size: 11.5,
                       color:
@@ -1401,7 +1416,8 @@ class _OpcuaPageState extends State<OpcuaPage> {
         isDense: true,
         style: Theme.of(context).textTheme.bodySmall,
         items: [
-          DropdownMenuItem(value: '__all__', child: Text('$label: alle')),
+          DropdownMenuItem(
+              value: '__all__', child: Text(context.tr("{0}: alle", [label]))),
           for (final item in values)
             DropdownMenuItem(value: item, child: Text('$label: $item')),
         ],
@@ -1435,7 +1451,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
                   controller: searchController,
                   focusNode: searchFocus,
                   decoration: InputDecoration(
-                    hintText: 'Nodes durchsuchen',
+                    hintText: context.tr("Nodes durchsuchen"),
                     prefixIcon: const Icon(Icons.search, size: 18),
                     suffixIcon: search.isEmpty
                         ? const Padding(
@@ -1445,7 +1461,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
                                 heightFactor: 1,
                                 child: KbdHint('/')))
                         : IconButton(
-                            tooltip: 'Suche löschen',
+                            tooltip: context.tr("Suche löschen"),
                             onPressed: _clearSearch,
                             icon: const Icon(Icons.close, size: 16),
                           ),
@@ -1457,7 +1473,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
               ToolButton(
                 key: const Key('filters-toggle'),
                 icon: Icons.filter_alt_outlined,
-                tooltip: 'Seitenfilter für Typ und Quality',
+                tooltip: context.tr("Seitenfilter für Typ und Quality"),
                 accent: OipTokens.cyan,
                 active:
                     showFilters || typeFilter != null || qualityFilter != null,
@@ -1471,7 +1487,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
               ToolButton(
                 key: const Key('view-list'),
                 icon: Icons.view_list_outlined,
-                tooltip: 'Flache Liste',
+                tooltip: context.tr("Flache Liste"),
                 accent: OipTokens.cyan,
                 active: view == _ViewMode.list,
                 onPressed: () {
@@ -1484,7 +1500,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
               ToolButton(
                 key: const Key('view-grouped'),
                 icon: Icons.segment_outlined,
-                tooltip: 'Nach Datentyp gruppieren',
+                tooltip: context.tr("Nach Datentyp gruppieren"),
                 accent: OipTokens.cyan,
                 active: view == _ViewMode.grouped,
                 onPressed: () {
@@ -1502,7 +1518,8 @@ class _OpcuaPageState extends State<OpcuaPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Server-Suche: Browse-Name des Servers · gesamte ausgewählte Quelle. Typ/Quality: nur geladene Seite.',
+                      context.tr(
+                          "Server-Suche: Browse-Name des Servers · gesamte ausgewählte Quelle. Typ/Quality: nur geladene Seite."),
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall
@@ -1541,7 +1558,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
                           }),
                           icon: const Icon(Icons.filter_alt_off_outlined,
                               size: 15),
-                          label: const Text('Seitenfilter zurücksetzen'),
+                          label: Text(context.tr("Seitenfilter zurücksetzen")),
                         ),
                     ]),
                   ]),
@@ -1563,10 +1580,12 @@ class _OpcuaPageState extends State<OpcuaPage> {
                 Text(scopeLabel.toUpperCase(),
                     style: WorkstationTokens.eyebrow(context, color: cyan)),
                 if (liveOnPage > 0)
-                  Text('LIVE $liveOnPage',
+                  Text(context.tr("LIVE {0}", [liveOnPage]),
                       style: WorkstationTokens.mono(context,
                           size: 10.5, color: cyan)),
-                Text('${items.length}/${allItems.length} auf dieser Seite',
+                Text(
+                    context.tr("{0}/{1} auf dieser Seite",
+                        [items.length, allItems.length]),
                     style: WorkstationTokens.mono(context,
                         size: 10.5, color: OipTokens.muted(context))),
               ],
@@ -1586,7 +1605,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
                   color: OipTokens.statusColor(context, 'degraded'),
                   action: TextButton(
                       onPressed: _retryBrowse,
-                      child: const Text('Erneut versuchen'))),
+                      child: Text(context.tr("Erneut versuchen")))),
             ),
           if (!loading && error == null && page != null && items.isEmpty)
             Padding(
@@ -1632,24 +1651,26 @@ class _OpcuaPageState extends State<OpcuaPage> {
                   spacing: 6,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Text('$_total Nodes · Seite $_pageIndex',
+                    Text(
+                        context
+                            .tr("{0} Nodes · Seite {1}", [_total, _pageIndex]),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Theme.of(context).colorScheme.onSurface)),
-                    Text('von $_pageCount',
+                    Text(context.tr("von {0}", [_pageCount]),
                         style: Theme.of(context).textTheme.bodySmall),
                   ],
                 ),
               ),
               ToolButton(
                 icon: Icons.first_page,
-                tooltip: 'Zum Anfang',
+                tooltip: context.tr("Zum Anfang"),
                 accent: OipTokens.cyan,
                 onPressed: _hasPrevious ? () => _goTo(0) : null,
               ),
               const SizedBox(width: 4),
               ToolButton(
                 icon: Icons.chevron_left,
-                tooltip: 'Vorherige Nodes',
+                tooltip: context.tr("Vorherige Nodes"),
                 accent: OipTokens.cyan,
                 onPressed:
                     _hasPrevious ? () => _goTo(offset - _pageSize) : null,
@@ -1658,14 +1679,14 @@ class _OpcuaPageState extends State<OpcuaPage> {
               ToolButton(
                 key: const Key('next-nodes'),
                 icon: Icons.chevron_right,
-                tooltip: 'Nächste Nodes',
+                tooltip: context.tr("Nächste Nodes"),
                 accent: OipTokens.cyan,
                 onPressed: _hasNext ? () => _goTo(offset + _pageSize) : null,
               ),
               const SizedBox(width: 4),
               ToolButton(
                 icon: Icons.last_page,
-                tooltip: 'Zum Ende',
+                tooltip: context.tr("Zum Ende"),
                 accent: OipTokens.cyan,
                 onPressed:
                     _hasNext ? () => _goTo((_pageCount - 1) * _pageSize) : null,
@@ -1824,10 +1845,10 @@ class _OpcuaPageState extends State<OpcuaPage> {
                 size: 28,
                 color: OipTokens.readableAccent(context, OipTokens.violet)),
             const SizedBox(height: OipTokens.s3),
-            Text('Node auswählen',
+            Text(context.tr("Node auswählen"),
                 style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: OipTokens.s1),
-            Text('Wähle eine Variable aus dem Adressraum.',
+            Text(context.tr("Wähle eine Variable aus dem Adressraum."),
                 style: Theme.of(context).textTheme.bodyMedium),
           ]),
         ),
@@ -1882,7 +1903,9 @@ class _OpcuaPageState extends State<OpcuaPage> {
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 2),
-                Text('ns=${node.namespace} · ${node.folder} · ${node.id}',
+                Text(
+                    context.tr("ns={0} · {1} · {2}",
+                        [node.namespace, node.folder, node.id]),
                     overflow: TextOverflow.ellipsis,
                     style: WorkstationTokens.mono(context,
                         size: 11, color: OipTokens.muted(context))),
@@ -1893,7 +1916,9 @@ class _OpcuaPageState extends State<OpcuaPage> {
           ToolButton(
             key: const Key('pin-toggle'),
             icon: isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-            tooltip: isPinned ? 'Pin entfernen' : 'Node anheften',
+            tooltip: isPinned
+                ? context.tr("Pin entfernen")
+                : context.tr("Node anheften"),
             active: isPinned,
             onPressed: !isPinned && pinned.length >= maxPins
                 ? null
@@ -1906,8 +1931,8 @@ class _OpcuaPageState extends State<OpcuaPage> {
                 ? Icons.compare_arrows
                 : Icons.compare_arrows_outlined,
             tooltip: isCompared
-                ? 'Aus Vergleich entfernen (C)'
-                : 'Zum Vergleich hinzufügen (C)',
+                ? context.tr("Aus Vergleich entfernen (C)")
+                : context.tr("Zum Vergleich hinzufügen (C)"),
             active: isCompared,
             accent: OipTokens.cyan,
             onPressed: !isCompared && compared.length >= maxCompare
@@ -1917,12 +1942,12 @@ class _OpcuaPageState extends State<OpcuaPage> {
           const SizedBox(width: 4),
           ToolButton(
             icon: Icons.copy_outlined,
-            tooltip: 'NodeId kopieren',
+            tooltip: context.tr("NodeId kopieren"),
             onPressed: () async {
               await Clipboard.setData(ClipboardData(text: node.id));
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('NodeId kopiert')));
+                  SnackBar(content: Text(context.tr("NodeId kopiert"))));
             },
           ),
         ]),
@@ -1938,16 +1963,17 @@ class _OpcuaPageState extends State<OpcuaPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(children: [
-                Text('AKTUELLER WERT',
+                Text(context.tr("AKTUELLER WERT"),
                     style: WorkstationTokens.eyebrow(context, color: cyan)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     live
-                        ? 'Live-Abonnement'
+                        ? context.tr("Live-Abonnement")
                         : observation == null
-                            ? 'Kein Wert'
-                            : 'Einzelabfrage · ${_clock(observation.receivedMs)}',
+                            ? context.tr("Kein Wert")
+                            : context.tr("Einzelabfrage · {0}",
+                                [_clock(observation.receivedMs)]),
                     textAlign: TextAlign.right,
                     overflow: TextOverflow.ellipsis,
                     style: WorkstationTokens.mono(context,
@@ -1962,7 +1988,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
                   alignment: WrapAlignment.spaceBetween,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Text('DARSTELLUNG',
+                    Text(context.tr("DARSTELLUNG"),
                         style: WorkstationTokens.eyebrow(context)),
                     DropdownButton<OpcValueFormat>(
                       key: const Key('value-format'),
@@ -1974,7 +2000,8 @@ class _OpcuaPageState extends State<OpcuaPage> {
                         for (final mode in OpcValueFormat.values)
                           DropdownMenuItem(
                               value: mode,
-                              child: Text(opcValueFormatLabel(mode)))
+                              child:
+                                  Text(context.tr(opcValueFormatLabel(mode))))
                       ],
                       onChanged: (mode) => setState(
                           () => valueFormat = mode ?? OpcValueFormat.original),
@@ -1982,7 +2009,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
                     ToolButton(
                       key: const Key('copy-original-value'),
                       icon: Icons.copy_all_outlined,
-                      tooltip: 'Unveränderten API-Wert kopieren',
+                      tooltip: context.tr("Unveränderten API-Wert kopieren"),
                       accent: OipTokens.cyan,
                       onPressed: observation == null
                           ? null
@@ -1991,8 +2018,9 @@ class _OpcuaPageState extends State<OpcuaPage> {
                                   text: originalObservationValue(observation)));
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text('Originalwert kopiert')));
+                                  SnackBar(
+                                      content: Text(
+                                          context.tr("Originalwert kopiert"))));
                             },
                     ),
                   ]),
@@ -2010,7 +2038,8 @@ class _OpcuaPageState extends State<OpcuaPage> {
               ),
               if (valueFormat != OpcValueFormat.original)
                 Text(
-                  'Formatierte Ansicht · Original bleibt per Kopieraktion abrufbar',
+                  context.tr(
+                      "Formatierte Ansicht · Original bleibt per Kopieraktion abrufbar"),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               const SizedBox(height: 10),
@@ -2018,23 +2047,26 @@ class _OpcuaPageState extends State<OpcuaPage> {
                 spacing: 6,
                 runSpacing: 6,
                 children: [
-                  StatusPill(known(observation?.quality),
+                  StatusPill(context.tr(known(observation?.quality)),
                       color:
                           OipTokens.statusColor(context, observation?.quality),
                       showDot: true),
                   StatusPill(
                     stale
-                        ? 'Veraltet'
+                        ? context.tr("Veraltet")
                         : live
-                            ? known(observation!.freshness)
-                            : 'Einzelabfrage',
+                            ? context.tr(known(observation!.freshness))
+                            : context.tr("Einzelabfrage"),
                     color: stale
                         ? OipTokens.statusColor(context, 'degraded')
                         : OipTokens.statusColor(
                             context, observation?.freshness),
                     showDot: true,
                   ),
-                  StatusPill(simulated ? 'OPC-UA-SIMULATOR' : 'OPC-UA-API',
+                  StatusPill(
+                      simulated
+                          ? context.tr("OPC-UA-SIMULATOR")
+                          : context.tr("OPC-UA-API"),
                       color: OipTokens.statusColor(context, 'info'),
                       icon: system.simulated
                           ? Icons.science_outlined
@@ -2043,13 +2075,16 @@ class _OpcuaPageState extends State<OpcuaPage> {
               ),
               const SizedBox(height: 12),
               Row(children: [
-                Text('SITZUNGSVERLAUF',
+                Text(context.tr("SITZUNGSVERLAUF"),
                     style: WorkstationTokens.eyebrow(context)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     numbers.length >= 2
-                        ? '${numbers.length} Punkte · ${simulated ? 'virtuelle Quellzeit' : 'Quellzeit'}'
+                        ? context.tr("{0} Punkte · {1}", [
+                            numbers.length,
+                            simulated ? 'virtuelle Quellzeit' : 'Quellzeit'
+                          ])
                         : '',
                     textAlign: TextAlign.right,
                     overflow: TextOverflow.ellipsis,
@@ -2083,27 +2118,31 @@ class _OpcuaPageState extends State<OpcuaPage> {
               if (analysis.sampleCount > 0) ...[
                 const Hairline(vertical: 8),
                 KeyValueGrid(children: [
-                  KeyValue('Samples · Session', '${analysis.sampleCount}'),
-                  KeyValue('Quality-Wechsel', '${analysis.qualityChanges}'),
+                  KeyValue(context.tr("Samples · Session"),
+                      '${analysis.sampleCount}'),
+                  KeyValue(context.tr("Quality-Wechsel"),
+                      '${analysis.qualityChanges}'),
                   KeyValue(
-                      'Zeitbereich · Quellzeit',
+                      context.tr("Zeitbereich · Quellzeit"),
                       analysis.sourceRangeMs == null
-                          ? 'Unbekannt'
-                          : '${analysis.sourceRangeMs} ms'),
+                          ? context.tr("Unbekannt")
+                          : context.tr("{0} ms", [analysis.sourceRangeMs])),
                   KeyValue(
-                      'Größter Sample-Abstand · kein Datenlückenbeweis',
+                      context.tr(
+                          "Größter Sample-Abstand · kein Datenlückenbeweis"),
                       analysis.largestSampleGapMs == null
-                          ? 'Nicht ableitbar'
-                          : '${analysis.largestSampleGapMs} ms',
+                          ? context.tr("Nicht ableitbar")
+                          : context.tr("{0} ms", [analysis.largestSampleGapMs]),
                       mono: false),
-                  KeyValue(
-                      'Letzter Empfang', timestamp(analysis.lastReceivedMs)),
+                  KeyValue(context.tr("Letzter Empfang"),
+                      timestamp(analysis.lastReceivedMs)),
                 ]),
               ],
               const SizedBox(height: OipTokens.s2),
-              const WorkstationNote(
-                'Historische API nicht verfügbar',
-                'Dieser Verlauf enthält ausschließlich reale Samples dieser UI-Sitzung. Er ist keine Server-History. Datenlücken und frühere Werte können ohne HistoryQuery nicht bestimmt werden.',
+              WorkstationNote(
+                context.tr("Historische API nicht verfügbar"),
+                context.tr(
+                    "Dieser Verlauf enthält ausschließlich reale Samples dieser UI-Sitzung. Er ist keine Server-History. Datenlücken und frühere Werte können ohne HistoryQuery nicht bestimmt werden."),
                 key: Key('history-unavailable'),
                 icon: Icons.history_toggle_off_outlined,
                 color: OipTokens.violet,
@@ -2112,21 +2151,24 @@ class _OpcuaPageState extends State<OpcuaPage> {
           ),
         ),
         _section(context, 'Identität', [
-          KeyValue('NodeId', node.id),
-          KeyValue('Namespace', 'ns=${node.namespace}'),
-          KeyValue('Name · BrowseName des Servers', node.name),
-          KeyValue('Ordner · Parent im Adressraum des Servers', node.folder,
+          KeyValue(context.tr("NodeId"), node.id),
+          KeyValue(
+              context.tr("Namespace"), context.tr("ns={0}", [node.namespace])),
+          KeyValue(context.tr("Name · BrowseName des Servers"), node.name),
+          KeyValue(context.tr("Ordner · Parent im Adressraum des Servers"),
+              node.folder,
               mono: false),
-          KeyValue('Datenquelle', nodeSource),
-          const KeyValue('Parent / References',
-              'Nicht verfügbar · keine BrowseReferences-Capability',
+          KeyValue(context.tr("Datenquelle"), nodeSource),
+          KeyValue(context.tr("Parent / References"),
+              context.tr("Nicht verfügbar · keine BrowseReferences-Capability"),
               mono: false),
         ]),
         _section(context, 'Zugriff & Typ', [
-          KeyValue('Datentyp · Core-Angabe',
+          KeyValue(context.tr("Datentyp · Core-Angabe"),
               '${node.dataType} · ${nodeTypeCode(node.dataType)}'),
-          KeyValue('Zugriff · Core-Angabe', _accessLabel(node.access)),
-          KeyValue('Wertetyp', _valueKind(observation)),
+          KeyValue(
+              context.tr("Zugriff · Core-Angabe"), _accessLabel(node.access)),
+          KeyValue(context.tr("Wertetyp"), _valueKind(observation)),
           if (node.access == 'ReadWrite')
             Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -2139,95 +2181,116 @@ class _OpcuaPageState extends State<OpcuaPage> {
                           ? null
                           : () => _writeNode(node),
                   icon: const Icon(Icons.edit_outlined, size: 16),
-                  label: Text(writeBusy ? 'Schreibe …' : 'Wert schreiben'),
+                  label: Text(writeBusy
+                      ? context.tr("Schreibe …")
+                      : context.tr("Wert schreiben")),
                 ),
               ),
             )
           else
-            const KeyValue('Schreiben', 'Vom OPC-UA-Server nicht freigegeben',
+            KeyValue(context.tr("Schreiben"),
+                context.tr("Vom OPC-UA-Server nicht freigegeben"),
                 mono: false),
         ]),
-        const ExpansionTile(
+        ExpansionTile(
           key: Key('technical-details'),
-          title: Text('Technische OPC-UA-Details'),
-          subtitle:
-              Text('Nicht gelieferte Attribute ausdrücklich kennzeichnen'),
+          title: Text(context.tr("Technische OPC-UA-Details")),
+          subtitle: Text(context
+              .tr("Nicht gelieferte Attribute ausdrücklich kennzeichnen")),
           tilePadding: EdgeInsets.zero,
           childrenPadding: EdgeInsets.zero,
           children: [
             KeyValueGrid(children: [
-              KeyValue('BrowseName', 'Nicht von API geliefert', mono: false),
-              KeyValue('DisplayName', 'Nicht von API geliefert', mono: false),
-              KeyValue('NodeClass', 'Nicht von API geliefert', mono: false),
-              KeyValue('ValueRank', 'Nicht von API geliefert', mono: false),
-              KeyValue('ArrayDimensions', 'Nicht von API geliefert',
+              KeyValue(context.tr("BrowseName"),
+                  context.tr("Nicht von API geliefert"),
                   mono: false),
-              KeyValue('AccessLevel / UserAccessLevel',
-                  'Effektives Schreibrecht vom Server geliefert; Rohattribute nicht geliefert',
+              KeyValue(context.tr("DisplayName"),
+                  context.tr("Nicht von API geliefert"),
                   mono: false),
-              KeyValue('Historizing', 'Nicht von API geliefert', mono: false),
+              KeyValue(context.tr("NodeClass"),
+                  context.tr("Nicht von API geliefert"),
+                  mono: false),
+              KeyValue(context.tr("ValueRank"),
+                  context.tr("Nicht von API geliefert"),
+                  mono: false),
+              KeyValue(context.tr("ArrayDimensions"),
+                  context.tr("Nicht von API geliefert"),
+                  mono: false),
+              KeyValue(
+                  context.tr("AccessLevel / UserAccessLevel"),
+                  context.tr(
+                      "Effektives Schreibrecht vom Server geliefert; Rohattribute nicht geliefert"),
+                  mono: false),
+              KeyValue(context.tr("Historizing"),
+                  context.tr("Nicht von API geliefert"),
+                  mono: false),
             ]),
           ],
         ),
         _section(context, 'Zeitstempel', [
           KeyValue(
               simulated
-                  ? 'SourceTimestamp · virtuelle Quellzeit'
-                  : 'SourceTimestamp',
+                  ? context.tr("SourceTimestamp · virtuelle Quellzeit")
+                  : context.tr("SourceTimestamp"),
               timestamp(observation?.sourceMs)),
-          KeyValue('ServerTimestamp', timestamp(observation?.serverMs)),
-          KeyValue('ReceivedTimestamp · lokale Empfangszeit',
+          KeyValue(
+              context.tr("ServerTimestamp"), timestamp(observation?.serverMs)),
+          KeyValue(context.tr("ReceivedTimestamp · lokale Empfangszeit"),
               timestamp(observation?.receivedMs)),
-          KeyValue('Server → Empfang · inkl. Uhrendifferenz',
+          KeyValue(context.tr("Server → Empfang · inkl. Uhrendifferenz"),
               _delta(observation?.serverMs, observation?.receivedMs)),
-          KeyValue('Alter bei Snapshot · lokale Empfangszeit',
+          KeyValue(context.tr("Alter bei Snapshot · lokale Empfangszeit"),
               _delta(observation?.receivedMs, system.generatedMs)),
         ]),
         _section(context, 'Qualität & Erfassung', [
-          KeyValue('Quality',
+          KeyValue(context.tr("Quality"),
               '${known(observation?.quality)} · ${observation?.quality ?? 'unknown'}',
               color: OipTokens.statusColor(context, observation?.quality)),
-          KeyValue('StatusCode', _statusCode(observation?.statusCode)),
-          KeyValue('CollectionError',
-              observation?.collectionError ?? 'Keine gemeldet',
+          KeyValue(
+              context.tr("StatusCode"), _statusCode(observation?.statusCode)),
+          KeyValue(context.tr("CollectionError"),
+              observation?.collectionError ?? context.tr("Keine gemeldet"),
               color: observation?.collectionError == null
                   ? null
                   : OipTokens.statusColor(context, 'degraded')),
-          KeyValue('Freshness (API)',
+          KeyValue(context.tr("Freshness (API)"),
               '${known(observation?.freshness)} · ${observation?.freshness ?? 'unknown'}'),
-          KeyValue(
-              'Quality-Bedeutung', _qualityExplanation(observation?.quality),
+          KeyValue(context.tr("Quality-Bedeutung"),
+              _qualityExplanation(observation?.quality),
               mono: false),
         ]),
         _section(context, 'Subscription', [
           KeyValue(
-              'Status',
+              context.tr("Status"),
               live
-                  ? known(system.subscription)
-                  : 'Nicht abonniert · gezielte API-Einzelabfrage',
+                  ? context.tr(known(system.subscription))
+                  : context.tr("Nicht abonniert · gezielte API-Einzelabfrage"),
               mono: false),
           KeyValue(
-              'Modus',
+              context.tr("Modus"),
               live
-                  ? 'Fortlaufendes Abonnement über den Rust-Adapter'
-                  : 'Seitenweise gelesen · die Messung entsteht im Kollektor',
+                  ? context.tr("Fortlaufendes Abonnement über den Rust-Adapter")
+                  : context.tr(
+                      "Seitenweise gelesen · die Messung entsteht im Kollektor"),
               mono: false),
         ]),
         _section(context, 'Provenienz', [
           KeyValue(
-              'Ursprung',
+              context.tr("Ursprung"),
               observation == null
-                  ? 'Unbekannt'
+                  ? context.tr("Unbekannt")
                   : observation.simulated
-                      ? 'Simulation · simulation_origin'
-                      : 'Backend',
+                      ? context.tr("Simulation · simulation_origin")
+                      : context.tr("Backend"),
               mono: false),
-          KeyValue('Snapshot erzeugt', timestamp(system.generatedMs)),
+          KeyValue(
+              context.tr("Snapshot erzeugt"), timestamp(system.generatedMs)),
         ]),
         const SizedBox(height: OipTokens.s3),
-        const WorkstationNote(
-          'Zugriff nach Serverrechten',
-          'Die Messung entsteht im Kollektor. Der Browser liest den Serveradressraum; Schreibaktionen erscheinen nur bei serverseitiger ReadWrite-Freigabe und zulässigem Operator-Kontext.',
+        WorkstationNote(
+          context.tr("Zugriff nach Serverrechten"),
+          context.tr(
+              "Die Messung entsteht im Kollektor. Der Browser liest den Serveradressraum; Schreibaktionen erscheinen nur bei serverseitiger ReadWrite-Freigabe und zulässigem Operator-Kontext."),
           icon: Icons.admin_panel_settings_outlined,
           color: OipTokens.lime,
         ),
@@ -2443,7 +2506,7 @@ class _NodeRowState extends State<_NodeRow> {
                   StatusIndicator(widget.quality, size: dense ? 6 : 7),
                   if (widget.live && !dense) ...[
                     const SizedBox(width: 6),
-                    Text('LIVE',
+                    Text(context.tr("LIVE"),
                         style: WorkstationTokens.eyebrow(context, color: cyan)
                             .copyWith(fontSize: 8.5)),
                   ],

@@ -18,15 +18,15 @@ void main() {
       (tester) async {
     await bootstrapSettings(tester);
 
-    final header = find.text('About');
+    final header = find.text('Über die App');
     expect(header, findsOneWidget);
     // The About block sits below the settings form; bring it into view before
     // asserting its contents.
     await tester.ensureVisible(header);
     await tester.pumpAndSettle();
 
-    expect(find.text('About'), findsOneWidget);
-    expect(find.text('CLIENT IDENTITY'), findsOneWidget);
+    expect(find.text('Über die App'), findsOneWidget);
+    expect(find.text('CLIENT-IDENTITÄT'), findsOneWidget);
     // Version and build are exposed with stable keys and mirror the manifest.
     expect(find.byKey(const Key('settings-about-version')), findsOneWidget);
     expect(find.text(kOipApplication.version), findsOneWidget);

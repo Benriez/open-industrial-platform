@@ -1,3 +1,4 @@
+import '../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -357,8 +358,8 @@ class _NetworkPageState extends State<NetworkPage> {
   Future<void> _copy(String label, String value) async {
     await Clipboard.setData(ClipboardData(text: value));
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('$label kopiert')));
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr("{0} kopiert", [label]))));
   }
 
   void _reconcileSnapshot(Snapshot snapshot, List<NetworkEdge> edges) {
@@ -639,15 +640,16 @@ class _NetworkPageState extends State<NetworkPage> {
         snapshot.topology.any((link) => link.simulated);
     final compareCount = comparedDevices.length + comparedEdges.length;
     return AdaptiveWorkspaceHeader(
-      eyebrow: 'NETWORK ENGINEERING EXPLORER · READ-ONLY',
-      title: 'Netzwerk & VPN',
-      subtitle:
-          'Bekannte Geräte und gelieferte Beziehungen · keine aktiven Probes',
+      eyebrow: context.tr("NETWORK ENGINEERING EXPLORER · READ-ONLY"),
+      title: context.tr("Netzwerk & VPN"),
+      subtitle: context.tr(
+          "Bekannte Geräte und gelieferte Beziehungen · keine aktiven Probes"),
       accent: OipTokens.violet,
       primaryAction: WorkspacePrimaryAction(
         buttonKey: const Key('network-primary-connections'),
-        label: 'Beziehungen prüfen',
-        tooltip: 'Tatsächlich gelieferte Verbindungspfade untersuchen',
+        label: context.tr("Beziehungen prüfen"),
+        tooltip:
+            context.tr("Tatsächlich gelieferte Verbindungspfade untersuchen"),
         icon: Icons.alt_route_outlined,
         onPressed: () => _setMode(_NetworkMode.connections),
       ),
@@ -667,7 +669,8 @@ class _NetworkPageState extends State<NetworkPage> {
         ToolButton(
           key: const Key('network-compare-open'),
           icon: Icons.compare_arrows_outlined,
-          tooltip: 'Network Compare öffnen · $compareCount ausgewählt',
+          tooltip: context
+              .tr("Network Compare öffnen · {0} ausgewählt", [compareCount]),
           accent: OipTokens.cyan,
           active: mode == _NetworkMode.compare,
           onPressed: () => _setMode(_NetworkMode.compare),
@@ -837,7 +840,7 @@ class _NetworkPageState extends State<NetworkPage> {
     Widget inspector() => AdaptiveInspector(
           controller: widget.controller,
           workspace: WorkspaceId.network,
-          label: 'Netzwerkbeziehungen & Evidence',
+          label: context.tr("Netzwerkbeziehungen & Evidence"),
           hasSelection: hasSelection,
           child: _inspector(snapshot, edges),
         );
@@ -873,14 +876,14 @@ class _NetworkPageState extends State<NetworkPage> {
               FilterChip(
                 key: const Key('network-tablet-explorer'),
                 avatar: const Icon(Icons.list_alt, size: 16),
-                label: const Text('Device Explorer'),
+                label: Text(context.tr("Device Explorer")),
                 selected: tabletExplorer,
                 onSelected: (value) => setState(() => tabletExplorer = value),
               ),
               FilterChip(
                 key: const Key('network-tablet-inspector'),
                 avatar: const Icon(Icons.info_outline, size: 16),
-                label: const Text('Context Inspector'),
+                label: Text(context.tr("Context Inspector")),
                 selected: tabletInspector,
                 onSelected: (value) {
                   setState(() => tabletInspector = value);
@@ -910,19 +913,19 @@ class _NetworkPageState extends State<NetworkPage> {
         SizedBox(
           width: double.infinity,
           child: SegmentedButton<_MobilePane>(
-            segments: const [
+            segments: [
               ButtonSegment(
                   value: _MobilePane.primary,
                   icon: Icon(Icons.hub_outlined, size: 16),
-                  label: Text('Arbeitsbereich')),
+                  label: Text(context.tr("Arbeitsbereich"))),
               ButtonSegment(
                   value: _MobilePane.explorer,
                   icon: Icon(Icons.list_alt, size: 16),
-                  label: Text('Explorer')),
+                  label: Text(context.tr("Explorer"))),
               ButtonSegment(
                   value: _MobilePane.inspector,
                   icon: Icon(Icons.info_outline, size: 16),
-                  label: Text('Inspector')),
+                  label: Text(context.tr("Inspector"))),
             ],
             selected: {mobilePane},
             showSelectedIcon: false,
@@ -991,8 +994,8 @@ class _NetworkPageState extends State<NetworkPage> {
                   child: Semantics(
                     container: true,
                     excludeSemantics: true,
-                    label: 'Logische Topologie',
-                    child: const Text('Logische Topologie',
+                    label: context.tr("Logische Topologie"),
+                    child: Text(context.tr("Logische Topologie"),
                         style: TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 ),
@@ -1001,27 +1004,27 @@ class _NetworkPageState extends State<NetworkPage> {
                     '${visibleEdges.length} BESTÄTIGTE PFADE', 'unknown'),
                 ToolButton(
                     icon: Icons.remove,
-                    tooltip: 'Verkleinern',
+                    tooltip: context.tr("Verkleinern"),
                     onPressed: hasTopology ? () => _zoom(.8) : null),
                 ToolButton(
                     icon: Icons.add,
-                    tooltip: 'Vergrößern',
+                    tooltip: context.tr("Vergrößern"),
                     onPressed: hasTopology ? () => _zoom(1.25) : null),
                 ToolButton(
                     key: const Key('fit-topology'),
                     icon: Icons.fit_screen,
-                    tooltip: 'Topologie einpassen',
+                    tooltip: context.tr("Topologie einpassen"),
                     onPressed:
                         hasTopology ? () => _fit(layout, user: true) : null),
                 ToolButton(
                     icon: Icons.restart_alt,
-                    tooltip: 'Ansicht zurücksetzen',
+                    tooltip: context.tr("Ansicht zurücksetzen"),
                     onPressed: hasTopology
                         ? () => _setTransform(1, Offset.zero)
                         : null),
                 ToolButton(
                     icon: Icons.center_focus_strong,
-                    tooltip: 'Auf Auswahl fokussieren',
+                    tooltip: context.tr("Auf Auswahl fokussieren"),
                     onPressed: !hasGraphSelection
                         ? null
                         : () => _focusSelection(layout)),
@@ -1031,8 +1034,8 @@ class _NetworkPageState extends State<NetworkPage> {
                         ? Icons.label_outlined
                         : Icons.label_off_outlined,
                     tooltip: showEdgeLabels
-                        ? 'Edge Labels ausblenden'
-                        : 'Edge Labels anzeigen',
+                        ? context.tr("Edge Labels ausblenden")
+                        : context.tr("Edge Labels anzeigen"),
                     active: showEdgeLabels,
                     accent: OipTokens.cyan,
                     onPressed: hasTopology
@@ -1040,7 +1043,7 @@ class _NetworkPageState extends State<NetworkPage> {
                         : null),
                 IconButton(
                   key: const Key('selection-clear'),
-                  tooltip: 'Auswahl aufheben',
+                  tooltip: context.tr("Auswahl aufheben"),
                   onPressed: selectedId == null && selectedEdgeId == null
                       ? null
                       : _clearSelection,
@@ -1056,7 +1059,7 @@ class _NetworkPageState extends State<NetworkPage> {
               alignment: Alignment.centerLeft,
               child: FilterChip(
                 key: const Key('neighbors-only'),
-                label: const Text('Show Direct Neighbors'),
+                label: Text(context.tr("Show Direct Neighbors")),
                 selected: neighborsOnly,
                 onSelected: (value) => setState(() {
                   neighborsOnly = value;
@@ -1097,7 +1100,13 @@ class _NetworkPageState extends State<NetworkPage> {
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 7, 12, 8),
           child: Text(
-            '${panningRecommended ? 'Lesbare Mindestgröße: horizontal pannen; alle Pfade zusätzlich im Verbindungsworkspace. · ' : ''}Nur bestätigte logische Snapshot-Pfade · keine physische Verkabelung. +/− Zoom · F Fit · 0 Reset · Pfeile Auswahl.',
+            context.tr(
+                "{0}Nur bestätigte logische Snapshot-Pfade · keine physische Verkabelung. +/− Zoom · F Fit · 0 Reset · Pfeile Auswahl.",
+                [
+                  panningRecommended
+                      ? 'Lesbare Mindestgröße: horizontal pannen; alle Pfade zusätzlich im Verbindungsworkspace. · '
+                      : ''
+                ]),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
@@ -1155,14 +1164,14 @@ class _NetworkPageState extends State<NetworkPage> {
         const NetworkSectionHeader(
             'Network Analysis', 'Bestand, Qualität und Beobachtungsgrenzen'),
         const SizedBox(height: OipTokens.s3),
-        const PanelLabel('Known topology', color: OipTokens.cyan),
+        PanelLabel(context.tr("Known topology"), color: OipTokens.cyan),
         NetworkKeyValue('Registrierte Geräte', '${snapshot.devices.length}'),
         NetworkKeyValue('Bekannte Topologie-Endpunkte', '$linkedCount'),
         NetworkKeyValue('Bekannte logische Pfade', '${edges.length}'),
         NetworkKeyValue(
             'Relation unbekannt', '${snapshot.devices.length - linkedCount}'),
         const NetworkDivider(),
-        const PanelLabel('Reported health', color: OipTokens.cyan),
+        PanelLabel(context.tr("Reported health"), color: OipTokens.cyan),
         NetworkKeyValue('Reachability · gemeldet',
             '${snapshot.devices.where((d) => d.health.reachability == 'reachable').length} erreichbar'),
         NetworkKeyValue('Collection Errors · geliefert', '$errors'),
@@ -1170,12 +1179,12 @@ class _NetworkPageState extends State<NetworkPage> {
         NetworkKeyValue(
             'Snapshot erzeugt', timestamp(snapshot.system.generatedMs)),
         const NetworkDivider(),
-        const PanelLabel('Measured reachability'),
+        PanelLabel(context.tr("Measured reachability")),
         const NetworkKeyValue('Aktive Probes', 'Nicht ausgeführt'),
         const NetworkHint('Gemeldet ist nicht gemessen',
             'Device Health und Transportstatus stammen aus dem Snapshot. Es liegt keine aktive Probe-Messmethode für diese UI vor.'),
         const NetworkDivider(),
-        const PanelLabel('Demo fixture', color: OipTokens.amber),
+        PanelLabel(context.tr("Demo fixture"), color: OipTokens.amber),
         NetworkKeyValue('Demo-/Fixture-Pfade', '$demoCount von ${edges.length}',
             status: demoCount == 0 ? 'unknown' : 'info'),
         const NetworkKeyValue('Physische Topologie', 'Nicht verfügbar'),
@@ -1240,7 +1249,9 @@ class _NetworkPageState extends State<NetworkPage> {
           ToolButton(
             key: const Key('network-pin-toggle'),
             icon: isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-            tooltip: isPinned ? 'Pin entfernen (P)' : 'Gerät anheften (P)',
+            tooltip: isPinned
+                ? context.tr("Pin entfernen (P)")
+                : context.tr("Gerät anheften (P)"),
             active: isPinned,
             onPressed: () => _togglePin(device),
           ),
@@ -1250,8 +1261,8 @@ class _NetworkPageState extends State<NetworkPage> {
                 ? Icons.compare_arrows
                 : Icons.compare_arrows_outlined,
             tooltip: isCompared
-                ? 'Aus Vergleich entfernen (C)'
-                : 'Zum Vergleich hinzufügen (C)',
+                ? context.tr("Aus Vergleich entfernen (C)")
+                : context.tr("Zum Vergleich hinzufügen (C)"),
             active: isCompared,
             accent: OipTokens.cyan,
             onPressed: !isCompared && comparedDevices.length >= maxCompare
@@ -1262,27 +1273,27 @@ class _NetworkPageState extends State<NetworkPage> {
             key: const Key('network-focus-node'),
             icon: Icons.center_focus_strong,
             tooltip: related.isEmpty
-                ? 'Kein Graph-Fokus: Relation unbekannt'
-                : 'Im Graph fokussieren',
+                ? context.tr("Kein Graph-Fokus: Relation unbekannt")
+                : context.tr("Im Graph fokussieren"),
             onPressed: related.isEmpty ? null : () => _focusNode(device),
           ),
           ToolButton(
             key: const Key('network-copy-id'),
             icon: Icons.copy_outlined,
-            tooltip: 'Device-ID kopieren',
+            tooltip: context.tr("Device-ID kopieren"),
             onPressed: () => _copy('Device-ID', device.id),
           ),
           ToolButton(
             key: const Key('network-copy-source'),
             icon: Icons.source_outlined,
-            tooltip: 'Source-ID kopieren',
+            tooltip: context.tr("Source-ID kopieren"),
             onPressed: device.sourceId == null
                 ? null
                 : () => _copy('Source-ID', device.sourceId!),
           ),
         ]),
         const NetworkDivider(),
-        const PanelLabel('Identity', color: OipTokens.violet),
+        PanelLabel(context.tr("Identity"), color: OipTokens.violet),
         NetworkKeyValue('Device-ID', device.id),
         if (widget.controller.infrastructure.ready) ...[
           NetworkKeyValue(
@@ -1311,7 +1322,7 @@ class _NetworkPageState extends State<NetworkPage> {
         NetworkKeyValue(
             'Datenprovenienz', device.simulated ? 'Simulation' : 'API'),
         const NetworkDivider(),
-        const PanelLabel('Connectivity', color: OipTokens.cyan),
+        PanelLabel(context.tr("Connectivity"), color: OipTokens.cyan),
         NetworkKeyValue('Direkte logische Nachbarn', '${related.length}'),
         if (related.isEmpty)
           const NetworkHint('Relation unbekannt · keine bekannten Pfade',
@@ -1322,10 +1333,10 @@ class _NetworkPageState extends State<NetworkPage> {
             key: const Key('network-open-connections'),
             onPressed: () => _setMode(_NetworkMode.connections),
             icon: const Icon(Icons.alt_route_outlined, size: 16),
-            label: const Text('Bekannte Verbindungen öffnen'),
+            label: Text(context.tr("Bekannte Verbindungen öffnen")),
           ),
         const NetworkDivider(),
-        const PanelLabel('Reachability & Health · reported'),
+        PanelLabel(context.tr("Reachability & Health · reported")),
         NetworkKeyValue(
             'Device Reachability', known(device.health.reachability),
             status: device.health.reachability),
@@ -1356,8 +1367,8 @@ class _NetworkPageState extends State<NetworkPage> {
           const NetworkHint('Datenalter nicht aktuell verifizierbar',
               'Der SSE-Kanal ist nicht live. Zuletzt gelieferte Werte werden nicht als aktuelle Erreichbarkeit ausgegeben.'),
         const NetworkDivider(),
-        PanelLabel(
-            'Diagnostics · ${errors.length} Fehler · ${incidents.length} Befunde'),
+        PanelLabel(context.tr("Diagnostics · {0} Fehler · {1} Befunde",
+            [errors.length, incidents.length])),
         if (errors.isEmpty)
           const NetworkHint('Keine Collection Errors geliefert',
               'Das ist kein Nachweis eines fehlerfreien Netzwerks.'),
@@ -1374,7 +1385,7 @@ class _NetworkPageState extends State<NetworkPage> {
         OutlinedButton.icon(
           onPressed: () => showDevice(context, widget.controller, device),
           icon: const Icon(Icons.open_in_new, size: 16),
-          label: const Text('Registry-Gerätedetails öffnen'),
+          label: Text(context.tr("Registry-Gerätedetails öffnen")),
         ),
       ]),
     );
@@ -1424,8 +1435,8 @@ class _NetworkPageState extends State<NetworkPage> {
           key: const Key('network-edge-compare-toggle'),
           icon: compared ? Icons.compare_arrows : Icons.compare_arrows_outlined,
           tooltip: compared
-              ? 'Pfad aus Vergleich entfernen (C)'
-              : 'Pfad zum Vergleich hinzufügen (C)',
+              ? context.tr("Pfad aus Vergleich entfernen (C)")
+              : context.tr("Pfad zum Vergleich hinzufügen (C)"),
           active: compared,
           accent: OipTokens.cyan,
           onPressed: !compared && comparedEdges.length >= maxCompare
@@ -1433,14 +1444,14 @@ class _NetworkPageState extends State<NetworkPage> {
               : () => _toggleCompareEdge(edge),
         ),
         const NetworkDivider(),
-        const PanelLabel('Endpoint A / B', color: OipTokens.violet),
+        PanelLabel(context.tr("Endpoint A / B"), color: OipTokens.violet),
         NetworkKeyValue('Endpoint A', '${name(link.from)} · ${link.from}'),
         NetworkKeyValue('Endpoint B', '${name(link.to)} · ${link.to}'),
         const NetworkKeyValue('Connection ID', 'Nicht im Legacy-DTO enthalten'),
         NetworkKeyValue('Connection Type', networkEdgeKind(link)),
         NetworkKeyValue('Transport · DTO', link.transport),
         const NetworkDivider(),
-        const PanelLabel('Relation Provenance & Verification'),
+        PanelLabel(context.tr("Relation Provenance & Verification")),
         const NetworkHint('Logische Zuordnung · nicht physikalisch verifiziert',
             'Der Edge stammt aus dem Snapshot. Er beweist keine aktive Paket- oder Link-Erreichbarkeit und keine physische Verbindung.'),
         NetworkKeyValue('Status · geliefert', known(link.status),
@@ -1450,7 +1461,7 @@ class _NetworkPageState extends State<NetworkPage> {
         const NetworkKeyValue('Timestamps', 'Nicht im Link-DTO enthalten'),
         const NetworkKeyValue('Datenalter', 'Nicht im Link-DTO enthalten'),
         const NetworkDivider(),
-        const PanelLabel('Available Metrics'),
+        PanelLabel(context.tr("Available Metrics")),
         NetworkKeyValue('RTT', networkLinkRtt(link)),
         NetworkKeyValue('Packet Loss', networkLinkLoss(link)),
         const NetworkKeyValue('Bandwidth', 'Nicht verfügbar'),
@@ -1471,7 +1482,7 @@ class _NetworkPageState extends State<NetworkPage> {
                     .firstOrNull;
                 if (device != null) _selectNodeFromInspector(device);
               },
-              child: Text('Zu ${name(id)}'),
+              child: Text(context.tr("Zu {0}", [name(id)])),
             ),
         ]),
       ]),
@@ -1520,12 +1531,13 @@ class _NetworkPageState extends State<NetworkPage> {
           child: visible.isEmpty
               ? edges.isEmpty && snapshot.devices.isNotEmpty
                   ? _registeredDevicesWithoutPaths(snapshot)
-                  : const Center(
+                  : Center(
                       child: Padding(
                         padding: EdgeInsets.all(20),
                         child: WorkstationNote(
-                            'Keine gelieferten Pfade im Filter',
-                            'Suche oder Filter ändern. Ein leeres Ergebnis wird nicht als Offline-Zustand interpretiert.'),
+                            context.tr("Keine gelieferten Pfade im Filter"),
+                            context.tr(
+                                "Suche oder Filter ändern. Ein leeres Ergebnis wird nicht als Offline-Zustand interpretiert.")),
                       ),
                     )
               : ListView.separated(
@@ -1598,7 +1610,8 @@ class _NetworkPageState extends State<NetworkPage> {
         isExpanded: true,
         style: Theme.of(context).textTheme.bodySmall,
         items: [
-          DropdownMenuItem(value: '__all__', child: Text('$label: alle')),
+          DropdownMenuItem(
+              value: '__all__', child: Text(context.tr("{0}: alle", [label]))),
           for (final item in values)
             DropdownMenuItem(
                 value: item, child: Text('$label: ${known(item)}')),
@@ -1620,9 +1633,15 @@ class _NetworkPageState extends State<NetworkPage> {
       button: true,
       selected: selected,
       excludeSemantics: true,
-      label: 'Verbindungspfad ${name(link.from)} nach ${name(link.to)}, '
-          '${link.transport}, ${known(link.status)}, '
-          'RTT ${networkLinkRtt(link)}, Loss ${networkLinkLoss(link)}',
+      label: context
+          .tr("Verbindungspfad {0} nach {1}, {2}, {3}, RTT {4}, Loss {5}", [
+        name(link.from),
+        name(link.to),
+        link.transport,
+        known(link.status),
+        networkLinkRtt(link),
+        networkLinkLoss(link)
+      ]),
       child: Material(
         color:
             selected ? OipTokens.violet.withOpacity(.10) : Colors.transparent,
@@ -1642,8 +1661,8 @@ class _NetworkPageState extends State<NetworkPage> {
                 IconButton(
                   key: Key('connection-compare-${edge.id.hashCode}'),
                   tooltip: compared
-                      ? 'Pfad aus Vergleich entfernen'
-                      : 'Pfad vergleichen',
+                      ? context.tr("Pfad aus Vergleich entfernen")
+                      : context.tr("Pfad vergleichen"),
                   onPressed: () => _toggleCompareEdge(edge),
                   icon: Icon(
                       compared
@@ -1656,12 +1675,14 @@ class _NetworkPageState extends State<NetworkPage> {
               const SizedBox(height: 5),
               Wrap(spacing: 10, runSpacing: 4, children: [
                 Text(link.transport),
-                Text(known(link.status),
+                Text(context.tr(known(link.status)),
                     style: TextStyle(
                         color: OipTokens.statusColor(context, link.status))),
-                Text('RTT ${networkLinkRtt(link)}'),
-                Text('Loss ${networkLinkLoss(link)}'),
-                Text(link.simulated ? 'Demo / Fixture' : 'API'),
+                Text(context.tr("RTT {0}", [networkLinkRtt(link)])),
+                Text(context.tr("Loss {0}", [networkLinkLoss(link)])),
+                Text(link.simulated
+                    ? context.tr("Demo / Fixture")
+                    : context.tr("API")),
               ]),
             ]),
           ),
@@ -1788,7 +1809,8 @@ class _NetworkPageState extends State<NetworkPage> {
             if (logicalVpnPaths.isNotEmpty) ...[
               const NetworkDivider(),
               Text(
-                  'Gelieferte logische Pfade mit VPN-Transport · Demo-Fixtures',
+                  context.tr(
+                      "Gelieferte logische Pfade mit VPN-Transport · Demo-Fixtures"),
                   style: Theme.of(context).textTheme.titleSmall),
               for (final edge in logicalVpnPaths) _edgeLink(snapshot, edge),
               const NetworkHint('Logische Pfade sind keine Tunnelmessung',
@@ -1817,8 +1839,11 @@ class _NetworkPageState extends State<NetworkPage> {
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(networkKindIcon(device.kind), size: 20),
                 title: Text(device.name),
-                subtitle: Text(
-                    '${networkDeviceCategory(device.kind)} · ${device.location} · VPN: ${known(device.health.vpn)}'),
+                subtitle: Text(context.tr("{0} · {1} · VPN: {2}", [
+                  networkDeviceCategory(device.kind),
+                  device.location,
+                  known(device.health.vpn)
+                ])),
                 trailing: NetworkBadge(
                   transportLive
                       ? known(device.health.vpn).toUpperCase()
@@ -1894,7 +1919,7 @@ class _NetworkPageState extends State<NetworkPage> {
           NetworkBadge('${sources.length} SOURCES', 'unknown'),
         ]),
         const NetworkDivider(),
-        const PanelLabel('Analysis · tatsächlich verfügbare Daten',
+        PanelLabel(context.tr("Analysis · tatsächlich verfügbare Daten"),
             color: OipTokens.cyan),
         NetworkKeyValue('Registrierte Geräte', '${snapshot.devices.length}'),
         NetworkKeyValue('Bekannte Topologie-Endpunkte',
@@ -1911,7 +1936,7 @@ class _NetworkPageState extends State<NetworkPage> {
             'Eine funktionierende API oder ein aktiver SSE-Kanal beweist weder Source-Health noch gemessene Geräteerreichbarkeit.',
             status: transportLive ? 'connected' : 'stale'),
         const NetworkDivider(),
-        const PanelLabel('Collection Errors · geliefert'),
+        PanelLabel(context.tr("Collection Errors · geliefert")),
         if (errors.isEmpty)
           const NetworkHint('Keine Collection Errors geliefert',
               'Nicht bekannt ist nicht gleich gesund. Für Links liegen keine separaten Collection Errors vor.'),
@@ -1921,7 +1946,7 @@ class _NetworkPageState extends State<NetworkPage> {
               '${observation.collectionError} · Quality ${known(observation.quality)} · Freshness ${known(observation.freshness)}',
               status: 'bad'),
         const NetworkDivider(),
-        const PanelLabel('Device / Link Events'),
+        PanelLabel(context.tr("Device / Link Events")),
         for (final incident in snapshot.incidents)
           NetworkHint(
               '${incident.simulated ? 'Indiz · Demo' : 'Belegt'} · ${incident.title}',
@@ -1954,7 +1979,9 @@ class _NetworkPageState extends State<NetworkPage> {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            '$message Pins/Compare sitzungslokal · Read-only · keine Shell-, VPN- oder Netzwerksteuerung.',
+            context.tr(
+                "{0} Pins/Compare sitzungslokal · Read-only · keine Shell-, VPN- oder Netzwerksteuerung.",
+                [message]),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ),

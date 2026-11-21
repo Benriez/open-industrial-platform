@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import '../../design_system/theme.dart';
 import '../../models/contracts.dart';
@@ -60,7 +61,7 @@ class _ActivityCoverageWorkspaceState extends State<ActivityCoverageWorkspace> {
           if (tab == OverviewWorkspaceTab.activity)
             IconButton(
               key: const Key('overview-workspace-open-diagnostics'),
-              tooltip: 'Diagnostics öffnen',
+              tooltip: context.tr("Diagnostics öffnen"),
               onPressed: () => widget.navigate(4),
               icon: const Icon(Icons.arrow_outward, size: 17),
             ),
@@ -104,8 +105,14 @@ class _ActivityCoverageWorkspaceState extends State<ActivityCoverageWorkspace> {
       Row(children: [
         Expanded(
           child: Text(
-            '${filtered.length} Collection-Records · aktuelles begrenztes API-Fenster'
-            '${widget.selection.sourceId == null ? '' : ' · Source ${widget.selection.sourceId}'}',
+            context.tr(
+                "{0} Collection-Records · aktuelles begrenztes API-Fenster{1}",
+                [
+                  filtered.length,
+                  widget.selection.sourceId == null
+                      ? ''
+                      : ' · Source ${widget.selection.sourceId}'
+                ]),
             overflow: TextOverflow.ellipsis,
             style: WorkstationTokens.mono(context, size: 10),
           ),
@@ -116,13 +123,13 @@ class _ActivityCoverageWorkspaceState extends State<ActivityCoverageWorkspace> {
             key: const Key('overview-event-filter'),
             isExpanded: true,
             value: eventFilter,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
                 isDense: true,
-                labelText: 'EVENT-TYP',
+                labelText: context.tr("EVENT-TYP"),
                 border: OutlineInputBorder()),
             items: [
-              const DropdownMenuItem(
-                  value: 'all', child: Text('Alle gelieferten')),
+              DropdownMenuItem(
+                  value: 'all', child: Text(context.tr("Alle gelieferten"))),
               ...kinds.map(
                   (kind) => DropdownMenuItem(value: kind, child: Text(kind))),
             ],
@@ -133,10 +140,10 @@ class _ActivityCoverageWorkspaceState extends State<ActivityCoverageWorkspace> {
       const SizedBox(height: 4),
       Expanded(
         child: filtered.isEmpty
-            ? const Align(
+            ? Align(
                 alignment: Alignment.centerLeft,
-                child:
-                    Text('Keine Events im ausgewählten aktuellen Datenumfang.'))
+                child: Text(context
+                    .tr("Keine Events im ausgewählten aktuellen Datenumfang.")))
             : ListView.builder(
                 itemCount: filtered.length,
                 itemBuilder: (context, index) {
@@ -226,7 +233,8 @@ class _ActivityCoverageWorkspaceState extends State<ActivityCoverageWorkspace> {
     return SingleChildScrollView(
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Text(
-            'DATA COVERAGE & TRUST · Snapshot ${timestamp(system.generatedMs)}',
+            context.tr("DATA COVERAGE & TRUST · Snapshot {0}",
+                [timestamp(system.generatedMs)]),
             style: WorkstationTokens.eyebrow(context, color: OipTokens.cyan)),
         const SizedBox(height: 4),
         ...rows.map((row) => Container(
@@ -245,7 +253,9 @@ class _ActivityCoverageWorkspaceState extends State<ActivityCoverageWorkspace> {
               ]),
             )),
         Text(
-            'Persistierte Zahl: kein Zeitraum- oder Tenant-Aggregat; ermittelt ${timestamp(system.generatedMs)}. Fehlende Werte werden nicht als 0 dargestellt.',
+            context.tr(
+                "Persistierte Zahl: kein Zeitraum- oder Tenant-Aggregat; ermittelt {0}. Fehlende Werte werden nicht als 0 dargestellt.",
+                [timestamp(system.generatedMs)]),
             style: Theme.of(context).textTheme.bodySmall),
       ]),
     );
@@ -253,10 +263,10 @@ class _ActivityCoverageWorkspaceState extends State<ActivityCoverageWorkspace> {
 
   Widget _sources(BuildContext context) {
     if (widget.sources.isEmpty) {
-      return const Align(
+      return Align(
           alignment: Alignment.centerLeft,
-          child:
-              Text('SourceHealth im aktuellen Datenumfang nicht verfügbar.'));
+          child: Text(context
+              .tr("SourceHealth im aktuellen Datenumfang nicht verfügbar.")));
     }
     return ListView(
       children: widget.sources.map((source) {
@@ -272,7 +282,14 @@ class _ActivityCoverageWorkspaceState extends State<ActivityCoverageWorkspace> {
           title: Text('${source.name} · ${source.id}',
               maxLines: 1, overflow: TextOverflow.ellipsis),
           subtitle: Text(
-              '${known(source.connection)} · ${known(source.freshness)} · Empfang ${timestamp(source.lastReceivedMs)} · $gaps dokumentierte Gaps im aktuellen Fenster · keine History-Behauptung',
+              context.tr(
+                  "{0} · {1} · Empfang {2} · {3} dokumentierte Gaps im aktuellen Fenster · keine History-Behauptung",
+                  [
+                    known(source.connection),
+                    known(source.freshness),
+                    timestamp(source.lastReceivedMs),
+                    gaps
+                  ]),
               maxLines: 2,
               overflow: TextOverflow.ellipsis),
           trailing: const Icon(Icons.chevron_right, size: 16),

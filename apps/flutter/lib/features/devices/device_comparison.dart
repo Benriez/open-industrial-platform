@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import '../../design_system/theme.dart';
 import '../../models/contracts.dart';
@@ -57,7 +58,9 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
                   ChoiceChip(
                     key: const Key('device-compare-tab'),
                     avatar: const Icon(Icons.compare_outlined, size: 14),
-                    label: Text('Comparison ${widget.session.compare.length}/4',
+                    label: Text(
+                        context.tr("Comparison {0}/4",
+                            [widget.session.compare.length]),
                         style: const TextStyle(fontSize: 11)),
                     selected: compareTab,
                     showCheckmark: false,
@@ -69,7 +72,7 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
                   ChoiceChip(
                     key: const Key('device-activity-tab'),
                     avatar: const Icon(Icons.event_note_outlined, size: 14),
-                    label: const Text('Related Activity',
+                    label: Text(context.tr("Related Activity"),
                         style: TextStyle(fontSize: 11)),
                     selected: !compareTab,
                     showCheckmark: false,
@@ -78,7 +81,7 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
                     labelPadding: const EdgeInsets.symmetric(horizontal: 6),
                     onSelected: (_) => _selectTab(false),
                   ),
-                  Text('SESSION-LOCAL · keine Persistenz',
+                  Text(context.tr("SESSION-LOCAL · keine Persistenz"),
                       style: WorkstationTokens.eyebrow(context)),
                 ],
               ),
@@ -89,28 +92,31 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
               child: IconButton(
                 key: const Key('device-comparison-toggle'),
                 tooltip: expanded
-                    ? 'Vergleich einklappen'
-                    : 'Vergleich ausklappen',
+                    ? context.tr("Vergleich einklappen")
+                    : context.tr("Vergleich ausklappen"),
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(width: 28, height: 28),
+                constraints:
+                    const BoxConstraints.tightFor(width: 28, height: 28),
                 onPressed: widget.onToggle,
-                icon: Icon(
-                    expanded ? Icons.expand_less : Icons.expand_more, size: 18),
+                icon: Icon(expanded ? Icons.expand_less : Icons.expand_more,
+                    size: 18),
               ),
             ),
           ]),
         ),
         if (expanded) ...[
           const SizedBox(height: 4),
-          Expanded(child: compareTab ? _comparison(context) : _activity(context)),
+          Expanded(
+              child: compareTab ? _comparison(context) : _activity(context)),
         ] else if (empty) ...[
           const SizedBox(height: 2),
-          const SizedBox(
+          SizedBox(
             height: 20,
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Bis zu vier Geräte über Compare auswählen. Unterschiedliche Messdimensionen werden nicht zu einer gemeinsamen Kennzahl verrechnet.',
+                context.tr(
+                    "Bis zu vier Geräte über Compare auswählen. Unterschiedliche Messdimensionen werden nicht zu einer gemeinsamen Kennzahl verrechnet."),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 12),
@@ -136,10 +142,10 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
         .whereType<Device>()
         .toList();
     if (devices.isEmpty) {
-      return const Align(
+      return Align(
         alignment: Alignment.centerLeft,
-        child: Text(
-            'Bis zu vier Geräte über Compare auswählen. Unterschiedliche Messdimensionen werden nicht zu einer gemeinsamen Kennzahl verrechnet.'),
+        child: Text(context.tr(
+            "Bis zu vier Geräte über Compare auswählen. Unterschiedliche Messdimensionen werden nicht zu einer gemeinsamen Kennzahl verrechnet.")),
       );
     }
     final fields = <String, String Function(Device)>{
@@ -155,8 +161,8 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
               widget.infrastructure!.devicePlacement(device)?.infrastructureId)
           : 'Nicht im v1-Vertrag verfügbar',
       'Site': (device) => widget.infrastructure?.ready == true
-          ? widget.infrastructure!.hierarchy.siteName(
-              widget.infrastructure!.devicePlacement(device)?.siteId)
+          ? widget.infrastructure!.hierarchy
+              .siteName(widget.infrastructure!.devicePlacement(device)?.siteId)
           : 'Nicht im v1-Vertrag verfügbar',
       'Registry Status': (device) => device.isFaulted
           ? 'Faulted · reported'
@@ -192,7 +198,8 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
         if (registry == null) {
           return 'Unbekannt · kein autorisiertes Service-Register';
         }
-        final services = registry.where((s) => s.deviceId == device.id).toList();
+        final services =
+            registry.where((s) => s.deviceId == device.id).toList();
         if (services.isEmpty) return 'Keine Dienste deklariert';
         return services.map((s) => s.name).join(' · ');
       },
@@ -215,7 +222,7 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
             key: const Key('device-comparison-fields'),
             children: [
               Row(children: [
-                const SizedBox(width: 160, child: Text('VERGLEICHSFELD')),
+                SizedBox(width: 160, child: Text(context.tr("VERGLEICHSFELD"))),
                 ...devices.map((device) => SizedBox(
                       width: 210,
                       child: ListTile(
@@ -228,7 +235,7 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
                         leading: Icon(deviceIcon(device.kind), size: 17),
                         trailing: IconButton(
                           key: Key('device-compare-remove-${device.id}'),
-                          tooltip: 'Aus Vergleich entfernen',
+                          tooltip: context.tr("Aus Vergleich entfernen"),
                           onPressed: () => widget.onRemove(device),
                           icon: const Icon(Icons.close, size: 16),
                         ),
@@ -268,10 +275,10 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
         .where((item) => item.id == widget.session.selectedId)
         .firstOrNull;
     if (selected == null) {
-      return const Align(
+      return Align(
           alignment: Alignment.centerLeft,
-          child: Text(
-              'Gerät auswählen, um exakt zugeordnete Findings und Source-Events zu sehen.'));
+          child: Text(context.tr(
+              "Gerät auswählen, um exakt zugeordnete Findings und Source-Events zu sehen.")));
     }
     final findings = widget.snapshot.incidents
         .where((item) => item.deviceId == selected.id)
@@ -284,8 +291,9 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
     if (findings.isEmpty && events.isEmpty) {
       return Align(
           alignment: Alignment.centerLeft,
-          child: Text(
-              'Keine Related Activity für ${selected.id} im aktuellen API-Fenster.'));
+          child: Text(context.tr(
+              "Keine Related Activity für {0} im aktuellen API-Fenster.",
+              [selected.id])));
     }
     return ListView(children: [
       ...findings.map((item) => ListTile(
@@ -294,8 +302,8 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
             leading: const Icon(Icons.radar, size: 16),
             title:
                 Text(item.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-            subtitle: Text(
-                '${item.id} · exakte Device-ID · ${item.simulated ? 'SIMULATED' : 'REPORTED'}'),
+            subtitle: Text(context.tr("{0} · exakte Device-ID · {1}",
+                [item.id, item.simulated ? 'SIMULATED' : 'REPORTED'])),
             onTap: () => widget.navigate(4),
           )),
       ...events.map((item) => ListTile(
@@ -304,8 +312,10 @@ class _DeviceComparisonWorkspaceState extends State<DeviceComparisonWorkspace> {
             leading: const Icon(Icons.account_tree_outlined, size: 16),
             title: Text('${item.kind} · ${item.sourceId}',
                 maxLines: 1, overflow: TextOverflow.ellipsis),
-            subtitle: Text(
-                '${item.id ?? 'Sequenz ${item.sequence ?? 'unbekannt'}'} · ${timestamp(item.atMs ?? item.gapEndedMs)} · Source-Ereignis'),
+            subtitle: Text(context.tr("{0} · {1} · Source-Ereignis", [
+              item.id ?? 'Sequenz ${item.sequence ?? 'unbekannt'}',
+              timestamp(item.atMs ?? item.gapEndedMs)
+            ])),
             onTap: () => widget.navigate(4),
           )),
     ]);
@@ -334,37 +344,50 @@ class DeviceInventoryHealth extends StatelessWidget {
       child: SingleChildScrollView(
         child:
             Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          const PanelLabel('Inventory Health · Beobachtungsumfang'),
+          PanelLabel(context.tr("Inventory Health · Beobachtungsumfang")),
           KeyValueGrid(children: [
             KeyValue(
-                'REGISTRY', '${snapshot.devices.length} Geräte im v1-Snapshot'),
-            KeyValue(
-                'SOURCE-ZUORDNUNG', '$withSource / ${snapshot.devices.length}'),
-            KeyValue('OBSERVED TELEMETRY',
+                context.tr("REGISTRY"),
+                context.tr(
+                    "{0} Geräte im v1-Snapshot", [snapshot.devices.length])),
+            KeyValue(context.tr("SOURCE-ZUORDNUNG"),
+                '$withSource / ${snapshot.devices.length}'),
+            KeyValue(context.tr("OBSERVED TELEMETRY"),
                 '$withTelemetry / ${snapshot.devices.length}'),
-            KeyValue('REPORTED REACHABILITY',
-                '$reachable erreichbar · nicht aktiv gemessen'),
-            KeyValue('SIMULATED INVENTORY',
-                '${snapshot.devices.where((item) => item.simulated).length} Geräte'),
-            const KeyValue('SERVICE COVERAGE', 'Unbekannt · Capability fehlt'),
+            KeyValue(
+                context.tr("REPORTED REACHABILITY"),
+                context
+                    .tr("{0} erreichbar · nicht aktiv gemessen", [reachable])),
+            KeyValue(
+                context.tr("SIMULATED INVENTORY"),
+                context.tr("{0} Geräte",
+                    [snapshot.devices.where((item) => item.simulated).length])),
+            KeyValue(context.tr("SERVICE COVERAGE"),
+                context.tr("Unbekannt · Capability fehlt")),
           ]),
           const Hairline(),
-          const PanelLabel(
-              'Source Health · nicht mit Device Health gleichsetzen'),
+          PanelLabel(context
+              .tr("Source Health · nicht mit Device Health gleichsetzen")),
           if (sources.isEmpty)
-            const Text('SourceHealth im aktuellen Datenumfang nicht verfügbar.')
+            Text(context
+                .tr("SourceHealth im aktuellen Datenumfang nicht verfügbar."))
           else
             ...sources.map((source) => ListTile(
                   key: Key('device-health-source-${source.id}'),
                   dense: true,
                   leading: StatusDot(source.connection),
                   title: Text('${source.name} · ${source.id}'),
-                  subtitle: Text(
-                      '${known(source.connection)} · ${known(source.freshness)} · Empfang ${timestamp(source.lastReceivedMs)} · ${source.simulated ? 'SIMULATED' : 'REPORTED'}'),
+                  subtitle: Text(context.tr("{0} · {1} · Empfang {2} · {3}", [
+                    known(source.connection),
+                    known(source.freshness),
+                    timestamp(source.lastReceivedMs),
+                    source.simulated ? 'SIMULATED' : 'REPORTED'
+                  ])),
                 )),
-          const WorkstationNote(
-            'Kein globales Gesundheitsurteil',
-            'Registry-Mitgliedschaft, SourceHealth, Observations, gemeldete Reachability und Diagnosebefunde bleiben getrennt. Fehlende Services und aktive Probes bleiben unbekannt.',
+          WorkstationNote(
+            context.tr("Kein globales Gesundheitsurteil"),
+            context.tr(
+                "Registry-Mitgliedschaft, SourceHealth, Observations, gemeldete Reachability und Diagnosebefunde bleiben getrennt. Fehlende Services und aktive Probes bleiben unbekannt."),
             icon: Icons.fact_check_outlined,
           ),
         ]),

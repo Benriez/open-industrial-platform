@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../../design_system/theme.dart';
@@ -11,7 +12,8 @@ import 'settings_session.dart';
 /// The Core serializes its categories in snake_case; the enum of the client
 /// is camelCase. The mapping is explicit so that the status of a category of
 /// the Core is found and not guessed.
-String settingsCategoryWireName(SettingsCategory category) => switch (category) {
+String settingsCategoryWireName(SettingsCategory category) =>
+    switch (category) {
       SettingsCategory.general => 'general',
       SettingsCategory.mcpAgents => 'mcp_agents',
       SettingsCategory.infrastructure => 'infrastructure',
@@ -114,6 +116,7 @@ class SettingsNavigation extends StatelessWidget {
   final SettingsWorkspaceSession session;
   final ValueChanged<SettingsCategory> onCategory;
   final ValueChanged<SettingsSection> onSection;
+
   /// The categories of the Core. The administration of a category is stated
   /// by the Core itself; the client does not guess it.
   final List<SettingsCategoryDefinition> categories;
@@ -132,7 +135,7 @@ class SettingsNavigation extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const PanelLabel('Settings navigation'),
+          PanelLabel(context.tr("Settings navigation")),
           for (final category in SettingsCategory.values) ...[
             _category(context, category),
             if (session.category == category) ...[
@@ -164,7 +167,7 @@ class SettingsNavigation extends StatelessWidget {
     };
     return Padding(
       padding: const EdgeInsets.only(left: 34, right: 9, bottom: 4),
-      child: Text('CORE · $status',
+      child: Text(context.tr("CORE · {0}", [status]),
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
               fontSize: 9.5,
               color: definition.status == 'offline_administration_required'
@@ -179,7 +182,8 @@ class SettingsNavigation extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: 'Settings-Kategorie ${settingsCategoryLabel(category)}',
+      label: context.tr("Settings-Kategorie {0}",
+          [context.tr(settingsCategoryLabel(category))]),
       child: Material(
         color: selected ? tone.withOpacity(.11) : Colors.transparent,
         borderRadius: BorderRadius.circular(WorkstationTokens.radiusSm),
@@ -194,7 +198,7 @@ class SettingsNavigation extends StatelessWidget {
                   size: 17, color: selected ? tone : OipTokens.muted(context)),
               const SizedBox(width: 9),
               Expanded(
-                child: Text(settingsCategoryLabel(category),
+                child: Text(context.tr(settingsCategoryLabel(category)),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontSize: 12,
                         fontWeight:
@@ -216,7 +220,8 @@ class SettingsNavigation extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: 'Settings-Bereich ${settingsSectionLabel(section)}',
+      label: context.tr(
+          "Settings-Bereich {0}", [context.tr(settingsSectionLabel(section))]),
       child: Material(
         color: selected ? tone.withOpacity(.12) : Colors.transparent,
         borderRadius: BorderRadius.circular(WorkstationTokens.radiusSm),
@@ -227,7 +232,7 @@ class SettingsNavigation extends StatelessWidget {
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(35, 8, 8, 8),
-            child: Text(settingsSectionLabel(section),
+            child: Text(context.tr(settingsSectionLabel(section)),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: selected ? tone : OipTokens.muted(context),
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w400)),
@@ -308,7 +313,7 @@ class SettingsLimitations extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const PanelLabel('Grenzen & Anforderungen'),
+          PanelLabel(context.tr("Grenzen & Anforderungen")),
           for (final limitation in limitations)
             Padding(
               padding: const EdgeInsets.only(bottom: 7),

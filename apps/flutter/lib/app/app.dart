@@ -3,6 +3,9 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../design_system/theme.dart';
 import '../features/devices.dart';
 import '../features/overview.dart';
@@ -12,6 +15,9 @@ import '../features/diagnostics.dart';
 import '../features/operator_login.dart';
 import '../features/settings.dart';
 import '../features/version_changelog.dart';
+import '../l10n/document_language.dart';
+import '../l10n/language_picker.dart';
+import '../l10n/oip_strings.dart';
 import '../models/app_metadata.dart';
 import '../widgets/components.dart';
 import '../widgets/adaptive_workspace.dart';
@@ -51,12 +57,52 @@ class OipApp extends StatefulWidget {
 }
 
 class _OipAppState extends State<OipApp> {
+  static const _languageKey = 'oip-language';
+  Locale _locale = oipLocales.first;
+  bool _languageChosen = false;
   OipThemeVariant themeVariant = OipThemeVariant.spectrum;
 
   @override
   void initState() {
     super.initState();
+    unawaited(_restoreLanguage());
     if (widget.autoStart) unawaited(widget.controller.start());
+  }
+
+  Future<void> _restoreLanguage() async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      final saved = preferences.getString(_languageKey);
+      if (!mounted || _languageChosen) return;
+      final selected = oipLocales
+          .where((locale) => locale.languageCode == saved)
+          .firstOrNull;
+      if (selected != null && selected != _locale) {
+        setState(() => _locale = selected);
+        setDocumentLanguage(selected.languageCode);
+      }
+    } on PlatformException catch (error) {
+      debugPrint('OIP language preference unavailable: ${error.code}');
+    } on MissingPluginException {
+      // The language can still be changed for the current app instance.
+    }
+  }
+
+  Future<void> _setLanguage(Locale locale) async {
+    setState(() {
+      _languageChosen = true;
+      _locale = locale;
+    });
+    setDocumentLanguage(locale.languageCode);
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      if (_locale != locale) return;
+      await preferences.setString(_languageKey, locale.languageCode);
+    } on PlatformException catch (error) {
+      debugPrint('OIP could not save language preference: ${error.code}');
+    } on MissingPluginException {
+      // The selected language remains active until the app closes.
+    }
   }
 
   @override
@@ -79,6 +125,12 @@ class _OipAppState extends State<OipApp> {
   Widget build(BuildContext context) => MaterialApp(
         title: 'Open Industrial Platform',
         debugShowCheckedModeBanner: false,
+        locale: _locale,
+        supportedLocales: oipLocales,
+        localizationsDelegates: const [
+          OipStrings.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
         theme: OipTokens.theme(Brightness.light),
         darkTheme: OipTokens.theme(
           Brightness.dark,
@@ -87,12 +139,15 @@ class _OipAppState extends State<OipApp> {
         themeMode: themeVariant == OipThemeVariant.daylight
             ? ThemeMode.light
             : ThemeMode.dark,
-        home: DashboardShell(
-          widget.controller,
-          dark: themeVariant != OipThemeVariant.daylight,
-          themeVariant: themeVariant,
-          toggleTheme: cycleTheme,
-          setTheme: setTheme,
+        home: OipLanguageScope(
+          onChanged: _setLanguage,
+          child: DashboardShell(
+            widget.controller,
+            dark: themeVariant != OipThemeVariant.daylight,
+            themeVariant: themeVariant,
+            toggleTheme: cycleTheme,
+            setTheme: setTheme,
+          ),
         ),
       );
 }
@@ -255,7 +310,8 @@ class _DashboardShellState extends State<DashboardShell> {
           borderRadius: BorderRadius.circular(OipTokens.radiusSm),
           child: Semantics(
             button: true,
-            label: 'Navigation ${pageTitles[index]}',
+            label:
+                context.tr("Navigation {0}", [context.tr(pageTitles[index])]),
             onTap: select,
             child: ExcludeSemantics(
               child: ListTile(
@@ -270,7 +326,7 @@ class _DashboardShellState extends State<DashboardShell> {
                   color: page == index ? accent : OipTokens.muted(context),
                 ),
                 title: Text(
-                  pageTitles[index],
+                  context.tr(pageTitles[index]),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight:
@@ -321,9 +377,9 @@ class _DashboardShellState extends State<DashboardShell> {
                   ),
                 ),
                 const SizedBox(width: OipTokens.s3),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'OPEN INDUSTRIAL\nPLATFORM',
+                    context.tr("OPEN INDUSTRIAL\nPLATFORM"),
                     style: TextStyle(
                         fontSize: 11,
                         height: 1.35,
@@ -352,8 +408,9 @@ class _DashboardShellState extends State<DashboardShell> {
                 const EdgeInsets.fromLTRB(24, OipTokens.s3, 16, OipTokens.s4),
             child: Semantics(
               button: true,
-              label:
-                  'Versionshinweise öffnen. Version ${kOipApplication.version}, Build ${kOipApplication.build}',
+              label: context.tr(
+                  "Versionshinweise öffnen. Version {0}, Build {1}",
+                  [kOipApplication.version, kOipApplication.build]),
               child: InkWell(
                 key: const Key('sidebar-app-version'),
                 borderRadius: BorderRadius.circular(4),
@@ -364,7 +421,8 @@ class _DashboardShellState extends State<DashboardShell> {
                     children: [
                       Expanded(
                         child: Text(
-                          'VERSION ${kOipApplication.version} · BUILD ${kOipApplication.build}',
+                          context.tr("VERSION {0} · BUILD {1}",
+                              [kOipApplication.version, kOipApplication.build]),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style:
@@ -390,7 +448,8 @@ class _DashboardShellState extends State<DashboardShell> {
 
   Widget _navGroupLabel(String label) => Padding(
         padding: const EdgeInsets.fromLTRB(24, 0, 12, 10),
-        child: Text(label, style: Theme.of(context).textTheme.labelSmall),
+        child: Text(context.tr(label),
+            style: Theme.of(context).textTheme.labelSmall),
       );
 }
 
@@ -440,7 +499,7 @@ class _TopBar extends StatelessWidget {
                       Builder(
                         builder: (context) => IconButton(
                           key: const Key('open-navigation'),
-                          tooltip: 'Navigation öffnen',
+                          tooltip: context.tr("Navigation öffnen"),
                           onPressed: () => Scaffold.of(context).openDrawer(),
                           icon: const Icon(Icons.menu),
                         ),
@@ -449,10 +508,10 @@ class _TopBar extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('WORKSPACE / LOCAL LAB',
+                          Text(context.tr("WORKSPACE / LOCAL LAB"),
                               style: Theme.of(context).textTheme.labelSmall),
                           const SizedBox(height: OipTokens.s1),
-                          spectrumTitle(context, pageTitles[page]),
+                          spectrumTitle(context, context.tr(pageTitles[page])),
                         ],
                       ),
                     ),
@@ -461,9 +520,9 @@ class _TopBar extends StatelessWidget {
                         padding: const EdgeInsets.only(right: OipTokens.s2),
                         child: Text(
                           switch (themeVariant) {
-                            OipThemeVariant.spectrum => 'SPECTRUM',
-                            OipThemeVariant.graphite => 'GRAPHITE',
-                            OipThemeVariant.daylight => 'DAYLIGHT',
+                            OipThemeVariant.spectrum => context.tr("SPECTRUM"),
+                            OipThemeVariant.graphite => context.tr("GRAPHITE"),
+                            OipThemeVariant.daylight => context.tr("DAYLIGHT"),
                           },
                           style: Theme.of(context)
                               .textTheme
@@ -473,7 +532,7 @@ class _TopBar extends StatelessWidget {
                       ),
                     IconButton(
                       key: const Key('theme-toggle'),
-                      tooltip: 'Darstellung wechseln',
+                      tooltip: context.tr("Darstellung wechseln"),
                       onPressed: toggleTheme,
                       icon: Icon(
                           dark
@@ -529,16 +588,21 @@ class _TopBar extends StatelessWidget {
                     if (!narrow)
                       Tooltip(
                         message: simulation
-                            ? 'Simulation only; no real infrastructure changes.'
+                            ? context.tr(
+                                "Simulation only; no real infrastructure changes.")
                             : !operatorActionsAvailable
-                                ? 'Authorize a managed operator session to open actions permitted for its scope.'
-                                : 'Inventory registration and updates, SSH onboarding and monitoring configuration are available when permitted by the current scope. Telemetry is collector-owned; OPC-UA writes require server-reported ReadWrite access and an authorized scope.',
+                                ? context.tr(
+                                    "Authorize a managed operator session to open actions permitted for its scope.")
+                                : context.tr(
+                                    "Inventory registration and updates, SSH onboarding and monitoring configuration are available when permitted by the current scope. Telemetry is collector-owned; OPC-UA writes require server-reported ReadWrite access and an authorized scope."),
                         child: Text(
                           simulation
-                              ? 'Simulation · Self-hosted'
+                              ? context.tr("Simulation · Self-hosted")
                               : !operatorActionsAvailable
-                                  ? 'Sign in to manage · Self-hosted'
-                                  : 'Operator actions · Self-hosted',
+                                  ? context
+                                      .tr("Sign in to manage · Self-hosted")
+                                  : context
+                                      .tr("Operator actions · Self-hosted"),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
@@ -587,7 +651,7 @@ class _PageContent extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: OipTokens.s4),
             child: InlineNotice(
-              'Verbindung und Datenaktualität',
+              context.tr("Verbindung und Datenaktualität"),
               controller.error!,
               icon: Icons.sync_problem_outlined,
               color: OipTokens.statusColor(context, 'degraded'),
@@ -597,7 +661,7 @@ class _PageContent extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: OipTokens.s4),
             child: InlineNotice(
-              'Szenariowechsel nicht ausgeführt',
+              context.tr("Szenariowechsel nicht ausgeführt"),
               controller.scenarioError!,
               icon: Icons.tune,
               color: OipTokens.statusColor(context, 'degraded'),
@@ -611,7 +675,7 @@ class _PageContent extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: controller.reconnect,
                 icon: const Icon(Icons.refresh, size: 17),
-                label: const Text('Jetzt erneut verbinden'),
+                label: Text(context.tr("Jetzt erneut verbinden")),
               ),
             ),
           ),
@@ -623,7 +687,12 @@ class _PageContent extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerLeft,
               child: StatusPill(
-                'VERALTET / UNBEKANNT · ${controller.connection != 'live' ? 'UI-Stream; OPC UA zuletzt' : 'OPC UA primär'}: ${known(snapshot.system.opcua)}',
+                context.tr("VERALTET / UNBEKANNT · {0}: {1}", [
+                  controller.connection != 'live'
+                      ? 'UI-Stream; OPC UA zuletzt'
+                      : 'OPC UA primär',
+                  known(snapshot.system.opcua)
+                ]),
                 color: OipTokens.statusColor(context, 'degraded'),
                 showDot: true,
               ),
@@ -636,11 +705,12 @@ class _PageContent extends StatelessWidget {
         else if (snapshot == null && page != 5)
           StateMessage(
             controller.error == null
-                ? 'Verbindung zum lokalen OIP-Server'
+                ? context.tr("Verbindung zum lokalen OIP-Server")
                 : controller.error!.contains('nicht erreichbar')
-                    ? 'Server nicht erreichbar'
-                    : 'API-Daten konnten nicht geladen werden',
-            'REST lädt den Anfangszustand. SSE liefert danach Änderungen.',
+                    ? context.tr("Server nicht erreichbar")
+                    : context.tr("API-Daten konnten nicht geladen werden"),
+            context.tr(
+                "REST lädt den Anfangszustand. SSE liefert danach Änderungen."),
             icon: Icons.sensors,
             action: controller.error == null
                 ? const Padding(
@@ -649,7 +719,7 @@ class _PageContent extends StatelessWidget {
                   )
                 : TextButton(
                     onPressed: controller.reconnect,
-                    child: const Text('Erneut versuchen'),
+                    child: Text(context.tr("Erneut versuchen")),
                   ),
           )
         else
@@ -665,9 +735,10 @@ class _PageContent extends StatelessWidget {
                 themeVariant: themeVariant,
                 onTheme: setTheme,
               ),
-            _ => const StateMessage(
-                'Unbekanntes Modul',
-                'Die angeforderte Hauptnavigation ist nicht registriert.',
+            _ => StateMessage(
+                context.tr("Unbekanntes Modul"),
+                context.tr(
+                    "Die angeforderte Hauptnavigation ist nicht registriert."),
                 icon: Icons.error_outline,
               ),
           },
@@ -678,34 +749,35 @@ class _PageContent extends StatelessWidget {
           spacing: OipTokens.s3,
           runSpacing: OipTokens.s1,
           children: [
-            Text('OIP · SPECTRUM 2027',
+            Text(context.tr("OIP · SPECTRUM 2027"),
                 style: Theme.of(context).textTheme.labelSmall),
             Text(
               controller.hasAuthorizedContext
-                  ? 'Reale Infrastruktur · lokale Operator-Sitzung'
-                  : 'Lokale Entwicklung und Simulation',
+                  ? context.tr("Reale Infrastruktur · lokale Operator-Sitzung")
+                  : context.tr("Lokale Entwicklung und Simulation"),
               style: Theme.of(context).textTheme.bodySmall,
             ),
             Text(
               snapshot == null
-                  ? 'Security-Blocker werden vom Server geladen'
+                  ? context.tr("Security-Blocker werden vom Server geladen")
                   : snapshot.system.blocker == 'none'
-                      ? 'Kein Security-Blocker gemeldet'
+                      ? context.tr("Kein Security-Blocker gemeldet")
                       : snapshot.system.blocker == 'unknown'
                           // The scoped snapshot of a tenant carries no
                           // platform fact. The blocker of the platform is
                           // therefore not delivered to this session: the
                           // footer names that instead of showing a
                           // placeholder as an open blocker.
-                          ? 'Security-Blocker: an diese Sitzung nicht geliefert'
-                          : '${snapshot.system.blocker} offen',
+                          ? context.tr(
+                              "Security-Blocker: an diese Sitzung nicht geliefert")
+                          : context.tr("{0} offen", [snapshot.system.blocker]),
               style: Theme.of(context).textTheme.bodySmall,
             ),
             if (controller.hasAuthorizedContext)
               TextButton(
                 key: const Key('operator-logout'),
                 onPressed: () => controller.logout(),
-                child: const Text('Operator abmelden'),
+                child: Text(context.tr("Operator abmelden")),
               ),
           ],
         ),

@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -49,22 +50,23 @@ class DiagnosticsEventTimeline extends StatelessWidget {
           child: LayoutBuilder(builder: (context, box) {
             final title =
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('EVIDENCE TIMELINE 2.0',
+              Text(context.tr("EVIDENCE TIMELINE 2.0"),
                   style: WorkstationTokens.eyebrow(context,
                       color: OipTokens.violet)),
               const SizedBox(height: 2),
-              Text('Evidence Timeline',
+              Text(context.tr("Evidence Timeline"),
                   style: Theme.of(context).textTheme.titleMedium),
               if (box.maxWidth >= 500)
                 Text(
-                    'Nur zeitgestempelte Collection-Ereignisse · zeitliche Nähe beweist keine Ursache',
+                    context.tr(
+                        "Nur zeitgestempelte Collection-Ereignisse · zeitliche Nähe beweist keine Ursache"),
                     style: Theme.of(context).textTheme.bodySmall),
             ]);
             if (box.maxWidth < 500) {
               return Row(children: [
                 Expanded(child: title),
                 IconButton(
-                    tooltip: 'Spuren ausblenden',
+                    tooltip: context.tr("Spuren ausblenden"),
                     onPressed: onHide,
                     icon: const Icon(Icons.visibility_off_outlined, size: 18)),
               ]);
@@ -74,7 +76,7 @@ class DiagnosticsEventTimeline extends StatelessWidget {
               TextButton.icon(
                   onPressed: onHide,
                   icon: const Icon(Icons.visibility_off_outlined, size: 16),
-                  label: const Text('Spuren ausblenden')),
+                  label: Text(context.tr("Spuren ausblenden"))),
             ]);
           }),
         ),
@@ -88,27 +90,27 @@ class DiagnosticsEventTimeline extends StatelessWidget {
                 ToolButton(
                     key: const Key('diagnostics-timeline-zoom-out'),
                     icon: Icons.zoom_out,
-                    tooltip: 'Timeline verkleinern',
+                    tooltip: context.tr("Timeline verkleinern"),
                     onPressed: range.zoom <= 1 ? null : onZoomOut),
                 ToolButton(
                     key: const Key('diagnostics-timeline-zoom-in'),
                     icon: Icons.zoom_in,
-                    tooltip: 'Timeline vergrößern',
+                    tooltip: context.tr("Timeline vergrößern"),
                     onPressed: range.zoom >= 64 ? null : onZoomIn),
                 ToolButton(
                     key: const Key('diagnostics-timeline-fit'),
                     icon: Icons.fit_screen,
-                    tooltip: 'Fit to Available Data',
+                    tooltip: context.tr("Fit to Available Data"),
                     onPressed: onFit),
                 ToolButton(
                     key: const Key('diagnostics-timeline-pan-left'),
                     icon: Icons.arrow_back,
-                    tooltip: 'Timeline nach links',
+                    tooltip: context.tr("Timeline nach links"),
                     onPressed: onPanLeft),
                 ToolButton(
                     key: const Key('diagnostics-timeline-pan-right'),
                     icon: Icons.arrow_forward,
-                    tooltip: 'Timeline nach rechts',
+                    tooltip: context.tr("Timeline nach rechts"),
                     onPressed: onPanRight),
                 Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -123,18 +125,25 @@ class DiagnosticsEventTimeline extends StatelessWidget {
               color: WorkstationTokens.well(context),
               borderRadius: BorderRadius.circular(6)),
           child: Text(
-              'ZEITBASIS · EVENT TIMESTAMP / SERVER WALL CLOCK · UTC\n$visibleCount/${timestamped.length} zeitgestempelte Ereignisse im Viewport · $missingTime ohne Zeitstempel nur im Explorer',
+              context.tr(
+                  "ZEITBASIS · EVENT TIMESTAMP / SERVER WALL CLOCK · UTC\n{0}/{1} zeitgestempelte Ereignisse im Viewport · {2} ohne Zeitstempel nur im Explorer",
+                  [
+                    visibleCount,
+                    timestamped.length,
+                    missingTime
+                  ]),
               style: WorkstationTokens.mono(context,
                   size: 9.5, color: OipTokens.muted(context))),
         ),
         if (timestamped.isEmpty)
-          const Expanded(
+          Expanded(
               child: Center(
                   child: Padding(
                       padding: EdgeInsets.all(16),
                       child: WorkstationNote(
-                          'Keine zeitgestempelten Ereignisse',
-                          'Ereignisse ohne EventTimestamp bleiben vollständig im Explorer und Inspector verfügbar. Es wird keine Position erfunden.'))))
+                          context.tr("Keine zeitgestempelten Ereignisse"),
+                          context.tr(
+                              "Ereignisse ohne EventTimestamp bleiben vollständig im Explorer und Inspector verfügbar. Es wird keine Position erfunden.")))))
         else ...[
           _Axis(range: range),
           Expanded(
@@ -161,7 +170,8 @@ class DiagnosticsEventTimeline extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
             child: Text(
-                'Marker gruppieren sich nur visuell; Gruppen öffnen alle Mitglieder. Gap-Flächen nutzen ausschließlich dokumentierte Grenzen.',
+                context.tr(
+                    "Marker gruppieren sich nur visuell; Gruppen öffnen alle Mitglieder. Gap-Flächen nutzen ausschließlich dokumentierte Grenzen."),
                 style: Theme.of(context).textTheme.bodySmall),
           ),
         ],
@@ -235,7 +245,7 @@ class _SourceLane extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: WorkstationTokens.mono(context, size: 9.5)),
-                    Text('${events.length} Events',
+                    Text(context.tr("{0} Events", [events.length]),
                         style: Theme.of(context)
                             .textTheme
                             .bodySmall
@@ -366,7 +376,8 @@ class _TimelineMarker extends StatelessWidget {
     final selected = await showDialog<DiagnosticEvent>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('${cluster.events.length} zeitnahe Ereignisse'),
+        title: Text(
+            context.tr("{0} zeitnahe Ereignisse", [cluster.events.length])),
         content: SizedBox(
           width: 520,
           child: Column(
@@ -374,7 +385,12 @@ class _TimelineMarker extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                    '${timestamp(cluster.firstMs)} bis ${timestamp(cluster.lastMs)}\nVisuelle Gruppe · keine Korrelation oder Ursache',
+                    context.tr(
+                        "{0} bis {1}\nVisuelle Gruppe · keine Korrelation oder Ursache",
+                        [
+                          timestamp(cluster.firstMs),
+                          timestamp(cluster.lastMs)
+                        ]),
                     style: Theme.of(context).textTheme.bodySmall),
                 const SizedBox(height: 12),
                 Flexible(
@@ -387,7 +403,8 @@ class _TimelineMarker extends StatelessWidget {
                         key:
                             Key('diagnostics-timeline-group-event-${item.key}'),
                         dense: true,
-                        title: Text(diagnosticEventTitle(item.event.kind)),
+                        title: Text(
+                            context.tr(diagnosticEventTitle(item.event.kind))),
                         subtitle: Text(
                             '${item.recordId ?? 'Keine Server-Record-ID'}\n${timestamp(item.timestampMs)}'),
                         onTap: () => Navigator.of(context).pop(item),
@@ -400,7 +417,7 @@ class _TimelineMarker extends StatelessWidget {
         actions: [
           TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Schließen'))
+              child: Text(context.tr("Schließen")))
         ],
       ),
     );

@@ -1,3 +1,4 @@
+import '../l10n/oip_strings.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../design_system/theme.dart';
@@ -59,8 +60,8 @@ class _DeviceHistorySectionState extends State<DeviceHistorySection> {
       _error = '';
     });
     try {
-      final page = await widget.api.observationHistory(
-          deviceId: widget.deviceId, cursor: cursor);
+      final page = await widget.api
+          .observationHistory(deviceId: widget.deviceId, cursor: cursor);
       if (!mounted) return;
       setState(() {
         for (final sample in page.observations) {
@@ -78,7 +79,8 @@ class _DeviceHistorySectionState extends State<DeviceHistorySection> {
       if (!mounted) return;
       setState(() {
         _failed = true;
-        _error = apiErrorMessage(exception, 'Historie nicht abrufbar.');
+        _error =
+            apiErrorMessage(exception, context.tr("Historie nicht abrufbar."));
       });
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -89,11 +91,12 @@ class _DeviceHistorySectionState extends State<DeviceHistorySection> {
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SectionTitle('Persistierte Messhistorie',
+          SectionTitle(context.tr("Persistierte Messhistorie"),
               'Aus der Core-Datenbank · gespeicherte Werte, kein Live-Zustand'),
           const SizedBox(height: OipTokens.s3),
           if (_failed && _samples.isEmpty)
-            StateMessage('Historie nicht verfügbar', _error, compact: true)
+            StateMessage(context.tr("Historie nicht verfügbar"), _error,
+                compact: true)
           else if (_samples.isEmpty && _busy)
             const Padding(
               padding: EdgeInsets.all(OipTokens.s4),
@@ -101,9 +104,9 @@ class _DeviceHistorySectionState extends State<DeviceHistorySection> {
             )
           else if (_samples.isEmpty)
             InlineNotice(
-              'Keine persistierten Messwerte',
-              'Der Core hat für dieses Gerät keine gespeicherten Beobachtungen. '
-                  'Das ist kein Nachweis einer lückenlosen Überwachung.',
+              context.tr("Keine persistierten Messwerte"),
+              context.tr(
+                  "Der Core hat für dieses Gerät keine gespeicherten Beobachtungen. Das ist kein Nachweis einer lückenlosen Überwachung."),
               icon: Icons.history,
               color: OipTokens.statusColor(context, 'degraded'),
             )
@@ -124,26 +127,29 @@ class _DeviceHistorySectionState extends State<DeviceHistorySection> {
               child: TextButton.icon(
                 onPressed: _busy ? null : () => _load(_cursor),
                 icon: const Icon(Icons.expand_more),
-                label: const Text('Neuere Einträge laden'),
+                label: Text(context.tr("Neuere Einträge laden")),
               ),
             )
           else if (_truncated)
-            const InlineNotice(
-              'Historie gekürzt',
-              'Weitere Einträge liegen vor, die Fortsetzung ist derzeit nicht abrufbar.',
+            InlineNotice(
+              context.tr("Historie gekürzt"),
+              context.tr(
+                  "Weitere Einträge liegen vor, die Fortsetzung ist derzeit nicht abrufbar."),
               icon: Icons.more_horiz,
             ),
           if (_missing.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: OipTokens.s2),
-              child: Text('Grenzen dieser Historie: ${_missing.join(' ')}',
+              child: Text(
+                  context
+                      .tr("Grenzen dieser Historie: {0}", [_missing.join(' ')]),
                   style: Theme.of(context).textTheme.bodySmall),
             ),
           if (_timeSemantics.isNotEmpty)
             ExpansionTile(
               tilePadding: EdgeInsets.zero,
               childrenPadding: EdgeInsets.zero,
-              title: Text('Zeit- und Herkunftssemantik',
+              title: Text(context.tr("Zeit- und Herkunftssemantik"),
                   style: Theme.of(context)
                       .textTheme
                       .labelSmall
@@ -178,7 +184,7 @@ class HistorySampleRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${observation.metricId} · Historie',
+          Text(context.tr("{0} · Historie", [observation.metricId]),
               style: Theme.of(context)
                   .textTheme
                   .labelSmall
@@ -186,7 +192,7 @@ class HistorySampleRow extends StatelessWidget {
           const SizedBox(height: OipTokens.s1),
           Text('$value · ${known(observation.quality)} · '
               '${known(observation.freshness)}'),
-          Text('Empfangen ${timestamp(sample.receivedMs)}',
+          Text(context.tr("Empfangen {0}", [timestamp(sample.receivedMs)]),
               style: Theme.of(context).textTheme.bodySmall),
         ],
       ),

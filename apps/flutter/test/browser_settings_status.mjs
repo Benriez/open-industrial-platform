@@ -43,7 +43,7 @@ const isAWireName = (word) => /^[a-z][a-z0-9_]*$/.test(word);
 
 // The categories of the navigation, as the surface names them.
 const CATEGORIES = {
-  general: 'General',
+  general: 'Allgemein',
   mcp_agents: 'MCP & Agents',
   infrastructure: 'Infrastructure',
   data_storage: 'Data & Storage',

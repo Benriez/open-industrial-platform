@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../../design_system/theme.dart';
@@ -58,11 +59,9 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
   /// The Core replaces the metadata of a device as a whole, so the note is
   /// **merged** into the metadata that the client sends back: a write of the
   /// name never drops the note.
-  late final TextEditingController _note = TextEditingController(
-      text: _theNoteOf(widget.device));
-  late String _type = widget.device.type.isEmpty
-      ? 'other'
-      : widget.device.type;
+  late final TextEditingController _note =
+      TextEditingController(text: _theNoteOf(widget.device));
+  late String _type = widget.device.type.isEmpty ? 'other' : widget.device.type;
 
   /// The types that the administration offers.
   ///
@@ -76,6 +75,7 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
     if (current.isNotEmpty && !types.contains(current)) types.add(current);
     return types;
   }
+
   bool _busy = false;
   String? _error;
 
@@ -156,7 +156,8 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = apiErrorMessage(error, 'Das Gerät konnte nicht aktualisiert werden.');
+        _error = apiErrorMessage(
+            error, context.tr("Das Gerät konnte nicht aktualisiert werden."));
       });
     }
   }
@@ -169,19 +170,21 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
       key: const Key('device-administration'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('VERWALTUNG · REVISION ${widget.device.revision}',
+        Text(context.tr("VERWALTUNG · REVISION {0}", [widget.device.revision]),
             style: WorkstationTokens.eyebrow(context, color: OipTokens.violet)),
         const SizedBox(height: 6),
         if (api == null)
-          const InlineNotice(
-            'Verwaltung nicht verfügbar',
-            'Dieser Client hat keinen autorisierten Management-Adapter. Das Gerät kann hier nicht geändert werden.',
+          InlineNotice(
+            context.tr("Verwaltung nicht verfügbar"),
+            context.tr(
+                "Dieser Client hat keinen autorisierten Management-Adapter. Das Gerät kann hier nicht geändert werden."),
             icon: Icons.lock_outline,
           )
         else if (archived)
-          const InlineNotice(
-            'Gerät archiviert',
-            'Ein archiviertes Gerät sammelt keine Messwerte mehr. Seine Historie bleibt erhalten.',
+          InlineNotice(
+            context.tr("Gerät archiviert"),
+            context.tr(
+                "Ein archiviertes Gerät sammelt keine Messwerte mehr. Seine Historie bleibt erhalten."),
             icon: Icons.inventory_2_outlined,
           )
         else ...[
@@ -189,7 +192,7 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
             key: const Key('device-administration-name'),
             controller: _name,
             enabled: !_busy,
-            decoration: const InputDecoration(labelText: 'Anzeigename'),
+            decoration: InputDecoration(labelText: context.tr("Anzeigename")),
           ),
           const SizedBox(height: 6),
           // The Core refuses a control character in the note, so the field
@@ -201,9 +204,10 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
             enabled: !_busy,
             maxLines: 1,
             maxLength: 1024,
-            decoration: const InputDecoration(
-              labelText: 'Notiz',
-              helperText: 'Freier Text des Betreibers zu diesem Gerät',
+            decoration: InputDecoration(
+              labelText: context.tr("Notiz"),
+              helperText:
+                  context.tr("Freier Text des Betreibers zu diesem Gerät"),
             ),
           ),
           const SizedBox(height: 6),
@@ -213,11 +217,12 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
                 key: const Key('device-administration-type'),
                 value: _type,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Gerätetyp'),
+                decoration: InputDecoration(labelText: context.tr("Gerätetyp")),
                 items: [
                   for (final type in _types)
                     DropdownMenuItem(
-                        value: type, child: Text(deviceKindName(type))),
+                        value: type,
+                        child: Text(context.tr(deviceKindName(type)))),
                 ],
                 onChanged: _busy
                     ? null
@@ -230,7 +235,8 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
                 key: const Key('device-administration-site'),
                 controller: _site,
                 enabled: !_busy,
-                decoration: const InputDecoration(labelText: 'Standort (Site)'),
+                decoration:
+                    InputDecoration(labelText: context.tr("Standort (Site)")),
               ),
             ),
           ]),
@@ -240,7 +246,7 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
               key: const Key('device-administration-update'),
               onPressed: _busy ? null : _update,
               icon: const Icon(Icons.save_outlined, size: 16),
-              label: const Text('Änderungen speichern'),
+              label: Text(context.tr("Änderungen speichern")),
             ),
           ]),
           // The archive is an offline operation of the Core: the managed
@@ -248,7 +254,7 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
           // names the procedure instead of offering a write that the Core
           // would refuse.
           InlineNotice(
-            'Archivierung ist ein Offline-Vorgang',
+            context.tr("Archivierung ist ein Offline-Vorgang"),
             'Der Core archiviert nur mit gestopptem Betrieb. Der Datensatz und '
             'seine Historie bleiben erhalten, das Gerät sammelt keine Messwerte '
             'mehr. Der Vorgang läuft mit dem Offline-Plan des Core: '
@@ -265,7 +271,7 @@ class _DeviceAdministrationState extends State<DeviceAdministration> {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: InlineNotice(
-                'Änderung nicht angenommen',
+                context.tr("Änderung nicht angenommen"),
                 _error!,
                 icon: Icons.error_outline,
                 color: OipTokens.statusColor(context, 'degraded'),

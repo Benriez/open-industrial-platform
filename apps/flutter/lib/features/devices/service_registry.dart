@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../../design_system/theme.dart';
@@ -28,17 +29,15 @@ class ServiceRegistryPanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('SERVICE REGISTRY · AUTHORIZED DATA REQUIRED',
+            Text(context.tr("SERVICE REGISTRY · AUTHORIZED DATA REQUIRED"),
                 style: WorkstationTokens.eyebrow(context,
                     color: OipTokens.violet)),
             const SizedBox(height: 10),
-            const Text('Keine Dienste deklariert.',
+            Text(context.tr("Keine Dienste deklariert."),
                 style: TextStyle(fontSize: 18)),
             const SizedBox(height: 8),
-            const Text(
-                'Der Core liefert das Register der Dienste des autorisierten Scopes, '
-                'und der Betreiber hat für diesen Scope keinen Dienst deklariert. '
-                'Ein leeres Register ist eine Aussage des Betreibers, keine Messung.'),
+            Text(context.tr(
+                "Der Core liefert das Register der Dienste des autorisierten Scopes, und der Betreiber hat für diesen Scope keinen Dienst deklariert. Ein leeres Register ist eine Aussage des Betreibers, keine Messung.")),
           ],
         ),
       );
@@ -49,28 +48,34 @@ class ServiceRegistryPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('SERVICE REGISTRY · AUTHORIZED DATA REQUIRED',
-              style: WorkstationTokens.eyebrow(context, color: OipTokens.violet)),
+          Text(context.tr("SERVICE REGISTRY · AUTHORIZED DATA REQUIRED"),
+              style:
+                  WorkstationTokens.eyebrow(context, color: OipTokens.violet)),
           const SizedBox(height: 10),
-          Text('${registry.length} Dienste deklariert',
+          Text(context.tr("{0} Dienste deklariert", [registry.length]),
               style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 8),
-          const Text(
-              'Der Core misst keinen Dienst: das Register ist die Deklaration des '
-              'Betreibers im Plan der Instanz.'),
+          Text(context.tr(
+              "Der Core misst keinen Dienst: das Register ist die Deklaration des Betreibers im Plan der Instanz.")),
           const SizedBox(height: 12),
           for (final service in registry) ...[
             KeyValueGrid(children: [
-              KeyValue('SERVICE', '${service.name} · ${service.id}'),
-              KeyValue('KIND', service.kind),
-              KeyValue('ENDPOINT',
+              KeyValue(
+                  context.tr("SERVICE"), '${service.name} · ${service.id}'),
+              KeyValue(context.tr("KIND"), service.kind),
+              KeyValue(
+                  context.tr("ENDPOINT"),
                   service.endpoint == null && service.port == null
-                      ? 'Nicht deklariert'
+                      ? context.tr("Nicht deklariert")
                       : '${service.endpoint ?? '—'}${service.port == null ? '' : ':${service.port}'}'),
-              KeyValue('STATE', '${_state(service.state)} · declared'),
-              KeyValue('SITE', service.siteId),
-              KeyValue('DEVICE',
-                  service.deviceIsResolved ? service.deviceId! : 'Nicht zuordenbar'),
+              KeyValue(context.tr("STATE"),
+                  context.tr("{0} · declared", [_state(service.state)])),
+              KeyValue(context.tr("SITE"), service.siteId),
+              KeyValue(
+                  context.tr("DEVICE"),
+                  service.deviceIsResolved
+                      ? service.deviceId!
+                      : context.tr("Nicht zuordenbar")),
             ]),
             const SizedBox(height: 10),
           ],
@@ -102,34 +107,33 @@ class ServiceInventoryMissing extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('SERVICE REGISTRY · AUTHORIZED DATA REQUIRED',
+            Text(context.tr("SERVICE REGISTRY · AUTHORIZED DATA REQUIRED"),
                 style: WorkstationTokens.eyebrow(context,
                     color: OipTokens.violet)),
             const SizedBox(height: 10),
-            Text('Kein autorisiertes Service-Inventar verfügbar.',
+            Text(context.tr("Kein autorisiertes Service-Inventar verfügbar."),
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
-            const Text(
-                'Dieser Core liefert kein autorisiertes Service-Register. '
-                'Gerätenamen, Device.kind und Registry Connection Type werden nicht '
-                'als Dienste ausgegeben.'),
+            Text(context.tr(
+                "Dieser Core liefert kein autorisiertes Service-Register. Gerätenamen, Device.kind und Registry Connection Type werden nicht als Dienste ausgegeben.")),
             const SizedBox(height: 14),
-            const KeyValueGrid(children: [
-              KeyValue('SERVICE REGISTRY QUERY',
-                  'Fehlt · Typed Rust Capability erforderlich'),
-              KeyValue('DEVICE → SERVICE RELATION',
-                  'Fehlt · keine IDs im Device-DTO'),
-              KeyValue('ENDPOINT / PROTOCOL', 'Nicht autorisiert geliefert'),
-              KeyValue('REST / MCP',
-                  'Keine Service-Route bzw. kein Service-Tool vorhanden'),
+            KeyValueGrid(children: [
+              KeyValue(context.tr("SERVICE REGISTRY QUERY"),
+                  context.tr("Fehlt · Typed Rust Capability erforderlich")),
+              KeyValue(context.tr("DEVICE → SERVICE RELATION"),
+                  context.tr("Fehlt · keine IDs im Device-DTO")),
+              KeyValue(context.tr("ENDPOINT / PROTOCOL"),
+                  context.tr("Nicht autorisiert geliefert")),
+              KeyValue(
+                  context.tr("REST / MCP"),
+                  context.tr(
+                      "Keine Service-Route bzw. kein Service-Tool vorhanden")),
             ]),
             const SizedBox(height: 10),
-            const WorkstationNote(
-              'Agent-first Backend-Anforderung',
-              'Benötigt werden autorisierte, scoped und paginierte '
-              'ServiceDeclaration-DTOs mit Provenance, Freshness und '
-              'Device-ID-Beziehung. Der Vertrag: '
-              'docs/architecture/OIP_DEVICES_SERVICES_2027_CORE_REQUIREMENTS.md.',
+            WorkstationNote(
+              context.tr("Agent-first Backend-Anforderung"),
+              context.tr(
+                  "Benötigt werden autorisierte, scoped und paginierte ServiceDeclaration-DTOs mit Provenance, Freshness und Device-ID-Beziehung. Der Vertrag: docs/architecture/OIP_DEVICES_SERVICES_2027_CORE_REQUIREMENTS.md."),
               icon: Icons.account_tree_outlined,
             ),
           ],

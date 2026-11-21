@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../design_system/theme.dart';
@@ -110,7 +111,7 @@ class _InfrastructureExplorerState extends State<InfrastructureExplorer> {
     if (unassigned.isNotEmpty) {
       children.add(Padding(
         padding: const EdgeInsets.fromLTRB(10, 10, 10, 4),
-        child: Text('KEINE SOURCE-ZUORDNUNG',
+        child: Text(context.tr("KEINE SOURCE-ZUORDNUNG"),
             style: WorkstationTokens.eyebrow(context)),
       ));
       for (final device in unassigned) {
@@ -135,8 +136,14 @@ class _InfrastructureExplorerState extends State<InfrastructureExplorer> {
           button: true,
           selected: selected,
           excludeSemantics: true,
-          label: 'Source ${source.name} ${source.id} auswählen · '
-              '$signalCount Signale · ${known(source.connection)} · ${known(source.freshness)}',
+          label:
+              context.tr("Source {0} {1} auswählen · {2} Signale · {3} · {4}", [
+            source.name,
+            source.id,
+            signalCount,
+            known(source.connection),
+            known(source.freshness)
+          ]),
           child: ListTile(
             key: Key('overview-explorer-source-${source.id}'),
             dense: true,
@@ -149,7 +156,12 @@ class _InfrastructureExplorerState extends State<InfrastructureExplorer> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontWeight: FontWeight.w600)),
             subtitle: Text(
-                '${source.id} · $signalCount Signale\n${known(source.connection)} · ${known(source.freshness)}',
+                context.tr("{0} · {1} Signale\n{2} · {3}", [
+                  source.id,
+                  signalCount,
+                  known(source.connection),
+                  known(source.freshness)
+                ]),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis),
             onTap: () => widget.onSource(source),
@@ -174,9 +186,16 @@ class _InfrastructureExplorerState extends State<InfrastructureExplorer> {
           button: true,
           selected: selected,
           excludeSemantics: true,
-          label:
-              'Gerät ${device.name} ${device.id} auswählen · ${deviceKindName(device.kind)} · '
-              '$source · Daten ${_telemetryLabel(telemetry)} · Reachability ${known(device.health.reachability)} reported',
+          label: context.tr(
+              "Gerät {0} {1} auswählen · {2} · {3} · Daten {4} · Reachability {5} reported",
+              [
+                device.name,
+                device.id,
+                deviceKindName(device.kind),
+                source,
+                _telemetryLabel(telemetry),
+                known(device.health.reachability)
+              ]),
           child: ListTile(
             key: Key('overview-explorer-device-${device.id}'),
             dense: true,
@@ -192,8 +211,13 @@ class _InfrastructureExplorerState extends State<InfrastructureExplorer> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 12.5)),
             subtitle: Text(
-                '${deviceKindName(device.kind)} · $source\n'
-                'Daten: ${_telemetryLabel(telemetry)} · Reachability: ${known(device.health.reachability)} (reported)',
+                context.tr(
+                    "{0} · {1}\nDaten: {2} · Reachability: {3} (reported)", [
+                  deviceKindName(device.kind),
+                  source,
+                  _telemetryLabel(telemetry),
+                  known(device.health.reachability)
+                ]),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 10.5)),
@@ -241,7 +265,7 @@ class _InfrastructureExplorerState extends State<InfrastructureExplorer> {
       accent: OipTokens.cyan,
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        PanelLabel('Infrastructure Explorer',
+        PanelLabel(context.tr("Infrastructure Explorer"),
             trailing: Text(
                 '${widget.sources.length}S · ${widget.snapshot.devices.length}D',
                 style: WorkstationTokens.mono(context, size: 10))),
@@ -249,10 +273,10 @@ class _InfrastructureExplorerState extends State<InfrastructureExplorer> {
           key: const Key('overview-explorer-search'),
           controller: searchController,
           onChanged: (_) => setState(() {}),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             isDense: true,
             prefixIcon: Icon(Icons.search, size: 17),
-            hintText: 'Source, Gerät, Typ …',
+            hintText: context.tr("Source, Gerät, Typ …"),
             border: OutlineInputBorder(),
           ),
         ),
@@ -261,15 +285,19 @@ class _InfrastructureExplorerState extends State<InfrastructureExplorer> {
           key: const Key('overview-explorer-filter'),
           isExpanded: true,
           value: telemetryFilter,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
               isDense: true,
-              labelText: 'TELEMETRIE',
+              labelText: context.tr("TELEMETRIE"),
               border: OutlineInputBorder()),
-          items: const [
-            DropdownMenuItem(value: 'all', child: Text('Alle Zustände')),
-            DropdownMenuItem(value: 'fresh', child: Text('Frisch beobachtet')),
-            DropdownMenuItem(value: 'stale', child: Text('Stale / unknown')),
-            DropdownMenuItem(value: 'none', child: Text('Keine Telemetrie')),
+          items: [
+            DropdownMenuItem(
+                value: 'all', child: Text(context.tr("Alle Zustände"))),
+            DropdownMenuItem(
+                value: 'fresh', child: Text(context.tr("Frisch beobachtet"))),
+            DropdownMenuItem(
+                value: 'stale', child: Text(context.tr("Stale / unknown"))),
+            DropdownMenuItem(
+                value: 'none', child: Text(context.tr("Keine Telemetrie"))),
           ],
           onChanged: (value) =>
               setState(() => telemetryFilter = value ?? 'all'),
@@ -281,8 +309,10 @@ class _InfrastructureExplorerState extends State<InfrastructureExplorer> {
             focusNode: listFocus,
             onKeyEvent: _onKey,
             child: rows.isEmpty
-                ? const Center(
-                    child: Text('Keine Registry-Einträge im aktuellen Filter.',
+                ? Center(
+                    child: Text(
+                        context
+                            .tr("Keine Registry-Einträge im aktuellen Filter."),
                         textAlign: TextAlign.center))
                 : ListView(
                     controller: listScroll,
@@ -294,13 +324,22 @@ class _InfrastructureExplorerState extends State<InfrastructureExplorer> {
         Builder(builder: (context) {
           final states = widget.snapshot.devices.map(_deviceTelemetry).toList();
           return Text(
-              'FRESH OBSERVED ${states.where((state) => state == 'fresh').length} · '
-              'STALE / UNKNOWN ${states.where((state) => state == 'stale' || state == 'unknown').length} · '
-              'NO TELEMETRY ${states.where((state) => state == 'none').length}',
+              context.tr(
+                  "FRESH OBSERVED {0} · STALE / UNKNOWN {1} · NO TELEMETRY {2}",
+                  [
+                    states.where((state) => state == 'fresh').length,
+                    states
+                        .where(
+                            (state) => state == 'stale' || state == 'unknown')
+                        .length,
+                    states.where((state) => state == 'none').length
+                  ]),
               style: WorkstationTokens.eyebrow(context));
         }),
         const SizedBox(height: 3),
-        Text('Pfeile Auswahl · Enter öffnet Zeile · reported ≠ gemessen',
+        Text(
+            context.tr(
+                "Pfeile Auswahl · Enter öffnet Zeile · reported ≠ gemessen"),
             style: WorkstationTokens.mono(context,
                 size: 9.5, color: OipTokens.muted(context))),
       ]),

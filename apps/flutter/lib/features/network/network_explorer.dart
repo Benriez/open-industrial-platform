@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../../design_system/theme.dart';
@@ -91,18 +92,20 @@ class NetworkDeviceExplorer extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('DEVICE EXPLORER',
+                    Text(context.tr("DEVICE EXPLORER"),
                         style: WorkstationTokens.eyebrow(context,
                             color: OipTokens.cyan)),
                     const SizedBox(height: 2),
-                    Text('${devices.length}/${snapshot.devices.length} Geräte',
+                    Text(
+                        context.tr("{0}/{1} Geräte",
+                            [devices.length, snapshot.devices.length]),
                         style: Theme.of(context).textTheme.titleSmall),
                   ]),
             ),
             ToolButton(
               key: const Key('network-filters-toggle'),
               icon: Icons.filter_alt_outlined,
-              tooltip: 'Explorer-Filter anzeigen oder ausblenden',
+              tooltip: context.tr("Explorer-Filter anzeigen oder ausblenden"),
               accent: OipTokens.cyan,
               active: showFilters ||
                   kindFilter != null ||
@@ -121,7 +124,7 @@ class NetworkDeviceExplorer extends StatelessWidget {
             onChanged: onQuery,
             decoration: InputDecoration(
               isDense: true,
-              hintText: 'Name, ID oder Source',
+              hintText: context.tr("Name, ID oder Source"),
               prefixIcon: const Icon(Icons.search, size: 17),
               suffixIcon: query.isEmpty
                   ? const Padding(
@@ -129,7 +132,7 @@ class NetworkDeviceExplorer extends StatelessWidget {
                       child: Align(
                           widthFactor: 1, heightFactor: 1, child: KbdHint('/')))
                   : IconButton(
-                      tooltip: 'Suche löschen',
+                      tooltip: context.tr("Suche löschen"),
                       onPressed: onClearSearch,
                       icon: const Icon(Icons.close, size: 16)),
             ),
@@ -220,10 +223,10 @@ class NetworkDeviceExplorer extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           color: WorkstationTokens.well(context),
           child: Wrap(spacing: 8, runSpacing: 3, children: [
-            Text('TOPOLOGIE $knownCount',
+            Text(context.tr("TOPOLOGIE {0}", [knownCount]),
                 style:
                     WorkstationTokens.eyebrow(context, color: OipTokens.cyan)),
-            Text('RELATION UNBEKANNT $unknownCount',
+            Text(context.tr("RELATION UNBEKANNT {0}", [unknownCount]),
                 style: WorkstationTokens.eyebrow(context)),
           ]),
         ),
@@ -246,11 +249,11 @@ class NetworkDeviceExplorer extends StatelessWidget {
                 ),
               if (recent.isNotEmpty)
                 Tooltip(
-                  message:
-                      'Zuletzt ausgewählt: ${recent.map((d) => d.name).join(', ')}',
+                  message: context.tr("Zuletzt ausgewählt: {0}",
+                      [recent.map((d) => d.name).join(', ')]),
                   child: Chip(
                     avatar: const Icon(Icons.history, size: 14),
-                    label: Text('Zuletzt ${recent.length}',
+                    label: Text(context.tr("Zuletzt {0}", [recent.length]),
                         style: const TextStyle(fontSize: 10)),
                   ),
                 ),
@@ -270,11 +273,12 @@ class NetworkDeviceExplorer extends StatelessWidget {
                           : Colors.transparent),
                 ),
                 child: devices.isEmpty
-                    ? const SingleChildScrollView(
+                    ? SingleChildScrollView(
                         padding: EdgeInsets.all(14),
                         child: WorkstationNote(
-                          'Keine Geräte im Filter',
-                          'Suche oder Filter ändern. Ein leeres Ergebnis bedeutet weder Offline noch Isolation.',
+                          context.tr("Keine Geräte im Filter"),
+                          context.tr(
+                              "Suche oder Filter ändern. Ein leeres Ergebnis bedeutet weder Offline noch Isolation."),
                           icon: Icons.search_off_outlined,
                         ),
                       )
@@ -285,13 +289,11 @@ class NetworkDeviceExplorer extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final device = devices[index];
                           final group = _contextGroup(device, linked);
-                            final showGroup = index == 0 ||
-                                _contextGroup(devices[index - 1], linked) != group;
+                          final showGroup = index == 0 ||
+                              _contextGroup(devices[index - 1], linked) !=
+                                  group;
                           return Column(children: [
-                            if (showGroup)
-                              _groupLabel(
-                                  context,
-                                  group),
+                            if (showGroup) _groupLabel(context, group),
                             _DeviceRow(
                               device: device,
                               relationCount:
@@ -314,7 +316,8 @@ class NetworkDeviceExplorer extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 7, 12, 9),
           child: Text(
-            'Pfeile Auswahl · Enter Inspector · P Pin · C Compare\nRelation unbekannt ist nicht offline oder isoliert',
+            context.tr(
+                "Pfeile Auswahl · Enter Inspector · P Pin · C Compare\nRelation unbekannt ist nicht offline oder isoliert"),
             style: WorkstationTokens.mono(context,
                 size: 9.5, color: OipTokens.muted(context)),
           ),
@@ -339,7 +342,8 @@ class NetworkDeviceExplorer extends StatelessWidget {
         'ORGANIZATION · ${infrastructure!.hierarchy.organizationName(placement.organizationId)}',
       'infrastructure' =>
         'INFRASTRUCTURE · ${infrastructure!.hierarchy.infrastructureName(placement.infrastructureId)}',
-      'site' => 'SITE · ${infrastructure!.hierarchy.siteName(placement.siteId)}',
+      'site' =>
+        'SITE · ${infrastructure!.hierarchy.siteName(placement.siteId)}',
       _ => 'KONTEXT NICHT GELIEFERT',
     };
   }
@@ -378,7 +382,8 @@ class NetworkDeviceExplorer extends StatelessWidget {
           if (nullable)
             DropdownMenuItem<T>(
                 value: null,
-                child: Text('$label: alle', overflow: TextOverflow.ellipsis)),
+                child: Text(context.tr("{0}: alle", [label]),
+                    overflow: TextOverflow.ellipsis)),
           for (final item in values)
             DropdownMenuItem<T>(
               value: item,
@@ -425,9 +430,15 @@ class _DeviceRow extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: 'Gerät ${device.name} auswählen, ID ${device.id}, '
-          'Status ${known(status)}, $relationCount bekannte logische Verbindungen, '
-          '${device.simulated ? 'Demo-Inventar' : 'API-Inventar'}',
+      label: context.tr(
+          "Gerät {0} auswählen, ID {1}, Status {2}, {3} bekannte logische Verbindungen, {4}",
+          [
+            device.name,
+            device.id,
+            known(status),
+            relationCount,
+            device.simulated ? 'Demo-Inventar' : 'API-Inventar'
+          ]),
       child: Material(
         color: selected ? accent.withOpacity(.12) : Colors.transparent,
         borderRadius: BorderRadius.circular(7),
@@ -447,7 +458,8 @@ class _DeviceRow extends StatelessWidget {
               ExcludeSemantics(
                   child: Icon(networkKindIcon(device.kind),
                       size: 19,
-                      color: OipTokens.readableAccent(context, OipTokens.cyan))),
+                      color:
+                          OipTokens.readableAccent(context, OipTokens.cyan))),
               const SizedBox(width: 8),
               Expanded(
                 child: ExcludeSemantics(
@@ -464,14 +476,18 @@ class _DeviceRow extends StatelessWidget {
                                 ?.copyWith(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 3),
                         Text(
-                          '${known(status)} · $relationCount Relationen · ${device.simulated ? 'Demo' : 'API'}',
+                          context.tr("{0} · {1} Relationen · {2}", [
+                            known(status),
+                            relationCount,
+                            device.simulated ? 'Demo' : 'API'
+                          ]),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: WorkstationTokens.mono(context,
                               size: 9.5, color: statusColor),
                         ),
                         if (device.sourceId != null)
-                          Text('Source ${device.sourceId}',
+                          Text(context.tr("Source {0}", [device.sourceId]),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: WorkstationTokens.mono(context,
@@ -482,8 +498,8 @@ class _DeviceRow extends StatelessWidget {
               IconButton(
                 key: Key('explorer-compare-${device.id}'),
                 tooltip: compared
-                    ? '${device.name} aus Vergleich entfernen'
-                    : '${device.name} vergleichen',
+                    ? context.tr("{0} aus Vergleich entfernen", [device.name])
+                    : context.tr("{0} vergleichen", [device.name]),
                 onPressed: onCompare,
                 visualDensity: VisualDensity.compact,
                 icon: Icon(
@@ -496,8 +512,8 @@ class _DeviceRow extends StatelessWidget {
               IconButton(
                 key: Key('explorer-pin-${device.id}'),
                 tooltip: pinned
-                    ? '${device.name} loslösen'
-                    : '${device.name} anheften',
+                    ? context.tr("{0} loslösen", [device.name])
+                    : context.tr("{0} anheften", [device.name]),
                 onPressed: onPin,
                 visualDensity: VisualDensity.compact,
                 icon: Icon(pinned ? Icons.push_pin : Icons.push_pin_outlined,

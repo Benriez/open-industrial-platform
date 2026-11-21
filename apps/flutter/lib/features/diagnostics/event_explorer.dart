@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../../design_system/theme.dart';
@@ -96,20 +97,21 @@ class DiagnosticsEventExplorer extends StatelessWidget {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  Text('EVENT EXPLORER',
+                  Text(context.tr("EVENT EXPLORER"),
                       style: WorkstationTokens.eyebrow(context,
                           color: OipTokens.cyan)),
                   const SizedBox(height: 2),
-                  Text('Collection-Ereignisse',
+                  Text(context.tr("Collection-Ereignisse"),
                       style: Theme.of(context).textTheme.titleSmall),
                   Text(
-                      '${events.length}/${allEvents.length} im geladenen Fenster',
+                      context.tr("{0}/{1} im geladenen Fenster",
+                          [events.length, allEvents.length]),
                       style: Theme.of(context).textTheme.bodySmall),
                 ])),
             ToolButton(
               key: const Key('diagnostics-filters-toggle'),
               icon: Icons.filter_alt_outlined,
-              tooltip: 'Explorer-Filter anzeigen oder ausblenden',
+              tooltip: context.tr("Explorer-Filter anzeigen oder ausblenden"),
               accent: OipTokens.cyan,
               active: showFilters ||
                   sourceFilter != null ||
@@ -128,7 +130,7 @@ class DiagnosticsEventExplorer extends StatelessWidget {
             onChanged: onQuery,
             decoration: InputDecoration(
               isDense: true,
-              hintText: 'Typ, Source, Sequenz oder Grund',
+              hintText: context.tr("Typ, Source, Sequenz oder Grund"),
               prefixIcon: const Icon(Icons.search, size: 17),
               suffixIcon: query.isEmpty
                   ? const Padding(
@@ -136,7 +138,7 @@ class DiagnosticsEventExplorer extends StatelessWidget {
                       child: Align(
                           widthFactor: 1, heightFactor: 1, child: KbdHint('/')))
                   : IconButton(
-                      tooltip: 'Suche löschen',
+                      tooltip: context.tr("Suche löschen"),
                       onPressed: onClearSearch,
                       icon: const Icon(Icons.close, size: 16)),
             ),
@@ -219,25 +221,29 @@ class DiagnosticsEventExplorer extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           color: WorkstationTokens.well(context),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(
               stale
-                  ? 'LETZTER ERFOLGREICHER STAND · ABRUF FEHLER'
+                  ? context.tr("LETZTER ERFOLGREICHER STAND · ABRUF FEHLER")
                   : moreAvailable
-                      ? 'WEITERE AUTORISIERTE EREIGNISSE VORHANDEN'
-                      : 'NUR DAS TATSÄCHLICH GELADENE AUTORISIERTE FENSTER',
+                      ? context.tr("WEITERE AUTORISIERTE EREIGNISSE VORHANDEN")
+                      : context.tr(
+                          "NUR DAS TATSÄCHLICH GELADENE AUTORISIERTE FENSTER"),
               style: WorkstationTokens.eyebrow(context,
                   color: stale || moreAvailable ? OipTokens.yellow : null),
             ),
             if (missingEvidence.isNotEmpty)
-              Text('${missingEvidence.length} missing-evidence Marker',
+              Text(
+                  context.tr(
+                      "{0} missing-evidence Marker", [missingEvidence.length]),
                   style: WorkstationTokens.eyebrow(context)),
             if (moreAvailable)
               TextButton.icon(
                 key: const Key('diagnostics-load-more'),
                 onPressed: onLoadMore,
                 icon: const Icon(Icons.expand_more, size: 15),
-                label: const Text('Weitere Ereignisse laden'),
+                label: Text(context.tr("Weitere Ereignisse laden")),
               ),
           ]),
         ),
@@ -251,7 +257,8 @@ class DiagnosticsEventExplorer extends StatelessWidget {
                   key: Key('diagnostics-pin-${item.key}'),
                   avatar: const Icon(Icons.push_pin, size: 13),
                   label: Text(
-                      item.recordId ?? diagnosticEventTitle(item.event.kind),
+                      item.recordId ??
+                          context.tr(diagnosticEventTitle(item.event.kind)),
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontSize: 10)),
                   selected: selectedKey == item.key,
@@ -261,11 +268,16 @@ class DiagnosticsEventExplorer extends StatelessWidget {
                 ),
               if (recent.isNotEmpty)
                 Tooltip(
-                  message:
-                      'Zuletzt: ${recent.map((item) => item.recordId ?? diagnosticEventTitle(item.event.kind)).join(', ')}',
+                  message: context.tr("Zuletzt: {0}", [
+                    recent
+                        .map((item) =>
+                            item.recordId ??
+                            diagnosticEventTitle(item.event.kind))
+                        .join(', ')
+                  ]),
                   child: Chip(
                       avatar: const Icon(Icons.history, size: 14),
-                      label: Text('Zuletzt ${recent.length}',
+                      label: Text(context.tr("Zuletzt {0}", [recent.length]),
                           style: const TextStyle(fontSize: 10))),
                 ),
             ]),
@@ -282,11 +294,12 @@ class DiagnosticsEventExplorer extends StatelessWidget {
                     border: Border.all(
                         color: focused ? OipTokens.cyan : Colors.transparent)),
                 child: events.isEmpty
-                    ? const SingleChildScrollView(
+                    ? SingleChildScrollView(
                         padding: EdgeInsets.all(12),
                         child: WorkstationNote(
-                          'Keine Collection-Ereignisse geliefert',
-                          'Entweder enthält das aktuelle API-Fenster keine Einträge oder die lokalen Filter schließen alle aus. Dies ist weder eine vollständige Historie noch ein Gesundheitsbeweis.',
+                          context.tr("Keine Collection-Ereignisse geliefert"),
+                          context.tr(
+                              "Entweder enthält das aktuelle API-Fenster keine Einträge oder die lokalen Filter schließen alle aus. Dies ist weder eine vollständige Historie noch ein Gesundheitsbeweis."),
                           icon: Icons.search_off_outlined,
                         ))
                     : ListView.builder(
@@ -330,7 +343,8 @@ class DiagnosticsEventExplorer extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
           child: Text(
-              'Pfeile Auswahl · Enter Inspector · P Pin · C Compare\nSeverity wird von dieser API nicht geliefert',
+              context.tr(
+                  "Pfeile Auswahl · Enter Inspector · P Pin · C Compare\nSeverity wird von dieser API nicht geliefert"),
               style: WorkstationTokens.mono(context,
                   size: 9.5, color: OipTokens.muted(context))),
         ),
@@ -352,7 +366,8 @@ class DiagnosticsEventExplorer extends StatelessWidget {
       if (placement == null) continue;
       final id = switch (kind) {
         InfrastructureSelectionKind.organization => placement.organizationId,
-        InfrastructureSelectionKind.infrastructure => placement.infrastructureId,
+        InfrastructureSelectionKind.infrastructure =>
+          placement.infrastructureId,
         InfrastructureSelectionKind.site => placement.siteId,
         _ => '',
       };
@@ -362,7 +377,8 @@ class DiagnosticsEventExplorer extends StatelessWidget {
           infrastructure!.hierarchy.organizationName(id),
         InfrastructureSelectionKind.infrastructure =>
           infrastructure!.hierarchy.infrastructureName(id),
-        InfrastructureSelectionKind.site => infrastructure!.hierarchy.siteName(id),
+        InfrastructureSelectionKind.site =>
+          infrastructure!.hierarchy.siteName(id),
         _ => id,
       };
     }
@@ -403,7 +419,8 @@ class DiagnosticsEventExplorer extends StatelessWidget {
           if (nullable)
             DropdownMenuItem<T>(
                 value: null,
-                child: Text('$label: alle', overflow: TextOverflow.ellipsis)),
+                child: Text(context.tr("{0}: alle", [label]),
+                    overflow: TextOverflow.ellipsis)),
           for (final item in values)
             DropdownMenuItem<T>(
                 value: item,
@@ -445,8 +462,15 @@ class _EventRow extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label:
-          'Ereignis $title auswählen, ${item.sourceLabel}, ${timestamp(event.atMs)}, Severity nicht geliefert, ${item.recordId == null ? 'keine Server-Record-ID' : 'Record ${item.recordId}'}',
+      label: context.tr(
+          "Ereignis {0} auswählen, {1}, {2}, Severity nicht geliefert, {3}", [
+        title,
+        item.sourceLabel,
+        timestamp(event.atMs),
+        item.recordId == null
+            ? 'keine Server-Record-ID'
+            : 'Record ${item.recordId}'
+      ]),
       child: Material(
         color: selected ? accent.withOpacity(.12) : Colors.transparent,
         borderRadius: BorderRadius.circular(7),
@@ -479,9 +503,9 @@ class _EventRow extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                   child: ExcludeSemantics(
-                child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                     Text(title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -491,7 +515,10 @@ class _EventRow extends StatelessWidget {
                             ?.copyWith(fontSize: 12)),
                     const SizedBox(height: 2),
                     Text(
-                        'Quelle: ${event.sourceId ?? 'unbekannt'} · ${diagnosticEventCategory(event.kind)}',
+                        context.tr("Quelle: {0} · {1}", [
+                          event.sourceId ?? 'unbekannt',
+                          diagnosticEventCategory(event.kind)
+                        ]),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall),
@@ -501,7 +528,9 @@ class _EventRow extends StatelessWidget {
                         style: WorkstationTokens.mono(context,
                             size: 9.5, color: OipTokens.muted(context))),
                     if (event.gapMs != null)
-                      Text('Dokumentierte Lücke: ${event.gapMs} ms',
+                      Text(
+                          context
+                              .tr("Dokumentierte Lücke: {0} ms", [event.gapMs]),
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
@@ -509,10 +538,13 @@ class _EventRow extends StatelessWidget {
                     if (item.hasGapBounds && event.gapMs == null)
                       Text(
                           event.kind == 'DataLoss'
-                              ? 'Datenlücke: Zeitraum nicht bestimmbar'
+                              ? context
+                                  .tr("Datenlücke: Zeitraum nicht bestimmbar")
                               : item.gapIsInverted
-                                  ? 'Datenlücke: inkonsistente Zeitgrenzen'
-                                  : 'Datenlücke: unvollständige Zeitgrenzen',
+                                  ? context.tr(
+                                      "Datenlücke: inkonsistente Zeitgrenzen")
+                                  : context.tr(
+                                      "Datenlücke: unvollständige Zeitgrenzen"),
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
@@ -521,16 +553,16 @@ class _EventRow extends StatelessWidget {
                     Wrap(spacing: 4, runSpacing: 2, children: [
                       Text(
                           item.recordId == null
-                              ? 'OHNE RECORD-ID'
-                              : 'API-RECORD ${item.recordId}',
+                              ? context.tr("OHNE RECORD-ID")
+                              : context.tr("API-RECORD {0}", [item.recordId]),
                           style: WorkstationTokens.eyebrow(context,
                               color: OipTokens.muted(context))),
                       if (item.deliveryCount > 1)
-                        Text('${item.deliveryCount}× GELIEFERT',
+                        Text(context.tr("{0}× GELIEFERT", [item.deliveryCount]),
                             style: WorkstationTokens.eyebrow(context,
                                 color: OipTokens.yellow)),
                       if (item.identityConflict)
-                        Text('SEQUENZKONFLIKT',
+                        Text(context.tr("SEQUENZKONFLIKT"),
                             style: WorkstationTokens.eyebrow(context,
                                 color: OipTokens.red)),
                     ]),
@@ -540,8 +572,9 @@ class _EventRow extends StatelessWidget {
                     width: 32,
                     height: 32,
                     child: IconButton(
-                        tooltip:
-                            pinned ? 'Ereignis lösen' : 'Ereignis anheften',
+                        tooltip: pinned
+                            ? context.tr("Ereignis lösen")
+                            : context.tr("Ereignis anheften"),
                         onPressed: onPin,
                         icon: Icon(
                             pinned ? Icons.push_pin : Icons.push_pin_outlined,
@@ -554,8 +587,8 @@ class _EventRow extends StatelessWidget {
                     height: 32,
                     child: IconButton(
                         tooltip: compared
-                            ? 'Aus Compare entfernen'
-                            : 'Zu Compare hinzufügen',
+                            ? context.tr("Aus Compare entfernen")
+                            : context.tr("Zu Compare hinzufügen"),
                         onPressed: onCompare,
                         icon: Icon(
                             compared

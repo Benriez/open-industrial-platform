@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -44,29 +45,30 @@ class DiagnosticsEvidenceInspector extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 11, 12, 7),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('EVIDENCE INSPECTOR',
+            Text(context.tr("EVIDENCE INSPECTOR"),
                 style: WorkstationTokens.eyebrow(context,
                     color: OipTokens.violet)),
             const SizedBox(height: 2),
             Text(
                 item == null
-                    ? 'Ereignis auswählen'
-                    : diagnosticEventTitle(item.event.kind),
+                    ? context.tr("Ereignis auswählen")
+                    : context.tr(diagnosticEventTitle(item.event.kind)),
                 style: Theme.of(context).textTheme.titleMedium),
             Text(
                 item == null
-                    ? 'Technische Evidenz · Read-only'
-                    : 'COLLECTION EVENT · KEINE KAUSALBEHAUPTUNG',
+                    ? context.tr("Technische Evidenz · Read-only")
+                    : context.tr("COLLECTION EVENT · KEINE KAUSALBEHAUPTUNG"),
                 style: Theme.of(context).textTheme.bodySmall),
           ]),
         ),
         if (item == null)
-          const Expanded(
+          Expanded(
               child: SingleChildScrollView(
                   padding: EdgeInsets.all(12),
                   child: WorkstationNote(
-                    'Kein Ereignis ausgewählt',
-                    'Explorer, Timeline und Inspector verwenden denselben Datensatz. Auswahl mit Pfeiltasten, Enter, Touch oder Maus.',
+                    context.tr("Kein Ereignis ausgewählt"),
+                    context.tr(
+                        "Explorer, Timeline und Inspector verwenden denselben Datensatz. Auswahl mit Pfeiltasten, Enter, Touch oder Maus."),
                     icon: Icons.touch_app_outlined,
                     color: OipTokens.violet,
                   )))
@@ -98,103 +100,145 @@ class DiagnosticsEvidenceInspector extends StatelessWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Wrap(spacing: 6, runSpacing: 6, children: [
         ToolButton(
-            tooltip: pinned ? 'Ereignis lösen' : 'Ereignis anheften',
+            tooltip: pinned
+                ? context.tr("Ereignis lösen")
+                : context.tr("Ereignis anheften"),
             icon: pinned ? Icons.push_pin : Icons.push_pin_outlined,
             active: pinned,
             onPressed: onPin),
         ToolButton(
-            tooltip:
-                compared ? 'Aus Compare entfernen' : 'Zu Compare hinzufügen',
+            tooltip: compared
+                ? context.tr("Aus Compare entfernen")
+                : context.tr("Zu Compare hinzufügen"),
             icon: Icons.compare_arrows_outlined,
             active: compared,
             onPressed: onCompare),
         ToolButton(
             key: const Key('inspector-focus-timeline'),
-            tooltip: 'In Timeline fokussieren',
+            tooltip: context.tr("In Timeline fokussieren"),
             icon: Icons.center_focus_strong_outlined,
             onPressed: item.hasTimestamp ? onFocusTimeline : null),
       ]),
       const SizedBox(height: 8),
       _section(context, 'IDENTITY', Icons.fingerprint, [
-        KeyValue('Event ID / Record-ID',
-            item.recordId ?? 'Nicht vom Server geliefert',
+        KeyValue(context.tr("Event ID / Record-ID"),
+            item.recordId ?? context.tr("Nicht vom Server geliefert"),
             trailing: item.recordId == null
                 ? null
                 : _copy(context, 'Event ID kopieren', item.recordId!)),
-        KeyValue('Event Type', event.kind),
-        KeyValue('Source ID', event.sourceId ?? 'Nicht geliefert',
+        KeyValue(context.tr("Event Type"), event.kind),
+        KeyValue(context.tr("Source ID"),
+            event.sourceId ?? context.tr("Nicht geliefert"),
             trailing: event.sourceId == null
                 ? null
                 : _copy(context, 'Source ID kopieren', event.sourceId!)),
-        const KeyValue('Device ID', 'Im CollectionEvent nicht enthalten'),
+        KeyValue(context.tr("Device ID"),
+            context.tr("Im CollectionEvent nicht enthalten")),
         if (infrastructure?.ready == true) ...[
-          KeyValue('Organization',
-              infrastructure!.hierarchy.organizationName(infrastructure!.sourcePlacement(event.sourceId)?.organizationId)),
-          KeyValue('Infrastructure',
-              infrastructure!.hierarchy.infrastructureName(infrastructure!.sourcePlacement(event.sourceId)?.infrastructureId)),
-          KeyValue('Site',
-              infrastructure!.hierarchy.siteName(infrastructure!.sourcePlacement(event.sourceId)?.siteId)),
+          KeyValue(
+              context.tr("Organization"),
+              infrastructure!.hierarchy.organizationName(infrastructure!
+                  .sourcePlacement(event.sourceId)
+                  ?.organizationId)),
+          KeyValue(
+              context.tr("Infrastructure"),
+              infrastructure!.hierarchy.infrastructureName(infrastructure!
+                  .sourcePlacement(event.sourceId)
+                  ?.infrastructureId)),
+          KeyValue(
+              context.tr("Site"),
+              infrastructure!.hierarchy.siteName(
+                  infrastructure!.sourcePlacement(event.sourceId)?.siteId)),
         ],
-        KeyValue('Event Category', diagnosticEventCategory(event.kind)),
-        const KeyValue('Severity', 'Nicht vom Core geliefert'),
+        KeyValue(context.tr("Event Category"),
+            context.tr(diagnosticEventCategory(event.kind))),
+        KeyValue(
+            context.tr("Severity"), context.tr("Nicht vom Core geliefert")),
         if (item.deliveryCount > 1)
-          KeyValue('Identische Lieferungen',
-              '${item.deliveryCount} · als ein Record konsolidiert'),
+          KeyValue(
+              context.tr("Identische Lieferungen"),
+              context.tr(
+                  "{0} · als ein Record konsolidiert", [item.deliveryCount])),
         if (item.identityConflict)
-          const KeyValue('Identitätsprüfung',
-              'Gleiche Source-Sequenz mit abweichendem Inhalt · separat ausgewiesen',
+          KeyValue(
+              context.tr("Identitätsprüfung"),
+              context.tr(
+                  "Gleiche Source-Sequenz mit abweichendem Inhalt · separat ausgewiesen"),
               color: OipTokens.red),
       ]),
       _section(context, 'TIMING', Icons.schedule_outlined, [
-        KeyValue('EventTimestamp · Server Wall Clock', timestamp(event.atMs),
+        KeyValue(context.tr("EventTimestamp · Server Wall Clock"),
+            timestamp(event.atMs),
             trailing: event.atMs == null
                 ? null
                 : _copy(context, 'Zeitpunkt kopieren', event.atMs.toString())),
-        const KeyValue(
-            'SourceTimestamp', 'Für CollectionEvent nicht geliefert'),
-        const KeyValue('ServerTimestamp',
-            'Kein separates Feld; EventTimestamp ist Server-Zeit'),
-        const KeyValue('ReceivedTimestamp', 'Nicht geliefert'),
-        const KeyValue('Clock Uncertainty',
-            'Nicht geliefert · keine Zeitsynchronisation behauptet'),
+        KeyValue(context.tr("SourceTimestamp"),
+            context.tr("Für CollectionEvent nicht geliefert")),
+        KeyValue(context.tr("ServerTimestamp"),
+            context.tr("Kein separates Feld; EventTimestamp ist Server-Zeit")),
+        KeyValue(
+            context.tr("ReceivedTimestamp"), context.tr("Nicht geliefert")),
+        KeyValue(
+            context.tr("Clock Uncertainty"),
+            context
+                .tr("Nicht geliefert · keine Zeitsynchronisation behauptet")),
       ]),
       _section(context, 'COLLECTION CONTEXT', Icons.lan_outlined, [
         KeyValue(
-            'Source Health · Reachability',
+            context.tr("Source Health · Reachability"),
             source == null
-                ? 'Kein aktueller Source-Datensatz'
-                : known(source!.reachability)),
-        KeyValue('Connection State',
-            source == null ? 'Unbekannt' : known(source!.connection)),
-        KeyValue('Collection State', _collectionState(event)),
-        KeyValue('Tatsächlicher Fehler',
-            event.reason ?? source?.lastError ?? 'Nicht geliefert'),
-        KeyValue('Freshness',
-            source == null ? 'Unbekannt' : known(source!.freshness)),
+                ? context.tr("Kein aktueller Source-Datensatz")
+                : context.tr(known(source!.reachability))),
         KeyValue(
-            'Letzter erfolgreicher Empfang', timestamp(source?.lastReceivedMs)),
+            context.tr("Connection State"),
+            source == null
+                ? context.tr("Unbekannt")
+                : context.tr(known(source!.connection))),
+        KeyValue(context.tr("Collection State"),
+            context.tr(_collectionState(event))),
+        KeyValue(context.tr("Tatsächlicher Fehler"),
+            event.reason ?? source?.lastError ?? context.tr("Nicht geliefert")),
+        KeyValue(
+            context.tr("Freshness"),
+            source == null
+                ? context.tr("Unbekannt")
+                : context.tr(known(source!.freshness))),
+        KeyValue(context.tr("Letzter erfolgreicher Empfang"),
+            timestamp(source?.lastReceivedMs)),
       ]),
       _section(context, 'DATA GAP', Icons.space_bar_outlined, _gapFacts(item)),
       _section(context, 'PROVENANCE & EVIDENCE', Icons.fact_check_outlined, [
-        KeyValue('Aussageherkunft',
+        KeyValue(
+            context.tr("Aussageherkunft"),
             infrastructure?.ready == true
-                ? 'Tatsächlich von GET /api/v2/events/history im autorisierten Kontext empfangen'
-                : 'Tatsächlich von GET /api/v1/events empfangenes Collection-Ereignis'),
-        const KeyValue('Regelbefund',
-            'Nein · keine Regel-ID, Version oder Evaluation geliefert'),
-        KeyValue('Beobachteter Zustand', _collectionState(event), color: tone),
-        KeyValue('Verlorene Samples',
-            event.dropped?.toString() ?? 'Nicht geliefert / nicht zutreffend'),
-        KeyValue('Gemeldeter Grund', event.reason ?? 'Nicht geliefert'),
+                ? context.tr(
+                    "Tatsächlich von GET /api/v2/events/history im autorisierten Kontext empfangen")
+                : context.tr(
+                    "Tatsächlich von GET /api/v1/events empfangenes Collection-Ereignis")),
+        KeyValue(
+            context.tr("Regelbefund"),
+            context.tr(
+                "Nein · keine Regel-ID, Version oder Evaluation geliefert")),
+        KeyValue(context.tr("Beobachteter Zustand"),
+            context.tr(_collectionState(event)),
+            color: tone),
+        KeyValue(
+            context.tr("Verlorene Samples"),
+            event.dropped?.toString() ??
+                context.tr("Nicht geliefert / nicht zutreffend")),
+        KeyValue(context.tr("Gemeldeter Grund"),
+            event.reason ?? context.tr("Nicht geliefert")),
       ]),
       _section(context, 'RELATED EVIDENCE · ZEITLICHE NÄHE',
           Icons.compare_arrows_outlined, [
-        const KeyValue('Aussagegrenze',
-            'Vorher / gleichzeitig / danach ist keine bestätigte Korrelation und keine Ursache',
+        KeyValue(
+            context.tr("Aussagegrenze"),
+            context.tr(
+                "Vorher / gleichzeitig / danach ist keine bestätigte Korrelation und keine Ursache"),
             mono: false),
         if (related.isEmpty)
-          const KeyValue(
-              'Benachbarte Ereignisse', 'Keine im aktuell geladenen Fenster'),
+          KeyValue(context.tr("Benachbarte Ereignisse"),
+              context.tr("Keine im aktuell geladenen Fenster")),
         for (final candidate in related.take(4))
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 3),
@@ -209,14 +253,18 @@ class DiagnosticsEvidenceInspector extends StatelessWidget {
           ),
       ]),
       _section(context, 'UNKNOWNS / OPEN QUESTIONS', Icons.help_outline, [
-        const KeyValue(
-            'Ursache', 'Nicht verifiziert · keine Root-Cause-Behauptung',
+        KeyValue(context.tr("Ursache"),
+            context.tr("Nicht verifiziert · keine Root-Cause-Behauptung"),
             mono: false),
-        const KeyValue('Historie',
-            'Nur aktuell verfügbare Ereignisse; kein Replay und keine vollständige Serverhistorie',
+        KeyValue(
+            context.tr("Historie"),
+            context.tr(
+                "Nur aktuell verfügbare Ereignisse; kein Replay und keine vollständige Serverhistorie"),
             mono: false),
-        const KeyValue('Messwerte',
-            'Keine ereignisverknüpften Observation-Referenzen geliefert',
+        KeyValue(
+            context.tr("Messwerte"),
+            context.tr(
+                "Keine ereignisverknüpften Observation-Referenzen geliefert"),
             mono: false),
       ]),
     ]);
@@ -282,8 +330,8 @@ class DiagnosticsEvidenceInspector extends StatelessWidget {
         onPressed: () async {
           await Clipboard.setData(ClipboardData(text: value));
           if (context.mounted) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text('$tooltip · erledigt')));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(context.tr("{0} · erledigt", [tooltip]))));
           }
         },
         icon: const Icon(Icons.copy_outlined, size: 15),

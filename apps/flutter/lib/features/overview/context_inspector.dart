@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import '../../design_system/theme.dart';
 import '../../models/contracts.dart';
@@ -60,10 +61,10 @@ class OverviewContextInspector extends StatelessWidget {
         return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              PanelLabel('Context Inspector',
+              PanelLabel(context.tr("Context Inspector"),
                   trailing: IconButton(
                     key: const Key('overview-inspector-clear'),
-                    tooltip: 'Auswahl aufheben',
+                    tooltip: context.tr("Auswahl aufheben"),
                     onPressed: selection.hasEntity ? onClear : null,
                     icon: const Icon(Icons.close, size: 17),
                   )),
@@ -79,9 +80,10 @@ class OverviewContextInspector extends StatelessWidget {
     );
   }
 
-  Widget _empty(BuildContext context) => const WorkstationNote(
-        'Quelle, Gerät oder Ereignis auswählen.',
-        'Explorer, Operational Focus und Activity verwenden denselben technischen Kontext.',
+  Widget _empty(BuildContext context) => WorkstationNote(
+        context.tr("Quelle, Gerät oder Ereignis auswählen."),
+        context.tr(
+            "Explorer, Operational Focus und Activity verwenden denselben technischen Kontext."),
         icon: Icons.touch_app_outlined,
       );
 
@@ -89,8 +91,10 @@ class OverviewContextInspector extends StatelessWidget {
     final source =
         sources.where((item) => item.id == selection.sourceId).firstOrNull;
     if (source == null) {
-      return const WorkstationNote('Source nicht im aktuellen Datenumfang',
-          'Die Auswahl bleibt ohne fremde oder veraltete Source-Metadaten.',
+      return WorkstationNote(
+          context.tr("Source nicht im aktuellen Datenumfang"),
+          context.tr(
+              "Die Auswahl bleibt ohne fremde oder veraltete Source-Metadaten."),
           icon: Icons.cloud_off_outlined);
     }
     final signals = overviewSignalsFor(snapshot, sourceId: source.id);
@@ -99,16 +103,26 @@ class OverviewContextInspector extends StatelessWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       _identity(context, source.name, source.id, Icons.account_tree_outlined,
           OipTokens.cyan),
-      KeyValue('CONNECTION STATE', known(source.connection)),
-      KeyValue('FRESHNESS', known(source.freshness)),
-      KeyValue('TATSÄCHLICHER EMPFANG', timestamp(source.lastReceivedMs)),
-      KeyValue('PROVENIENZ',
-          '${source.simulated ? 'SIMULATED' : 'REPORTED'} · Reachability ${known(source.reachability)} · kein aktiver Probe'),
-      KeyValue('AVAILABLE SIGNALS', '${signals.length} im aktuellen Snapshot'),
-      KeyValue('COLLECTION EVENTS',
-          '${sourceEvents.length} im begrenzten aktuellen Fenster'),
+      KeyValue(
+          context.tr("CONNECTION STATE"), context.tr(known(source.connection))),
+      KeyValue(context.tr("FRESHNESS"), context.tr(known(source.freshness))),
+      KeyValue(context.tr("TATSÄCHLICHER EMPFANG"),
+          timestamp(source.lastReceivedMs)),
+      KeyValue(
+          context.tr("PROVENIENZ"),
+          context.tr("{0} · Reachability {1} · kein aktiver Probe", [
+            source.simulated ? 'SIMULATED' : 'REPORTED',
+            known(source.reachability)
+          ])),
+      KeyValue(context.tr("AVAILABLE SIGNALS"),
+          context.tr("{0} im aktuellen Snapshot", [signals.length])),
+      KeyValue(
+          context.tr("COLLECTION EVENTS"),
+          context.tr(
+              "{0} im begrenzten aktuellen Fenster", [sourceEvents.length])),
       if (source.lastError != null)
-        KeyValue('LAST ERROR', source.lastError!, color: OipTokens.yellow),
+        KeyValue(context.tr("LAST ERROR"), source.lastError!,
+            color: OipTokens.yellow),
     ]);
   }
 
@@ -117,8 +131,9 @@ class OverviewContextInspector extends StatelessWidget {
         .where((item) => item.id == selection.deviceId)
         .firstOrNull;
     if (device == null) {
-      return const WorkstationNote('Gerät nicht im aktuellen Registry-Stand',
-          'Es werden keine früheren Gerätedaten untergeschoben.',
+      return WorkstationNote(
+          context.tr("Gerät nicht im aktuellen Registry-Stand"),
+          context.tr("Es werden keine früheren Gerätedaten untergeschoben."),
           icon: Icons.dns_outlined);
     }
     final signals = overviewSignalsFor(snapshot,
@@ -135,19 +150,27 @@ class OverviewContextInspector extends StatelessWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       _identity(context, device.name, device.id, Icons.dns_outlined,
           OipTokens.violet),
-      KeyValue('SOURCE', device.sourceId ?? 'Nicht zugeordnet'),
-      KeyValue('REGISTRY',
+      KeyValue(context.tr("SOURCE"),
+          device.sourceId ?? context.tr("Nicht zugeordnet")),
+      KeyValue(context.tr("REGISTRY"),
           '${deviceKindName(device.kind)} · ${device.location} · ${device.connection}'),
       KeyValue(
-          'OBSERVED TELEMETRY',
+          context.tr("OBSERVED TELEMETRY"),
           signals.isEmpty
-              ? 'Keine Observation im Snapshot'
-              : '${signals.length} Signale · ${states.join(', ')}'),
-      KeyValue('LAST KNOWN DATA', timestamp(lastReceived)),
-      KeyValue('CONNECTIVITY',
-          '${known(device.health.reachability)} · REPORTED${device.simulated ? ' / SIMULATED' : ''} · kein aktiver Probe'),
-      KeyValue('UNAVAILABLE / UNKNOWN',
-          'Agent ${known(device.health.agent)} · VPN ${known(device.health.vpn)} · keine Ableitung aus Registry'),
+              ? context.tr("Keine Observation im Snapshot")
+              : context.tr(
+                  "{0} Signale · {1}", [signals.length, states.join(', ')])),
+      KeyValue(context.tr("LAST KNOWN DATA"), timestamp(lastReceived)),
+      KeyValue(
+          context.tr("CONNECTIVITY"),
+          context.tr("{0} · REPORTED{1} · kein aktiver Probe", [
+            known(device.health.reachability),
+            device.simulated ? ' / SIMULATED' : ''
+          ])),
+      KeyValue(
+          context.tr("UNAVAILABLE / UNKNOWN"),
+          context.tr("Agent {0} · VPN {1} · keine Ableitung aus Registry",
+              [known(device.health.agent), known(device.health.vpn)])),
     ]);
   }
 
@@ -156,8 +179,10 @@ class OverviewContextInspector extends StatelessWidget {
         .where((item) => overviewEventKey(item) == selection.eventKey)
         .firstOrNull;
     if (event == null) {
-      return const WorkstationNote('Ereignis nicht im aktuellen Fenster',
-          'Die begrenzte API-Ansicht enthält diesen Record nicht mehr.',
+      return WorkstationNote(
+          context.tr("Ereignis nicht im aktuellen Fenster"),
+          context.tr(
+              "Die begrenzte API-Ansicht enthält diesen Record nicht mehr."),
           icon: Icons.event_busy_outlined);
     }
     final control = const {
@@ -169,22 +194,30 @@ class OverviewContextInspector extends StatelessWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       _identity(context, event.kind, overviewEventIdentity(event),
           Icons.event_note_outlined, OipTokens.amber),
-      KeyValue('EVENT ID / RECORD', overviewEventIdentity(event)),
-      KeyValue('EVENT TYPE', event.kind),
-      KeyValue('SOURCE', event.sourceId ?? 'Nicht projiziert'),
-      KeyValue(control ? 'EVENT TIME · CONTROL/WALL CLOCK' : 'EVENT TIME · API',
+      KeyValue(context.tr("EVENT ID / RECORD"), overviewEventIdentity(event)),
+      KeyValue(context.tr("EVENT TYPE"), event.kind),
+      KeyValue(context.tr("SOURCE"),
+          event.sourceId ?? context.tr("Nicht projiziert")),
+      KeyValue(
+          control
+              ? context.tr("EVENT TIME · CONTROL/WALL CLOCK")
+              : context.tr("EVENT TIME · API"),
           timestamp(event.atMs)),
-      KeyValue('PROVENIENZ',
+      KeyValue(context.tr("PROVENIENZ"),
           '${event.originClass ?? 'v1 Collection Record'}${snapshot.system.simulated ? ' · Demo-Core' : ''}'),
-      if (event.sequence != null) KeyValue('SEQUENCE', '${event.sequence}'),
+      if (event.sequence != null)
+        KeyValue(context.tr("SEQUENCE"), '${event.sequence}'),
       if (event.reason != null)
-        KeyValue('AVAILABLE EVIDENCE · REASON', event.reason!),
+        KeyValue(context.tr("AVAILABLE EVIDENCE · REASON"), event.reason!),
       if (event.gapStartedMs != null)
-        KeyValue('DOCUMENTED GAP',
+        KeyValue(context.tr("DOCUMENTED GAP"),
             '${timestamp(event.gapStartedMs)} → ${timestamp(event.gapEndedMs)}${event.gapMs == null ? '' : ' · ${event.gapMs} ms'}'),
-      if (event.dropped != null) KeyValue('DROPPED', '${event.dropped}'),
-      const KeyValue('OPEN QUESTIONS',
-          'Ursache und globale Severity nicht geliefert; kein ID-Router-Kontext.'),
+      if (event.dropped != null)
+        KeyValue(context.tr("DROPPED"), '${event.dropped}'),
+      KeyValue(
+          context.tr("OPEN QUESTIONS"),
+          context.tr(
+              "Ursache und globale Severity nicht geliefert; kein ID-Router-Kontext.")),
     ]);
   }
 
@@ -244,12 +277,12 @@ class OverviewContextInspector extends StatelessWidget {
           ),
           IconButton(
               key: const Key('overview-inspector-open-network'),
-              tooltip: 'Netzwerk untersuchen',
+              tooltip: context.tr("Netzwerk untersuchen"),
               onPressed: () => navigate(2),
               icon: const Icon(Icons.hub_outlined, size: 18)),
           IconButton(
               key: const Key('overview-inspector-source-diagnostics'),
-              tooltip: 'Diagnostics öffnen',
+              tooltip: context.tr("Diagnostics öffnen"),
               onPressed: () => navigate(4),
               icon: const Icon(Icons.radar, size: 18)),
         ]),
@@ -261,7 +294,7 @@ class OverviewContextInspector extends StatelessWidget {
                     device == null ? null : () => onDeviceDetails(device)),
           ),
           IconButton(
-              tooltip: 'Network & VPN öffnen',
+              tooltip: context.tr("Network & VPN öffnen"),
               onPressed: () => navigate(2),
               icon: const Icon(Icons.hub_outlined, size: 18)),
         ]),
@@ -274,13 +307,14 @@ class OverviewContextInspector extends StatelessWidget {
 
   Widget _attention(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      PanelLabel('Operational Attention',
+      PanelLabel(context.tr("Operational Attention"),
           color: OipTokens.amber,
           trailing: Text('${attention.length}',
               style: WorkstationTokens.mono(context, size: 11))),
       if (attention.isEmpty)
         Text(
-            'Keine aktiven Findings oder Störungen im verfügbaren Snapshot/Eventfenster. Beobachtungslücken bleiben separat ausgewiesen.',
+            context.tr(
+                "Keine aktiven Findings oder Störungen im verfügbaren Snapshot/Eventfenster. Beobachtungslücken bleiben separat ausgewiesen."),
             style: Theme.of(context).textTheme.bodySmall),
       ...attention.take(1).map((entry) => Padding(
             padding: const EdgeInsets.only(bottom: 5),
@@ -308,7 +342,9 @@ class OverviewContextInspector extends StatelessWidget {
           )),
       if (attention.length > 1)
         Text(
-            '+${attention.length - 1} weitere · Activity/Diagnostics für den vollständigen Umfang',
+            context.tr(
+                "+{0} weitere · Activity/Diagnostics für den vollständigen Umfang",
+                [attention.length - 1]),
             style: Theme.of(context).textTheme.bodySmall),
     ]);
   }

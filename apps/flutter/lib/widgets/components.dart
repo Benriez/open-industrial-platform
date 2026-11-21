@@ -1,3 +1,4 @@
+import '../l10n/oip_strings.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../design_system/theme.dart';
@@ -364,7 +365,7 @@ class StatusIndicator extends StatelessWidget {
       ),
     );
     return Semantics(
-      label: 'Status: ${OipTokens.statusLabel(status)}',
+      label: context.tr("Status: {0}", [OipTokens.statusLabel(status)]),
       child: labelled
           ? Row(mainAxisSize: MainAxisSize.min, children: [
               dot,
@@ -601,15 +602,18 @@ class DataTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final valid = entries.where((entry) => entry.atMs != null).toList();
     if (valid.isEmpty) {
-      return const InlineNotice('Keine zeitgestempelten Ereignisse',
-          'Die API hat keine darstellbaren Collection-Zeitpunkte geliefert.');
+      return InlineNotice(
+          context.tr("Keine zeitgestempelten Ereignisse"),
+          context.tr(
+              "Die API hat keine darstellbaren Collection-Zeitpunkte geliefert."));
     }
     final tracks = valid.map((entry) => entry.track).toSet().toList();
     final first = valid.map((entry) => entry.atMs!).reduce(math.min);
     final last = valid.map((entry) => entry.atMs!).reduce(math.max);
     final span = math.max(1, last - first);
     return Semantics(
-      label: 'Ereignis-Zeitspuren, ${valid.length} API-Ereignisse',
+      label:
+          context.tr("Ereignis-Zeitspuren, {0} API-Ereignisse", [valid.length]),
       child: Column(children: [
         LayoutBuilder(builder: (context, box) {
           final labelWidth = box.maxWidth < 420 ? 76.0 : 112.0;

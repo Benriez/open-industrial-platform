@@ -1,3 +1,4 @@
+import '../l10n/oip_strings.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -191,7 +192,8 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
   /// the Core and merges the answer by the stable Core IDs, so no row is
   /// duplicated. A failed continuation keeps the evidence that is already
   /// loaded and offers a fresh authorized query.
-  Future<void> _loadEvidence({bool moreGaps = false, bool moreHealth = false}) async {
+  Future<void> _loadEvidence(
+      {bool moreGaps = false, bool moreHealth = false}) async {
     if (!widget.controller.managed) return;
     final current = ++evidenceGeneration;
     setState(() => evidenceBusy = true);
@@ -199,12 +201,12 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
       final status = await widget.controller.api.collectionEventsWithStatus();
       final gapPage = moreHealth
           ? null
-          : await widget.controller.api
-              .diagnosticGaps(cursor: moreGaps ? documentedGaps?.nextCursor : null);
+          : await widget.controller.api.diagnosticGaps(
+              cursor: moreGaps ? documentedGaps?.nextCursor : null);
       final healthPage = moreGaps
           ? null
-          : await widget.controller.api
-              .healthHistory(cursor: moreHealth ? healthTransitions?.nextCursor : null);
+          : await widget.controller.api.healthHistory(
+              cursor: moreHealth ? healthTransitions?.nextCursor : null);
       if (!mounted || current != evidenceGeneration) return;
       setState(() {
         diagnosisHistoryStatus = status.diagnosisHistoryStatus;
@@ -498,15 +500,16 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
       skipTraversal: true,
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         AdaptiveWorkspaceHeader(
-          eyebrow: 'DIAGNOSTICS · EVIDENCE WORKSPACE',
-          title: 'Diagnose & Ereignisse',
-          subtitle:
-              'Findings prüfen · Ereignis auswählen · Evidence gezielt vertiefen',
+          eyebrow: context.tr("DIAGNOSTICS · EVIDENCE WORKSPACE"),
+          title: context.tr("Diagnose & Ereignisse"),
+          subtitle: context.tr(
+              "Findings prüfen · Ereignis auswählen · Evidence gezielt vertiefen"),
           accent: OipTokens.yellow,
           primaryAction: WorkspacePrimaryAction(
             buttonKey: const Key('diagnostics-primary-timeline'),
-            label: 'Evidence Timeline',
-            tooltip: 'Vollständige Timeline mit Source-Lanes direkt öffnen',
+            label: context.tr("Evidence Timeline"),
+            tooltip: context
+                .tr("Vollständige Timeline mit Source-Lanes direkt öffnen"),
             icon: Icons.timeline_outlined,
             onPressed: () => _setMode(_DiagnosticsMode.timeline),
           ),
@@ -528,7 +531,7 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
                 controller: widget.controller,
                 workspace: WorkspaceId.diagnostics),
             IconButton(
-              tooltip: 'Diagnosedaten aktualisieren',
+              tooltip: context.tr("Diagnosedaten aktualisieren"),
               onPressed: loadingEvents ? null : _loadEvents,
               icon: const Icon(Icons.refresh),
             ),
@@ -539,12 +542,14 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
             apiConnectionStatus(context, widget.controller),
             StatusPill(
                 widget.controller.infrastructure.ready
-                    ? 'KONTEXT · ${widget.controller.infrastructure.selectedBreadcrumb}'
-                    : 'SOURCE · ${snapshot.primarySourceId ?? 'NICHT GELIEFERT'}',
+                    ? context.tr("KONTEXT · {0}",
+                        [widget.controller.infrastructure.selectedBreadcrumb])
+                    : context.tr("SOURCE · {0}",
+                        [snapshot.primarySourceId ?? 'NICHT GELIEFERT']),
                 color: OipTokens.cyan),
-            const StatusPill('READ-ONLY · SESSION-INVESTIGATION',
+            StatusPill(context.tr("READ-ONLY · SESSION-INVESTIGATION"),
                 color: OipTokens.violet),
-            const StatusPill('GETRENNT VON DER DIAGNOSE',
+            StatusPill(context.tr("GETRENNT VON DER DIAGNOSE"),
                 color: OipTokens.blue),
           ]),
         const SizedBox(height: OipTokens.s3),
@@ -553,8 +558,13 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: InlineNotice(
-              'Collection-Ereignisse nicht verfügbar',
-              '${apiErrorMessage(eventsError!, 'Collection-Ereignisse konnten nicht geladen werden.')} Angezeigte Events sind der letzte erfolgreiche, jetzt stale Stand.',
+              context.tr("Collection-Ereignisse nicht verfügbar"),
+              context.tr(
+                  "{0} Angezeigte Events sind der letzte erfolgreiche, jetzt stale Stand.",
+                  [
+                    apiErrorMessage(eventsError!,
+                        'Collection-Ereignisse konnten nicht geladen werden.')
+                  ]),
               icon: Icons.cloud_off_outlined,
               color: OipTokens.red,
             ),
@@ -574,19 +584,19 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
                         EdgeInsets.symmetric(horizontal: 4)),
                     textStyle: WidgetStatePropertyAll(TextStyle(fontSize: 11)),
                   ),
-                  segments: const [
+                  segments: [
                     ButtonSegment(
                         value: _MobilePane.explorer,
                         icon: Icon(Icons.list_alt, size: 16),
-                        label: Text('Explorer')),
+                        label: Text(context.tr("Explorer"))),
                     ButtonSegment(
                         value: _MobilePane.workspace,
                         icon: Icon(Icons.timeline, size: 16),
-                        label: Text('Timeline')),
+                        label: Text(context.tr("Timeline"))),
                     ButtonSegment(
                         value: _MobilePane.inspector,
                         icon: Icon(Icons.info_outline, size: 16),
-                        label: Text('Inspector')),
+                        label: Text(context.tr("Inspector"))),
                   ],
                   selected: {mobilePane},
                   showSelectedIcon: false,
@@ -615,8 +625,8 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
                         }),
                     icon: const Icon(Icons.list_alt, size: 16),
                     label: Text(tabletExplorer
-                        ? 'Explorer schließen'
-                        : 'Explorer öffnen')),
+                        ? context.tr("Explorer schließen")
+                        : context.tr("Explorer öffnen"))),
                 const SizedBox(width: 6),
                 TextButton.icon(
                     onPressed: () => setState(() {
@@ -625,8 +635,8 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
                         }),
                     icon: const Icon(Icons.info_outline, size: 16),
                     label: Text(tabletInspector
-                        ? 'Inspector schließen'
-                        : 'Inspector öffnen')),
+                        ? context.tr("Inspector schließen")
+                        : context.tr("Inspector öffnen"))),
               ]),
               SizedBox(
                   height: 650,
@@ -676,7 +686,7 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
                 .layout(WorkspaceId.diagnostics)
                 .expertWorkspace) ...[
           const SizedBox(height: OipTokens.s4),
-          Text('INVESTIGATION DETAILS · INCIDENTS / DEMO-BEFUNDE',
+          Text(context.tr("INVESTIGATION DETAILS · INCIDENTS / DEMO-BEFUNDE"),
               style:
                   WorkstationTokens.eyebrow(context, color: OipTokens.violet)),
           const SizedBox(height: 6),
@@ -706,7 +716,8 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
           'Noch kein persistierter Diagnoselauf. Die aktuellen Demo-Befunde werden vom Rust-Backend erzeugt.',
         'not_implemented' =>
           'Eine persistierte Diagnoseausführung ist nicht implementiert. Die dokumentierten Lücken und Gesundheitsverläufe sind der persistierte Stand des Core; sie sind keine gespeicherte Diagnose und keine Ursache.',
-        final status => 'Der Core nennt den Stand der Diagnosehistorie: $status.',
+        final status =>
+          'Der Core nennt den Stand der Diagnosehistorie: $status.',
       };
 
   Widget _persistedEvidence(BuildContext context) {
@@ -717,7 +728,7 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('PERSISTIERTE EVIDENZ · CORE-SPEICHER',
+          Text(context.tr("PERSISTIERTE EVIDENZ · CORE-SPEICHER"),
               style: WorkstationTokens.eyebrow(context, color: OipTokens.cyan)),
           const SizedBox(height: 6),
           InlineNotice(
@@ -732,15 +743,16 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
           // already holds.
           if (evidenceError != null)
             StateMessage(
-              'Persistierte Evidenz nicht verfügbar',
+              context.tr("Persistierte Evidenz nicht verfügbar"),
               apiErrorMessage(
                 evidenceError!,
-                'Die persistierte Evidenz konnte nicht geladen werden.',
+                context.tr(
+                    "Die persistierte Evidenz konnte nicht geladen werden."),
               ),
               compact: true,
               action: TextButton(
                 onPressed: evidenceBusy ? null : _loadEvidence,
-                child: const Text('Erneut laden'),
+                child: Text(context.tr("Erneut laden")),
               ),
             ),
           if (gaps != null && health != null)
@@ -759,9 +771,10 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
       BuildContext context, DiagnosticPage gaps, DiagnosticPage health) {
     final notes = <String>[...gaps.missingEvidence, ...health.missingEvidence];
     if (gaps.gaps.isEmpty && health.transitions.isEmpty) {
-      return const InlineNotice(
-        'Keine dokumentierte Lücke und kein Gesundheitsverlauf',
-        'Das Core hat nichts dokumentiert. Das ist kein Nachweis einer lückenlosen Überwachung.',
+      return InlineNotice(
+        context.tr("Keine dokumentierte Lücke und kein Gesundheitsverlauf"),
+        context.tr(
+            "Das Core hat nichts dokumentiert. Das ist kein Nachweis einer lückenlosen Überwachung."),
         icon: Icons.rule_outlined,
       );
     }
@@ -772,42 +785,43 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
           Padding(
             padding: const EdgeInsets.only(bottom: OipTokens.s2),
             child: FactGrid(children: [
-              Fact('Dokumentierte Lücke · ${gap.source}',
+              Fact(
+                  context.tr("Dokumentierte Lücke · {0}", [gap.source]),
                   '${timestamp(gap.documentedStartMs)} → '
                   '${timestamp(gap.documentedEndMs)}'
                   '${gap.durationMs == null ? ' · unbekannter Markerabstand' : ' · Markerabstand: ${gap.durationMs} ms, keine gemessene Ausfalldauer'}'),
-              Fact('Grund', '${gap.reason} · Herkunft: ${gap.origin}'),
+              Fact(context.tr("Grund"),
+                  context.tr("{0} · Herkunft: {1}", [gap.reason, gap.origin])),
             ]),
           ),
         for (final transition in health.transitions)
           Padding(
             padding: const EdgeInsets.only(bottom: OipTokens.s2),
             child: FactGrid(children: [
-              Fact('Gesundheitsverlauf · ${transition.source}',
+              Fact(context.tr("Gesundheitsverlauf · {0}", [transition.source]),
                   timestamp(transition.atMs)),
               Fact(
-                  'Zustand',
+                  context.tr("Zustand"),
                   '${transition.previous == null ? 'Unbekannt' : _healthLabel(transition.previous!)} → '
                   '${transition.current == null ? 'Unbekannt' : _healthLabel(transition.current!)}'),
-              Fact('Provenienz', transition.provenance),
+              Fact(context.tr("Provenienz"), transition.provenance),
             ]),
           ),
-        _continuation(gaps, 'Lücken',
-            () => _loadEvidence(moreGaps: true)),
+        _continuation(gaps, 'Lücken', () => _loadEvidence(moreGaps: true)),
         _continuation(health, 'Gesundheitsverlauf',
             () => _loadEvidence(moreHealth: true)),
         if (gaps.timeSemantics.isNotEmpty || health.timeSemantics.isNotEmpty)
           ExpansionTile(
-            title: const Text('Zeit- und Herkunftssemantik'),
+            title: Text(context.tr("Zeit- und Herkunftssemantik")),
             children: [
               Text(gaps.timeSemantics),
               Text(health.timeSemantics),
-              const Text('Markerabstände sind keine gemessenen Ausfalldauern. '
-                  'Historische Zustände beweisen keine aktuelle Erreichbarkeit.'),
+              Text(context.tr(
+                  "Markerabstände sind keine gemessenen Ausfalldauern. Historische Zustände beweisen keine aktuelle Erreichbarkeit.")),
             ],
           ),
         if (notes.isNotEmpty)
-          Text('Grenzen dieser Evidenz: ${notes.join(' ')}',
+          Text(context.tr("Grenzen dieser Evidenz: {0}", [notes.join(' ')]),
               style: Theme.of(context).textTheme.bodySmall),
       ],
     );
@@ -820,13 +834,14 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
   Widget _continuation(DiagnosticPage page, String label, VoidCallback load) {
     if (!page.truncated) return const SizedBox.shrink();
     if (page.nextCursor == null) {
-      return Text('$label: Antwort gekürzt; keine Fortsetzung verfügbar.');
+      return Text(context
+          .tr("{0}: Antwort gekürzt; keine Fortsetzung verfügbar.", [label]));
     }
     return Align(
       alignment: Alignment.centerRight,
       child: TextButton(
         onPressed: evidenceBusy ? null : load,
-        child: Text('$label: weitere Einträge laden'),
+        child: Text(context.tr("{0}: weitere Einträge laden", [label])),
       ),
     );
   }
@@ -845,8 +860,9 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(
             MediaQuery.sizeOf(context).width < OipTokens.mobile
-                ? 'DEMO · BESTEHENDE API · GETRENNT'
-                : 'DEMO-SZENARIEN · BESTEHENDE AUTORISIERTE SIMULATORSTEUERUNG · GETRENNT VON ECHTEN COLLECTION-EVENTS',
+                ? context.tr("DEMO · BESTEHENDE API · GETRENNT")
+                : context.tr(
+                    "DEMO-SZENARIEN · BESTEHENDE AUTORISIERTE SIMULATORSTEUERUNG · GETRENNT VON ECHTEN COLLECTION-EVENTS"),
             style: WorkstationTokens.eyebrow(context, color: OipTokens.yellow)),
         const SizedBox(height: 5),
         Wrap(
@@ -956,7 +972,7 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
       AdaptiveInspector(
         controller: widget.controller,
         workspace: WorkspaceId.diagnostics,
-        label: 'Event Details & Evidence',
+        label: context.tr("Event Details & Evidence"),
         hasSelection: current != null,
         child: DiagnosticsEvidenceInspector(
           selected: current,
@@ -981,17 +997,19 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
             Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Row(children: [
             Expanded(
-                child: Text('Evidence Timeline',
+                child: Text(context.tr("Evidence Timeline"),
                     style: Theme.of(context).textTheme.titleMedium)),
             TextButton.icon(
                 onPressed: () => setState(() => showTimeline = true),
                 icon: const Icon(Icons.visibility_outlined),
-                label: const Text('Spuren zeigen'))
+                label: Text(context.tr("Spuren zeigen")))
           ]),
-          const Expanded(
+          Expanded(
               child: Center(
-                  child: InlineNotice('Klassische Ereignisliste aktiv',
-                      'Alle Collection-Ereignisse bleiben im Event Explorer vollständig bedienbar.',
+                  child: InlineNotice(
+                      context.tr("Klassische Ereignisliste aktiv"),
+                      context.tr(
+                          "Alle Collection-Ereignisse bleiben im Event Explorer vollständig bedienbar."),
                       icon: Icons.list_alt_outlined))),
         ]),
       );

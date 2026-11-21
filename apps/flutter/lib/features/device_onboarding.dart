@@ -1,3 +1,4 @@
+import '../l10n/oip_strings.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -94,8 +95,10 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
       await operation();
     } catch (e) {
       if (mounted) {
-        setState(() => error = apiErrorMessage(e,
-            'Vorgang fehlgeschlagen. Es wurde keine erfolgreiche Verbindung bestätigt.'));
+        setState(() => error = apiErrorMessage(
+            e,
+            context.tr(
+                "Vorgang fehlgeschlagen. Es wurde keine erfolgreiche Verbindung bestätigt.")));
       }
     } finally {
       if (mounted) setState(() => busy = false);
@@ -125,7 +128,9 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
       profile = profiles.firstOrNull?.id;
     } catch (e) {
       error = apiErrorMessage(
-          e, 'Autorisierte Konfiguration konnte nicht geladen werden.');
+          e,
+          context
+              .tr("Autorisierte Konfiguration konnte nicht geladen werden."));
     }
     if (mounted) setState(() => busy = false);
   }
@@ -216,7 +221,7 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
     } catch (e) {
       if (mounted) {
         setState(() => error = apiErrorMessage(
-            e, 'Verbindungsstatus konnte nicht gelesen werden.'));
+            e, context.tr("Verbindungsstatus konnte nicht gelesen werden.")));
       }
       timer?.cancel();
     } finally {
@@ -331,23 +336,27 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                 Expanded(
                     child: Text(
                         existing
-                            ? 'Verbindung für dieses Gerät einrichten'
-                            : 'Gerät hinzufügen',
+                            ? context
+                                .tr("Verbindung für dieses Gerät einrichten")
+                            : context.tr("Gerät hinzufügen"),
                         style: Theme.of(context).textTheme.headlineSmall)),
                 IconButton(
-                    tooltip: 'Onboarding schließen',
+                    tooltip: context.tr("Onboarding schließen"),
                     onPressed: busy ? null : () => Navigator.pop(context),
                     icon: const Icon(Icons.close))
               ]),
-              Text('Schritt ${step + 1}/5 · ${[
-                'Infrastruktur auswählen',
-                'Verbindung konfigurieren',
-                'Verbindung testen',
-                'Gerät bestätigen',
-                method == 'manual'
-                    ? 'Inventar gespeichert'
-                    : 'Monitoring aktivieren'
-              ][step]}'),
+              Text(context.tr("Schritt {0}/5 · {1}", [
+                step + 1,
+                [
+                  'Infrastruktur auswählen',
+                  'Verbindung konfigurieren',
+                  'Verbindung testen',
+                  'Gerät bestätigen',
+                  method == 'manual'
+                      ? 'Inventar gespeichert'
+                      : 'Monitoring aktivieren'
+                ][step]
+              ])),
               const SizedBox(height: 16),
               if (busy) const LinearProgressIndicator(),
               if (error != null)
@@ -384,7 +393,8 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                       key: const Key('onboarding-type'),
                       isExpanded: true,
                       value: kind,
-                      decoration: const InputDecoration(labelText: 'Gerätetyp'),
+                      decoration:
+                          InputDecoration(labelText: context.tr("Gerätetyp")),
                       items: const [
                         'server',
                         'desktop',
@@ -396,7 +406,8 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                         'other'
                       ]
                           .map((v) => DropdownMenuItem(
-                              value: v, child: Text(deviceKindName(v))))
+                              value: v,
+                              child: Text(context.tr(deviceKindName(v)))))
                           .toList(),
                       onChanged: (v) => setState(() => kind = v!)),
                 const SizedBox(height: 12),
@@ -405,37 +416,39 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                     onPressed: busy || site == null
                         ? null
                         : () => setState(() => step = 1),
-                    child: const Text('Verbindungsmethode wählen')),
+                    child: Text(context.tr("Verbindungsmethode wählen"))),
               ],
               if (step == 1) ...[
                 DropdownButtonFormField<String>(
                     isExpanded: true,
                     value: method,
-                    decoration:
-                        const InputDecoration(labelText: 'Verbindungsmethode'),
+                    decoration: InputDecoration(
+                        labelText: context.tr("Verbindungsmethode")),
                     items: [
-                      const DropdownMenuItem(
-                          value: 'ssh', child: Text('SSH — Linux / macOS')),
+                      DropdownMenuItem(
+                          value: 'ssh',
+                          child: Text(context.tr("SSH — Linux / macOS"))),
                       if (!existing)
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                             value: 'manual',
-                            child: Text('Nur Inventar, keine Verbindung')),
+                            child: Text(
+                                context.tr("Nur Inventar, keine Verbindung"))),
                     ],
                     onChanged:
                         busy ? null : (v) => setState(() => method = v!)),
                 const SizedBox(height: 12),
-                const Text(
-                    'OPC UA: separater autorisierter Source-Provisioning-Pfad. SNMP, Windows, Android und VPN-Monitoring sind hier nicht implementiert.'),
+                Text(context.tr(
+                    "OPC UA: separater autorisierter Source-Provisioning-Pfad. SNMP, Windows, Android und VPN-Monitoring sind hier nicht implementiert.")),
                 const SizedBox(height: 12),
                 if (method == 'ssh') ...[
                   if (profiles.isEmpty)
-                    const Text(
-                        'Kein freigegebenes SSH-Profil. Der lokale Operator muss eine SSH-Identität und den erlaubten Endpoint im Core-Profil konfigurieren. Keine privaten Schlüssel im Browser.'),
+                    Text(context.tr(
+                        "Kein freigegebenes SSH-Profil. Der lokale Operator muss eine SSH-Identität und den erlaubten Endpoint im Core-Profil konfigurieren. Keine privaten Schlüssel im Browser.")),
                   DropdownButtonFormField<String>(
                       isExpanded: true,
                       value: profile,
-                      decoration: const InputDecoration(
-                          labelText: 'Lokale SSH-Identität'),
+                      decoration: InputDecoration(
+                          labelText: context.tr("Lokale SSH-Identität")),
                       items: profiles
                           .map((p) => DropdownMenuItem(
                               value: p.id, child: Text(p.label)))
@@ -459,8 +472,9 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                     DropdownButtonFormField<String>(
                         isExpanded: true,
                         value: alias,
-                        decoration: const InputDecoration(
-                            labelText: 'Optionaler autorisierter Hostalias'),
+                        decoration: InputDecoration(
+                            labelText: context
+                                .tr("Optionaler autorisierter Hostalias")),
                         items: profiles
                             .firstWhere((p) => p.id == profile)
                             .aliases
@@ -469,8 +483,8 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                             .toList(),
                         onChanged:
                             busy ? null : (v) => setState(() => alias = v)),
-                  const Text(
-                      'Der Core prüft ausschließlich diesen expliziten Endpoint. Es findet kein Netzwerkscan statt.'),
+                  Text(context.tr(
+                      "Der Core prüft ausschließlich diesen expliziten Endpoint. Es findet kein Netzwerkscan statt.")),
                 ],
                 const SizedBox(height: 12),
                 FilledButton(
@@ -479,20 +493,21 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                         ? null
                         : () => run(start),
                     child: Text(method == 'manual'
-                        ? 'Inventarregistrierung prüfen'
-                        : 'SSH-Verbindung testen')),
+                        ? context.tr("Inventarregistrierung prüfen")
+                        : context.tr("SSH-Verbindung testen"))),
               ],
               if (step == 2) ...[
                 Text(switch (stage) {
-                  'connecting' => 'Connecting · SSH-Handshake',
-                  'awaiting_host_key' =>
-                    'Unbekannter Host-Key · Bestätigung erforderlich',
+                  'connecting' => context.tr("Connecting · SSH-Handshake"),
+                  'awaiting_host_key' => context
+                      .tr("Unbekannter Host-Key · Bestätigung erforderlich"),
                   'ready_for_authentication' =>
-                    'Host-Key bereits vertrauenswürdig',
-                  'authenticating' => 'Authenticating',
-                  'reading_device_information' => 'Reading device information',
-                  'failed' => 'Verification failed',
-                  _ => stage ?? 'Prüfung läuft'
+                    context.tr("Host-Key bereits vertrauenswürdig"),
+                  'authenticating' => context.tr("Authenticating"),
+                  'reading_device_information' =>
+                    context.tr("Reading device information"),
+                  'failed' => context.tr("Verification failed"),
+                  _ => stage ?? context.tr("Prüfung läuft")
                 }),
                 if (plan?.fingerprint != null)
                   Semantics(
@@ -501,36 +516,36 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                           child: Text(plan!.fingerprint!,
                               key: const Key('host-key-fingerprint')))),
                 if (stage == 'awaiting_host_key') ...[
-                  const Text(
-                      'Vergleiche diesen Fingerprint über einen unabhängigen vertrauenswürdigen Weg mit dem Zielgerät. Der Handshake allein beweist keine Geräteidentität.'),
+                  Text(context.tr(
+                      "Vergleiche diesen Fingerprint über einen unabhängigen vertrauenswürdigen Weg mit dem Zielgerät. Der Handshake allein beweist keine Geräteidentität.")),
                   FilledButton(
                       key: const Key('trust-host-key'),
                       onPressed:
                           busy ? null : () => run(() => verify(trust: true)),
-                      child: const Text(
-                          'Fingerprint geprüft · diesem Host-Key vertrauen')),
+                      child: Text(context.tr(
+                          "Fingerprint geprüft · diesem Host-Key vertrauen"))),
                 ],
                 if (stage == 'ready_for_authentication')
                   FilledButton(
                       onPressed: busy ? null : () => run(verify),
-                      child:
-                          const Text('Authentifizieren und Hostdaten lesen')),
+                      child: Text(
+                          context.tr("Authentifizieren und Hostdaten lesen"))),
                 if (stage == 'failed')
-                  const Text(
-                      'Inventar und bisherige Identität bleiben erhalten. Schließe den Dialog und korrigiere Endpoint oder Identität für einen neuen Versuch.'),
+                  Text(context.tr(
+                      "Inventar und bisherige Identität bleiben erhalten. Schließe den Dialog und korrigiere Endpoint oder Identität für einen neuen Versuch.")),
               ],
               if (step == 3) ...[
                 if (method == 'manual')
-                  const Text(
-                      'Nur Inventar: Registered · Connectivity Unknown · Telemetry NoCollector · Health NotEvaluated. Es wird keine Verbindung aufgebaut.')
+                  Text(context.tr(
+                      "Nur Inventar: Registered · Connectivity Unknown · Telemetry NoCollector · Health NotEvaluated. Es wird keine Verbindung aufgebaut."))
                 else ...[
-                  const Text(
-                      'Verification complete · tatsächlich gelesene Geräteidentität'),
+                  Text(context.tr(
+                      "Verification complete · tatsächlich gelesene Geräteidentität")),
                   ...identityWidgets(plan!.identity!),
-                  const Text(
-                      'Vergleiche diese Informationen mit deinem erwarteten Gerät. Ein gleicher Anzeigename ist kein Identitätsnachweis.'),
-                  const Text(
-                      'Monitoring wird erst nach der Identitätsbestätigung separat aktiviert.'),
+                  Text(context.tr(
+                      "Vergleiche diese Informationen mit deinem erwarteten Gerät. Ein gleicher Anzeigename ist kein Identitätsnachweis.")),
+                  Text(context.tr(
+                      "Monitoring wird erst nach der Identitätsbestätigung separat aktiviert.")),
                 ],
                 CheckboxListTile(
                     key: const Key('confirm-device-identity'),
@@ -539,38 +554,44 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                         ? null
                         : (v) => setState(() => consent = v ?? false),
                     title: Text(method == 'manual'
-                        ? 'Ich bestätige die reine Inventarregistrierung ohne Verbindung.'
-                        : 'Diese ermittelte Identität gehört zum ausgewählten Gerät.')),
+                        ? context.tr(
+                            "Ich bestätige die reine Inventarregistrierung ohne Verbindung.")
+                        : context.tr(
+                            "Diese ermittelte Identität gehört zum ausgewählten Gerät."))),
                 FilledButton(
                     key: const Key('persist-device-connection'),
                     onPressed: busy || !consent ? null : () => run(confirm),
                     child: Text(method == 'manual'
-                        ? 'Nur im Inventar registrieren'
-                        : 'Identität bestätigen und Verbindung speichern')),
+                        ? context.tr("Nur im Inventar registrieren")
+                        : context.tr(
+                            "Identität bestätigen und Verbindung speichern"))),
               ],
               if (step == 4) ...[
                 Text(method == 'manual'
-                    ? 'Inventar gespeichert. Keine Verbindung und keine Telemetrie.'
+                    ? context.tr(
+                        "Inventar gespeichert. Keine Verbindung und keine Telemetrie.")
                     : monitor
-                        ? 'SSH-Identität verifiziert und Collector aktiviert. Collecting wird erst nach tatsächlich empfangenen Messwerten angezeigt.'
-                        : 'SSH Verified. Monitoring bleibt deaktiviert.'),
+                        ? context.tr(
+                            "SSH-Identität verifiziert und Collector aktiviert. Collecting wird erst nach tatsächlich empfangenen Messwerten angezeigt.")
+                        : context.tr(
+                            "SSH Verified. Monitoring bleibt deaktiviert.")),
                 if (method == 'ssh' && !monitor) ...[
-                  const Text(
-                      'Optional: Feste read-only Systemabfragen. Keine Remote-Installation.'),
+                  Text(context.tr(
+                      "Optional: Feste read-only Systemabfragen. Keine Remote-Installation.")),
                   field('Polling-Intervall in Sekunden (10–3600)', interval,
                       'poll-seconds'),
                   FilledButton(
                       key: const Key('enable-device-monitoring'),
                       onPressed: busy ? null : () => run(enableMonitoring),
-                      child: const Text('Monitoring aktivieren')),
-                  const Text(
-                      'Du kannst Monitoring auch später im Geräte-Inspector einschalten.'),
+                      child: Text(context.tr("Monitoring aktivieren"))),
+                  Text(context.tr(
+                      "Du kannst Monitoring auch später im Geräte-Inspector einschalten.")),
                 ],
-                Text(
-                    'Geräte-ID: ${widget.deviceId ?? plan?.deviceId ?? registrationId}'),
+                Text(context.tr("Geräte-ID: {0}",
+                    [widget.deviceId ?? plan?.deviceId ?? registrationId])),
                 FilledButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Zum Geräteinventar')),
+                    child: Text(context.tr("Zum Geräteinventar"))),
               ],
             ],
           )),

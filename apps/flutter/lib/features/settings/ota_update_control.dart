@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -45,7 +46,8 @@ class _OipOtaUpdateControlState extends State<OipOtaUpdateControl> {
           'Das Update wird geladen und nach dem Neustart installiert.',
         'deferred' => 'Das Update wurde zurückgestellt.',
         'busy' => 'Eine Update-Prüfung läuft bereits.',
-        _ => 'Die Update-Prüfung ist fehlgeschlagen. Bitte später erneut versuchen.',
+        _ =>
+          'Die Update-Prüfung ist fehlgeschlagen. Bitte später erneut versuchen.',
       };
     } on PlatformException catch (error) {
       message = error.message ??
@@ -56,7 +58,8 @@ class _OipOtaUpdateControlState extends State<OipOtaUpdateControl> {
       if (mounted) setState(() => checking = false);
     }
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
@@ -78,7 +81,9 @@ class _OipOtaUpdateControlState extends State<OipOtaUpdateControl> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.system_update_alt),
-                label: Text(checking ? 'Suche nach Updates …' : 'Nach Updates suchen'),
+                label: Text(checking
+                    ? context.tr("Suche nach Updates …")
+                    : context.tr("Nach Updates suchen")),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: OipTokens.cyan,
                 ),

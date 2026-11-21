@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../design_system/theme.dart';
@@ -44,8 +45,7 @@ String observedQualityOf(List<Observation> values) {
   return 'mixed';
 }
 
-List<Device> filteredDevices(
-    Snapshot snapshot, DevicesWorkspaceSession session,
+List<Device> filteredDevices(Snapshot snapshot, DevicesWorkspaceSession session,
     [InfrastructureContext? infrastructure]) {
   final query = session.search.trim().toLowerCase();
   final result = snapshot.devices.where((device) {
@@ -172,26 +172,21 @@ class DeviceFilterBar extends StatelessWidget {
               session.offset = 0;
               changed();
             },
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               isDense: true,
               contentPadding: EdgeInsets.symmetric(horizontal: 10),
               prefixIcon: Icon(Icons.search, size: 16),
-              prefixIconConstraints: BoxConstraints(minWidth: 30, minHeight: 30),
-              hintText: 'Name, ID, Typ, Source …',
+              prefixIconConstraints:
+                  BoxConstraints(minWidth: 30, minHeight: 30),
+              hintText: context.tr("Name, ID, Typ, Source …"),
               border: OutlineInputBorder(),
             ),
           ),
         );
 
         final primary = <Widget>[
-          _filter(
-              context,
-              'device-type-filter',
-              'TYP',
-              session.type,
-              ['all', ...types],
-              width(145),
-              (value) => session.type = value,
+          _filter(context, 'device-type-filter', 'TYP', session.type,
+              ['all', ...types], width(145), (value) => session.type = value,
               // The word of the type, not the identifier of the enum of the
               // Core; the value stays the identifier.
               itemLabel: deviceKindName),
@@ -281,7 +276,7 @@ class DeviceFilterBar extends StatelessWidget {
           height: DevicesLayout.controlHeight,
           child: IconButton(
             key: const Key('device-filter-reset'),
-            tooltip: 'Filter zurücksetzen',
+            tooltip: context.tr("Filter zurücksetzen"),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints.tightFor(width: 36, height: 36),
             onPressed: () {
@@ -294,62 +289,67 @@ class DeviceFilterBar extends StatelessWidget {
         );
         final note = Text(
           infrastructure?.ready == true
-              ? 'v2 autorisierter Scope · UI-Auswahl ist Präsentationsfilter'
-              : 'v1-Snapshot · Filter nicht serverseitig',
+              ? context.tr(
+                  "v2 autorisierter Scope · UI-Auswahl ist Präsentationsfilter")
+              : context.tr("v1-Snapshot · Filter nicht serverseitig"),
           style: WorkstationTokens.mono(context,
               size: 9, color: OipTokens.muted(context)),
         );
 
         if (wide) {
-          return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Row(children: [
-              search,
-              const SizedBox(width: DevicesLayout.controlGap),
-              primary[0],
-              const SizedBox(width: DevicesLayout.controlGap),
-              primary[1],
-              const SizedBox(width: DevicesLayout.controlGap),
-              primary[2],
-              const SizedBox(width: DevicesLayout.groupGap),
-              primary[3],
-              const Spacer(),
-              toggle,
-              const SizedBox(width: DevicesLayout.controlGap),
-              reset,
-            ]),
-            if (session.showAdvancedFilters) ...[
-              const SizedBox(height: DevicesLayout.controlGap),
-              Row(children: [
-                secondary[0],
-                const SizedBox(width: DevicesLayout.controlGap),
-                secondary[1],
-                const SizedBox(width: DevicesLayout.controlGap),
-                secondary[2],
-              ]),
-            ],
-            const SizedBox(height: 2),
-            Align(alignment: Alignment.centerRight, child: note),
-          ]);
+          return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(children: [
+                  search,
+                  const SizedBox(width: DevicesLayout.controlGap),
+                  primary[0],
+                  const SizedBox(width: DevicesLayout.controlGap),
+                  primary[1],
+                  const SizedBox(width: DevicesLayout.controlGap),
+                  primary[2],
+                  const SizedBox(width: DevicesLayout.groupGap),
+                  primary[3],
+                  const Spacer(),
+                  toggle,
+                  const SizedBox(width: DevicesLayout.controlGap),
+                  reset,
+                ]),
+                if (session.showAdvancedFilters) ...[
+                  const SizedBox(height: DevicesLayout.controlGap),
+                  Row(children: [
+                    secondary[0],
+                    const SizedBox(width: DevicesLayout.controlGap),
+                    secondary[1],
+                    const SizedBox(width: DevicesLayout.controlGap),
+                    secondary[2],
+                  ]),
+                ],
+                const SizedBox(height: 2),
+                Align(alignment: Alignment.centerRight, child: note),
+              ]);
         }
-        return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          search,
-          const SizedBox(height: DevicesLayout.controlGap),
-          Wrap(
-            spacing: DevicesLayout.controlGap,
-            runSpacing: DevicesLayout.controlGap,
-            children: [...primary, toggle],
-          ),
-          if (session.showAdvancedFilters) ...[
-            const SizedBox(height: DevicesLayout.controlGap),
-            Wrap(
-              spacing: DevicesLayout.controlGap,
-              runSpacing: DevicesLayout.controlGap,
-              children: secondary,
-            ),
-          ],
-          const SizedBox(height: 2),
-          Row(children: [Expanded(child: note), reset]),
-        ]);
+        return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              search,
+              const SizedBox(height: DevicesLayout.controlGap),
+              Wrap(
+                spacing: DevicesLayout.controlGap,
+                runSpacing: DevicesLayout.controlGap,
+                children: [...primary, toggle],
+              ),
+              if (session.showAdvancedFilters) ...[
+                const SizedBox(height: DevicesLayout.controlGap),
+                Wrap(
+                  spacing: DevicesLayout.controlGap,
+                  runSpacing: DevicesLayout.controlGap,
+                  children: secondary,
+                ),
+              ],
+              const SizedBox(height: 2),
+              Row(children: [Expanded(child: note), reset]),
+            ]);
       }),
     );
   }
@@ -358,6 +358,7 @@ class DeviceFilterBar extends StatelessWidget {
       List<String> values, double width, ValueChanged<String> set,
       {String Function(String)? itemLabel}) {
     final current = values.contains(value) ? value : 'all';
+
     /// The word of the entry of the filter.
     ///
     /// The entry "all" is **not** a type of a device: it is the choice that
@@ -372,8 +373,7 @@ class DeviceFilterBar extends StatelessWidget {
     }
 
     final items = values
-        .map((item) => DropdownMenuItem(
-            value: item, child: Text(shown(item))))
+        .map((item) => DropdownMenuItem(value: item, child: Text(shown(item))))
         .toList();
     return SizedBox(
       width: width,
@@ -488,29 +488,30 @@ class _MoreFiltersButton extends StatelessWidget {
           key: const Key('device-more-filters'),
           onTap: onTap,
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(expanded ? Icons.expand_less : Icons.tune, size: 15),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text('Weitere Filter',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(fontSize: 11.5, fontWeight: FontWeight.w600)),
-          ),
-          if (activeCount > 0) ...[
+            Icon(expanded ? Icons.expand_less : Icons.tune, size: 15),
             const SizedBox(width: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-              decoration: BoxDecoration(
-                color: accent.withOpacity(.18),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text('$activeCount',
-                  style: WorkstationTokens.mono(context, size: 9.5, color: accent)),
+            Flexible(
+              child: Text(context.tr("Weitere Filter"),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(fontSize: 11.5, fontWeight: FontWeight.w600)),
             ),
-          ],
+            if (activeCount > 0) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(.18),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text('$activeCount',
+                    style: WorkstationTokens.mono(context,
+                        size: 9.5, color: accent)),
+              ),
+            ],
           ]),
         ),
       ),
@@ -643,7 +644,7 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
       padding: const EdgeInsets.fromLTRB(
           DevicesLayout.panelPadding, 10, DevicesLayout.panelPadding, 8),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        PanelLabel('Inventory Explorer',
+        PanelLabel(context.tr("Inventory Explorer"),
             bottom: 4,
             trailing: Text('${all.length}/${widget.snapshot.devices.length}',
                 style: WorkstationTokens.mono(context, size: 10))),
@@ -658,11 +659,10 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
             child: IconButton(
               key: const Key('device-density'),
               tooltip: widget.session.compact
-                  ? 'Comfortable-Dichte'
-                  : 'Compact-Dichte',
+                  ? context.tr("Comfortable-Dichte")
+                  : context.tr("Compact-Dichte"),
               padding: EdgeInsets.zero,
-              constraints:
-                  const BoxConstraints.tightFor(width: 36, height: 36),
+              constraints: const BoxConstraints.tightFor(width: 36, height: 36),
               onPressed: () => setState(
                   () => widget.session.compact = !widget.session.compact),
               icon: Icon(
@@ -681,8 +681,8 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
             focusNode: listFocus,
             onKeyEvent: _key,
             child: entries.isEmpty
-                ? const Center(
-                    child: Text('Keine Geräte gefunden',
+                ? Center(
+                    child: Text(context.tr("Keine Geräte gefunden"),
                         textAlign: TextAlign.center))
                 : SingleChildScrollView(
                     controller: listScroll,
@@ -690,8 +690,7 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
                       children: entries.map((entry) {
                         return entry.device == null
                             ? Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(6, 5, 6, 2),
+                                padding: const EdgeInsets.fromLTRB(6, 5, 6, 2),
                                 child: Text(entry.header!.toUpperCase(),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -706,20 +705,20 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
         ),
         Row(children: [
           Expanded(
-            child: Text('Seite ${currentPage + 1} / $pages',
+            child: Text(context.tr("Seite {0} / {1}", [currentPage + 1, pages]),
                 style: WorkstationTokens.mono(context, size: 9.5)),
           ),
           SizedBox(
             width: 28,
             height: 28,
             child: IconButton(
-              tooltip: 'Vorherige Geräte',
+              tooltip: context.tr("Vorherige Geräte"),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints.tightFor(width: 28, height: 28),
               onPressed: currentPage == 0
                   ? null
-                  : () => setState(
-                      () => widget.session.offset = (currentPage - 1) * pageSize),
+                  : () => setState(() =>
+                      widget.session.offset = (currentPage - 1) * pageSize),
               icon: const Icon(Icons.chevron_left, size: 18),
             ),
           ),
@@ -727,18 +726,18 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
             width: 28,
             height: 28,
             child: IconButton(
-              tooltip: 'Nächste Geräte',
+              tooltip: context.tr("Nächste Geräte"),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints.tightFor(width: 28, height: 28),
               onPressed: currentPage + 1 >= pages
                   ? null
-                  : () => setState(
-                      () => widget.session.offset = (currentPage + 1) * pageSize),
+                  : () => setState(() =>
+                      widget.session.offset = (currentPage + 1) * pageSize),
               icon: const Icon(Icons.chevron_right, size: 18),
             ),
           ),
         ]),
-        Text('Pfeile/Home/End · Enter öffnet · P Pin · C Compare',
+        Text(context.tr("Pfeile/Home/End · Enter öffnet · P Pin · C Compare"),
             style: WorkstationTokens.mono(context,
                 size: 9, color: OipTokens.muted(context))),
       ]),
@@ -850,7 +849,7 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
             .map((entry) => Row(children: [
                   SizedBox(
                     width: 78,
-                    child: Text('GRUPPIERUNG',
+                    child: Text(context.tr("GRUPPIERUNG"),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: WorkstationTokens.eyebrow(context)),
@@ -916,10 +915,19 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
       child: Semantics(
         button: true,
         selected: selected,
-        label: 'Gerät ${device.name} ${device.id} auswählen · ${deviceKindName(device.kind)} · '
-            '${device.sourceId ?? 'keine Source'} · '
-            '${observed.isEmpty ? 'keine aktuelle Observation' : '${observed.length} Observations'} · '
-            'Reachability $reachability reported${device.simulated ? ' · simuliert' : ''}',
+        label: context.tr(
+            "Gerät {0} {1} auswählen · {2} · {3} · {4} · Reachability {5} reported{6}",
+            [
+              device.name,
+              device.id,
+              deviceKindName(device.kind),
+              device.sourceId ?? 'keine Source',
+              observed.isEmpty
+                  ? 'keine aktuelle Observation'
+                  : '${observed.length} Observations',
+              reachability,
+              device.simulated ? ' · simuliert' : ''
+            ]),
         child: Material(
           color:
               selected ? OipTokens.blue.withOpacity(.14) : Colors.transparent,
@@ -955,9 +963,15 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
                                   fontSize: 11.5, fontWeight: FontWeight.w600)),
                         ),
                         Text(
-                            '${deviceKindName(device.kind)} · ${device.sourceId ?? 'keine Source'} · '
-                            '${observed.isEmpty ? 'keine Observation' : known(freshness)} · '
-                            '$reachability reported${device.simulated ? ' · SIM' : ''}',
+                            context.tr("{0} · {1} · {2} · {3} reported{4}", [
+                              deviceKindName(device.kind),
+                              device.sourceId ?? 'keine Source',
+                              observed.isEmpty
+                                  ? 'keine Observation'
+                                  : known(freshness),
+                              reachability,
+                              device.simulated ? ' · SIM' : ''
+                            ]),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -999,10 +1013,7 @@ class DeviceInventoryExplorerState extends State<DeviceInventoryExplorer> {
           child: InkWell(
             key: key,
             onTap: onTap,
-            child: SizedBox(
-                width: 28,
-                height: 32,
-                child: Icon(icon, size: 15)),
+            child: SizedBox(width: 28, height: 32, child: Icon(icon, size: 15)),
           ),
         ),
       );

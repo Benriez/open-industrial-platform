@@ -1,3 +1,4 @@
+import '../l10n/oip_strings.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../app/controller.dart';
@@ -57,8 +58,8 @@ class _DeviceConnectionPanelState extends State<DeviceConnectionPanel> {
       if (mounted) {
         setState(() {
           result = null;
-          error =
-              apiErrorMessage(e, 'Verbindungsinformationen nicht zugänglich.');
+          error = apiErrorMessage(
+              e, context.tr("Verbindungsinformationen nicht zugänglich."));
         });
       }
     } finally {
@@ -85,8 +86,8 @@ class _DeviceConnectionPanelState extends State<DeviceConnectionPanel> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() =>
-            error = apiErrorMessage(e, 'Monitoring-Änderung fehlgeschlagen.'));
+        setState(() => error = apiErrorMessage(
+            e, context.tr("Monitoring-Änderung fehlgeschlagen.")));
       }
     } finally {
       if (mounted) setState(() => busy = false);
@@ -98,16 +99,19 @@ class _DeviceConnectionPanelState extends State<DeviceConnectionPanel> {
     final c = result?.connection;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       const Divider(),
-      Text('Verbindung & Monitoring',
+      Text(context.tr("Verbindung & Monitoring"),
           style: Theme.of(context).textTheme.titleLarge),
       if (error != null) Text(error!),
       if (result == null && error == null) const LinearProgressIndicator(),
       if (result != null && c == null) ...[
-        const Text(
-            'Registered · Connectivity Unknown · Telemetry NoCollector · Health NotEvaluated'),
+        Text(context.tr(
+            "Registered · Connectivity Unknown · Telemetry NoCollector · Health NotEvaluated")),
         if (result!.lastAttempt != null)
-          Text(
-              'Letzter Prüfversuch: ${result!.lastAttempt!['at_ms']} · ${result!.lastAttempt!['error']?['message'] ?? result!.lastAttempt!['stage']}'),
+          Text(context.tr("Letzter Prüfversuch: {0} · {1}", [
+            result!.lastAttempt!['at_ms'],
+            result!.lastAttempt!['error']?['message'] ??
+                result!.lastAttempt!['stage']
+          ])),
         OutlinedButton.icon(
             key: const Key('configure-existing-device'),
             onPressed: () async {
@@ -116,56 +120,61 @@ class _DeviceConnectionPanelState extends State<DeviceConnectionPanel> {
               await refresh();
             },
             icon: const Icon(Icons.link),
-            label: const Text('Verbindung für dieses Gerät einrichten')),
+            label: Text(context.tr("Verbindung für dieses Gerät einrichten"))),
       ],
       if (c != null) ...[
         Text(
             switch (c.status) {
-              'collecting' => 'Collecting · aktuelle Messwerte empfangen',
-              'ssh_verified' => 'SSH Verified · Monitoring deaktiviert',
-              'unreachable' =>
-                'Unreachable · tatsächlicher Verbindungsversuch fehlgeschlagen',
-              'stale' => 'Stale · Messwerte veraltet',
-              'host_key_changed' => 'Host-Key geändert · Verbindung blockiert',
-              'host_key_unknown' =>
-                'Host-Key unbekannt · Identität vor der nächsten Verbindung bestätigen',
+              'collecting' =>
+                context.tr("Collecting · aktuelle Messwerte empfangen"),
+              'ssh_verified' =>
+                context.tr("SSH Verified · Monitoring deaktiviert"),
+              'unreachable' => context.tr(
+                  "Unreachable · tatsächlicher Verbindungsversuch fehlgeschlagen"),
+              'stale' => context.tr("Stale · Messwerte veraltet"),
+              'host_key_changed' =>
+                context.tr("Host-Key geändert · Verbindung blockiert"),
+              'host_key_unknown' => context.tr(
+                  "Host-Key unbekannt · Identität vor der nächsten Verbindung bestätigen"),
               // The monitoring is armed and the host has not delivered a
               // measurement yet: the state says so, and not that the
               // connection works.
-              'collector_configured' =>
-                'Überwachung konfiguriert · noch keine Messwerte empfangen',
+              'collector_configured' => context.tr(
+                  "Überwachung konfiguriert · noch keine Messwerte empfangen"),
               // The Core refused the connection and the identity of the host
               // could not be confirmed: the state names the refusal.
-              'verification_failed' =>
-                'Verifikation fehlgeschlagen · Identität nicht bestätigt',
+              'verification_failed' => context.tr(
+                  "Verifikation fehlgeschlagen · Identität nicht bestätigt"),
               // A state that the client does not know is **named**, never
               // shown as the wire name of the Core: the surface speaks to the
               // operator.
-              _ => 'Verbindungsstatus unbekannt'
+              _ => context.tr("Verbindungsstatus unbekannt")
             },
             key: const Key('device-monitoring-status')),
+        Text(context.tr("SSH · {0}@{1}:{2}",
+            [c.endpoint['user'], c.endpoint['host'], c.endpoint['port']])),
+        Text(context.tr("Host-Key: {0}", [c.fingerprint])),
         Text(
-            'SSH · ${c.endpoint['user']}@${c.endpoint['host']}:${c.endpoint['port']}'),
-        Text('Host-Key: ${c.fingerprint}'),
-        Text('Letzter Prüfversuch: ${timestamp(c.lastAttempt)}'),
-        Text('Letzte erfolgreiche Erfassung: ${timestamp(c.lastSuccess)}'),
+            context.tr("Letzter Prüfversuch: {0}", [timestamp(c.lastAttempt)])),
+        Text(context.tr(
+            "Letzte erfolgreiche Erfassung: {0}", [timestamp(c.lastSuccess)])),
         if (c.error != null)
           Text('${c.error!['code']}: ${c.error!['message']}'),
         ExpansionTile(
-            title: const Text('Tatsächlich verifizierte Identität'),
+            title: Text(context.tr("Tatsächlich verifizierte Identität")),
             children: identityWidgets(c.identity)),
         SwitchListTile(
-            title: const Text('Read-only Monitoring'),
-            subtitle:
-                Text('Polling: ${c.pollSeconds} s · Revision ${c.revision}'),
+            title: Text(context.tr("Read-only Monitoring")),
+            subtitle: Text(context.tr(
+                "Polling: {0} s · Revision {1}", [c.pollSeconds, c.revision])),
             value: c.enabled,
             onChanged: busy ? null : (v) => toggle(c, v)),
         const SizedBox(height: OipTokens.s4),
-        const SectionTitle('Aktuelle Messwerte',
+        SectionTitle(context.tr("Aktuelle Messwerte"),
             'Vom autorisierten Gerät tatsächlich gelesene Werte · keine Ersatzwerte'),
         if (c.observations.isEmpty)
-          const Text(
-              'Noch keine aktuellen Messwerte. Verifizierung allein ist kein kontinuierliches Monitoring.')
+          Text(context.tr(
+              "Noch keine aktuellen Messwerte. Verifizierung allein ist kein kontinuierliches Monitoring."))
         else
           ...c.observations.map((o) => MeasurementRow(o)),
       ],

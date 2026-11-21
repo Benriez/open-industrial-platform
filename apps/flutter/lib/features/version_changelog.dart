@@ -1,3 +1,4 @@
+import '../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../design_system/theme.dart';
@@ -15,6 +16,14 @@ class VersionChangelogDialog extends StatelessWidget {
   const VersionChangelogDialog({super.key});
 
   static const _releases = <_ReleaseNotes>[
+    _ReleaseNotes(
+      version: '0.3.42',
+      build: '45',
+      date: '21. November 2026',
+      changes: [
+        'Deutsch und Englisch lassen sich beim Anmelden und in den lokalen Einstellungen auswählen.',
+      ],
+    ),
     _ReleaseNotes(
       version: '0.3.41',
       build: '44',
@@ -272,11 +281,15 @@ class VersionChangelogDialog extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Änderungsprotokoll',
+                        Text(context.tr("Änderungsprotokoll"),
                             style: Theme.of(context).textTheme.titleLarge),
                         const SizedBox(height: 3),
                         Text(
-                          '${kOipApplication.name} · Version ${kOipApplication.version} · Build ${kOipApplication.build}',
+                          context.tr("{0} · Version {1} · Build {2}", [
+                            kOipApplication.name,
+                            kOipApplication.version,
+                            kOipApplication.build
+                          ]),
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: OipTokens.muted(context),
@@ -287,7 +300,7 @@ class VersionChangelogDialog extends StatelessWidget {
                   ),
                   IconButton(
                     key: const Key('version-changelog-close'),
-                    tooltip: 'Schließen',
+                    tooltip: context.tr("Schließen"),
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close),
                   ),
@@ -313,7 +326,8 @@ class VersionChangelogDialog extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Die Versionshinweise sind in der App enthalten und benötigen keine Serververbindung.',
+                    context.tr(
+                        "Die Versionshinweise sind in der App enthalten und benötigen keine Serververbindung."),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: OipTokens.muted(context),
                         ),
@@ -357,7 +371,8 @@ class _ReleaseCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Version ${release.version} · Build ${release.build}',
+                  context.tr("Version {0} · Build {1}",
+                      [release.version, release.build]),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -372,7 +387,7 @@ class _ReleaseCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    'INSTALLIERT',
+                    context.tr("INSTALLIERT"),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color:
                               OipTokens.readableAccent(context, OipTokens.cyan),
@@ -384,7 +399,7 @@ class _ReleaseCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          Text(release.date,
+          Text(context.tr(release.date),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: OipTokens.muted(context),
                   )),
@@ -399,7 +414,7 @@ class _ReleaseCard extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 8, right: 10),
                     child: Icon(Icons.circle, size: 6, color: OipTokens.cyan),
                   ),
-                  Expanded(child: Text(change)),
+                  Expanded(child: Text(context.tr(change))),
                 ],
               ),
             ),

@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../../design_system/theme.dart';
@@ -71,14 +72,16 @@ class SettingsToolExplorer extends StatelessWidget {
         report.tools.map((tool) => tool.capability).toSet().toList()..sort();
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       SettingsSectionHeader(
-        title: 'MCP Tool & Capability Explorer',
-        subtitle:
-            '${report.tools.length} registrierte Tools aus dem autorisierten Core-Mapping. Sichtbarkeit ist keine Ausführungsfreigabe.',
-        status: 'READ-ONLY CATALOG',
+        title: context.tr("MCP Tool & Capability Explorer"),
+        subtitle: context.tr(
+            "{0} registrierte Tools aus dem autorisierten Core-Mapping. Sichtbarkeit ist keine Ausführungsfreigabe.",
+            [report.tools.length]),
+        status: context.tr("READ-ONLY CATALOG"),
         actions: [
           ToolButton(
             icon: Icons.copy_outlined,
-            tooltip: 'Tool-Katalog als technische Textansicht kopieren',
+            tooltip:
+                context.tr("Tool-Katalog als technische Textansicht kopieren"),
             onPressed: () => onCopy(
               'Tool-Katalog',
               report.tools
@@ -98,13 +101,13 @@ class SettingsToolExplorer extends StatelessWidget {
           focusNode: searchFocus,
           onChanged: (_) => onFiltersChanged(),
           decoration: InputDecoration(
-            labelText: 'Tool, Capability oder Beschreibung',
+            labelText: context.tr("Tool, Capability oder Beschreibung"),
             prefixIcon: const Icon(Icons.search, size: 18),
             suffixIcon: searchController.text.isEmpty
                 ? null
                 : IconButton(
                     key: const Key('settings-tool-search-clear'),
-                    tooltip: 'Suche löschen',
+                    tooltip: context.tr("Suche löschen"),
                     icon: const Icon(Icons.close, size: 16),
                     onPressed: () {
                       searchController.clear();
@@ -118,14 +121,17 @@ class SettingsToolExplorer extends StatelessWidget {
           key: const Key('settings-permission-filter'),
           isExpanded: true,
           value: session.permissionFilter,
-          decoration: const InputDecoration(labelText: 'Permission'),
-          items: const [
-            DropdownMenuItem(value: 'all', child: Text('Alle Berechtigungen')),
-            DropdownMenuItem(value: 'available', child: Text('Available')),
-            DropdownMenuItem(value: 'denied', child: Text('Denied by Policy')),
+          decoration: InputDecoration(labelText: context.tr("Permission")),
+          items: [
+            DropdownMenuItem(
+                value: 'all', child: Text(context.tr("Alle Berechtigungen"))),
+            DropdownMenuItem(
+                value: 'available', child: Text(context.tr("Available"))),
+            DropdownMenuItem(
+                value: 'denied', child: Text(context.tr("Denied by Policy"))),
             DropdownMenuItem(
                 value: 'runtime_unavailable',
-                child: Text('Runtime Unavailable')),
+                child: Text(context.tr("Runtime Unavailable"))),
           ],
           onChanged: (value) {
             session.permissionFilter = value ?? 'all';
@@ -136,10 +142,10 @@ class SettingsToolExplorer extends StatelessWidget {
           key: const Key('settings-capability-filter'),
           isExpanded: true,
           value: session.capabilityFilter,
-          decoration: const InputDecoration(labelText: 'Capability'),
+          decoration: InputDecoration(labelText: context.tr("Capability")),
           items: [
-            const DropdownMenuItem(
-                value: 'all', child: Text('Alle Capabilities')),
+            DropdownMenuItem(
+                value: 'all', child: Text(context.tr("Alle Capabilities"))),
             for (final value in capabilities)
               DropdownMenuItem(
                   value: value,
@@ -171,15 +177,18 @@ class SettingsToolExplorer extends StatelessWidget {
       }),
       const SizedBox(height: 8),
       Text(
-          '${tools.length} von ${report.tools.length} Tools · Filter wirken nur auf den gelieferten Katalog',
+          context.tr(
+              "{0} von {1} Tools · Filter wirken nur auf den gelieferten Katalog",
+              [tools.length, report.tools.length]),
           style: Theme.of(context).textTheme.bodySmall),
       const SizedBox(height: 8),
       Expanded(
         child: tools.isEmpty
-            ? const Center(
+            ? Center(
                 child: WorkstationNote(
-                  'Keine Tools im Filter',
-                  'Suche oder Filter ändern. Der Core-Katalog bleibt unverändert.',
+                  context.tr("Keine Tools im Filter"),
+                  context.tr(
+                      "Suche oder Filter ändern. Der Core-Katalog bleibt unverändert."),
                   icon: Icons.filter_alt_off_outlined,
                 ),
               )
@@ -194,8 +203,11 @@ class SettingsToolExplorer extends StatelessWidget {
                   return Semantics(
                     button: true,
                     selected: selected,
-                    label:
-                        'MCP Tool ${tool.name}. ${toolAvailabilityLabel(tool)}. ${tool.classification}',
+                    label: context.tr("MCP Tool {0}. {1}. {2}", [
+                      tool.name,
+                      toolAvailabilityLabel(tool),
+                      tool.classification
+                    ]),
                     child: Material(
                       color: selected
                           ? tone.withOpacity(.12)
@@ -236,7 +248,8 @@ class SettingsToolExplorer extends StatelessWidget {
                               child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text(toolAvailabilityLabel(tool),
+                                    Text(
+                                        context.tr(toolAvailabilityLabel(tool)),
                                         textAlign: TextAlign.end,
                                         style: TextStyle(
                                             fontSize: 10,
@@ -245,8 +258,9 @@ class SettingsToolExplorer extends StatelessWidget {
                                     Text(
                                         tool.classification
                                                 .contains('read_only')
-                                            ? 'READ ONLY'
-                                            : 'CLASSIFICATION UNKNOWN',
+                                            ? context.tr("READ ONLY")
+                                            : context
+                                                .tr("CLASSIFICATION UNKNOWN"),
                                         style: Theme.of(context)
                                             .textTheme
                                             .labelSmall),
@@ -254,7 +268,8 @@ class SettingsToolExplorer extends StatelessWidget {
                             ),
                             ToolButton(
                               icon: Icons.copy_outlined,
-                              tooltip: 'Tool-Namen ${tool.name} kopieren',
+                              tooltip: context
+                                  .tr("Tool-Namen {0} kopieren", [tool.name]),
                               onPressed: () => onCopy('Tool-Name', tool.name),
                             ),
                           ]),
@@ -288,9 +303,10 @@ class SettingsToolInspector extends StatelessWidget {
   Widget build(BuildContext context) {
     final selected = tool;
     if (selected == null) {
-      return const WorkstationNote(
-        'Tool auswählen',
-        'Ein registriertes Tool auswählen, um Schema, Permissions, Scopes und effektive Verfügbarkeit zu prüfen.',
+      return WorkstationNote(
+        context.tr("Tool auswählen"),
+        context.tr(
+            "Ein registriertes Tool auswählen, um Schema, Permissions, Scopes und effektive Verfügbarkeit zu prüfen."),
         icon: Icons.smart_toy_outlined,
       );
     }
@@ -298,41 +314,52 @@ class SettingsToolInspector extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        PanelLabel('Tool Inspector', color: tone),
+        PanelLabel(context.tr("Tool Inspector"), color: tone),
         Text(selected.name, style: WorkstationTokens.mono(context, size: 14)),
         const SizedBox(height: 6),
         Text(selected.description,
             style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 10),
         Wrap(spacing: 6, runSpacing: 6, children: [
-          StatusPill(toolAvailabilityLabel(selected), color: tone),
+          StatusPill(context.tr(toolAvailabilityLabel(selected)), color: tone),
           StatusPill(
               selected.classification.contains('read_only')
-                  ? 'READ ONLY'
-                  : 'CLASSIFICATION UNKNOWN',
+                  ? context.tr("READ ONLY")
+                  : context.tr("CLASSIFICATION UNKNOWN"),
               icon: Icons.lock_outline),
         ]),
         const Hairline(),
-        KeyValue('Capability', selected.capability),
-        KeyValue('Required Permissions', selected.permissions.join(', ')),
-        KeyValue('Allowed Scopes', selected.supportedScopes.join(', ')),
-        KeyValue('Registered', selected.registered ? 'true' : 'false'),
-        KeyValue('Available to Principal',
-            selected.availableToPrincipal ? 'true' : 'false'),
+        KeyValue(context.tr("Capability"), selected.capability),
+        KeyValue(context.tr("Required Permissions"),
+            selected.permissions.join(', ')),
         KeyValue(
-            'Runtime Available', selected.runtimeAvailable ? 'true' : 'false'),
-        KeyValue('Classification', selected.classification),
+            context.tr("Allowed Scopes"), selected.supportedScopes.join(', ')),
+        KeyValue(context.tr("Registered"),
+            selected.registered ? context.tr("true") : context.tr("false")),
+        KeyValue(
+            context.tr("Available to Principal"),
+            selected.availableToPrincipal
+                ? context.tr("true")
+                : context.tr("false")),
+        KeyValue(
+            context.tr("Runtime Available"),
+            selected.runtimeAvailable
+                ? context.tr("true")
+                : context.tr("false")),
+        KeyValue(context.tr("Classification"), selected.classification),
         if (server != null) ...[
-          KeyValue('Max Input Bytes', server!.fact('max_input_bytes')),
-          KeyValue('Max Output Bytes', server!.fact('max_output_bytes')),
-          KeyValue('Max Requests / Session',
+          KeyValue(
+              context.tr("Max Input Bytes"), server!.fact('max_input_bytes')),
+          KeyValue(
+              context.tr("Max Output Bytes"), server!.fact('max_output_bytes')),
+          KeyValue(context.tr("Max Requests / Session"),
               server!.fact('max_requests_per_session')),
         ],
         const Hairline(),
         Wrap(spacing: 6, children: [
           ChoiceChip(
             key: const Key('settings-input-schema'),
-            label: const Text('Input Schema'),
+            label: Text(context.tr("Input Schema")),
             selected: !session.showOutputSchema,
             showCheckmark: false,
             onSelected: (_) {
@@ -342,7 +369,7 @@ class SettingsToolInspector extends StatelessWidget {
           ),
           ChoiceChip(
             key: const Key('settings-output-schema'),
-            label: const Text('Output Schema'),
+            label: Text(context.tr("Output Schema")),
             selected: session.showOutputSchema,
             showCheckmark: false,
             onSelected: (_) {
@@ -366,18 +393,19 @@ class SettingsToolInspector extends StatelessWidget {
                 '${session.showOutputSchema ? 'Output' : 'Input'} Schema',
                 selected.prettySchema(output: session.showOutputSchema)),
             icon: const Icon(Icons.copy_outlined, size: 16),
-            label: const Text('Schema kopieren'),
+            label: Text(context.tr("Schema kopieren")),
           ),
           OutlinedButton.icon(
             onPressed: () => onCopy('Tool-Name', selected.name),
             icon: const Icon(Icons.copy_outlined, size: 16),
-            label: const Text('Tool-Namen kopieren'),
+            label: Text(context.tr("Tool-Namen kopieren")),
           ),
         ]),
         const SizedBox(height: 10),
-        const WorkstationNote(
-          'Execution & Fehler',
-          'Schemas gewähren keine Ausführung. Der Core prüft Ziel-Scope und Berechtigung bei jedem Aufruf erneut und liefert strukturierte Capability-Fehler. Diese Workstation führt keine Tools aus.',
+        WorkstationNote(
+          context.tr("Execution & Fehler"),
+          context.tr(
+              "Schemas gewähren keine Ausführung. Der Core prüft Ziel-Scope und Berechtigung bei jedem Aufruf erneut und liefert strukturierte Capability-Fehler. Diese Workstation führt keine Tools aus."),
           icon: Icons.policy_outlined,
         ),
       ],
@@ -406,8 +434,11 @@ class SettingsPermissionMatrix extends StatelessWidget {
           final tone = toolAvailabilityColor(context, tool);
           return Semantics(
             button: true,
-            label:
-                'Permission ${tool.name}: ${toolAvailabilityLabel(tool)}. Berechtigung ${tool.permissions.join(', ')}',
+            label: context.tr("Permission {0}: {1}. Berechtigung {2}", [
+              tool.name,
+              toolAvailabilityLabel(tool),
+              tool.permissions.join(', ')
+            ]),
             child: ListTile(
               key: Key('settings-permission-${tool.name}'),
               dense: true,
@@ -418,7 +449,7 @@ class SettingsPermissionMatrix extends StatelessWidget {
                   '${tool.capability} · ${tool.permissions.join(', ')} · ${tool.supportedScopes.join(', ')}'),
               trailing: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 140),
-                child: Text(toolAvailabilityLabel(tool),
+                child: Text(context.tr(toolAvailabilityLabel(tool)),
                     textAlign: TextAlign.end,
                     style: TextStyle(fontSize: 10, color: tone)),
               ),

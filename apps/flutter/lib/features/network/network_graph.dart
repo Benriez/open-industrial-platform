@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -365,7 +366,7 @@ class _NetworkTopologyGraphState extends State<NetworkTopologyGraph> {
         onKeyEvent: widget.onKeyEvent,
         child: Semantics(
           container: true,
-          label: 'Topologie-Viewport',
+          label: context.tr("Topologie-Viewport"),
           child: ClipRect(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -373,11 +374,12 @@ class _NetworkTopologyGraphState extends State<NetworkTopologyGraph> {
                     Theme.of(context).scaffoldBackgroundColor, .42),
               ),
               child: widget.layout.devices.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Padding(
                         padding: EdgeInsets.all(24),
                         child: Text(
-                          'Keine registrierten Geräte im aktuellen Kontext oder Filter.',
+                          context.tr(
+                              "Keine registrierten Geräte im aktuellen Kontext oder Filter."),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -530,7 +532,8 @@ class NetworkTopologyNode extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: 'Details ${device.name}, Status ${OipTokens.statusLabel(status)}',
+      label: context.tr("Details {0}, Status {1}",
+          [device.name, OipTokens.statusLabel(status)]),
       child: Material(
         color: Color.lerp(scheme.surface, category, selected ? .10 : .035),
         shape: RoundedRectangleBorder(
@@ -545,8 +548,16 @@ class NetworkTopologyNode extends StatelessWidget {
           borderRadius: BorderRadius.circular(9),
         ),
         child: Tooltip(
-          message:
-              '${device.name}\n${deviceKindName(device.kind)} · ${device.location}\nErreichbarkeit: ${OipTokens.statusLabel(status)}\nTelemetrie: ${OipTokens.statusLabel(transportLive ? device.health.freshness : 'stale')}\n${device.simulated ? 'Demo-Inventar' : 'API-Inventar'}',
+          message: context
+              .tr("{0}\n{1} · {2}\nErreichbarkeit: {3}\nTelemetrie: {4}\n{5}", [
+            device.name,
+            deviceKindName(device.kind),
+            device.location,
+            OipTokens.statusLabel(status),
+            OipTokens.statusLabel(
+                transportLive ? device.health.freshness : 'stale'),
+            device.simulated ? 'Demo-Inventar' : 'API-Inventar'
+          ]),
           child: InkWell(
             key: Key('topology-${device.id}'),
             onTap: onTap,
@@ -618,12 +629,20 @@ class _EdgeHandle extends StatelessWidget {
       button: true,
       selected: selected,
       excludeSemantics: true,
-      label:
-          'Verbindung $from nach $to, ${edge.link.transport}, Status ${OipTokens.statusLabel(edge.link.status)}',
+      label: context.tr("Verbindung {0} nach {1}, {2}, Status {3}", [
+        from,
+        to,
+        edge.link.transport,
+        OipTokens.statusLabel(edge.link.status)
+      ]),
       child: Tooltip(
-        message: '$from → $to\n${edge.link.transport}\n'
-            'Status ${OipTokens.statusLabel(edge.link.status)}\n'
-            '${edge.link.simulated ? 'Demo / Fixture' : 'API'}',
+        message: context.tr("{0} → {1}\n{2}\nStatus {3}\n{4}", [
+          from,
+          to,
+          edge.link.transport,
+          OipTokens.statusLabel(edge.link.status),
+          edge.link.simulated ? 'Demo / Fixture' : 'API'
+        ]),
         child: Material(
           color: Theme.of(context).colorScheme.surface,
           shape: RoundedRectangleBorder(

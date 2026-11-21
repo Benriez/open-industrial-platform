@@ -13,7 +13,7 @@ class _Collecting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-        child: Text('Sammle Sitzungswerte …',
+        child: Text(context.tr("Sammle Sitzungswerte …"),
             style: Theme.of(context).textTheme.bodySmall),
       );
 }
@@ -101,7 +101,8 @@ class _TankBody extends StatelessWidget {
                 _ValueText(item: item, color: color, size: 34),
                 Text(
                     scale.auto
-                        ? '${_formatBound(scale.min, item)} · Skala automatisch'
+                        ? context.tr("{0} · Skala automatisch",
+                            [_formatBound(scale.min, item)])
                         : _formatBound(scale.min, item),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -360,7 +361,7 @@ class _HistogramBody extends StatelessWidget {
       footer: Row(children: [
         Text(_formatBound(low, item), style: bounds),
         Expanded(
-          child: Text('Verteilung · ${values.length} Samples',
+          child: Text(context.tr("Verteilung · {0} Samples", [values.length]),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -455,8 +456,10 @@ class _TimelineBody extends StatelessWidget {
       ),
       footer: Text(
           thresholds
-              ? 'Normal ${share(counts[0])} · Warnung ${share(counts[1])} · Kritisch ${share(counts[2])}'
-              : 'Intensität: ${_formatBound(low, item)} – ${_formatBound(top, item)}',
+              ? context.tr("Normal {0} · Warnung {1} · Kritisch {2}",
+                  [share(counts[0]), share(counts[1]), share(counts[2])])
+              : context.tr("Intensität: {0} – {1}",
+                  [_formatBound(low, item), _formatBound(top, item)]),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: bounds),
@@ -723,7 +726,8 @@ class _CompareBody extends StatelessWidget {
     if (rows.isEmpty) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-        child: Text('Kein Gerät liefert diese Metrik in diesem Kontext.',
+        child: Text(
+            context.tr("Kein Gerät liefert diese Metrik in diesem Kontext."),
             style: Theme.of(context).textTheme.bodySmall),
       );
     }
@@ -761,7 +765,8 @@ class _DevicesBody extends StatelessWidget {
     if (devices.isEmpty) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-        child: Text('Für diesen Kontext wurden keine Geräte geliefert.',
+        child: Text(
+            context.tr("Für diesen Kontext wurden keine Geräte geliefert."),
             style: Theme.of(context).textTheme.bodySmall),
       );
     }
@@ -777,10 +782,13 @@ class _DevicesBody extends StatelessWidget {
                 final tone =
                     OipTokens.statusColor(context, health.reachability);
                 return Tooltip(
-                  message: '${device.name}\n'
-                      'Erreichbarkeit ${OipTokens.statusLabel(health.reachability)} · '
-                      'Dienst ${OipTokens.statusLabel(health.service)} · '
-                      'Telemetrie ${OipTokens.statusLabel(health.freshness)}',
+                  message: context.tr(
+                      "{0}\nErreichbarkeit {1} · Dienst {2} · Telemetrie {3}", [
+                    device.name,
+                    OipTokens.statusLabel(health.reachability),
+                    OipTokens.statusLabel(health.service),
+                    OipTokens.statusLabel(health.freshness)
+                  ]),
                   child: Container(
                     width: 156,
                     height: 46,
@@ -824,7 +832,9 @@ class _DevicesBody extends StatelessWidget {
           if (devices.length > _max)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Text('+${devices.length - _max} weitere nicht dargestellt',
+              child: Text(
+                  context.tr("+{0} weitere nicht dargestellt",
+                      [devices.length - _max]),
                   style: Theme.of(context).textTheme.bodySmall),
             ),
         ],

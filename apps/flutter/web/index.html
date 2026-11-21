@@ -19,9 +19,17 @@
 <body>
   <div id="loading" role="status">
     <img src="icons/Icon-192.png" width="40" height="40" alt="">
-    <span>Open Industrial Platform · wird geladen …</span>
+    <span id="loading-text">Open Industrial Platform · wird geladen …</span>
   </div>
   <script>
+    try {
+      if (JSON.parse(localStorage.getItem('flutter.oip-language')) === 'en') {
+        document.documentElement.lang = 'en';
+        document.getElementById('loading-text').textContent = 'Open Industrial Platform · loading …';
+      }
+    } catch (_) {
+      // The default language is available even when storage is disabled.
+    }
     // CanvasKit is packaged locally; the application has no runtime CDN dependency.
     window.addEventListener('flutter-first-frame', () => document.getElementById('loading')?.remove());
   </script>

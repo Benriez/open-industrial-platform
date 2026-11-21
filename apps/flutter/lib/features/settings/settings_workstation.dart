@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -35,6 +36,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final FocusNode searchFocus = FocusNode(debugLabel: 'settings-tool-search');
   final FocusNode pageFocus = FocusNode(debugLabel: 'settings-workstation');
   SettingsSnapshot? settings;
+
   /// The categories of the Core with their administration status. They
   /// describe the instance and not a section, so they are kept when a section
   /// is loaded that does not read the settings.
@@ -274,7 +276,8 @@ class _SettingsPageState extends State<SettingsPage> {
     Clipboard.setData(ClipboardData(text: value));
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$label kopiert.')));
+      ..showSnackBar(
+          SnackBar(content: Text(context.tr("{0} kopiert.", [label]))));
   }
 
   KeyEventResult _pageKey(FocusNode node, KeyEvent event) {
@@ -333,7 +336,7 @@ class _SettingsPageState extends State<SettingsPage> {
             final inspector = AdaptiveInspector(
               controller: widget.controller,
               workspace: WorkspaceId.settings,
-              label: 'Einstellung, Berechtigung & Provenienz',
+              label: context.tr("Einstellung, Berechtigung & Provenienz"),
               hasSelection: hasSelection,
               child: WorkstationPanel(
                 key: const Key('settings-inspector'),
@@ -398,16 +401,17 @@ class _SettingsPageState extends State<SettingsPage> {
     final live = dataOrigin == SettingsDataOrigin.liveApi;
     return AdaptiveWorkspaceHeader(
       key: const Key('settings-page-header'),
-      eyebrow: 'SETTINGS · APPLICATION MANAGEMENT',
-      title: 'Einstellungen',
-      subtitle:
-          'Effektive Werte verstehen · Änderbarkeit und Berechtigung prüfen',
+      eyebrow: context.tr("SETTINGS · APPLICATION MANAGEMENT"),
+      title: context.tr("Einstellungen"),
+      subtitle: context.tr(
+          "Effektive Werte verstehen · Änderbarkeit und Berechtigung prüfen"),
       accent: OipTokens.cyan,
       primaryAction: !_backendFree
           ? WorkspacePrimaryAction(
               buttonKey: const Key('settings-refresh'),
-              label: 'Status aktualisieren',
-              tooltip: 'Autorisierten Management-Read erneut prüfen',
+              label: context.tr("Status aktualisieren"),
+              tooltip:
+                  context.tr("Autorisierten Management-Read erneut prüfen"),
               icon: Icons.refresh,
               onPressed: loading ? null : _load,
             )
@@ -427,17 +431,18 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ],
       status: [
-        const StatusPill('AGENT-FIRST',
+        StatusPill(context.tr("AGENT-FIRST"),
             color: OipTokens.lime, icon: Icons.smart_toy_outlined),
-        const StatusPill('READ-ONLY / OFFLINE ADMIN', icon: Icons.lock_outline),
+        StatusPill(context.tr("READ-ONLY / OFFLINE ADMIN"),
+            icon: Icons.lock_outline),
         if (fixture)
-          const StatusPill('CONTRACT FIXTURE · NICHT LIVE',
+          StatusPill(context.tr("CONTRACT FIXTURE · NICHT LIVE"),
               color: OipTokens.yellow, icon: Icons.science_outlined),
         if (live)
-          const StatusPill('AUTHORIZED API READ',
+          StatusPill(context.tr("AUTHORIZED API READ"),
               color: OipTokens.cyan, icon: Icons.verified_outlined),
         if (loadError != null)
-          const StatusPill('AUTH / CONNECTION LIMITED',
+          StatusPill(context.tr("AUTH / CONNECTION LIMITED"),
               color: OipTokens.yellow, icon: Icons.warning_amber_outlined),
       ],
     );
@@ -450,10 +455,11 @@ class _SettingsPageState extends State<SettingsPage> {
       null => _backendFree ? 'LOCAL / EXISTING SNAPSHOT' : 'NO AUTHORIZED DATA',
     };
     return AdvancedWorkspaceSection(
-      title: 'Technischer Kontext & Vertragsdetails',
+      title: context.tr("Technischer Kontext & Vertragsdetails"),
       summary: widget.controller.infrastructure.ready
           ? widget.controller.infrastructure.selectedBreadcrumb
-          : 'Effektiver Scope, Provenienz und Offline-Change-Channel',
+          : context
+              .tr("Effektiver Scope, Provenienz und Offline-Change-Channel"),
       expanded: widget.controller.workspaces
           .layout(WorkspaceId.settings)
           .advancedFilters,
@@ -538,13 +544,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _workspace() {
     if (loading) {
-      return const Center(
+      return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           CircularProgressIndicator(),
           SizedBox(height: 12),
-          Text('Autorisierte Core-Daten werden gelesen …'),
+          Text(context.tr("Autorisierte Core-Daten werden gelesen …")),
           SizedBox(height: 4),
-          Text('Keine Hintergrund-Polls; nur dieser bounded Read.'),
+          Text(context.tr("Keine Hintergrund-Polls; nur dieser bounded Read.")),
         ]),
       );
     }
@@ -640,8 +646,8 @@ class _SettingsPageState extends State<SettingsPage> {
             style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: 12),
         WorkstationNote(
-          'Fachlicher Status',
-          apiErrorMessage(error, 'Unbekannter Management-Fehler.'),
+          context.tr("Fachlicher Status"),
+          apiErrorMessage(error, context.tr("Unbekannter Management-Fehler.")),
           icon: unauthorized
               ? Icons.admin_panel_settings_outlined
               : Icons.info_outline,
@@ -652,7 +658,7 @@ class _SettingsPageState extends State<SettingsPage> {
           key: const Key('settings-retry'),
           onPressed: _load,
           icon: const Icon(Icons.refresh, size: 17),
-          label: const Text('Autorisierten Read erneut versuchen'),
+          label: Text(context.tr("Autorisierten Read erneut versuchen")),
         ),
         if (unauthorized) ...[
           const SizedBox(height: 8),
@@ -663,25 +669,28 @@ class _SettingsPageState extends State<SettingsPage> {
               _selectSection(SettingsSection.versions);
             },
             icon: const Icon(Icons.system_update_alt_outlined, size: 17),
-            label: const Text('App-Version und Updates öffnen'),
+            label: Text(context.tr("App-Version und Updates öffnen")),
           ),
         ],
         const SizedBox(height: 8),
         ExpansionTile(
           key: const Key('settings-error-details'),
-          title: const Text('Technische Fehlerdetails'),
-          subtitle: const Text('Sanitized · keine Credentials'),
+          title: Text(context.tr("Technische Fehlerdetails")),
+          subtitle: Text(context.tr("Sanitized · keine Credentials")),
           children: [
-            KeyValue('Code', code ?? 'Unknown'),
-            KeyValue('Endpoint',
-                error is ApiFailure ? error.path ?? 'Unknown' : 'Unknown'),
+            KeyValue(context.tr("Code"), code ?? context.tr("Unknown")),
             KeyValue(
-                'HTTP Status',
+                context.tr("Endpoint"),
                 error is ApiFailure
-                    ? error.statusCode?.toString() ?? 'not received'
-                    : 'not received'),
-            const KeyValue('Authorization fallback',
-                'none; no token in URL, storage or web assets'),
+                    ? error.path ?? context.tr("Unknown")
+                    : context.tr("Unknown")),
+            KeyValue(
+                context.tr("HTTP Status"),
+                error is ApiFailure
+                    ? error.statusCode?.toString() ?? context.tr("not received")
+                    : context.tr("not received")),
+            KeyValue(context.tr("Authorization fallback"),
+                context.tr("none; no token in URL, storage or web assets")),
           ],
         ),
       ],
@@ -726,42 +735,51 @@ class _SettingsPageState extends State<SettingsPage> {
       return _settingInspector(selectedDefinition, effective);
     }
     return ListView(children: [
-      const PanelLabel('Context / Help'),
+      PanelLabel(context.tr("Context / Help")),
       KeyValue(
-          'Effective Scope',
+          context.tr("Effective Scope"),
           widget.controller.infrastructure.ready
               ? widget.controller.infrastructure.selectedBreadcrumb
               : _backendFree
-                  ? 'Local UI / existing v1 snapshot'
-                  : 'Platform management or explicit authorized target'),
+                  ? context.tr("Local UI / existing v1 snapshot")
+                  : context
+                      .tr("Platform management or explicit authorized target")),
       KeyValue(
-          'Permissions',
+          context.tr("Permissions"),
           loadError == null
-              ? 'Evaluated per authorized read; category metadata is not a grant'
-              : 'Restricted / not available'),
+              ? context.tr(
+                  "Evaluated per authorized read; category metadata is not a grant")
+              : context.tr("Restricted / not available")),
       KeyValue(
-          'Provenance',
+          context.tr("Provenance"),
           switch (dataOrigin) {
-            SettingsDataOrigin.contractFixture =>
-              'Sanitized OIP-008.4 contract fixture; not live status',
-            SettingsDataOrigin.liveApi => 'Authorized Core DTO',
-            null => 'No management response',
+            SettingsDataOrigin.contractFixture => context
+                .tr("Sanitized OIP-008.4 contract fixture; not live status"),
+            SettingsDataOrigin.liveApi => context.tr("Authorized Core DTO"),
+            null => context.tr("No management response"),
           }),
-      const KeyValue('Apply Status',
-          'Reads: active_startup_snapshot where delivered; writes: offline only, requires restart'),
+      KeyValue(
+          context.tr("Apply Status"),
+          context.tr(
+              "Reads: active_startup_snapshot where delivered; writes: offline only, requires restart")),
       const Hairline(),
       if (report?.clientConfiguration != null) ...[
-        KeyValue('Executable',
-            report!.clientConfiguration!.executable ?? 'Placeholder required'),
-        KeyValue('Arguments', report!.clientConfiguration!.args.join(' ')),
-        const KeyValue('Credential Contents', 'Never read or exported'),
+        KeyValue(
+            context.tr("Executable"),
+            report!.clientConfiguration!.executable ??
+                context.tr("Placeholder required")),
+        KeyValue(context.tr("Arguments"),
+            report!.clientConfiguration!.args.join(' ')),
+        KeyValue(context.tr("Credential Contents"),
+            context.tr("Never read or exported")),
         const Hairline(),
       ],
       if (report != null) SettingsLimitations(report!.limitations),
       if (report == null)
-        const WorkstationNote(
-          'Kontextsensitiver Inspector',
-          'Setting oder Tool auswählen. Der Inspector zeigt nur gelieferte Vertragsdaten, Permission-Grenzen und konkrete Backend-Anforderungen.',
+        WorkstationNote(
+          context.tr("Kontextsensitiver Inspector"),
+          context.tr(
+              "Setting oder Tool auswählen. Der Inspector zeigt nur gelieferte Vertragsdaten, Permission-Grenzen und konkrete Backend-Anforderungen."),
           icon: Icons.info_outline,
         ),
     ]);
@@ -770,42 +788,46 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _settingInspector(
       SettingDefinition definition, EffectiveSetting? effective) {
     return ListView(children: [
-      const PanelLabel('Setting Inspector'),
+      PanelLabel(context.tr("Setting Inspector")),
       Text(definition.key, style: WorkstationTokens.mono(context, size: 14)),
       const SizedBox(height: 6),
       Text(definition.description,
           style: Theme.of(context).textTheme.bodySmall),
       const SizedBox(height: 8),
-      const StatusPill('OFFLINE ADMINISTRATION REQUIRED',
+      StatusPill(context.tr("OFFLINE ADMINISTRATION REQUIRED"),
           color: OipTokens.yellow, icon: Icons.lock_outline),
       const Hairline(),
-      KeyValue('Effective Value', effective?.effective.display ?? 'Unknown'),
-      KeyValue('Default', definition.defaultValue.display),
-      KeyValue('Type', definition.dataType),
+      KeyValue(context.tr("Effective Value"),
+          effective?.effective.display ?? context.tr("Unknown")),
+      KeyValue(context.tr("Default"), definition.defaultValue.display),
+      KeyValue(context.tr("Type"), definition.dataType),
+      KeyValue(context.tr("Requested Scope"),
+          effective?.requestedScope.display ?? context.tr("Unknown")),
+      KeyValue(context.tr("Origin Scope"),
+          effective?.origin?.display ?? 'built_in_default'),
       KeyValue(
-          'Requested Scope', effective?.requestedScope.display ?? 'Unknown'),
-      KeyValue(
-          'Origin Scope', effective?.origin?.display ?? 'built_in_default'),
-      KeyValue(
-          'Persisted Exact Scope',
+          context.tr("Persisted Exact Scope"),
           effective?.persisted == null
-              ? 'No exact-scope record; default/inherited value'
-              : 'revision ${effective!.persisted!.revision}'),
-      KeyValue('Effective Revision',
-          effective?.effectiveRevision.toString() ?? 'Unknown'),
-      KeyValue('Apply Status', effective?.applyStatus ?? 'Unknown'),
-      KeyValue('Apply Mode', definition.applyMode),
-      KeyValue('Validation', definition.validation, mono: false),
-      KeyValue('Supported Scopes', definition.scopes.join(' > ')),
-      KeyValue('Inherited', definition.inherited ? 'true' : 'false'),
-      KeyValue('Read / Write Permission',
+              ? context.tr("No exact-scope record; default/inherited value")
+              : context.tr("revision {0}", [effective!.persisted!.revision])),
+      KeyValue(context.tr("Effective Revision"),
+          effective?.effectiveRevision.toString() ?? context.tr("Unknown")),
+      KeyValue(context.tr("Apply Status"),
+          effective?.applyStatus ?? context.tr("Unknown")),
+      KeyValue(context.tr("Apply Mode"), definition.applyMode),
+      KeyValue(context.tr("Validation"), definition.validation, mono: false),
+      KeyValue(context.tr("Supported Scopes"), definition.scopes.join(' > ')),
+      KeyValue(context.tr("Inherited"),
+          definition.inherited ? context.tr("true") : context.tr("false")),
+      KeyValue(context.tr("Read / Write Permission"),
           '${definition.readPermission} / ${definition.writePermission}'),
-      KeyValue('Sensitivity', definition.sensitivity, mono: false),
-      KeyValue('Persistence', definition.persistence),
-      KeyValue('Change Channel', definition.changeChannel),
-      const WorkstationNote(
-        'Kein Browser-Speichern',
-        'expected_revision bezieht sich beim Offline-CLI auf den exakten Scope-Datensatz (0 bei Abwesenheit), nicht auf eine geerbte effective_revision. Die UI führt keine Mutation aus.',
+      KeyValue(context.tr("Sensitivity"), definition.sensitivity, mono: false),
+      KeyValue(context.tr("Persistence"), definition.persistence),
+      KeyValue(context.tr("Change Channel"), definition.changeChannel),
+      WorkstationNote(
+        context.tr("Kein Browser-Speichern"),
+        context.tr(
+            "expected_revision bezieht sich beim Offline-CLI auf den exakten Scope-Datensatz (0 bei Abwesenheit), nicht auf eine geerbte effective_revision. Die UI führt keine Mutation aus."),
         icon: Icons.offline_bolt_outlined,
       ),
     ]);

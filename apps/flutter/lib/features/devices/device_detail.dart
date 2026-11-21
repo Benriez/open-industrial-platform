@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import '../../app/controller.dart';
 import '../../design_system/theme.dart';
@@ -60,15 +61,16 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (device == null) {
-      return const WorkstationPanel(
+      return WorkstationPanel(
         key: Key('device-engineering-workspace'),
         accent: OipTokens.blue,
         padding: EdgeInsets.all(DevicesLayout.panelPadding),
         child: Align(
           alignment: Alignment.topLeft,
           child: WorkstationNote(
-            'Gerät für die technische Untersuchung auswählen',
-            'Explorer, Engineering Workspace, Inspector und Related Activity verwenden anschließend dieselbe Device-ID. Es werden keine vorherigen Messwerte übernommen.',
+            context.tr("Gerät für die technische Untersuchung auswählen"),
+            context.tr(
+                "Explorer, Engineering Workspace, Inspector und Related Activity verwenden anschließend dieselbe Device-ID. Es werden keine vorherigen Messwerte übernommen."),
             icon: Icons.dns_outlined,
           ),
         ),
@@ -89,7 +91,7 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('ENGINEERING WORKSPACE',
+                    Text(context.tr("ENGINEERING WORKSPACE"),
                         style: WorkstationTokens.eyebrow(context,
                             color: OipTokens.blue)),
                     Text('${current.name} · ${current.id}',
@@ -98,10 +100,10 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
                   ]),
             ),
             if (current.simulated)
-              const StatusPill('SIMULATED', icon: Icons.science_outlined),
+              StatusPill(context.tr("SIMULATED"), icon: Icons.science_outlined),
             if (error != null) ...[
               StatusPill(
-                'METRIKEN NICHT ERREICHBAR',
+                context.tr("METRIKEN NICHT ERREICHBAR"),
                 color: OipTokens.statusColor(context, 'degraded'),
                 icon: Icons.error_outline,
               ),
@@ -109,23 +111,23 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
               // without scrolling through the identity grid first.
               IconButton(
                 key: const Key('device-metrics-retry-header'),
-                tooltip: 'DeviceDetail erneut laden',
+                tooltip: context.tr("DeviceDetail erneut laden"),
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh, size: 18),
               ),
             ],
             IconButton(
               key: const Key('device-detail-close'),
-              tooltip: 'Details schließen',
+              tooltip: context.tr("Details schließen"),
               onPressed: onClose,
               icon: const Icon(Icons.close, size: 18),
             ),
           ]),
-          const TabBar(
+          TabBar(
             tabs: [
-              Tab(text: 'Engineering'),
-              Tab(text: 'Telemetry'),
-              Tab(text: 'Related Events'),
+              Tab(text: context.tr("Engineering")),
+              Tab(text: context.tr("Telemetry")),
+              Tab(text: context.tr("Related Events")),
             ],
           ),
           Expanded(
@@ -177,68 +179,79 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
     final observations = metrics;
     return SingleChildScrollView(
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        PanelLabel('Identity & Registry',
-            trailing:
-                Text('READ-ONLY', style: WorkstationTokens.eyebrow(context))),
+        PanelLabel(context.tr("Identity & Registry"),
+            trailing: Text(context.tr("READ-ONLY"),
+                style: WorkstationTokens.eyebrow(context))),
         KeyValueGrid(children: [
-          KeyValue('DEVICE ID', device.id),
-          KeyValue('DISPLAY NAME', device.name),
-          KeyValue('DEVICE TYPE', deviceKindName(device.kind)),
-          KeyValue('SOURCE ID', device.sourceId ?? 'Nicht verfügbar'),
-          KeyValue('REGISTRY LOCATION', device.location),
-          KeyValue('REGISTRY CONNECTION TYPE', device.connection),
-          KeyValue('MANUFACTURER / MODEL', _identity(inventoryDevice, 'manufacturer',
-              'model')),
-          KeyValue('FIRMWARE / OS',
+          KeyValue(context.tr("DEVICE ID"), device.id),
+          KeyValue(context.tr("DISPLAY NAME"), device.name),
+          KeyValue(context.tr("DEVICE TYPE"),
+              context.tr(deviceKindName(device.kind))),
+          KeyValue(context.tr("SOURCE ID"),
+              device.sourceId ?? context.tr("Nicht verfügbar")),
+          KeyValue(context.tr("REGISTRY LOCATION"), device.location),
+          KeyValue(context.tr("REGISTRY CONNECTION TYPE"), device.connection),
+          KeyValue(context.tr("MANUFACTURER / MODEL"),
+              _identity(inventoryDevice, 'manufacturer', 'model')),
+          KeyValue(context.tr("FIRMWARE / OS"),
               _identity(inventoryDevice, 'operating_system')),
-          KeyValue('SERIAL / BRIDGE-ID',
+          KeyValue(context.tr("SERIAL / BRIDGE-ID"),
               _identity(inventoryDevice, 'serial_number')),
-          KeyValue('MAC / IP-ADRESSE', _identity(inventoryDevice, 'mac_address',
-              'ip_address')),
+          KeyValue(context.tr("MAC / IP-ADRESSE"),
+              _identity(inventoryDevice, 'mac_address', 'ip_address')),
           if (infrastructure?.ready == true) ...[
-            KeyValue('ORGANIZATION',
-                infrastructure!.hierarchy.organizationName(infrastructure!.devicePlacement(device)?.organizationId)),
-            KeyValue('INFRASTRUCTURE',
-                infrastructure!.hierarchy.infrastructureName(infrastructure!.devicePlacement(device)?.infrastructureId)),
-            KeyValue('SITE',
-                infrastructure!.hierarchy.siteName(infrastructure!.devicePlacement(device)?.siteId)),
+            KeyValue(
+                context.tr("ORGANIZATION"),
+                infrastructure!.hierarchy.organizationName(
+                    infrastructure!.devicePlacement(device)?.organizationId)),
+            KeyValue(
+                context.tr("INFRASTRUCTURE"),
+                infrastructure!.hierarchy.infrastructureName(
+                    infrastructure!.devicePlacement(device)?.infrastructureId)),
+            KeyValue(
+                context.tr("SITE"),
+                infrastructure!.hierarchy
+                    .siteName(infrastructure!.devicePlacement(device)?.siteId)),
           ] else
-            const KeyValue('ORGANIZATION / INFRASTRUCTURE / SITE',
-                'Nicht im autorisierten v1-Vertrag verfügbar'),
-          const KeyValue('INTERFACE TYPE',
-              'Nicht separat verfügbar; Registry Connection Type oben'),
+            KeyValue(context.tr("ORGANIZATION / INFRASTRUCTURE / SITE"),
+                context.tr("Nicht im autorisierten v1-Vertrag verfügbar")),
+          KeyValue(
+              context.tr("INTERFACE TYPE"),
+              context.tr(
+                  "Nicht separat verfügbar; Registry Connection Type oben")),
         ]),
         // The note of the device is a free text, so it stands under the grid
         // and takes the whole width of the panel.
-        KeyValue('NOTE', _note(inventoryDevice),
+        KeyValue(context.tr("NOTE"), _note(inventoryDevice),
             key: const Key('device-identity-note'), mono: false),
         const Hairline(vertical: 4),
-        const PanelLabel('Observation & Telemetry'),
+        PanelLabel(context.tr("Observation & Telemetry")),
         if (loading)
           const Padding(
             padding: EdgeInsets.all(8),
             child: LinearProgressIndicator(minHeight: 2),
           )
         else if (error != null)
-          const WorkstationNote(
-            'Metriken nicht erreichbar',
-            'Der DeviceDetail-Request ist fehlgeschlagen. Frühere oder fremde Messwerte werden nicht angezeigt.',
+          WorkstationNote(
+            context.tr("Metriken nicht erreichbar"),
+            context.tr(
+                "Der DeviceDetail-Request ist fehlgeschlagen. Frühere oder fremde Messwerte werden nicht angezeigt."),
             icon: Icons.error_outline,
             color: OipTokens.yellow,
           )
         else if (observations.isEmpty)
-          const WorkstationNote(
-            'Keine Telemetrie für dieses Gerät verfügbar',
-            'DeviceDetail enthält keine Observations. Kein Ersatzwert, kein 0 % und kein künstlicher Chart.',
+          WorkstationNote(
+            context.tr("Keine Telemetrie für dieses Gerät verfügbar"),
+            context.tr(
+                "DeviceDetail enthält keine Observations. Kein Ersatzwert, kein 0 % und kein künstlicher Chart."),
             icon: Icons.sensors_off_outlined,
           )
         else
           Wrap(
             spacing: 8,
             runSpacing: 6,
-            children: observations
-                .map((item) => _metricChip(context, item))
-                .toList(),
+            children:
+                observations.map((item) => _metricChip(context, item)).toList(),
           ),
         if (error != null)
           Align(
@@ -247,89 +260,103 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
               key: const Key('device-metrics-retry'),
               onPressed: onRetry,
               icon: const Icon(Icons.refresh, size: 16),
-              label: const Text('Erneut versuchen'),
+              label: Text(context.tr("Erneut versuchen")),
             ),
           ),
         if (controller?.management != null && controller!.managed) ...[
           const Hairline(vertical: 4),
-          const PanelLabel('Connection & Monitoring'),
+          PanelLabel(context.tr("Connection & Monitoring")),
           DeviceConnectionPanel(
               controller: controller!,
               deviceId: device.id,
               onObservations: onConnectionObservations),
           const Hairline(vertical: 4),
-          const PanelLabel('Persistierte Messhistorie'),
+          PanelLabel(context.tr("Persistierte Messhistorie")),
           DeviceHistorySection(
               api: controller!.management!, deviceId: device.id),
         ],
         const Hairline(vertical: 4),
-        const PanelLabel('Connectivity Evidence'),
+        PanelLabel(context.tr("Connectivity Evidence")),
         KeyValueGrid(children: [
-          KeyValue('REGISTRY CONNECTION TYPE', device.connection),
-          KeyValue('REPORTED REACHABILITY',
+          KeyValue(context.tr("REGISTRY CONNECTION TYPE"), device.connection),
+          KeyValue(context.tr("REPORTED REACHABILITY"),
               '${known(device.health.reachability)} · ${device.simulated ? 'SIMULATED / REPORTED' : 'REPORTED'}'),
           KeyValue(
-              'OBSERVED SOURCE CONNECTION',
+              context.tr("OBSERVED SOURCE CONNECTION"),
               source == null
-                  ? 'Unbekannt / keine Source'
-                  : known(source.connection)),
-          const KeyValue('ACTUAL PROBE RESULT',
-              'Unbekannt · kein aktiver Probe ausgeführt'),
+                  ? context.tr("Unbekannt / keine Source")
+                  : context.tr(known(source.connection))),
+          KeyValue(context.tr("ACTUAL PROBE RESULT"),
+              context.tr("Unbekannt · kein aktiver Probe ausgeführt")),
         ]),
         const Hairline(vertical: 4),
         Row(children: [
           Expanded(
-            child: Text('Fünf unabhängige Statusdimensionen',
+            child: Text(context.tr("Fünf unabhängige Statusdimensionen"),
                 style: WorkstationTokens.eyebrow(context)),
           ),
-          Text('REPORTED', style: WorkstationTokens.eyebrow(context)),
+          Text(context.tr("REPORTED"),
+              style: WorkstationTokens.eyebrow(context)),
         ]),
         KeyValueGrid(children: [
-          KeyValue('DEVICE REACHABILITY', known(device.health.reachability),
+          KeyValue(context.tr("DEVICE REACHABILITY"),
+              context.tr(known(device.health.reachability)),
               color:
                   OipTokens.statusColor(context, device.health.reachability)),
-          KeyValue('VPN TRANSPORT', known(device.health.vpn),
+          KeyValue(
+              context.tr("VPN TRANSPORT"), context.tr(known(device.health.vpn)),
               color: OipTokens.statusColor(context, device.health.vpn)),
-          KeyValue('AGENT AVAILABILITY', known(device.health.agent),
+          KeyValue(context.tr("AGENT AVAILABILITY"),
+              context.tr(known(device.health.agent)),
               color: OipTokens.statusColor(context, device.health.agent)),
-          KeyValue('SERVICE HEALTH', known(device.health.service),
+          KeyValue(context.tr("SERVICE HEALTH"),
+              context.tr(known(device.health.service)),
               color: OipTokens.statusColor(context, device.health.service)),
           KeyValue(
-              'TELEMETRY FRESHNESS',
+              context.tr("TELEMETRY FRESHNESS"),
               connection == 'live'
-                  ? known(device.health.freshness)
-                  : 'Veraltet / unbekannt',
+                  ? context.tr(known(device.health.freshness))
+                  : context.tr("Veraltet / unbekannt"),
               color: connection == 'live'
                   ? OipTokens.statusColor(context, device.health.freshness)
                   : OipTokens.statusColor(context, 'degraded')),
         ]),
         const Hairline(vertical: 4),
-        const PanelLabel('Zustandsdimensionen getrennt'),
+        PanelLabel(context.tr("Zustandsdimensionen getrennt")),
         KeyValueGrid(children: [
           KeyValue(
-              'SOURCE HEALTH',
+              context.tr("SOURCE HEALTH"),
               source == null
-                  ? 'Unbekannt'
+                  ? context.tr("Unbekannt")
                   : '${known(source.connection)} · ${known(source.service)}'),
           KeyValue(
-              'DEVICE TELEMETRY FRESHNESS',
+              context.tr("DEVICE TELEMETRY FRESHNESS"),
               observations.isEmpty
-                  ? known(device.health.freshness)
-                  : known(deviceObservedFreshness(snapshot, device))),
+                  ? context.tr(known(device.health.freshness))
+                  : context
+                      .tr(known(deviceObservedFreshness(snapshot, device)))),
           KeyValue(
-              'OBSERVATION QUALITY',
+              context.tr("OBSERVATION QUALITY"),
               observations.isEmpty
-                  ? 'Unbekannt'
+                  ? context.tr("Unbekannt")
                   : deviceObservedQuality(snapshot, device).toUpperCase()),
-          KeyValue('NETWORK REACHABILITY',
-              '${known(device.health.reachability)} · REPORTED, nicht gemessen'),
-          KeyValue('DIAGNOSTIC FINDINGS',
-              '${snapshot.incidents.where((item) => item.deviceId == device.id).length} exakt zugeordnet'),
+          KeyValue(
+              context.tr("NETWORK REACHABILITY"),
+              context.tr("{0} · REPORTED, nicht gemessen",
+                  [known(device.health.reachability)])),
+          KeyValue(
+              context.tr("DIAGNOSTIC FINDINGS"),
+              context.tr("{0} exakt zugeordnet", [
+                snapshot.incidents
+                    .where((item) => item.deviceId == device.id)
+                    .length
+              ])),
         ]),
         const SizedBox(height: 6),
-        const WorkstationNote(
-          'Keine Gesundheitsableitung',
-          'Ein Source-Reconnect beweist nicht, dass jedes zugeordnete Gerät vollständig funktioniert. Registry Presence, Telemetrie, Reachability und Findings bleiben getrennt.',
+        WorkstationNote(
+          context.tr("Keine Gesundheitsableitung"),
+          context.tr(
+              "Ein Source-Reconnect beweist nicht, dass jedes zugeordnete Gerät vollständig funktioniert. Registry Presence, Telemetrie, Reachability und Findings bleiben getrennt."),
           icon: Icons.fact_check_outlined,
         ),
       ]),
@@ -353,20 +380,22 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
   Widget _telemetry(BuildContext context, Device device) {
     if (loading) return const Center(child: CircularProgressIndicator());
     if (error != null) {
-      return const Center(
+      return Center(
         child: WorkstationNote(
-          'Metriken nicht erreichbar',
-          'Der ausgewählte DeviceDetail-Umfang konnte nicht geladen werden.',
+          context.tr("Metriken nicht erreichbar"),
+          context.tr(
+              "Der ausgewählte DeviceDetail-Umfang konnte nicht geladen werden."),
           icon: Icons.error_outline,
           color: OipTokens.yellow,
         ),
       );
     }
     if (metrics.isEmpty) {
-      return const Center(
+      return Center(
         child: WorkstationNote(
-          'Keine Telemetrie für dieses Gerät verfügbar',
-          'Keine Observations im autorisierten DeviceDetail. Frühere Geräte- oder Source-Werte werden nicht untergeschoben.',
+          context.tr("Keine Telemetrie für dieses Gerät verfügbar"),
+          context.tr(
+              "Keine Observations im autorisierten DeviceDetail. Frühere Geräte- oder Source-Werte werden nicht untergeschoben."),
           icon: Icons.sensors_off_outlined,
         ),
       );
@@ -391,14 +420,21 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
             Text('${item.display} ${item.symbol}',
                 style: Theme.of(context).textTheme.headlineSmall),
             KeyValueGrid(children: [
-              KeyValue('QUALITÄT / FRESHNESS',
+              KeyValue(context.tr("QUALITÄT / FRESHNESS"),
                   '${known(item.quality)} · ${known(item.freshness)}'),
-              KeyValue('DATENHERKUNFT',
-                  '${item.simulated ? 'SIMULATED · ' : ''}OBSERVED · ${item.sourceId ?? 'Source unbekannt'}'),
-              KeyValue('SOURCE TIMESTAMP', timestamp(item.sourceMs)),
-              KeyValue('SERVER TIMESTAMP', timestamp(item.serverMs)),
-              KeyValue('RECEIVE TIMESTAMP', timestamp(item.receivedMs)),
-              KeyValue('STATUS / COLLECTION ERROR',
+              KeyValue(
+                  context.tr("DATENHERKUNFT"),
+                  context.tr("{0}OBSERVED · {1}", [
+                    item.simulated ? 'SIMULATED · ' : '',
+                    item.sourceId ?? 'Source unbekannt'
+                  ])),
+              KeyValue(
+                  context.tr("SOURCE TIMESTAMP"), timestamp(item.sourceMs)),
+              KeyValue(
+                  context.tr("SERVER TIMESTAMP"), timestamp(item.serverMs)),
+              KeyValue(
+                  context.tr("RECEIVE TIMESTAMP"), timestamp(item.receivedMs)),
+              KeyValue(context.tr("STATUS / COLLECTION ERROR"),
                   '${item.statusCode ?? 'Nicht verfügbar'} · ${item.collectionError ?? 'Kein Fehler geliefert'}'),
             ]),
           ]),
@@ -415,10 +451,11 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
             device.sourceId != null && item.sourceId == device.sourceId)
         .toList();
     if (incidents.isEmpty && sourceEvents.isEmpty) {
-      return const Center(
+      return Center(
         child: WorkstationNote(
-          'Keine zuordenbaren Ereignisse',
-          'Weder eine exakte Device-ID- noch eine Source-ID-Beziehung ist im aktuellen Ereignisfenster vorhanden.',
+          context.tr("Keine zuordenbaren Ereignisse"),
+          context.tr(
+              "Weder eine exakte Device-ID- noch eine Source-ID-Beziehung ist im aktuellen Ereignisfenster vorhanden."),
           icon: Icons.event_busy_outlined,
         ),
       );
@@ -429,8 +466,9 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
             dense: true,
             leading: const Icon(Icons.radar, size: 17),
             title: Text(incident.title),
-            subtitle: Text(
-                '${incident.id} · exakte Device-ID · ${incident.simulated ? 'SIMULATED' : 'REPORTED'} · keine Severity/Kausalität abgeleitet'),
+            subtitle: Text(context.tr(
+                "{0} · exakte Device-ID · {1} · keine Severity/Kausalität abgeleitet",
+                [incident.id, incident.simulated ? 'SIMULATED' : 'REPORTED'])),
             trailing: const Icon(Icons.arrow_outward, size: 16),
             onTap: () => navigate(4),
           )),
@@ -440,8 +478,14 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
             dense: true,
             leading: const Icon(Icons.account_tree_outlined, size: 17),
             title: Text(event.kind),
-            subtitle: Text(
-                '${event.id ?? 'Source/Sequenz ${event.sequence ?? 'unbekannt'}'} · ${event.sourceId} · ${timestamp(event.atMs ?? event.gapEndedMs)}\nSource-Ereignis, nicht automatisch ein Device-Incident${event.reason == null ? '' : ' · ${event.reason}'}'),
+            subtitle: Text(context.tr(
+                "{0} · {1} · {2}\nSource-Ereignis, nicht automatisch ein Device-Incident{3}",
+                [
+                  event.id ?? 'Source/Sequenz ${event.sequence ?? 'unbekannt'}',
+                  event.sourceId,
+                  timestamp(event.atMs ?? event.gapEndedMs),
+                  event.reason == null ? '' : ' · ${event.reason}'
+                ])),
             trailing: const Icon(Icons.arrow_outward, size: 16),
             onTap: () => navigate(4),
           )),
@@ -498,11 +542,12 @@ class DeviceContextInspector extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(
           DevicesLayout.panelPadding, 10, DevicesLayout.panelPadding, 8),
       child: current == null
-          ? const Align(
+          ? Align(
               alignment: Alignment.topLeft,
               child: WorkstationNote(
-                'Kein Gerät ausgewählt',
-                'Identität, Availability, Data Quality, Relationships und Provenienz erscheinen nach der Auswahl.',
+                context.tr("Kein Gerät ausgewählt"),
+                context.tr(
+                    "Identität, Availability, Data Quality, Relationships und Provenienz erscheinen nach der Auswahl."),
                 icon: Icons.info_outline,
               ),
             )
@@ -550,31 +595,40 @@ class DeviceContextInspector extends StatelessWidget {
         .where((incident) => incident.deviceId == device.id)
         .length;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      PanelLabel('Context Inspector',
-          trailing: Text(device.simulated ? 'SIMULATED' : 'API',
+      PanelLabel(context.tr("Context Inspector"),
+          trailing: Text(
+              device.simulated ? context.tr("SIMULATED") : context.tr("API"),
               style: WorkstationTokens.eyebrow(context))),
       Text(device.name, style: Theme.of(context).textTheme.titleMedium),
       Text(device.id,
           style: WorkstationTokens.mono(context,
               size: 10.5, color: OipTokens.muted(context))),
       const Hairline(vertical: 5),
-      const PanelLabel('Identification'),
+      PanelLabel(context.tr("Identification")),
       _kv('TYPE / SOURCE',
           '${deviceKindName(device.kind)} · ${device.sourceId ?? 'Nicht zugeordnet'}'),
       if (infrastructure?.ready == true) ...[
-        _kv('ORGANIZATION',
-            infrastructure!.hierarchy.organizationName(infrastructure!.devicePlacement(device)?.organizationId)),
-        _kv('INFRASTRUCTURE',
-            infrastructure!.hierarchy.infrastructureName(infrastructure!.devicePlacement(device)?.infrastructureId)),
-        _kv('SITE',
-            infrastructure!.hierarchy.siteName(infrastructure!.devicePlacement(device)?.siteId)),
-        _kv('REGISTRATION STATE',
+        _kv(
+            'ORGANIZATION',
+            infrastructure!.hierarchy.organizationName(
+                infrastructure!.devicePlacement(device)?.organizationId)),
+        _kv(
+            'INFRASTRUCTURE',
+            infrastructure!.hierarchy.infrastructureName(
+                infrastructure!.devicePlacement(device)?.infrastructureId)),
+        _kv(
+            'SITE',
+            infrastructure!.hierarchy
+                .siteName(infrastructure!.devicePlacement(device)?.siteId)),
+        _kv(
+            'REGISTRATION STATE',
             infrastructure!.inventory
                     ?.where((item) => item.id == device.id)
                     .firstOrNull
                     ?.registration ??
                 'Nicht geliefert'),
-        _kv('TELEMETRY AVAILABILITY',
+        _kv(
+            'TELEMETRY AVAILABILITY',
             infrastructure!.inventory
                     ?.where((item) => item.id == device.id)
                     .firstOrNull
@@ -583,9 +637,8 @@ class DeviceContextInspector extends StatelessWidget {
       ] else
         _kv('HIERARCHISCHE ZUORDNUNG',
             'Registry Device → ${source == null ? 'Source unbekannt' : source.name}; Org/Infrastructure/Site nicht geliefert'),
-      const PanelLabel('Availability'),
-      _kv(
-          'REGISTRY PRESENCE', 'Im aktuellen autorisierten Snapshot vorhanden'),
+      PanelLabel(context.tr("Availability")),
+      _kv('REGISTRY PRESENCE', 'Im aktuellen autorisierten Snapshot vorhanden'),
       _kv(
           'DATA FRESHNESS',
           metrics.isEmpty
@@ -595,7 +648,7 @@ class DeviceContextInspector extends StatelessWidget {
           source == null ? 'Unbekannt' : known(source.connection)),
       _kv('REACHABILITY PROVENANCE',
           '${known(device.health.reachability)} · ${device.simulated ? 'SIMULATED / REPORTED' : 'REPORTED'} · keine Probe'),
-      const PanelLabel('Data Quality'),
+      PanelLabel(context.tr("Data Quality")),
       _kv(
           'LETZTER MESSWERT',
           latest == null
@@ -606,7 +659,7 @@ class DeviceContextInspector extends StatelessWidget {
           latest == null
               ? 'Unbekannt'
               : '${known(latest.quality)} · ${timestamp(latest.receivedMs)}'),
-      const PanelLabel('Relationships'),
+      PanelLabel(context.tr("Relationships")),
       _kv(
           'SOURCE',
           source == null
@@ -624,7 +677,7 @@ class DeviceContextInspector extends StatelessWidget {
               ? 'Nicht zuordenbar'
               : 'Source-Zuordnung vorhanden; Node-ID-Routing nicht verfügbar'),
       _kv('DIAGNOSTIC REFERENCES', '$findings exakte Device-ID-Findings'),
-      const PanelLabel('Provenance'),
+      PanelLabel(context.tr("Provenance")),
       _kv(
           'OBSERVED',
           metrics.isEmpty
@@ -644,7 +697,8 @@ class DeviceContextInspector extends StatelessWidget {
   /// names that instead of deriving a service from the device.
   String _servicesOf(Device device) {
     final registry = infrastructure?.services;
-    if (registry == null) return 'Unbekannt · kein autorisiertes Service-Register';
+    if (registry == null)
+      return 'Unbekannt · kein autorisiertes Service-Register';
     final services = registry.where((s) => s.deviceId == device.id).toList();
     if (services.isEmpty) return 'Keine Dienste deklariert';
     return '${services.length} deklariert · '
@@ -652,8 +706,7 @@ class DeviceContextInspector extends StatelessWidget {
   }
 
   /// Dense key/value row for the narrow inspector column.
-  Widget _kv(String label, String value) =>
-      KeyValue(label, value, dense: true);
+  Widget _kv(String label, String value) => KeyValue(label, value, dense: true);
 
   Widget _actions(BuildContext context, Device device) {
     return Column(children: [
@@ -666,7 +719,7 @@ class DeviceContextInspector extends StatelessWidget {
             onPressed: () => onPin(device),
             icon: Icon(pinned ? Icons.push_pin : Icons.push_pin_outlined,
                 size: 16),
-            label: Text(pinned ? 'Gepinnt' : 'Pinnen'),
+            label: Text(pinned ? context.tr("Gepinnt") : context.tr("Pinnen")),
           ),
         ),
         const SizedBox(width: 6),
@@ -677,7 +730,9 @@ class DeviceContextInspector extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 6)),
             onPressed: () => onCompare(device),
             icon: const Icon(Icons.compare_outlined, size: 16),
-            label: Text(compared ? 'Im Vergleich' : 'Vergleichen'),
+            label: Text(compared
+                ? context.tr("Im Vergleich")
+                : context.tr("Vergleichen")),
           ),
         ),
       ]),
@@ -685,13 +740,13 @@ class DeviceContextInspector extends StatelessWidget {
         ToolButton(
           key: const Key('device-copy-id'),
           icon: Icons.copy_outlined,
-          tooltip: 'Device ID kopieren',
+          tooltip: context.tr("Device ID kopieren"),
           onPressed: () => onCopy('Device ID', device.id),
         ),
         ToolButton(
           key: const Key('device-copy-source'),
           icon: Icons.account_tree_outlined,
-          tooltip: 'Source ID kopieren',
+          tooltip: context.tr("Source ID kopieren"),
           onPressed: device.sourceId == null
               ? null
               : () => onCopy('Source ID', device.sourceId!),
@@ -699,27 +754,31 @@ class DeviceContextInspector extends StatelessWidget {
         ToolButton(
           key: const Key('device-inspector-network'),
           icon: Icons.hub_outlined,
-          tooltip: 'Network Explorer öffnen · Modulziel, kein ID-Deep-Link',
+          tooltip: context
+              .tr("Network Explorer öffnen · Modulziel, kein ID-Deep-Link"),
           onPressed: () => navigate(2),
         ),
         ToolButton(
           key: const Key('device-inspector-opcua'),
           icon: Icons.account_tree_outlined,
           tooltip: device.sourceId == null
-              ? 'OPC-UA nicht zuordenbar'
-              : 'OPC-UA-Browser öffnen · Source-Modul, kein Node-Deep-Link',
+              ? context.tr("OPC-UA nicht zuordenbar")
+              : context.tr(
+                  "OPC-UA-Browser öffnen · Source-Modul, kein Node-Deep-Link"),
           onPressed: device.sourceId == null ? null : () => navigate(3),
         ),
         ToolButton(
           key: const Key('device-inspector-diagnostics'),
           icon: Icons.radar,
-          tooltip: 'Diagnostics öffnen · Modulziel, kein Event-Deep-Link',
+          tooltip: context
+              .tr("Diagnostics öffnen · Modulziel, kein Event-Deep-Link"),
           onPressed: () => navigate(4),
         ),
         ToolButton(
           key: const Key('device-inspector-overview'),
           icon: Icons.space_dashboard_outlined,
-          tooltip: 'Overview öffnen · Modulziel, kein Device-Deep-Link',
+          tooltip:
+              context.tr("Overview öffnen · Modulziel, kein Device-Deep-Link"),
           onPressed: () => navigate(0),
         ),
       ]),

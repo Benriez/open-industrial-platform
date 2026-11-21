@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/controller.dart';
@@ -54,7 +55,7 @@ class UnifiedInfrastructureSummary extends StatelessWidget {
       accent: OipTokens.cyan,
       padding: const EdgeInsets.all(12),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        const PanelLabel('Unified Infrastructure View', bottom: 6),
+        PanelLabel(context.tr("Unified Infrastructure View"), bottom: 6),
         Wrap(
           spacing: 12,
           runSpacing: 6,
@@ -75,9 +76,10 @@ class UnifiedInfrastructureSummary extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         if (hierarchy.infrastructures.isEmpty)
-          const WorkstationNote(
-            'No infrastructure configured',
-            'Der autorisierte Principal sieht aktuell keine Infrastructure. Es wird keine Demo-Organization angelegt.',
+          WorkstationNote(
+            context.tr("No infrastructure configured"),
+            context.tr(
+                "Der autorisierte Principal sieht aktuell keine Infrastructure. Es wird keine Demo-Organization angelegt."),
             icon: Icons.account_tree_outlined,
           )
         else
@@ -93,7 +95,8 @@ class UnifiedInfrastructureSummary extends StatelessWidget {
           ),
         const SizedBox(height: 4),
         Text(
-          'Nur tatsächlich autorisierte Rows · keine globale Health-Severity · Unknown ≠ Offline · NoCollector ≠ Fehler',
+          context.tr(
+              "Nur tatsächlich autorisierte Rows · keine globale Health-Severity · Unknown ≠ Offline · NoCollector ≠ Fehler"),
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ]),
@@ -127,8 +130,10 @@ class UnifiedInfrastructureSummary extends StatelessWidget {
         infrastructure.organizationId, infrastructure.id);
     return Semantics(
       button: true,
-      label:
-          'Infrastructure ${organization?.name ?? infrastructure.organizationId} ${infrastructure.name} global auswählen',
+      label: context.tr("Infrastructure {0} {1} global auswählen", [
+        organization?.name ?? infrastructure.organizationId,
+        infrastructure.name
+      ]),
       child: ListTile(
         key: Key('unified-infrastructure-${infrastructure.id}'),
         dense: true,
@@ -142,9 +147,18 @@ class UnifiedInfrastructureSummary extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(
-          '$sites Sites · $devices Devices · ${sources.length} Sources · '
-          'Freshness $fresh/${sources.length} · Availability $available/${sources.length} · '
-          'Findings ${findings?.toString() ?? 'unbekannt'}',
+          context.tr(
+              "{0} Sites · {1} Devices · {2} Sources · Freshness {3}/{4} · Availability {5}/{6} · Findings {7}",
+              [
+                sites,
+                devices,
+                sources.length,
+                fresh,
+                sources.length,
+                available,
+                sources.length,
+                findings?.toString() ?? 'unbekannt'
+              ]),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),

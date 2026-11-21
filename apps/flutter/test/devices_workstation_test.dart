@@ -268,7 +268,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Context Inspector follows the same device ID.
-      expect(find.text('CONTEXT INSPECTOR'), findsOneWidget);
+      expect(find.text('KONTEXTINSPEKTOR'), findsOneWidget);
       expect(
           _within(
               'device-context-inspector', find.text('OPC-UA-Sensoren · M-01')),

@@ -1,3 +1,4 @@
+import '../../l10n/oip_strings.dart';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -116,11 +117,16 @@ class OverviewTrendChartState extends State<OverviewTrendChart> {
           width: double.infinity,
           child: Semantics(
             container: true,
-            label: 'Session-lokaler Signalverlauf, ${samples.length} von '
-                '${widget.samples.length} Samples, Zoom $zoom-fach, '
-                '${widget.simulated ? 'Simulator-Quellzeit' : 'Quellzeit'}, '
-                'Minimum ${minimum?.toStringAsFixed(1) ?? 'unbekannt'}, '
-                'Maximum ${maximum?.toStringAsFixed(1) ?? 'unbekannt'}',
+            label: context.tr(
+                "Session-lokaler Signalverlauf, {0} von {1} Samples, Zoom {2}-fach, {3}, Minimum {4}, Maximum {5}",
+                [
+                  samples.length,
+                  widget.samples.length,
+                  zoom,
+                  widget.simulated ? 'Simulator-Quellzeit' : 'Quellzeit',
+                  minimum?.toStringAsFixed(1) ?? 'unbekannt',
+                  maximum?.toStringAsFixed(1) ?? 'unbekannt'
+                ]),
             child: LayoutBuilder(builder: (context, constraints) {
               final size = Size(constraints.maxWidth, widget.height);
               return GestureDetector(
@@ -162,23 +168,28 @@ class OverviewTrendChartState extends State<OverviewTrendChart> {
           Expanded(
             child: Text(
               minimum == null
-                  ? 'Keine numerischen Samples im Sitzungsfenster'
-                  : '${samples.length}/${widget.samples.length} SAMPLES · '
-                      'MIN ${minimum.toStringAsFixed(1)} ${widget.unit} · '
-                      'MAX ${maximum!.toStringAsFixed(1)} ${widget.unit}',
+                  ? context.tr("Keine numerischen Samples im Sitzungsfenster")
+                  : context.tr("{0}/{1} SAMPLES · MIN {2} {3} · MAX {4} {5}", [
+                      samples.length,
+                      widget.samples.length,
+                      minimum.toStringAsFixed(1),
+                      widget.unit,
+                      maximum!.toStringAsFixed(1),
+                      widget.unit
+                    ]),
               overflow: TextOverflow.ellipsis,
               style: WorkstationTokens.mono(context, size: 10),
             ),
           ),
           IconButton(
             key: const Key('overview-chart-zoom-out'),
-            tooltip: 'Zeitraum verkleinern',
+            tooltip: context.tr("Zeitraum verkleinern"),
             onPressed: zoom == 1 ? null : () => setZoom(zoom ~/ 2),
             icon: const Icon(Icons.zoom_out, size: 18),
           ),
           IconButton(
             key: const Key('overview-chart-zoom-in'),
-            tooltip: 'In verfügbares Datenfenster zoomen',
+            tooltip: context.tr("In verfügbares Datenfenster zoomen"),
             onPressed: widget.samples.length < 3 || zoom >= 8
                 ? null
                 : () => setZoom(zoom * 2),
@@ -186,20 +197,20 @@ class OverviewTrendChartState extends State<OverviewTrendChart> {
           ),
           IconButton(
             key: const Key('overview-chart-reset'),
-            tooltip: 'Zeitraum zurücksetzen',
+            tooltip: context.tr("Zeitraum zurücksetzen"),
             onPressed: zoom == 1 ? null : () => setZoom(1),
             icon: const Icon(Icons.restart_alt, size: 18),
           ),
           IconButton(
             key: const Key('overview-sample-previous'),
-            tooltip: 'Vorheriges Sample',
+            tooltip: context.tr("Vorheriges Sample"),
             onPressed: selectable.isEmpty ? null : () => selectRelative(false),
             icon: const Icon(Icons.chevron_left),
           ),
           IconButton(
             key: const Key('overview-sample-next'),
             focusNode: sampleNextFocus,
-            tooltip: 'Nächstes Sample',
+            tooltip: context.tr("Nächstes Sample"),
             onPressed: selectable.isEmpty ? null : () => selectRelative(true),
             icon: const Icon(Icons.chevron_right),
           ),
@@ -210,11 +221,15 @@ class OverviewTrendChartState extends State<OverviewTrendChart> {
             padding: const EdgeInsets.all(OipTokens.s2),
             color: WorkstationTokens.well(context),
             child: Text(
-              '${selectedSample.display} ${selectedSample.symbol} · '
-              '${known(selectedSample.quality)} · '
-              '${selectedSample.simulated ? 'Simulator-Quellzeit' : 'Quellzeit'} '
-              '${timestamp(selectedSample.sourceMs)} · '
-              'Tatsächlicher Empfang ${timestamp(selectedSample.receivedMs)}',
+              context
+                  .tr("{0} {1} · {2} · {3} {4} · Tatsächlicher Empfang {5}", [
+                selectedSample.display,
+                selectedSample.symbol,
+                known(selectedSample.quality),
+                selectedSample.simulated ? 'Simulator-Quellzeit' : 'Quellzeit',
+                timestamp(selectedSample.sourceMs),
+                timestamp(selectedSample.receivedMs)
+              ]),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),

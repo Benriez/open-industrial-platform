@@ -1,3 +1,4 @@
+import '../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../app/controller.dart';
@@ -153,7 +154,7 @@ class _OverviewPageState extends State<OverviewPage> {
                   final inspector = AdaptiveInspector(
                     controller: controller,
                     workspace: WorkspaceId.overview,
-                    label: 'Kontext & Provenienz',
+                    label: context.tr("Kontext & Provenienz"),
                     hasSelection: selection.kind != OverviewSelectionKind.none,
                     child: OverviewContextInspector(
                       snapshot: snapshot,
@@ -256,30 +257,34 @@ class _OverviewPageState extends State<OverviewPage> {
 
   Widget _header() => AdaptiveWorkspaceHeader(
         eyebrow: dashboardMode
-            ? 'VISUALISIERUNG · AUTORISIERTE MESSWERTE'
-            : 'INFRASTRUCTURE COMMAND CENTER · READ-ONLY',
+            ? context.tr("VISUALISIERUNG · AUTORISIERTE MESSWERTE")
+            : context.tr("INFRASTRUCTURE COMMAND CENTER · READ-ONLY"),
         title: dashboardMode
-            ? 'Infrastruktur-Dashboard'
-            : 'Operations Workstation',
+            ? context.tr("Infrastruktur-Dashboard")
+            : context.tr("Operations Workstation"),
         subtitle: dashboardMode
-            ? 'Panels je Benutzer und Infrastruktur zusammenstellen'
-            : 'Zustand erkennen · Auffälligkeiten auswählen · technisch vertiefen',
+            ? context.tr("Panels je Benutzer und Infrastruktur zusammenstellen")
+            : context.tr(
+                "Zustand erkennen · Auffälligkeiten auswählen · technisch vertiefen"),
         accent: OipTokens.cyan,
         primaryAction: WorkspacePrimaryAction(
           buttonKey: const Key('overview-primary-diagnostics'),
-          label: 'Diagnose öffnen',
-          tooltip:
-              'Findings, aktuelle Ereignisse und Collection-Probleme untersuchen',
+          label: context.tr("Diagnose öffnen"),
+          tooltip: context.tr(
+              "Findings, aktuelle Ereignisse und Collection-Probleme untersuchen"),
           icon: Icons.fact_check_outlined,
           onPressed: () => widget.navigate(4),
         ),
         actions: [
           WorkspacePrimaryAction(
             buttonKey: const Key('overview-dashboard-toggle'),
-            label: dashboardMode ? 'Übersicht' : 'Dashboard öffnen',
+            label: dashboardMode
+                ? context.tr("Übersicht")
+                : context.tr("Dashboard öffnen"),
             tooltip: dashboardMode
-                ? 'Zur Operations-Übersicht zurückkehren'
-                : 'Persönliche Live-Panels für diesen Infrastrukturkontext öffnen',
+                ? context.tr("Zur Operations-Übersicht zurückkehren")
+                : context.tr(
+                    "Persönliche Live-Panels für diesen Infrastrukturkontext öffnen"),
             icon: dashboardMode
                 ? Icons.arrow_back
                 : Icons.dashboard_customize_outlined,
@@ -301,13 +306,15 @@ class _OverviewPageState extends State<OverviewPage> {
         ],
         status: [
           StatusPill(
-            snapshot.system.simulated ? 'DEMO / SIMULATION' : 'BACKEND-DATEN',
+            snapshot.system.simulated
+                ? context.tr("DEMO / SIMULATION")
+                : context.tr("BACKEND-DATEN"),
             color: OipTokens.statusColor(context, 'info'),
             icon: snapshot.system.simulated
                 ? Icons.science_outlined
                 : Icons.cloud_done_outlined,
           ),
-          const StatusPill('READ-ONLY', icon: Icons.lock_outline),
+          StatusPill(context.tr("READ-ONLY"), icon: Icons.lock_outline),
         ],
       );
 
@@ -452,7 +459,11 @@ class _OverviewPageState extends State<OverviewPage> {
   Widget _statusValue(String label, String value, String status) => Semantics(
         excludeSemantics: true,
         label: label == 'CORE'
-            ? 'Core-Zustand: ${value == 'STALE / RECONNECT' ? 'Status veraltet' : value[0] + value.substring(1).toLowerCase()}'
+            ? context.tr("Core-Zustand: {0}", [
+                value == 'STALE / RECONNECT'
+                    ? 'Status veraltet'
+                    : value[0] + value.substring(1).toLowerCase()
+              ])
             : '$label: $value',
         child: Row(children: [
           StatusDot(status),
@@ -494,20 +505,20 @@ class _OverviewPageState extends State<OverviewPage> {
       child: SingleChildScrollView(
         child:
             Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          PanelLabel('Operational Focus · Session Telemetry',
+          PanelLabel(context.tr("Operational Focus · Session Telemetry"),
               trailing: Wrap(children: [
                 if (MediaQuery.sizeOf(context).width < OipTokens.tablet)
                   ToolButton(
                     key: const Key('overview-mobile-open-inspector'),
                     icon: Icons.info_outline,
-                    tooltip: 'Inspector anzeigen',
+                    tooltip: context.tr("Inspector anzeigen"),
                     onPressed: () => setState(
                         () => mobilePane = _OverviewMobilePane.inspector),
                   ),
                 ToolButton(
                   key: const Key('overview-open-opcua'),
                   icon: Icons.arrow_outward,
-                  tooltip: 'OPC-UA untersuchen',
+                  tooltip: context.tr("OPC-UA untersuchen"),
                   onPressed: () => widget.navigate(3),
                 ),
               ])),
@@ -515,13 +526,13 @@ class _OverviewPageState extends State<OverviewPage> {
             Expanded(
               child: Text(
                 selectedSource == null
-                    ? 'Alle im Snapshot verfügbaren Signale'
+                    ? context.tr("Alle im Snapshot verfügbaren Signale")
                     : '$selectedSource${selectedDevice == null ? '' : ' · $selectedDevice'}',
                 overflow: TextOverflow.ellipsis,
                 style: WorkstationTokens.mono(context, size: 10.5),
               ),
             ),
-            Text('${controller.history.length}/60 SESSION',
+            Text(context.tr("{0}/60 SESSION", [controller.history.length]),
                 style: WorkstationTokens.mono(context, size: 10)),
           ]),
           const SizedBox(height: 7),
@@ -531,8 +542,8 @@ class _OverviewPageState extends State<OverviewPage> {
             value: options.any((item) => observationKey(item) == selectedKey)
                 ? selectedKey
                 : null,
-            decoration: const InputDecoration(
-                labelText: 'SIGNAL / NODE',
+            decoration: InputDecoration(
+                labelText: context.tr("SIGNAL / NODE"),
                 isDense: true,
                 border: OutlineInputBorder()),
             items: options
@@ -550,8 +561,9 @@ class _OverviewPageState extends State<OverviewPage> {
           const SizedBox(height: 7),
           if (selected == null)
             WorkstationNote(
-              'Kein Live-Signal verfügbar',
-              'Für diesen Kontext enthält der Snapshot keine auswählbare Observation. Keine Ersatzwerte, kein Chart und kein Wert 0.',
+              context.tr("Kein Live-Signal verfügbar"),
+              context.tr(
+                  "Für diesen Kontext enthält der Snapshot keine auswählbare Observation. Keine Ersatzwerte, kein Chart und kein Wert 0."),
               icon: Icons.sensors_off_outlined,
               color: OipTokens.muted(context),
             )
@@ -566,15 +578,20 @@ class _OverviewPageState extends State<OverviewPage> {
                 StatusPill(known(selected.freshness).toUpperCase(),
                     color: OipTokens.statusColor(context, selected.freshness),
                     showDot: true),
-                StatusPill('QUALITÄT ${known(selected.quality).toUpperCase()}',
+                StatusPill(
+                    context.tr("QUALITÄT {0}",
+                        [known(selected.quality).toUpperCase()]),
                     color: OipTokens.statusColor(context, selected.quality)),
                 if (selected.simulated)
-                  const StatusPill('SIMULATED', icon: Icons.science_outlined),
+                  StatusPill(context.tr("SIMULATED"),
+                      icon: Icons.science_outlined),
               ],
             ),
             const SizedBox(height: 4),
             Wrap(spacing: 14, runSpacing: 3, children: [
-              Text('TATSÄCHLICHER EMPFANG ${timestamp(selected.receivedMs)}',
+              Text(
+                  context.tr("TATSÄCHLICHER EMPFANG {0}",
+                      [timestamp(selected.receivedMs)]),
                   style: WorkstationTokens.mono(context, size: 9.5)),
               Text(
                   '${selected.simulated ? 'SIMULATOR-QUELLZEIT' : 'QUELLZEIT'} ${timestamp(selected.sourceMs)}',
@@ -582,7 +599,7 @@ class _OverviewPageState extends State<OverviewPage> {
                       size: 9.5,
                       color: selected.simulated ? OipTokens.violet : null)),
               if (selected.virtualTimeMs != null)
-                Text('VIRTUAL +${selected.virtualTimeMs} ms',
+                Text(context.tr("VIRTUAL +{0} ms", [selected.virtualTimeMs]),
                     style: WorkstationTokens.mono(context, size: 9.5)),
             ]),
             OverviewTrendChart(
@@ -594,7 +611,8 @@ class _OverviewPageState extends State<OverviewPage> {
               height: MediaQuery.sizeOf(context).height >= 1000 ? 230 : 156,
             ),
             Text(
-              'Session-lokal · keine persistierte History · Linien nur zwischen gültigen, zeitnahen Samples ohne belegte Gap. Freshness folgt dem Core, nicht der virtuellen Wanduhr.',
+              context.tr(
+                  "Session-lokal · keine persistierte History · Linien nur zwischen gültigen, zeitnahen Samples ohne belegte Gap. Freshness folgt dem Core, nicht der virtuellen Wanduhr."),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],

@@ -1,3 +1,4 @@
+import '../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 
 import '../design_system/theme.dart';
@@ -57,9 +58,11 @@ class OpcCompareWorkspace extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Node-Vergleich',
+                    Text(context.tr("Node-Vergleich"),
                         style: Theme.of(context).textTheme.titleLarge),
-                    Text('${entries.length}/4 · quellenbezogen · sitzungslokal',
+                    Text(
+                        context.tr("{0}/4 · quellenbezogen · sitzungslokal",
+                            [entries.length]),
                         style: WorkstationTokens.mono(context,
                             size: 10.5, color: OipTokens.muted(context))),
                   ]),
@@ -67,7 +70,7 @@ class OpcCompareWorkspace extends StatelessWidget {
             ToolButton(
               key: const Key('compare-clear'),
               icon: Icons.delete_sweep_outlined,
-              tooltip: 'Vergleich leeren',
+              tooltip: context.tr("Vergleich leeren"),
               accent: OipTokens.cyan,
               onPressed: entries.isEmpty ? null : onClear,
             ),
@@ -75,23 +78,25 @@ class OpcCompareWorkspace extends StatelessWidget {
             ToolButton(
               key: const Key('compare-close'),
               icon: Icons.close,
-              tooltip: 'Vergleich schließen (Esc)',
+              tooltip: context.tr("Vergleich schließen (Esc)"),
               accent: OipTokens.cyan,
               onPressed: onClose,
             ),
           ]),
           const Hairline(),
           if (entries.isEmpty)
-            const WorkstationNote(
-              'Noch keine Nodes im Vergleich',
-              'Node im Inspector mit C oder der Vergleichs-Aktion hinzufügen. Pins und Vergleiche bleiben sitzungslokal; es werden keine Benutzerpräferenzen im Core gespeichert.',
+            WorkstationNote(
+              context.tr("Noch keine Nodes im Vergleich"),
+              context.tr(
+                  "Node im Inspector mit C oder der Vergleichs-Aktion hinzufügen. Pins und Vergleiche bleiben sitzungslokal; es werden keine Benutzerpräferenzen im Core gespeichert."),
               icon: Icons.compare_arrows_outlined,
               color: OipTokens.cyan,
             )
           else ...[
-            const WorkstationNote(
-              'Unabhängige Messzeitpunkte',
-              'Werte werden nebeneinander gezeigt, nicht zeitlich synchronisiert. Es gibt keine Interpolation, Einheitenumrechnung oder Differenzbildung. Zeitstempel und Provenienz gelten jeweils nur für ihre eigene Spalte.',
+            WorkstationNote(
+              context.tr("Unabhängige Messzeitpunkte"),
+              context.tr(
+                  "Werte werden nebeneinander gezeigt, nicht zeitlich synchronisiert. Es gibt keine Interpolation, Einheitenumrechnung oder Differenzbildung. Zeitstempel und Provenienz gelten jeweils nur für ihre eigene Spalte."),
               icon: Icons.schedule_outlined,
               color: OipTokens.cyan,
             ),
@@ -175,7 +180,8 @@ class OpcCompareWorkspace extends StatelessWidget {
           ToolButton(
             key: Key('compare-remove-${entry.node.name}'),
             icon: Icons.close,
-            tooltip: '${entry.node.name} aus Vergleich entfernen',
+            tooltip:
+                context.tr("{0} aus Vergleich entfernen", [entry.node.name]),
             accent: OipTokens.cyan,
             onPressed: () => onRemove(entry),
           ),
