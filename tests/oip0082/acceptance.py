@@ -149,6 +149,14 @@ def historical_acceptance(a,c):
  record('09_diagnostics_history_evidence',{'seven_capabilities_parity':True,'event_pages':pages,'stable_ids':len(ids),'gaps':len(gaps['items']),'health_transitions':len(health['items']),'missing_evidence_explicit':True,'scope_denials':True,'sse_history_identity':True})
  return persisted_ids
 
+SCOPED_READER_TOOLS = {
+ 'data_gaps_read', 'device_connection_read', 'device_read', 'devices_read',
+ 'diagnostic_findings_read', 'event_detail_read', 'event_history_read',
+ 'events_read', 'evidence_read', 'infrastructures_read', 'inventory_read',
+ 'observation_history_read', 'observations_read', 'opcua_nodes_read',
+ 'organizations_read', 'services_read', 'sites_read',
+ 'source_health_history_read', 'sources_read',
+}
 try:
  provision=start('provision',[BIN,'--config',RUN/'core.json','--provision',RUN/'plan.json']);provision.wait(timeout=10);assert provision.returncode==0
  same=start('provision-idempotent',[BIN,'--config',RUN/'core.json','--provision',RUN/'plan.json']);same.wait(timeout=10);assert same.returncode==0 and json.loads((OUT/'provision-idempotent.log').read_text())['idempotent']
@@ -163,7 +171,8 @@ try:
  assert result==expected
  for c,org in [(A,'org-a'),(B,'org-a'),(C,'org-b')]:
   assert [o['id'] for o in c.call('organizations_read')['items']]==[org]
-  assert len(c.command({'op':'tools'})['result']['tools'])==18
+  tool_names={tool['name'] for tool in c.command({'op':'tools'})['result']['tools']}
+  assert tool_names=={'oip_'+name for name in SCOPED_READER_TOOLS},sorted(tool_names)
   for resource in c.command({'op':'resources'})['result']['resources']:assert resource['uri'] not in ['oip://v1/core/health','oip://v1/snapshot/current','oip://v1/core/queue']
   allowed=expected[[A,B,C].index(c)];snapshot_scope(c.resource('oip://v2/snapshot/current'),allowed)
   devices=c.call('devices_read');assert {d['data_source_id'] for d in devices}==set(allowed)
@@ -175,7 +184,7 @@ try:
  site=Client('reader-site-a1','client-site');source=Client('reader-source-b','client-source');assert len(site.call('sources_read'))==2;assert len(source.call('sources_read'))==1
  for c in [A,B,C]:
   own=c.call('sources_read')[0]['id'];page=c.call('opcua_nodes_read',{'source':own,'folder':'all','limit':100});assert page['limit']==100 and page['total']>=1000
- record('02_real_clients_scope_parity',{'principals':[c.principal for c in [A,B,C]],'source_sets':result,'tools':18,'node_page_limit':100})
+ record('02_real_clients_scope_parity',{'principals':[c.principal for c in [A,B,C]],'source_sets':result,'tools':len(tool_names),'tool_names':sorted(tool_names),'node_page_limit':100})
  for c,args in [(B,{'infrastructure':'infra-b1'}),(C,{'site':'site-a1'}),(A,{'organization':'org-b'}),(A,{'source':'source-d'}),(source,{'source':'source-a'})]:c.denied('sources_read',args)
  for args in [{'principal':'platform-reader'},{'actor':'platform-reader'},{'permissions':['core_read']},{'sources':{'kind':'all'}},{'limit':101},{'offset':-1}]:B.denied('sources_read',args)
  B.denied('simulation_scenario_set',{'scenario':'offline'})

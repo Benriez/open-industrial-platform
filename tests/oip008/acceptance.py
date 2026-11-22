@@ -4,7 +4,7 @@ Runtime credentials/databases remain in private /private/tmp; sanitized report u
 """
 import concurrent.futures,hashlib,json,os,pathlib,select,secrets,signal,socket,subprocess,threading,time,urllib.request,urllib.error
 ROOT=pathlib.Path(__file__).resolve().parents[2]
-OUT=ROOT/'target'/'oip008-e2e';OUT.mkdir(parents=True,exist_ok=True)
+OUT=pathlib.Path(os.environ.get('OIP_EVIDENCE_DIR', ROOT/'target/oip008-e2e'));OUT.mkdir(parents=True,exist_ok=True)
 RUN=pathlib.Path('/private/tmp')/('oip8-'+str(os.getpid()));RUN.mkdir(mode=0o700)
 BIN=ROOT/'target/debug/oip-server';SDK=ROOT/'target/debug/examples/mcp_probe';SIM=ROOT/'target/debug/oip-simulated-server';SQL='/opt/homebrew/opt/sqlite/bin/sqlite3'
 PROCS=[];REPORT={'baseline':'a27e7b1e01dc1cb6f4d97c34319b0aa6d7321871','phases':[],'runtime_directory':str(RUN),'model_used':False};CLIENTS=[]
@@ -90,6 +90,14 @@ def snapshot_scope(snapshot,expected):
  assert {l['source_id'] for l in snapshot['locations']}==set(expected)
  assert all(e['context']['data_source_id'] in expected for e in snapshot['events'])
  assert not any(k in snapshot for k in ['revision','run_id','queue','core','system','persisted_observations'])
+SCOPED_READER_TOOLS = {
+ 'data_gaps_read', 'device_connection_read', 'device_read', 'devices_read',
+ 'diagnostic_findings_read', 'event_detail_read', 'event_history_read',
+ 'events_read', 'evidence_read', 'infrastructures_read', 'inventory_read',
+ 'observation_history_read', 'observations_read', 'opcua_nodes_read',
+ 'organizations_read', 'services_read', 'sites_read',
+ 'source_health_history_read', 'sources_read',
+}
 try:
  provision=start('provision',[BIN,'--config',RUN/'core.json','--provision',RUN/'plan.json']);provision.wait(timeout=10);assert provision.returncode==0
  same=start('provision-idempotent',[BIN,'--config',RUN/'core.json','--provision',RUN/'plan.json']);same.wait(timeout=10);assert same.returncode==0 and json.loads((OUT/'provision-idempotent.log').read_text())['idempotent']
@@ -104,7 +112,8 @@ try:
  assert result==expected
  for c,org in [(A,'org-a'),(B,'org-a'),(C,'org-b')]:
   assert [o['id'] for o in c.call('organizations_read')['items']]==[org]
-  assert len(c.command({'op':'tools'})['result']['tools'])==18
+  tool_names={tool['name'] for tool in c.command({'op':'tools'})['result']['tools']}
+  assert tool_names=={'oip_'+name for name in SCOPED_READER_TOOLS},sorted(tool_names)
   for resource in c.command({'op':'resources'})['result']['resources']:assert resource['uri'] not in ['oip://v1/core/health','oip://v1/snapshot/current','oip://v1/core/queue']
   allowed=expected[[A,B,C].index(c)];snapshot_scope(c.resource('oip://v2/snapshot/current'),allowed)
   devices=c.call('devices_read');assert {d['data_source_id'] for d in devices}==set(allowed)
@@ -116,7 +125,7 @@ try:
  site=Client('reader-site-a1','client-site');source=Client('reader-source-b','client-source');assert len(site.call('sources_read'))==2;assert len(source.call('sources_read'))==1
  for c in [A,B,C]:
   own=c.call('sources_read')[0]['id'];page=c.call('opcua_nodes_read',{'source':own,'folder':'all','limit':100});assert page['limit']==100 and page['total']>=1000
- record('02_real_clients_scope_parity',{'principals':[c.principal for c in [A,B,C]],'source_sets':result,'tools':18,'node_page_limit':100})
+ record('02_real_clients_scope_parity',{'principals':[c.principal for c in [A,B,C]],'source_sets':result,'tools':len(tool_names),'tool_names':sorted(tool_names),'node_page_limit':100})
  for c,args in [(B,{'infrastructure':'infra-b1'}),(C,{'site':'site-a1'}),(A,{'organization':'org-b'}),(A,{'source':'source-d'}),(source,{'source':'source-a'})]:c.denied('sources_read',args)
  for args in [{'principal':'platform-reader'},{'actor':'platform-reader'},{'permissions':['core_read']},{'sources':{'kind':'all'}},{'limit':101},{'offset':-1}]:B.denied('sources_read',args)
  B.denied('simulation_scenario_set',{'scenario':'offline'})

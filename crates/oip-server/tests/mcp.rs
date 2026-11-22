@@ -681,15 +681,26 @@ async fn resource_models_match_direct_service_and_rest_including_sse_projections
         assert_eq!(direct["value"], http, "{uri}");
     }
     let mapping = oip_server::mcp::capability_mapping();
-    assert_eq!(mapping["capabilities"].as_array().unwrap().len(), 33);
+    let capabilities = mapping["capabilities"].as_array().unwrap();
+    assert_eq!(capabilities.len(), CapabilityId::ALL.len());
+    let blocked = capabilities
+        .iter()
+        .filter(|entry| entry["mcp_status"] == "BLOCKED")
+        .map(|entry| {
+            assert!(entry["tool"].is_null());
+            assert!(entry["resource"].is_null());
+            serde_json::from_value::<CapabilityId>(entry["capability"].clone()).unwrap()
+        })
+        .collect::<Vec<_>>();
     assert_eq!(
-        mapping["capabilities"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .filter(|c| c["mcp_status"] == "BLOCKED")
-            .count(),
-        4
+        blocked,
+        [
+            CapabilityId::OpcuaNodeWrite,
+            CapabilityId::SimulationScenarioSet,
+            CapabilityId::SettingsChange,
+            CapabilityId::InventoryChange,
+            CapabilityId::DeviceConnectionConfigure,
+        ]
     );
     assert!(s.shutdown().await.clean);
 }

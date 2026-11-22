@@ -216,6 +216,7 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
   final Set<http.Client> _settingsClients = <http.Client>{};
   EventConnection? _events;
   String? _csrf;
+  int _sessionRevision = 0;
   bool _managed = false;
 
   @override
@@ -239,20 +240,31 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
             : _rest.post(uri(path), headers: headers, body: jsonEncode(body));
       });
 
-  BrowserSession _session(Json value) {
+  BrowserSession _session(Json value, {required bool current}) {
     final s = BrowserSession.fromJson(value);
-    _managed = s.mode != 'explicit_legacy_demo';
-    _csrf = s.authenticated ? value['csrf_token'] as String? : null;
+    if (current) {
+      _managed = s.mode != 'explicit_legacy_demo';
+      _csrf = s.authenticated ? value['csrf_token'] as String? : null;
+    }
     return s;
   }
 
   @override
-  Future<BrowserSession> session() async =>
-      _session(await _get('/api/v2/browser/session') as Json);
+  Future<BrowserSession> session() async {
+    final revision = ++_sessionRevision;
+    final value = await _get('/api/v2/browser/session') as Json;
+    return _session(value, current: revision == _sessionRevision);
+  }
+
+  Future<BrowserSession> _login(String path, Json body) async {
+    final value = await _change(path, body) as Json;
+    _sessionRevision++;
+    return _session(value, current: true);
+  }
 
   @override
-  Future<BrowserSession> login(String code) async =>
-      _session(await _change('/api/v2/browser/login', {'code': code}) as Json);
+  Future<BrowserSession> login(String code) =>
+      _login('/api/v2/browser/login', {'code': code});
 
   @override
   Future<void> pairDeviceCredential(String credential) async {
@@ -260,15 +272,15 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
   }
 
   @override
-  Future<BrowserSession> loginWithDeviceCredential(String credential) async =>
-      _session(await _change(
-          '/api/v2/browser/device-login', {'credential': credential}) as Json);
+  Future<BrowserSession> loginWithDeviceCredential(String credential) =>
+      _login('/api/v2/browser/device-login', {'credential': credential});
 
   @override
   Future<void> logout() async {
     try {
       await _change('/api/v2/browser/session', {}, method: 'DELETE');
     } finally {
+      _sessionRevision++;
       _csrf = null;
       disconnect();
     }

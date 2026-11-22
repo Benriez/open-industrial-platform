@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:oip_dashboard/services/api.dart';
 
 /// The session cookie of the native client.
@@ -77,5 +80,35 @@ void main() {
     expect(items, hasLength(1));
     expect(seenCookies.any((cookie) => cookie.contains('oip_session=')), isTrue,
         reason: 'the request after the login carried no session cookie');
+  });
+
+  test('An older session read cannot clear the CSRF token from a newer login',
+      () async {
+    final pending = Completer<http.Response>();
+    final client = MockClient((request) async {
+      if (request.method == 'GET') return pending.future;
+      if (request.url.path == '/api/v2/browser/login') {
+        return http.Response(jsonEncode({
+          'authenticated': true,
+          'mode': 'managed_local_operator',
+          'csrf_token': 'fresh-token',
+        }), 200);
+      }
+      expect(request.method, 'DELETE');
+      expect(request.headers['x-oip-csrf'], 'fresh-token');
+      return http.Response('{}', 200);
+    });
+    final api = RestApi(Uri.parse('http://127.0.0.1:${server.port}'),
+        client: client);
+    addTearDown(api.close);
+    final staleRead = api.session();
+    await api.login('one-time-code');
+    pending.complete(http.Response(jsonEncode({
+      'authenticated': false,
+      'mode': 'managed_local_operator',
+    }), 200));
+    expect((await staleRead).authenticated, isFalse);
+
+    await api.logout();
   });
 }

@@ -32,6 +32,7 @@ class OipController extends ChangeNotifier {
   String? scenarioError;
   bool scenarioBusy = false;
   bool _closed = false;
+  bool _loggingOut = false;
   int _epoch = 0;
   DateTime? lastMessage;
   final List<Observation> history = [];
@@ -179,6 +180,7 @@ class OipController extends ChangeNotifier {
   }
 
   Future<void> _completeLogin(BrowserSession session) async {
+    if (_closed || _loggingOut) return;
     _sessionPrincipal = session.authenticated ? session.principalId : null;
     contextRevision++;
     history.clear();
@@ -193,26 +195,43 @@ class OipController extends ChangeNotifier {
 
   /// Revokes the local operator session and drops every authorized object.
   Future<void> logout() async {
+    if (_closed || _loggingOut) return;
+    _loggingOut = true;
+    _epoch++;
+    api.disconnect();
     final boundary = management;
     String? failure;
     try {
       if (boundary != null) await boundary.logout();
-      _sessionPrincipal = null;
     } catch (exception) {
       failure = apiErrorMessage(exception,
           'Der Core konnte die Abmeldung nicht bestätigen. Verbinde dich erneut und wiederhole die Abmeldung.');
+    } finally {
+      _loggingOut = false;
     }
+    if (_closed) return;
+    _clearAuthorizedState();
+    connection = 'identity-required';
+    error = failure ?? 'Die lokale Operator-Sitzung wurde beendet.';
+    infrastructure.markIdentityFailure(_operatorLoginRequired);
+    notifyListeners();
+  }
+
+  void _clearAuthorizedState() {
     contextRevision++;
+    onboardingScope = const OnboardingScope();
+    _transport = _TransportMode.unknown;
+    _sessionPrincipal = null;
+    _contextScopeSignature = null;
     snapshot = null;
     _authorizedSnapshot = null;
+    lastMessage = null;
+    workspaces.invalidateObjects();
     history.clear();
     telemetryKey = null;
     telemetrySelectionExplicit = false;
     operationalSources = const [];
     operationalEvents = const [];
-    connection = 'identity-required';
-    error = failure ?? 'Die lokale Operator-Sitzung wurde beendet.';
-    notifyListeners();
   }
 
   /// Composite invalidation key for every context-bound workstation. The old
@@ -272,59 +291,59 @@ class OipController extends ChangeNotifier {
   /// Useful for an explicit resync and for deterministic contract-fixture UI
   /// tests; production startup continues into [start] after the same read.
   Future<void> resyncInfrastructure() async {
-    await _bindSessionPrincipal();
+    if (_closed || _loggingOut || loginRequired) return;
+    final epoch = _epoch;
+    final principal = await _readSessionPrincipal();
+    if (!_isCurrent(epoch)) return;
     final bootstrap = await api.infrastructureBootstrap();
-    if (_closed) return;
+    if (!_isCurrent(epoch)) return;
+    _sessionPrincipal = principal;
     _transport = _TransportMode.authorized;
     _acceptBootstrap(bootstrap);
     notifyListeners();
   }
 
+  bool _isCurrent(int epoch) => !_closed && epoch == _epoch;
+
   Future<void> start() async {
+    if (_closed || _loggingOut) return;
     final epoch = ++_epoch;
     var attempt = 0;
-    while (!_closed && epoch == _epoch) {
+    while (_isCurrent(epoch)) {
       try {
         connection = snapshot == null ? 'connecting' : 'reconnecting';
         notifyListeners();
 
         if (_transport != _TransportMode.legacyDemo) {
-          if (!await _preflightBrowserSession()) return;
-          if (_closed || epoch != _epoch) return;
+          if (!await _preflightBrowserSession(epoch)) return;
+          if (!_isCurrent(epoch)) return;
           try {
             infrastructure.markLoading();
             final bootstrap = await api.infrastructureBootstrap();
-            if (_closed || epoch != _epoch) return;
+            if (!_isCurrent(epoch)) return;
             _transport = _TransportMode.authorized;
-            await _bindSessionPrincipal();
             _acceptBootstrap(bootstrap);
           } on ApiFailure catch (exception) {
+            if (!_isCurrent(epoch)) return;
             if (exception.code == 'UNSUPPORTED' ||
                 exception.statusCode == 404 ||
                 exception.statusCode == 405) {
-              await _acceptLegacyDemo();
-            } else if (_isIdentityFailure(exception)) {
-              // Only an explicitly marked demo may use the legacy transport.
-              // A real tenant denial never falls back to anonymous v1 data.
-              final demoAccepted = await _tryExplicitDemo();
-              if (!demoAccepted) {
-                snapshot = null;
-                _authorizedSnapshot = null;
-                history.clear();
-                telemetryKey = null;
-                operationalSources = const [];
-                operationalEvents = const [];
-                infrastructure.markIdentityFailure(exception);
-                rethrow;
+              if (managed || management?.managed == true) {
+                throw _unsupportedContext;
               }
+              await _acceptLegacyDemo(epoch);
+            } else if (_isIdentityFailure(exception) &&
+                _transport == _TransportMode.unknown &&
+                management?.managed != true) {
+              if (!await _tryExplicitDemo(epoch)) rethrow;
             } else {
               rethrow;
             }
           }
         } else {
-          await _acceptLegacyDemo();
+          await _acceptLegacyDemo(epoch);
         }
-        if (_closed || epoch != _epoch) return;
+        if (!_isCurrent(epoch)) return;
         // A REST/bootstrap resync starts a new display window; SSE has no full
         // replay and Last-Event-ID is never an authorization selector.
         history.clear();
@@ -333,7 +352,7 @@ class OipController extends ChangeNotifier {
             ? api.infrastructureStream()
             : api.stream();
         await for (final event in events.timeout(streamTimeout)) {
-          if (_closed || epoch != _epoch) return;
+          if (!_isCurrent(epoch)) return;
           if (event.type == 'error') {
             throw ApiFailure(
               'Live-Daten vorübergehend nicht verfügbar.',
@@ -360,17 +379,23 @@ class OipController extends ChangeNotifier {
         }
         throw const ApiFailure('Live-Verbindung geschlossen.');
       } catch (exception) {
-        if (_closed || epoch != _epoch) return;
+        if (!_isCurrent(epoch)) return;
         if (exception is ApiFailure &&
             (_isIdentityFailure(exception) ||
                 exception.code == 'UNSUPPORTED_CONTEXT')) {
           // Identity/policy failures are terminal until an explicit retry. They
           // are neither a transport outage nor a reason for an endless poll.
+          _epoch++;
           api.disconnect();
-          connection = exception.code == 'UNSUPPORTED_CONTEXT'
-              ? 'context-unsupported'
-              : 'identity-required';
+          _clearAuthorizedState();
           error = _connectionError(exception);
+          if (exception.code == 'UNSUPPORTED_CONTEXT') {
+            connection = 'context-unsupported';
+            infrastructure.markUnavailable(exception);
+          } else {
+            connection = 'identity-required';
+            infrastructure.markIdentityFailure(exception);
+          }
           notifyListeners();
           return;
         }
@@ -388,30 +413,20 @@ class OipController extends ChangeNotifier {
   /// launch the session can be absent even though the API itself is healthy;
   /// treating that 403 as a connection failure hides the login and Touch ID
   /// controls behind an endless reconnect state.
-  Future<bool> _preflightBrowserSession() async {
+  Future<bool> _preflightBrowserSession(int epoch) async {
     final boundary = management;
     if (boundary == null) return true;
     try {
       final session = await boundary.session();
+      if (!_isCurrent(epoch)) return false;
       if (session.mode == 'explicit_legacy_demo') return true;
       if (!session.authenticated) {
+        _epoch++;
         api.disconnect();
-        _sessionPrincipal = null;
-        snapshot = null;
-        _authorizedSnapshot = null;
-        history.clear();
-        telemetryKey = null;
-        operationalSources = const [];
-        operationalEvents = const [];
-        final unauthenticated = const ApiFailure(
-          'Für diese Installation ist eine Operator-Anmeldung erforderlich.',
-          code: 'UNAUTHENTICATED',
-          path: '/api/v2/browser/session',
-          statusCode: 401,
-        );
-        infrastructure.markIdentityFailure(unauthenticated);
+        _clearAuthorizedState();
         connection = 'login_required';
         error = null;
+        infrastructure.markIdentityFailure(_operatorLoginRequired);
         notifyListeners();
         return false;
       }
@@ -428,6 +443,13 @@ class OipController extends ChangeNotifier {
       rethrow;
     }
   }
+
+  static const _operatorLoginRequired = ApiFailure(
+    'Für diese Installation ist eine Operator-Anmeldung erforderlich.',
+    code: 'UNAUTHENTICATED',
+    path: '/api/v2/browser/session',
+    statusCode: 401,
+  );
 
   bool _isIdentityFailure(ApiFailure error) =>
       error.statusCode == 401 ||
@@ -446,13 +468,17 @@ class OipController extends ChangeNotifier {
   bool _isExplicitDemo(Snapshot initial) =>
       initial.system.simulated && initial.system.demoControls;
 
-  Future<void> _acceptLegacyDemo() async {
+  static const _unsupportedContext = ApiFailure(
+    'Dieser Core bietet keinen autorisierten v2-Kontext; reale v1-Daten werden nicht anonym übernommen.',
+    code: 'UNSUPPORTED_CONTEXT',
+    statusCode: 409,
+  );
+
+  Future<void> _acceptLegacyDemo(int epoch) async {
     final initial = await api.initial();
+    if (!_isCurrent(epoch)) return;
     if (!_isExplicitDemo(initial)) {
-      throw const ApiFailure(
-          'Dieser Core bietet keinen autorisierten v2-Kontext; reale v1-Daten werden nicht anonym übernommen.',
-          code: 'UNSUPPORTED_CONTEXT',
-          statusCode: 409);
+      throw _unsupportedContext;
     }
     _transport = _TransportMode.legacyDemo;
     if (infrastructure.status != InfrastructureContextStatus.unavailable) {
@@ -462,10 +488,10 @@ class OipController extends ChangeNotifier {
     _accept(initial);
   }
 
-  Future<bool> _tryExplicitDemo() async {
+  Future<bool> _tryExplicitDemo(int epoch) async {
     try {
       final initial = await api.initial();
-      if (!_isExplicitDemo(initial)) {
+      if (!_isCurrent(epoch) || !_isExplicitDemo(initial)) {
         return false;
       }
       _transport = _TransportMode.legacyDemo;
@@ -487,15 +513,14 @@ class OipController extends ChangeNotifier {
   /// operator across a refresh of the authorized projection.
   String? _sessionPrincipal;
 
-  Future<void> _bindSessionPrincipal() async {
+  Future<String?> _readSessionPrincipal() async {
     final boundary = management;
-    if (boundary == null) return;
+    if (boundary == null) return null;
     try {
       final session = await boundary.session();
-      _sessionPrincipal = session.authenticated ? session.principalId : null;
+      return session.authenticated ? session.principalId : null;
     } catch (_) {
-      // The identity stays unknown. The scope is then reset to Unified on the
-      // next bootstrap, which is the safe behaviour.
+      return null;
     }
   }
 

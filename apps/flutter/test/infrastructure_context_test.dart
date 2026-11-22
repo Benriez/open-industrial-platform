@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -267,6 +269,96 @@ void main() {
       controller.dispose();
       await running;
     });
+
+    test('Logout clears the authorized scope before an old resync returns',
+        () async {
+      final bootstrap = infrastructureFixture();
+      final api = _SessionApi()..infrastructure = bootstrap;
+      final controller = OipController(api);
+      addTearDown(controller.dispose);
+      await controller.resyncInfrastructure();
+      controller.selectInfrastructure(
+          const InfrastructureSelection.infrastructure('org-a', 'infra-a1'));
+      final pending = Completer<InfrastructureBootstrap>();
+      api.pendingBootstrap = pending;
+      final resync = controller.resyncInfrastructure();
+      await api.bootstrapRequested.future;
+
+      await controller.logout();
+      expect(controller.loginRequired, isTrue);
+      expect(controller.infrastructure.ready, isFalse);
+      expect(controller.infrastructure.hierarchy.infrastructures, isEmpty);
+      expect(controller.infrastructure.selection.isUnified, isTrue);
+      pending.complete(bootstrap);
+      await resync;
+
+      expect(controller.snapshot, isNull);
+      expect(controller.infrastructure.ready, isFalse);
+      expect(controller.history, isEmpty);
+    });
+
+    test('Stale session preflight cannot replace a newer authorized session',
+        () async {
+      final api = _SessionApi()..infrastructure = infrastructureFixture();
+      final controller = OipController(api);
+      addTearDown(controller.dispose);
+      final pending = Completer<BrowserSession>();
+      api.pendingSession = pending;
+      final oldConnection = controller.start();
+      api.pendingSession = null;
+      final live = Completer<void>();
+      controller.addListener(() {
+        if (controller.connection == 'live' && !live.isCompleted) {
+          live.complete();
+        }
+      });
+      controller.reconnect();
+      await live.future;
+
+      pending.complete(BrowserSession.fromJson({
+        'authenticated': false,
+        'mode': 'local_operator_session',
+      }));
+      await oldConnection;
+
+      expect(controller.connection, 'live');
+      expect(controller.hasAuthorizedContext, isTrue);
+      expect(controller.snapshot, isNotNull);
+    });
+
+    test('Identity denial during preflight discards retained tenant data',
+        () async {
+      final api = _SessionApi()..infrastructure = infrastructureFixture();
+      final controller = OipController(api);
+      addTearDown(controller.dispose);
+      await controller.resyncInfrastructure();
+      expect(controller.infrastructure.ready, isTrue);
+      api.sessionFailure = const ApiFailure('denied',
+          code: 'PERMISSION_DENIED', statusCode: 403);
+
+      await controller.start();
+
+      expect(controller.loginRequired, isTrue);
+      expect(controller.infrastructure.ready, isFalse);
+      expect(controller.snapshot, isNull);
+      expect(controller.operationalSources, isEmpty);
+    });
+
+    test('Loss of the managed route cannot switch the shell to legacy demo',
+        () async {
+      final api = _SessionApi()..infrastructure = infrastructureFixture();
+      final controller = OipController(api);
+      addTearDown(controller.dispose);
+      await controller.resyncInfrastructure();
+      api.infrastructureFailure =
+          const ApiFailure('route unavailable', statusCode: 404);
+
+      await controller.start();
+
+      expect(controller.connection, 'context-unsupported');
+      expect(controller.infrastructure.principalIdentity, isNull);
+      expect(controller.snapshot, isNull);
+    });
   });
 
   group('OIP-009 selector and cross-module UI · marked fixture', () {
@@ -398,16 +490,34 @@ void main() {
 
 /// A client that carries the identity of the authorized session.
 class _SessionApi extends FakeApi implements DeviceManagementApi {
+  Completer<BrowserSession>? pendingSession;
+  ApiFailure? sessionFailure;
+  Completer<InfrastructureBootstrap>? pendingBootstrap;
+  final bootstrapRequested = Completer<void>();
+
+  @override
+  Future<InfrastructureBootstrap> infrastructureBootstrap() async {
+    final pending = pendingBootstrap;
+    if (pending == null) return super.infrastructureBootstrap();
+    if (!bootstrapRequested.isCompleted) bootstrapRequested.complete();
+    return pending.future;
+  }
+
   @override
   bool get managed => true;
 
   @override
-  Future<BrowserSession> session() async => BrowserSession.fromJson({
-        'authenticated': true,
-        'principal_id': 'fixture-operator',
-        'csrf_token': null,
-        'mode': 'local_operator_session',
-      });
+  Future<BrowserSession> session() async {
+    if (sessionFailure != null) throw sessionFailure!;
+    final pending = pendingSession;
+    if (pending != null) return pending.future;
+    return BrowserSession.fromJson({
+      'authenticated': true,
+      'principal_id': 'fixture-operator',
+      'csrf_token': null,
+      'mode': 'local_operator_session',
+    });
+  }
 
   @override
   Future<BrowserSession> login(String code) async => session();

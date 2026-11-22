@@ -181,13 +181,29 @@ async fn real_opcua_storage_api_sse_and_reconnect() {
     assert_eq!(nodes["items"].as_array().unwrap().len(), 40);
     // The total of a folder is a number of the **server**: the test does not
     // encode the size of the simulation that it happens to run.
-    let (_, all) = get(app.clone(), "/api/v1/opcua/nodes?folder=all&limit=1").await;
-    let total = all["total"].as_u64().expect("the total of the address space");
+    let (_, all) = get(app.clone(), "/api/v1/opcua/nodes?folder=all&limit=2").await;
+    let total = all["total"]
+        .as_u64()
+        .expect("the total of the address space");
     assert!(
         nodes["total"].as_u64().expect("the total of the folder") < total,
         "a folder is a part of the catalogue"
     );
-    assert!(nodes["items"][0]["observation"]["value"]["float"].is_number());
+    assert!(nodes["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|item| item["observation"].is_null()));
+    let (_, selected) = get(
+        app.clone(),
+        "/api/v1/opcua/nodes?folder=Bulk&offset=960&limit=1",
+    )
+    .await;
+    assert_eq!(
+        selected["items"][0]["node_id"],
+        nodes["items"][0]["node_id"]
+    );
+    assert!(selected["items"][0]["observation"]["value"]["float"].is_number());
     // The address space of the server is delivered as it is: every node
     // names the folder of the server, the namespace of the node id and the
     // access of the class of the node.
@@ -224,7 +240,7 @@ async fn real_opcua_storage_api_sse_and_reconnect() {
         let folder = folder.as_str().expect("the name of the folder");
         let (_, page) = get(
             app.clone(),
-            &format!("/api/v1/opcua/nodes?folder={folder}&limit=1"),
+            &format!("/api/v1/opcua/nodes?folder={folder}&limit=2"),
         )
         .await;
         sum += page["total"].as_u64().expect("the total of the folder");

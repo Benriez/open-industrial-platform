@@ -767,6 +767,7 @@ class InfrastructureContext extends ChangeNotifier {
     services = null;
     findings = null;
     origin = null;
+    principalIdentity = null;
     selection = const InfrastructureSelection.unified();
     contextRevision++;
     notifyListeners();

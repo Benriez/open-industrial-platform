@@ -6,6 +6,8 @@ credentials. No personal database, no protected installation and no foreign proc
 touched. A case that needs a protected historical binary is only executed when that binary
 is present and its hash matches the recorded value; otherwise the case is reported as
 BLOCKED with the reason instead of being run with a substitute.
+Every selected case must produce fresh passing receipts to pass. A selection
+with blocked but no failed cases is PARTIAL and exits with status 2.
 
 Usage:
     python3 tests/canonical_regression.py [--only <case>] [--evidence <dir>]
@@ -43,19 +45,19 @@ CASES = [
         "name": "oip008_acceptance",
         "script": "tests/oip008/acceptance.py",
         "timeout": 900,
-        "reports": ["target/oip008-e2e/report.json"],
+        "reports": ["report.json"],
     },
     {
         "name": "oip0082_acceptance",
         "script": "tests/oip0082/acceptance.py",
         "timeout": 900,
-        "reports": ["@evidence/report.json", "target/oip0082-e2e/report.json"],
+        "reports": ["report.json"],
     },
     {
         "name": "oip0082_schema3_migration",
         "script": "tests/oip0082/schema3_migration.py",
         "timeout": 900,
-        "reports": ["target/oip0082-migration/report.json"],
+        "reports": ["report.json"],
         "baseline": "oip008",
         "baseline_args": ("--baseline-binary", "--baseline-sha256"),
     },
@@ -63,7 +65,7 @@ CASES = [
         "name": "oip0084_acceptance",
         "script": "tests/oip0084/acceptance.py",
         "timeout": 1200,
-        "reports": ["@evidence/report.json", "target/oip0084-e2e/report.json"],
+        "reports": ["report.json"],
         "baseline": "oip0083",
         "baseline_env": ("OIP0083_BASELINE_BINARY", "OIP0083_BASELINE_SHA256"),
     },
@@ -71,13 +73,13 @@ CASES = [
         "name": "oip0085_acceptance",
         "script": "tests/oip0085/acceptance.py",
         "timeout": 1200,
-        "reports": ["@evidence/report.json", "target/oip0085-e2e/report.json"],
+        "reports": ["report.json"],
     },
     {
         "name": "oip0085_migration",
         "script": "tests/oip0085/migration.py",
         "timeout": 900,
-        "reports": ["@evidence/report.json", "target/oip0085-migration/report.json"],
+        "reports": ["report.json"],
         "baseline": "oip0084",
         "baseline_env": ("OIP0084_BASELINE_BINARY", "OIP0084_BASELINE_SHA256"),
     },
@@ -85,13 +87,13 @@ CASES = [
         "name": "oip008_ui_regression",
         "script": "tests/oip008/ui_regression.py",
         "timeout": 2400,
-        "reports": ["@evidence/ui-regression.json", "target/oip008-ui/ui-regression.json"],
+        "reports": ["ui-regression.json"],
     },
     {
         "name": "oip_canonical_ui_gate",
         "script": "tests/real_device/acceptance.py",
         "timeout": 2400,
-        "reports": ["@evidence/report.json", "@evidence/browser/browser-canonical-ui-gate.json"],
+        "reports": ["report.json", "browser/browser-canonical-ui-gate.json"],
         "env": {"OIP_CANONICAL_UI_GATE": "1"},
         "env_override": {"OIP_SERVER_BIN": "OIP_CANONICAL_SERVER_BIN"},
         "env_paths": {
@@ -104,7 +106,7 @@ CASES = [
         "name": "oip008_legacy_migration",
         "script": "tests/oip008/legacy_migration.py",
         "timeout": 900,
-        "reports": ["target/oip008-legacy/report.json"],
+        "reports": ["report.json"],
         "baseline_env_only": ("OIP007_BASELINE_BINARY",),
         "baseline_prepared": "target/oip-007-baseline/target/debug/oip-server",
         "baseline_reason": "the harness has to create a genuine schema2 database, which only an OIP-007 schema2 writer can do; the canonical binary creates schema3 or later. Build it with python3 tests/oip007_baseline.py",
@@ -127,25 +129,29 @@ def evaluate(report):
     """Read the harness report and derive its own status."""
     try:
         payload = json.loads(report.read_text())
-    except ValueError:
-        return None, "unreadable report"
+    except (OSError, ValueError):
+        return None
+    if not isinstance(payload, dict):
+        return None
     if isinstance(payload.get("status"), str):
-        return payload["status"], payload
+        return payload["status"]
     if isinstance(payload.get("verdict"), str):
-        return payload["verdict"], payload
+        return payload["verdict"]
     results = payload.get("results")
-    if isinstance(results, list):
-        failed = [r.get("name") for r in results if r.get("status") != "PASS"]
-        return ("PASS" if not failed else "FAIL"), payload
-    return None, payload
+    if isinstance(results, list) and results:
+        passed = all(isinstance(row, dict) and row.get("status") == "PASS"
+                     for row in results)
+        return "PASS" if passed else "FAIL"
+    return None
 
 
 def run_case(case, evidence):
     name = case["name"]
     command_arguments = []
     env = dict(os.environ)
-    env["OIP_EVIDENCE_DIR"] = str(evidence / name)
-    pathlib.Path(env["OIP_EVIDENCE_DIR"]).mkdir(parents=True, exist_ok=True)
+    case_evidence = evidence / name
+    env["OIP_EVIDENCE_DIR"] = str(case_evidence)
+    case_evidence.mkdir(parents=True, exist_ok=True)
     for key, value in case.get("env", {}).items():
         env[key] = value
     for key, value in case.get("env_paths", {}).items():
@@ -186,6 +192,7 @@ def run_case(case, evidence):
                     "seconds": 0.0,
                 }
     started = time.monotonic()
+    started_wall_ns = time.time_ns()
     process = subprocess.run(
         [sys.executable, str(ROOT / case["script"]), *command_arguments,
          *case.get("args", ())],
@@ -211,32 +218,28 @@ def run_case(case, evidence):
         if binary.is_file():
             result["baseline_binary_sha256"] = hashlib.sha256(binary.read_bytes()).hexdigest()
             result["baseline_source"] = "rebuilt from the verified OIP-007 baseline commit a27e7b1; the identity of the historical protected binary is not claimed"
-    harness_statuses = []
+    result["harness_status"] = "PASS"
     for candidate in case["reports"]:
-        report = (
-            (evidence / name / candidate.removeprefix("@evidence/"))
-            if candidate.startswith("@evidence/")
-            else (ROOT / candidate)
-        )
-        if report.is_file() and report.stat().st_mtime >= started - 5:
-            status, payload = evaluate(report)
+        report = case_evidence / candidate
+        status = None
+        if report.is_file() and report.stat().st_mtime_ns >= started_wall_ns:
+            status = evaluate(report)
             result.setdefault("reports", []).append(str(report))
             result.setdefault("report", str(report))
-            if status is not None:
-                harness_statuses.append(status)
-                if status != "PASS":
-                    result["status"] = "FAIL"
-    if harness_statuses:
-        result["harness_status"] = "PASS" if all(status == "PASS" for status in harness_statuses) else "FAIL"
+        if status != "PASS":
+            result["status"] = result["harness_status"] = "FAIL"
+            result.setdefault("report_errors", {})[candidate] = (
+                status or "missing, stale, or invalid report")
     return result
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--only", action="append", default=[])
+    parser.add_argument("--only", action="append", default=[],
+                        choices=[case["name"] for case in CASES])
     parser.add_argument("--evidence", default=str(ROOT / "target" / "oip-canonical-regression"))
     args = parser.parse_args()
-    evidence = pathlib.Path(args.evidence)
+    evidence = pathlib.Path(args.evidence).resolve()
     evidence.mkdir(parents=True, exist_ok=True)
     results = []
     for case in CASES:
@@ -252,10 +255,10 @@ def main():
         "failed": [r["name"] for r in results if r["status"] == "FAIL"],
         "blocked": [r["name"] for r in results if r["status"] == "BLOCKED"],
     }
-    summary["status"] = "PASS" if not summary["failed"] else "FAIL"
+    summary["status"] = "FAIL" if summary["failed"] else "PARTIAL" if summary["blocked"] else "PASS"
     (evidence / "canonical-regression.json").write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))
-    return 0 if not summary["failed"] else 1
+    return {"PASS": 0, "FAIL": 1, "PARTIAL": 2}[summary["status"]]
 
 
 if __name__ == "__main__":

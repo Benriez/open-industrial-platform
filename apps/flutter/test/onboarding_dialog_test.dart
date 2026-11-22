@@ -1,15 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oip_dashboard/app/controller.dart';
 import 'package:oip_dashboard/features/device_onboarding.dart';
 import 'package:oip_dashboard/models/contracts.dart';
 import 'package:oip_dashboard/models/history.dart';
+import 'package:oip_dashboard/models/infrastructure.dart';
 import 'package:oip_dashboard/models/onboarding.dart';
 import 'package:oip_dashboard/services/api.dart';
+import 'infrastructure_support.dart';
 import 'support.dart';
 
 class InventoryOnlyApi extends FakeApi implements DeviceManagementApi {
   Json? saved;
+  Completer<Json>? pendingInventory;
+  bool inventoryRequested = false;
   @override
   bool get managed => true;
   @override
@@ -29,7 +35,12 @@ class InventoryOnlyApi extends FakeApi implements DeviceManagementApi {
         HierarchyItem.fromJson({'id': level, 'name': level})
       ];
   @override
-  Future<Json> inventory(String id) async => throw UnimplementedError();
+  Future<Json> inventory(String id) async {
+    inventoryRequested = true;
+    final pending = pendingInventory;
+    if (pending != null) return pending.future;
+    throw UnimplementedError();
+  }
   @override
   Future<void> register(Json device) async {
     saved = device;
@@ -69,6 +80,59 @@ class InventoryOnlyApi extends FakeApi implements DeviceManagementApi {
 }
 
 void main() {
+  testWidgets('The first scope change closes only the onboarding dialog',
+      (tester) async {
+    final api = InventoryOnlyApi()..infrastructure = infrastructureFixture();
+    final controller = OipController(api);
+    final navigator = GlobalKey<NavigatorState>();
+    addTearDown(controller.dispose);
+    await controller.resyncInfrastructure();
+    await tester.pumpWidget(MaterialApp(
+      navigatorKey: navigator,
+      home: const Scaffold(body: Text('Home')),
+    ));
+    unawaited(navigator.currentState!.push<void>(MaterialPageRoute(
+      builder: (context) => Scaffold(
+        body: TextButton(
+          onPressed: () => showDeviceOnboarding(context, controller),
+          child: const Text('Open onboarding'),
+        ),
+      ),
+    )));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open onboarding'));
+    await tester.pumpAndSettle();
+    expect(find.byType(DeviceOnboarding), findsOneWidget);
+
+    controller.selectInfrastructure(
+        const InfrastructureSelection.infrastructure('org-a', 'infra-a1'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DeviceOnboarding), findsNothing);
+    expect(find.text('Open onboarding'), findsOneWidget);
+  });
+
+  testWidgets('An inventory load failure after disposal is ignored',
+      (tester) async {
+    final pending = Completer<Json>();
+    final api = InventoryOnlyApi()..pendingInventory = pending;
+    final controller = OipController(api);
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: DeviceOnboarding(controller: controller, deviceId: 'device-a1'),
+      ),
+    ));
+    await tester.pump();
+    expect(api.inventoryRequested, isTrue);
+    await tester.pumpWidget(const SizedBox());
+
+    pending.completeError(const ApiFailure('Inventory not available'));
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('The type of the device is named with the shared vocabulary',
       (tester) async {
     final api = InventoryOnlyApi();

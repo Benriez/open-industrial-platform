@@ -51,18 +51,38 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
   DeviceConnection? savedConnection;
   Timer? timer;
   bool polling = false;
-  late final int contextRevision = widget.controller.contextRevision;
+  late final int _contextRevision;
+  late final String _scopeSignature;
+  bool _scopeInvalidated = false;
+
   void contextChanged() {
-    if (mounted && contextRevision != widget.controller.contextRevision) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
-      });
+    if (!mounted ||
+        _scopeInvalidated ||
+        (_contextRevision == widget.controller.contextRevision &&
+            _scopeSignature == widget.controller.contextScopeSignature)) {
+      return;
     }
+    _scopeInvalidated = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final route = ModalRoute.of(context);
+      if (route == null || route.isFirst || !route.isActive) return;
+      final navigator = route.navigator;
+      if (navigator == null) return;
+      if (route.isCurrent) {
+        navigator.pop();
+      } else {
+        navigator.removeRoute(route);
+      }
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   @override
   void initState() {
     super.initState();
+    _contextRevision = widget.controller.contextRevision;
+    _scopeSignature = widget.controller.contextScopeSignature;
     widget.controller.addListener(contextChanged);
     unawaited(load());
   }
@@ -86,7 +106,7 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
   }
 
   Future<void> run(Future<void> Function() operation) async {
-    if (busy) return;
+    if (busy || _scopeInvalidated) return;
     setState(() {
       busy = true;
       error = null;
@@ -109,12 +129,15 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
     try {
       final ctx = widget.controller.onboardingScope;
       organizations = await api.hierarchy('organizations', {});
+      if (!mounted || _scopeInvalidated) return;
       organization = organizations.any((o) => o.id == ctx.organization)
           ? ctx.organization
           : organizations.firstOrNull?.id;
       await loadInfrastructure(ctx.infrastructure, ctx.site);
+      if (!mounted || _scopeInvalidated) return;
       if (widget.deviceId != null) {
         final item = await api.inventory(widget.deviceId!);
+        if (!mounted || _scopeInvalidated) return;
         final record = item['record'] as Json,
             device = record['device'] as Json;
         name.text = device['display_name'] as String;
@@ -124,15 +147,17 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
         await loadInfrastructure(
             item['infrastructure_id'] as String, device['site_id'] as String);
       }
+      if (!mounted || _scopeInvalidated) return;
       profiles = (await api.connection(deviceId: widget.deviceId)).profiles;
       profile = profiles.firstOrNull?.id;
     } catch (e) {
+      if (!mounted || _scopeInvalidated) return;
       error = apiErrorMessage(
           e,
           context
               .tr("Autorisierte Konfiguration konnte nicht geladen werden."));
     }
-    if (mounted) setState(() => busy = false);
+    if (mounted && !_scopeInvalidated) setState(() => busy = false);
   }
 
   Future<void> loadInfrastructure(
@@ -141,6 +166,7 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
         ? []
         : await api
             .hierarchy('infrastructures', {'organization': organization!});
+    if (!mounted || _scopeInvalidated) return;
     infrastructure = infrastructures.any((i) => i.id == preferred)
         ? preferred
         : infrastructures.firstOrNull?.id;

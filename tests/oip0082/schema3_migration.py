@@ -4,7 +4,7 @@ Runtime credentials/databases remain in private /private/tmp; sanitized report u
 """
 import concurrent.futures,hashlib,json,os,pathlib,select,secrets,signal,socket,subprocess,threading,time,urllib.request,urllib.error
 ROOT=pathlib.Path(__file__).resolve().parents[2]
-OUT=ROOT/'target'/'oip0082-migration';OUT.mkdir(parents=True,exist_ok=True)
+OUT=pathlib.Path(os.environ.get('OIP_EVIDENCE_DIR', ROOT/'target/oip0082-migration'));OUT.mkdir(parents=True,exist_ok=True)
 RUN=pathlib.Path('/private/tmp')/('oip82-migration-'+str(os.getpid()));RUN.mkdir(mode=0o700)
 BIN=ROOT/'target/debug/oip-server';SDK=ROOT/'target/debug/examples/mcp_probe';SIM=ROOT/'target/debug/oip-simulated-server';SQL='/opt/homebrew/opt/sqlite/bin/sqlite3'
 PROCS=[];REPORT={'baseline':'79639ff42c68ee2ede34862929822a4789845268','phases':[],'runtime_directory':str(RUN),'model_used':False};CLIENTS=[]
