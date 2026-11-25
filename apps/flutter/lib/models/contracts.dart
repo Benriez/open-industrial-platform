@@ -311,8 +311,8 @@ class Snapshot {
           o.metricId == 'temperature')
       .firstOrNull;
   Snapshot.fromJson(Json j)
-      : incidentsDelivered = j['_incidents_delivered'] as bool? ??
-            j['incidents'] is List,
+      : incidentsDelivered =
+            j['_incidents_delivered'] as bool? ?? j['incidents'] is List,
         topologyDelivered =
             j['_topology_delivered'] as bool? ?? j['topology'] is List,
         core = CoreHealthView.fromJson(
@@ -368,9 +368,8 @@ class Snapshot {
     return Snapshot._(
       core: core,
       system: system.projected(
-        primarySourceId: projectedSources.length == 1
-            ? projectedSources.single.id
-            : null,
+        primarySourceId:
+            projectedSources.length == 1 ? projectedSources.single.id : null,
       ),
       devices: devices ?? this.devices,
       metrics: metrics ?? this.metrics,
@@ -394,7 +393,7 @@ extension SnapshotAlarm on Snapshot {
 
 class SourceInfo {
   final String id, name, entityId;
-  final bool simulated;
+  final bool simulated, opcuaBrowse;
   final String reachability, connection, service, freshness, validity;
   final int? lastReceivedMs;
   final String? lastError;
@@ -404,6 +403,7 @@ class SourceInfo {
     required this.name,
     required this.entityId,
     required this.simulated,
+    required this.opcuaBrowse,
     required this.reachability,
     required this.connection,
     required this.service,
@@ -420,6 +420,7 @@ class SourceInfo {
         name: name,
         entityId: entityId,
         simulated: simulated,
+        opcuaBrowse: opcuaBrowse,
         reachability: reachability,
         connection: liveConnection,
         service: service,
@@ -434,6 +435,7 @@ class SourceInfo {
         name = j['name'] as String,
         entityId = j['entity_id'] as String,
         simulated = j['simulated'] as bool,
+        opcuaBrowse = j['opcua_browse'] == true,
         reachability = j['reachability'] as String,
         connection = j['connection'] as String,
         service = j['service'] as String,
@@ -462,6 +464,7 @@ class OpcNode {
 class NodePage {
   final List<OpcNode> items;
   final int total, offset, limit;
+
   /// The folders of the address space of the source, as the Core delivered
   /// them. A Core that delivers none leaves the list empty.
   final List<String> folders;

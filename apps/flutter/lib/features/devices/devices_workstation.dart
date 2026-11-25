@@ -425,8 +425,8 @@ class _DevicesPageState extends State<DevicesPage> {
         tooltip: simulation
             ? context.tr("Simuliertes Gerät zur Vorschau hinzufügen.")
             : operatorActionsAvailable
-                ? context.tr(
-                    "Gerät registrieren oder die sichere SSH-Einrichtung starten. Der Core prüft die Berechtigung für den gewählten Bereich.")
+                ? context
+                    .tr("Ein Gerät für den ausgewählten Standort hinzufügen.")
                 : context.tr(
                     "Melde dich an, um die für dein Operator-Profil erlaubten Geräteaktionen zu öffnen."),
         icon: Icons.add,

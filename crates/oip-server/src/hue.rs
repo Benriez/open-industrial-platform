@@ -1,4 +1,4 @@
-//! Read-only Philips Hue Bridge collector.
+//! Philips Hue Bridge collection and operator setup over pinned TLS.
 //!
 //! The bridge serves HTTPS with a certificate that it issued itself and does
 //! not present the root of its own chain, so its identity can only be verified
@@ -14,6 +14,7 @@
 use crate::state::{now_ms, AppState};
 use oip_core::*;
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::{
     collections::BTreeMap,
     path::{Path, PathBuf},
@@ -96,6 +97,10 @@ pub fn fault(code: &str) -> ConnectionFault {
             "HUE_ANSWER_LIMIT" => "The answer of the Hue bridge exceeded the allowed size",
             "HUE_ANSWER_INVALID" => "The bridge answered without a usable configuration; no identity is asserted",
             "HUE_TOKEN_REQUIRED" => "The lights of the bridge need an application token of the operator; only the verified identity of the bridge is readable",
+            "HUE_LINK_BUTTON_REQUIRED" => "Press the link button on the Hue Bridge and try again",
+            "HUE_PAIRING_REFUSED" => "The Hue Bridge did not approve pairing",
+            "HUE_CREDENTIAL_NOT_SAVED" => "OIP could not save the Hue connection",
+            "HUE_SEARCH_REFUSED" => "The Hue Bridge did not start looking for devices",
             "HUE_CANCELLED" => "The Hue collection was cancelled",
             _ => "Hue read-only verification failed; no measurement is asserted",
         }
@@ -438,13 +443,19 @@ fn tls_answer(raw: &[u8], stderr: &str, success: bool) -> Result<HttpAnswer, Con
 /// One HTTP request over one TLS session in which the presented certificate of the
 /// bridge is verified against the pin: `openssl` refuses the connection itself
 /// when the certificate is not the pinned one.
+enum BridgeRequest<'a> {
+    Read,
+    Update(&'a str),
+    Create(&'a str),
+}
+
 async fn verified_request(
     binary: &Path,
     host: &str,
     port: u16,
     path: &str,
     pin: &Path,
-    body: Option<&str>,
+    request: BridgeRequest<'_>,
     cancel: &CancellationToken,
 ) -> Result<HttpAnswer, ConnectionFault> {
     if !pin.is_file() {
@@ -454,16 +465,18 @@ async fn verified_request(
         .parse::<std::net::IpAddr>()
         .map_err(|_| fault("HUE_PROFILE_UNAVAILABLE"))?;
     let endpoint = std::net::SocketAddr::new(ip, port);
-    let (method, headers, body) = match body {
-        Some(body) => (
-            "PUT",
-            format!(
-                "Content-Type: application/json\r\nContent-Length: {}\r\n",
-                body.len()
-            ),
-            body,
-        ),
-        None => ("GET", String::new(), ""),
+    let (method, body) = match request {
+        BridgeRequest::Read => ("GET", ""),
+        BridgeRequest::Update(body) => ("PUT", body),
+        BridgeRequest::Create(body) => ("POST", body),
+    };
+    let headers = if body.is_empty() {
+        String::new()
+    } else {
+        format!(
+            "Content-Type: application/json\r\nContent-Length: {}\r\n",
+            body.len()
+        )
     };
     let request = format!("{method} {path} HTTP/1.1\r\nHost: {endpoint}\r\nUser-Agent: oip-hue/1\r\nAccept: application/json\r\n{headers}Connection: close\r\n\r\n{body}");
     let mut command = Command::new(binary);
@@ -524,52 +537,119 @@ async fn verified_request(
     result
 }
 
-async fn read_token(profile: &HueProfile) -> Result<Option<String>, ConnectionFault> {
-    let Some(path) = profile.token_file.as_ref() else {
+fn valid_token(token: &str) -> bool {
+    !token.is_empty()
+        && token.len() <= 128
+        && token
+            .bytes()
+            .all(|c| c.is_ascii_alphanumeric() || b"-_".contains(&c))
+}
+
+async fn managed_token_path(
+    directory: &Path,
+    profile: &HueProfile,
+) -> Result<PathBuf, ConnectionFault> {
+    let pin = tokio::fs::File::open(&profile.pin_file)
+        .await
+        .map_err(|_| fault("HUE_PIN_MISSING"))?;
+    let pin = bounded(pin, 16_384)
+        .await
+        .map_err(|_| fault("HUE_PIN_MISSING"))?;
+    let fingerprint = Sha256::new()
+        .chain_update(profile.device_id.as_str())
+        .chain_update([0])
+        .chain_update(pin)
+        .finalize();
+    Ok(directory.join(format!("{}-{fingerprint:x}.token", profile.id)))
+}
+
+async fn read_token(
+    profile: &HueProfile,
+    managed: Option<&Path>,
+) -> Result<Option<String>, ConnectionFault> {
+    let unreadable = || fault("HUE_TOKEN_FILE_UNREADABLE");
+    let path = if let Some(managed) = managed {
+        match tokio::fs::symlink_metadata(managed).await {
+            Ok(metadata) if metadata.is_file() => Some(managed),
+            Ok(_) => return Err(unreadable()),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                profile.token_file.as_deref()
+            }
+            Err(_) => return Err(unreadable()),
+        }
+    } else {
+        profile.token_file.as_deref()
+    };
+    let Some(path) = path else {
         return Ok(None);
     };
-    if !path.is_file() {
-        return Err(fault("HUE_TOKEN_FILE_UNREADABLE"));
+    let metadata = tokio::fs::metadata(path).await.map_err(|_| unreadable())?;
+    if !metadata.is_file() || metadata.len() > 256 {
+        return Err(unreadable());
     }
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
-        let metadata = tokio::fs::metadata(path)
-            .await
-            .map_err(|_| fault("HUE_TOKEN_FILE_UNREADABLE"))?;
-        if metadata.permissions().mode() & 0o077 != 0 || metadata.len() > 256 {
-            return Err(fault("HUE_TOKEN_FILE_UNREADABLE"));
+        if metadata.permissions().mode() & 0o077 != 0 {
+            return Err(unreadable());
         }
     }
-    let token = tokio::fs::read_to_string(path)
+    let file = tokio::fs::File::open(path)
         .await
-        .map_err(|_| fault("HUE_TOKEN_FILE_UNREADABLE"))?
-        .trim()
-        .to_owned();
-    if token.is_empty()
-        || token.len() > 128
-        || !token
-            .bytes()
-            .all(|c| c.is_ascii_alphanumeric() || b"-_".contains(&c))
-    {
-        return Err(fault("HUE_TOKEN_FILE_UNREADABLE"));
+        .map_err(|_| unreadable())?;
+    let bytes = bounded(file, 256).await.map_err(|_| unreadable())?;
+    let token = std::str::from_utf8(&bytes)
+        .map_err(|_| unreadable())?
+        .trim();
+    if !valid_token(token) {
+        return Err(unreadable());
     }
-    Ok(Some(token))
+    Ok(Some(token.to_owned()))
+}
+
+async fn read_lights(
+    binary: &Path,
+    profile: &HueProfile,
+    token: &str,
+    cancel: &CancellationToken,
+) -> Result<Vec<HueLight>, ConnectionFault> {
+    let answer = verified_request(
+        binary,
+        &profile.host,
+        profile.port,
+        &format!("/api/{token}/lights"),
+        &profile.pin_file,
+        BridgeRequest::Read,
+        cancel,
+    )
+    .await?;
+    if answer.status != Some(200) {
+        return Err(fault("HUE_ANSWER_INVALID"));
+    }
+    if answer.body.contains("unauthorized user") {
+        return Err(fault("HUE_TOKEN_REQUIRED"));
+    }
+    parse_lights(&answer.body)
 }
 
 async fn collect(
     binary: &Path,
     profile: &HueProfile,
     cancel: &CancellationToken,
+    credentials: Option<&Path>,
 ) -> Result<BridgeReport, ConnectionFault> {
-    let token = read_token(profile).await?;
+    let managed = match credentials {
+        Some(dir) => Some(managed_token_path(dir, profile).await?),
+        None => None,
+    };
+    let token = read_token(profile, managed.as_deref()).await?;
     let configuration = verified_request(
         binary,
         &profile.host,
         profile.port,
         "/api/config",
         &profile.pin_file,
-        None,
+        BridgeRequest::Read,
         cancel,
     )
     .await?;
@@ -580,25 +660,7 @@ async fn collect(
     // The lights are read only with the token of the operator. Without it the
     // limit of the capability is recorded, not hidden.
     let lights = match token {
-        Some(token) => {
-            let answer = verified_request(
-                binary,
-                &profile.host,
-                profile.port,
-                &format!("/api/{token}/lights"),
-                &profile.pin_file,
-                None,
-                cancel,
-            )
-            .await?;
-            if answer.status != Some(200) {
-                return Err(fault("HUE_ANSWER_INVALID"));
-            }
-            if answer.body.contains("unauthorized user") {
-                return Err(fault("HUE_TOKEN_REQUIRED"));
-            }
-            Some(parse_lights(&answer.body)?)
-        }
+        Some(token) => Some(read_lights(binary, profile, &token, cancel).await?),
         None => None,
     };
     Ok(BridgeReport {
@@ -659,7 +721,10 @@ async fn light_request(
         .get_or_try_init(openssl)
         .await
         .map_err(unavailable)?;
-    let token = read_token(profile)
+    let managed = managed_token_path(&state.hue_credentials_dir, profile)
+        .await
+        .map_err(unavailable)?;
+    let token = read_token(profile, Some(&managed))
         .await
         .map_err(unavailable)?
         .ok_or_else(|| unavailable(fault("HUE_TOKEN_REQUIRED")))?;
@@ -669,7 +734,7 @@ async fn light_request(
         profile.port,
         &format!("/api/{token}/lights{resource}"),
         &profile.pin_file,
-        body,
+        body.map_or(BridgeRequest::Read, BridgeRequest::Update),
         &state.stopping,
     )
     .await
@@ -698,6 +763,144 @@ pub(crate) async fn list(
         return Err(unavailable(fault("HUE_TOKEN_REQUIRED")));
     }
     parse_lights(&body).map_err(unavailable)
+}
+
+pub(crate) fn can_setup(
+    profile: &HueProfile,
+    hierarchy: &HierarchyRegistry,
+    principal: &PrincipalId,
+    source: &DataSourceId,
+) -> bool {
+    profile.principals.contains(principal)
+        && hierarchy.permits(
+            principal,
+            CapabilityId::HueSetup,
+            &AccessScope::Source(source.clone()),
+            false,
+        )
+}
+
+fn pair_reply(body: &str) -> Result<String, ConnectionFault> {
+    let [result]: [serde_json::Value; 1] = setup_reply(body)?
+        .try_into()
+        .map_err(|_| fault("HUE_PAIRING_REFUSED"))?;
+    if result["error"]["type"].as_u64() == Some(101) {
+        return Err(fault("HUE_LINK_BUTTON_REQUIRED"));
+    }
+    result["success"]["username"]
+        .as_str()
+        .filter(|token| valid_token(token))
+        .map(str::to_owned)
+        .ok_or_else(|| fault("HUE_PAIRING_REFUSED"))
+}
+
+fn setup_reply(body: &str) -> Result<Vec<serde_json::Value>, ConnectionFault> {
+    serde_json::from_str(body).map_err(|_| fault("HUE_ANSWER_INVALID"))
+}
+
+async fn save_managed_token(path: &Path, token: &str) -> Result<(), ConnectionFault> {
+    let failed = || fault("HUE_CREDENTIAL_NOT_SAVED");
+    let nonce = crate::browser_session::random_token().map_err(|_| failed())?;
+    let temporary = path.with_extension(nonce);
+    let mut options = tokio::fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    options.mode(0o600);
+    let mut file = options.open(&temporary).await.map_err(|_| failed())?;
+    let result = async {
+        file.write_all(token.as_bytes()).await?;
+        file.sync_all().await?;
+        tokio::fs::rename(&temporary, path).await
+    }
+    .await;
+    if result.is_err() {
+        let _ = tokio::fs::remove_file(&temporary).await;
+    }
+    result.map_err(|_| failed())
+}
+
+pub(crate) async fn setup(
+    state: &AppState,
+    profile: &HueProfile,
+    action: HueSetupAction,
+) -> Result<(), CapabilityError> {
+    if state.stopping.is_cancelled() {
+        return Err(unavailable(fault("HUE_CANCELLED")));
+    }
+    let _setup = state.hue_setup.try_lock().map_err(|_| busy())?;
+    let _permit = state.hue_requests.try_acquire().map_err(|_| busy())?;
+    let binary = state
+        .hue_tls
+        .get_or_try_init(openssl)
+        .await
+        .map_err(unavailable)?;
+    let path = managed_token_path(&state.hue_credentials_dir, profile)
+        .await
+        .map_err(unavailable)?;
+    let token = read_token(profile, Some(&path))
+        .await
+        .map_err(unavailable)?;
+    match action {
+        HueSetupAction::PairBridge => {
+            if let Some(token) = token {
+                match read_lights(binary, profile, &token, &state.stopping).await {
+                    Ok(_) => return Ok(()),
+                    Err(error) if error.code == "HUE_TOKEN_REQUIRED" => {}
+                    Err(error) => return Err(unavailable(error)),
+                }
+            }
+            crate::ssh::private_workdir(&state.hue_credentials_dir)
+                .map_err(|_| unavailable(fault("HUE_CREDENTIAL_NOT_SAVED")))?;
+            let answer = verified_request(
+                binary,
+                &profile.host,
+                profile.port,
+                "/api",
+                &profile.pin_file,
+                BridgeRequest::Create(r#"{"devicetype":"open-industrial-platform#oip"}"#),
+                &state.stopping,
+            )
+            .await
+            .map_err(unavailable)?;
+            if answer.status != Some(200) {
+                return Err(unavailable(fault("HUE_PAIRING_REFUSED")));
+            }
+            let token = pair_reply(&answer.body).map_err(unavailable)?;
+            save_managed_token(&path, &token)
+                .await
+                .map_err(unavailable)?;
+            read_lights(binary, profile, &token, &state.stopping)
+                .await
+                .map_err(unavailable)?;
+        }
+        HueSetupAction::SearchLights => {
+            let token = token.ok_or_else(|| unavailable(fault("HUE_TOKEN_REQUIRED")))?;
+            let answer = verified_request(
+                binary,
+                &profile.host,
+                profile.port,
+                &format!("/api/{token}/lights"),
+                &profile.pin_file,
+                BridgeRequest::Create("{}"),
+                &state.stopping,
+            )
+            .await
+            .map_err(unavailable)?;
+            let started = answer.status == Some(200)
+                && setup_reply(&answer.body)
+                    .map_err(unavailable)?
+                    .iter()
+                    .any(|item| {
+                        item["success"]["/lights"]
+                            .as_str()
+                            .is_some_and(|message| message == "Searching for new devices")
+                    });
+            if !started {
+                return Err(unavailable(fault("HUE_SEARCH_REFUSED")));
+            }
+        }
+    }
+    Ok(())
 }
 
 fn command_body(
@@ -942,7 +1145,7 @@ async fn poll(binary: PathBuf, state: AppState, profile: HueProfile, cancel: Can
         if needs_connection {
             state.connecting(&source).await;
         }
-        match collect(&binary, &profile, &cancel).await {
+        match collect(&binary, &profile, &cancel, Some(&state.hue_credentials_dir)).await {
             Ok(report) => {
                 failures = 0;
                 if needs_connection {
@@ -1021,6 +1224,194 @@ pub async fn supervise(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn pairing_replies_require_a_valid_application_token() {
+        assert_eq!(
+            pair_reply(r#"[{"error":{"type":101}}]"#).unwrap_err().code,
+            "HUE_LINK_BUTTON_REQUIRED"
+        );
+        assert_eq!(
+            pair_reply(r#"[{"success":{"username":"app-token_1"}}]"#).unwrap(),
+            "app-token_1"
+        );
+        for body in [
+            r#"[{"success":{"username":"url/path"}}]"#,
+            r#"[{"success":{"username":"token"}},{"error":{"type":101}}]"#,
+            r#"[{"error":{"type":1}}]"#,
+        ] {
+            assert_eq!(pair_reply(body).unwrap_err().code, "HUE_PAIRING_REFUSED");
+        }
+    }
+
+    #[tokio::test]
+    async fn setup_pairs_and_searches_on_an_owned_pinned_tls_bridge() {
+        use crate::config::CoreConfig;
+        use oip_storage::SqliteStore;
+        use tokio::io::{AsyncBufReadExt, BufReader};
+
+        const BRIDGE: &str = r#"
+import http.server, json, ssl, sys
+
+pair_requests = 0
+plug_found = False
+
+class Handler(http.server.BaseHTTPRequestHandler):
+    def answer(self, answer):
+        body = json.dumps(answer).encode()
+        self.send_response(200)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_POST(self):
+        global pair_requests, plug_found
+        self.rfile.read(int(self.headers["Content-Length"]))
+        if self.path == "/api":
+            pair_requests += 1
+            if pair_requests == 1:
+                self.answer([{"error": {"type": 101}}])
+            elif pair_requests == 2:
+                self.answer([{"success": {"username": "fixture-hue-token"}}])
+            else:
+                self.answer([{"error": {"type": 1}}])
+        elif self.path == "/api/fixture-hue-token/lights":
+            plug_found = True
+            self.answer([{"success": {"/lights": "Searching for new devices"}}])
+        else:
+            self.send_error(404)
+
+    def do_GET(self):
+        if self.path == "/api/fixture-hue-token/lights":
+            self.answer({"41": {"name":"Socket", "type":"On/Off plug-in unit",
+                                 "state":{"on":False, "reachable":True}}} if plug_found else {})
+        else:
+            self.send_error(404)
+
+server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+tls.load_cert_chain(sys.argv[1], sys.argv[2])
+server.socket = tls.wrap_socket(server.socket, server_side=True)
+print(server.server_port, flush=True)
+server.serve_forever()
+"#;
+        struct TempDir(PathBuf);
+        impl Drop for TempDir {
+            fn drop(&mut self) {
+                let _ = std::fs::remove_dir_all(&self.0);
+            }
+        }
+        let dir = TempDir(
+            std::fs::canonicalize(std::env::temp_dir())
+                .unwrap()
+                .join(format!(
+                    "oip-hue-setup-{}",
+                    crate::browser_session::random_token().unwrap()
+                )),
+        );
+        crate::ssh::private_workdir(&dir.0).unwrap();
+        let certificate = dir.0.join("bridge.pem");
+        let key = dir.0.join("bridge.key");
+        let binary = openssl().await.unwrap();
+        let certificate_creation = Command::new(&binary)
+            .args([
+                "req",
+                "-x509",
+                "-newkey",
+                "rsa:2048",
+                "-nodes",
+                "-days",
+                "1",
+                "-subj",
+                "/CN=OIP Hue Setup Fixture",
+            ])
+            .arg("-out")
+            .arg(&certificate)
+            .arg("-keyout")
+            .arg(&key)
+            .output()
+            .await
+            .unwrap();
+        assert!(certificate_creation.status.success());
+        let mut bridge = Command::new("python3")
+            .args(["-u", "-c", BRIDGE])
+            .arg(&certificate)
+            .arg(&key)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .kill_on_drop(true)
+            .spawn()
+            .unwrap();
+        let mut port = String::new();
+        tokio::time::timeout(
+            Duration::from_secs(5),
+            BufReader::new(bridge.stdout.take().unwrap()).read_line(&mut port),
+        )
+        .await
+        .unwrap()
+        .unwrap();
+        let profile = HueProfile {
+            control_enabled: true,
+            id: "fixture".into(),
+            label: "Owned TLS fixture".into(),
+            principals: vec![PrincipalId::new("local-operator").unwrap()],
+            device_id: DeviceId::new("fixture").unwrap(),
+            host: "127.0.0.1".into(),
+            port: port.trim().parse().unwrap(),
+            poll_seconds: 30,
+            pin_file: certificate,
+            token_file: None,
+        };
+        let config = CoreConfig {
+            database: dir.0.join("core.sqlite"),
+            ..Default::default()
+        };
+        let state =
+            AppState::configured(SqliteStore::open(&config.database).unwrap(), &config, None)
+                .unwrap();
+        state.hue_tls.set(binary).unwrap();
+
+        assert_eq!(
+            setup(&state, &profile, HueSetupAction::SearchLights)
+                .await
+                .unwrap_err()
+                .code,
+            "HUE_TOKEN_REQUIRED"
+        );
+        assert_eq!(
+            setup(&state, &profile, HueSetupAction::PairBridge)
+                .await
+                .unwrap_err()
+                .code,
+            "HUE_LINK_BUTTON_REQUIRED"
+        );
+        let token_path = managed_token_path(&state.hue_credentials_dir, &profile)
+            .await
+            .unwrap();
+        assert!(!token_path.exists());
+        setup(&state, &profile, HueSetupAction::PairBridge)
+            .await
+            .unwrap();
+        assert_eq!(
+            read_token(&profile, Some(&token_path))
+                .await
+                .unwrap()
+                .as_deref(),
+            Some("fixture-hue-token")
+        );
+        setup(&state, &profile, HueSetupAction::PairBridge)
+            .await
+            .unwrap();
+        setup(&state, &profile, HueSetupAction::SearchLights)
+            .await
+            .unwrap();
+        let lights = list(&state, &profile).await.unwrap();
+        assert_eq!(lights.len(), 1);
+        assert_eq!(lights[0].id, 41);
+        assert!(!lights[0].on);
+        assert!(state.shutdown().await.clean);
+        bridge.kill().await.unwrap();
+    }
+
     #[test]
     fn light_commands_use_capabilities_ranges_and_exact_confirmations() {
         use serde_json::json;
@@ -1411,6 +1802,7 @@ mod tests {
             Path::new("/usr/bin/openssl"),
             &profile,
             &CancellationToken::new(),
+            None,
         )
         .await
         .err()
@@ -1438,6 +1830,7 @@ mod tests {
             Path::new("/usr/bin/openssl"),
             &profile,
             &CancellationToken::new(),
+            None,
         )
         .await
         .err()

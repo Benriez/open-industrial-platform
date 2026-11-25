@@ -164,7 +164,7 @@ try {
   await page.waitForTimeout(300);
   await capture('01b-manual-name');
   await page.getByRole('button',{name:'Verbindungsmethode wählen',exact:true}).click();
-  await page.getByRole('button',{name:/Verbindungsmethode SSH/}).click();
+  await page.getByRole('button',{name:/Verbindungsmethode Computer oder Router/}).click();
   await page.getByText('Nur Inventar, keine Verbindung',{exact:true}).last().click();
   await page.getByRole('button',{name:'Inventarregistrierung prüfen',exact:true}).click();
   await page.getByRole('checkbox',{name:'Ich bestätige die reine Inventarregistrierung ohne Verbindung.',exact:true}).click();
@@ -327,22 +327,16 @@ try {
   await page.waitForTimeout(800);
   await page.getByRole('button',{name:'Verbindung für dieses Gerät einrichten',exact:true}).click();
   await page.getByRole('button',{name:'Verbindungsmethode wählen',exact:true}).click();
-  await typeInto(page.getByRole('textbox',{name:'Hostname oder IP-Adresse',exact:true}),'127.0.0.1');
-  await typeInto(page.getByRole('textbox',{name:'SSH-Port',exact:true}),String(fixture.port));
-  // Port's Tab advances real Flutter focus to the user field; do not refocus its semantic-only DOM proxy.
-  await page.keyboard.type(fixture.user,{delay:100});
-  await page.waitForTimeout(200); await page.keyboard.press('Tab');
-  await capture('02-explicit-endpoint');
-  console.log('endpoint input complete');
-  await page.getByRole('button',{name:'SSH-Verbindung testen',exact:true}).click();
-  const trust=page.getByRole('button',{name:'Fingerprint geprüft · diesem Host-Key vertrauen',exact:true});
-  await trust.waitFor({timeout:30000});
-  console.log('host key shown');
-  const expectedFingerprint=execFileSync('/usr/bin/ssh-keygen',['-lf',resolve(fixture.directory,'host.pub'),'-E','sha256'],{encoding:'utf8'}).split(/\s+/)[1];
-  assert((await page.locator('body').ariaSnapshot()).includes(expectedFingerprint));
-  await capture('03-host-key-confirmation');
-  // Fixture host key was created by this isolated test, independently known.
-  await trust.click();
+  assert(await waitFor(async()=> (await page.locator('body').ariaSnapshot()).includes('Testgerät')));
+  assert.equal(await page.getByRole('textbox',{name:'Hostname oder IP-Adresse',exact:true}).count(),0);
+  assert.equal(await page.getByRole('textbox',{name:'SSH-Port',exact:true}).count(),0);
+  await capture('02-prepared-device');
+  await page.getByRole('button',{name:'Gerät prüfen',exact:true}).click();
+  const verify=page.getByRole('button',{name:'Geräteinformationen abrufen',exact:true});
+  await verify.waitFor({timeout:30000});
+  assert.equal(await page.getByRole('button',{name:/diesem Host-Key vertrauen/}).count(),0);
+  await capture('03-pinned-device');
+  await verify.click();
   await page.getByRole('button',{name:'Identität bestätigen und Verbindung speichern',exact:true}).waitFor({timeout:30000});
   await writeFile(resolve(out,'verified-ax.txt'),await page.locator('body').ariaSnapshot());
   await capture('04-actual-host-identity');
@@ -350,7 +344,7 @@ try {
   await page.getByRole('button',{name:'Identität bestätigen und Verbindung speichern',exact:true}).click();
   await page.getByRole('button',{name:'Zum Geräteinventar',exact:true}).waitFor();
   await capture('05-persisted-binding');
-  await page.getByRole('button',{name:'Monitoring aktivieren',exact:true}).click();
+  assert.equal(await page.getByRole('button',{name:'Monitoring aktivieren',exact:true}).count(),0);
   await page.getByRole('button',{name:'Zum Geräteinventar',exact:true}).click();
   // The approved Spectrum-2027 device workspace carries the authorized
   // monitoring evidence and the persisted history. The device is selected
@@ -363,6 +357,9 @@ try {
   // The expected values are read back from the Core, never invented here, and
   // they must be the same values that the operator sees in the browser.
   const observed=(await (await context.request.get(base+'/api/v2/device-connections?device_id=browser-existing',{timeout:60000})).json());
+  const fingerprint=execFileSync('/usr/bin/ssh-keygen',['-lf',resolve(fixture.directory,'host.pub'),'-E','sha256'],{encoding:'utf8'}).split(/\s+/)[1];
+  assert.equal(observed.connection.fingerprint,fingerprint,'the persisted host key must match the prepared fixture');
+  assert.equal(sshRequests.some(request=>request.operation==='trust_host_key'),false);
   const observations=observed.connection.observations;
   assert(Array.isArray(observations)&&observations.length>0,'Core reports no authorized observations');
   const os=observations.find(o=>o.metric_id==='host.os');
@@ -533,7 +530,7 @@ try {
   await page.getByRole('button',{name:'Operator abmelden',exact:true}).click();
   await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,hardware:'owned loopback SSH fixture, not private Raspberry Pi',host_key_consent:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,device_detail_telemetry_tab:true,device_detail_metrics:[os.metric_id,memory.metric_id],all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_administration:{device_id:manualId,revision_before:manualRevision,revision_after:updated.items[0].record.revision,display_name_updated:true,online_archive_refused:'OFFLINE_ARCHIVE_REQUIRED',archive_is_offline_operation:true,note_written:true,the_note:NOTE,the_note_is_dropped_by_a_write_without_the_merge:true},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[1]+'/'+sources[2],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'DeviceDetail Telemetry tab and connection monitoring panel of the approved UI',demo_coordinates_absent:true},rendered_diagnostics:{approved_surface:'persisted_evidence',persisted_evidence_section:true,diagnosis_history_status:status,health_transitions:healthPage.items.length,documented_gaps:gapsPage.items.length},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
+  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,prepared_endpoint_without_manual_fields:true,hardware:'owned loopback SSH fixture',prepared_host_key_pinned:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,device_detail_telemetry_tab:true,device_detail_metrics:[os.metric_id,memory.metric_id],all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_administration:{device_id:manualId,revision_before:manualRevision,revision_after:updated.items[0].record.revision,display_name_updated:true,online_archive_refused:'OFFLINE_ARCHIVE_REQUIRED',archive_is_offline_operation:true,note_written:true,the_note:NOTE,the_note_is_dropped_by_a_write_without_the_merge:true},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[1]+'/'+sources[2],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'DeviceDetail Telemetry tab and connection monitoring panel of the approved UI',demo_coordinates_absent:true},rendered_diagnostics:{approved_surface:'persisted_evidence',persisted_evidence_section:true,diagnosis_history_status:status,health_transitions:healthPage.items.length,documented_gaps:gapsPage.items.length},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
 } catch(e) {
   await writeFile(resolve(out,'ssh-requests.json'),JSON.stringify(sshRequests,null,2));
   await capture('failure');

@@ -29,6 +29,7 @@ pub struct HueLight {
 pub struct HueLights {
     pub source: DataSourceId,
     pub can_control: bool,
+    pub can_setup: bool,
     pub lights: Vec<HueLight>,
 }
 
@@ -49,4 +50,20 @@ pub struct HueLightCommand {
     pub source: DataSourceId,
     pub light_id: u64,
     pub change: HueChange,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum HueSetupAction {
+    PairBridge,
+    SearchLights,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
+#[serde(deny_unknown_fields)]
+pub struct HueSetupRequest {
+    pub source: DataSourceId,
+    pub action: HueSetupAction,
 }

@@ -62,7 +62,16 @@ else:
     owned_fixture=SshFixture();fixture=owned_fixture.metadata()
     fixture_path=RUN/'ssh-fixture.json';fixture_path.write_text(json.dumps(fixture));os.environ['OIP_SSH_FIXTURE']=str(fixture_path)
 fdir=pathlib.Path(fixture['directory'])
-config['ssh']={'profiles':[{'id':'fixture','label':'Owned loopback SSH fixture','principals':['reader-org-a'],'allowed_hosts':['127.0.0.1'],'allowed_ports':[fixture['port'],port()],'identity_file':str(fdir/'client'),'agent_socket':None,'known_hosts_file':None,'aliases':{}}]}
+known_hosts=fdir/'guided-known-hosts'
+host_key=' '.join((fdir/'host.pub').read_text().split()[:2])
+known_hosts.write_text(f"[127.0.0.1]:{fixture['port']} {host_key}\n")
+known_hosts.chmod(0o600)
+raw_profile={'id':'fixture','label':'Owned loopback SSH fixture','principals':['reader-org-a'],
+             'allowed_hosts':['127.0.0.1'],'allowed_ports':[fixture['port'],port()],
+             'identity_file':str(fdir/'client'),'agent_socket':None,'known_hosts_file':None}
+prepared_profile={**raw_profile,'id':'prepared-fixture','known_hosts_file':str(known_hosts),
+                  'aliases':{'Testgerät':{'host':'127.0.0.1','port':fixture['port'],'user':fixture['user']}}}
+config['ssh']={'profiles':[raw_profile,prepared_profile]}
 (RUN/'core.json').write_text(json.dumps(config));(RUN/'plan.json').write_text(json.dumps(plan))
 REPORT.update(baseline='49a86bb0aa9f737fe9392eb2b5421e1ffe2f8c68',physical_raspberry_pi_tested=False,ssh_fixture='owned loopback OpenSSH, actual host facts')
 def request(path,body=None,principal='reader-org-a',headers=None,method=None,opener=None):

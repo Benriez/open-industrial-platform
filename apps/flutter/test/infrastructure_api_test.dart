@@ -113,7 +113,8 @@ void main() {
           },
           _ => <String, dynamic>{},
         };
-        return http.Response(jsonEncode(body), 200, headers: {
+        final encoded = utf8.encode(jsonEncode(body));
+        return http.Response.bytes(encoded, 200, headers: {
           'content-type': 'application/json',
           'x-oip-contract-fixture': 'oip-009-contract-fixture',
           'x-oip-contract-principal': 'fixture-operator',
@@ -200,7 +201,8 @@ void main() {
           },
           _ => <String, dynamic>{},
         };
-        return http.Response(jsonEncode(body), 200, headers: {
+        final encoded = utf8.encode(jsonEncode(body));
+        return http.Response.bytes(encoded, 200, headers: {
           'content-type': 'application/json',
           'x-oip-contract-fixture': 'oip-009-contract-fixture',
         });

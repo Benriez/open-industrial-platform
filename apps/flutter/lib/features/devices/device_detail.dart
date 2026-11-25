@@ -1,3 +1,4 @@
+import 'dart:async';
 import '../../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import '../../app/controller.dart';
@@ -10,6 +11,7 @@ import '../../widgets/device_kind.dart';
 import '../../widgets/workstation.dart';
 import '../device_connection_panel.dart';
 import '../device_history.dart';
+import '../overview/hue_lights.dart';
 import 'device_administration.dart';
 import 'device_inventory.dart';
 import 'devices_layout.dart';
@@ -77,6 +79,7 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
       );
     }
     final current = device!;
+    final activeController = controller;
     return WorkstationPanel(
       key: const Key('device-engineering-workspace'),
       accent: OipTokens.blue,
@@ -99,6 +102,15 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleMedium),
                   ]),
             ),
+            if (activeController?.managed == true &&
+                activeController!.management != null &&
+                !current.simulated)
+              IconButton(
+                key: const Key('device-setup-shortcut'),
+                tooltip: context.tr("Gerät einrichten"),
+                onPressed: () => _showSetup(context, activeController, current),
+                icon: const Icon(Icons.settings_outlined, size: 18),
+              ),
             if (current.simulated)
               StatusPill(context.tr("SIMULATED"), icon: Icons.science_outlined),
             if (error != null) ...[
@@ -142,6 +154,17 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
     );
   }
 
+  void _showSetup(BuildContext context, OipController owner, Device device) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => _DeviceSetupDialog(
+        controller: owner,
+        device: device,
+        navigate: navigate,
+      ),
+    );
+  }
+
   /// The identity facts of the device as the Core holds them.
   ///
   /// A fact that the Core does not hold is named as unavailable: the panel
@@ -176,6 +199,8 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
   Widget _engineering(BuildContext context, Device device) {
     final source =
         sources.where((item) => item.id == device.sourceId).firstOrNull;
+    final hueApi = controller?.api;
+    final hueSource = device.connection == 'Hue HTTPS' ? device.sourceId : null;
     final observations = metrics;
     return SingleChildScrollView(
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -265,11 +290,20 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
           ),
         if (controller?.management != null && controller!.managed) ...[
           const Hairline(vertical: 4),
-          PanelLabel(context.tr("Connection & Monitoring")),
-          DeviceConnectionPanel(
-              controller: controller!,
-              deviceId: device.id,
-              onObservations: onConnectionObservations),
+          if (hueApi is HueApi && hueSource != null)
+            HueLightsPanel(
+                key: ValueKey(
+                    'device-hue-${controller!.contextScopeSignature}-$hueSource'),
+                api: hueApi as HueApi,
+                source: hueSource,
+                bridgeName: device.name)
+          else ...[
+            PanelLabel(context.tr("Connection & Monitoring")),
+            DeviceConnectionPanel(
+                controller: controller!,
+                deviceId: device.id,
+                onObservations: onConnectionObservations),
+          ],
           const Hairline(vertical: 4),
           PanelLabel(context.tr("Persistierte Messhistorie")),
           DeviceHistorySection(
@@ -783,5 +817,165 @@ class DeviceContextInspector extends StatelessWidget {
         ),
       ]),
     ]);
+  }
+}
+
+class _DeviceSetupDialog extends StatefulWidget {
+  final OipController controller;
+  final Device device;
+  final ValueChanged<int> navigate;
+
+  const _DeviceSetupDialog({
+    required this.controller,
+    required this.device,
+    required this.navigate,
+  });
+
+  @override
+  State<_DeviceSetupDialog> createState() => _DeviceSetupDialogState();
+}
+
+class _DeviceSetupDialogState extends State<_DeviceSetupDialog> {
+  late final int revision;
+  late final String scope;
+  bool invalidated = false;
+  bool checking = false;
+  String? opcuaSource, opcuaResult;
+
+  @override
+  void initState() {
+    super.initState();
+    revision = widget.controller.contextRevision;
+    scope = widget.controller.contextScopeSignature;
+    widget.controller.addListener(_scopeChanged);
+    unawaited(_loadOpcuaSource());
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_scopeChanged);
+    super.dispose();
+  }
+
+  void _scopeChanged() {
+    if (invalidated ||
+        (revision == widget.controller.contextRevision &&
+            scope == widget.controller.contextScopeSignature)) return;
+    invalidated = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final route = ModalRoute.of(context);
+      if (route == null || !route.isActive) return;
+      route.navigator?.removeRoute(route);
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  Future<void> _loadOpcuaSource() async {
+    final owner = widget.controller;
+    final device = widget.device;
+    if (device.sourceId == null || device.connection == 'Hue HTTPS') return;
+    try {
+      final sources = await owner.api.contextSources(owner.infrastructure);
+      if (!mounted || invalidated) return;
+      if (sources.any((source) =>
+          source.id == device.sourceId &&
+          source.entityId == device.id &&
+          source.opcuaBrowse)) {
+        setState(() => opcuaSource = device.sourceId);
+      }
+    } catch (_) {
+      // The source controls require a positive authorization projection.
+    }
+  }
+
+  Future<void> _checkOpcua(String source) async {
+    if (checking || invalidated) return;
+    setState(() {
+      checking = true;
+      opcuaResult = null;
+    });
+    try {
+      final owner = widget.controller;
+      final nodes = await owner.api.contextNodes(
+          '', 'all', 0, owner.infrastructure,
+          source: source, limit: 2);
+      if (!mounted || invalidated) return;
+      opcuaResult = nodes.total > 0
+          ? context.tr(
+              'Gerätedaten verfügbar. {0} Einträge gefunden.', [nodes.total])
+          : context.tr(
+              'Gerätedaten zurzeit nicht verfügbar. Prüfe, ob das Gerät eingeschaltet ist, und versuche es erneut.');
+    } catch (_) {
+      if (!mounted || invalidated) return;
+      opcuaResult = context.tr(
+          'Die Gerätedaten konnten nicht geprüft werden. Versuche es erneut.');
+    } finally {
+      if (mounted && !invalidated) setState(() => checking = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (invalidated) return const SizedBox.shrink();
+    final api = widget.controller.api;
+    final device = widget.device;
+    final opcua = opcuaSource;
+    final hue = device.connection == 'Hue HTTPS' ? device.sourceId : null;
+    return AlertDialog(
+      title: Text(context.tr('{0} einrichten', [device.name])),
+      content: SizedBox(
+        width: 560,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (api is HueApi && hue != null)
+                HueLightsPanel(
+                    api: api as HueApi, source: hue, bridgeName: device.name)
+              else
+                DeviceConnectionPanel(
+                  controller: widget.controller,
+                  deviceId: device.id,
+                  guided: true,
+                ),
+              if (opcua != null) ...[
+                const Divider(),
+                Text(context.tr('Gerätedaten (OPC UA)'),
+                    style: Theme.of(context).textTheme.titleLarge),
+                if (checking) const LinearProgressIndicator(),
+                if (opcuaResult != null)
+                  Semantics(liveRegion: true, child: Text(opcuaResult!)),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    OutlinedButton(
+                      key: const Key('check-device-opcua'),
+                      onPressed: checking ? null : () => _checkOpcua(opcua),
+                      child: Text(context.tr('Gerätedaten prüfen')),
+                    ),
+                    TextButton(
+                      key: const Key('open-device-opcua'),
+                      onPressed: () {
+                        widget.controller.openOpcuaSource(opcua);
+                        Navigator.of(context).pop();
+                        widget.navigate(3);
+                      },
+                      child: Text(context.tr('Gerätedaten ansehen')),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(context.tr('Schließen')),
+        ),
+      ],
+    );
   }
 }

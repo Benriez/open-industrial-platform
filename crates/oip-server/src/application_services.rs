@@ -109,6 +109,7 @@ impl ApplicationServices {
             CapabilityRequest::OpcuaNodesRead(q) => q.source.clone().or(self.state.primary.clone()),
             CapabilityRequest::HueLightsRead(q) => Some(q.source.clone()),
             CapabilityRequest::HueLightControl(q) => Some(q.source.clone()),
+            CapabilityRequest::HueSetup(q) => Some(q.source.clone()),
             CapabilityRequest::OpcuaNodeWrite(q) => Some(q.source.clone()),
             CapabilityRequest::DeviceRead(q) => {
                 self.state
@@ -185,7 +186,7 @@ impl ApplicationServices {
         use CapabilityRequest::*;
         let s = &self.state;
         match request {
-            HueLightsRead(_) | HueLightControl(_) | DeviceConnectionRead(_)
+            HueLightsRead(_) | HueLightControl(_) | HueSetup(_) | DeviceConnectionRead(_)
             | DeviceConnectionConfigure(_)
             | InventoryRead(_)
             | ServiceRegistryRead(_)
@@ -639,7 +640,7 @@ impl CapabilityService for ApplicationServices {
             .filter(|id| {
                 !matches!(
                     id,
-                    CapabilityId::HueLightsRead | CapabilityId::HueLightControl | CapabilityId::DeviceConnectionRead
+                    CapabilityId::HueLightsRead | CapabilityId::HueLightControl | CapabilityId::HueSetup | CapabilityId::DeviceConnectionRead
                         | CapabilityId::DeviceConnectionConfigure
                         | CapabilityId::InventoryRead
                         | CapabilityId::InventoryPlanRead

@@ -384,10 +384,10 @@ def main() -> int:
         lights_path = "/api/v2/hue/lights"
         read_status, lights = request(base, lights_path + "?source=hue-lan", opener=opener)
         if args.token_file:
-            assert read_status == 200 and lights["can_control"] is False
+            assert read_status == 200 and lights["can_control"] is False and lights["can_setup"] is False
             assert len(lights["lights"]) == observed["lights.total"]
         else:
-            assert read_status == 503 and lights["code"] == "HUE_TOKEN_REQUIRED"
+            assert read_status == 503 and lights["code"] == "HUE_PAIRING_AVAILABLE"
         hidden_status, _ = request(base, lights_path + "?source=hue-lan", opener=other_opener)
         assert hidden_status == 404
         # An impossible resource id is sufficient to prove that these requests
@@ -398,6 +398,13 @@ def main() -> int:
         assert disabled == missing_csrf == 403
         report["dashboard"] = {"read": read_status, "foreign_read": hidden_status,
                                "monitor_only_write": disabled, "missing_csrf": missing_csrf}
+        # Setup must not reach the bridge without the CSRF token or for a
+        # profile configured for monitoring only when searching for devices.
+        setup_path = "/api/v2/hue/setup"
+        search = {"source": "hue-lan", "action": "search_lights"}
+        no_csrf, _ = request(base, setup_path, "POST", search, opener=opener)
+        read_only, _ = request(base, setup_path, "POST", search, headers=csrf, opener=opener)
+        assert no_csrf == read_only == 403
 
 
         # 6. the negative control of the collector: a pin that is not the

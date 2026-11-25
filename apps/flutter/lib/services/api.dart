@@ -179,13 +179,16 @@ abstract class DeviceManagementApi {
       {required String deviceId, String? cursor, int limit = 20});
 }
 
-/// Optional native-only pairing operations, kept separate from the existing
-/// management seam so test and legacy clients do not claim Touch ID support.
 abstract class HueApi {
   Future<HueLights> hueLights(String source);
   Future<void> changeHueLight(String source, int id, Json change);
 }
 
+abstract class HueSetupApi {
+  Future<void> setupHue(String source, HueSetupAction action);
+}
+
+/// Native-only pairing operations for the sign-in credential.
 abstract class TouchIdManagementApi {
   Future<void> pairDeviceCredential(String credential);
   Future<BrowserSession> loginWithDeviceCredential(String credential);
@@ -214,7 +217,12 @@ String apiErrorMessage(Object error, String fallback) {
 }
 
 class RestApi
-    implements OipApi, DeviceManagementApi, TouchIdManagementApi, HueApi {
+    implements
+        OipApi,
+        DeviceManagementApi,
+        TouchIdManagementApi,
+        HueApi,
+        HueSetupApi {
   final Uri base;
   final http.Client _rest;
   final bool _dedicatedNodeClients;
@@ -376,6 +384,17 @@ class RestApi
   }
 
   @override
+  Future<void> setupHue(String source, HueSetupAction action) async {
+    final result = await _change(
+            '/api/v2/hue/setup', {'source': source, 'action': action.wireName})
+        as Json;
+    if (result['accepted'] != true || result['action'] != action.wireName) {
+      throw const ApiFailure('Hue setup was not confirmed.',
+          code: 'HUE_SETUP_NOT_CONFIRMED');
+    }
+  }
+
+  @override
   Future<ConnectionResult> configure(Json action) async =>
       ConnectionResult.fromJson(
           await _change('/api/v2/device-connections', action) as Json);
@@ -478,7 +497,7 @@ class RestApi
       rememberSessionCookie(response.headers['set-cookie']);
       if (response.statusCode != 200) {
         try {
-          final body = jsonDecode(response.body) as Json;
+          final body = jsonDecode(utf8.decode(response.bodyBytes)) as Json;
           throw ApiFailure(
             body['message'] as String? ?? 'OIP-Server meldet einen Fehler.',
             code: body['code'] as String?,
@@ -493,7 +512,8 @@ class RestApi
         }
       }
       try {
-        return jsonDecode(response.body);
+        // JSON bodies are UTF-8 even when the Content-Type has no charset.
+        return jsonDecode(utf8.decode(response.bodyBytes));
       } catch (_) {
         throw ApiFailure(
           'Die API-Antwort ist kein gültiges JSON.',
@@ -670,7 +690,8 @@ class RestApi
       if (response.statusCode != 200) {
         String? serverCode;
         try {
-          serverCode = (jsonDecode(response.body) as Json)['code'] as String?;
+          final body = jsonDecode(utf8.decode(response.bodyBytes)) as Json;
+          serverCode = body['code'] as String?;
         } catch (_) {
           // Status mapping below remains deterministic for non-JSON errors.
         }
@@ -699,7 +720,7 @@ class RestApi
         throw ApiFailure(message,
             code: code, path: path, statusCode: response.statusCode);
       }
-      final body = jsonDecode(response.body);
+      final body = jsonDecode(utf8.decode(response.bodyBytes));
       final marker = response.headers['x-oip-contract-fixture'];
       final fixture = marker == 'oip-0084-contract-fixture' ||
           marker == 'oip-009-contract-fixture';
@@ -1160,7 +1181,8 @@ class RestApi
     if (response.statusCode != 200) {
       String? code;
       try {
-        code = (jsonDecode(response.body) as Json)['code'] as String?;
+        final body = jsonDecode(utf8.decode(response.bodyBytes)) as Json;
+        code = body['code'] as String?;
       } catch (_) {}
       throw ApiFailure(
         response.statusCode == 403

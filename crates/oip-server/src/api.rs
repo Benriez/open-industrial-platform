@@ -196,7 +196,16 @@ pub fn router_with_identity(
         )
         .route("/api/v2/installation/status", get(installation_status))
         .route("/api/v2/inventory/devices", get(inventory_read))
-        .route("/api/v2/hue/lights", get(hue_lights).post(hue_control).layer(axum::extract::DefaultBodyLimit::max(1024)))
+        .route(
+            "/api/v2/hue/lights",
+            get(hue_lights)
+                .post(hue_control)
+                .layer(axum::extract::DefaultBodyLimit::max(1024)),
+        )
+        .route(
+            "/api/v2/hue/setup",
+            post(hue_setup).layer(axum::extract::DefaultBodyLimit::max(1024)),
+        )
         .route("/api/v2/services", get(services_read))
         .route("/api/v2/inventory/apply", post(inventory_apply))
         .route(
@@ -211,7 +220,7 @@ pub fn router_with_identity(
         .route("/api/v2/organizations", get(organizations))
         .route("/api/v2/infrastructures", get(infrastructures))
         .route("/api/v2/sites", get(sites))
-        .route("/api/v2/sources", get(source_health))
+        .route("/api/v2/sources", get(authorized_source_health))
         .route("/api/v2/devices", get(devices))
         .route("/api/v2/devices/{id}", get(device))
         .route("/api/v2/observations", get(metrics))
@@ -538,6 +547,38 @@ async fn source_health(
         CapabilityOutput::Sources(v) => Ok(Json(v)),
         _ => Err(mismatch().into_response()),
     }
+}
+#[derive(serde::Serialize)]
+struct AuthorizedSourceHealth {
+    #[serde(flatten)]
+    health: SourceHealth,
+    opcua_browse: bool,
+}
+async fn authorized_source_health(
+    Authorized(s): Authorized,
+    query: Result<Query<SourceQuery>, axum::extract::rejection::QueryRejection>,
+) -> Result<Json<Vec<AuthorizedSourceHealth>>, Response> {
+    let allowed = s
+        .authority
+        .as_ref()
+        .and_then(|authority| authority.principal.as_ref())
+        .and_then(|principal| {
+            s.hierarchy()
+                .map(|h| h.allowed_sources(principal, CapabilityId::OpcuaNodesRead))
+        })
+        .unwrap_or_default();
+    let bindings = s.opcua_browse_bindings.clone();
+    let Json(health) = source_health(Authorized(s), query).await?;
+    Ok(Json(
+        health
+            .into_iter()
+            .map(|health| AuthorizedSourceHealth {
+                opcua_browse: allowed.contains(&health.id)
+                    && bindings.contains(&(health.id.clone(), health.entity_id.clone())),
+                health,
+            })
+            .collect(),
+    ))
 }
 async fn live(Authorized(s): Authorized) -> Result<impl IntoResponse, CapabilityErrorResponse> {
     match call(s, CapabilityRequest::CoreLivenessRead).await? {
@@ -933,7 +974,8 @@ async fn inventory_apply(
     }
 }
 async fn hue_lights(
-    Authorized(s): Authorized, Query(q): Query<HueLightsQuery>,
+    Authorized(s): Authorized,
+    Query(q): Query<HueLightsQuery>,
 ) -> Result<Json<HueLights>, CapabilityErrorResponse> {
     match call(s, CapabilityRequest::HueLightsRead(q)).await? {
         CapabilityOutput::HueLights(result) => Ok(Json(result)),
@@ -941,14 +983,30 @@ async fn hue_lights(
     }
 }
 async fn hue_control(
-    Authorized(s): Authorized, body: Result<Json<HueLightCommand>, axum::extract::rejection::JsonRejection>,
+    Authorized(s): Authorized,
+    body: Result<Json<HueLightCommand>, axum::extract::rejection::JsonRejection>,
 ) -> Result<Json<serde_json::Value>, CapabilityErrorResponse> {
     let Json(command) = body.map_err(|_| CapabilityErrorResponse(inventory_invalid()))?;
     match call(s, CapabilityRequest::HueLightControl(command)).await? {
-        CapabilityOutput::HueCommandAccepted {light_id} => Ok(Json(json!({"accepted":true,"light_id":light_id}))),
+        CapabilityOutput::HueCommandAccepted { light_id } => {
+            Ok(Json(json!({"accepted":true,"light_id":light_id})))
+        }
         _ => Err(mismatch()),
     }
 }
+async fn hue_setup(
+    Authorized(s): Authorized,
+    body: Result<Json<HueSetupRequest>, axum::extract::rejection::JsonRejection>,
+) -> Result<Json<serde_json::Value>, CapabilityErrorResponse> {
+    let Json(request) = body.map_err(|_| CapabilityErrorResponse(inventory_invalid()))?;
+    match call(s, CapabilityRequest::HueSetup(request)).await? {
+        CapabilityOutput::HueSetupAccepted { action } => {
+            Ok(Json(json!({"accepted": true, "action": action})))
+        }
+        _ => Err(mismatch()),
+    }
+}
+
 async fn connection_read(
     Authorized(s): Authorized,
     q: Result<Query<ConnectionQuery>, axum::extract::rejection::QueryRejection>,

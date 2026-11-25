@@ -49,6 +49,48 @@ class _Bridge extends FakeApi implements HueApi {
   }
 }
 
+class _SetupBridge extends _Bridge implements HueSetupApi {
+  bool paired = false, found = false;
+  int tries = 0;
+  final setupActions = <HueSetupAction>[];
+
+  @override
+  Future<HueLights> hueLights(String source) async {
+    if (!paired) {
+      throw const ApiFailure('Hue pairing available',
+          code: 'HUE_PAIRING_AVAILABLE');
+    }
+    return HueLights.fromJson({
+      'can_control': true,
+      'can_setup': true,
+      'lights': [
+        if (found)
+          {
+            'id': 99,
+            'name': 'Neue Steckdose',
+            'kind': 'On/Off plug-in unit',
+            'on': false,
+            'reachable': true
+          },
+      ],
+    });
+  }
+
+  @override
+  Future<void> setupHue(String source, HueSetupAction action) async {
+    expect(source, 'hue-own');
+    setupActions.add(action);
+    if (action == HueSetupAction.searchLights) {
+      found = true;
+    } else if (++tries == 1) {
+      throw const ApiFailure('Link button required',
+          code: 'HUE_LINK_BUTTON_REQUIRED');
+    } else {
+      paired = true;
+    }
+  }
+}
+
 Future<void> open(WidgetTester t, _Bridge bridge) async {
   await t.pumpWidget(MaterialApp(
       home: Scaffold(
@@ -119,6 +161,45 @@ void main() {
     expect(t.widget<Switch>(find.byType(Switch).first).value, isFalse);
     await t.pumpWidget(const SizedBox());
   });
+  testWidgets(
+      'A bridge can be paired and a new smart plug can be found in the app',
+      (t) async {
+    final api = _SetupBridge();
+    await open(t, api);
+    await t.tap(find.text('Hue Bridge verbinden'));
+    await t.pumpAndSettle();
+    expect(find.textContaining('große Taste in der Mitte'), findsOneWidget);
+    await t.tap(find.text('Abbrechen'));
+    await t.pumpAndSettle();
+    expect(api.setupActions, isEmpty);
+
+    for (var n = 0; n < 2; n++) {
+      await t.tap(find.text('Hue Bridge verbinden'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Jetzt verbinden'));
+      await t.pumpAndSettle();
+      if (n == 0) {
+        expect(find.textContaining('versuche es erneut'), findsOneWidget);
+      }
+    }
+    expect(find.text('Hue Bridge verbunden.'), findsOneWidget);
+    await t.tap(find.text('Lampen und Steckdosen hinzufügen'));
+    await t.pumpAndSettle();
+    await t.tap(find.text('Suche starten'));
+    await t.pump();
+    expect(find.textContaining('Die Bridge sucht'), findsOneWidget);
+    await t.pump(const Duration(seconds: 45));
+    await t.pumpAndSettle();
+    expect(find.text('Ein neues Gerät gefunden.'), findsOneWidget);
+    expect(find.text('Neue Steckdose'), findsOneWidget);
+    expect(api.setupActions, [
+      HueSetupAction.pairBridge,
+      HueSetupAction.pairBridge,
+      HueSetupAction.searchLights,
+    ]);
+    await t.pumpWidget(const SizedBox());
+  });
+
   testWidgets('Reader sees the lights with controls disabled', (t) async {
     final api = _Bridge(writable: false);
     await open(t, api);

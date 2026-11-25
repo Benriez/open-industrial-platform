@@ -327,7 +327,9 @@ impl CoreRuntime {
     pub async fn from_state(state: AppState, config: CoreConfig) -> Result<Self, RuntimeError> {
         let hue_tls = if config.hue.is_some() {
             Some(
-                state.hue_tls.get_or_try_init(crate::hue::openssl)
+                state
+                    .hue_tls
+                    .get_or_try_init(crate::hue::openssl)
                     .await
                     .cloned()
                     .map_err(|error| RuntimeError::Configuration(error.code))?,
@@ -475,7 +477,7 @@ async fn opcua_browser_source_worker(
             .view()
             .sources
             .iter()
-            .any(|candidate| candidate.id == id);
+            .any(|candidate| candidate.id == id && candidate.entity_id == entity);
         if !registered {
             tracing::error!(source_id=%id,code="opcua_browser_source_unregistered","OPC-UA browser binding must reference a registered source");
             tokio::select! { _ = cancel.cancelled() => break, _ = tokio::time::sleep(Duration::from_secs(30)) => continue }

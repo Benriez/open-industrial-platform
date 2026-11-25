@@ -701,6 +701,7 @@ async fn resource_models_match_direct_service_and_rest_including_sse_projections
             CapabilityId::InventoryChange,
             CapabilityId::DeviceConnectionConfigure,
             CapabilityId::HueLightControl,
+            CapabilityId::HueSetup,
         ]
     );
     assert!(s.shutdown().await.clean);

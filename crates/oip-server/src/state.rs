@@ -8,7 +8,7 @@ use oip_opcua::{async_opcua::AsyncOpcUaClient, BrowseEntry};
 use oip_storage::SqliteStore;
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, BTreeSet},
     sync::{
         atomic::{AtomicBool, AtomicI64, AtomicU64, Ordering},
         Arc, Mutex,
@@ -94,6 +94,8 @@ pub struct AppState {
     pub(crate) hue_profiles: Arc<BTreeMap<DataSourceId, crate::hue::HueProfile>>,
     pub(crate) hue_tls: Arc<tokio::sync::OnceCell<std::path::PathBuf>>,
     pub(crate) hue_requests: Arc<tokio::sync::Semaphore>,
+    pub(crate) hue_setup: Arc<tokio::sync::Mutex<()>>,
+    pub(crate) hue_credentials_dir: std::path::PathBuf,
     pub ssh: Arc<crate::connection_service::ConnectionHub>,
     pub browser_sessions: Arc<crate::browser_session::BrowserSessions>,
     pub settings: Arc<Vec<SettingRecord>>,
@@ -108,6 +110,7 @@ pub struct AppState {
     pub client: Arc<RwLock<Option<Arc<AsyncOpcUaClient>>>>,
     pub clients: Arc<RwLock<BTreeMap<DataSourceId, Arc<AsyncOpcUaClient>>>>,
     pub catalogs: Arc<RwLock<BTreeMap<DataSourceId, Vec<BrowseEntry>>>>,
+    pub(crate) opcua_browse_bindings: Arc<BTreeSet<(DataSourceId, EntityId)>>,
     pub tailscale_status: Arc<Mutex<Option<crate::network_services::TailscaleSnapshot>>>,
     pub scenario_tx: Option<watch::Sender<String>>,
     pub primary: Option<DataSourceId>,
@@ -338,9 +341,22 @@ impl AppState {
             None => crate::browser_session::BrowserSessions::default(),
         };
         Ok(Self {
-            hue_profiles: Arc::new(config.hue.iter().flat_map(|h| &h.profiles).map(|p| (crate::hue::source_id(p), p.clone())).collect()),
+            hue_profiles: Arc::new(
+                config
+                    .hue
+                    .iter()
+                    .flat_map(|h| &h.profiles)
+                    .map(|p| (crate::hue::source_id(p), p.clone()))
+                    .collect(),
+            ),
             hue_tls: Default::default(),
             hue_requests: Arc::new(tokio::sync::Semaphore::new(8)),
+            hue_setup: Arc::new(tokio::sync::Mutex::new(())),
+            hue_credentials_dir: config
+                .database
+                .parent()
+                .unwrap_or_else(|| std::path::Path::new("."))
+                .join("hue-credentials"),
             ssh,
             browser_sessions: Arc::new(browser_sessions),
             settings,
@@ -363,6 +379,18 @@ impl AppState {
             client: Arc::new(RwLock::new(None)),
             clients: Arc::new(RwLock::new(BTreeMap::new())),
             catalogs: Arc::new(RwLock::new(BTreeMap::new())),
+            opcua_browse_bindings: Arc::new(
+                config
+                    .opcua_browse_sources
+                    .iter()
+                    .map(|binding| {
+                        Ok((
+                            DataSourceId::new(&binding.id).map_err(|_| "OPC UA source id")?,
+                            EntityId::new(&binding.entity_id).map_err(|_| "OPC UA entity id")?,
+                        ))
+                    })
+                    .collect::<Result<_, &str>>()?,
+            ),
             tailscale_status: Arc::new(Mutex::new(None)),
             scenario_tx,
             stopping: tokio_util::sync::CancellationToken::new(),

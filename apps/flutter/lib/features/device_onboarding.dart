@@ -43,7 +43,16 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
   final registrationId = _id();
   List<HierarchyItem> organizations = [], infrastructures = [], sites = [];
   List<SshProfile> profiles = [];
-  String? organization, infrastructure, site, profile, alias, error;
+  String? organization, infrastructure, site, profile, error;
+  (String, String)? preparedTarget;
+  bool manualSsh = false;
+
+  List<(SshProfile, String)> get preparedTargets => [
+        for (final option in profiles)
+          for (final alias in option.aliases) (option, alias)
+      ];
+  bool get usesPreparedTarget => preparedTargets.isNotEmpty && !manualSsh;
+  bool get active => mounted && !_scopeInvalidated;
   String kind = 'other', method = 'ssh';
   int step = 0, revision = 0;
   bool busy = true, consent = false, monitor = false, done = false;
@@ -114,14 +123,14 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
     try {
       await operation();
     } catch (e) {
-      if (mounted) {
+      if (active) {
         setState(() => error = apiErrorMessage(
             e,
             context.tr(
                 "Vorgang fehlgeschlagen. Es wurde keine erfolgreiche Verbindung bestätigt.")));
       }
     } finally {
-      if (mounted) setState(() => busy = false);
+      if (active) setState(() => busy = false);
     }
   }
 
@@ -148,8 +157,12 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
             item['infrastructure_id'] as String, device['site_id'] as String);
       }
       if (!mounted || _scopeInvalidated) return;
-      profiles = (await api.connection(deviceId: widget.deviceId)).profiles;
+      final options = await api.connection(deviceId: widget.deviceId);
+      if (!active) return;
+      profiles = options.profiles;
       profile = profiles.firstOrNull?.id;
+      final preset = preparedTargets.singleOrNull;
+      if (preset != null) preparedTarget = (preset.$1.id, preset.$2);
     } catch (e) {
       if (!mounted || _scopeInvalidated) return;
       error = apiErrorMessage(
@@ -188,19 +201,23 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
         'metadata': <String, dynamic>{}
       };
   Future<void> start() async {
-    if (site == null ||
-        name.text.trim().isEmpty ||
-        (method == 'ssh' && profile == null)) {
-      throw const ApiFailure(
-          'Name, autorisierter Standort und SSH-Profil sind erforderlich.');
+    if (site == null || name.text.trim().isEmpty) {
+      throw ApiFailure(
+          context.tr("Gib einen Gerätenamen ein und wähle einen Standort."));
     }
     if (method == 'manual') {
       setState(() => step = 3);
       return;
     }
-    final parsed = int.tryParse(port.text);
+    final selected = usesPreparedTarget ? preparedTarget : null;
+    final selectedProfile = usesPreparedTarget ? selected?.$1 : profile;
+    if (selectedProfile == null) {
+      throw ApiFailure(context.tr("Wähle einen vorbereiteten Gerätezugang."));
+    }
+    final parsed = selected == null ? int.tryParse(port.text) : 22;
     if (parsed == null || parsed < 1 || parsed > 65535) {
-      throw const ApiFailure('SSH-Port muss zwischen 1 und 65535 liegen.');
+      throw ApiFailure(
+          context.tr('SSH-Port muss zwischen 1 und 65535 liegen.'));
     }
     final result = await api.configure({
       'operation': 'start',
@@ -212,14 +229,23 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
               'expected_revision': revision
             },
       'endpoint': {
-        'host': host.text.trim(),
+        'host': selected == null ? host.text.trim() : '',
         'port': parsed,
-        'user': user.text.trim(),
-        'identity_profile': profile,
-        'alias': alias
+        'user': selected == null ? user.text.trim() : '',
+        'identity_profile': selectedProfile,
+        'alias': selected?.$2
       }
     });
-    if (!mounted) return;
+    if (!active) {
+      final id = result.plan?.id;
+      if (id != null) {
+        unawaited(api
+            .configure({'operation': 'cancel', 'plan_id': id}).then<void>(
+                (_) {},
+                onError: (Object _) {}));
+      }
+      return;
+    }
     setState(() {
       plan = result.plan;
       step = 2;
@@ -228,11 +254,12 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
   }
 
   Future<void> poll() async {
-    if (polling || plan == null || !mounted) return;
+    if (polling || plan == null || !active) return;
     polling = true;
+    final id = plan!.id;
     try {
-      final result = await api.connection(planId: plan!.id);
-      if (!mounted) return;
+      final result = await api.connection(planId: id);
+      if (!active || step != 2 || plan?.id != id) return;
       setState(() {
         plan = result.plan;
         if (plan?.stage == 'verification_complete') {
@@ -245,11 +272,11 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
         }
       });
     } catch (e) {
-      if (mounted) {
+      if (active && step == 2 && plan?.id == id) {
         setState(() => error = apiErrorMessage(
             e, context.tr("Verbindungsstatus konnte nicht gelesen werden.")));
+        timer?.cancel();
       }
-      timer?.cancel();
     } finally {
       polling = false;
     }
@@ -263,8 +290,9 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
         'fingerprint': plan!.fingerprint
       });
     }
+    if (!active) return;
     final r = await api.configure({'operation': 'verify', 'plan_id': plan!.id});
-    if (mounted) setState(() => plan = r.plan);
+    if (active && step == 2) setState(() => plan = r.plan);
   }
 
   Future<void> confirm() async {
@@ -283,12 +311,13 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
         'operation': 'confirm',
         'plan_id': plan!.id,
         'identity_confirmed': true,
-        'enable_monitoring': false,
+        'enable_monitoring': usesPreparedTarget,
         'poll_seconds': n
       });
       savedConnection = saved.connection;
+      monitor = savedConnection?.enabled == true;
     }
-    if (!mounted) return;
+    if (!active) return;
     setState(() {
       done = true;
       step = 4;
@@ -318,6 +347,24 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
     }
   }
 
+  Future<void> editConnection() async {
+    timer?.cancel();
+    final id = plan?.id;
+    if (id != null) {
+      try {
+        await api.configure({'operation': 'cancel', 'plan_id': id});
+      } on ApiFailure catch (failure) {
+        if (failure.statusCode != 404) rethrow;
+      }
+    }
+    if (!active) return;
+    setState(() {
+      consent = false;
+      plan = null;
+      step = 1;
+    });
+  }
+
   Widget select(String label, String? value, List<HierarchyItem> values,
           void Function(String?) changed, {bool locked = false}) =>
       Padding(
@@ -326,7 +373,7 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
               key: ValueKey('$label-$value'),
               value: values.any((v) => v.id == value) ? value : null,
               isExpanded: true,
-              decoration: InputDecoration(labelText: label),
+              decoration: InputDecoration(labelText: context.tr(label)),
               items: values
                   .map((v) => DropdownMenuItem(
                       value: v.id,
@@ -344,7 +391,7 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
               autocorrect: false,
               enableSuggestions: false,
               maxLength: 253,
-              decoration: InputDecoration(labelText: label)));
+              decoration: InputDecoration(labelText: context.tr(label))));
   @override
   Widget build(BuildContext context) {
     final existing = widget.deviceId != null;
@@ -367,7 +414,7 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                             : context.tr("Gerät hinzufügen"),
                         style: Theme.of(context).textTheme.headlineSmall)),
                 IconButton(
-                    tooltip: context.tr("Onboarding schließen"),
+                    tooltip: context.tr("Einrichtung schließen"),
                     onPressed: busy ? null : () => Navigator.pop(context),
                     icon: const Icon(Icons.close))
               ]),
@@ -453,7 +500,9 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                     items: [
                       DropdownMenuItem(
                           value: 'ssh',
-                          child: Text(context.tr("SSH — Linux / macOS"))),
+                          child: Text(context.tr(preparedTargets.isEmpty
+                              ? "SSH — Linux / macOS"
+                              : "Computer oder Router verbinden"))),
                       if (!existing)
                         DropdownMenuItem(
                             value: 'manual',
@@ -463,85 +512,102 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                     onChanged:
                         busy ? null : (v) => setState(() => method = v!)),
                 const SizedBox(height: 12),
-                Text(context.tr(
-                    "OPC UA: separater autorisierter Source-Provisioning-Pfad. SNMP, Windows, Android und VPN-Monitoring sind hier nicht implementiert.")),
-                const SizedBox(height: 12),
                 if (method == 'ssh') ...[
-                  if (profiles.isEmpty)
-                    Text(context.tr(
-                        "Kein freigegebenes SSH-Profil. Der lokale Operator muss eine SSH-Identität und den erlaubten Endpoint im Core-Profil konfigurieren. Keine privaten Schlüssel im Browser.")),
-                  DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      value: profile,
-                      decoration: InputDecoration(
-                          labelText: context.tr("Lokale SSH-Identität")),
-                      items: profiles
-                          .map((p) => DropdownMenuItem(
-                              value: p.id, child: Text(p.label)))
-                          .toList(),
-                      onChanged: busy
-                          ? null
-                          : (v) => setState(() {
-                                profile = v;
-                                alias = null;
-                              })),
-                  const SizedBox(height: 12),
-                  field('Hostname oder IP-Adresse', host, 'ssh-host'),
-                  field('SSH-Port', port, 'ssh-port'),
-                  field('SSH-Benutzer (kein root)', user, 'ssh-user'),
-                  if (profiles
-                          .where((p) => p.id == profile)
-                          .firstOrNull
-                          ?.aliases
-                          .isNotEmpty ==
-                      true)
-                    DropdownButtonFormField<String>(
-                        isExpanded: true,
-                        value: alias,
-                        decoration: InputDecoration(
-                            labelText: context
-                                .tr("Optionaler autorisierter Hostalias")),
-                        items: profiles
-                            .firstWhere((p) => p.id == profile)
-                            .aliases
-                            .map((a) =>
-                                DropdownMenuItem(value: a, child: Text(a)))
-                            .toList(),
-                        onChanged:
-                            busy ? null : (v) => setState(() => alias = v)),
-                  Text(context.tr(
-                      "Der Core prüft ausschließlich diesen expliziten Endpoint. Es findet kein Netzwerkscan statt.")),
+                  if (preparedTargets.isNotEmpty) ...[
+                    if (usesPreparedTarget)
+                      DropdownButtonFormField<(String, String)>(
+                          key: const Key('prepared-ssh-target'),
+                          isExpanded: true,
+                          value: preparedTarget,
+                          decoration: InputDecoration(
+                              labelText: context.tr("Vorbereitetes Gerät")),
+                          items: preparedTargets
+                              .map((item) => DropdownMenuItem(
+                                  value: (item.$1.id, item.$2),
+                                  child: Text(item.$2,
+                                      overflow: TextOverflow.ellipsis)))
+                              .toList(),
+                          onChanged: busy
+                              ? null
+                              : (value) =>
+                                  setState(() => preparedTarget = value)),
+                    TextButton(
+                        onPressed: busy
+                            ? null
+                            : () => setState(() => manualSsh = !manualSsh),
+                        child: Text(context.tr(usesPreparedTarget
+                            ? "Verbindungsdaten selbst eingeben"
+                            : "Vorbereitetes Gerät auswählen"))),
+                  ],
+                  if (!usesPreparedTarget) ...[
+                    if (profiles.isEmpty)
+                      Text(context.tr(
+                          "Für diesen Bereich ist noch kein Gerätezugang freigegeben. Wende dich an die Person, die deine OIP-Installation verwaltet.")),
+                    if (profiles.isNotEmpty)
+                      DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          value: profile,
+                          decoration: InputDecoration(
+                              labelText: context.tr("Lokale SSH-Identität")),
+                          items: profiles
+                              .map((p) => DropdownMenuItem(
+                                  value: p.id, child: Text(p.label)))
+                              .toList(),
+                          onChanged:
+                              busy ? null : (v) => setState(() => profile = v)),
+                    if (profiles.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      field('Hostname oder IP-Adresse', host, 'ssh-host'),
+                      field('SSH-Port', port, 'ssh-port'),
+                      field('SSH-Benutzer (kein root)', user, 'ssh-user'),
+                    ],
+                  ],
                 ],
                 const SizedBox(height: 12),
                 FilledButton(
                     key: const Key('ssh-test'),
-                    onPressed: busy || (method == 'ssh' && profile == null)
+                    onPressed: busy ||
+                            (method == 'ssh' &&
+                                (usesPreparedTarget
+                                    ? preparedTarget == null
+                                    : profile == null))
                         ? null
                         : () => run(start),
                     child: Text(method == 'manual'
                         ? context.tr("Inventarregistrierung prüfen")
-                        : context.tr("SSH-Verbindung testen"))),
+                        : context.tr(usesPreparedTarget
+                            ? "Gerät prüfen"
+                            : "SSH-Verbindung testen"))),
               ],
               if (step == 2) ...[
                 Text(switch (stage) {
-                  'connecting' => context.tr("Connecting · SSH-Handshake"),
-                  'awaiting_host_key' => context
-                      .tr("Unbekannter Host-Key · Bestätigung erforderlich"),
-                  'ready_for_authentication' =>
-                    context.tr("Host-Key bereits vertrauenswürdig"),
-                  'authenticating' => context.tr("Authenticating"),
-                  'reading_device_information' =>
-                    context.tr("Reading device information"),
-                  'failed' => context.tr("Verification failed"),
+                  'connecting' => context.tr(usesPreparedTarget
+                      ? "Die App sucht das ausgewählte Gerät."
+                      : "Connecting · SSH-Handshake"),
+                  'awaiting_host_key' => context.tr(usesPreparedTarget
+                      ? "Für dieses Gerät ist keine bestätigte Identität hinterlegt. Wende dich an die Person, die deine OIP-Installation verwaltet."
+                      : "Unbekannter Host-Key · Bestätigung erforderlich"),
+                  'ready_for_authentication' => context.tr(usesPreparedTarget
+                      ? "Das Gerät hat sich mit seinem bekannten Schlüssel gemeldet."
+                      : "Host-Key bereits vertrauenswürdig"),
+                  'authenticating' => context.tr(usesPreparedTarget
+                      ? "Die App meldet sich am Gerät an."
+                      : "Authenticating"),
+                  'reading_device_information' => context.tr(usesPreparedTarget
+                      ? "Die App liest Geräteinformationen."
+                      : "Reading device information"),
+                  'failed' => context.tr(usesPreparedTarget
+                      ? "Das Gerät konnte nicht geprüft werden."
+                      : "Verification failed"),
                   _ => stage ?? context.tr("Prüfung läuft")
                 }),
-                if (plan?.fingerprint != null)
+                if (!usesPreparedTarget && plan?.fingerprint != null)
                   Semantics(
                       container: true,
                       child: SelectionArea(
                           child: Text(plan!.fingerprint!,
                               key: const Key('host-key-fingerprint')))),
-                if (stage == 'awaiting_host_key') ...[
+                if (stage == 'awaiting_host_key' && !usesPreparedTarget) ...[
                   Text(context.tr(
                       "Vergleiche diesen Fingerprint über einen unabhängigen vertrauenswürdigen Weg mit dem Zielgerät. Der Handshake allein beweist keine Geräteidentität.")),
                   FilledButton(
@@ -554,11 +620,15 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                 if (stage == 'ready_for_authentication')
                   FilledButton(
                       onPressed: busy ? null : () => run(verify),
-                      child: Text(
-                          context.tr("Authentifizieren und Hostdaten lesen"))),
-                if (stage == 'failed')
-                  Text(context.tr(
-                      "Inventar und bisherige Identität bleiben erhalten. Schließe den Dialog und korrigiere Endpoint oder Identität für einen neuen Versuch.")),
+                      child: Text(context.tr(usesPreparedTarget
+                          ? "Geräteinformationen abrufen"
+                          : "Authentifizieren und Hostdaten lesen"))),
+                if (stage == 'failed' ||
+                    (stage == 'awaiting_host_key' && usesPreparedTarget) ||
+                    error != null)
+                  TextButton(
+                      onPressed: busy ? null : () => run(editConnection),
+                      child: Text(context.tr("Verbindungsauswahl ändern"))),
               ],
               if (step == 3) ...[
                 if (method == 'manual')
@@ -567,11 +637,21 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                 else ...[
                   Text(context.tr(
                       "Verification complete · tatsächlich gelesene Geräteidentität")),
-                  ...identityWidgets(plan!.identity!),
+                  if (usesPreparedTarget) ...[
+                    Text(context
+                        .tr("Gerätename: {0}", [plan!.identity!['hostname']])),
+                    Text(context.tr("Betriebssystem: {0}",
+                        [plan!.identity!['operating_system']])),
+                    ExpansionTile(
+                        title: Text(context.tr("Technische Gerätedaten")),
+                        children: identityWidgets(plan!.identity!)),
+                  ] else
+                    ...identityWidgets(plan!.identity!),
                   Text(context.tr(
                       "Vergleiche diese Informationen mit deinem erwarteten Gerät. Ein gleicher Anzeigename ist kein Identitätsnachweis.")),
-                  Text(context.tr(
-                      "Monitoring wird erst nach der Identitätsbestätigung separat aktiviert.")),
+                  Text(context.tr(usesPreparedTarget
+                      ? "Nach deiner Bestätigung beginnt die App mit der Überwachung."
+                      : "Monitoring wird erst nach der Identitätsbestätigung separat aktiviert.")),
                 ],
                 CheckboxListTile(
                     key: const Key('confirm-device-identity'),
@@ -613,8 +693,9 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                   Text(context.tr(
                       "Du kannst Monitoring auch später im Geräte-Inspector einschalten.")),
                 ],
-                Text(context.tr("Geräte-ID: {0}",
-                    [widget.deviceId ?? plan?.deviceId ?? registrationId])),
+                if (!usesPreparedTarget || method == 'manual')
+                  Text(context.tr("Geräte-ID: {0}",
+                      [widget.deviceId ?? plan?.deviceId ?? registrationId])),
                 FilledButton(
                     onPressed: () => Navigator.pop(context),
                     child: Text(context.tr("Zum Geräteinventar"))),

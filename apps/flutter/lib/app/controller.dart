@@ -227,6 +227,7 @@ class OipController extends ChangeNotifier {
     _authorizedSnapshot = null;
     lastMessage = null;
     workspaces.invalidateObjects();
+    _nextOpcuaSource = null;
     history.clear();
     telemetryKey = null;
     telemetrySelectionExplicit = false;
@@ -239,6 +240,18 @@ class OipController extends ChangeNotifier {
   String get contextScopeSignature => infrastructure.ready
       ? infrastructure.scopeSignature
       : 'legacy/${snapshot?.primarySourceId ?? 'unscoped-snapshot'}';
+
+  (String, String)? _nextOpcuaSource;
+
+  void openOpcuaSource(String source) {
+    _nextOpcuaSource = (contextScopeSignature, source);
+  }
+
+  String? takeOpcuaSource() {
+    final target = _nextOpcuaSource;
+    _nextOpcuaSource = null;
+    return target?.$1 == contextScopeSignature ? target?.$2 : null;
+  }
 
   void selectInfrastructure(InfrastructureSelection selection) {
     infrastructure.select(selection);

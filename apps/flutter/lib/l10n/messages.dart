@@ -3,12 +3,97 @@
 const englishMessages = <String, String>{
   "Ein": "On",
   "Aus": "Off",
+  "Die App sucht das ausgewählte Gerät.":
+      "The app is looking for the selected device.",
+  "Für dieses Gerät ist keine bestätigte Identität hinterlegt. Wende dich an die Person, die deine OIP-Installation verwaltet.":
+      "This device has no approved identity. Contact the person who manages your OIP installation.",
+  "Die App meldet sich am Gerät an.": "The app is signing in to the device.",
+  "Die App liest Geräteinformationen.":
+      "The app is reading device information.",
+  "Das Gerät konnte nicht geprüft werden.": "The device could not be verified.",
+  "{0} einrichten": "Set up {0}",
+  "Geräteverbindung": "Device connection",
+  "Verbindung einrichten": "Set up connection",
+  "Verbunden. Die App empfängt Messwerte.":
+      "Connected. The app is receiving measurements.",
+  "Das Gerät ist verbunden. Die Überwachung ist aus.":
+      "The device is connected. Monitoring is off.",
+  "Das Gerät antwortet zurzeit nicht. Prüfe, ob es eingeschaltet und mit dem Netzwerk verbunden ist.":
+      "The device is not responding. Check that it is on and connected to the network.",
+  "Die App kann die Identität des Geräts nicht bestätigen. Die Verbindung wurde blockiert.":
+      "The app cannot confirm the device's identity. The connection was blocked.",
+  "Die App wartet auf die ersten Messwerte.":
+      "The app is waiting for the first measurements.",
+  "Die App empfängt zurzeit keine Messwerte.":
+      "The app is not receiving measurements.",
+  "Messwerte automatisch erfassen": "Collect measurements automatically",
+  "Gerätedaten (OPC UA)": "Device data (OPC UA)",
+  "Gerätedaten prüfen": "Check device data",
+  "Gerätedaten ansehen": "View device data",
+  "Gerätedaten verfügbar. {0} Einträge gefunden.":
+      "Device data is available. Found {0} entries.",
+  "Gerätedaten zurzeit nicht verfügbar. Prüfe, ob das Gerät eingeschaltet ist, und versuche es erneut.":
+      "Device data is currently unavailable. Check that the device is on and try again.",
+  "Die Gerätedaten konnten nicht geprüft werden. Versuche es erneut.":
+      "The device data could not be checked. Try again.",
+  "Gerät einrichten": "Set up device",
+  "Ein Gerät für den ausgewählten Standort hinzufügen.":
+      "Add a device to the selected site.",
+  "Gib einen Gerätenamen ein und wähle einen Standort.":
+      "Enter a device name and choose a site.",
+  "Wähle einen vorbereiteten Gerätezugang.":
+      "Choose a device connection that has been prepared.",
+  "Einrichtung schließen": "Close setup",
+  "Computer oder Router verbinden": "Connect a computer or router",
+  "Vorbereitetes Gerät": "Prepared device",
+  "Verbindungsdaten selbst eingeben": "Enter connection details manually",
+  "Vorbereitetes Gerät auswählen": "Choose a prepared device",
+  "Für diesen Bereich ist noch kein Gerätezugang freigegeben. Wende dich an die Person, die deine OIP-Installation verwaltet.":
+      "Device access has yet to be enabled for this area. Contact the person who manages your OIP installation.",
+  "Gerät prüfen": "Check device",
+  "Das Gerät hat sich mit seinem bekannten Schlüssel gemeldet.":
+      "The device presented its known key.",
+  "Geräteinformationen abrufen": "Read device information",
+  "Verbindungsauswahl ändern": "Change connection selection",
+  "Gerätename: {0}": "Device name: {0}",
+  "Betriebssystem: {0}": "Operating system: {0}",
+  "Technische Gerätedaten": "Technical device information",
+  "Nach deiner Bestätigung beginnt die App mit der Überwachung.":
+      "The app starts monitoring once you confirm.",
+  "Hue Bridge verbinden": "Connect Hue Bridge",
+  "Lampen und Steckdosen hinzufügen": "Add lights and smart plugs",
+  "Verbinde zuerst deine Hue Bridge mit Open Industrial Platform.":
+      "Connect your Hue Bridge to Open Industrial Platform first.",
+  "Drücke die große Taste in der Mitte deiner Hue Bridge. Wähle direkt danach hier „Jetzt verbinden“.":
+      "Press the large button in the middle of your Hue Bridge, then select Connect now.",
+  "Schalte die Hue-Lampe oder Steckdose ein und halte sie in Reichweite der Bridge. Wähle dann „Suche starten“.":
+      "Turn on the Hue light or smart plug and keep it within range of the bridge. Then select Start search.",
+  "Jetzt verbinden": "Connect now",
+  "Suche starten": "Start search",
+  "Hue Bridge verbunden.": "Hue Bridge connected.",
+  "Die Bridge sucht nach Geräten. Das dauert bis zu 45 Sekunden.":
+      "The bridge is searching for devices. This takes up to 45 seconds.",
+  "Das Suchergebnis konnte nicht geladen werden.":
+      "Could not load the search result.",
+  "Keine neuen Geräte gefunden. Prüfe Stromversorgung und Abstand zur Bridge.":
+      "No new devices found. Check the power supply and distance to the bridge.",
+  "Ein neues Gerät gefunden.": "One new device found.",
+  "{0} neue Geräte gefunden.": "Found {0} new devices.",
+  "Drücke die Taste an der Hue Bridge und versuche es erneut.":
+      "Press the button on the Hue Bridge and try again.",
+  "Dein Konto darf diese Hue Bridge nicht einrichten.":
+      "Your account does not have permission to set up this Hue Bridge.",
+  "Die Hue-Einrichtung konnte nicht abgeschlossen werden.":
+      "Could not finish Hue setup.",
   "Hue-Beleuchtung": "Hue lights",
   "Lichter aktualisieren": "Refresh lights",
   "Hue-Lichter konnten nicht geladen werden.": "Could not load Hue lights.",
-  "Die Bridge hat die Änderung nicht bestätigt.": "The bridge did not confirm the change.",
-  "Auf dieser Bridge sind keine Lichter eingerichtet.": "This bridge has no lights.",
-  "Zum Steuern mit einem berechtigten Operator-Konto anmelden.": "Sign in with an authorized operator account to control these lights.",
+  "Die Bridge hat die Änderung nicht bestätigt.":
+      "The bridge did not confirm the change.",
+  "Auf dieser Bridge sind keine Lichter eingerichtet.":
+      "This bridge has no lights.",
+  "Zum Steuern mit einem berechtigten Operator-Konto anmelden.":
+      "Sign in with an authorized operator account to control these lights.",
   "{0} schalten": "Switch {0}",
   "Helligkeit von {0}": "Brightness of {0}",
   "Lichtfarbe": "Light color",

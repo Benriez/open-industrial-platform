@@ -27,12 +27,21 @@ class HueLight {
 }
 
 class HueLights {
-  final bool canControl;
+  final bool canControl, canSetup;
   final List<HueLight> lights;
 
   HueLights.fromJson(Json json)
       : canControl = json['can_control'] as bool,
+        canSetup = json['can_setup'] == true,
         lights = (json['lights'] as List)
             .map((item) => HueLight.fromJson(item as Json))
             .toList();
+}
+
+enum HueSetupAction {
+  pairBridge('pair_bridge'),
+  searchLights('search_lights');
+
+  final String wireName;
+  const HueSetupAction(this.wireName);
 }

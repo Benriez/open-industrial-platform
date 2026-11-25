@@ -65,7 +65,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
   /// Real samples per source and metric, bounded to this mounted UI session.
   final sessionHistory = <String, List<Observation>>{};
   Snapshot? ingested;
-  String? scopeSignature;
+  String? scopeSignature, requestedSource;
 
   final searchController = TextEditingController();
   final searchFocus = FocusNode(debugLabel: 'opcua-search');
@@ -83,6 +83,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
             .where((item) => item.name == preference.view)
             .firstOrNull ??
         _ViewMode.list;
+    requestedSource = widget.controller.takeOpcuaSource();
     widget.controller.addListener(_ingest);
     _ingest();
     unawaited(_reloadContext());
@@ -114,6 +115,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
     final nextScope = widget.controller.contextScopeSignature;
     if (scopeSignature != null && scopeSignature != nextScope) {
       generation++;
+      requestedSource = null;
       debounce?.cancel();
       page = null;
       selected = null;
@@ -231,7 +233,12 @@ class _OpcuaPageState extends State<OpcuaPage> {
         final globalSource =
             widget.controller.infrastructure.selection.sourceId;
         if (widget.controller.infrastructure.ready) {
-          if (globalSource != null &&
+          final source = requestedSource;
+          requestedSource = null;
+          if (source != null &&
+              result.any((item) => item.id == source && item.opcuaBrowse)) {
+            selectedSource = source;
+          } else if (globalSource != null &&
               result.any((item) => item.id == globalSource)) {
             selectedSource = globalSource;
           } else if (!result.any((item) => item.id == selectedSource)) {

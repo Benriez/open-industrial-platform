@@ -23,8 +23,10 @@ class HueLightsPanel extends StatefulWidget {
 
 class _HueLightsPanelState extends State<HueLightsPanel> {
   HueLights? data;
-  String? readError, commandError;
-  Timer? timer;
+  String? readError, commandError, setupMessage;
+  Timer? timer, searchTimer;
+  HueSetupAction? pendingSetup;
+  bool pairingAvailable = false, settingUp = false;
   int generation = 0;
   bool fetching = false;
   int? writing;
@@ -34,13 +36,16 @@ class _HueLightsPanelState extends State<HueLightsPanel> {
     super.initState();
     _refresh();
     timer = Timer.periodic(const Duration(seconds: 15), (_) {
-      if (!fetching && writing == null) _refresh();
+      if (!fetching && writing == null && !settingUp && searchTimer == null) {
+        _refresh();
+      }
     });
   }
 
   @override
   void dispose() {
     timer?.cancel();
+    searchTimer?.cancel();
     super.dispose();
   }
 
@@ -53,21 +58,86 @@ class _HueLightsPanelState extends State<HueLightsPanel> {
         setState(() {
           data = next;
           readError = null;
+          pairingAvailable = false;
         });
     } catch (e) {
       if (mounted && ticket == generation)
         setState(() {
           data = null;
-          readError = apiErrorMessage(
-              e, context.tr('Hue-Lichter konnten nicht geladen werden.'));
+          pairingAvailable =
+              e is ApiFailure && e.code == 'HUE_PAIRING_AVAILABLE';
+          readError = pairingAvailable
+              ? context.tr(
+                  'Verbinde zuerst deine Hue Bridge mit Open Industrial Platform.')
+              : apiErrorMessage(
+                  e, context.tr('Hue-Lichter konnten nicht geladen werden.'));
         });
     } finally {
       if (ticket == generation) fetching = false;
     }
   }
 
+  Future<void> _completeSetup(HueSetupAction action) async {
+    final api = widget.api;
+    if (api is! HueSetupApi || settingUp || searchTimer != null) return;
+    final setupApi = api as HueSetupApi;
+    final pairing = action == HueSetupAction.pairBridge;
+    final previous = data?.lights.map((light) => light.id).toSet() ?? <int>{};
+    setState(() {
+      pendingSetup = null;
+      settingUp = true;
+      setupMessage = null;
+      commandError = null;
+    });
+    try {
+      await setupApi.setupHue(widget.source, action);
+      if (!mounted) return;
+      if (pairing) {
+        await _refresh();
+        if (mounted && data != null) {
+          setState(() => setupMessage = context.tr('Hue Bridge verbunden.'));
+        }
+      } else {
+        setState(() => setupMessage = context.tr(
+            'Die Bridge sucht nach Geräten. Das dauert bis zu 45 Sekunden.'));
+        searchTimer = Timer(const Duration(seconds: 45), () async {
+          await _refresh();
+          if (!mounted) return;
+          final found = data?.lights
+              .where((light) => !previous.contains(light.id))
+              .length;
+          setState(() {
+            searchTimer = null;
+            setupMessage = switch (found) {
+              null =>
+                context.tr('Das Suchergebnis konnte nicht geladen werden.'),
+              0 => context.tr(
+                  'Keine neuen Geräte gefunden. Prüfe Stromversorgung und Abstand zur Bridge.'),
+              1 => context.tr('Ein neues Gerät gefunden.'),
+              _ => context.tr('{0} neue Geräte gefunden.', [found]),
+            };
+          });
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => commandError = switch (e is ApiFailure ? e.code : null) {
+            'HUE_LINK_BUTTON_REQUIRED' => context.tr(
+                'Drücke die Taste an der Hue Bridge und versuche es erneut.'),
+            'PERMISSION_DENIED' =>
+              context.tr('Dein Konto darf diese Hue Bridge nicht einrichten.'),
+            _ => apiErrorMessage(
+                e,
+                context.tr(
+                    'Die Hue-Einrichtung konnte nicht abgeschlossen werden.')),
+          });
+    } finally {
+      if (mounted) setState(() => settingUp = false);
+    }
+  }
+
   Future<void> _change(HueLight light, Json change) async {
-    if (writing != null || data?.canControl != true) return;
+    if (writing != null || settingUp || data?.canControl != true) return;
     ++generation;
     setState(() {
       writing = light.id;
@@ -96,7 +166,9 @@ class _HueLightsPanelState extends State<HueLightsPanel> {
         IconButton(
           tooltip: context.tr('Lichter aktualisieren'),
           icon: const Icon(Icons.refresh, size: 16),
-          onPressed: writing == null ? _refresh : null,
+          onPressed: writing == null && !settingUp && searchTimer == null
+              ? _refresh
+              : null,
         )
       ],
       child: Padding(
@@ -106,6 +178,46 @@ class _HueLightsPanelState extends State<HueLightsPanel> {
           if (data == null && readError == null)
             const LinearProgressIndicator(minHeight: 2),
           if (readError != null) Text(readError!),
+          if (pendingSetup == null &&
+              widget.api is HueSetupApi &&
+              (pairingAvailable || data?.canSetup == true))
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: settingUp || searchTimer != null || writing != null
+                    ? null
+                    : () => setState(() => pendingSetup = pairingAvailable
+                        ? HueSetupAction.pairBridge
+                        : HueSetupAction.searchLights),
+                icon: Icon(pairingAvailable ? Icons.link : Icons.add),
+                label: Text(context.tr(pairingAvailable
+                    ? 'Hue Bridge verbinden'
+                    : 'Lampen und Steckdosen hinzufügen')),
+              ),
+            ),
+          if (pendingSetup case final action?) ...[
+            Text(context.tr(action == HueSetupAction.pairBridge
+                ? 'Drücke die große Taste in der Mitte deiner Hue Bridge. Wähle direkt danach hier „Jetzt verbinden“.'
+                : 'Schalte die Hue-Lampe oder Steckdose ein und halte sie in Reichweite der Bridge. Wähle dann „Suche starten“.')),
+            Wrap(
+              spacing: 8,
+              children: [
+                FilledButton(
+                  onPressed: () => _completeSetup(action),
+                  child: Text(context.tr(action == HueSetupAction.pairBridge
+                      ? 'Jetzt verbinden'
+                      : 'Suche starten')),
+                ),
+                TextButton(
+                  onPressed: () => setState(() => pendingSetup = null),
+                  child: Text(context.tr('Abbrechen')),
+                ),
+              ],
+            ),
+          ],
+          if (settingUp || searchTimer != null) const LinearProgressIndicator(),
+          if (setupMessage != null)
+            Semantics(liveRegion: true, child: Text(setupMessage!)),
           if (commandError != null)
             Semantics(
                 liveRegion: true,
@@ -133,6 +245,8 @@ class _HueLightsPanelState extends State<HueLightsPanel> {
                           light: light,
                           allowed: data!.canControl &&
                               writing == null &&
+                              !settingUp &&
+                              searchTimer == null &&
                               light.reachable,
                           pending: writing == light.id,
                           onChange: (change) => _change(light, change))),

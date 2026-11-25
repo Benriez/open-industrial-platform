@@ -280,6 +280,7 @@ fn output_schema(id: CapabilityId) -> Value {
         CapabilityId::InventoryRead => "inventory",
         CapabilityId::HueLightsRead => "hue_lights",
         CapabilityId::HueLightControl => "hue_command_accepted",
+        CapabilityId::HueSetup => "hue_setup_accepted",
         CapabilityId::ServiceRegistryRead => "service_registry",
         CapabilityId::InventoryPlanRead | CapabilityId::InventoryChange => "inventory_plan",
         CapabilityId::SettingsRead => "settings",

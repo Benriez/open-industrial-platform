@@ -291,8 +291,20 @@ impl ApplicationServices {
         if let HueLightsRead(q) = &request {
             let profile = crate::hue::visible_profile(&self.state, h, p, &q.source)?;
             let can_control = crate::hue::can_control(profile, h, p, &q.source);
-            let lights = crate::hue::list(&self.state, profile).await?;
-            return Ok(CapabilityOutput::HueLights(HueLights {source:q.source.clone(), can_control, lights}));
+            let can_setup = crate::hue::can_setup(profile, h, p, &q.source);
+            let lights = crate::hue::list(&self.state, profile).await.map_err(|error| {
+                if can_setup && error.code == "HUE_TOKEN_REQUIRED" {
+                    CapabilityError::new(error.kind, "HUE_PAIRING_AVAILABLE", "Connect the Hue Bridge in OIP to see its lights")
+                } else {
+                    error
+                }
+            })?;
+            return Ok(CapabilityOutput::HueLights(HueLights {
+                source: q.source.clone(),
+                can_control,
+                can_setup: can_setup && profile.control_enabled,
+                lights,
+            }));
         }
         if let HueLightControl(q) = &request {
             let profile = crate::hue::visible_profile(&self.state, h, p, &q.source)?;
@@ -304,6 +316,17 @@ impl ApplicationServices {
             self.audit.record(&started)?;
             crate::hue::command(&self.state, profile, q).await?;
             return Ok(CapabilityOutput::HueCommandAccepted {light_id:q.light_id});
+        }
+        if let HueSetup(q) = &request {
+            let profile = crate::hue::visible_profile(&self.state, h, p, &q.source)?;
+            if !crate::hue::can_setup(profile, h, p, &q.source)
+                || (matches!(q.action, HueSetupAction::SearchLights) && !profile.control_enabled)
+            {
+                return Err(denied());
+            }
+            self.audit.record(&self.audit_event(context, id, Some(&q.source), true, "started"))?;
+            crate::hue::setup(&self.state, profile, q.action).await?;
+            return Ok(CapabilityOutput::HueSetupAccepted { action: q.action });
         }
         if let DeviceConnectionRead(q) = &request {
             return self.connection_read(context, q.clone());

@@ -12,12 +12,14 @@ import 'device_onboarding.dart';
 class DeviceConnectionPanel extends StatefulWidget {
   final OipController controller;
   final String deviceId;
+  final bool guided;
   final ValueChanged<List<Observation>>? onObservations;
   const DeviceConnectionPanel(
       {super.key,
       required this.controller,
       required this.deviceId,
-      this.onObservations});
+      this.onObservations,
+      this.guided = false});
   @override
   State<DeviceConnectionPanel> createState() => _DeviceConnectionPanelState();
 }
@@ -41,7 +43,7 @@ class _DeviceConnectionPanelState extends State<DeviceConnectionPanel> {
   }
 
   Future<void> refresh() async {
-    if (busy || !mounted) return;
+    if (!mounted || busy) return;
     busy = true;
     try {
       final value = await widget.controller.management!
@@ -94,9 +96,60 @@ class _DeviceConnectionPanelState extends State<DeviceConnectionPanel> {
     }
   }
 
+  Future<void> _openOnboarding() async {
+    await showDeviceOnboarding(context, widget.controller,
+        deviceId: widget.deviceId);
+    await refresh();
+  }
+
+  Widget _guided(BuildContext context, DeviceConnection? connection) {
+    final status = switch (connection?.status) {
+      'collecting' => 'Verbunden. Die App empfängt Messwerte.',
+      'ssh_verified' => 'Das Gerät ist verbunden. Die Überwachung ist aus.',
+      'unreachable' ||
+      'stale' =>
+        'Das Gerät antwortet zurzeit nicht. Prüfe, ob es eingeschaltet und mit dem Netzwerk verbunden ist.',
+      'host_key_changed' ||
+      'host_key_unknown' ||
+      'verification_failed' =>
+        'Die App kann die Identität des Geräts nicht bestätigen. Die Verbindung wurde blockiert.',
+      'collector_configured' => 'Die App wartet auf die ersten Messwerte.',
+      _ => 'Die App empfängt zurzeit keine Messwerte.',
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(context.tr('Geräteverbindung'),
+            style: Theme.of(context).textTheme.titleLarge),
+        if (error != null) Text(error!),
+        if (result == null && error == null) const LinearProgressIndicator(),
+        if (result != null && connection == null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton.icon(
+              key: const Key('configure-existing-device'),
+              onPressed: _openOnboarding,
+              icon: const Icon(Icons.link),
+              label: Text(context.tr('Verbindung einrichten')),
+            ),
+          ),
+        if (connection != null) ...[
+          Semantics(liveRegion: true, child: Text(context.tr(status))),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(context.tr('Messwerte automatisch erfassen')),
+            value: connection.enabled,
+            onChanged: busy ? null : (value) => toggle(connection, value),
+          ),
+        ],
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = result?.connection;
+    if (widget.guided) return _guided(context, c);
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       const Divider(),
       Text(context.tr("Verbindung & Monitoring"),
@@ -114,11 +167,7 @@ class _DeviceConnectionPanelState extends State<DeviceConnectionPanel> {
           ])),
         OutlinedButton.icon(
             key: const Key('configure-existing-device'),
-            onPressed: () async {
-              await showDeviceOnboarding(context, widget.controller,
-                  deviceId: widget.deviceId);
-              await refresh();
-            },
+            onPressed: _openOnboarding,
             icon: const Icon(Icons.link),
             label: Text(context.tr("Verbindung für dieses Gerät einrichten"))),
       ],

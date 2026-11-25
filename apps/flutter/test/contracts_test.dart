@@ -37,18 +37,20 @@ void main() {
   });
   test('REST preserves structured public API error codes', () async {
     final api = RestApi(Uri.parse('http://127.0.0.1:8080'),
-        client: MockClient((_) async => http.Response(
-            jsonEncode({
+        client: MockClient((_) async => http.Response.bytes(
+            utf8.encode(jsonEncode({
               'ok': false,
-              'message': 'Demo deaktiviert',
+              'message': 'Demo ist für dieses Gerät deaktiviert',
               'code': 'DEMO_DISABLED'
-            }),
-            403)));
+            })),
+            403,
+            headers: {'content-type': 'application/json'})));
     await expectLater(
       api.initial(),
       throwsA(isA<ApiFailure>()
           .having((error) => error.code, 'code', 'DEMO_DISABLED')
-          .having((error) => error.message, 'message', 'Demo deaktiviert')),
+          .having((error) => error.message, 'message',
+              'Demo ist für dieses Gerät deaktiviert')),
     );
     api.close();
   });
@@ -153,11 +155,14 @@ void main() {
         requests.add(request);
         switch (request.url.path) {
           case '/api/v1/system/status':
-            return http.Response(jsonEncode(data['system']), 200);
+            return http.Response.bytes(
+                utf8.encode(jsonEncode(data['system'])), 200);
           case '/api/v1/devices':
-            return http.Response(jsonEncode(data['devices']), 200);
+            return http.Response.bytes(
+                utf8.encode(jsonEncode(data['devices'])), 200);
           case '/api/v1/metrics/current':
-            return http.Response(jsonEncode(data['metrics']), 200);
+            return http.Response.bytes(
+                utf8.encode(jsonEncode(data['metrics'])), 200);
           case '/api/v1/events':
             return http.Response(
               jsonEncode({
