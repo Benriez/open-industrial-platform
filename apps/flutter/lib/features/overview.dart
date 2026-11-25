@@ -113,8 +113,7 @@ class _OverviewPageState extends State<OverviewPage> {
               _contextBar(),
               const SizedBox(height: OipTokens.s2),
               if (controller.api is HueApi)
-                for (final bridge in snapshot.devices.where(
-                    (d) => d.connection == 'Hue HTTPS' && d.sourceId != null))
+                for (final bridge in hueBridges)
                   HueLightsPanel(
                       key: ValueKey(
                           'hue-${controller.contextScopeSignature}-${bridge.sourceId}'),
@@ -266,10 +265,15 @@ class _OverviewPageState extends State<OverviewPage> {
     );
   }
 
+  Iterable<Device> get hueBridges => snapshot.devices
+      .where((d) => d.connection == 'Hue HTTPS' && d.sourceId != null);
+
   Widget _header() => AdaptiveWorkspaceHeader(
         eyebrow: dashboardMode
             ? context.tr("VISUALISIERUNG · AUTORISIERTE MESSWERTE")
-            : context.tr("INFRASTRUCTURE COMMAND CENTER · READ-ONLY"),
+            : context.tr(hueBridges.isEmpty
+                ? "INFRASTRUCTURE COMMAND CENTER · READ-ONLY"
+                : "INFRASTRUCTURE COMMAND CENTER"),
         title: dashboardMode
             ? context.tr("Infrastruktur-Dashboard")
             : context.tr("Operations Workstation"),
@@ -325,7 +329,8 @@ class _OverviewPageState extends State<OverviewPage> {
                 ? Icons.science_outlined
                 : Icons.cloud_done_outlined,
           ),
-          StatusPill(context.tr("READ-ONLY"), icon: Icons.lock_outline),
+          if (hueBridges.isEmpty)
+            StatusPill(context.tr("READ-ONLY"), icon: Icons.lock_outline),
         ],
       );
 

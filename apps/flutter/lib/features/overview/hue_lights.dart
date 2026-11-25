@@ -166,8 +166,9 @@ class _LightTileState extends State<_LightTile> {
     final change = await showDialog<Json>(
         context: context,
         builder: (context) => _LightColor(light: widget.light));
-    if (mounted && change != null && widget.allowed && widget.light.on)
+    if (mounted && change != null && widget.allowed && widget.light.on) {
       widget.onChange(change);
+    }
   }
 
   @override
@@ -181,6 +182,7 @@ class _LightTileState extends State<_LightTile> {
             .toColor()
         : const Color(0xffffcf83);
     return Card(
+        semanticContainer: false,
         margin: EdgeInsets.zero,
         child: Padding(
             padding: const EdgeInsets.all(12),
@@ -202,6 +204,7 @@ class _LightTileState extends State<_LightTile> {
                 Expanded(
                     child: Text(l.name, style: theme.textTheme.titleSmall)),
                 Semantics(
+                    container: true,
                     label: context.tr('{0} schalten', [l.name]),
                     child: Switch(
                         value: l.on,
@@ -216,11 +219,13 @@ class _LightTileState extends State<_LightTile> {
                   const Icon(Icons.brightness_6_outlined, size: 16),
                   Expanded(
                       child: Semantics(
+                          container: true,
                           label: context.tr('Helligkeit von {0}', [l.name]),
                           child: Slider(
                             min: 1,
                             max: 100,
                             divisions: 99,
+                            semanticFormatterCallback: (v) => '${v.round()} %',
                             value: (dragging ?? l.brightness!).clamp(1, 100),
                             onChanged: widget.allowed && l.on
                                 ? (v) => setState(() => dragging = v)
