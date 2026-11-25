@@ -196,11 +196,14 @@ class _LightRowState extends State<_LightRow> {
             style: theme.textTheme.labelLarge,
             maxLines: 2,
             overflow: TextOverflow.ellipsis),
-        if (!l.reachable)
-          Text(context.tr('Nicht erreichbar'),
-              style: WorkstationTokens.mono(context,
-                  size: 10,
-                  color: OipTokens.statusColor(context, 'unavailable'))),
+        Text(
+            context
+                .tr(l.reachable ? (l.on ? 'Ein' : 'Aus') : 'Nicht erreichbar'),
+            style: WorkstationTokens.mono(context,
+                size: 10,
+                color: l.reachable
+                    ? muted
+                    : OipTokens.statusColor(context, 'unavailable'))),
       ])),
     ]);
     final power = Semantics(
@@ -219,11 +222,13 @@ class _LightRowState extends State<_LightRow> {
             onPressed: editable ? _pick : null,
             style: TextButton.styleFrom(
                 foregroundColor: theme.colorScheme.onSurface,
-                textStyle: theme.textTheme.labelSmall,
+                textStyle:
+                    theme.textTheme.labelSmall?.copyWith(letterSpacing: .05),
                 padding: const EdgeInsets.symmetric(horizontal: 6)),
             icon: Icon(Icons.palette_outlined,
                 size: 15, color: editable ? color : muted),
-            label: Text(context.tr(l.hasColor ? 'Lichtfarbe' : 'Weißton')))
+            label: Text(context.tr(l.hasColor ? 'Lichtfarbe' : 'Weißton'),
+                maxLines: 1, overflow: TextOverflow.ellipsis))
         : null;
     final brightness = l.brightness;
     final dimmer = brightness == null
@@ -285,7 +290,7 @@ class _LightRowState extends State<_LightRow> {
                     SizedBox(
                         width: box.maxWidth < 530 ? 122 : 166, child: dimmer),
                     const SizedBox(width: 10),
-                    SizedBox(width: 90, child: colorButton),
+                    SizedBox(width: 106, child: colorButton),
                   ] else if (colorButton != null)
                     colorButton,
                   power,

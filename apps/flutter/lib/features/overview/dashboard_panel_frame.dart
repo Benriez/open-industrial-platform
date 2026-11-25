@@ -39,26 +39,29 @@ class DashboardPanelFrame extends StatelessWidget {
         ),
         const SizedBox(width: 7),
       ],
-      Flexible(
-        child: Text(title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context)
-                .textTheme
-                .labelLarge
-                ?.copyWith(fontSize: 12.5, fontWeight: FontWeight.w600)),
+      Expanded(
+        child: Row(children: [
+          Flexible(
+            child: Text(title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelLarge
+                    ?.copyWith(fontSize: 12.5, fontWeight: FontWeight.w600)),
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(subtitle!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: WorkstationTokens.mono(context,
+                      size: 10, color: OipTokens.muted(context))),
+            ),
+          ]
+        ]),
       ),
-      if (subtitle != null) ...[
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(subtitle!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: WorkstationTokens.mono(context,
-                  size: 10, color: OipTokens.muted(context))),
-        ),
-      ] else
-        const Spacer(),
       if (badge != null && stateColor != null)
         Container(
           margin: const EdgeInsets.only(left: 6),

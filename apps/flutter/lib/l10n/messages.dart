@@ -1,6 +1,8 @@
 // Client-owned interface copy. Unmapped source strings are used verbatim.
 
 const englishMessages = <String, String>{
+  "Ein": "On",
+  "Aus": "Off",
   "Hue-Beleuchtung": "Hue lights",
   "Lichter aktualisieren": "Refresh lights",
   "Hue-Lichter konnten nicht geladen werden.": "Could not load Hue lights.",
