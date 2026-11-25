@@ -62,10 +62,11 @@ impl FromRequestParts<ApiContext> for Authorized {
             } else {
                 None
             };
+            let active = !matches!(parts.uri.path(), "/api/v1/stream" | "/api/v2/stream");
             s.authority = Some(
                 s.state
                     .browser_sessions
-                    .authenticate(token, csrf)
+                    .check_session(token, csrf, active)
                     .map_err(CapabilityErrorResponse)?,
             );
         } else if !s.state.legacy_access {
@@ -124,7 +125,7 @@ async fn call(
         s.authority = Some(
             s.state
                 .browser_sessions
-                .authenticate(token, None)
+                .check_session(token, None, false)
                 .map_err(CapabilityErrorResponse)?,
         );
     }
@@ -193,6 +194,16 @@ pub fn router_with_identity(
         .route(
             "/api/v2/browser/device-login",
             post(browser_device_login).layer(axum::extract::DefaultBodyLimit::max(1024)),
+        )
+        .route(
+            "/api/v2/browser/device-credentials",
+            get(browser_paired_devices),
+        )
+        .route(
+            "/api/v2/browser/device-credentials/{id}",
+            axum::routing::patch(browser_rename_device)
+                .delete(browser_revoke_device)
+                .layer(axum::extract::DefaultBodyLimit::max(1024)),
         )
         .route("/api/v2/installation/status", get(installation_status))
         .route("/api/v2/inventory/devices", get(inventory_read))
@@ -609,28 +620,37 @@ async fn ready(Authorized(s): Authorized) -> Result<impl IntoResponse, Capabilit
 async fn sse(Authorized(s): Authorized) -> Result<impl IntoResponse, CapabilityErrorResponse> {
     call(s.clone(), CapabilityRequest::SnapshotRead).await?;
     let rx = s.updates.subscribe();
-    let output = stream::unfold((s, rx, true), |(s, mut rx, first)| async move {
-        if s.stopping.is_cancelled() {
-            return None;
-        }
-        if !first {
-            tokio::select! {_=s.stopping.cancelled()=>return None,changed=rx.changed()=>{if changed.is_err(){return None;}},_=tokio::time::sleep(Duration::from_secs(1))=>{}}
-        }
-        let event = match call(s.clone(), CapabilityRequest::SnapshotRead).await {
-            Ok(CapabilityOutput::Snapshot(snapshot)) => Event::default()
-                .event("snapshot")
-                .id(format!(
-                    "{}:{}",
-                    snapshot.core.run_id, snapshot.core.revision
-                ))
-                .json_data(snapshot)
-                .unwrap_or_else(|_| Event::default().event("error").data("serialization failed")),
-            _ => Event::default()
-                .event("error")
-                .data("application snapshot unavailable"),
-        };
-        Some((Ok::<_, Infallible>(event), (s, rx, false)))
-    });
+    let output = stream::unfold(
+        (s, rx, true, false),
+        |(s, mut rx, first, terminal)| async move {
+            if terminal || s.stopping.is_cancelled() {
+                return None;
+            }
+            if !first {
+                tokio::select! {_=s.stopping.cancelled()=>return None,changed=rx.changed()=>{if changed.is_err(){return None;}},_=tokio::time::sleep(Duration::from_secs(1))=>{}}
+            }
+            let result = call(s.clone(), CapabilityRequest::SnapshotRead).await;
+            let terminal = result
+                .as_ref()
+                .is_err_and(|error| error.0.kind == CapabilityErrorCode::PermissionDenied);
+            let event = match result {
+                Ok(CapabilityOutput::Snapshot(snapshot)) => Event::default()
+                    .event("snapshot")
+                    .id(format!(
+                        "{}:{}",
+                        snapshot.core.run_id, snapshot.core.revision
+                    ))
+                    .json_data(snapshot)
+                    .unwrap_or_else(|_| {
+                        Event::default().event("error").data("serialization failed")
+                    }),
+                _ => Event::default()
+                    .event("error")
+                    .data("application snapshot unavailable"),
+            };
+            Some((Ok::<_, Infallible>(event), (s, rx, false, terminal)))
+        },
+    );
     Ok(Sse::new(output).keep_alive(KeepAlive::new().interval(Duration::from_secs(2))))
 }
 
@@ -685,8 +705,8 @@ async fn scoped_sse(
     // Authorize before200/stream headers. Fixed cadence avoids wakeups exposing
     // unrelated organizations; full authorized resync ignores untrusted cursors.
     let first = call(s.clone(), CapabilityRequest::ScopedSnapshotRead).await?;
-    let output = stream::unfold((s, Some(first)), |(s, first)| async move {
-        if s.stopping.is_cancelled() {
+    let output = stream::unfold((s, Some(first), false), |(s, first, terminal)| async move {
+        if terminal || s.stopping.is_cancelled() {
             return None;
         }
         let result = if let Some(first) = first {
@@ -695,6 +715,9 @@ async fn scoped_sse(
             tokio::select! {_=s.stopping.cancelled()=>return None,_=tokio::time::sleep(Duration::from_secs(1))=>{}}
             call(s.clone(), CapabilityRequest::ScopedSnapshotRead).await
         };
+        let terminal = result
+            .as_ref()
+            .is_err_and(|error| error.0.kind == CapabilityErrorCode::PermissionDenied);
         let event = match result {
             Ok(CapabilityOutput::ScopedSnapshot(snapshot)) => {
                 let bytes = serde_json::to_vec(&snapshot).expect("serializable snapshot");
@@ -709,7 +732,7 @@ async fn scoped_sse(
                 .event("error")
                 .data("Authorized snapshot unavailable"),
         };
-        Some((Ok::<_, Infallible>(event), (s, None)))
+        Some((Ok::<_, Infallible>(event), (s, None, terminal)))
     });
     Ok(Sse::new(output).keep_alive(KeepAlive::new().interval(Duration::from_secs(2))))
 }
@@ -887,13 +910,7 @@ async fn browser_pair_device(
     headers: axum::http::HeaderMap,
     body: Result<Json<BrowserDeviceCredential>, axum::extract::rejection::JsonRejection>,
 ) -> Result<Response, CapabilityErrorResponse> {
-    crate::browser_session::require_origin(&headers).map_err(CapabilityErrorResponse)?;
-    let token = crate::browser_session::cookie(&headers)
-        .ok_or_else(|| CapabilityErrorResponse(denied()))?;
-    let csrf = headers
-        .get("x-oip-csrf")
-        .and_then(|v| v.to_str().ok())
-        .ok_or_else(|| CapabilityErrorResponse(denied()))?;
+    let (token, csrf) = browser_mutation_identity(&headers)?;
     let Json(body) = body.map_err(|_| CapabilityErrorResponse(denied()))?;
     s.state
         .browser_sessions
@@ -906,6 +923,84 @@ async fn browser_pair_device(
     );
     Ok(response)
 }
+fn browser_mutation_identity(
+    headers: &axum::http::HeaderMap,
+) -> Result<(&str, &str), CapabilityErrorResponse> {
+    crate::browser_session::require_origin(headers).map_err(CapabilityErrorResponse)?;
+    let token =
+        crate::browser_session::cookie(headers).ok_or_else(|| CapabilityErrorResponse(denied()))?;
+    let csrf = headers
+        .get("x-oip-csrf")
+        .and_then(|value| value.to_str().ok())
+        .ok_or_else(|| CapabilityErrorResponse(denied()))?;
+    Ok((token, csrf))
+}
+
+fn browser_private_response(response: impl IntoResponse) -> Response {
+    let mut response = response.into_response();
+    response
+        .headers_mut()
+        .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+    response
+}
+
+async fn browser_paired_devices(
+    axum::extract::State(s): axum::extract::State<ApiContext>,
+    headers: axum::http::HeaderMap,
+) -> Result<Response, CapabilityErrorResponse> {
+    let token = crate::browser_session::cookie(&headers)
+        .ok_or_else(|| CapabilityErrorResponse(denied()))?;
+    let items = s
+        .state
+        .browser_sessions
+        .paired_devices(token)
+        .map_err(CapabilityErrorResponse)?;
+    Ok(browser_private_response(Json(json!({"items": items}))))
+}
+
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BrowserDeviceLabel {
+    label: String,
+}
+
+async fn browser_rename_device(
+    axum::extract::State(s): axum::extract::State<ApiContext>,
+    Path(id): Path<String>,
+    headers: axum::http::HeaderMap,
+    body: Result<Json<BrowserDeviceLabel>, axum::extract::rejection::JsonRejection>,
+) -> Result<Response, CapabilityErrorResponse> {
+    let (token, csrf) = browser_mutation_identity(&headers)?;
+    let Json(body) = body.map_err(|_| CapabilityErrorResponse(denied()))?;
+    s.state
+        .browser_sessions
+        .rename_device(token, csrf, &id, &body.label)
+        .map_err(CapabilityErrorResponse)?;
+    Ok(browser_private_response(Json(json!({"renamed": true}))))
+}
+
+async fn browser_revoke_device(
+    axum::extract::State(s): axum::extract::State<ApiContext>,
+    Path(id): Path<String>,
+    headers: axum::http::HeaderMap,
+) -> Result<Response, CapabilityErrorResponse> {
+    let (token, csrf) = browser_mutation_identity(&headers)?;
+    let result = s
+        .state
+        .browser_sessions
+        .revoke_device(token, csrf, &id)
+        .map_err(CapabilityErrorResponse)?;
+    let current = result.current_session_revoked;
+    let mut response = browser_private_response(Json(result));
+    if current {
+        response.headers_mut().insert(
+            header::SET_COOKIE,
+            HeaderValue::from_static("oip_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0"),
+        );
+    }
+    Ok(response)
+}
+
 async fn browser_device_login(
     axum::extract::State(s): axum::extract::State<ApiContext>,
     headers: axum::http::HeaderMap,

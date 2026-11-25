@@ -217,6 +217,17 @@ class OipController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void deviceSignInRevoked() {
+    if (_closed || _loggingOut) return;
+    _epoch++;
+    api.disconnect();
+    _clearAuthorizedState();
+    connection = 'identity-required';
+    error = 'Die Geräteanmeldung wurde gesperrt.';
+    infrastructure.markIdentityFailure(_operatorLoginRequired);
+    notifyListeners();
+  }
+
   void _clearAuthorizedState() {
     contextRevision++;
     onboardingScope = const OnboardingScope();

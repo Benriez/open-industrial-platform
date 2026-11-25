@@ -39,7 +39,7 @@ the login view in `apps/flutter/lib/features/operator_login.dart`.
 |---|---|---|
 | Pairing code | 256 bit random, 120 s, single use, at most 32 pending grants | `crates/oip-server/src/browser_session.rs` (`issue`, `login`); `tests/real_device/acceptance.py` phase `browser_identity_online_writer` |
 | Code issuance | only through the existing authenticated local IPC path (`--browser-login`); no SQLite access, no grant creation | `crates/oip-server/src/mcp/ipc.rs`; `docs/architecture/real-device-onboarding.md:27-33` |
-| Session | 256 bit random, server side hashed index, no time-based expiry, at most 64 sessions. At capacity, a valid sign-in may replace its own principal's least recently used session. | `crates/oip-server/src/browser_session.rs` (`authenticate`, `info`) |
+| Session | 256 bit random, server-side hashed index, 30 minutes idle or 12 hours absolute, at most eight sessions per principal and 64 overall. A valid sign-in can replace its own principal's least recently used session. Status checks and SSE are passive. | `crates/oip-server/src/browser_session.rs` unit tests and `tests/oip_session_lifetime.py` |
 | Invalid codes | bounded rejection accounting that never blocks a valid one-time grant; a full session table does not consume an issued grant | `crates/oip-server/src/browser_session.rs` unit tests |
 | Login | `POST /api/v2/browser/login` requires the exact `Origin`. The answer sets a host-only, `HttpOnly`, `SameSite=Strict` session cookie with `Path=/`. | `crates/oip-server/tests/browser_session.rs`, `tests/real_device/acceptance.py` |
 | Session query | `GET /api/v2/browser/session` returns only the bound Principal and an ephemeral CSRF value, `Cache-Control: no-store`, and no CSRF value for an unauthenticated caller | `crates/oip-server/tests/browser_session.rs` |
@@ -47,10 +47,11 @@ the login view in `apps/flutter/lib/features/operator_login.dart`.
 | Revocation | `DELETE /api/v2/browser/session` needs the same boundary and invalidates the session immediately | `crates/oip-server/tests/browser_session.rs` |
 | Token hygiene | no cookie value, CSRF value or bearer in a URL, a web asset, `LocalStorage` or `sessionStorage`; the CSRF value exists only in Flutter memory | `apps/flutter/test/onboarding_contract_test.dart`; `apps/flutter/test/browser_onboarding.mjs` |
 | Restart | sessions are in memory, so a restart invalidates them; the device and collector configuration persists in storage | `crates/oip-server/src/state.rs`, `crates/oip-storage/src/connection.rs` |
-| macOS Touch ID | after an ordinary authorized login, the native app can pair a random 256-bit device credential; macOS stores it in Keychain with `biometryCurrentSet` and `WhenUnlockedThisDeviceOnly`; the Core keeps only its SHA-256 digest and Principal binding in memory (maximum 32 pairings) | `apps/flutter/macos/Runner/MainFlutterWindow.swift`, `apps/flutter/lib/app/controller.dart`, `crates/oip-server/src/browser_session.rs` |
-| Touch ID session | biometric unlock submits the paired credential to `POST /api/v2/browser/device-login`, which issues the same 30-minute HttpOnly session cookie and CSRF token as code login; the credential can be paired only with an active session and valid CSRF | `crates/oip-server/src/api.rs`, `crates/oip-server/src/browser_session.rs` unit test |
-| Touch ID lifecycle | the Core restart clears device pairings; a code login and re-pair are required. Replacing or changing the enrolled Mac fingerprints makes the local Keychain item unavailable and also requires re-pairing | `crates/oip-server/src/state.rs`, Keychain access-control policy |
-| Touch ID HTTP flow | `POST /api/v2/browser/pairing` requires the current cookie, exact Origin and CSRF; `POST /api/v2/browser/device-login` requires the exact Origin and a paired credential; both responses are `no-store` | `crates/oip-server/tests/browser_session.rs::touch_id_pairing_requires_the_session_csrf_and_reissues_the_bound_principal` |
+| macOS Touch ID | The Core accepts one new device credential within 120 seconds of a successful single-use code login. The store retains only a digest and an authorized principal. New registrations are limited to eight per principal and 32 in total. Existing credentials remain usable until revoked. | `crates/oip-server/src/browser_session.rs` and `tests/oip_session_lifetime.py` |
+| Touch ID session | Biometric unlock submits the paired credential to `POST /api/v2/browser/device-login`, issuing the same cookie and CSRF token as code login. A device-authenticated session cannot pair another device. | `crates/oip-server/tests/browser_session.rs` and `tests/oip_session_lifetime.py` |
+| Device sign-in management | Authenticated operators can list and name their own sign-ins under Settings → Security & Access → Current Identity. Revocation denies the credential and all sessions issued from it. Re-enrollment uses a fresh code and a new credential. Mutations require matching Origin and CSRF. | `tests/oip_session_lifetime.py` and `apps/flutter/test/paired_device_sign_ins_test.dart` |
+| Restart and recovery | The Core drops sessions on restart and retains active and revoked device credentials separately. The sibling `.revocations` file is authoritative over an older credential snapshot. Standard Core backup and restore operate on SQLite and leave both sidecars in place. If restoring an entire machine, retain the newest revocation file from protected state before starting Core. | `crates/oip-server/src/browser_session.rs`, `tools/oip_ops.py` and the restart test in `tests/oip_session_lifetime.py` |
+| Apple Keychain | A notarized direct package with the matching OIP provisioning profile requires the data protection Keychain and `biometryCurrentSet`. An explicitly authorized internal ad-hoc package uses the existing executable-bound file Keychain fallback where needed. | `tools/oip_github_ota_package.py`, `apps/flutter/macos/Runner/MainFlutterWindow.swift` and `tests/oip_github_ota_package.py` for the ad-hoc path |
 
 The HTTP cookie boundary is host scoped, not port isolated. It is not a production browser
 identity solution: no HTTPS, no remote identity and no isolation against hostile same-UID
@@ -60,13 +61,37 @@ processes or browser extensions is claimed.
 
 * The projection stream revalidates the browser session for **every** projection
   (`crates/oip-server/src/api.rs`, `call` re-authenticates the token). A revoked or expired
-  session therefore stops the delivery instead of continuing to stream.
+  session therefore stops delivery. An authorization failure emits one error event and
+  closes the stream. Stream traffic does not reset the session idle timer.
 * The stream carries only the scoped projection of the session's Principal. A scoped snapshot
   never invents global counts, health, incidents or topology
   (`apps/flutter/test/onboarding_contract_test.dart`).
 * API answers are `no-store`; framing is denied with `X-Frame-Options` and a
   `Content-Security-Policy: frame-ancestors 'none'`; referrers are suppressed.
 * No public listener, no CORS grant and no anonymous tenant fallback exist.
+
+### Security journal and release control
+
+Core stores online mutation records in the database's sibling `.security-audit`
+directory. Each record carries an HMAC linked to the previous record. A separate
+seal records the last confirmed append. Startup verifies the chain, rejects a
+changed or truncated committed log, and can recover an unsealed tail. Keep the
+journal, key and seal together when backing up security state. The local Core
+account is within this trust boundary. An independent destination is required
+to detect replacement of all three by that account or its administrator.
+
+External writes record a start before dispatch and a result with the same
+correlation ID. A start without a recorded result has an unknown outcome.
+Check the actual target before retrying. The local journal is capped at 32 MiB.
+An unavailable audit blocks new writes that require evidence. Revocation remains
+available and retains the principal and timestamp in its own private store.
+
+The macOS release script checks the locked Rust dependencies before building or
+publishing. Developer ID distribution requires the signing identity, matching
+Keychain provisioning profile and an Apple notarization profile. Publication
+also retains the existing Ed25519 verification of the final archive. The
+remaining OPC UA dependency migration and real transport acceptance are tracked
+in the security remediation record.
 
 ## 4. The global context seam as implemented
 

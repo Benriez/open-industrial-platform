@@ -16,6 +16,7 @@ schemars = "1"
 axum = "0.8.9"
 flate2 = "1"
 futures = "0.3"
+hmac = "0.12"
 oip-core = { path = "../oip-core", features = ["schemas"] }
 oip-opcua = { path = "../oip-opcua" }
 oip-simulator = { path = "../oip-simulator" }

@@ -98,6 +98,7 @@ features = ["send_guard"]
 
 [dependencies.postcard]
 version = "^1"
+default-features = false
 features = ["use-std"]
 
 [dependencies.regex]

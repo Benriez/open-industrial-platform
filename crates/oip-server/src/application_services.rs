@@ -59,10 +59,11 @@ fn storage(_: String) -> CapabilityError {
 }
 impl ApplicationServices {
     pub fn new(state: AppState) -> Self {
-        Self {
-            state,
-            audit: Arc::new(LocalLogAudit),
-        }
+        let audit = state.security_audit.as_ref().map_or_else(
+            || Arc::new(LocalLogAudit) as Arc<dyn CapabilityAudit>,
+            |audit| audit.clone() as Arc<dyn CapabilityAudit>,
+        );
+        Self { state, audit }
     }
     pub fn with_audit(state: AppState, audit: Arc<dyn CapabilityAudit>) -> Self {
         Self { state, audit }

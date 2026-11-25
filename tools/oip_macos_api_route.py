@@ -13,6 +13,9 @@ from oip_tcp_relay import Relay, Server
 
 
 class RoutedServer(Server):
+    # This loopback listener sees every local process as the same peer.
+    peer_limit = 32
+
     def __init__(self, port, target):
         self.target = target
         self.lock = threading.Lock()

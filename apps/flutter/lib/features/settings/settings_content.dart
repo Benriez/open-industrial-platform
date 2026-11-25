@@ -7,6 +7,7 @@ import '../../app/controller.dart';
 import '../../design_system/theme.dart';
 import '../../l10n/language_picker.dart';
 import '../../models/app_metadata.dart';
+import '../../services/api.dart';
 import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
 import 'settings_models.dart';
@@ -14,6 +15,7 @@ import 'settings_navigation.dart';
 import 'ota_update_control.dart';
 import 'settings_session.dart';
 import 'settings_tool_explorer.dart';
+import 'paired_device_sign_ins.dart';
 
 class SettingsSectionContent extends StatelessWidget {
   final SettingsSection section;
@@ -865,8 +867,14 @@ class SettingsSectionContent extends StatelessWidget {
         const SizedBox(height: 12),
         SettingsFacts(report!.facts),
         const Hairline(),
-        KeyValue(context.tr("Credential Management"),
-            context.tr("unsupported in browser")),
+        if (section == SettingsSection.currentIdentity &&
+            controller.managed &&
+            controller.api is PairedDeviceManagementApi)
+          PairedDeviceSignIns(
+            key: ValueKey(controller.contextRevision),
+            api: controller.api as PairedDeviceManagementApi,
+            onCurrentRevoked: controller.deviceSignInRevoked,
+          ),
         KeyValue(
             context.tr("Role Inventory / Editor"), context.tr("unsupported")),
         KeyValue(
@@ -876,7 +884,7 @@ class SettingsSectionContent extends StatelessWidget {
         WorkstationNote(
           context.tr("Nicht „Secure for Production“"),
           context.tr(
-              "RUSTSEC-2023-0071, RUSTSEC-2023-0089, RUSTSEC-2024-0449 sowie Remote-/Browser-Identity, feindliche Same-UID-Isolation, manipulationssicheres Audit und OT-Safety-Nachweise bleiben offen."),
+              "Offen sind RUSTSEC-2023-0071, RUSTSEC-2024-0449 und RUSTSEC-2026-0543, die Absicherung externer Browser-Anmeldungen und des lokalen Systemkontos, ein extern abgesichertes Audit und der Nachweis der Betriebssicherheit."),
           icon: Icons.gpp_maybe_outlined,
           color: OipTokens.yellow,
         ),

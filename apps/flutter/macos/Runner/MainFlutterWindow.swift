@@ -619,6 +619,8 @@ private final class GitHubOTAUpdater {
 private enum TouchIdKeychain {
   private static let service = "org.openindustrial.oip.touch-id"
   private static let account = "operator-device-credential"
+  private static let requireProtected =
+    Bundle.main.object(forInfoDictionaryKey: "OIPRequireProtectedTouchID") as? Bool == true
   private(set) static var isAuthenticating = false
 
   static func handle(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -660,7 +662,7 @@ private enum TouchIdKeychain {
   /// biometrics. A protected item can report interaction-not-allowed here and
   /// still be usable by the explicit biometric read method.
   private static func credentialExists() -> Bool {
-    credentialExists(dataProtection: true) || credentialExists(dataProtection: false)
+    credentialExists(dataProtection: true) || (!requireProtected && credentialExists(dataProtection: false))
   }
 
   private static func credentialExists(dataProtection: Bool) -> Bool {
@@ -750,7 +752,7 @@ private enum TouchIdKeychain {
         item[kSecAttrAccessControl as String] = access
         item[kSecUseAuthenticationContext as String] = context
         let protectedStatus = SecItemAdd(item as CFDictionary, nil)
-        let status = protectedStatus == errSecMissingEntitlement || protectedStatus == errSecParam
+        let status = !requireProtected && (protectedStatus == errSecMissingEntitlement || protectedStatus == errSecParam)
             ? addFileKeychainCredential(secret)
             : protectedStatus
         guard status == errSecSuccess else {
@@ -798,11 +800,11 @@ private enum TouchIdKeychain {
           return
         }
         let protected = readItem(dataProtection: true, context: context)
-        let fileBased: (data: Data?, status: OSStatus) = protected.data == nil
-            ? readItem(dataProtection: false, context: context)
-            : (data: nil, status: errSecItemNotFound)
-        guard let secret = protected.data ?? fileBased.data else {
-          result(keychainError(fileBased.data == nil ? fileBased.status : protected.status))
+        let item = (protected.data != nil || requireProtected)
+            ? protected
+            : readItem(dataProtection: false, context: context)
+        guard let secret = item.data else {
+          result(keychainError(item.status))
           return
         }
         result(secret.map { String(format: "%02x", $0) }.joined())
@@ -825,8 +827,10 @@ private enum TouchIdKeychain {
 
   private static func deleteCredentials(context: LAContext) -> OSStatus {
     let protectedStatus = deleteItem(dataProtection: true, context: context)
-    let fileStatus = deleteItem(dataProtection: false, context: context)
-    for status in [protectedStatus, fileStatus] {
+    let statuses = requireProtected ? [protectedStatus] : [
+      protectedStatus, deleteItem(dataProtection: false, context: context),
+    ]
+    for status in statuses {
       if status != errSecSuccess && status != errSecItemNotFound && status != errSecMissingEntitlement {
         return status
       }

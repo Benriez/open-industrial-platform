@@ -15,6 +15,9 @@ Usage: tools/oip_ota_release.sh <version>
 Build, sign, verify, and publish a direct macOS OTA release from this Mac.
 Requires a clean main branch synced with origin/main, Flutter 3.22.0, gh auth,
 and the OTA Ed25519 private key in the macOS login Keychain.
+For verified distribution set OIP_MACOS_DEVELOPER_ID, OIP_MACOS_NOTARY_PROFILE,
+and OIP_MACOS_PROVISIONING_PROFILE. OIP_ALLOW_ADHOC_OTA=1 is for an explicitly
+authorized internal release.
 Example: tools/oip_ota_release.sh 0.3.9
 EOF
 }
@@ -38,10 +41,25 @@ if [[ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]]; then
   echo "main must be pushed and synced with origin/main before release" >&2
   exit 1
 fi
-if ! command -v flutter >/dev/null || ! command -v gh >/dev/null; then
-  echo "flutter and gh must be installed and on PATH" >&2
+if ! command -v flutter >/dev/null || ! command -v gh >/dev/null || ! command -v cargo-deny >/dev/null; then
+  echo "flutter, gh, and cargo-deny must be installed and on PATH" >&2
   exit 1
 fi
+SIGNING_ARGS=()
+if [[ -n "${OIP_MACOS_DEVELOPER_ID:-}${OIP_MACOS_NOTARY_PROFILE:-}${OIP_MACOS_PROVISIONING_PROFILE:-}" ]]; then
+  if [[ -z "${OIP_MACOS_DEVELOPER_ID:-}" || -z "${OIP_MACOS_NOTARY_PROFILE:-}" || ! -f "${OIP_MACOS_PROVISIONING_PROFILE:-}" ]]; then
+    echo "A Developer ID identity, notary Keychain profile, and OIP provision profile are required together." >&2
+    exit 1
+  fi
+  SIGNING_ARGS=(--developer-id "$OIP_MACOS_DEVELOPER_ID" --notary-profile "$OIP_MACOS_NOTARY_PROFILE"
+                --provisioning-profile "$OIP_MACOS_PROVISIONING_PROFILE")
+elif [[ "${OIP_ALLOW_ADHOC_OTA:-}" != "1" ]]; then
+  echo "A verified Developer ID release requires Apple signing and notarization credentials." >&2
+  exit 1
+fi
+
+cargo deny --locked check advisories
+
 FLUTTER_VERSION="$(flutter --version --machine | python3 -c 'import json,sys; print(json.load(sys.stdin)["frameworkVersion"])')"
 if [[ "$FLUTTER_VERSION" != "3.22.0" ]]; then
   echo "Flutter 3.22.0 is required; found $FLUTTER_VERSION" >&2
@@ -113,7 +131,7 @@ cd "$ROOT"
 
 python3 tools/oip_github_ota_package.py \
   --bundle apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app \
-  --out "$RELEASE_DIR" --build "$BUILD"
+  --out "$RELEASE_DIR" --build "$BUILD" ${SIGNING_ARGS[@]+"${SIGNING_ARGS[@]}"}
 
 PUBLIC_KEY="$(/usr/libexec/PlistBuddy -c 'Print :OIPUpdatePublicKey' apps/flutter/macos/Runner/Info.plist)"
 swift tools/oip_ota_verify.swift \

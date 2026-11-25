@@ -273,8 +273,13 @@ impl ApplicationServices {
                     "identity_mode",
                     "trusted local IPC credential / REST header binding".into(),
                 );
-                fact("audit","local structured execution logs; settings changes atomically recorded, not tamper-proof".into());
-                fact("production_blockers","RUSTSEC-2023-0071; RUSTSEC-2023-0089; RUSTSEC-2024-0449; remote/browser identity; same-UID trust; durable audit; OT safety".into());
+                let audit = if self.state.security_audit.is_some() {
+                    "Authenticated local journal for online mutations and device sign-in changes"
+                } else {
+                    "Development execution logs"
+                };
+                fact("audit", audit.into());
+                fact("production_blockers","RUSTSEC-2023-0071; RUSTSEC-2024-0449; RUSTSEC-2026-0543; remote/browser identity; same-UID trust; external audit anchoring; OT safety".into());
             }
         }
         Ok(CapabilityOutput::Management(report))

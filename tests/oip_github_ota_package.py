@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import pathlib
 import plistlib
@@ -10,12 +11,53 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 BUNDLE = ROOT / "apps/flutter/build/macos/Build/Products/Release/oip_dashboard.app"
 PACKAGE = ROOT / "tools/oip_github_ota_package.py"
 VERIFY = ROOT / "tools/oip_ota_verify.swift"
 HELPER = ROOT / "apps/flutter/macos/Runner/oip_ota_install_helper.sh"
+
+
+spec = importlib.util.spec_from_file_location("ota_packager", PACKAGE)
+packager = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(packager)
+
+
+class DeveloperIDPackaging(unittest.TestCase):
+    def test_requires_the_app_keychain_entitlement_from_the_signed_profile(self):
+        team = "Z123456789"
+        identity = f"Developer ID Application: OIP Fixture ({team})"
+        app_id = f"{team}.{packager.BUNDLE_ID}"
+        profile = {
+            "TeamIdentifier": [team],
+            "Entitlements": {
+                "com.apple.application-identifier": app_id,
+                "keychain-access-groups": [f"{team}.*"],
+                "com.apple.security.get-task-allow": True,
+            },
+        }
+        with mock.patch.object(packager.subprocess, "check_output",
+                               return_value=plistlib.dumps(profile)):
+            self.assertEqual(packager.developer_entitlements(identity, pathlib.Path("fixture")), {
+                "com.apple.application-identifier": app_id,
+                "com.apple.developer.team-identifier": team,
+                "keychain-access-groups": [app_id],
+            })
+        profile["Entitlements"]["keychain-access-groups"] = ["another.app"]
+        with mock.patch.object(packager.subprocess, "check_output",
+                               return_value=plistlib.dumps(profile)):
+            with self.assertRaisesRegex(ValueError, "Keychain group"):
+                packager.developer_entitlements(identity, pathlib.Path("fixture"))
+
+    def test_failed_notarization_cannot_staple_or_prepare_the_release(self):
+        with mock.patch.object(packager.subprocess, "check_output",
+                               return_value=b'{"status":"Invalid","id":"fixture"}'), \
+             mock.patch.object(packager, "run") as run:
+            with self.assertRaisesRegex(ValueError, "did not accept"):
+                packager.notarize_bundle(pathlib.Path("app"), pathlib.Path("archive"), "profile")
+            run.assert_not_called()
 
 
 class GitHubOTAPackage(unittest.TestCase):
@@ -34,6 +76,7 @@ class GitHubOTAPackage(unittest.TestCase):
             staged = output / "Open Industrial Platform.app"
             staged_info = plistlib.loads((staged / "Contents/Info.plist").read_bytes())
             self.assertIs(staged_info["OIPUpdateEnabled"], True)
+            self.assertIs(staged_info["OIPRequireProtectedTouchID"], False)
             self.assertEqual(staged_info["CFBundleIdentifier"], "org.openindustrial.oipDashboard")
             self.assertTrue((staged / "Contents/Resources/oip_ota_install_helper.sh").is_file())
 

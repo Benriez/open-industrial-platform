@@ -1,19 +1,30 @@
 //! Local operator-issued, one-use pairing grants. No IPC credential enters the browser.
-use oip_core::{denied, CapabilityError, ExecutionContext, PrincipalId, SourceScope};
+use crate::{
+    private_state::{load as load_store, replace as persist_store},
+    security_audit::{confirm_completion, DeviceAction, DurableAudit},
+    state::now_ms,
+};
+use oip_core::{
+    denied, CapabilityError, CapabilityErrorCode, ExecutionContext, PrincipalId, SourceScope,
+};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
     collections::BTreeMap,
-    fs::{self, File, OpenOptions},
-    io::{self, Read, Write},
+    io::{self, Read},
     path::{Path, PathBuf},
-    sync::Mutex,
+    sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
 const GRANT_TTL: Duration = Duration::from_secs(120);
 const MAX_SESSIONS: usize = 64;
+const MAX_SESSIONS_PER_PRINCIPAL: usize = 8;
+const SESSION_IDLE_TTL: Duration = Duration::from_secs(30 * 60);
+const SESSION_MAX_TTL: Duration = Duration::from_secs(12 * 60 * 60);
 const MAX_GRANTS: usize = 32;
 const MAX_DEVICE_CREDENTIALS: usize = 32;
+const MAX_DEVICES_PER_PRINCIPAL: usize = 8;
+const MAX_DEVICE_HISTORY: usize = 4096;
 /// Bounded record of rejected codes. The counter never blocks a valid single-use
 /// grant; it only keeps the rejection state itself bounded.
 const MAX_FAILED: usize = 16;
@@ -25,7 +36,20 @@ struct Grant {
 struct Session {
     principal: PrincipalId,
     csrf: String,
+    created_at: Instant,
     last_used: Instant,
+    device: Option<String>,
+    pair_until: Option<Instant>,
+}
+impl Session {
+    fn accepts_csrf(&self, csrf: &str) -> bool {
+        csrf.len() == self.csrf.len()
+            && csrf
+                .bytes()
+                .zip(self.csrf.bytes())
+                .fold(0u8, |d, (a, b)| d | (a ^ b))
+                == 0
+    }
 }
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -38,16 +62,47 @@ struct PersistedDeviceCredentials {
     version: u8,
     credentials: BTreeMap<String, DeviceCredential>,
 }
+#[derive(Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DeviceHistory {
+    version: u8,
+    revoked: BTreeMap<String, RevokedDevice>,
+    labels: BTreeMap<String, String>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RevokedDevice {
+    principal: PrincipalId,
+    revoked_at_ms: i64,
+}
+
+#[derive(Serialize)]
+pub struct PairedDevice {
+    id: String,
+    label: Option<String>,
+    current: bool,
+}
+
+#[derive(Serialize)]
+pub struct DeviceRevocation {
+    revoked: bool,
+    pub current_session_revoked: bool,
+}
+
 #[derive(Default)]
 struct Entries {
     grants: BTreeMap<String, Grant>,
     sessions: BTreeMap<String, Session>,
     device_credentials: BTreeMap<String, DeviceCredential>,
+    device_history: DeviceHistory,
     failed: Vec<Instant>,
 }
 pub struct BrowserSessions {
     entries: Mutex<Entries>,
     credential_store: Option<PathBuf>,
+    history_store: Option<PathBuf>,
+    audit: Option<Arc<DurableAudit>>,
 }
 #[derive(Clone, Serialize)]
 pub struct SessionInfo {
@@ -64,14 +119,40 @@ pub fn random_token() -> std::io::Result<String> {
 fn digest(v: &str) -> String {
     format!("{:x}", Sha256::digest(v.as_bytes()))
 }
+fn device_id(key: &str) -> String {
+    digest(&format!("oip-paired-device:{key}"))
+}
+
+fn valid_token(value: &str) -> bool {
+    value.len() == 64 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
+}
+
+fn persistence_error(error: io::Error) -> CapabilityError {
+    tracing::warn!(kind = ?error.kind(), "could not persist device sign-in state");
+    CapabilityError::new(
+        CapabilityErrorCode::PersistenceUnavailable,
+        "DEVICE_CREDENTIALS_UNAVAILABLE",
+        "Device sign-in state could not be saved",
+    )
+}
+
+fn device_not_found() -> CapabilityError {
+    CapabilityError::new(
+        CapabilityErrorCode::ResourceNotFound,
+        "DEVICE_CREDENTIAL_NOT_FOUND",
+        "Device sign-in not found",
+    )
+}
+
 fn context(p: PrincipalId) -> ExecutionContext {
     static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
     ExecutionContext {
         actor: p.to_string(),
         principal: Some(p),
         correlation_id: format!(
-            "browser-{}-{}",
+            "browser-{}-{}-{}",
             std::process::id(),
+            now_ms(),
             NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
         ),
         permissions: Default::default(),
@@ -82,6 +163,10 @@ impl Entries {
     fn prune(&mut self) {
         let now = Instant::now();
         self.grants.retain(|_, g| g.expires > now);
+        self.sessions.retain(|_, session| {
+            now.duration_since(session.created_at) < SESSION_MAX_TTL
+                && now.duration_since(session.last_used) < SESSION_IDLE_TTL
+        });
         self.failed
             .retain(|t| now.duration_since(*t) < Duration::from_secs(60));
     }
@@ -89,21 +174,24 @@ impl Entries {
     fn start_session(
         &mut self,
         principal: PrincipalId,
+        device: Option<String>,
+        pair_until: Option<Instant>,
     ) -> Result<(String, SessionInfo), CapabilityError> {
         let token = random_token().map_err(|_| denied())?;
         let csrf = random_token().map_err(|_| denied())?;
-        if self.sessions.len() >= MAX_SESSIONS {
-            // Clients that close without logging out leave an entry behind.
-            // Only a valid sign-in can reclaim an entry of the same principal.
-            let oldest = self
-                .sessions
-                .iter()
-                .filter(|(_, session)| session.principal == principal)
+        let owned = self
+            .sessions
+            .iter()
+            .filter(|(_, session)| session.principal == principal);
+        let count = owned.clone().count();
+        if count >= MAX_SESSIONS_PER_PRINCIPAL || self.sessions.len() >= MAX_SESSIONS {
+            let oldest = owned
                 .min_by_key(|(_, session)| session.last_used)
                 .map(|(key, _)| key.clone())
                 .ok_or_else(denied)?;
             self.sessions.remove(&oldest);
         }
+        let now = Instant::now();
         let info = SessionInfo {
             authenticated: true,
             principal_id: Some(principal.clone()),
@@ -115,7 +203,10 @@ impl Entries {
             Session {
                 principal,
                 csrf,
-                last_used: Instant::now(),
+                created_at: now,
+                last_used: now,
+                device,
+                pair_until,
             },
         );
         Ok((token, info))
@@ -126,14 +217,66 @@ impl BrowserSessions {
     /// one-use grants remain process-local and are never restored on restart.
     pub fn open(credential_store: impl Into<PathBuf>) -> io::Result<Self> {
         let credential_store = credential_store.into();
-        let credentials = load_credentials(&credential_store)?;
+        // The history is independent of the credential snapshot. An older
+        // credential backup cannot reactivate a key while this history is retained.
+        let mut name = credential_store.as_os_str().to_os_string();
+        name.push(".revocations");
+        let history_store = PathBuf::from(name);
+        let mut device_history = load_history(&history_store)?;
+        let mut credentials = load_credentials(&credential_store)?;
+        credentials.retain(|key, _| !device_history.revoked.contains_key(key));
+        device_history
+            .labels
+            .retain(|key, _| credentials.contains_key(key));
         Ok(Self {
             entries: Mutex::new(Entries {
                 device_credentials: credentials,
+                device_history,
                 ..Default::default()
             }),
             credential_store: Some(credential_store),
+            history_store: Some(history_store),
+            audit: None,
         })
+    }
+
+    pub(crate) fn with_audit(mut self, audit: Option<Arc<DurableAudit>>) -> Self {
+        self.audit = audit;
+        self
+    }
+
+    fn audit_device(
+        &self,
+        ctx: &ExecutionContext,
+        action: DeviceAction,
+        id: &str,
+        outcome: &str,
+    ) -> Result<(), CapabilityError> {
+        if let Some(audit) = &self.audit {
+            audit.record_device(
+                ctx.principal.as_ref().expect("bound device principal"),
+                action,
+                id,
+                &ctx.correlation_id,
+                outcome,
+            )?;
+        }
+        Ok(())
+    }
+
+    fn audit_device_result<T>(
+        &self,
+        ctx: &ExecutionContext,
+        action: DeviceAction,
+        id: &str,
+        result: Result<T, CapabilityError>,
+    ) -> Result<T, CapabilityError> {
+        let outcome = if result.is_ok() {
+            "succeeded"
+        } else {
+            "failed"
+        };
+        confirm_completion(result, self.audit_device(ctx, action, id, outcome))
     }
 
     pub fn issue(&self, principal: PrincipalId) -> Result<String, CapabilityError> {
@@ -155,7 +298,7 @@ impl BrowserSessions {
     pub fn login(&self, code: &str) -> Result<(String, SessionInfo), CapabilityError> {
         let mut e = self.entries.lock().map_err(|_| denied())?;
         e.prune();
-        if code.len() != 64 || !code.bytes().all(|b| b.is_ascii_hexdigit()) {
+        if !valid_token(code) {
             return Err(denied());
         }
         let key = digest(code);
@@ -168,14 +311,24 @@ impl BrowserSessions {
             return Err(denied());
         };
         let principal = grant.principal.clone();
-        let session = e.start_session(principal)?;
+        let session = e.start_session(principal, None, Some(Instant::now() + GRANT_TTL))?;
         e.grants.remove(&key);
         Ok(session)
     }
-    pub fn authenticate(
+    #[cfg(test)]
+    fn authenticate(
         &self,
         token: &str,
         csrf: Option<&str>,
+    ) -> Result<ExecutionContext, CapabilityError> {
+        self.check_session(token, csrf, true)
+    }
+
+    pub fn check_session(
+        &self,
+        token: &str,
+        csrf: Option<&str>,
+        active: bool,
     ) -> Result<ExecutionContext, CapabilityError> {
         if token.len() != 64 {
             return Err(denied());
@@ -183,16 +336,12 @@ impl BrowserSessions {
         let mut e = self.entries.lock().map_err(|_| denied())?;
         e.prune();
         let s = e.sessions.get_mut(&digest(token)).ok_or_else(denied)?;
-        if csrf.is_some_and(|c| {
-            c.len() != s.csrf.len()
-                || c.bytes()
-                    .zip(s.csrf.bytes())
-                    .fold(0u8, |d, (a, b)| d | (a ^ b))
-                    != 0
-        }) {
+        if csrf.is_some_and(|value| !s.accepts_csrf(value)) {
             return Err(denied());
         }
-        s.last_used = Instant::now();
+        if active {
+            s.last_used = Instant::now();
+        }
         Ok(context(s.principal.clone()))
     }
     /// Pair a native device credential with the currently authenticated
@@ -204,50 +353,219 @@ impl BrowserSessions {
         csrf: &str,
         credential: &str,
     ) -> Result<(), CapabilityError> {
-        let mut e = self.entries.lock().map_err(|_| denied())?;
-        e.prune();
-        if credential.len() != 64 || !credential.bytes().all(|b| b.is_ascii_hexdigit()) {
+        let mut entries = self.entries.lock().map_err(|_| denied())?;
+        entries.prune();
+        if !valid_token(credential) {
             return Err(denied());
         }
-        let session = e.sessions.get(&digest(token)).ok_or_else(denied)?;
-        if csrf.len() != session.csrf.len()
-            || csrf
-                .bytes()
-                .zip(session.csrf.bytes())
-                .fold(0u8, |d, (a, b)| d | (a ^ b))
-                != 0
+        let session_key = digest(token);
+        let session = entries.sessions.get(&session_key).ok_or_else(denied)?;
+        if !session.accepts_csrf(csrf)
+            || !session
+                .pair_until
+                .is_some_and(|expires| expires > Instant::now())
         {
             return Err(denied());
         }
         let principal = session.principal.clone();
-        if !e.device_credentials.contains_key(&digest(credential))
-            && e.device_credentials.len() >= MAX_DEVICE_CREDENTIALS
+        let key = digest(credential);
+        if entries.device_credentials.contains_key(&key)
+            || entries.device_history.revoked.contains_key(&key)
         {
             return Err(denied());
         }
-        let mut credentials = e.device_credentials.clone();
-        credentials.insert(digest(credential), DeviceCredential { principal });
-        if let Some(path) = &self.credential_store {
-            persist_credentials(path, &credentials).map_err(|_| denied())?;
+        if entries.device_credentials.len() >= MAX_DEVICE_CREDENTIALS
+            || entries.device_credentials.len() + entries.device_history.revoked.len()
+                >= MAX_DEVICE_HISTORY
+            || entries
+                .device_credentials
+                .values()
+                .filter(|d| d.principal == principal)
+                .count()
+                >= MAX_DEVICES_PER_PRINCIPAL
+        {
+            return Err(CapabilityError::new(
+                CapabilityErrorCode::OperationNotSupported,
+                "DEVICE_CREDENTIAL_LIMIT",
+                "Device sign-in limit reached",
+            ));
         }
-        e.device_credentials = credentials;
-        Ok(())
+
+        let ctx = context(principal.clone());
+        let id = device_id(&key);
+        self.audit_device(&ctx, DeviceAction::Pair, &id, "started")?;
+        let result = (|| {
+            let mut credentials = entries.device_credentials.clone();
+            credentials.insert(key, DeviceCredential { principal });
+            if let Some(path) = &self.credential_store {
+                persist_credentials(path, &credentials).map_err(persistence_error)?;
+            }
+            entries.device_credentials = credentials;
+            entries
+                .sessions
+                .get_mut(&session_key)
+                .expect("locked session")
+                .pair_until = None;
+            Ok(())
+        })();
+        self.audit_device_result(&ctx, DeviceAction::Pair, &id, result)
     }
-    /// Redeem a paired credential for a normal local browser session.
-    pub fn device_login(&self, credential: &str) -> Result<(String, SessionInfo), CapabilityError> {
-        let mut e = self.entries.lock().map_err(|_| denied())?;
-        e.prune();
-        if credential.len() != 64 || !credential.bytes().all(|b| b.is_ascii_hexdigit()) {
+
+    pub fn paired_devices(&self, token: &str) -> Result<Vec<PairedDevice>, CapabilityError> {
+        let mut entries = self.entries.lock().map_err(|_| denied())?;
+        entries.prune();
+        let session = entries.sessions.get(&digest(token)).ok_or_else(denied)?;
+        Ok(entries
+            .device_credentials
+            .iter()
+            .filter(|(_, device)| device.principal == session.principal)
+            .map(|(key, _)| PairedDevice {
+                id: device_id(key),
+                label: entries.device_history.labels.get(key).cloned(),
+                current: session.device.as_ref() == Some(key),
+            })
+            .collect())
+    }
+
+    pub fn rename_device(
+        &self,
+        token: &str,
+        csrf: &str,
+        id: &str,
+        label: &str,
+    ) -> Result<(), CapabilityError> {
+        let mut entries = self.entries.lock().map_err(|_| denied())?;
+        entries.prune();
+        let session = entries.sessions.get(&digest(token)).ok_or_else(denied)?;
+        if !session.accepts_csrf(csrf) {
             return Err(denied());
         }
-        let Some(device) = e.device_credentials.get(&digest(credential)) else {
-            if e.failed.len() < MAX_FAILED {
-                e.failed.push(Instant::now());
+        let label = label.trim();
+        if !valid_label(label) {
+            return Err(CapabilityError::new(
+                CapabilityErrorCode::InvalidInput,
+                "DEVICE_CREDENTIAL_LABEL_INVALID",
+                "Enter a device name of up to 64 characters",
+            ));
+        }
+        let key = entries
+            .device_credentials
+            .iter()
+            .find(|(key, device)| device.principal == session.principal && device_id(key) == id)
+            .map(|(key, _)| key.clone())
+            .ok_or_else(device_not_found)?;
+        let ctx = context(session.principal.clone());
+        self.audit_device(&ctx, DeviceAction::Rename, id, "started")?;
+        let result = (|| {
+            let history = &mut entries.device_history;
+            let previous = history.labels.insert(key.clone(), label.to_owned());
+            if let Some(path) = &self.history_store {
+                if let Err(error) = persist_store(path, history) {
+                    match previous {
+                        Some(value) => {
+                            history.labels.insert(key, value);
+                        }
+                        None => {
+                            history.labels.remove(&key);
+                        }
+                    }
+                    return Err(persistence_error(error));
+                }
+            }
+            Ok(())
+        })();
+        self.audit_device_result(&ctx, DeviceAction::Rename, id, result)
+    }
+
+    pub fn revoke_device(
+        &self,
+        token: &str,
+        csrf: &str,
+        id: &str,
+    ) -> Result<DeviceRevocation, CapabilityError> {
+        let mut entries = self.entries.lock().map_err(|_| denied())?;
+        entries.prune();
+        let session = entries.sessions.get(&digest(token)).ok_or_else(denied)?;
+        if !session.accepts_csrf(csrf) {
+            return Err(denied());
+        }
+        let principal = session.principal.clone();
+        let key = entries
+            .device_credentials
+            .iter()
+            .filter(|(_, device)| device.principal == principal)
+            .map(|(key, _)| key)
+            .chain(
+                entries
+                    .device_history
+                    .revoked
+                    .iter()
+                    .filter(|(_, device)| device.principal == principal)
+                    .map(|(key, _)| key),
+            )
+            .find(|key| device_id(key) == id)
+            .cloned()
+            .ok_or_else(device_not_found)?;
+        let current_session_revoked = session.device.as_ref() == Some(&key);
+        let ctx = context(principal.clone());
+        // A failing audit must never keep a compromised key active. Even in
+        // that case the private revocation record captures owner and time.
+        let _ = self.audit_device(&ctx, DeviceAction::Revoke, id, "started");
+        entries.device_history.labels.remove(&key);
+        entries
+            .device_history
+            .revoked
+            .entry(key.clone())
+            .or_insert_with(|| RevokedDevice {
+                principal,
+                revoked_at_ms: now_ms(),
+            });
+        entries.device_credentials.remove(&key);
+        entries
+            .sessions
+            .retain(|_, session| session.device.as_ref() != Some(&key));
+
+        let result = (|| {
+            // Keep the denial in memory even on an I/O error. Confirmation
+            // requires a durable tombstone. The same owner may retry.
+            if let Some(path) = &self.history_store {
+                persist_store(path, &entries.device_history).map_err(persistence_error)?;
+            }
+            if let Some(path) = &self.credential_store {
+                // Remove the key from the older format for binary rollback.
+                persist_credentials(path, &entries.device_credentials)
+                    .map_err(persistence_error)?;
+            }
+            Ok(DeviceRevocation {
+                revoked: true,
+                current_session_revoked,
+            })
+        })();
+        let outcome = if result.is_ok() {
+            "succeeded"
+        } else {
+            "failed"
+        };
+        let _ = self.audit_device(&ctx, DeviceAction::Revoke, id, outcome);
+        result
+    }
+
+    /// Redeem a paired credential for a normal local browser session.
+    pub fn device_login(&self, credential: &str) -> Result<(String, SessionInfo), CapabilityError> {
+        let mut entries = self.entries.lock().map_err(|_| denied())?;
+        entries.prune();
+        if !valid_token(credential) {
+            return Err(denied());
+        }
+        let key = digest(credential);
+        let Some(device) = entries.device_credentials.get(&key) else {
+            if entries.failed.len() < MAX_FAILED {
+                entries.failed.push(Instant::now());
             }
             return Err(denied());
         };
         let principal = device.principal.clone();
-        e.start_session(principal)
+        entries.start_session(principal, Some(key), None)
     }
     pub fn info(&self, token: Option<&str>, legacy: bool) -> SessionInfo {
         let mut e = match self.entries.lock() {
@@ -262,8 +580,7 @@ impl BrowserSessions {
             }
         };
         e.prune();
-        if let Some(s) = token.and_then(|t| e.sessions.get_mut(&digest(t))) {
-            s.last_used = Instant::now();
+        if let Some(s) = token.and_then(|t| e.sessions.get(&digest(t))) {
             return SessionInfo {
                 authenticated: true,
                 principal_id: Some(s.principal.clone()),
@@ -294,42 +611,50 @@ impl Default for BrowserSessions {
         Self {
             entries: Mutex::new(Entries::default()),
             credential_store: None,
+            history_store: None,
+            audit: None,
         }
     }
 }
 
 fn load_credentials(path: &Path) -> io::Result<BTreeMap<String, DeviceCredential>> {
-    let before = match fs::symlink_metadata(path) {
-        Ok(metadata) => metadata,
-        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(BTreeMap::new()),
-        Err(error) => return Err(error),
+    let Some(stored) = load_store::<PersistedDeviceCredentials>(path, 64 * 1024)? else {
+        return Ok(BTreeMap::new());
     };
-    validate_store_metadata(&before)?;
-    let file = File::open(path)?;
-    let after = file.metadata()?;
-    validate_store_metadata(&after)?;
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::MetadataExt;
-        if before.ino() != after.ino() || before.dev() != after.dev() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                "credential store changed while opening",
-            ));
-        }
-    }
-    let mut bytes = Vec::new();
-    file.take(64 * 1024 + 1).read_to_end(&mut bytes)?;
-    if bytes.len() > 64 * 1024 {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "credential store too large",
-        ));
-    }
-    let stored: PersistedDeviceCredentials = serde_json::from_slice(&bytes)
-        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
     validate_credentials(stored.version, &stored.credentials)?;
     Ok(stored.credentials)
+}
+
+fn valid_label(label: &str) -> bool {
+    !label.is_empty()
+        && label.chars().count() <= 64
+        && !label.chars().any(|c| {
+            c.is_control() || matches!(c, '\u{202a}'..='\u{202e}' | '\u{2066}'..='\u{2069}')
+        })
+}
+
+fn load_history(path: &Path) -> io::Result<DeviceHistory> {
+    let history =
+        load_store::<DeviceHistory>(path, 4 * 1024 * 1024)?.unwrap_or_else(|| DeviceHistory {
+            version: 1,
+            ..Default::default()
+        });
+    if history.version != 1
+        || history.revoked.len() > MAX_DEVICE_HISTORY
+        || history.labels.len() > MAX_DEVICE_CREDENTIALS
+        || history
+            .revoked
+            .keys()
+            .chain(history.labels.keys())
+            .any(|key| !valid_token(key))
+        || history.labels.values().any(|label| !valid_label(label))
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "invalid device history",
+        ));
+    }
+    Ok(history)
 }
 
 fn validate_credentials(
@@ -355,86 +680,15 @@ fn persist_credentials(
     credentials: &BTreeMap<String, DeviceCredential>,
 ) -> io::Result<()> {
     validate_credentials(1, credentials)?;
-    if let Ok(metadata) = fs::symlink_metadata(path) {
-        validate_store_metadata(&metadata)?;
-    }
-    let parent = path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
-    fs::create_dir_all(parent)?;
-    let filename = path.file_name().ok_or_else(|| {
-        io::Error::new(io::ErrorKind::InvalidInput, "invalid credential store path")
-    })?;
-    let temp_name = format!(
-        ".{}.{}.{}.tmp",
-        filename.to_string_lossy(),
-        std::process::id(),
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_nanos()
-    );
-    let temp = parent.join(temp_name);
-    let stored = PersistedDeviceCredentials {
-        version: 1,
-        credentials: credentials.clone(),
-    };
-    let bytes = serde_json::to_vec(&stored).map_err(io::Error::other)?;
-    let mut options = OpenOptions::new();
-    options.write(true).create_new(true);
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::OpenOptionsExt;
-        options.mode(0o600);
-    }
-    let result = (|| {
-        let mut file = options.open(&temp)?;
-        file.write_all(&bytes)?;
-        file.sync_all()?;
-        fs::rename(&temp, path)?;
-        File::open(parent)?.sync_all()?;
-        Ok(())
-    })();
-    if result.is_err() {
-        let _ = fs::remove_file(&temp);
-    }
-    result
+    persist_store(
+        path,
+        &PersistedDeviceCredentials {
+            version: 1,
+            credentials: credentials.clone(),
+        },
+    )
 }
 
-fn validate_store_metadata(metadata: &fs::Metadata) -> io::Result<()> {
-    if !metadata.is_file() {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "credential store must be a regular file",
-        ));
-    }
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::MetadataExt;
-        if metadata.nlink() != 1 || metadata.mode() & 0o077 != 0 {
-            return Err(io::Error::new(
-                io::ErrorKind::PermissionDenied,
-                "credential store must be private",
-            ));
-        }
-        let output = std::process::Command::new("/usr/bin/id")
-            .arg("-u")
-            .output()?;
-        let uid = std::str::from_utf8(&output.stdout)
-            .ok()
-            .and_then(|text| text.trim().parse::<u32>().ok())
-            .filter(|_| output.status.success())
-            .ok_or_else(|| io::Error::other("cannot establish Core user"))?;
-        if metadata.uid() != uid {
-            return Err(io::Error::new(
-                io::ErrorKind::PermissionDenied,
-                "credential store owner mismatch",
-            ));
-        }
-    }
-    Ok(())
-}
 pub fn cookie(headers: &axum::http::HeaderMap) -> Option<&str> {
     headers
         .get(axum::http::header::COOKIE)?
@@ -565,37 +819,87 @@ mod tests {
     }
 
     #[test]
-    fn sessions_outlive_the_old_timeout_and_their_principal_can_reclaim_capacity() {
+    fn session_idle_and_absolute_expiry_are_independent_of_background_reads() {
         let sessions = BrowserSessions::default();
         let principal = PrincipalId::new("local-principal").unwrap();
         let login = || {
             let code = sessions.issue(principal.clone()).unwrap();
             sessions.login(&code).unwrap().0
         };
+
         let idle = login();
-        let old = Instant::now() - Duration::from_secs(1801);
-        let age_session = || {
-            sessions
-                .entries
-                .lock()
-                .unwrap()
-                .sessions
-                .get_mut(&digest(&idle))
-                .unwrap()
-                .last_used = old;
+        let near_expiry = Instant::now() - SESSION_IDLE_TTL + Duration::from_secs(2);
+        let age = |token: &str, created: Option<Instant>, last_use: Instant| {
+            let mut entries = sessions.entries.lock().unwrap();
+            let session = entries.sessions.get_mut(&digest(token)).unwrap();
+            if let Some(created) = created {
+                session.created_at = created;
+            }
+            session.last_used = last_use;
         };
-        age_session();
+        age(&idle, Some(near_expiry), near_expiry);
         assert!(sessions.info(Some(&idle), false).authenticated);
-        age_session();
+        assert!(sessions.check_session(&idle, None, false).is_ok());
+        assert_eq!(
+            sessions.entries.lock().unwrap().sessions[&digest(&idle)].last_used,
+            near_expiry
+        );
         assert!(sessions.authenticate(&idle, None).is_ok());
-        age_session();
-        let tokens: Vec<_> = (1..MAX_SESSIONS).map(|_| login()).collect();
-        assert!(sessions.login(&"b".repeat(64)).is_err());
-        let replacement = login();
+        assert!(sessions.entries.lock().unwrap().sessions[&digest(&idle)].last_used > near_expiry);
+        age(&idle, None, Instant::now() - SESSION_IDLE_TTL);
+        assert!(!sessions.info(Some(&idle), false).authenticated);
         assert!(sessions.authenticate(&idle, None).is_err());
+
+        let active = login();
+        age(
+            &active,
+            Some(Instant::now() - SESSION_MAX_TTL),
+            Instant::now(),
+        );
+        assert!(sessions.authenticate(&active, None).is_err());
+    }
+
+    #[test]
+    fn per_principal_capacity_protects_other_sign_ins_and_expiry_reclaims_slots() {
+        let sessions = BrowserSessions::default();
+        let principal = PrincipalId::new("local-principal").unwrap();
+        let login = |p: &PrincipalId| {
+            sessions
+                .login(&sessions.issue(p.clone()).unwrap())
+                .unwrap()
+                .0
+        };
+        let oldest = login(&principal);
+        let tokens: Vec<_> = (1..MAX_SESSIONS_PER_PRINCIPAL)
+            .map(|_| login(&principal))
+            .collect();
+        let next_user = login(&PrincipalId::new("next-principal").unwrap());
+        let replacement = login(&principal);
+        assert_eq!(
+            sessions.entries.lock().unwrap().sessions.len(),
+            MAX_SESSIONS_PER_PRINCIPAL + 1
+        );
+        assert!(sessions.authenticate(&oldest, None).is_err());
         assert!(sessions.authenticate(&replacement, None).is_ok());
+        assert!(sessions.authenticate(&next_user, None).is_ok());
         for token in tokens {
             assert!(sessions.authenticate(&token, None).is_ok());
         }
+
+        sessions
+            .entries
+            .lock()
+            .unwrap()
+            .sessions
+            .get_mut(&digest(&next_user))
+            .unwrap()
+            .last_used = Instant::now() - SESSION_IDLE_TTL;
+        let third_user = login(&PrincipalId::new("third-principal").unwrap());
+        assert!(sessions.authenticate(&next_user, None).is_err());
+        assert!(sessions.authenticate(&third_user, None).is_ok());
+        assert_eq!(
+            sessions.entries.lock().unwrap().sessions.len(),
+            MAX_SESSIONS_PER_PRINCIPAL + 1
+        );
     }
 }

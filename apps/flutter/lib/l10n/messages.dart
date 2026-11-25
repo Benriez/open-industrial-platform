@@ -1,6 +1,28 @@
 // Client-owned interface copy. Unmapped source strings are used verbatim.
 
 const englishMessages = <String, String>{
+  "Gespeicherte Geräteanmeldungen": "Saved device sign-ins",
+  "Hier verwaltest du Macs, die sich mit Touch ID bei diesem Core anmelden dürfen.":
+      "Manage the Macs allowed to sign in to this Core with Touch ID.",
+  "Für dein Konto sind keine Geräteanmeldungen gespeichert.":
+      "There are no saved device sign-ins for your account.",
+  "Name": "Name",
+  "Zum Ersetzen sperrst du die bisherige Anmeldung und richtest Touch ID mit einem neuen Einmalcode wieder ein.":
+      "To replace a device sign-in, revoke the old one and set up Touch ID again with a new one-time code.",
+  "Diese Anmeldung": "Current sign-in",
+  "Geräteanmeldung benennen": "Name device sign-in",
+  "Anmeldung sperren": "Revoke sign-in",
+  "Anmeldung für {0} sperren?": "Revoke sign-in for {0}?",
+  "Du wirst sofort abgemeldet. Für eine erneute Einrichtung brauchst du einen Einmalcode.":
+      "You will be signed out immediately. You will need a one-time code to set up this device again.",
+  "Dieses Gerät wird abgemeldet. Für eine erneute Einrichtung braucht es einen Einmalcode.":
+      "This device will be signed out. It will need a one-time code to set up sign-in again.",
+  "Geräteanmeldungen konnten nicht geladen werden.":
+      "Could not load device sign-ins.",
+  "Der Name konnte nicht gespeichert werden.": "Could not save the name.",
+  "Die Geräteanmeldung wurde gesperrt.": "The device sign-in was revoked.",
+  "Der Core konnte die Sperre nicht bestätigen. Versuche es erneut.":
+      "The Core could not confirm the revocation. Try again.",
   "Ein": "On",
   "Aus": "Off",
   "Die App sucht das ausgewählte Gerät.":
@@ -1066,8 +1088,8 @@ const englishMessages = <String, String>{
   "Quellenstatus": "Source status",
   "REST lädt den Anfangszustand. SSE liefert danach Änderungen.":
       "REST loads the initial state. SSE then delivers changes.",
-  "RUSTSEC-2023-0071, RUSTSEC-2023-0089, RUSTSEC-2024-0449 sowie Remote-/Browser-Identity, feindliche Same-UID-Isolation, manipulationssicheres Audit und OT-Safety-Nachweise bleiben offen.":
-      "RUSTSEC-2023-0071, RUSTSEC-2023-0089, RUSTSEC-2024-0449 as well as remote/browser identity, hostile Same UID isolation, tamper-proof audit and OT safety proof remain open.",
+  "Offen sind RUSTSEC-2023-0071, RUSTSEC-2024-0449 und RUSTSEC-2026-0543, die Absicherung externer Browser-Anmeldungen und des lokalen Systemkontos, ein extern abgesichertes Audit und der Nachweis der Betriebssicherheit.":
+      "Outstanding items include RUSTSEC-2023-0071, RUSTSEC-2024-0449 and RUSTSEC-2026-0543, protection for remote browser identities and the local system account, independent audit anchoring and operational safety evidence.",
   "Read + Write · serverseitig freigegeben":
       "Read + Write · Available on the server",
   "Read · lesend": "Read-only",

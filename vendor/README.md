@@ -17,3 +17,7 @@ This is not a security bypass: certificate validation, trust stores, security
 policies and open62541's nonce-length check remain enabled. The patch is wired
 with `[patch.crates-io]` in the workspace root and must be re-evaluated before
 any async-opcua upgrade.
+
+The server uses Postcard only to encode and decode owned opaque NodeIds.
+The manifest selects `use-std` without Postcard's default embedded heapless
+feature, removing the unused unmaintained `atomic-polyfill` dependency.

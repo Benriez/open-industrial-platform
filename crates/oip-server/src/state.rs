@@ -98,6 +98,7 @@ pub struct AppState {
     pub(crate) hue_credentials_dir: std::path::PathBuf,
     pub ssh: Arc<crate::connection_service::ConnectionHub>,
     pub browser_sessions: Arc<crate::browser_session::BrowserSessions>,
+    pub(crate) security_audit: Option<Arc<crate::security_audit::DurableAudit>>,
     pub settings: Arc<Vec<SettingRecord>>,
     pub settings_loaded_ms: i64,
     pub management: Arc<Mutex<crate::settings_services::ManagementRuntime>>,
@@ -143,7 +144,22 @@ impl AppState {
         config: &CoreConfig,
         scenario_tx: Option<watch::Sender<String>>,
     ) -> Result<Self, String> {
+        Self::configured_with_audit(store, config, scenario_tx, None)
+    }
+
+    pub(crate) fn configured_with_audit(
+        store: SqliteStore,
+        config: &CoreConfig,
+        scenario_tx: Option<watch::Sender<String>>,
+        security_audit: Option<Arc<crate::security_audit::DurableAudit>>,
+    ) -> Result<Self, String> {
         config.validate()?;
+        let browser_sessions = match &config.browser_credentials_file {
+            Some(path) => crate::browser_session::BrowserSessions::open(path)
+                .map_err(|_| "browser credential store unavailable")?,
+            None => crate::browser_session::BrowserSessions::default(),
+        }
+        .with_audit(security_audit.clone());
         let hierarchy = store
             .hierarchy()
             .map_err(|_| "hierarchy unavailable")?
@@ -335,11 +351,6 @@ impl AppState {
         let worker = writer::spawn(app, rx, view_tx, notifications, weak, registry_tx)
             .map_err(|_| "writer_thread_start")?;
         *inner.thread.lock().map_err(|_| "thread lock")? = Some(worker);
-        let browser_sessions = match &config.browser_credentials_file {
-            Some(path) => crate::browser_session::BrowserSessions::open(path)
-                .map_err(|_| "browser credential store unavailable")?,
-            None => crate::browser_session::BrowserSessions::default(),
-        };
         Ok(Self {
             hue_profiles: Arc::new(
                 config
@@ -359,6 +370,7 @@ impl AppState {
                 .join("hue-credentials"),
             ssh,
             browser_sessions: Arc::new(browser_sessions),
+            security_audit,
             settings,
             settings_loaded_ms,
             management,

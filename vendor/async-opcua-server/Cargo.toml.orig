@@ -39,7 +39,7 @@ chrono = { workspace = true }
 futures = { workspace = true }
 hashbrown = { workspace = true }
 parking_lot = { workspace = true }
-postcard = { workspace = true }
+postcard = { version = "^1", default-features = false, features = ["use-std"] }
 regex = { workspace = true }
 serde = { workspace = true }
 tokio = { workspace = true }

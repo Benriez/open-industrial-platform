@@ -5,6 +5,8 @@ Preserves HTTP Host/Origin, cookies, streaming and half closes. Each connection
 has its own upstream socket; no shared SSH channels or authentication storage.
 """
 import argparse
+import collections
+import selectors
 import socket
 import socketserver
 import threading
@@ -23,46 +25,85 @@ class Relay(socketserver.BaseRequestHandler):
         self.relay_to(self.server.target)
 
     def relay_to(self, target):
+        client = self.request
         try:
-            upstream = socket.create_connection(target, timeout=5)
+            # A connection without a request cannot consume an upstream socket.
+            client.settimeout(self.server.request_start_timeout)
+            first = client.recv(65536)
+            if not first:
+                return
+            with socket.create_connection(target, timeout=5) as upstream:
+                self.forward(client, upstream, first)
         except OSError:
             return
-        upstream.settimeout(None)
-        keepalive(upstream)
-        keepalive(self.request)
 
-        def pump(source, destination):
-            try:
-                while True:
-                    data = source.recv(65536)
-                    if not data:
-                        break
-                    destination.sendall(data)
-            except OSError:
-                # Wake the other direction on a broken connection.
-                try:
-                    source.shutdown(socket.SHUT_RDWR)
-                except OSError:
-                    pass
-            finally:
-                try:
-                    destination.shutdown(socket.SHUT_WR)
-                except OSError:
-                    pass
+    def forward(self, client, upstream, first):
+        for sock in (client, upstream):
+            sock.settimeout(self.server.write_timeout)
+            keepalive(sock)
+        upstream.sendall(first)
 
-        worker = threading.Thread(target=pump, args=(self.request, upstream), daemon=True)
-        worker.start()
-        try:
-            pump(upstream, self.request)
-        finally:
-            upstream.close()
-            worker.join(timeout=2)
+        with selectors.DefaultSelector() as active:
+            active.register(client, selectors.EVENT_READ, upstream)
+            active.register(upstream, selectors.EVENT_READ, client)
+            while active.get_map():
+                readable = active.select(self.server.idle_timeout)
+                if not readable:
+                    return
+                for entry, _ in readable:
+                    data = entry.fileobj.recv(65536)
+                    if data:
+                        entry.data.sendall(data)
+                    else:
+                        active.unregister(entry.fileobj)
+                        entry.data.shutdown(socket.SHUT_WR)
 
 
 class Server(socketserver.ThreadingTCPServer):
     allow_reuse_address = True
     daemon_threads = True
     request_queue_size = 128
+    connection_limit = 64
+    peer_limit = 12
+    request_start_timeout = 10
+    idle_timeout = 300
+    write_timeout = 15
+
+    def __init__(self, address, handler):
+        self._admission = threading.Lock()
+        self._connections = 0
+        self._peers = collections.Counter()
+        super().__init__(address, handler)
+
+    def process_request(self, request, client_address):
+        peer = client_address[0]
+        with self._admission:
+            allowed = (self._connections < self.connection_limit
+                       and self._peers[peer] < self.peer_limit)
+            if allowed:
+                self._connections += 1
+                self._peers[peer] += 1
+        if not allowed:
+            self.shutdown_request(request)
+            return
+        try:
+            super().process_request(request, client_address)
+        except Exception:
+            self._release(peer)
+            raise
+
+    def process_request_thread(self, request, client_address):
+        try:
+            super().process_request_thread(request, client_address)
+        finally:
+            self._release(client_address[0])
+
+    def _release(self, peer):
+        with self._admission:
+            self._connections -= 1
+            self._peers[peer] -= 1
+            if not self._peers[peer]:
+                del self._peers[peer]
 
 
 def main():

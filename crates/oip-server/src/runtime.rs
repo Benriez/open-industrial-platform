@@ -318,8 +318,11 @@ impl CoreRuntime {
                     })?;
             }
         }
+        let audit = crate::security_audit::DurableAudit::open(&config.database)
+            .map_err(|error| RuntimeError::Configuration(format!("security audit: {error}")))?;
         let state =
-            AppState::configured(store, &config, scenario).map_err(RuntimeError::Ingestion)?;
+            AppState::configured_with_audit(store, &config, scenario, Some(Arc::new(audit)))
+                .map_err(RuntimeError::Ingestion)?;
         let mut runtime = Self::from_state(state, config).await?;
         runtime.database_ownership = Some(ownership);
         Ok(runtime)

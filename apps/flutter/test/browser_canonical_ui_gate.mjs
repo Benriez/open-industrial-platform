@@ -1,5 +1,5 @@
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE);
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 
@@ -126,6 +126,25 @@ try {
   await page.getByRole('button', { name: 'Operator-Sitzung autorisieren', exact: true }).click();
   await waitForAria('Alle berechtigten Infrastrukturen');
 
+  const sessionResponse = await context.request.get(base.replace(/\/$/, '') + '/api/v2/browser/session',
+      { timeout: 60000 });
+  check('browser session HTTP status', sessionResponse.status() === 200, sessionResponse.status());
+  const rawSession = await sessionResponse.json();
+  session = {
+    authenticated: rawSession.authenticated,
+    principal_id: rawSession.principal_id,
+    mode: rawSession.mode,
+  };
+  check('browser session authenticated', session.authenticated === true);
+  check('browser session uses managed local operator mode', session.mode === 'local_operator_session');
+  check('browser session principal present', typeof session.principal_id === 'string' && session.principal_id.length > 0);
+
+  const pair = await context.request.post(new URL('/api/v2/browser/pairing', base).href, {
+    headers: { origin: new URL(base).origin, 'x-oip-csrf': rawSession.csrf_token },
+    data: { credential: randomBytes(32).toString('hex') },
+  });
+  check('an isolated paired device is available for the settings check', pair.status() === 200, pair.status());
+
   // The web release is several megabytes and the loopback of a local
   // machine is slow. The download of the delivered bundle therefore gets
   // the same time as the first paint of the application.
@@ -150,19 +169,6 @@ try {
   for (const marker of overviewForbidden) {
     check(`managed mode has no legacy marker ${marker}`, !first.includes(marker));
   }
-
-  const sessionResponse = await context.request.get(base.replace(/\/$/, '') + '/api/v2/browser/session',
-      { timeout: 60000 });
-  check('browser session HTTP status', sessionResponse.status() === 200, sessionResponse.status());
-  const rawSession = await sessionResponse.json();
-  session = {
-    authenticated: rawSession.authenticated,
-    principal_id: rawSession.principal_id,
-    mode: rawSession.mode,
-  };
-  check('browser session authenticated', session.authenticated === true);
-  check('browser session uses managed local operator mode', session.mode === 'local_operator_session');
-  check('browser session principal present', typeof session.principal_id === 'string' && session.principal_id.length > 0);
 
   for (const width of [1440, 1920]) {
     const height = width === 1440 ? 900 : 1080;
@@ -226,6 +232,22 @@ try {
       findings.push({ check: `screenshot ${workstation.slug} ${width}px`, ok: true, detail: shot });
     }
   }
+  await page.waitForTimeout(650);
+  await page.getByRole('button', { name: 'Settings-Kategorie Security & Access' }).click();
+  await page.waitForTimeout(650);
+  await page.getByRole('button', { name: 'Settings-Bereich Aktuelle Identität' }).click();
+  await waitForAria('Gespeicherte Geräteanmeldungen');
+  await page.waitForTimeout(650);
+  await page.getByRole('button', { name: 'Anmeldung sperren', exact: true }).click();
+  await waitForAria('Für eine erneute Einrichtung braucht es einen Einmalcode.');
+  await page.waitForTimeout(650);
+  await page.getByRole('button', { name: 'Anmeldung sperren', exact: true }).last().click();
+  await waitForAria('Die Geräteanmeldung wurde gesperrt.');
+  const cleared = await context.request.get(new URL('/api/v2/browser/device-credentials', base).href);
+  const devices = await cleared.json();
+  check('the served app revokes the selected sign-in',
+    cleared.status() === 200 && devices.items.length === 0, cleared.status());
+
   const unexpectedDenials = coreDenials.filter((denial) =>
     ![401, 403].includes(denial.status) ||
     !/^\/api\/v[12]\//.test(new URL(denial.url).pathname));

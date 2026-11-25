@@ -194,6 +194,26 @@ abstract class TouchIdManagementApi {
   Future<BrowserSession> loginWithDeviceCredential(String credential);
 }
 
+class PairedDeviceSignIn {
+  final String id;
+  final String? label;
+  final bool current;
+
+  const PairedDeviceSignIn(this.id, this.label, this.current);
+
+  factory PairedDeviceSignIn.fromJson(Json value) => PairedDeviceSignIn(
+        value['id'] as String,
+        value['label'] as String?,
+        value['current'] == true,
+      );
+}
+
+abstract class PairedDeviceManagementApi {
+  Future<List<PairedDeviceSignIn>> pairedDeviceSignIns();
+  Future<void> renameDeviceSignIn(String id, String label);
+  Future<bool> revokeDeviceSignIn(String id);
+}
+
 class ApiFailure implements Exception {
   final String message;
   final String? code;
@@ -221,6 +241,7 @@ class RestApi
         OipApi,
         DeviceManagementApi,
         TouchIdManagementApi,
+        PairedDeviceManagementApi,
         HueApi,
         HueSetupApi {
   final Uri base;
@@ -250,9 +271,12 @@ class RestApi
   Future<dynamic> _change(String path, Json body, {String method = 'POST'}) =>
       _request(path, () {
         final headers = _sessionHeaders({'Content-Type': 'application/json'});
-        return method == 'DELETE'
-            ? _rest.delete(uri(path), headers: headers)
-            : _rest.post(uri(path), headers: headers, body: jsonEncode(body));
+        return switch (method) {
+          'DELETE' => _rest.delete(uri(path), headers: headers),
+          'PATCH' =>
+            _rest.patch(uri(path), headers: headers, body: jsonEncode(body)),
+          _ => _rest.post(uri(path), headers: headers, body: jsonEncode(body)),
+        };
       });
 
   BrowserSession _session(Json value, {required bool current}) {
@@ -289,6 +313,37 @@ class RestApi
   @override
   Future<BrowserSession> loginWithDeviceCredential(String credential) =>
       _login('/api/v2/browser/device-login', {'credential': credential});
+
+  @override
+  Future<List<PairedDeviceSignIn>> pairedDeviceSignIns() async {
+    final result = await _get('/api/v2/browser/device-credentials') as Json;
+    return (result['items'] as List)
+        .cast<Json>()
+        .map(PairedDeviceSignIn.fromJson)
+        .toList();
+  }
+
+  @override
+  Future<void> renameDeviceSignIn(String id, String label) async {
+    await _change(
+        '/api/v2/browser/device-credentials/${Uri.encodeComponent(id)}',
+        {'label': label},
+        method: 'PATCH');
+  }
+
+  @override
+  Future<bool> revokeDeviceSignIn(String id) async {
+    final revision = _sessionRevision;
+    final result = await _change(
+        '/api/v2/browser/device-credentials/${Uri.encodeComponent(id)}', {},
+        method: 'DELETE') as Json;
+    final current = result['current_session_revoked'] == true;
+    if (current && revision == _sessionRevision) {
+      _sessionRevision++;
+      _csrf = null;
+    }
+    return current;
+  }
 
   @override
   Future<void> logout() async {

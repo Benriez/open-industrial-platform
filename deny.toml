@@ -3,13 +3,11 @@
 version = 2
 yanked = "deny"
 unmaintained = "all"
-# Local-only OIP-002 exceptions, not a production security clearance. The RSA
-# Marvin advisory has no fixed release as of this verification. Any real or
-# networked industrial use requires a new security gate and stack evaluation.
+# The production RustSec gate reports RSA 0.9 directly. The compatible fix
+# starts at 0.10, and the pinned OPC UA client and crypto crates still require
+# 0.9. Reassess this stack before releasing with the advisory outstanding.
 ignore = [
-    { id = "RUSTSEC-2023-0071", reason = "async-opcua RSA dependency; only explicitly trusted loopback tests are permitted in OIP-002; no fixed upstream release; review by 2027-02-03" },
-    { id = "RUSTSEC-2023-0089", reason = "transitive heapless/postcard atomic-polyfill; unmaintained, replacement requires upstream async-opcua migration; review by 2027-02-03" },
-    { id = "RUSTSEC-2024-0449", reason = "transitive unsafe-libyaml parser via serde_yaml; unmaintained, replacement requires upstream async-opcua migration; review by 2027-02-03" },
+    { id = "RUSTSEC-2024-0449", reason = "Unmaintained parser used by async-opcua's YAML helpers; OIP accepts typed JSON and constructs its OPC UA config in code; migrate the upstream dependency and review by 2027-02-03" },
 ]
 
 [licenses]

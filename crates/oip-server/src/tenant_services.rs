@@ -276,8 +276,7 @@ impl ApplicationServices {
                 event.target = source.to_string();
             }
         }
-        self.audit.record(&event)?;
-        result
+        crate::security_audit::confirm_completion(result, self.audit.record(&event))
     }
     async fn run_tenant(
         &self,
@@ -332,6 +331,7 @@ impl ApplicationServices {
             return self.connection_read(context, q.clone());
         }
         if let DeviceConnectionConfigure(q) = &request {
+            self.audit.record(&self.audit_event(context, id, None, true, "started"))?;
             return self.connection_configure(context, q.clone()).await;
         }
         if let InventoryChange(q) = &request {
@@ -348,6 +348,7 @@ impl ApplicationServices {
                     "Archive remains an explicit offline operation",
                 ));
             }
+            self.audit.record(&self.audit_event(context, id, None, true, "started"))?;
             return self
                 .state
                 .inventory_online(q.clone())
@@ -360,6 +361,7 @@ impl ApplicationServices {
             {
                 return Err(inaccessible());
             }
+            self.audit.record(&self.audit_event(context, id, Some(&body.source), true, "started"))?;
             return self.run(request).await;
         }
         if id.descriptor().mutating {
