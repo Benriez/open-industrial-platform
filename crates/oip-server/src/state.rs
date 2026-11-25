@@ -8,7 +8,7 @@ use oip_opcua::{async_opcua::AsyncOpcUaClient, BrowseEntry};
 use oip_storage::SqliteStore;
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, BTreeSet},
     sync::{
         atomic::{AtomicBool, AtomicI64, AtomicU64, Ordering},
         Arc, Mutex,
@@ -91,6 +91,7 @@ pub struct RegistrySnapshot {
 }
 #[derive(Clone)]
 pub struct AppState {
+    hue_sources: Arc<BTreeSet<DataSourceId>>,
     pub ssh: Arc<crate::connection_service::ConnectionHub>,
     pub browser_sessions: Arc<crate::browser_session::BrowserSessions>,
     pub settings: Arc<Vec<SettingRecord>>,
@@ -335,6 +336,7 @@ impl AppState {
             None => crate::browser_session::BrowserSessions::default(),
         };
         Ok(Self {
+            hue_sources: Arc::new(config.hue.iter().flat_map(|h| &h.profiles).map(crate::hue::source_id).collect()),
             ssh,
             browser_sessions: Arc::new(browser_sessions),
             settings,
@@ -664,7 +666,9 @@ impl AppState {
                     name: s.name.clone(),
                     kind: "Industrial".into(),
                     location: "Local simulation".into(),
-                    connection: if self.connections().iter().any(|c| c.source_id == s.id) {
+                    connection: if self.hue_sources.contains(&s.id) {
+                        "Hue HTTPS"
+                    } else if self.connections().iter().any(|c| c.source_id == s.id) {
                         "SSH"
                     } else {
                         "OPC UA"

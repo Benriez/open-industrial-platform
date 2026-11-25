@@ -342,6 +342,7 @@ def main() -> int:
         for _ in range(60):
             status, detail = request(base, "/api/v2/devices/hue-bridge", opener=opener)
             assert status == 200, f"collector device returned HTTP {status}"
+            assert detail["device"]["connection"] == "Hue HTTPS", detail["device"]["connection"]
             observed = {
                 o["metric_id"]: next(iter(o["value"].values()))
                 for o in detail["metrics"] if o["value"] is not None and o["quality"] == "good"
