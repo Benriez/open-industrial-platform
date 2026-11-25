@@ -856,7 +856,21 @@ class SettingsSectionContent extends StatelessWidget {
                 "Source > Site > Infrastructure > Organization > Platform > built-in default")),
       ]);
 
-  Widget _security(BuildContext context) => ListView(children: [
+  Widget _security(BuildContext context) {
+    final securityReport = report;
+    final api = controller.api;
+    return ListView(children: [
+      if (section == SettingsSection.currentIdentity &&
+          controller.managed &&
+          api is PairedDeviceManagementApi) ...[
+        PairedDeviceSignIns(
+          key: ValueKey(controller.contextRevision),
+          api: api as PairedDeviceManagementApi,
+          onCurrentRevoked: controller.deviceSignInRevoked,
+        ),
+        if (securityReport != null) const Hairline(),
+      ],
+      if (securityReport != null) ...[
         SettingsSectionHeader(
           title: context.tr("Security & Access"),
           subtitle: context.tr(
@@ -865,16 +879,8 @@ class SettingsSectionContent extends StatelessWidget {
           statusColor: OipTokens.yellow,
         ),
         const SizedBox(height: 12),
-        SettingsFacts(report!.facts),
+        SettingsFacts(securityReport.facts),
         const Hairline(),
-        if (section == SettingsSection.currentIdentity &&
-            controller.managed &&
-            controller.api is PairedDeviceManagementApi)
-          PairedDeviceSignIns(
-            key: ValueKey(controller.contextRevision),
-            api: controller.api as PairedDeviceManagementApi,
-            onCurrentRevoked: controller.deviceSignInRevoked,
-          ),
         KeyValue(
             context.tr("Role Inventory / Editor"), context.tr("unsupported")),
         KeyValue(
@@ -884,12 +890,14 @@ class SettingsSectionContent extends StatelessWidget {
         WorkstationNote(
           context.tr("Nicht „Secure for Production“"),
           context.tr(
-              "Offen sind RUSTSEC-2023-0071, RUSTSEC-2024-0449 und RUSTSEC-2026-0543, die Absicherung externer Browser-Anmeldungen und des lokalen Systemkontos, ein extern abgesichertes Audit und der Nachweis der Betriebssicherheit."),
+              "Offen sind RUSTSEC-2023-0071 und RUSTSEC-2026-0543, die Absicherung externer Browser-Anmeldungen und des lokalen Systemkontos, ein extern abgesichertes Audit und der Nachweis der Betriebssicherheit."),
           icon: Icons.gpp_maybe_outlined,
           color: OipTokens.yellow,
         ),
-        SettingsLimitations(report!.limitations),
-      ]);
+        SettingsLimitations(securityReport.limitations),
+      ],
+    ]);
+  }
 
   Widget _system(BuildContext context) => ListView(children: [
         SettingsSectionHeader(

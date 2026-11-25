@@ -1,6 +1,7 @@
 // Client-owned interface copy. Unmapped source strings are used verbatim.
 
 const englishMessages = <String, String>{
+  "Sperren": "Revoke",
   "Gespeicherte Geräteanmeldungen": "Saved device sign-ins",
   "Hier verwaltest du Macs, die sich mit Touch ID bei diesem Core anmelden dürfen.":
       "Manage the Macs allowed to sign in to this Core with Touch ID.",
@@ -1088,8 +1089,8 @@ const englishMessages = <String, String>{
   "Quellenstatus": "Source status",
   "REST lädt den Anfangszustand. SSE liefert danach Änderungen.":
       "REST loads the initial state. SSE then delivers changes.",
-  "Offen sind RUSTSEC-2023-0071, RUSTSEC-2024-0449 und RUSTSEC-2026-0543, die Absicherung externer Browser-Anmeldungen und des lokalen Systemkontos, ein extern abgesichertes Audit und der Nachweis der Betriebssicherheit.":
-      "Outstanding items include RUSTSEC-2023-0071, RUSTSEC-2024-0449 and RUSTSEC-2026-0543, protection for remote browser identities and the local system account, independent audit anchoring and operational safety evidence.",
+  "Offen sind RUSTSEC-2023-0071 und RUSTSEC-2026-0543, die Absicherung externer Browser-Anmeldungen und des lokalen Systemkontos, ein extern abgesichertes Audit und der Nachweis der Betriebssicherheit.":
+      "Outstanding items include RUSTSEC-2023-0071 and RUSTSEC-2026-0543, protection for remote browser identities and the local system account, independent audit anchoring and operational safety evidence.",
   "Read + Write · serverseitig freigegeben":
       "Read + Write · Available on the server",
   "Read · lesend": "Read-only",

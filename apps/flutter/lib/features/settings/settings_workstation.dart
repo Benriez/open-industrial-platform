@@ -167,6 +167,11 @@ class _SettingsPageState extends State<SettingsPage> {
         case SettingsSection.evidence:
           loadedReport = await api.management('diagnostic_rules');
         case SettingsSection.currentIdentity:
+          // Own device sign-ins have a separate browser-session permission.
+          loadedReport =
+              widget.controller.managed && api is PairedDeviceManagementApi
+                  ? await optional(api.management('security'))
+                  : await api.management('security');
         case SettingsSection.auditSecurity:
           loadedReport = await api.management('security');
         case SettingsSection.runtime:

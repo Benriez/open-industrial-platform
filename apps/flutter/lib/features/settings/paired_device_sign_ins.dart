@@ -169,10 +169,10 @@ class _PairedDeviceSignInsState extends State<PairedDeviceSignIns> {
                     tooltip: context.tr('Geräteanmeldung benennen'),
                     icon: const Icon(Icons.edit_outlined),
                   ),
-                  IconButton(
+                  TextButton.icon(
                     onPressed: busy ? null : () => _revoke(device),
-                    tooltip: context.tr('Anmeldung sperren'),
                     icon: const Icon(Icons.block_outlined),
+                    label: Text(context.tr('Sperren')),
                   ),
                 ],
               ),

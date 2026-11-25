@@ -18,6 +18,7 @@ class FixtureSettingsApi extends FakeApi {
       this.delay = Duration.zero,
       this.statusOverride = const {}});
   final String contextName;
+
   /// The states the Core answers, if a test wants to change them. The
   /// negative control of the navigation needs an answer that differs from
   /// the usual one.
@@ -189,27 +190,27 @@ void main() {
     expect(find.text('CORE · Nur lesend'), findsOneWidget);
   });
 
-  testWidgets('The navigation follows the answer of the Core, not a table of the client',
+  testWidgets(
+      'The navigation follows the answer of the Core, not a table of the client',
       (tester) async {
     // The negative control: the Core answers that the General category is
     // only read — the opposite of the usual answer. A navigation that showed
     // a table of its own would show the wrong word here.
-    await bootstrapSettings(
-        tester,
-        api: FixtureSettingsApi(
-            statusOverride: const {'general': 'read_only'}));
+    await bootstrapSettings(tester,
+        api:
+            FixtureSettingsApi(statusOverride: const {'general': 'read_only'}));
 
     expect(find.text('CORE · Nur lesend'), findsOneWidget);
     expect(find.text('CORE · Nur offline administrierbar'), findsNothing);
   });
 
-  testWidgets('A state that the client does not know is named, never shown as the wire name',
+  testWidgets(
+      'A state that the client does not know is named, never shown as the wire name',
       (tester) async {
     // The contract of the settings requires that the states are distinguished
     // in the words of the surface; the wire name of an unknown state belongs
     // to the contract of the Core and not to the operator.
-    await bootstrapSettings(
-        tester,
+    await bootstrapSettings(tester,
         api: FixtureSettingsApi(
             statusOverride: const {'general': 'requires_restart'}));
 
@@ -470,8 +471,8 @@ void main() {
   testWidgets('K HTTP 400 request rejection is its own precise state',
       (tester) async {
     final api = FixtureSettingsApi()
-      ..settingsFailure =
-          const ApiFailure('Bad request', code: 'INVALID_REQUEST', statusCode: 400);
+      ..settingsFailure = const ApiFailure('Bad request',
+          code: 'INVALID_REQUEST', statusCode: 400);
     await bootstrapSettings(tester, api: api);
     // A 400 is the Core rejecting the request against the management contract;
     // it is neither an authorization failure, nor offline, nor a malformed
@@ -482,8 +483,8 @@ void main() {
     expect(find.text('Management-Daten nicht verfügbar'), findsNothing);
     expect(find.text('Core-Vertrag nicht erfüllt'), findsNothing);
     expect(find.text('Management-Zugriff nicht autorisiert'), findsNothing);
-    expect(find.text('Core / Management-Endpunkt nicht erreichbar'),
-        findsNothing);
+    expect(
+        find.text('Core / Management-Endpunkt nicht erreichbar'), findsNothing);
     // The technical details carry the exact sanitized code and status, and no
     // fabricated data renders: the retry control is present.
     await tester.tap(find.text('Technische Fehlerdetails'));
@@ -613,7 +614,7 @@ void main() {
     await category(tester, SettingsCategory.diagnostics);
     expect(find.textContaining('documented markers'), findsWidgets);
     await category(tester, SettingsCategory.securityAccess);
-    expect(find.textContaining('RUSTSEC-2024-0449'), findsWidgets);
+    expect(find.textContaining('RUSTSEC-2026-0543'), findsWidgets);
     expect(find.text('Secure for Production'), findsNothing);
     await category(tester, SettingsCategory.system);
     expect(

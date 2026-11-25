@@ -238,10 +238,10 @@ try {
   await page.getByRole('button', { name: 'Settings-Bereich Aktuelle Identität' }).click();
   await waitForAria('Gespeicherte Geräteanmeldungen');
   await page.waitForTimeout(650);
-  await page.getByRole('button', { name: 'Anmeldung sperren', exact: true }).click();
+  await page.getByRole('button', { name: 'Sperren', exact: true }).click();
   await waitForAria('Für eine erneute Einrichtung braucht es einen Einmalcode.');
   await page.waitForTimeout(650);
-  await page.getByRole('button', { name: 'Anmeldung sperren', exact: true }).last().click();
+  await page.getByRole('button', { name: 'Anmeldung sperren', exact: true }).click();
   await waitForAria('Die Geräteanmeldung wurde gesperrt.');
   const cleared = await context.request.get(new URL('/api/v2/browser/device-credentials', base).href);
   const devices = await cleared.json();
