@@ -190,8 +190,9 @@ try {
 
   await openOverview();
   await waitForNameContaining('Diagnose öffnen');
-  await waitForNameContaining(`DEVICES: ${devices.length}`);
-  await waitForNameContaining(`SOURCES: ${sources.length} · `);
+  await waitForNameContaining(`Geräte: ${devices.length}`);
+  const sourceFigure = await waitForNameContaining('Verbundene Quellen: ');
+  assert.match(sourceFigure, new RegExp(`Verbundene Quellen: \\d+ von ${sources.length}\\b`));
   pass('the Overview names the managed surface and the counts of the Core');
   await capture('overview');
 
