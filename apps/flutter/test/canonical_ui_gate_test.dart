@@ -220,15 +220,15 @@ void main() {
       await pumpShell(tester, controller);
 
       // The unified infrastructure view counts only authorized rows.
-      expect(find.text('UNIFIED INFRASTRUCTURE VIEW'), findsOneWidget);
-      expect(find.text('ORGANIZATIONS'), findsOneWidget);
-      expect(find.text('INFRASTRUCTURES'), findsOneWidget);
-      expect(find.text('SITES'), findsOneWidget);
-      // The placement of an authorized infrastructure is shown.
-      expect(find.textContaining('Organization A / Infrastructure A1'),
-          findsOneWidget);
-      // An empty result is a fact, not an offline state.
-      expect(find.textContaining('Unknown ≠ Offline'), findsOneWidget);
+      expect(find.text('Infrastrukturübersicht'), findsOneWidget);
+      expect(find.bySemanticsLabel('Geräte: 5'), findsOneWidget);
+      expect(find.text('Infrastructure A1'), findsOneWidget);
+      final details = find.byKey(const Key('unified-infrastructure-details'));
+      await tester.ensureVisible(details);
+      await tester.tap(details);
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('Organisationen: 2'), findsOneWidget);
+      expect(find.textContaining('Bei unbekanntem Status ist offen'), findsOneWidget);
     });
 
     testWidgets('The shell is responsive and keeps the context selector',
@@ -297,7 +297,7 @@ void main() {
         expect(find.text('AGENT-FIRST'), findsNothing);
         if (failure.statusCode == 401) {
           expect(find.text('Lokale Operator-Anmeldung'), findsOneWidget);
-          expect(find.text('UNIFIED INFRASTRUCTURE VIEW'), findsNothing);
+          expect(find.text('Infrastrukturübersicht'), findsNothing);
         }
         controller.dispose();
         await tester.pump(const Duration(milliseconds: 20));

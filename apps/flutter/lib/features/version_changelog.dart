@@ -17,6 +17,15 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.51',
+      build: '54',
+      date: '26. November 2026',
+      changes: [
+        'Beim Öffnen des Dashboards wird die Infrastrukturübersicht ausgeblendet.',
+        'Die Infrastrukturübersicht zeigt Geräte, Verbindungen und Messwerte auf einen Blick. Weitere Kennzahlen lassen sich aufklappen.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.50',
       build: '53',
       date: '25. November 2026',

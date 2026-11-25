@@ -107,7 +107,8 @@ class _OverviewPageState extends State<OverviewPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _header(),
-              if (controller.infrastructure.ready &&
+              if (!dashboardMode &&
+                  controller.infrastructure.ready &&
                   controller.infrastructure.selection.isUnified) ...[
                 const SizedBox(height: OipTokens.s2),
                 UnifiedInfrastructureSummary(controller: controller),

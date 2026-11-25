@@ -1,6 +1,28 @@
 // Client-owned interface copy. Unmapped source strings are used verbatim.
 
 const englishMessages = <String, String>{
+  "26. November 2026": "26 November 2026",
+  "Beim Öffnen des Dashboards wird die Infrastrukturübersicht ausgeblendet.":
+      "Opening the dashboard hides the infrastructure overview.",
+  "Die Infrastrukturübersicht zeigt Geräte, Verbindungen und Messwerte auf einen Blick. Weitere Kennzahlen lassen sich aufklappen.":
+      "See devices, connections and measurement coverage at a glance. Expand the infrastructure overview for more figures.",
+  "Infrastrukturübersicht": "Infrastructure overview",
+  "In diesem Kontext sind keine Infrastrukturen verfügbar.":
+      "No infrastructure is available in this context.",
+  "Verbundene Quellen": "Connected sources",
+  "Geräte mit Messwerten": "Devices with measurements",
+  "{0} von {1}": "{0} of {1}",
+  "Weitere Kennzahlen": "More figures",
+  "Organisationen": "Organizations",
+  "Infrastrukturen": "Infrastructures",
+  "Quellen ohne aktuelle Daten": "Sources without current data",
+  "Befunde": "Findings",
+  "Probleme bei der Datenerfassung": "Data collection problems",
+  "Bei unbekanntem Status ist offen, ob die Quelle offline ist. Fehlende Datenerfassung sagt nichts über die Verbindung aus.":
+      "When a source status is unknown, it may still be online. Missing data collection does not establish connection status.",
+  "Standorte {0}": "Sites {0}",
+  "Geräte {0}": "Devices {0}",
+  "Quellen verbunden {0}/{1}": "Sources connected {0}/{1}",
   "25. November 2026": "25 November 2026",
   "Jeder Arbeitsbereich hat eine Spectrum-Überschrift. Die wichtigsten Aktionen stehen kompakt darunter.":
       "Each workspace has a Spectrum title with its main actions grouped below.",
@@ -363,8 +385,6 @@ const englishMessages = <String, String>{
       "The selected DeviceDetail scope could not be loaded.",
   "Der autorisierte Live-Snapshot verletzt den v2-Datenvertrag.":
       "The authorized live snapshot violates the v2 data contract.",
-  "Der autorisierte Principal sieht aktuell keine Infrastructure. Es wird keine Demo-Organization angelegt.":
-      "The authorized principal does not currently see any infrastructure. No demo organization is created.",
   "Der lokale API-Tunnel nutzt einen frischen Forwarding-Port.":
       "The local API tunnel opens a new forwarding port.",
   "Der lokale API-Tunnel verwendet einen frischen Weiterleitungsport.":
@@ -996,8 +1016,6 @@ const englishMessages = <String, String>{
   "Nur im Inventar registrieren": "Register only in inventory",
   "Nur lesend": "Read-only",
   "Nur offline administrierbar": "Managed offline only",
-  "Nur tatsächlich autorisierte Rows · keine globale Health-Severity · Unknown ≠ Offline · NoCollector ≠ Fehler":
-      "Only actually authorized rows · no global health-severity · Unknown ≠ Offline · NoCollector ≠ Errors",
   "Nur tatsächlich beobachtete Transitionen gemäß Core-Report":
       "Only actually observed transitions according to Core report",
   "Nur zeitgestempelte Collection-Ereignisse · zeitliche Nähe beweist keine Ursache":

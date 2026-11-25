@@ -157,10 +157,11 @@ the managed browser run.
 | 4 | No AGENT-FIRST sidebar card | widget + browser |
 | 5 | No legacy dashboard as the real-mode default | widget + browser |
 | 6 | No hardcoded demo device or metric in the managed projection | widget + browser |
-| 7 | Correct real-mode empty, loading and error states (`Unknown ≠ Offline`, no "wird geladen" as a state) | widget + browser |
+| 7 | Correct real-mode empty, loading and error states (unknown stays distinct from offline in the infrastructure figures, no "wird geladen" as a state) | widget + browser |
 | 8 | Responsive geometry: the context selector survives 390/768/1440/1920 px | widget |
 | 9 | No regression of browser authentication and of the device onboarding action | widget + browser |
 | 10 | Visual comparison against hash-pinned technical references at 1440×900 and 1920×1080 | stable-shell pixel comparison + browser semantic/geometry assertions |
+| 11 | The unified infrastructure summary is visible in Overview and is dismissed while the Dashboard is open, with its further figures expandable in Overview | widget + browser |
 
 The screenshot comparison protects **structure and layout**, not the dynamic
 values: timestamps, counters and identifiers differ between runs. It re-derives

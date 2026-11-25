@@ -4,6 +4,7 @@ import 'package:oip_dashboard/app/controller.dart';
 import 'package:oip_dashboard/design_system/theme.dart';
 import 'package:oip_dashboard/features/overview.dart';
 import 'package:oip_dashboard/models/infrastructure.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'infrastructure_support.dart';
 import 'support.dart';
@@ -57,23 +58,63 @@ void main() {
     // infrastructure summary represents the authorized unified selection.
     expect(find.byKey(const Key('unified-infrastructure-summary')),
         findsOneWidget);
-    // The unified view counts only the rows the Core delivered.
-    expect(find.text('UNIFIED INFRASTRUCTURE VIEW'), findsOneWidget);
-    expect(find.text('ORGANIZATIONS'), findsOneWidget);
-    expect(find.text('INFRASTRUCTURES'), findsOneWidget);
-    expect(find.text('SITES'), findsOneWidget);
-    // The placement of an authorized infrastructure is shown with the
-    // identifiers the Core delivered for it.
-    expect(find.textContaining('Organization A / Infrastructure A1'),
+    expect(find.text('Infrastrukturübersicht'), findsOneWidget);
+    expect(find.bySemanticsLabel('Geräte: 5'), findsOneWidget);
+    expect(
+        find.bySemanticsLabel('Verbundene Quellen: 3 von 4'), findsOneWidget);
+    expect(find.bySemanticsLabel('Geräte mit Messwerten: 3 von 5'),
         findsOneWidget);
-    expect(find.textContaining('2 Sites'), findsWidgets);
+    final row = find.byKey(const Key('unified-infrastructure-infra-a1'));
+    expect(find.descendant(of: row, matching: find.text('Infrastructure A1')),
+        findsOneWidget);
+    expect(find.descendant(of: row, matching: find.text('Organization A')),
+        findsOneWidget);
+    expect(find.descendant(of: row, matching: find.text('Standorte 2')),
+        findsOneWidget);
+
+    expect(find.text('Probleme bei der Datenerfassung'), findsNothing);
+    await tester.tap(find.byKey(const Key('unified-infrastructure-details')));
+    await tester.pumpAndSettle();
+    expect(find.bySemanticsLabel('Organisationen: 2'), findsOneWidget);
+    expect(find.bySemanticsLabel('Infrastrukturen: 3'), findsOneWidget);
+    expect(find.bySemanticsLabel('Standorte: 4'), findsOneWidget);
+    expect(find.bySemanticsLabel('Quellen ohne aktuelle Daten: 1'),
+        findsOneWidget);
+    expect(find.bySemanticsLabel('Befunde: 1'), findsOneWidget);
+    expect(find.bySemanticsLabel('Probleme bei der Datenerfassung: 1'),
+        findsOneWidget);
     // The demo coordinates are gone in the managed mode.
     expect(find.textContaining('M-01'), findsNothing);
     expect(find.textContaining('Temperatur M-01'), findsNothing);
     expect(find.textContaining('Netzwerkzonen'), findsNothing);
     // Unknown is not offline and no global severity is invented.
-    expect(find.textContaining('keine globale Health-Severity'), findsOneWidget);
-    expect(find.textContaining('Unknown ≠ Offline'), findsOneWidget);
+    expect(find.textContaining('Bei unbekanntem Status ist offen'),
+        findsOneWidget);
+  });
+
+  testWidgets('Dashboard hides the infrastructure overview until returning',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final controller = managedController();
+    addTearDown(controller.dispose);
+    await controller.resyncInfrastructure();
+    await pumpManaged(tester, controller, (c) => OverviewPage(c, (_) {}));
+
+    final summary = find.byKey(const Key('unified-infrastructure-summary'));
+    final toggle = find.byKey(const Key('overview-dashboard-toggle'));
+    expect(summary, findsOneWidget);
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(summary, findsNothing);
+    expect(find.text('Infrastruktur-Dashboard'), findsOneWidget);
+    expect(find.byKey(const Key('overview-modular-dashboard-panels')),
+        findsOneWidget);
+    expect(controller.infrastructure.selection.isUnified, isTrue);
+
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(summary, findsOneWidget);
+    expect(find.text('Infrastruktur-Dashboard'), findsNothing);
   });
 
   testWidgets('The managed overview names the measured metric of a source',
@@ -99,7 +140,8 @@ void main() {
     expect(controller.telemetryKey, first);
   });
 
-  test('An authorized snapshot invents no global count, health or topology', () {
+  test('An authorized snapshot invents no global count, health or topology',
+      () {
     final snapshot = AuthorizedSnapshot.fromJson({
       'sources': <dynamic>[],
       'devices': <dynamic>[],

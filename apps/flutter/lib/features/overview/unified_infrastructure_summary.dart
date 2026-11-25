@@ -7,8 +7,6 @@ import '../../models/contracts.dart';
 import '../../models/infrastructure.dart';
 import '../../widgets/workstation.dart';
 
-/// Compact, authorized multi-infrastructure summary for Unified View.
-/// Selecting a row changes the one global context; there is no local filter.
 class UnifiedInfrastructureSummary extends StatelessWidget {
   final OipController controller;
   const UnifiedInfrastructureSummary({super.key, required this.controller});
@@ -21,13 +19,14 @@ class UnifiedInfrastructureSummary extends StatelessWidget {
     final hierarchy = model.hierarchy;
     final sources = snapshot.sources;
     final connected =
-        sources.where((item) => item.connection == 'connected').length;
-    final staleOrUnknown =
-        sources.where((item) => item.freshness != 'fresh').length;
+        sources.where((source) => source.connection == 'connected').length;
+    final observedDevices = {
+      for (final observation in snapshot.metrics)
+        (observation.sourceId, observation.entityId),
+    };
     final covered = snapshot.devices
-        .where((device) => snapshot.metrics.any((observation) =>
-            observation.entityId == device.id &&
-            observation.sourceId == device.sourceId))
+        .where(
+            (device) => observedDevices.contains((device.sourceId, device.id)))
         .length;
     final collectionProblems = snapshot.recentEvents
         .where((event) =>
@@ -35,69 +34,93 @@ class UnifiedInfrastructureSummary extends StatelessWidget {
             event.kind == 'SubscriptionError' ||
             event.gapStartedMs != null)
         .length;
-    final findings = model.findings;
-    final facts = <(String, String)>[
-      ('ORGANIZATIONS', '${hierarchy.organizations.length}'),
-      ('INFRASTRUCTURES', '${hierarchy.infrastructures.length}'),
-      ('SITES', '${hierarchy.sites.length}'),
-      ('DEVICES', '${snapshot.devices.length}'),
-      ('SOURCES', '${sources.length} · $connected CONNECTED'),
-      ('STALE / UNKNOWN SOURCES', '$staleOrUnknown'),
-      (
-        'DETERMINISTIC FINDINGS',
-        findings == null ? 'NICHT VERFÜGBAR' : '${findings.length}'
-      ),
-      ('COLLECTION PROBLEMS', '$collectionProblems'),
-      ('DATA COVERAGE', '$covered / ${snapshot.devices.length} DEVICES'),
-    ];
+
     return WorkstationPanel(
       key: const Key('unified-infrastructure-summary'),
-      accent: OipTokens.cyan,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        PanelLabel(context.tr("Unified Infrastructure View"), bottom: 6),
-        Wrap(
-          spacing: 12,
-          runSpacing: 6,
-          children: facts
-              .map((fact) => Semantics(
-                    label: '${fact.$1}: ${fact.$2}',
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(fact.$1,
-                              style: WorkstationTokens.eyebrow(context)),
-                          Text(fact.$2,
-                              style: WorkstationTokens.mono(context,
-                                  size: 11, weight: FontWeight.w700)),
-                        ]),
-                  ))
-              .toList(),
+        Semantics(
+          header: true,
+          child: Text(context.tr("Infrastrukturübersicht"),
+              style: Theme.of(context).textTheme.titleMedium),
         ),
-        const SizedBox(height: 8),
-        if (hierarchy.infrastructures.isEmpty)
-          WorkstationNote(
-            context.tr("No infrastructure configured"),
-            context.tr(
-                "Der autorisierte Principal sieht aktuell keine Infrastructure. Es wird keine Demo-Organization angelegt."),
-            icon: Icons.account_tree_outlined,
-          )
-        else
+        if (hierarchy.infrastructures.isEmpty) ...[
+          const SizedBox(height: OipTokens.s2),
+          Text(context
+              .tr("In diesem Kontext sind keine Infrastrukturen verfügbar.")),
+          const SizedBox(height: OipTokens.s2),
+        ] else ...[
+          const SizedBox(height: OipTokens.s3),
+          _SummaryFacts(
+            prominent: true,
+            facts: [
+              (context.tr("Geräte"), '${snapshot.devices.length}'),
+              (
+                context.tr("Verbundene Quellen"),
+                context.tr("{0} von {1}", [connected, sources.length]),
+              ),
+              (
+                context.tr("Geräte mit Messwerten"),
+                context.tr("{0} von {1}", [covered, snapshot.devices.length]),
+              ),
+            ],
+          ),
+          const Hairline(vertical: OipTokens.s2),
           ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 184),
-            child: ListView(
+            constraints: const BoxConstraints(maxHeight: 250),
+            child: ListView.separated(
+              primary: false,
               shrinkWrap: true,
-              children: [
-                for (final infrastructure in hierarchy.infrastructures)
-                  _infrastructureRow(context, infrastructure),
-              ],
+              padding: EdgeInsets.zero,
+              itemCount: hierarchy.infrastructures.length,
+              separatorBuilder: (_, __) => const Hairline(vertical: 0),
+              itemBuilder: (context, index) =>
+                  _infrastructureRow(context, hierarchy.infrastructures[index]),
             ),
           ),
-        const SizedBox(height: 4),
-        Text(
-          context.tr(
-              "Nur tatsächlich autorisierte Rows · keine globale Health-Severity · Unknown ≠ Offline · NoCollector ≠ Fehler"),
-          style: Theme.of(context).textTheme.bodySmall,
+        ],
+        const Hairline(vertical: 0),
+        ExpansionTile(
+          key: const Key('unified-infrastructure-details'),
+          tilePadding: EdgeInsets.zero,
+          shape: const Border(),
+          collapsedShape: const Border(),
+          title: Text(context.tr("Weitere Kennzahlen"),
+              style: Theme.of(context).textTheme.bodyMedium),
+          expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+          childrenPadding: const EdgeInsets.only(bottom: OipTokens.s3),
+          children: [
+            _SummaryFacts(facts: [
+              (
+                context.tr("Organisationen"),
+                '${hierarchy.organizations.length}'
+              ),
+              (
+                context.tr("Infrastrukturen"),
+                '${hierarchy.infrastructures.length}'
+              ),
+              (context.tr("Standorte"), '${hierarchy.sites.length}'),
+              (
+                context.tr("Quellen ohne aktuelle Daten"),
+                '${sources.where((source) => source.freshness != 'fresh').length}',
+              ),
+              (
+                context.tr("Befunde"),
+                model.findings?.length.toString() ??
+                    context.tr("Nicht verfügbar"),
+              ),
+              (
+                context.tr("Probleme bei der Datenerfassung"),
+                '$collectionProblems'
+              ),
+            ]),
+            const SizedBox(height: OipTokens.s2),
+            Text(
+              context.tr(
+                  "Bei unbekanntem Status ist offen, ob die Quelle offline ist. Fehlende Datenerfassung sagt nichts über die Verbindung aus."),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
         ),
       ]),
     );
@@ -107,64 +130,99 @@ class UnifiedInfrastructureSummary extends StatelessWidget {
       BuildContext context, AuthorizedInfrastructure infrastructure) {
     final organization =
         model.hierarchy.organization(infrastructure.organizationId);
+    final organizationName =
+        organization?.name ?? infrastructure.organizationId;
     final sites = model.hierarchy.sites
         .where((item) => item.infrastructureId == infrastructure.id)
         .length;
-    final devices = snapshot.devices.where((device) {
-      final placement = model.devicePlacement(device);
-      return placement?.infrastructureId == infrastructure.id;
-    }).length;
+    final devices = snapshot.devices
+        .where((device) =>
+            model.devicePlacement(device)?.infrastructureId ==
+            infrastructure.id)
+        .length;
     final sourceIds = model.hierarchy.locations
         .where((item) => item.infrastructureId == infrastructure.id)
         .map((item) => item.sourceId)
         .toSet();
     final sources =
-        snapshot.sources.where((item) => sourceIds.contains(item.id)).toList();
-    final fresh = sources.where((item) => item.freshness == 'fresh').length;
-    final available =
-        sources.where((item) => item.connection == 'connected').length;
-    final findings = model.findings
-        ?.where((finding) => finding.evidenceSourceIds.any(sourceIds.contains))
-        .length;
+        snapshot.sources.where((source) => sourceIds.contains(source.id));
+    final connected =
+        sources.where((source) => source.connection == 'connected').length;
     final selection = InfrastructureSelection.infrastructure(
         infrastructure.organizationId, infrastructure.id);
+
     return Semantics(
       button: true,
-      label: context.tr("Infrastructure {0} {1} global auswählen", [
-        organization?.name ?? infrastructure.organizationId,
-        infrastructure.name
-      ]),
+      label: context.tr("Infrastructure {0} {1} global auswählen",
+          [organizationName, infrastructure.name]),
       child: ListTile(
         key: Key('unified-infrastructure-${infrastructure.id}'),
-        dense: true,
-        minTileHeight: 52,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
         leading: Icon(Icons.hub_outlined,
-            size: 18, color: OipTokens.readableAccent(context, OipTokens.cyan)),
-        title: Text(
-          '${organization?.name ?? infrastructure.organizationId} / ${infrastructure.name}',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+            color: OipTokens.readableAccent(context, OipTokens.cyan)),
+        title: Text(infrastructure.name,
+            maxLines: 2, overflow: TextOverflow.ellipsis),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(organizationName,
+                maxLines: 1, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 3),
+            Wrap(spacing: 14, runSpacing: 2, children: [
+              Text(context.tr("Standorte {0}", [sites])),
+              Text(context.tr("Geräte {0}", [devices])),
+              Text(context.tr(
+                  "Quellen verbunden {0}/{1}", [connected, sources.length])),
+            ]),
+          ],
         ),
-        subtitle: Text(
-          context.tr(
-              "{0} Sites · {1} Devices · {2} Sources · Freshness {3}/{4} · Availability {5}/{6} · Findings {7}",
-              [
-                sites,
-                devices,
-                sources.length,
-                fresh,
-                sources.length,
-                available,
-                sources.length,
-                findings?.toString() ?? 'unbekannt'
-              ]),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: const Icon(Icons.arrow_forward, size: 16),
+        trailing: const Icon(Icons.chevron_right, size: 20),
         onTap: () => controller.selectInfrastructure(selection),
       ),
     );
+  }
+}
+
+class _SummaryFacts extends StatelessWidget {
+  const _SummaryFacts({required this.facts, this.prominent = false});
+
+  final List<(String, String)> facts;
+  final bool prominent;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final valueStyle = prominent ? text.titleLarge : text.titleSmall;
+    return LayoutBuilder(builder: (context, constraints) {
+      final columns = constraints.maxWidth >= 480 ? 3 : 1;
+      final width = (constraints.maxWidth - (columns - 1) * 16) / columns;
+      return Wrap(
+        spacing: 16,
+        runSpacing: prominent ? 6 : 12,
+        children: [
+          for (final (label, value) in facts)
+            SizedBox(
+              width: width,
+              child: Semantics(
+                label: '$label: $value',
+                excludeSemantics: true,
+                child: columns == 1
+                    ? Row(children: [
+                        Expanded(child: Text(label, style: text.bodySmall)),
+                        const SizedBox(width: 12),
+                        Text(value, style: valueStyle),
+                      ])
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(value, style: valueStyle),
+                          Text(label, style: text.bodySmall),
+                        ],
+                      ),
+              ),
+            ),
+        ],
+      );
+    });
   }
 }

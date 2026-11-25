@@ -82,7 +82,7 @@ await page.getByRole('button', { name: /Infrastructure Context:/ }).first()
 let projectionMs = projectionStarted;
 for (let attempt = 0; attempt < 120; attempt++) {
   const snapshot = await page.locator('body').ariaSnapshot();
-  if (snapshot.includes('UNIFIED INFRASTRUCTURE VIEW')) {
+  if (snapshot.includes('Infrastrukturübersicht')) {
     projectionMs = Date.now() - projectionStarted;
     break;
   }

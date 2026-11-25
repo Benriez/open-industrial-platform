@@ -114,7 +114,7 @@ try {
   check('anonymous real mode requires operator login', anonymous.includes('Lokale Operator-Anmeldung'));
   check('healthy anonymous API identifies the required login', anonymous.includes('ANMELDUNG ERFORDERLICH'));
   check('required login is not reported as a stale API', !anonymous.includes('API STALE / RECONNECT'));
-  check('anonymous state never restores unified managed content', !anonymous.includes('UNIFIED INFRASTRUCTURE VIEW'));
+  check('anonymous state never restores unified managed content', !anonymous.includes('Infrastrukturübersicht'));
   for (const marker of overviewForbidden) {
     check(`anonymous state has no legacy marker ${marker}`, !anonymous.includes(marker));
   }
@@ -163,8 +163,23 @@ try {
   for (const workstation of workstations) {
     check(`workstation navigation ${workstation.name}`, first.includes(`Navigation ${workstation.name}`));
   }
-  check('authorized projection', first.includes('UNIFIED INFRASTRUCTURE VIEW'));
-  check('honest unknown state', first.includes('Unknown ≠ Offline'));
+  check('authorized projection', first.includes('Infrastrukturübersicht'));
+  check('the overview starts with the three primary figures',
+    first.includes('Geräte: ') && first.includes('Verbundene Quellen: ') &&
+    first.includes('Geräte mit Messwerten: '));
+  const details = page.getByRole('button', { name: /Weitere Kennzahlen/ });
+  const unknown = 'Bei unbekanntem Status ist offen';
+  check('technical counts are collapsed by default',
+    !first.includes('Probleme bei der Datenerfassung: ') && !first.includes(unknown));
+  await page.waitForTimeout(650);
+  await details.click();
+  await waitForAria(unknown);
+  const expanded = await snapshot();
+  check('further counts preserve the authorized source and collection states',
+    expanded.includes('Quellen ohne aktuelle Daten: ') &&
+    expanded.includes('Probleme bei der Datenerfassung: ') && expanded.includes(unknown));
+  await page.waitForTimeout(650);
+  await details.click();
   for (const marker of overviewForbidden) {
     check(`managed mode has no legacy marker ${marker}`, !first.includes(marker));
   }
@@ -248,6 +263,23 @@ try {
       await page.screenshot({ path: shot, fullPage: false });
       screenshots.push(shot);
       findings.push({ check: `screenshot ${workstation.slug} ${width}px`, ok: true, detail: shot });
+      if (workstation.slug === 'overview') {
+        await page.waitForTimeout(650);
+        await page.getByRole('button', { name: 'Dashboard öffnen' }).click();
+        await waitForAria('Infrastruktur-Dashboard');
+        const dashboard = await snapshot();
+        check(`dashboard hides infrastructure overview at ${width}px`,
+          !dashboard.includes('Infrastrukturübersicht') &&
+          !dashboard.includes('Weitere Kennzahlen') &&
+          dashboard.includes('Alle berechtigten Infrastrukturen'));
+        await page.waitForTimeout(650);
+        await page.getByRole('button', { name: 'Übersicht', exact: true }).click();
+        await waitForAria('Infrastrukturübersicht');
+        const overview = await snapshot();
+        check(`return restores the overview at ${width}px`,
+          !overview.includes('Infrastruktur-Dashboard') &&
+          overview.includes('Verbundene Quellen: '));
+      }
     }
   }
   await page.waitForTimeout(650);
