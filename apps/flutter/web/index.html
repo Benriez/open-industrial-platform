@@ -13,7 +13,9 @@
   <style>
     body { margin: 0; background: #0b1723; color: #e9f2f7; }
     #loading { display: flex; align-items: center; gap: 8px; padding: 40px; font: 14px system-ui; }
-    flutter-view { touch-action: manipulation; }
+    /* Flutter owns scrolling inside the view. Keep its accessibility
+       scroll targets from extending the browser document. */
+    flutter-view { touch-action: manipulation; overflow: clip; }
   </style>
 </head>
 <body>

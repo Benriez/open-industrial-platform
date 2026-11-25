@@ -251,9 +251,9 @@ try {
     }
   }
   await page.waitForTimeout(650);
-  await page.getByRole('button', { name: 'Settings-Kategorie System', exact: true }).click();
+  await page.getByRole('button', { name: 'Settings-Kategorie System' }).click();
   await page.waitForTimeout(650);
-  await page.getByRole('button', { name: 'Settings-Bereich Versionen & Updates', exact: true }).click();
+  await page.getByRole('button', { name: 'Settings-Bereich Versionen & Updates' }).click();
   await waitForAria('OIP · SPECTRUM 2027');
   check('current application identity in Settings', (await snapshot()).includes('OIP · SPECTRUM 2027'));
   await page.waitForTimeout(650);
