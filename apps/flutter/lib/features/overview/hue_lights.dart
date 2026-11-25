@@ -236,6 +236,7 @@ class _LightRowState extends State<_LightRow> {
               child: SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                     trackHeight: 2,
+                    tickMarkShape: SliderTickMarkShape.noTickMark,
                     thumbShape:
                         const RoundSliderThumbShape(enabledThumbRadius: 5),
                     overlayShape:
@@ -243,6 +244,7 @@ class _LightRowState extends State<_LightRow> {
                 child: Slider(
                   min: 1,
                   max: 100,
+                  divisions: 99,
                   activeColor: accent,
                   inactiveColor: WorkstationTokens.line(context),
                   semanticFormatterCallback: (v) => '${v.round()} %',
