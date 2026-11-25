@@ -17,6 +17,15 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.49',
+      build: '52',
+      date: '25. November 2026',
+      changes: [
+        'Der Inventory Explorer in Geräte & Dienste zeigt mehr Geräte auf einmal.',
+        'Technische Zusammenfassungsleisten in Geräte & Dienste und Übersicht wurden entfernt.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.48',
       build: '51',
       date: '25. November 2026',
