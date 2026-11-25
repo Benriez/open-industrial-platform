@@ -85,8 +85,11 @@ class UnifiedInfrastructureSummary extends StatelessWidget {
           tilePadding: EdgeInsets.zero,
           shape: const Border(),
           collapsedShape: const Border(),
-          title: Text(context.tr("Weitere Kennzahlen"),
-              style: Theme.of(context).textTheme.bodyMedium),
+          title: Semantics(
+            button: true,
+            child: Text(context.tr("Weitere Kennzahlen"),
+                style: Theme.of(context).textTheme.bodyMedium),
+          ),
           expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
           childrenPadding: const EdgeInsets.only(bottom: OipTokens.s3),
           children: [

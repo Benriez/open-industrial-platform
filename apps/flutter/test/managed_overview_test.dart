@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction, SemanticsFlag;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oip_dashboard/app/controller.dart';
@@ -73,6 +75,9 @@ void main() {
         findsOneWidget);
 
     expect(find.text('Probleme bei der Datenerfassung'), findsNothing);
+    final details = tester.getSemantics(find.text('Weitere Kennzahlen'));
+    expect(details.hasFlag(SemanticsFlag.isButton), isTrue);
+    expect(details.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
     await tester.tap(find.byKey(const Key('unified-infrastructure-details')));
     await tester.pumpAndSettle();
     expect(find.bySemanticsLabel('Organisationen: 2'), findsOneWidget);
