@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,6 +19,8 @@ import 'support.dart';
 /// note of the device is a field of that inspector: the keys of the page must
 /// not be captured while the field is edited.
 class _ManagedApi extends FakeApi implements DeviceManagementApi {
+  Future<ConnectionResult>? connectionResponse;
+
   @override
   bool get managed => true;
 
@@ -55,6 +59,7 @@ class _ManagedApi extends FakeApi implements DeviceManagementApi {
   @override
   Future<ConnectionResult> connection(
           {String? deviceId, String? planId}) async =>
+      connectionResponse ??
       ConnectionResult.fromJson(<String, dynamic>{'profiles': <dynamic>[]});
 
   @override
@@ -405,6 +410,56 @@ void main() {
               'device-engineering-workspace', find.textContaining('61.2 °C')),
           findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Monitoring adds new metrics to an existing device detail',
+        (tester) async {
+      final monitoring = Completer<ConnectionResult>();
+      final app = await _bootstrap(tester,
+          apiFactory: () => _ManagedApi()
+            ..infrastructure = infrastructureFixture()
+            ..connectionResponse = monitoring.future);
+      await app.controller.resyncInfrastructure();
+      await tester.pumpAndSettle();
+      await _navigate(tester, 1440);
+      await tester.tap(find.byKey(const Key('device-device-a1')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+      final apiMetric = infrastructureFixture()
+          .snapshot
+          .toSnapshot()
+          .metrics
+          .firstWhere((metric) => metric.entityId == 'device-a1');
+
+      monitoring.complete(ConnectionResult.fromJson({
+        'profiles': [],
+        'connection': {
+          'device_id': 'device-a1',
+          'status': 'collecting',
+          'fingerprint': 'SHA256:fixture',
+          'endpoint': {'host': '127.0.0.1', 'port': 22, 'user': 'fixture'},
+          'verified_identity': {'unavailable': []},
+          'monitoring_enabled': true,
+          'revision': 1,
+          'poll_seconds': 5,
+          'observations': [
+            _observation(
+                entity: 'device-a1',
+                source: 'source-a1',
+                metric: 'host.memory_total_bytes'),
+            _observation(
+                entity: 'device-a2',
+                source: 'source-a2',
+                metric: 'host.memory_total_bytes'),
+          ],
+        },
+      }));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Telemetry'));
+      await tester.pumpAndSettle();
+      expect(find.text('device-a1 · ${apiMetric.metricId}'), findsOneWidget);
+      expect(find.text('device-a1 · host.memory_total_bytes'), findsOneWidget);
+      expect(find.text('device-a2 · host.memory_total_bytes'), findsNothing);
     });
   });
 

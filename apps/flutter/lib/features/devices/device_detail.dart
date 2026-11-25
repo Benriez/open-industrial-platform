@@ -300,6 +300,7 @@ class DeviceEngineeringWorkspace extends StatelessWidget {
           else ...[
             PanelLabel(context.tr("Connection & Monitoring")),
             DeviceConnectionPanel(
+                key: ValueKey((controller!.contextScopeSignature, device.id)),
                 controller: controller!,
                 deviceId: device.id,
                 onObservations: onConnectionObservations),

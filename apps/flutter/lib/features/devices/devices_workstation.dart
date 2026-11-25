@@ -149,8 +149,8 @@ class _DevicesPageState extends State<DevicesPage> {
   }
 
   List<Observation> get displayMetrics {
-    // DeviceDetail defines the authorized metric set. SSE may only replace an
-    // exact source/entity/metric identity; it can never add another device's data.
+    // DeviceDetail and the selected device's Connection & Monitoring panel
+    // define the authorized metric set. SSE may only replace an exact match.
     return detailMetrics.map((detail) {
       return snapshot.metrics
               .where((live) =>
@@ -225,19 +225,34 @@ class _DevicesPageState extends State<DevicesPage> {
     if (!searchFocus.hasFocus) pageFocus.requestFocus();
   }
 
+  List<Observation> _mergeDeviceMetrics(
+      List<Observation> primary, Iterable<Observation> additional) {
+    final byIdentity = {
+      for (final item in primary)
+        (item.sourceId, item.entityId, item.metricId): item,
+    };
+    for (final item in additional) {
+      byIdentity.putIfAbsent(
+          (item.sourceId, item.entityId, item.metricId), () => item);
+    }
+    return byIdentity.values.toList();
+  }
+
   void _adoptConnectionObservations(
       String deviceId, List<Observation> observations) {
     if (!mounted ||
         !widget.controller.managed ||
         session.selectedId != deviceId ||
-        observations.isEmpty ||
-        detailMetrics.isNotEmpty) {
+        detailError != null) {
       return;
     }
+    final merged = _mergeDeviceMetrics(
+        detailMetrics, observations.where((item) => item.entityId == deviceId));
+    if (merged.length == detailMetrics.length) return;
     detailMetricRetry?.cancel();
     detailMetricRetry = null;
     setState(() {
-      detailMetrics = observations;
+      detailMetrics = merged;
       detailError = null;
       detailLoading = false;
     });
@@ -272,19 +287,23 @@ class _DevicesPageState extends State<DevicesPage> {
         // SSH inventory. Use them when DeviceDetail has no samples, so extra
         // host metrics such as GPU and temperature are visible in Telemetry.
         final result = await management.connection(deviceId: device.id);
-        values = result.connection?.observations ?? const [];
-        collectorIsActive = result.connection?.status == 'collecting';
+        final connection = result.connection;
+        if (connection != null && connection.deviceId == device.id) {
+          values = connection.observations
+              .where((item) => item.entityId == device.id)
+              .toList();
+          collectorIsActive = connection.status == 'collecting';
+        }
       }
       if (!mounted ||
           generation != requestGeneration ||
           session.selectedId != device.id) {
         return;
       }
-      // A concurrent refresh of the selected device's Connection & Monitoring
-      // panel may have delivered the first collector sample while this detail
-      // request was in flight. Keep that exact-device observation list.
-      if (values.isEmpty && detailMetrics.isNotEmpty) {
-        values = detailMetrics;
+      // The collector can deliver additional metrics while DeviceDetail is
+      // in flight. Keep them even when the detail response is already nonempty.
+      if (detailMetrics.isNotEmpty) {
+        values = _mergeDeviceMetrics(values, detailMetrics);
       }
       setState(() {
         detailMetrics = values;
