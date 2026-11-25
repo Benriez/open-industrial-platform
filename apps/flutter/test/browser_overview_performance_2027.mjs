@@ -161,7 +161,7 @@ async function waitForDropdownKind(kind, timeout = 20000) {
 
 async function openOverview() {
   await page.getByRole('button', {name: 'Navigation Übersicht', exact: true}).click({force: true});
-  await waitForNameContaining('Operations Workstation', bootTimeout);
+  await waitForNameContaining('Diagnose öffnen', bootTimeout);
   await waitForNameContaining('Collection-Records', bootTimeout);
 }
 
@@ -189,7 +189,7 @@ try {
   pass(`the Core delivered ${sources.length} sources, ${devices.length} devices and the event kinds ${kinds.join(', ')}`);
 
   await openOverview();
-  await waitForNameContaining('INFRASTRUCTURE COMMAND CENTER · READ-ONLY');
+  await waitForNameContaining('Diagnose öffnen');
   await waitForNameContaining(`DEVICES: ${devices.length} REGISTERED`);
   await waitForNameContaining(`SOURCES: ${sources.length}`);
   pass('the Overview names the managed surface and the counts of the Core');
@@ -307,7 +307,7 @@ try {
       await page.getByRole('button', {name: 'Navigation Geräte & Dienste', exact: true}).click({force: true});
       await waitForNameContaining('Geräte & Dienste', bootTimeout);
       await page.getByRole('button', {name: 'Navigation Übersicht', exact: true}).click({force: true});
-      await waitForNameContaining('Operations Workstation', bootTimeout);
+      await waitForNameContaining('Diagnose öffnen', bootTimeout);
     }));
   }
   pass('the Overview returns from another workstation in every round trip');

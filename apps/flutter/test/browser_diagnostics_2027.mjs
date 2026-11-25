@@ -182,7 +182,7 @@ try {
   await page.getByRole('button', {name: 'Navigation Diagnose & Ereignisse', exact: true}).click();
   // The eyebrow, the title and the badges of the workspace are one node of
   // the semantics tree: the journey reads the names, not the text of a node.
-  await waitForNameContaining('DIAGNOSTICS · EVIDENCE WORKSPACE', bootTimeout);
+  await waitForNameContaining('Evidence Timeline', bootTimeout);
 
   if (events.length === 0) {
     // The Core delivered no event: the surface must name that and must not

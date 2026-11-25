@@ -108,7 +108,7 @@ try {
   await pass(`the Core names ${folders.length} folders and ${catalogue.total} nodes`);
 
   await page.getByRole('button',{name:'Navigation OPC-UA-Browser',exact:true}).click();
-  await page.getByText('ADRESSRAUM-EXPLORER · SERVERRECHTE',{exact:true})
+  await page.getByText('SERVER-GESTEUERTER ZUGRIFF',{exact:true})
     .waitFor({timeout:bootTimeout});
 
   // The rows of the surface are the nodes of the page that the Core

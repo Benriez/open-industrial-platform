@@ -40,7 +40,7 @@ try{
   const ready=await context.request.post(base+'/api/v1/demo/scenario',{data:{scenario:'normal'}});
   assert.equal(ready.status(),200);
   await page.goto(base,{waitUntil:'domcontentloaded'});
-  await page.getByText('Operations Workstation',{exact:true}).waitFor({timeout:45000});
+  await page.getByText('Diagnose öffnen',{exact:true}).waitFor({timeout:45000});
   await page.getByText('API CONNECTED',{exact:false}).waitFor();
   await page.getByText('OPERATIONAL FOCUS · SESSION TELEMETRY',{exact:true}).hover();
   await capture('spectrum-hover-overview');

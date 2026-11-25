@@ -406,11 +406,6 @@ class _SettingsPageState extends State<SettingsPage> {
     final live = dataOrigin == SettingsDataOrigin.liveApi;
     return AdaptiveWorkspaceHeader(
       key: const Key('settings-page-header'),
-      eyebrow: context.tr("SETTINGS · APPLICATION MANAGEMENT"),
-      title: context.tr("Einstellungen"),
-      subtitle: context.tr(
-          "Effektive Werte verstehen · Änderbarkeit und Berechtigung prüfen"),
-      accent: OipTokens.cyan,
       primaryAction: !_backendFree
           ? WorkspacePrimaryAction(
               buttonKey: const Key('settings-refresh'),

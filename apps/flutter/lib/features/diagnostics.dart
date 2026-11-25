@@ -500,11 +500,6 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
       skipTraversal: true,
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         AdaptiveWorkspaceHeader(
-          eyebrow: context.tr("DIAGNOSTICS · EVIDENCE WORKSPACE"),
-          title: context.tr("Diagnose & Ereignisse"),
-          subtitle: context.tr(
-              "Findings prüfen · Ereignis auswählen · Evidence gezielt vertiefen"),
-          accent: OipTokens.yellow,
           primaryAction: WorkspacePrimaryAction(
             buttonKey: const Key('diagnostics-primary-timeline'),
             label: context.tr("Evidence Timeline"),
@@ -536,27 +531,26 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
               icon: const Icon(Icons.refresh),
             ),
           ],
-        ),
-        if (MediaQuery.sizeOf(context).width >= OipTokens.mobile)
-          Wrap(spacing: 7, runSpacing: 5, children: [
-            apiConnectionStatus(context, widget.controller),
-            StatusPill(
-                widget.controller.infrastructure.ready
-                    ? context.tr("KONTEXT · {0}",
-                        [widget.controller.infrastructure.selectedBreadcrumb])
-                    : context.tr("SOURCE · {0}",
-                        [snapshot.primarySourceId ?? 'NICHT GELIEFERT']),
-                color: OipTokens.cyan),
+          status: [
+            if (!widget.controller.infrastructure.ready)
+              StatusPill(
+                  context.tr("SOURCE · {0}",
+                      [snapshot.primarySourceId ?? 'NICHT GELIEFERT']),
+                  color: OipTokens.cyan),
             StatusPill(context.tr("READ-ONLY · SESSION-INVESTIGATION"),
                 color: OipTokens.violet),
             StatusPill(context.tr("GETRENNT VON DER DIAGNOSE"),
                 color: OipTokens.blue),
-          ]),
-        const SizedBox(height: OipTokens.s3),
-        if (snapshot.system.demoControls) _scenarioControl(snapshot),
+          ],
+        ),
+        if (snapshot.system.demoControls)
+          Padding(
+            padding: const EdgeInsets.only(top: OipTokens.s3),
+            child: _scenarioControl(snapshot),
+          ),
         if (eventsError != null)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: OipTokens.s3),
             child: InlineNotice(
               context.tr("Collection-Ereignisse nicht verfügbar"),
               context.tr(

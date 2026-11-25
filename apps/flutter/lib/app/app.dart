@@ -511,7 +511,13 @@ class _TopBar extends StatelessWidget {
                           Text(context.tr("WORKSPACE / LOCAL LAB"),
                               style: Theme.of(context).textTheme.labelSmall),
                           const SizedBox(height: OipTokens.s1),
-                          spectrumTitle(context, context.tr(pageTitles[page])),
+                          Semantics(
+                            key: const Key('workstation-title'),
+                            container: true,
+                            header: true,
+                            child: spectrumTitle(
+                                context, context.tr(pageTitles[page])),
+                          ),
                         ],
                       ),
                     ),

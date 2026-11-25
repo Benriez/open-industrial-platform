@@ -92,10 +92,10 @@ async function boot(width, height) {
   await page.getByRole('button', {name: 'Operator-Sitzung autorisieren', exact: true})
     .waitFor({timeout: bootTimeout});
   await login(context, page);
-  await page.getByText('Operations Workstation', {exact: true}).waitFor({timeout: bootTimeout});
+  await page.getByRole('button', {name: 'Diagnose öffnen', exact: true}).waitFor({timeout: bootTimeout});
   await page.getByText('API CONNECTED', {exact: false}).waitFor();
   await nav(page, 'Geräte & Dienste');
-  await page.getByText('DEVICES & SERVICES · OBJECT WORKSPACE', {exact: true}).waitFor();
+  await page.getByRole('button', {name: 'Gerät hinzufügen', exact: true}).waitFor();
   if (width >= 1000) {
     await page.getByRole('button', {name: /Engineering Workspace/}).click();
     await page.getByRole('button', {name: /Detail-Inspector manuell öffnen/}).click();

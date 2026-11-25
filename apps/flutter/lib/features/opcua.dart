@@ -865,11 +865,6 @@ class _OpcuaPageState extends State<OpcuaPage> {
         : 'unknown';
     final stale = widget.controller.stale;
     return AdaptiveWorkspaceHeader(
-      eyebrow: context.tr("ADRESSRAUM-EXPLORER · SERVERRECHTE"),
-      title: context.tr("OPC-UA-Browser"),
-      subtitle: context
-          .tr("Source wählen · Node suchen · Wert und Attribute untersuchen"),
-      accent: OipTokens.violet,
       primaryAction: WorkspacePrimaryAction(
         buttonKey: const Key('opcua-primary-search'),
         label: context.tr("Node suchen"),

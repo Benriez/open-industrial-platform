@@ -86,7 +86,7 @@ try {
   const tailnetCount=inventory.filter(device=>device.location==='Tailnet').length;
   const start=Date.now();
   await page.goto(base,{waitUntil:'domcontentloaded'});
-  await page.getByText('Operations Workstation',{exact:true}).waitFor({timeout:45000});
+  await page.getByText('Diagnose öffnen',{exact:true}).waitFor({timeout:45000});
   await page.getByText('API CONNECTED',{exact:false}).waitFor({timeout:15000});
   timings.firstLiveMs=Date.now()-start;
   await poll(async()=>/Session-lokaler Signalverlauf, [2-9]/.test(await page.locator('body').innerText()),'Multiple sensor samples rendered via SSE');

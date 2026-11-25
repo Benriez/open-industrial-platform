@@ -9,18 +9,16 @@ import 'workstation.dart';
 /// Shared progressive-disclosure primitives. They change presentation only;
 /// object authority and data provenance stay in the existing Core contracts.
 class AdaptiveWorkspaceHeader extends StatelessWidget {
-  final String eyebrow, title, subtitle;
-  final Color accent;
+  final String? title;
+  final String? description;
   final Widget? primaryAction;
   final List<Widget> status;
   final List<Widget> actions;
 
   const AdaptiveWorkspaceHeader({
     super.key,
-    required this.eyebrow,
-    required this.title,
-    required this.subtitle,
-    required this.accent,
+    this.title,
+    this.description,
     this.primaryAction,
     this.status = const [],
     this.actions = const [],
@@ -30,28 +28,14 @@ class AdaptiveWorkspaceHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, box) {
       final compact = box.maxWidth < 700;
-      final heading = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(eyebrow,
-              style: WorkstationTokens.eyebrow(context, color: accent)),
-          const SizedBox(height: 2),
-          Text(title, style: Theme.of(context).textTheme.headlineSmall),
-          if (subtitle.isNotEmpty)
-            Text(subtitle,
-                maxLines: compact ? 2 : 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall),
-        ],
-      );
       return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Wrap(
-          spacing: 10,
-          runSpacing: 7,
+          spacing: 8,
+          runSpacing: 6,
           crossAxisAlignment: WrapCrossAlignment.center,
-          alignment: WrapAlignment.spaceBetween,
           children: [
-            heading,
+            if (title != null)
+              Text(title!, style: Theme.of(context).textTheme.titleMedium),
             if (primaryAction != null) primaryAction!,
             ...actions,
             if (!compact) ...status,
@@ -61,6 +45,12 @@ class AdaptiveWorkspaceHeader extends StatelessWidget {
           const SizedBox(height: 6),
           Wrap(spacing: 6, runSpacing: 4, children: status),
         ],
+        if (description != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(description!,
+                style: Theme.of(context).textTheme.bodySmall),
+          ),
       ]);
     });
   }

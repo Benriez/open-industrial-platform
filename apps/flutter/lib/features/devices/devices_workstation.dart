@@ -415,10 +415,6 @@ class _DevicesPageState extends State<DevicesPage> {
         widget.controller.management != null;
     return AdaptiveWorkspaceHeader(
       key: const Key('devices-page-header'),
-      eyebrow: context.tr("DEVICES & SERVICES · OBJECT WORKSPACE"),
-      title: context.tr("Geräte & Dienste"),
-      subtitle: '',
-      accent: OipTokens.blue,
       primaryAction: WorkspacePrimaryAction(
         buttonKey: const Key('devices-add-primary'),
         label: context.tr("Gerät hinzufügen"),

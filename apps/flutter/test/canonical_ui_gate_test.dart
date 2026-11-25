@@ -113,10 +113,21 @@ void main() {
 
       await pumpShell(tester, controller);
 
+      void expectWorkstationTitle(String title) {
+        expect(
+          find.descendant(
+            of: find.byKey(const Key('workstation-title')),
+            matching: find.text(title),
+          ),
+          findsOneWidget,
+        );
+        // The two visible copies are the navigation item and the shell title.
+        expect(find.text(title), findsNWidgets(2));
+      }
+
       // Overview is the default landing page of the approved design.
+      expectWorkstationTitle('Übersicht');
       expect(find.byKey(const Key('overview-primary-diagnostics')),
-          findsOneWidget);
-      expect(find.text('INFRASTRUCTURE COMMAND CENTER · READ-ONLY'),
           findsOneWidget);
 
       // Devices & Services.
@@ -124,21 +135,24 @@ void main() {
       for (var i = 0; i < 8; i++) {
         await tester.pump(const Duration(milliseconds: 120));
       }
-      expect(find.byKey(const Key('devices-page-header')), findsOneWidget);
+      expectWorkstationTitle('Geräte & Dienste');
+      expect(find.byKey(const Key('devices-add-primary')), findsOneWidget);
 
       // Network & VPN.
       await tester.tap(find.text('Netzwerk & VPN').first);
       for (var i = 0; i < 8; i++) {
         await tester.pump(const Duration(milliseconds: 120));
       }
-      expect(find.byKey(const Key('network-primary-connections')),
-          findsOneWidget);
+      expectWorkstationTitle('Netzwerk & VPN');
+      expect(
+          find.byKey(const Key('network-primary-connections')), findsOneWidget);
 
       // OPC-UA Browser.
       await tester.tap(find.text('OPC-UA-Browser').first);
       for (var i = 0; i < 8; i++) {
         await tester.pump(const Duration(milliseconds: 120));
       }
+      expectWorkstationTitle('OPC-UA-Browser');
       expect(find.byKey(const Key('opcua-primary-search')), findsOneWidget);
 
       // Diagnostics & Events.
@@ -146,6 +160,7 @@ void main() {
       for (var i = 0; i < 8; i++) {
         await tester.pump(const Duration(milliseconds: 120));
       }
+      expectWorkstationTitle('Diagnose & Ereignisse');
       expect(find.byKey(const Key('diagnostics-primary-timeline')),
           findsOneWidget);
 
@@ -154,6 +169,7 @@ void main() {
       for (var i = 0; i < 8; i++) {
         await tester.pump(const Duration(milliseconds: 120));
       }
+      expectWorkstationTitle('Einstellungen');
       expect(find.byKey(const Key('settings-page-header')), findsOneWidget);
     });
 
@@ -165,12 +181,9 @@ void main() {
 
       await pumpShell(tester, controller);
 
-      // The OIP/005 command center is not the default of the real mode. The
-      // approved overview carries its own eyebrow instead.
-      expect(find.textContaining('Deine Infrastruktur. Ein Bild.'),
-          findsNothing);
-      expect(find.text('INFRASTRUCTURE COMMAND CENTER · READ-ONLY'),
-          findsOneWidget);
+      // The OIP/005 command center is not the default of the real mode.
+      expect(
+          find.textContaining('Deine Infrastruktur. Ein Bild.'), findsNothing);
       // The decorative gradient KPI row of the old overview is gone.
       expect(find.text('Erfasste Geräte'), findsNothing);
       expect(find.text('Erreichbare Geräte'), findsNothing);
@@ -253,8 +266,8 @@ void main() {
         // data. The rule of the baseline is proved by the mode of the Core,
         // not by a fixture that has the fallback switched off by hand.
         (api.data['system'] as Map<String, dynamic>)['demo_controls'] = false;
-        final controller = OipController(
-            api, retryDelay: const Duration(milliseconds: 1));
+        final controller =
+            OipController(api, retryDelay: const Duration(milliseconds: 1));
         final running = controller.start();
         await pumpShell(tester, controller);
 

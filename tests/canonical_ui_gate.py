@@ -28,7 +28,7 @@ BUILD_COMMAND = [
 REQUIRED_MARKERS = [
     'Alle berechtigten Infrastrukturen',
     'Einstellungen',
-    'INFRASTRUCTURE COMMAND CENTER',
+    'overview-primary-diagnostics',
 ]
 FORBIDDEN_MARKERS = [
     'OIP / 005 UI',

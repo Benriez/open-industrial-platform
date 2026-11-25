@@ -44,16 +44,16 @@ if (fs.existsSync(outDir) && fs.readdirSync(outDir).length > 0) {
 fs.mkdirSync(outDir, { recursive: true });
 
 const workstations = [
-  { name: 'Übersicht', slug: 'overview', marker: 'INFRASTRUCTURE COMMAND CENTER · READ-ONLY' },
-  { name: 'Geräte & Dienste', slug: 'devices', marker: 'DEVICES & SERVICES · OBJECT WORKSPACE' },
-  { name: 'Netzwerk & VPN', slug: 'network', marker: 'NETWORK ENGINEERING EXPLORER · READ-ONLY' },
+  { name: 'Übersicht', slug: 'overview', marker: 'Diagnose öffnen' },
+  { name: 'Geräte & Dienste', slug: 'devices', marker: 'Gerät hinzufügen' },
+  { name: 'Netzwerk & VPN', slug: 'network', marker: 'Beziehungen prüfen' },
   // The address space is **delivered** by the Core: a capture that shows an
   // empty catalogue would misrepresent the product. The workstation waits for
   // the number of the delivered nodes.
-  { name: 'OPC-UA-Browser', slug: 'opcua', marker: 'ADRESSRAUM-EXPLORER · READ-ONLY',
+  { name: 'OPC-UA-Browser', slug: 'opcua', marker: 'SERVER-GESTEUERTER ZUGRIFF',
     ready: /([1-9][0-9]*) Nodes/ },
   { name: 'Diagnose & Ereignisse', slug: 'diagnostics', marker: 'EVENTS · UNTERSUCHUNGSKONTEXT' },
-  { name: 'Einstellungen', slug: 'settings', marker: 'SETTINGS · APPLICATION MANAGEMENT' },
+  { name: 'Einstellungen', slug: 'settings', marker: 'READ-ONLY / OFFLINE ADMIN' },
 ];
 
 const findings = [];

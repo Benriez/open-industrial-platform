@@ -198,7 +198,7 @@ try {
   await pass(`the Core delivered ${devices.length} devices and ${registered.length} registered devices`);
 
   await page.getByRole('button', {name: 'Navigation Netzwerk & VPN', exact: true}).click();
-  await page.getByText('NETWORK ENGINEERING EXPLORER · READ-ONLY', {exact: true})
+  await page.getByRole('button', {name: 'Beziehungen prüfen', exact: true})
     .waitFor({timeout: bootTimeout});
 
   // 1. the summary names the absence of the paths — the Core delivers none.

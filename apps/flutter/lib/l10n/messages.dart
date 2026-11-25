@@ -2,6 +2,8 @@
 
 const englishMessages = <String, String>{
   "25. November 2026": "25 November 2026",
+  "Jeder Arbeitsbereich hat eine Spectrum-Überschrift. Die wichtigsten Aktionen stehen kompakt darunter.":
+      "Each workspace has a Spectrum title with its main actions grouped below.",
   "Du kannst gespeicherte Geräteanmeldungen in den Einstellungen sperren. Die Sperre gilt auch nach einem Core-Neustart.":
       "You can revoke saved device sign-ins in Settings. Revocation persists after a Core restart.",
   "Zwei Sicherheitsbefunde in den OPC-UA-Bibliotheken wurden behoben.":
@@ -140,8 +142,6 @@ const englishMessages = <String, String>{
       "The Core contract includes 25 read operations, legacy SimulationScenarioSet, and offline-only SettingsChange. MCP tools that modify data, remote MCP, browser administration, and listing active sessions are unavailable.",
   "3 Spalten": "3 columns",
   "4 Spalten": "4 Columns",
-  "ADRESSRAUM-EXPLORER · SERVERRECHTE":
-      "ADDRESS SPACE EXPLORER · SERVER PERMISSIONS",
   "AKTUELLER WERT": "CURRENT VALUE",
   "ANMELDUNG ERFORDERLICH": "SIGN-IN REQUIRED",
   "API VERBINDET": "API CONNECTING",
@@ -227,8 +227,6 @@ const englishMessages = <String, String>{
       "If there is an error in the live stream, the Mac app loads the current status via the existing login.",
   "Bei verweigertem Management-Zugriff führt ein Link direkt zu den lokalen Updates.":
       "If management access is denied, a link leads directly to the local updates.",
-  "Bekannte Geräte und gelieferte Beziehungen · keine aktiven Probes":
-      "Known devices and reported connections · no active probes",
   "Bekannte Topologie-Endpunkte": "Known topology endpoints",
   "Bekannte Verbindungen öffnen": "Open known connections",
   "Benachbarte Ereignisse": "Neighboring events",
@@ -491,8 +489,6 @@ const englishMessages = <String, String>{
   "Du verwendest die neueste Version.": "You are using the latest version.",
   "Edge Labels anzeigen": "Show edge labels",
   "Edge Labels ausblenden": "Hide edge labels",
-  "Effektive Werte verstehen · Änderbarkeit und Berechtigung prüfen":
-      "Inspect effective values, editability, and permissions",
   "Effektiver Scope, Provenienz und Offline-Change-Channel":
       "Effective scope, provenance, and offline change channel",
   "Effektives Schreibrecht vom Server geliefert; Rohattribute nicht geliefert":
@@ -568,8 +564,6 @@ const englishMessages = <String, String>{
   "Fehlgeschlagen": "Failed",
   "Fehlt · keine IDs im Device-DTO": "Missing · no IDs in the device record",
   "Filter zurücksetzen": "Reset filters",
-  "Findings prüfen · Ereignis auswählen · Evidence gezielt vertiefen":
-      "Review findings, select an event, and inspect the evidence",
   "Findings sind ohne Cursor abgeschnitten.":
       "Findings are cut off without cursors.",
   "Findings, aktuelle Ereignisse und Collection-Probleme untersuchen":
@@ -1047,8 +1041,6 @@ const englishMessages = <String, String>{
   "Overview öffnen · Modulziel, kein Device-Deep-Link":
       "Open Overview · Module target, no device-deep link",
   "Panel hinzufügen": "Add panel",
-  "Panels je Benutzer und Infrastruktur zusammenstellen":
-      "Customize panels for each user and infrastructure",
   "Permission {0}: {1}. Berechtigung {2}":
       "Permission {0}: {1}. Authorization {2}",
   "Persistierte Evidenz nicht verfügbar": "Persisted evidence not available",
@@ -1202,8 +1194,6 @@ const englishMessages = <String, String>{
   "Source nicht projiziert": "Source not projected",
   "Source unbekannt": "Source unknown",
   "Source und Nodes aktualisieren": "Refresh source and nodes",
-  "Source wählen · Node suchen · Wert und Attribute untersuchen":
-      "Select a source, find a node, and inspect its value and attributes",
   "Source {0} {1} auswählen · {2} Signale · {3} · {4}":
       "Select Source {0} {1} · {2} Signals · {3} · {4}",
   "Source, Gerät, Typ …": "Source, device, type ...",
@@ -1427,6 +1417,8 @@ const englishMessages = <String, String>{
   "Wissenschaft": "Science",
   "Wähle eine Variable aus dem Adressraum.":
       "Select a variable from the address space.",
+  "Zeigt bekannte Geräte und ihre gemeldeten Verbindungen. Führt keine Netzwerkscans aus.":
+      "Shows known devices and their reported connections. It does not scan the network.",
   "ZEITBASIS · EVENT TIMESTAMP / SERVER WALL CLOCK · UTC\n{0}/{1} zeitgestempelte Ereignisse im Viewport · {2} ohne Zeitstempel nur im Explorer":
       "ZEITBASIS · EVENT TIMESTAMP / SERVER WALL CLOCK · UTC {0}/{1} time stamped events in the viewport · {2} without time stamp only in the Explorer",
   "Zeit- und Herkunftssemantik": "Semantics of time and origin",
@@ -1452,8 +1444,6 @@ const englishMessages = <String, String>{
   "Zur Operations-Übersicht zurückkehren": "Return to the operations overview",
   "Zurück": "Back",
   "Zustand": "Condition",
-  "Zustand erkennen · Auffälligkeiten auswählen · technisch vertiefen":
-      "Review system status, select issues, and inspect the details",
   "Zustandsdimensionen getrennt": "State dimensions separately",
   "active_startup_snapshot beschreibt den laufenden Snapshot. persisted_requires_restart wäre ein Offline-Ergebnis, kein aktiver Runtime-Wert. Ein exakter Scope-Datensatz und ein geerbter effektiver Wert sind nicht dasselbe.":
       "active_startup_snapshot describes the running snapshot. persisted_requires_restart would be an offline result, not an active runtime value.",

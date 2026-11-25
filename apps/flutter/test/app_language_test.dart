@@ -29,14 +29,17 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    Finder workstationTitle(String label) => find.descendant(
+          of: find.byKey(const Key('workstation-title')),
+          matching: find.text(label),
+        );
+
     await mount();
-    expect(find.text('Einstellungen').first, findsOneWidget);
+    expect(workstationTitle('Einstellungen'), findsOneWidget);
     await select('English');
-    expect(find.text('Settings').first, findsOneWidget);
+    expect(workstationTitle('Settings'), findsOneWidget);
     expect(find.text('Devices & Services'), findsOneWidget);
     expect(find.text('Language'), findsOneWidget);
-    expect(find.text('Inspect effective values, editability, and permissions'),
-        findsOneWidget);
     expect(find.text('Your language choice is saved on this device.'),
         findsOneWidget);
     expect((await SharedPreferences.getInstance()).getString('oip-language'),
@@ -44,9 +47,9 @@ void main() {
 
     await tester.pumpWidget(const SizedBox());
     await mount();
-    expect(find.text('Settings').first, findsOneWidget);
+    expect(workstationTitle('Settings'), findsOneWidget);
     await select('Deutsch');
-    expect(find.text('Einstellungen').first, findsOneWidget);
+    expect(workstationTitle('Einstellungen'), findsOneWidget);
     expect((await SharedPreferences.getInstance()).getString('oip-language'),
         'de');
   });

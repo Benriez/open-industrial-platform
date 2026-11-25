@@ -256,17 +256,7 @@ class _OverviewPageState extends State<OverviewPage> {
   }
 
   Widget _header() => AdaptiveWorkspaceHeader(
-        eyebrow: dashboardMode
-            ? context.tr("VISUALISIERUNG · AUTORISIERTE MESSWERTE")
-            : context.tr("INFRASTRUCTURE COMMAND CENTER · READ-ONLY"),
-        title: dashboardMode
-            ? context.tr("Infrastruktur-Dashboard")
-            : context.tr("Operations Workstation"),
-        subtitle: dashboardMode
-            ? context.tr("Panels je Benutzer und Infrastruktur zusammenstellen")
-            : context.tr(
-                "Zustand erkennen · Auffälligkeiten auswählen · technisch vertiefen"),
-        accent: OipTokens.cyan,
+        title: dashboardMode ? context.tr("Infrastruktur-Dashboard") : null,
         primaryAction: WorkspacePrimaryAction(
           buttonKey: const Key('overview-primary-diagnostics'),
           label: context.tr("Diagnose öffnen"),

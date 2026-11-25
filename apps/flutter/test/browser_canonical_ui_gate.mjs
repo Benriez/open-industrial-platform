@@ -40,12 +40,12 @@ const check = (name, ok, detail) => {
   if (!ok) throw new Error(`${name}: ${detail ?? 'failed'}`);
 };
 const workstations = [
-  { name: 'Übersicht', slug: 'overview', marker: 'INFRASTRUCTURE COMMAND CENTER · READ-ONLY' },
-  { name: 'Geräte & Dienste', slug: 'devices', marker: 'DEVICES & SERVICES · OBJECT WORKSPACE' },
-  { name: 'Netzwerk & VPN', slug: 'network', marker: 'NETWORK ENGINEERING EXPLORER · READ-ONLY' },
-  { name: 'OPC-UA-Browser', slug: 'opcua', marker: 'ADRESSRAUM-EXPLORER · SERVERRECHTE' },
+  { name: 'Übersicht', slug: 'overview', marker: 'Diagnose öffnen' },
+  { name: 'Geräte & Dienste', slug: 'devices', marker: 'Gerät hinzufügen' },
+  { name: 'Netzwerk & VPN', slug: 'network', marker: 'Beziehungen prüfen' },
+  { name: 'OPC-UA-Browser', slug: 'opcua', marker: 'SERVER-GESTEUERTER ZUGRIFF' },
   { name: 'Diagnose & Ereignisse', slug: 'diagnostics', marker: 'EVENTS · UNTERSUCHUNGSKONTEXT' },
-  { name: 'Einstellungen', slug: 'settings', marker: 'SETTINGS · APPLICATION MANAGEMENT' },
+  { name: 'Einstellungen', slug: 'settings', marker: 'READ-ONLY / OFFLINE ADMIN' },
 ];
 const forbidden = ['Deine Infrastruktur. Ein Bild.', 'Erfasste Geräte',
   'Erreichbare Geräte', 'Temperatur M-01', 'Temperatur · M-01', 'Normalbetrieb',
@@ -179,6 +179,10 @@ try {
       await page.waitForTimeout(650);
       await page.getByRole('button', { name: `Navigation ${workstation.name}`, exact: true }).click();
       await waitForAria(workstation.marker);
+      const title = page.getByRole('heading', { name: workstation.name, exact: true });
+      await title.waitFor();
+      check(`one workstation title on ${workstation.slug} at ${width}px`,
+        await title.count() === 1);
       const workstationSnapshot = await snapshot();
       const scopedForbidden = forbidden.filter((marker) =>
         !['M-01', 'Normalbetrieb'].includes(marker) &&

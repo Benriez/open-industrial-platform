@@ -17,6 +17,14 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.48',
+      build: '51',
+      date: '25. November 2026',
+      changes: [
+        'Jeder Arbeitsbereich hat eine Spectrum-Überschrift. Die wichtigsten Aktionen stehen kompakt darunter.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.47',
       build: '50',
       date: '25. November 2026',

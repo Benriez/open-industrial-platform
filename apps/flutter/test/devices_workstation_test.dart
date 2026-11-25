@@ -965,12 +965,12 @@ void main() {
       await tester.tap(find.byKey(const Key('theme-toggle')));
       await tester.pumpAndSettle();
       expect(find.text('DAYLIGHT'), findsOneWidget);
-      expect(_within('devices-page-header', find.text('Geräte & Dienste')),
+      expect(_within('workstation-title', find.text('Geräte & Dienste')),
           findsOneWidget);
       await tester.tap(find.byKey(const Key('theme-toggle')));
       await tester.pumpAndSettle();
       expect(find.text('GRAPHITE'), findsOneWidget);
-      expect(_within('devices-page-header', find.text('Geräte & Dienste')),
+      expect(_within('workstation-title', find.text('Geräte & Dienste')),
           findsOneWidget);
       expect(tester.takeException(), isNull);
     });

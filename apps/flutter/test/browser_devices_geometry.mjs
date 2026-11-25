@@ -98,7 +98,7 @@ async function measure(page) {
     const byLabel = needle => nodes.find(node => node.label === needle);
     const byPrefix = needle => nodes.find(node => node.label.startsWith(needle));
 
-    const eyebrow = byLabel('DEVICES & SERVICES · OBJECT WORKSPACE');
+    const addDeviceButton = byLabel('Gerät hinzufügen');
     const countLine = nodes.find(node => /^\d+ von \d+ Geräten/.test(node.label));
     const workspaceEyebrow = byLabel('ENGINEERING WORKSPACE');
     const comparison = byLabel('SESSION-LOCAL · keine Persistenz');
@@ -144,7 +144,8 @@ async function measure(page) {
     const bottomMost = nodes.reduce((max, node) => Math.max(max, node.bottom), 0);
 
     return {
-      headerToInventoryPx: eyebrow ? Math.round(eyebrow.height) : null,
+      headerToInventoryPx: addDeviceButton && deviceRow
+        ? Math.round(deviceRow.y - addDeviceButton.y) : null,
       countLineTopPx: countLine ? Math.round(countLine.y) : null,
       filterBarHeightPx: Math.round(filterBottom - filterTop),
       filterControlCount: filters.length,
@@ -211,10 +212,10 @@ try {
     await page.getByRole('button', {name: 'Operator-Sitzung autorisieren', exact: true})
       .waitFor({timeout: bootTimeout});
     await login(page);
-    await page.getByText('Operations Workstation', {exact: true}).waitFor({timeout: bootTimeout});
+    await page.getByRole('button', {name: 'Diagnose öffnen', exact: true}).waitFor({timeout: bootTimeout});
     await page.getByText('API CONNECTED', {exact: false}).waitFor();
     await nav(page, 'Geräte & Dienste');
-    await page.getByText('DEVICES & SERVICES · OBJECT WORKSPACE', {exact: true})
+    await page.getByRole('button', {name: 'Gerät hinzufügen', exact: true})
       .waitFor({timeout: bootTimeout});
     await page.getByText(/\d+ von \d+ Geräten/).first().waitFor({timeout: bootTimeout});
     await page.waitForTimeout(700);

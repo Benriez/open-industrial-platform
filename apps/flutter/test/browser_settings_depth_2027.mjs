@@ -219,7 +219,7 @@ try {
 
   await page.getByRole('button', {name: 'Navigation Einstellungen', exact: true}).click();
   await page.waitForTimeout(1500);
-  await waitForNameContaining('SETTINGS · APPLICATION MANAGEMENT', bootTimeout);
+  await waitForNameContaining('READ-ONLY / OFFLINE ADMIN', bootTimeout);
 
   // 1. every category of the Core is offered by the surface.
   const categoryButtons = (await theNames())

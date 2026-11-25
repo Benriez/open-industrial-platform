@@ -640,11 +640,8 @@ class _NetworkPageState extends State<NetworkPage> {
         snapshot.topology.any((link) => link.simulated);
     final compareCount = comparedDevices.length + comparedEdges.length;
     return AdaptiveWorkspaceHeader(
-      eyebrow: context.tr("NETWORK ENGINEERING EXPLORER · READ-ONLY"),
-      title: context.tr("Netzwerk & VPN"),
-      subtitle: context.tr(
-          "Bekannte Geräte und gelieferte Beziehungen · keine aktiven Probes"),
-      accent: OipTokens.violet,
+      description: context.tr(
+          "Zeigt bekannte Geräte und ihre gemeldeten Verbindungen. Führt keine Netzwerkscans aus."),
       primaryAction: WorkspacePrimaryAction(
         buttonKey: const Key('network-primary-connections'),
         label: context.tr("Beziehungen prüfen"),
@@ -677,18 +674,18 @@ class _NetworkPageState extends State<NetworkPage> {
         ),
       ],
       status: [
-        NetworkBadge(
-          transportLive ? 'API CONNECTED' : 'API STALE / UNBEKANNT',
-          transportLive ? 'connected' : 'stale',
-          icon: transportLive ? Icons.sensors : Icons.sync_problem_outlined,
-        ),
+        if (!transportLive)
+          const NetworkBadge(
+            'API STALE / UNBEKANNT',
+            'stale',
+            icon: Icons.sync_problem_outlined,
+          ),
         NetworkBadge(
           hasSimulation ? 'DEMO / SIMULATION' : 'API-INVENTAR',
           hasSimulation ? 'info' : 'connected',
           icon: hasSimulation ? Icons.science_outlined : Icons.cloud_outlined,
         ),
-        // READ-ONLY is already stated by the eyebrow; keyboard shortcuts stay
-        // active without forcing another header row at tablet widths.
+        StatusPill(context.tr("READ-ONLY"), icon: Icons.lock_outline),
       ],
     );
   }

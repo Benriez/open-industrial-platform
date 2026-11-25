@@ -31,7 +31,7 @@ await context.route('**/*',route=>{
 });
 
 const views = [
-  {label:'Übersicht',slug:'overview',marker:'Operations Workstation'},
+  {label:'Übersicht',slug:'overview',marker:'Diagnose öffnen'},
   {label:'Geräte & Dienste',slug:'devices',marker:'DEVICES & SERVICES · ENGINEERING WORKSTATION'},
   {label:'Netzwerk & VPN',slug:'network',marker:'Logische Topologie'},
   {label:'OPC-UA-Browser',slug:'opcua',marker:'Namespace 2'},
@@ -62,7 +62,7 @@ try {
   const ready=await context.request.post(base+'/api/v1/demo/scenario',{data:{scenario:'normal'}});
   assert.equal(ready.status(),200);
   await page.goto(base,{waitUntil:'domcontentloaded'});
-  await page.getByText('Operations Workstation',{exact:true}).waitFor({timeout:45000});
+  await page.getByText('Diagnose öffnen',{exact:true}).waitFor({timeout:45000});
   await page.getByText('API CONNECTED',{exact:false}).waitFor({timeout:15000});
 
   for(const [width,height] of [[1920,1080],[1440,1000],[1024,900],[768,1024],[375,812]]) {
@@ -85,7 +85,7 @@ try {
   await page.getByRole('button',{name:/Darstellung wechseln/}).click({force:true});
   await page.getByRole('button',{name:/Darstellung wechseln/}).click({force:true});
   await page.getByText('SPECTRUM',{exact:true}).waitFor();
-  await nav('Übersicht','Operations Workstation');
+  await nav('Übersicht','Diagnose öffnen');
 
   const performanceResult=await page.evaluate(async()=>{
     const longTasks=[];

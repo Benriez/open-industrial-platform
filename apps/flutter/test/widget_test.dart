@@ -32,7 +32,12 @@ void main() {
         ..connection = 'live';
       await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
       await tester.pumpAndSettle();
-      expect(find.text('Operations Workstation'), findsOneWidget);
+      expect(
+        find.descendant(
+            of: find.byKey(const Key('workstation-title')),
+            matching: find.text('Übersicht')),
+        findsOneWidget,
+      );
       Future<void> navigate(int page) async {
         if (size.width < 1080) {
           await tester.tap(find.byKey(const Key('open-navigation')));
