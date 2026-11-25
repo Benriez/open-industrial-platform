@@ -644,9 +644,18 @@ class _DevicesPageState extends State<DevicesPage> {
             widget.controller.workspaces
                 .layout(WorkspaceId.devices)
                 .expertWorkspace;
-        if (box.maxWidth >= OipTokens.workstation && !showWorkspace) {
+        final wide = box.maxWidth >= OipTokens.workstation;
+        // Leave space for the shell and toolbar. On short windows the page
+        // can scroll so the explorer still has room for four grouped rows.
+        final comparisonReserve = wide && session.compareExpanded
+            ? DevicesLayout.comparisonExpanded - DevicesLayout.comparisonEmpty
+            : 0.0;
+        final height = wide
+            ? (viewport - 430 - comparisonReserve).clamp(480.0, 720.0)
+            : (viewport - 340).clamp(480.0, 680.0);
+        if (wide && !showWorkspace) {
           return Column(children: [
-            SizedBox(height: 420, child: explorer),
+            SizedBox(height: height, child: explorer),
             const SizedBox(height: DevicesLayout.panelGap),
             SizedBox(
               height: session.compareExpanded
@@ -658,18 +667,7 @@ class _DevicesPageState extends State<DevicesPage> {
             ),
           ]);
         }
-        if (box.maxWidth >= OipTokens.workstation) {
-          // The shell owns the top bar, the scroll padding and the page
-          // footer; the page owns the header, the scope strip, the mode tabs
-          // and the filter bar. The workstation row takes what is left of the
-          // viewport so the inventory starts as high as possible.
-          // An expanded comparison strip takes its height from the
-          // workstation row, so the page still fits into the viewport.
-          final comparisonReserve = session.compareExpanded
-              ? DevicesLayout.comparisonExpanded - DevicesLayout.comparisonEmpty
-              : 0.0;
-          final height =
-              (viewport - 480 - comparisonReserve).clamp(300.0, 720.0);
+        if (wide) {
           return Column(children: [
             SizedBox(
               height: height,
@@ -700,11 +698,6 @@ class _DevicesPageState extends State<DevicesPage> {
           ]);
         }
         if (box.maxWidth >= OipTokens.tablet) {
-          final comparisonReserve = session.compareExpanded
-              ? DevicesLayout.comparisonExpanded - DevicesLayout.comparisonEmpty
-              : 0.0;
-          final height =
-              (viewport - 430 - comparisonReserve).clamp(300.0, 560.0);
           return Column(children: [
             SizedBox(
               height: height,

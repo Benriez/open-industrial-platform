@@ -224,6 +224,33 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
 
 void main() {
   group('A selection and stale telemetry', () {
+    for (final size in [const Size(1024, 820), const Size(1440, 760)]) {
+      testWidgets(
+          'four grouped devices fit in the explorer at '
+          '${size.width.toInt()}×${size.height.toInt()}', (tester) async {
+        final data = fixture()
+          ..['devices'] = [
+            for (var i = 1; i <= 4; i++)
+              _device('device-$i', source: 'source-$i'),
+          ];
+        await _bootstrap(tester, size: size, data: data);
+        await _navigate(tester, size.width);
+        await tester.tap(find.byKey(const Key('device-device-1')));
+        await tester.pumpAndSettle();
+
+        final list =
+            tester.getRect(find.byKey(const Key('device-inventory-list')));
+        for (var i = 1; i <= 4; i++) {
+          final device = find.byKey(Key('device-device-$i'));
+          final row = tester.getRect(device);
+          expect(row.top, greaterThanOrEqualTo(list.top));
+          expect(row.bottom, lessThanOrEqualTo(list.bottom));
+          expect(device.hitTestable(), findsOneWidget);
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
+
     testWidgets(
         'Selection drives Explorer, Workspace, Inspector and Related Activity',
         (tester) async {

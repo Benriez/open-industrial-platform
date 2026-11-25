@@ -9,7 +9,7 @@
 /// Devices workstation carries three dense columns, and 12 px is the value
 /// used by the reference implementations (OPC-UA Browser 2027 Phase 2,
 /// Network & VPN 2027 Phase 2) for the same relation. Section gaps use 12 px
-/// for the same reason; the header, scope strip and mode tabs would otherwise
+/// for the same reason; the header and mode tabs would otherwise
 /// push the inventory explorer out of the first viewport.
 abstract final class DevicesLayout {
   /// Height of every interactive control in the toolbar and the explorer.
@@ -27,7 +27,7 @@ abstract final class DevicesLayout {
   /// Gap between the main panels of the workstation row.
   static const panelGap = 12.0;
 
-  /// Gap between two page sections (header, scope strip, tabs, filter bar).
+  /// Gap between two page sections (header, tabs, filter bar).
   static const sectionGap = 12.0;
 
   /// Compact device row height.
