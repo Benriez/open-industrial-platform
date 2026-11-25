@@ -17,6 +17,15 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.47',
+      build: '50',
+      date: '25. November 2026',
+      changes: [
+        'Du kannst gespeicherte Geräteanmeldungen in den Einstellungen sperren. Die Sperre gilt auch nach einem Core-Neustart.',
+        'Zwei Sicherheitsbefunde in den OPC-UA-Bibliotheken wurden behoben.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.42',
       build: '45',
       date: '21. November 2026',

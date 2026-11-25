@@ -1,6 +1,11 @@
 // Client-owned interface copy. Unmapped source strings are used verbatim.
 
 const englishMessages = <String, String>{
+  "25. November 2026": "25 November 2026",
+  "Du kannst gespeicherte Geräteanmeldungen in den Einstellungen sperren. Die Sperre gilt auch nach einem Core-Neustart.":
+      "You can revoke saved device sign-ins in Settings. Revocation persists after a Core restart.",
+  "Zwei Sicherheitsbefunde in den OPC-UA-Bibliotheken wurden behoben.":
+      "Two security issues in the OPC UA libraries were fixed.",
   "Sperren": "Revoke",
   "Gespeicherte Geräteanmeldungen": "Saved device sign-ins",
   "Hier verwaltest du Macs, die sich mit Touch ID bei diesem Core anmelden dürfen.":
