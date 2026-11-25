@@ -748,45 +748,6 @@ class _PageContent extends StatelessWidget {
                 icon: Icons.error_outline,
               ),
           },
-        const SizedBox(height: OipTokens.s7),
-        const Divider(),
-        const SizedBox(height: OipTokens.s3),
-        Wrap(
-          spacing: OipTokens.s3,
-          runSpacing: OipTokens.s1,
-          children: [
-            Text(context.tr("OIP · SPECTRUM 2027"),
-                style: Theme.of(context).textTheme.labelSmall),
-            Text(
-              controller.hasAuthorizedContext
-                  ? context.tr("Reale Infrastruktur · lokale Operator-Sitzung")
-                  : context.tr("Lokale Entwicklung und Simulation"),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            Text(
-              snapshot == null
-                  ? context.tr("Security-Blocker werden vom Server geladen")
-                  : snapshot.system.blocker == 'none'
-                      ? context.tr("Kein Security-Blocker gemeldet")
-                      : snapshot.system.blocker == 'unknown'
-                          // The scoped snapshot of a tenant carries no
-                          // platform fact. The blocker of the platform is
-                          // therefore not delivered to this session: the
-                          // footer names that instead of showing a
-                          // placeholder as an open blocker.
-                          ? context.tr(
-                              "Security-Blocker: an diese Sitzung nicht geliefert")
-                          : context.tr("{0} offen", [snapshot.system.blocker]),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            if (controller.hasAuthorizedContext)
-              TextButton(
-                key: const Key('operator-logout'),
-                onPressed: () => controller.logout(),
-                child: Text(context.tr("Operator abmelden")),
-              ),
-          ],
-        ),
       ],
     );
   }

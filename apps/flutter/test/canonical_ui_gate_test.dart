@@ -67,8 +67,7 @@ void main() {
       expect(find.text('ARBEITSBEREICH'), findsOneWidget);
       expect(find.text('DATEN & ANALYSE'), findsOneWidget);
       expect(find.text('SYSTEM'), findsOneWidget);
-      // The application identity is the current one, not the OIP/005 label.
-      expect(find.text('OIP · SPECTRUM 2027'), findsOneWidget);
+      expect(find.text('OIP · SPECTRUM 2027'), findsNothing);
       expect(find.textContaining('OIP / 005'), findsNothing);
     });
 
@@ -123,6 +122,11 @@ void main() {
         );
         // The two visible copies are the navigation item and the shell title.
         expect(find.text(title), findsNWidgets(2));
+        expect(find.textContaining('Security-Blocker:'), findsNothing);
+        expect(find.text('Reale Infrastruktur · lokale Operator-Sitzung'),
+            findsNothing);
+        expect(find.byKey(const Key('operator-logout')),
+            title == 'Einstellungen' ? findsOneWidget : findsNothing);
       }
 
       // Overview is the default landing page of the approved design.
@@ -170,7 +174,18 @@ void main() {
         await tester.pump(const Duration(milliseconds: 120));
       }
       expectWorkstationTitle('Einstellungen');
-      expect(find.byKey(const Key('settings-page-header')), findsOneWidget);
+      final header = find.byKey(const Key('settings-page-header'));
+      expect(header, findsOneWidget);
+      expect(
+          find.descendant(
+              of: header, matching: find.byKey(const Key('operator-logout'))),
+          findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('settings-category-system')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings-section-versions')));
+      await tester.pumpAndSettle();
+      expect(find.text('OIP · SPECTRUM 2027'), findsOneWidget);
     });
 
     testWidgets('The real mode shows no legacy dashboard and no demo identity',

@@ -7,14 +7,14 @@
 /// fields it describes, so a drift between the manifest and the rendered
 /// identity is visible in one place instead of silently diverging.
 ///
-/// The name, the shell identity footer and the data-disclosure note are stable
+/// The name, the shell identity and the data-disclosure note are stable
 /// and do not change per build.
 class OipApplicationInfo {
   const OipApplicationInfo({
     required this.name,
     required this.version,
     required this.build,
-    required this.footer,
+    required this.shellIdentity,
     required this.privacyNote,
     required this.license,
   });
@@ -28,9 +28,9 @@ class OipApplicationInfo {
   /// The monotonically increasing build number, mirroring the manifest build.
   final String build;
 
-  /// The approved shell identity shown in the application footer
+  /// The approved shell identity shown in Settings under About
   /// (`docs/design/OIP_CANONICAL_UI_BASELINE.md` §3).
-  final String footer;
+  final String shellIdentity;
 
   /// The store-ready data-disclosure note shown in the About section.
   final String privacyNote;
@@ -43,8 +43,8 @@ class OipApplicationInfo {
   /// The exact `version:` value of `pubspec.yaml`, kept next to the fields it
   /// describes so a drift between the manifest and the rendered identity is
   /// visible in one place.
-  static const _packageVersion = '0.3.49';
-  static const _packageBuild = '52';
+  static const _packageVersion = '0.3.50';
+  static const _packageBuild = '53';
   static const String manifestDeclaration = '$_packageVersion+$_packageBuild';
 }
 
@@ -56,7 +56,7 @@ const OipApplicationInfo kOipApplication = OipApplicationInfo(
       defaultValue: OipApplicationInfo._packageVersion),
   build: String.fromEnvironment('OIP_APP_BUILD',
       defaultValue: OipApplicationInfo._packageBuild),
-  footer: 'OIP · SPECTRUM 2027',
+  shellIdentity: 'OIP · SPECTRUM 2027',
   privacyNote:
       'Lokal betrieben. OIP sammelt keine Telemetrie und sendet keine Daten nach '
       'außen; autorisierte Geräte- und Hostdaten bleiben im Besitz des Operators.',

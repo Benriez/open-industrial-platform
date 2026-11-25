@@ -163,7 +163,6 @@ try {
   for (const workstation of workstations) {
     check(`workstation navigation ${workstation.name}`, first.includes(`Navigation ${workstation.name}`));
   }
-  check('current application identity', first.includes('OIP · SPECTRUM 2027'));
   check('authorized projection', first.includes('UNIFIED INFRASTRUCTURE VIEW'));
   check('honest unknown state', first.includes('Unknown ≠ Offline'));
   for (const marker of overviewForbidden) {
@@ -184,6 +183,12 @@ try {
       check(`one workstation title on ${workstation.slug} at ${width}px`,
         await title.count() === 1);
       const workstationSnapshot = await snapshot();
+      check(`no shared footer on ${workstation.slug} at ${width}px`,
+        !workstationSnapshot.includes('Reale Infrastruktur · lokale Operator-Sitzung') &&
+        !workstationSnapshot.includes('Security-Blocker: an diese Sitzung nicht geliefert'));
+      const logout = page.getByRole('button', { name: 'Operator abmelden', exact: true });
+      check(`logout is exclusive to settings on ${workstation.slug} at ${width}px`,
+        await logout.count() === (workstation.slug === 'settings' ? 1 : 0));
       if (workstation.slug === 'overview') {
         check(`no technical summary strips on overview at ${width}px`,
           !workstationSnapshot.includes('DATA TRUST') &&
@@ -245,6 +250,12 @@ try {
       findings.push({ check: `screenshot ${workstation.slug} ${width}px`, ok: true, detail: shot });
     }
   }
+  await page.waitForTimeout(650);
+  await page.getByRole('button', { name: 'Settings-Kategorie System', exact: true }).click();
+  await page.waitForTimeout(650);
+  await page.getByRole('button', { name: 'Settings-Bereich Versionen & Updates', exact: true }).click();
+  await waitForAria('OIP · SPECTRUM 2027');
+  check('current application identity in Settings', (await snapshot()).includes('OIP · SPECTRUM 2027'));
   await page.waitForTimeout(650);
   await page.getByRole('button', { name: 'Settings-Kategorie Security & Access' }).click();
   await page.waitForTimeout(650);

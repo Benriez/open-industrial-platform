@@ -748,7 +748,6 @@ const englishMessages = <String, String>{
   "Kein Live-Signal verfügbar": "No live signal available",
   "Kein Principal-Scope-Inventar geliefert":
       "No Principal Scope inventory delivered",
-  "Kein Security-Blocker gemeldet": "No security blocker reported",
   "Kein Verbindungsnachweis": "No proof of connection",
   "Kein Wert": "No value",
   "Kein aktiver Demo-Vorfall": "No active demo incident",
@@ -862,7 +861,6 @@ const englishMessages = <String, String>{
   "Logische Topologie": "Logical topology",
   "Lokal · keine Telemetrie": "Local · no telemetry",
   "Lokale Anmeldung fehlgeschlagen.": "Local sign-in failed.",
-  "Lokale Entwicklung und Simulation": "Local development and simulation",
   "Lokale Operator-Anmeldung": "Local operator sign-in",
   "Lokale SSH-Identität": "Local SSH identity",
   "Lokaler Demo-Kontext": "Local demo context",
@@ -1093,8 +1091,6 @@ const englishMessages = <String, String>{
   "Read · lesend": "Read-only",
   "Reale Core-Komposition, lokale stdio-Bridges und Unix-IPC. Kein Remote-MCP-Listener.":
       "Real core composition, local stdio bridges and Unix IPC. No remote MCP listener.",
-  "Reale Infrastruktur · lokale Operator-Sitzung":
-      "Real infrastructure · local operator session",
   "ReceivedTimestamp · lokale Empfangszeit":
       "ReceivedTimestamp · local reception time",
   "Reconnect gemeldet": "Reconnect reported",
@@ -1138,10 +1134,6 @@ const englishMessages = <String, String>{
   "Schritt {0}/5 · {1}": "Step {0}/5 · {1}",
   "Schwellen- oder Heat-Streifen über die Zeit":
       "Threshold or heat strip over time",
-  "Security-Blocker werden vom Server geladen":
-      "Security blockers are loaded from the server",
-  "Security-Blocker: an diese Sitzung nicht geliefert":
-      "Security blocker: not delivered to this session",
   "Segmentierter Balken": "Segmented bar",
   "Seite {0} / {1}": "Page {0} / {1}",
   "Seitenfilter für Typ und Quality": "Side filters for type and quality",

@@ -417,6 +417,13 @@ class _SettingsPageState extends State<SettingsPage> {
             )
           : null,
       actions: [
+        if (widget.controller.hasAuthorizedContext)
+          TextButton.icon(
+            key: const Key('operator-logout'),
+            onPressed: widget.controller.logout,
+            icon: const Icon(Icons.logout, size: 18),
+            label: Text(context.tr("Operator abmelden")),
+          ),
         InspectorOpenAction(
           controller: widget.controller,
           workspace: WorkspaceId.settings,

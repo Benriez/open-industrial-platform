@@ -188,7 +188,7 @@ class SettingsSectionContent extends StatelessWidget {
       ),
       KeyValue(
         context.tr("Shell"),
-        info.footer,
+        info.shellIdentity,
         mono: false,
         key: const Key('settings-about-shell'),
       ),

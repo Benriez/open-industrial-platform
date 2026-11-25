@@ -17,6 +17,15 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.50',
+      build: '53',
+      date: '25. November 2026',
+      changes: [
+        'Die Fußzeile ist in allen Arbeitsbereichen entfernt.',
+        'Du kannst dich direkt in den Einstellungen abmelden.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.49',
       build: '52',
       date: '25. November 2026',

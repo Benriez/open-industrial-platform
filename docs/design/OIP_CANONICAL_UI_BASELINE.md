@@ -96,7 +96,10 @@ integration was re-applied on top and is listed in §6.
 * **Technical provenance**: every state names its source (API, fixture,
   provenance marker) and unknown states stay unknown.
 * Three themes: Spectrum, Graphite, Daylight (`lib/design_system/theme.dart`).
-* The application identity in the footer is `OIP · SPECTRUM 2027`.
+* Settings displays the application identity `OIP · SPECTRUM 2027` under About
+  and offers operator logout. The six workstations have no shared status
+  footer. The widget and browser gates check that logout appears only in
+  Settings, and the onboarding journey verifies that it ends the Core session.
 
 ---
 
@@ -185,7 +188,7 @@ re-applied on top of it and are part of the baseline:
 
 | Feature | Where |
 |---|---|
-| Browser session, one-use code, CSRF, logout | `lib/services/api.dart` (`DeviceManagementApi`), `lib/app/controller.dart` (`login`, `logout`), `lib/features/operator_login.dart`, gate in `lib/app/app.dart` |
+| Browser session, one-use code, CSRF, logout | `lib/services/api.dart` (`DeviceManagementApi`), `lib/app/controller.dart` (`login`, `logout`), `lib/features/operator_login.dart`, gate in `lib/app/app.dart`, logout action in `lib/features/settings/settings_workstation.dart` |
 | Authorized multi-infrastructure projection | `lib/models/infrastructure.dart`, `controller.infrastructure` |
 | Device registration and SSH onboarding | `lib/features/device_onboarding.dart`, `lib/features/device_connection_panel.dart`, `lib/models/onboarding.dart`, action in `lib/features/devices/devices_workstation.dart` |
 | Host monitoring measurements | `lib/features/device_connection_panel.dart` |
