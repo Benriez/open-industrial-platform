@@ -42,6 +42,8 @@ pub struct HueSettings {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct HueProfile {
+    #[serde(default)]
+    pub control_enabled: bool,
     pub id: String,
     pub label: String,
     pub principals: Vec<PrincipalId>,
@@ -160,15 +162,6 @@ pub struct BridgeIdentity {
     pub datastore_version: String,
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct HueLight {
-    pub id: u64,
-    pub name: String,
-    pub on: bool,
-    pub brightness_percent: Option<f64>,
-    pub kind: String,
-}
-
 #[derive(Clone, Debug, Default)]
 pub struct BridgeReport {
     pub captured_at_ms: i64,
@@ -261,6 +254,23 @@ fn light_from(id: u64, light: &serde_json::Value) -> Result<HueLight, Connection
             .filter(|value| *value <= 254)
             .map(|value| (value as f64) * 100.0 / 254.0),
         kind: text(light, "type"),
+        reachable: state.get("reachable").and_then(|v| v.as_bool()),
+        hue_degrees: number(state, "hue")
+            .filter(|n| *n <= 65535)
+            .map(|n| n as f64 * 360.0 / 65535.0),
+        saturation_percent: number(state, "sat")
+            .filter(|n| *n <= 254)
+            .map(|n| n as f64 * 100.0 / 254.0),
+        ct: number(state, "ct").and_then(|n| u16::try_from(n).ok()),
+        ct_range: light.pointer("/capabilities/control/ct").and_then(|v| {
+            let min = u16::try_from(number(v, "min")?).ok()?;
+            let max = u16::try_from(number(v, "max")?).ok()?;
+            (min > 0 && max > min).then_some([min, max])
+        }),
+        color_mode: state
+            .get("colormode")
+            .and_then(|v| v.as_str())
+            .map(String::from),
     })
 }
 
@@ -381,12 +391,13 @@ async fn select_openssl(candidates: &[PathBuf]) -> Result<PathBuf, ConnectionFau
 /// One GET over one TLS session in which the presented certificate of the
 /// bridge is verified against the pin: `openssl` refuses the connection itself
 /// when the certificate is not the pinned one.
-async fn verified_get(
+async fn verified_request(
     binary: &Path,
     host: &str,
     port: u16,
     path: &str,
     pin: &Path,
+    body: Option<&str>,
     cancel: &CancellationToken,
 ) -> Result<HttpAnswer, ConnectionFault> {
     if !pin.is_file() {
@@ -396,9 +407,18 @@ async fn verified_get(
         .parse::<std::net::IpAddr>()
         .map_err(|_| fault("HUE_PROFILE_UNAVAILABLE"))?;
     let endpoint = std::net::SocketAddr::new(ip, port);
-    let request = format!(
-        "GET {path} HTTP/1.1\r\nHost: {endpoint}\r\nUser-Agent: oip-hue/1\r\nAccept: application/json\r\nConnection: close\r\n\r\n"
-    );
+    let (method, headers, body) = match body {
+        Some(body) => (
+            "PUT",
+            format!(
+                "Content-Type: application/json\r\nContent-Length: {}\r\n",
+                body.len()
+            ),
+            body,
+        ),
+        None => ("GET", String::new(), ""),
+    };
+    let request = format!("{method} {path} HTTP/1.1\r\nHost: {endpoint}\r\nUser-Agent: oip-hue/1\r\nAccept: application/json\r\n{headers}Connection: close\r\n\r\n{body}");
     let mut command = Command::new(binary);
     command
         .args([
@@ -503,12 +523,13 @@ async fn collect(
     cancel: &CancellationToken,
 ) -> Result<BridgeReport, ConnectionFault> {
     let token = read_token(profile).await?;
-    let configuration = verified_get(
+    let configuration = verified_request(
         binary,
         &profile.host,
         profile.port,
         "/api/config",
         &profile.pin_file,
+        None,
         cancel,
     )
     .await?;
@@ -520,12 +541,13 @@ async fn collect(
     // limit of the capability is recorded, not hidden.
     let lights = match token {
         Some(token) => {
-            let answer = verified_get(
+            let answer = verified_request(
                 binary,
                 &profile.host,
                 profile.port,
                 &format!("/api/{token}/lights"),
                 &profile.pin_file,
+                None,
                 cancel,
             )
             .await?;
@@ -544,6 +566,197 @@ async fn collect(
         identity,
         lights,
     })
+}
+
+pub(crate) fn visible_profile<'a>(
+    state: &'a AppState,
+    h: &HierarchyRegistry,
+    p: &PrincipalId,
+    source: &DataSourceId,
+) -> Result<&'a HueProfile, CapabilityError> {
+    let profile = state.hue_profiles.get(source).ok_or_else(inaccessible)?;
+    if !h.permits(
+        p,
+        CapabilityId::HueLightsRead,
+        &AccessScope::Source(source.clone()),
+        false,
+    ) || !state.inventory().iter().any(|r| {
+        r.device.id == profile.device_id && r.registration == RegistrationStatus::Registered
+    }) {
+        return Err(inaccessible());
+    }
+    Ok(profile)
+}
+
+pub(crate) fn can_control(
+    profile: &HueProfile,
+    h: &HierarchyRegistry,
+    p: &PrincipalId,
+    source: &DataSourceId,
+) -> bool {
+    profile.control_enabled
+        && profile.principals.contains(p)
+        && h.permits(
+            p,
+            CapabilityId::HueLightControl,
+            &AccessScope::Source(source.clone()),
+            false,
+        )
+}
+
+fn unavailable(f: ConnectionFault) -> CapabilityError {
+    CapabilityError::new(CapabilityErrorCode::SourceUnavailable, &f.code, &f.message)
+}
+
+async fn light_request(
+    state: &AppState,
+    profile: &HueProfile,
+    resource: &str,
+    body: Option<&str>,
+) -> Result<String, CapabilityError> {
+    let binary = state
+        .hue_tls
+        .get_or_try_init(openssl)
+        .await
+        .map_err(unavailable)?;
+    let token = read_token(profile)
+        .await
+        .map_err(unavailable)?
+        .ok_or_else(|| unavailable(fault("HUE_TOKEN_REQUIRED")))?;
+    let answer = verified_request(
+        binary,
+        &profile.host,
+        profile.port,
+        &format!("/api/{token}/lights{resource}"),
+        &profile.pin_file,
+        body,
+        &state.stopping,
+    )
+    .await
+    .map_err(unavailable)?;
+    if answer.status != Some(200) {
+        return Err(unavailable(fault("HUE_ENDPOINT_UNREACHABLE")));
+    }
+    Ok(answer.body)
+}
+
+fn busy() -> CapabilityError {
+    CapabilityError::new(
+        CapabilityErrorCode::SourceUnavailable,
+        "HUE_BUSY",
+        "The bridge is busy. Try again shortly.",
+    )
+}
+
+pub(crate) async fn list(
+    state: &AppState,
+    profile: &HueProfile,
+) -> Result<Vec<HueLight>, CapabilityError> {
+    let _permit = state.hue_requests.try_acquire().map_err(|_| busy())?;
+    let body = light_request(state, profile, "", None).await?;
+    if body.contains("unauthorized user") {
+        return Err(unavailable(fault("HUE_TOKEN_REQUIRED")));
+    }
+    parse_lights(&body).map_err(unavailable)
+}
+
+fn command_body(
+    light: &HueLight,
+    change: &HueChange,
+) -> Result<serde_json::Value, CapabilityError> {
+    use serde_json::json;
+    if light.reachable == Some(false) {
+        return Err(CapabilityError::new(
+            CapabilityErrorCode::SourceUnavailable,
+            "HUE_LIGHT_UNREACHABLE",
+            "The light is unreachable.",
+        ));
+    }
+    match *change {
+        HueChange::Power { on } => Ok(json!({"on":on})),
+        HueChange::Brightness { percent }
+            if (1..=100).contains(&percent) && light.brightness_percent.is_some() =>
+        {
+            Ok(json!({"bri": (u32::from(percent)*254+50)/100}))
+        }
+        HueChange::Color {
+            degrees,
+            saturation,
+        } if degrees <= 360
+            && saturation <= 100
+            && light.hue_degrees.is_some()
+            && light.saturation_percent.is_some() =>
+        {
+            Ok(
+                json!({"hue": (u32::from(degrees)*65535+180)/360, "sat": (u32::from(saturation)*254+50)/100}),
+            )
+        }
+        HueChange::Temperature { mired }
+            if light
+                .ct_range
+                .is_some_and(|[min, max]| (min..=max).contains(&mired))
+                && light.ct.is_some() =>
+        {
+            Ok(json!({"ct":mired}))
+        }
+        _ => Err(CapabilityError::new(
+            CapabilityErrorCode::InvalidInput,
+            "HUE_UNSUPPORTED_SETTING",
+            "The light does not support the requested setting or value.",
+        )),
+    }
+}
+
+fn confirmed(body: &str, id: u64, desired: &serde_json::Value) -> bool {
+    let Ok(serde_json::Value::Array(rows)) = serde_json::from_str(body) else {
+        return false;
+    };
+    let Some(fields) = desired.as_object() else {
+        return false;
+    };
+    rows.len() == fields.len()
+        && fields.iter().all(|(key, value)| {
+            let path = format!("/lights/{id}/state/{key}");
+            rows.iter().any(|r| {
+                r.get("error").is_none()
+                    && r.get("success").and_then(|v| v.get(&path)) == Some(value)
+            })
+        })
+}
+
+pub(crate) async fn command(
+    state: &AppState,
+    profile: &HueProfile,
+    command: &HueLightCommand,
+) -> Result<(), CapabilityError> {
+    if command.light_id == 0 {
+        return Err(inventory_invalid());
+    }
+    let _permit = state.hue_requests.try_acquire().map_err(|_| busy())?;
+    let resource = format!("/{}", command.light_id);
+    let raw = light_request(state, profile, &resource, None).await?;
+    let current: serde_json::Value =
+        serde_json::from_str(&raw).map_err(|_| unavailable(fault("HUE_ANSWER_INVALID")))?;
+    if current.is_array() {
+        return Err(inaccessible());
+    }
+    let light = light_from(command.light_id, &current).map_err(unavailable)?;
+    let desired = command_body(&light, &command.change)?;
+    let raw = light_request(
+        state,
+        profile,
+        &format!("{resource}/state"),
+        Some(&desired.to_string()),
+    )
+    .await?;
+    if !confirmed(&raw, command.light_id, &desired) {
+        return Err(CapabilityError::new(
+            CapabilityErrorCode::OperationNotSupported,
+            "HUE_CHANGE_UNCONFIRMED",
+            "The bridge did not confirm the complete change. Refresh the light state.",
+        ));
+    }
+    Ok(())
 }
 
 pub fn definition(profile: &HueProfile) -> SourceDefinition {
@@ -769,6 +982,61 @@ pub async fn supervise(
 mod tests {
     use super::*;
     #[test]
+    fn light_commands_use_capabilities_ranges_and_exact_confirmations() {
+        use serde_json::json;
+        let light = light_from(79,&json!({"name":"Lamp","state":{"on":true,"bri":128,"hue":0,"sat":0,"ct":300,"reachable":true},"capabilities":{"control":{"ct":{"min":153,"max":500}}}})).unwrap();
+        assert_eq!(
+            command_body(&light, &HueChange::Power { on: false }).unwrap(),
+            json!({"on":false})
+        );
+        assert_eq!(
+            command_body(&light, &HueChange::Brightness { percent: 50 }).unwrap(),
+            json!({"bri":127})
+        );
+        assert!(command_body(&light, &HueChange::Brightness { percent: 101 }).is_err());
+        assert!(command_body(&light, &HueChange::Temperature { mired: 152 }).is_err());
+        assert_eq!(
+            command_body(&light, &HueChange::Temperature { mired: 310 }).unwrap(),
+            json!({"ct":310})
+        );
+        let color = command_body(
+            &light,
+            &HueChange::Color {
+                degrees: 180,
+                saturation: 50,
+            },
+        )
+        .unwrap();
+        assert_eq!(color, json!({"hue":32768,"sat":127}));
+        let good = json!([{"success":{"/lights/79/state/hue":32768}},{"success":{"/lights/79/state/sat":127}}]);
+        assert!(confirmed(&good.to_string(), 79, &color));
+        assert!(!confirmed(&good.to_string(), 78, &color));
+        assert!(!confirmed(
+            &json!([good[0],{"error":{"type":7}}]).to_string(),
+            79,
+            &color
+        ));
+        let plug = light_from(100, &json!({"state":{"on":true,"reachable":true}})).unwrap();
+        assert!(command_body(&plug, &HueChange::Brightness { percent: 50 }).is_err());
+        assert!(command_body(
+            &plug,
+            &HueChange::Color {
+                degrees: 120,
+                saturation: 100
+            }
+        )
+        .is_err());
+        assert!(command_body(
+            &HueLight {
+                reachable: Some(false),
+                ..plug
+            },
+            &HueChange::Power { on: true }
+        )
+        .is_err());
+    }
+
+    #[test]
     fn the_answer_of_the_bridge_is_unwound_and_status_bound() {
         let raw = b"HTTP/1.1 200 OK\r\nServer: nginx\r\nTransfer-Encoding: chunked\r\n\r\n4\r\n{\"na\r\n8\r\nme\":\"Hue\r\n0\r\n\r\n";
         let answer = split_answer(raw).unwrap();
@@ -861,6 +1129,7 @@ mod tests {
     #[test]
     fn without_a_token_only_the_verified_identity_is_observed() {
         let profile = HueProfile {
+            control_enabled: false,
             id: "lan".into(),
             label: "The bridge in the LAN".into(),
             principals: vec![PrincipalId::new("device-operator").expect("id")],
@@ -903,6 +1172,7 @@ mod tests {
     #[test]
     fn every_light_is_an_observation_of_the_registered_bridge() {
         let profile = HueProfile {
+            control_enabled: false,
             id: "lan".into(),
             label: "The bridge in the LAN".into(),
             principals: vec![PrincipalId::new("device-operator").expect("id")],
@@ -927,6 +1197,7 @@ mod tests {
                     on: true,
                     brightness_percent: Some(50.0),
                     kind: "Zigbee light".into(),
+                    ..Default::default()
                 },
                 HueLight {
                     id: 40,
@@ -934,6 +1205,7 @@ mod tests {
                     on: false,
                     brightness_percent: None,
                     kind: "Zigbee light".into(),
+                    ..Default::default()
                 },
             ]),
         };
@@ -1007,6 +1279,7 @@ mod tests {
         })
         .expect("authorized hierarchy");
         let base = HueProfile {
+            control_enabled: false,
             id: "lan".into(),
             label: "The bridge in the LAN".into(),
             principals: vec![PrincipalId::new("device-operator").expect("id")],
@@ -1064,6 +1337,7 @@ mod tests {
     #[tokio::test]
     async fn a_bridge_without_a_readable_pin_is_refused_before_any_read() {
         let profile = HueProfile {
+            control_enabled: false,
             id: "lan".into(),
             label: "The bridge in the LAN".into(),
             principals: vec![PrincipalId::new("device-operator").expect("id")],
@@ -1090,6 +1364,7 @@ mod tests {
         let pin = std::env::temp_dir().join(format!("oip-hue-pin-{}", now_ms()));
         std::fs::write(&pin, "not a certificate\n").expect("a temporary pin");
         let profile = HueProfile {
+            control_enabled: false,
             id: "lan".into(),
             label: "The bridge in the LAN".into(),
             principals: vec![PrincipalId::new("device-operator").expect("id")],

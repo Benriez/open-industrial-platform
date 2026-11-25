@@ -288,6 +288,23 @@ impl ApplicationServices {
     ) -> Result<CapabilityOutput, CapabilityError> {
         use CapabilityRequest::*;
         let id = request.id();
+        if let HueLightsRead(q) = &request {
+            let profile = crate::hue::visible_profile(&self.state, h, p, &q.source)?;
+            let can_control = crate::hue::can_control(profile, h, p, &q.source);
+            let lights = crate::hue::list(&self.state, profile).await?;
+            return Ok(CapabilityOutput::HueLights(HueLights {source:q.source.clone(), can_control, lights}));
+        }
+        if let HueLightControl(q) = &request {
+            let profile = crate::hue::visible_profile(&self.state, h, p, &q.source)?;
+            if !crate::hue::can_control(profile, h, p, &q.source) {
+                return Err(denied());
+            }
+            let mut started = self.audit_event(context,id,Some(&q.source),true,"started");
+            started.target = format!("{}/lights/{}", q.source, q.light_id);
+            self.audit.record(&started)?;
+            crate::hue::command(&self.state, profile, q).await?;
+            return Ok(CapabilityOutput::HueCommandAccepted {light_id:q.light_id});
+        }
         if let DeviceConnectionRead(q) = &request {
             return self.connection_read(context, q.clone());
         }

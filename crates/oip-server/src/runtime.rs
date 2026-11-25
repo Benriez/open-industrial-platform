@@ -327,8 +327,9 @@ impl CoreRuntime {
     pub async fn from_state(state: AppState, config: CoreConfig) -> Result<Self, RuntimeError> {
         let hue_tls = if config.hue.is_some() {
             Some(
-                crate::hue::openssl()
+                state.hue_tls.get_or_try_init(crate::hue::openssl)
                     .await
+                    .cloned()
                     .map_err(|error| RuntimeError::Configuration(error.code))?,
             )
         } else {

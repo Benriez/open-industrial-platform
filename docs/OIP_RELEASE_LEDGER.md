@@ -466,7 +466,7 @@ upload.
   discovery and bridge receipts (`docs/evidence/oip-deployment-discovery/deployment-discovery.json`,
   `docs/evidence/oip-hue-device/hue-device.json`) are present, tracked and **not** flagged by the
   verification of the release. The operator subsequently paired OIP for read-only
-  monitoring. See N26 for the live measurements. Light control would require a separate product decision.
+  monitoring. See N26 for the live measurements. The dashboard also supports operator-authorized light control on bridges with control enabled.
 
 * Decide F5 permission rule (N1b) and protected schema-7 activation with a fresh schema-6 backup (N4).
   The activation itself is **rehearsed on a copy** of the store of the operator: the migration is

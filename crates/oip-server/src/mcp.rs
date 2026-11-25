@@ -93,9 +93,10 @@ struct ToolSpec {
     id: CapabilityId,
     description: &'static str,
 }
-const TOOLS: [ToolSpec; 22] = [
+const TOOLS: [ToolSpec; 23] = [
     ToolSpec{name:"oip_device_connection_read",id:CapabilityId::DeviceConnectionRead,description:"Read the authorized device SSH identity, monitoring state, last attempts and actual observations. Registration never implies connectivity. No mutation or private key data."},
     ToolSpec{name:"oip_inventory_read",id:CapabilityId::InventoryRead,description:"Read authorized persistent device inventory, metadata and collector availability. No collector does not mean offline; bounded pagination."},
+    ToolSpec{name:"oip_hue_lights_read",id:CapabilityId::HueLightsRead,description:"Read lights, supported controls and their current states from one authorized Hue source."},
     ToolSpec{name:"oip_services_read",id:CapabilityId::ServiceRegistryRead,description:"Read the authorized service registry that the operator declared for the infrastructure. Every record is declared, never measured: the Core runs no probe for a service. Bounded pagination; a foreign identifier is refused like an unknown one."},
     ToolSpec{name:"oip_inventory_plan_read",id:CapabilityId::InventoryPlanRead,description:"Validate a bounded inventory change plan against current permissions and revisions. Read-only; never applies changes or grants permissions."},
     ToolSpec{name:"oip_settings_read",id:CapabilityId::SettingsRead,description:"Read authorized typed setting definitions or effective startup values at an explicit scope; no mutation or credential access."},
@@ -131,6 +132,7 @@ const RESOURCES: [(&str, CapabilityId); 7] = [
 ];
 fn input_schema(id: CapabilityId) -> Value {
     let mut v = match id {
+        CapabilityId::HueLightsRead => serde_json::to_value(schemars::schema_for!(HueLightsQuery)),
         CapabilityId::DeviceConnectionRead => {
             serde_json::to_value(schemars::schema_for!(ConnectionQuery))
         }
@@ -276,6 +278,8 @@ fn output_schema(id: CapabilityId) -> Value {
             "connection"
         }
         CapabilityId::InventoryRead => "inventory",
+        CapabilityId::HueLightsRead => "hue_lights",
+        CapabilityId::HueLightControl => "hue_command_accepted",
         CapabilityId::ServiceRegistryRead => "service_registry",
         CapabilityId::InventoryPlanRead | CapabilityId::InventoryChange => "inventory_plan",
         CapabilityId::SettingsRead => "settings",

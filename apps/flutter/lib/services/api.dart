@@ -11,6 +11,7 @@ import 'session_cookie.dart';
 import '../models/contracts.dart';
 import '../models/diagnostics.dart';
 import '../models/history.dart';
+import '../models/hue.dart';
 import '../models/infrastructure.dart';
 import '../models/onboarding.dart';
 import '../features/settings/settings_models.dart';
@@ -180,6 +181,11 @@ abstract class DeviceManagementApi {
 
 /// Optional native-only pairing operations, kept separate from the existing
 /// management seam so test and legacy clients do not claim Touch ID support.
+abstract class HueApi {
+  Future<HueLights> hueLights(String source);
+  Future<void> changeHueLight(String source, int id, Json change);
+}
+
 abstract class TouchIdManagementApi {
   Future<void> pairDeviceCredential(String credential);
   Future<BrowserSession> loginWithDeviceCredential(String credential);
@@ -207,7 +213,8 @@ String apiErrorMessage(Object error, String fallback) {
   return '${error.message}$code';
 }
 
-class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
+class RestApi
+    implements OipApi, DeviceManagementApi, TouchIdManagementApi, HueApi {
   final Uri base;
   final http.Client _rest;
   final bool _dedicatedNodeClients;
@@ -354,6 +361,19 @@ class RestApi implements OipApi, DeviceManagementApi, TouchIdManagementApi {
         if (deviceId != null) 'device_id': deviceId,
         if (planId != null) 'plan_id': planId
       }) as Json);
+
+  @override
+  Future<HueLights> hueLights(String source) async => HueLights.fromJson(
+      await _get('/api/v2/hue/lights', {'source': source}) as Json);
+
+  @override
+  Future<void> changeHueLight(String source, int id, Json change) async {
+    final result = await _change('/api/v2/hue/lights',
+        {'source': source, 'light_id': id, 'change': change}) as Json;
+    if (result['accepted'] != true || result['light_id'] != id) {
+      throw const ApiFailure('Die Bridge hat die Änderung nicht bestätigt.');
+    }
+  }
 
   @override
   Future<ConnectionResult> configure(Json action) async =>

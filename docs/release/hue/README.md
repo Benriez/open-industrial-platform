@@ -45,3 +45,18 @@ a different certificate. The deployed result is recorded in
 In Devices & Services, open Philips Hue Bridge and expand Engineering, then
 Observation & Telemetry. The separate SSH setup panel can display
 `Telemetry NoCollector` when the bridge has active Hue readings.
+
+
+## Dashboard control
+
+Overview and Dashboard list every light returned by a paired bridge, including
+resource IDs above 32. The telemetry catalogue limit applies only to stored
+measurements. Switching, brightness, hue/saturation and white temperature are
+available according to each resource's reported capabilities.
+
+A bridge profile defaults to monitoring only. Set `control_enabled` to
+`true` to enable commands for the profile's listed principals. Each command
+requires device, telemetry and inventory management rights on that source.
+Reader accounts see the live state. Browser commands use session and CSRF
+protection. The Core checks the pinned bridge, the addressed light's current
+capabilities and each acknowledgement before reporting acceptance.

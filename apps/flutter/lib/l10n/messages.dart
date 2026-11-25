@@ -1,6 +1,20 @@
 // Client-owned interface copy. Unmapped source strings are used verbatim.
 
 const englishMessages = <String, String>{
+  "Hue-Beleuchtung": "Hue lights",
+  "Lichter aktualisieren": "Refresh lights",
+  "Hue-Lichter konnten nicht geladen werden.": "Could not load Hue lights.",
+  "Die Bridge hat die Änderung nicht bestätigt.": "The bridge did not confirm the change.",
+  "Auf dieser Bridge sind keine Lichter eingerichtet.": "This bridge has no lights.",
+  "Zum Steuern mit einem berechtigten Operator-Konto anmelden.": "Sign in with an authorized operator account to control these lights.",
+  "{0} schalten": "Switch {0}",
+  "Helligkeit von {0}": "Brightness of {0}",
+  "Lichtfarbe": "Light color",
+  "Weißton": "White light",
+  "Farbtemperatur": "Color temperature",
+  "Farbton": "Hue",
+  "Sättigung": "Saturation",
+  "Farbe": "Color",
   "+{0} weitere nicht dargestellt": "+{0} more not shown",
   "+{0} weitere · Activity/Diagnostics für den vollständigen Umfang":
       "+{0} further · Activity/Diagnostics for the full scope",

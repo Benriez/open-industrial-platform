@@ -196,6 +196,7 @@ pub fn router_with_identity(
         )
         .route("/api/v2/installation/status", get(installation_status))
         .route("/api/v2/inventory/devices", get(inventory_read))
+        .route("/api/v2/hue/lights", get(hue_lights).post(hue_control).layer(axum::extract::DefaultBodyLimit::max(1024)))
         .route("/api/v2/services", get(services_read))
         .route("/api/v2/inventory/apply", post(inventory_apply))
         .route(
@@ -928,6 +929,23 @@ async fn inventory_apply(
     .await?
     {
         CapabilityOutput::InventoryPlan(p) => Ok(Json(p)),
+        _ => Err(mismatch()),
+    }
+}
+async fn hue_lights(
+    Authorized(s): Authorized, Query(q): Query<HueLightsQuery>,
+) -> Result<Json<HueLights>, CapabilityErrorResponse> {
+    match call(s, CapabilityRequest::HueLightsRead(q)).await? {
+        CapabilityOutput::HueLights(result) => Ok(Json(result)),
+        _ => Err(mismatch()),
+    }
+}
+async fn hue_control(
+    Authorized(s): Authorized, body: Result<Json<HueLightCommand>, axum::extract::rejection::JsonRejection>,
+) -> Result<Json<serde_json::Value>, CapabilityErrorResponse> {
+    let Json(command) = body.map_err(|_| CapabilityErrorResponse(inventory_invalid()))?;
+    match call(s, CapabilityRequest::HueLightControl(command)).await? {
+        CapabilityOutput::HueCommandAccepted {light_id} => Ok(Json(json!({"accepted":true,"light_id":light_id}))),
         _ => Err(mismatch()),
     }
 }

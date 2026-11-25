@@ -42,6 +42,8 @@ pub enum CapabilityId {
     DeviceConnectionRead,
     DeviceConnectionConfigure,
     ServiceRegistryRead,
+    HueLightsRead,
+    HueLightControl,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
@@ -71,7 +73,7 @@ pub struct CapabilityDescriptor {
     pub audit: String,
 }
 impl CapabilityId {
-    pub const ALL: [Self; 34] = [
+    pub const ALL: [Self; 36] = [
         Self::CoreHealthRead,
         Self::CoreLivenessRead,
         Self::CoreReadinessRead,
@@ -106,10 +108,26 @@ impl CapabilityId {
         Self::DeviceConnectionRead,
         Self::DeviceConnectionConfigure,
         Self::ServiceRegistryRead,
+        Self::HueLightsRead,
+        Self::HueLightControl,
     ];
     pub fn descriptor(self) -> CapabilityDescriptor {
         use CapabilityId::*;
         let (permission, input, output) = match self {
+            HueLightsRead => (
+                vec![Permission::DevicesRead, Permission::TelemetryRead],
+                "HueLightsQuery",
+                "HueLights",
+            ),
+            HueLightControl => (
+                vec![
+                    Permission::InventoryManage,
+                    Permission::DevicesRead,
+                    Permission::TelemetryRead,
+                ],
+                "HueLightCommand",
+                "HueCommandAccepted",
+            ),
             DeviceConnectionRead => (
                 vec![Permission::DevicesRead, Permission::TelemetryRead],
                 "ConnectionQuery",
@@ -275,6 +293,7 @@ impl CapabilityId {
                     | InventoryChange
                     | DeviceConnectionConfigure
                     | OpcuaNodeWrite
+                    | HueLightControl
             ),
             input_type: input.into(),
             output_type: output.into(),
@@ -285,6 +304,7 @@ impl CapabilityId {
                     | InventoryChange
                     | DeviceConnectionConfigure
                     | OpcuaNodeWrite
+                    | HueLightControl
             ) {
                 "decision_and_outcome_local_log"
             } else {
@@ -393,6 +413,8 @@ pub enum CapabilityRequest {
     DeviceConnectionRead(ConnectionQuery),
     DeviceConnectionConfigure(ConnectionAction),
     ServiceRegistryRead(ServiceQuery),
+    HueLightsRead(HueLightsQuery),
+    HueLightControl(HueLightCommand),
 }
 impl CapabilityRequest {
     pub fn id(&self) -> CapabilityId {
@@ -405,6 +427,8 @@ impl CapabilityRequest {
             Self::InventoryChange(_) => CapabilityId::InventoryChange,
             Self::DeviceConnectionRead(_) => CapabilityId::DeviceConnectionRead,
             Self::DeviceConnectionConfigure(_) => CapabilityId::DeviceConnectionConfigure,
+            Self::HueLightsRead(_) => CapabilityId::HueLightsRead,
+            Self::HueLightControl(_) => CapabilityId::HueLightControl,
             Self::ServiceRegistryRead(_) => CapabilityId::ServiceRegistryRead,
             Self::EventHistoryRead(_) => CapabilityId::EventHistoryRead,
             Self::EventDetailRead(_) => CapabilityId::EventDetailRead,
@@ -438,6 +462,8 @@ impl CapabilityRequest {
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 #[serde(tag = "type", content = "value", rename_all = "snake_case")]
 pub enum CapabilityOutput {
+    HueLights(HueLights),
+    HueCommandAccepted { light_id: u64 },
     Connection(Box<ConnectionResult>),
     Inventory(InventoryPage),
     InventoryPlan(InventoryPlan),

@@ -11,6 +11,8 @@ import 'devices.dart';
 import 'overview/activity_workspace.dart';
 import 'overview/context_inspector.dart';
 import 'overview/dashboard_workspace.dart';
+import 'overview/hue_lights.dart';
+import '../services/api.dart';
 import 'overview/infrastructure_explorer.dart';
 import 'overview/overview_selection.dart';
 import 'overview/telemetry_chart.dart';
@@ -110,6 +112,15 @@ class _OverviewPageState extends State<OverviewPage> {
               const SizedBox(height: OipTokens.s2),
               _contextBar(),
               const SizedBox(height: OipTokens.s2),
+              if (controller.api is HueApi)
+                for (final bridge in snapshot.devices.where(
+                    (d) => d.connection == 'Hue HTTPS' && d.sourceId != null))
+                  HueLightsPanel(
+                      key: ValueKey(
+                          'hue-${controller.contextScopeSignature}-${bridge.sourceId}'),
+                      api: controller.api as HueApi,
+                      source: bridge.sourceId!,
+                      bridgeName: bridge.name),
               _statusStrip(),
               if (controller.infrastructure.ready &&
                   controller.infrastructure.selection.isUnified) ...[

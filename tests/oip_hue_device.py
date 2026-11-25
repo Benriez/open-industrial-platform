@@ -381,6 +381,25 @@ def main() -> int:
         assert hidden in (403, 404) and hidden == missing, (hidden, missing)
         report["the_scope"]["the_collected_device_status"] = hidden
 
+        lights_path = "/api/v2/hue/lights"
+        read_status, lights = request(base, lights_path + "?source=hue-lan", opener=opener)
+        if args.token_file:
+            assert read_status == 200 and lights["can_control"] is False
+            assert len(lights["lights"]) == observed["lights.total"]
+        else:
+            assert read_status == 503 and lights["code"] == "HUE_TOKEN_REQUIRED"
+        hidden_status, _ = request(base, lights_path + "?source=hue-lan", opener=other_opener)
+        assert hidden_status == 404
+        # An impossible resource id is sufficient to prove that these requests
+        # are refused before any bridge write.
+        action = {"source": "hue-lan", "light_id": 4294967295, "change": {"kind": "power", "on": True}}
+        disabled, _ = request(base, lights_path, "POST", action, headers=csrf, opener=opener)
+        missing_csrf, _ = request(base, lights_path, "POST", action, opener=opener)
+        assert disabled == missing_csrf == 403
+        report["dashboard"] = {"read": read_status, "foreign_read": hidden_status,
+                               "monitor_only_write": disabled, "missing_csrf": missing_csrf}
+
+
         # 6. the negative control of the collector: a pin that is not the
         # certificate of the bridge reads nothing.
         status, answer = request(base, "/api/v2/inventory/apply", "POST",

@@ -107,6 +107,8 @@ impl ApplicationServices {
             | CapabilityRequest::EventsRead(q) => q.source.clone(),
             CapabilityRequest::DevicesRead(q) => q.source.clone(),
             CapabilityRequest::OpcuaNodesRead(q) => q.source.clone().or(self.state.primary.clone()),
+            CapabilityRequest::HueLightsRead(q) => Some(q.source.clone()),
+            CapabilityRequest::HueLightControl(q) => Some(q.source.clone()),
             CapabilityRequest::OpcuaNodeWrite(q) => Some(q.source.clone()),
             CapabilityRequest::DeviceRead(q) => {
                 self.state
@@ -183,7 +185,7 @@ impl ApplicationServices {
         use CapabilityRequest::*;
         let s = &self.state;
         match request {
-            DeviceConnectionRead(_)
+            HueLightsRead(_) | HueLightControl(_) | DeviceConnectionRead(_)
             | DeviceConnectionConfigure(_)
             | InventoryRead(_)
             | ServiceRegistryRead(_)
@@ -602,6 +604,10 @@ impl CapabilityService for ApplicationServices {
                 return CapabilityId::ALL
                     .into_iter()
                     .filter(|id| {
+                        if *id == CapabilityId::HueLightsRead {
+                            return self.state.hue_profiles.keys().any(|source|
+                                crate::hue::visible_profile(&self.state, h, p, source).is_ok());
+                        }
                         !id.descriptor().mutating
                             && (h.platform(p, *id)
                                 || (!matches!(
@@ -633,7 +639,7 @@ impl CapabilityService for ApplicationServices {
             .filter(|id| {
                 !matches!(
                     id,
-                    CapabilityId::DeviceConnectionRead
+                    CapabilityId::HueLightsRead | CapabilityId::HueLightControl | CapabilityId::DeviceConnectionRead
                         | CapabilityId::DeviceConnectionConfigure
                         | CapabilityId::InventoryRead
                         | CapabilityId::InventoryPlanRead

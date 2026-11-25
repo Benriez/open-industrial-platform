@@ -35,3 +35,6 @@ pub use connection::*;
 
 mod services;
 pub use services::*;
+
+mod hue;
+pub use hue::*;
