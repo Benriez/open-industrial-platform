@@ -221,10 +221,14 @@ await page.waitForFunction(() => {
 const restored = await contextLabel();
 check('the selector returns to the unified view',
   /Alle berechtigten Infrastrukturen/.test(restored), restored);
-const allLabels = await accessibleLabels();
-check('the unified view shows every authorized infrastructure',
-  /Organization A \/ Infrastructure A1/.test(allLabels) &&
-  /Organization A \/ Infrastructure A2/.test(allLabels), 'an authorized infrastructure is missing');
+for (const name of ['Infrastructure A1', 'Infrastructure A2']) {
+  const row = page.getByRole('button', {
+    name: new RegExp(`^Infrastructure Organization A ${name} global auswählen`),
+  });
+  await row.waitFor({ timeout: 30000 });
+  check(`the unified view shows the authorized ${name}`,
+    await row.count() === 1, 'the authorized infrastructure row is missing or duplicated');
+}
 await page.screenshot({ path: `${outDir}/global-context-unified.png` });
 
 check('no browser JavaScript errors', errors.length === 0, errors.join(' | '));
