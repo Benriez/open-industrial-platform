@@ -177,7 +177,7 @@ struct HttpAnswer {
 }
 
 /// The answer of the bridge, with the chunked encoding unwound.
-fn split_answer(raw: &[u8]) -> Result<HttpAnswer, ConnectionFault> {
+fn split_answer(raw: &[u8], require_framing: bool) -> Result<HttpAnswer, ConnectionFault> {
     let invalid = || fault("HUE_ANSWER_INVALID");
     let end = raw
         .windows(4)
@@ -207,6 +207,20 @@ fn split_answer(raw: &[u8]) -> Result<HttpAnswer, ConnectionFault> {
                 .map_err(|_| invalid())?;
             body = &body[end + 2..];
             if size == 0 {
+                // The final chunk is followed by optional trailers and an empty line.
+                while !body.starts_with(b"\r\n") {
+                    let end = body
+                        .windows(2)
+                        .position(|p| p == b"\r\n")
+                        .ok_or_else(invalid)?;
+                    if !body[..end].contains(&b':') {
+                        return Err(invalid());
+                    }
+                    body = &body[end + 2..];
+                }
+                if body != b"\r\n" {
+                    return Err(invalid());
+                }
                 break;
             }
             let chunk = body.get(..size).ok_or_else(invalid)?;
@@ -214,6 +228,17 @@ fn split_answer(raw: &[u8]) -> Result<HttpAnswer, ConnectionFault> {
             decoded.extend_from_slice(chunk);
         }
         body = &decoded;
+    } else if let Some(length) = head
+        .lines()
+        .filter_map(|line| line.split_once(':'))
+        .find(|(k, _)| k.eq_ignore_ascii_case("content-length"))
+        .map(|(_, v)| v.trim())
+    {
+        if length.parse::<usize>().ok() != Some(body.len()) {
+            return Err(invalid());
+        }
+    } else if require_framing {
+        return Err(invalid());
     }
     Ok(HttpAnswer {
         status: Some(status),
@@ -388,7 +413,29 @@ async fn select_openssl(candidates: &[PathBuf]) -> Result<PathBuf, ConnectionFau
     Err(fault("HUE_TLS_TOOL_UNAVAILABLE"))
 }
 
-/// One GET over one TLS session in which the presented certificate of the
+// Some Hue firmware closes its socket without a TLS close_notify after a PUT.
+fn tls_answer(raw: &[u8], stderr: &str, success: bool) -> Result<HttpAnswer, ConnectionFault> {
+    if stderr.contains("verify error") || stderr.contains("certificate verify failed") {
+        return Err(fault("HUE_IDENTITY_CHANGED"));
+    }
+    if !success {
+        let mut errors = stderr.lines().filter(|s| s.contains(":error:")).peekable();
+        let verified = stderr.lines().any(|s| s.starts_with("depth=0 "))
+            && stderr.lines().any(|s| s == "verify return:1");
+        if !verified
+            || errors.peek().is_none()
+            || !errors.all(|s| {
+                s.contains(":unexpected eof while reading:")
+                    || s.contains(":shutdown while in init:")
+            })
+        {
+            return Err(fault("HUE_ENDPOINT_UNREACHABLE"));
+        }
+    }
+    split_answer(raw, !success)
+}
+
+/// One HTTP request over one TLS session in which the presented certificate of the
 /// bridge is verified against the pin: `openssl` refuses the connection itself
 /// when the certificate is not the pinned one.
 async fn verified_request(
@@ -466,14 +513,7 @@ async fn verified_request(
             Ok(Err(error)) if error.kind() == std::io::ErrorKind::InvalidData => Err(fault("HUE_ANSWER_LIMIT")),
             Ok(Err(_)) => Err(fault("HUE_ENDPOINT_UNREACHABLE")),
             Ok(Ok((answer, error, status))) => {
-                let error = String::from_utf8_lossy(&error);
-                if error.contains("verify error") || error.contains("certificate verify failed") {
-                    Err(fault("HUE_IDENTITY_CHANGED"))
-                } else if !status.success() {
-                    Err(fault("HUE_ENDPOINT_UNREACHABLE"))
-                } else {
-                    split_answer(&answer)
-                }
+                tls_answer(&answer, &String::from_utf8_lossy(&error), status.success())
             }
         }
     };
@@ -1039,22 +1079,38 @@ mod tests {
     #[test]
     fn the_answer_of_the_bridge_is_unwound_and_status_bound() {
         let raw = b"HTTP/1.1 200 OK\r\nServer: nginx\r\nTransfer-Encoding: chunked\r\n\r\n4\r\n{\"na\r\n8\r\nme\":\"Hue\r\n0\r\n\r\n";
-        let answer = split_answer(raw).unwrap();
+        let answer = split_answer(raw, false).unwrap();
         assert_eq!(answer.status, Some(200));
         assert_eq!(answer.body, "{\"name\":\"Hue");
         let plain = split_answer(
             b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"name\":\"Hue Bridge\"}",
+            false,
         )
         .unwrap();
         assert_eq!(plain.status, Some(200));
         assert_eq!(plain.body, "{\"name\":\"Hue Bridge\"}");
         assert_eq!(
-            split_answer(b"HTTP/1.1 404 Not Found\r\n\r\n")
+            split_answer(b"HTTP/1.1 404 Not Found\r\n\r\n", false)
                 .unwrap()
                 .status,
             Some(404)
         );
     }
+    #[test]
+    fn a_verified_tls_close_requires_a_complete_http_message() {
+        let eof = "depth=0 CN=bridge\nverify return:1\n00:error:0A000126:SSL routines::unexpected eof while reading:file:1:";
+        let chunked = b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n2\r\n[]\r\n0\r\n\r\n";
+        assert_eq!(tls_answer(chunked, eof, false).unwrap().body, "[]");
+        assert!(tls_answer(&chunked[..chunked.len() - 2], eof, false).is_err());
+        assert!(tls_answer(b"HTTP/1.1 200 OK\r\n\r\n[]", eof, false).is_err());
+        let fixed = b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n[]";
+        assert!(tls_answer(fixed, eof, false).is_ok());
+        assert!(tls_answer(&fixed[..fixed.len() - 1], eof, false).is_err());
+        assert!(tls_answer(fixed, &format!("{eof}\n00:error:other failure"), false).is_err());
+        assert!(tls_answer(fixed, &format!("verify error:num=20\n{eof}"), false).is_err());
+        assert!(tls_answer(fixed, "00:error:SSL:unexpected eof while reading:", false).is_err());
+    }
+
     #[tokio::test]
     async fn missing_and_unsupported_tls_clients_have_a_distinct_fault() {
         let paths = [
@@ -1071,8 +1127,11 @@ mod tests {
     fn chunk_lengths_are_hexadecimal_byte_counts() {
         let raw =
             "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\na\r\nGlühbirne\r\n0\r\n\r\n";
-        assert_eq!(split_answer(raw.as_bytes()).unwrap().body, "Glühbirne");
-        assert!(split_answer(raw.replace("a\r\nGl", "ff\r\nGl").as_bytes()).is_err());
+        assert_eq!(
+            split_answer(raw.as_bytes(), false).unwrap().body,
+            "Glühbirne"
+        );
+        assert!(split_answer(raw.replace("a\r\nGl", "ff\r\nGl").as_bytes(), false).is_err());
     }
 
     #[test]
