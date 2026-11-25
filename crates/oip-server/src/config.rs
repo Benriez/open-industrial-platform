@@ -115,6 +115,11 @@ mod tests {
 pub struct CoreConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ssh: Option<crate::ssh::SshSettings>,
+    /// Read-only Philips Hue bridges whose identity is verified against the
+    /// pinned certificate of the bridge. Without a profile there is no Hue
+    /// collector: the instance never reads a bridge it has not been told to.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hue: Option<crate::hue::HueSettings>,
     pub legacy_single_infrastructure: bool,
     /// Read local Tailscale peer membership and project only matches onto the
     /// authorized device inventory. Disabled unless the operator opts in.
@@ -139,6 +144,7 @@ impl Default for CoreConfig {
     fn default() -> Self {
         Self {
             ssh: None,
+            hue: None,
             legacy_single_infrastructure: false,
             tailscale_peer_status: false,
             database: "oip.sqlite".into(),
@@ -208,6 +214,10 @@ impl CoreConfig {
             }
             oip_opcua::validate_client_endpoint(&source.endpoint, true)
                 .map_err(|_| "OPC-UA browser source must use a literal loopback endpoint")?;
+        }
+        if let Some(hue) = &self.hue {
+            hue.validate(None)
+                .map_err(|error| format!("hue profile: {}", error.code))?;
         }
         Ok(())
     }

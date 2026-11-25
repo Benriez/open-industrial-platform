@@ -22,7 +22,13 @@ The rehearsal measures:
      unnoticed);
   4. the **onboarding**: the device is registered in a disposable Core
      through the authorized session, the record is read back, and a principal
-     of **another organization** does not see it.
+     of **another organization** does not see it;
+  5. the **collector**: the Core reads the bridge through a pinned profile and
+     persists the verified identity as measurements of the registered device —
+     and, when the operator supplies a token, the state and the brightness of
+     every light;
+  6. the **negative control of the collector**: a profile whose pin is not the
+     certificate of the bridge produces no measurement at all.
 
 The rehearsal never writes on the bridge: every request is a `GET`.
 
@@ -93,6 +99,9 @@ def main() -> int:
     parser.add_argument("--host", default="192.168.1.131")
     parser.add_argument("--binary", default=str(ROOT / "target/release/oip-server"))
     parser.add_argument("--pin", default=str(PIN))
+    parser.add_argument("--token-file", default=None,
+                        help="the application token of the operator; without it the "
+                             "rehearsal measures the honest limit of the capability")
     args = parser.parse_args()
     evidence = pathlib.Path(args.evidence).resolve()
     evidence.mkdir(parents=True, exist_ok=True)
@@ -230,21 +239,21 @@ def main() -> int:
             time.sleep(0.5)
 
         # the session of the operator: the one-time code over the local IPC
-        minted = subprocess.run([args.binary, "--browser-login", "--ipc-socket",
-                                 str(work / "s"), "--ipc-credential", str(credential)],
-                                capture_output=True, text=True, timeout=60)
-        assert minted.returncode == 0, minted.stderr
-        code = json.loads(minted.stdout)["login_code"]
-        jar = http.cookiejar.CookieJar()
-        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
-        status, answer = request(base, "/api/v2/browser/login", "POST", {"code": code},
-                                  opener=opener)
-        assert status == 200, answer
-        status, answer = request(base, "/api/v2/browser/session", opener=opener)
-        assert status == 200 and answer.get("authenticated") is True, answer
-        # A write of the browser session carries the origin and the CSRF token
-        # of the session, exactly as the application sends them.
-        csrf = {"x-oip-csrf": answer.get("csrf_token", "")}
+        def login(credential_file):
+            minted = subprocess.run([args.binary, "--browser-login", "--ipc-socket",
+                                     str(work / "s"), "--ipc-credential", str(credential_file)],
+                                    capture_output=True, text=True, timeout=60)
+            assert minted.returncode == 0, minted.stderr
+            code = json.loads(minted.stdout)["login_code"]
+            jar = http.cookiejar.CookieJar()
+            client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+            status, _ = request(base, "/api/v2/browser/login", "POST", {"code": code}, opener=client)
+            assert status == 200, f"login returned HTTP {status}"
+            status, session = request(base, "/api/v2/browser/session", opener=client)
+            assert status == 200 and session["authenticated"], f"session returned HTTP {status}"
+            return client, {"x-oip-csrf": session["csrf_token"]}
+
+        opener, csrf = login(credential)
 
         # the device of the bridge with the identity that was verified
         fingerprint = bridge["the_certificate_of_the_host"]["the_fingerprint"]
@@ -292,16 +301,7 @@ def main() -> int:
         report["steps"].append("the bridge is onboarded and its verified identity is readable")
 
         # the scope: a principal of another organization does not see it
-        code_other = json.loads(subprocess.run(
-            [args.binary, "--browser-login", "--ipc-socket", str(work / "s"),
-             "--ipc-credential", str(other_credential)],
-            capture_output=True, text=True, timeout=60).stdout)["login_code"]
-        other_jar = http.cookiejar.CookieJar()
-        other_opener = urllib.request.build_opener(
-            urllib.request.HTTPCookieProcessor(other_jar))
-        status, answer = request(base, "/api/v2/browser/login", "POST",
-                                  {"code": code_other}, opener=other_opener)
-        assert status == 200, answer
+        other_opener, _ = login(other_credential)
         status, page = request(base, "/api/v2/inventory/devices?id=hue-bridge",
                                 opener=other_opener)
         report["the_scope"] = {"the_status": status,
@@ -313,6 +313,117 @@ def main() -> int:
         assert not (page.get("items") or []), \
             "a principal of another organization sees the device of the bridge"
         report["steps"].append("a principal of another organization does not see the bridge")
+
+        # 5. the collector: the Core reads the bridge through the pinned profile
+        profile = {
+            "id": "lan",
+            "label": "The bridge of the operator in the LAN",
+            "principals": ["platform-reader"],
+            "device_id": "hue-bridge",
+            "host": args.host,
+            "port": 443,
+            "poll_seconds": 10,
+            "pin_file": str(pin),
+        }
+        if args.token_file:
+            token_file = pathlib.Path(args.token_file).resolve()
+            assert token_file.is_file(), f"the token file does not exist: {token_file}"
+            assert token_file.stat().st_mode & 0o077 == 0, "use a private token file"
+            profile["token_file"] = str(token_file)
+        tool("stop")
+        core = False
+        config = json.loads((work / "core.json").read_text())
+        config["hue"] = {"profiles": [profile]}
+        (work / "core.json").write_text(json.dumps(config, indent=2))
+        tool("start")
+        core = True
+        opener, csrf = login(credential)
+        observed = {}
+        for _ in range(60):
+            status, detail = request(base, "/api/v2/devices/hue-bridge", opener=opener)
+            assert status == 200, f"collector device returned HTTP {status}"
+            observed = {
+                o["metric_id"]: next(iter(o["value"].values()))
+                for o in detail["metrics"] if o["value"] is not None and o["quality"] == "good"
+            }
+            if {"bridge.bridge_id", "bridge.model_id", "bridge.api_version", "bridge.mac"} <= observed.keys():
+                if not args.token_file or any(m.startswith("light.") for m in observed):
+                    break
+            time.sleep(1)
+        report["the_collector"] = {
+            "the_profile": {k: v for k, v in profile.items() if k != "token_file"},
+            "the_token_configured": bool(args.token_file),
+            "the_metrics": observed,
+            "the_read": any(metric.startswith("bridge.") for metric in observed),
+        }
+        assert observed.get("bridge.bridge_id") == identity["the_bridge_id"], observed
+        assert observed.get("bridge.model_id") == identity["the_model_id"], observed
+        assert observed.get("bridge.api_version") == identity["the_api_version"], observed
+        assert observed.get("bridge.mac") == identity["the_mac"], observed
+        for metric, value in observed.items():
+            assert metric.startswith(("bridge.", "lights.", "light.")), metric
+            assert value is not None, (metric, value)
+        if args.token_file:
+            assert (observed.get("lights.total") or 0) > 0, "no light was read with the token"
+            assert any(metric.startswith("light.") for metric in observed), observed
+            report["steps"].append(
+                "the lights of the bridge are read with the token of the operator")
+        else:
+            assert not any(metric.startswith(("light.", "lights.")) for metric in observed), \
+                "the collector reported a light without a token of the operator"
+            report["steps"].append(
+                "the collector reads the identity of the bridge and names the limit of the token")
+
+        other_opener, _ = login(other_credential)
+        hidden, _ = request(base, "/api/v2/devices/hue-bridge", opener=other_opener)
+        missing, _ = request(base, "/api/v2/devices/nonexistent-bridge", opener=other_opener)
+        assert hidden in (403, 404) and hidden == missing, (hidden, missing)
+        report["the_scope"]["the_collected_device_status"] = hidden
+
+        # 6. the negative control of the collector: a pin that is not the
+        # certificate of the bridge reads nothing.
+        status, answer = request(base, "/api/v2/inventory/apply", "POST",
+                                 {"changes": [{"operation": "register", "device": {
+                                     "id": "hue-bridge-unverified",
+                                     "display_name": "A bridge with an unverified identity",
+                                     "device_type": "network_device",
+                                     "site_id": "site-a1",
+                                     "metadata": {"tags": ["negative-control"]},
+                                 }}]}, headers=csrf, opener=opener)
+        assert status == 200, answer
+        tool("stop")
+        core = False
+        config["hue"] = {"profiles": [profile, {
+            "id": "unverified",
+            "label": "A bridge whose certificate is not the pinned one",
+            "principals": ["platform-reader"],
+            "device_id": "hue-bridge-unverified",
+            "host": args.host,
+            "port": 443,
+            "poll_seconds": 10,
+            "pin_file": str(wrong),
+        }]}
+        (work / "core.json").write_text(json.dumps(config, indent=2))
+        tool("start")
+        core = True
+        opener, _ = login(credential)
+        pin_fault = False
+        for _ in range(25):
+            status, detail = request(base, "/api/v2/devices/hue-bridge-unverified", opener=opener)
+            assert status == 200, f"wrong-pin device returned HTTP {status}"
+            assert detail["device"]["data_source_id"] == "hue-unverified", detail["device"]
+            assert not detail["metrics"], "an unverified bridge produced measurements"
+            pin_fault = any("hue-unverified" in line and "HUE_IDENTITY_CHANGED" in line
+                            for line in (state / "oip.log").read_text().splitlines())
+            if pin_fault:
+                break
+            time.sleep(1)
+        assert pin_fault, "collector did not report a certificate rejection for hue-unverified"
+        report["the_collector"]["the_unverified_profile"] = {
+            "the_metrics": {}, "the_reads": 0, "the_fault": "HUE_IDENTITY_CHANGED",
+        }
+        report["steps"].append(
+            "a collector whose pin is not the certificate of the bridge reads nothing")
 
         # the Core stops and nothing of the rehearsal stays behind
         tool("stop")
@@ -347,7 +458,7 @@ def main() -> int:
     report["the_working_tree_is_clean"] = not subprocess.run(
         ["git", "status", "--porcelain"], cwd=ROOT, capture_output=True,
         text=True).stdout.strip()
-    report["the_read_only"] = "every request of the rehearsal is a GET; the bridge was not modified"
+    report["the_read_only"] = "every request to the bridge during this rehearsal was a GET"
     report["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     (evidence / "hue-device.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps({"the_status": report["the_status"],

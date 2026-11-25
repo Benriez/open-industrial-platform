@@ -1,11 +1,11 @@
 //! Supervised executor and protocol integration; no UI or web-server dependency.
 use crate::{
     config::{CoreConfig, OpcUaBrowseSource, SourceConfig},
-    state::{AppState, ShutdownReport, now_ms},
+    state::{now_ms, AppState, ShutdownReport},
 };
-use futures::{FutureExt, future::BoxFuture};
+use futures::{future::BoxFuture, FutureExt};
 use oip_core::*;
-use oip_opcua::{ClientOptions, ReadOnlyOpcUaAdapter, async_opcua::AsyncOpcUaClient};
+use oip_opcua::{async_opcua::AsyncOpcUaClient, ClientOptions, ReadOnlyOpcUaAdapter};
 use oip_storage::SqliteStore;
 use std::{collections::VecDeque, panic::AssertUnwindSafe, sync::Arc, time::Duration};
 use thiserror::Error;
@@ -276,6 +276,48 @@ impl CoreRuntime {
             let definition = crate::ssh::definition(&connection);
             store.merge_connection_source_definition(&definition)?;
         }
+        // A verified read-only collector is placed on the device it reads: the
+        // identity of a Hue bridge is pinned to its own certificate, exactly
+        // like the host key of an SSH host.
+        if let Some(hue) = &config.hue {
+            let hierarchy = store
+                .hierarchy()?
+                .ok_or_else(|| RuntimeError::Configuration("HUE_DEVICE_UNREGISTERED".into()))?;
+            hue.validate(Some(&hierarchy))
+                .map_err(|error| RuntimeError::Configuration(error.code))?;
+            let inventory = store.inventory_records()?;
+            for profile in &hue.profiles {
+                let device = inventory
+                    .iter()
+                    .find(|row| row.device.id == profile.device_id)
+                    .ok_or_else(|| RuntimeError::Configuration("HUE_DEVICE_UNREGISTERED".into()))?;
+                if !profile.principals.iter().all(|p| {
+                    hierarchy.permits(
+                        p,
+                        CapabilityId::DeviceRead,
+                        &AccessScope::Site(device.device.site_id.clone()),
+                        false,
+                    )
+                }) {
+                    return Err(RuntimeError::Configuration(
+                        "HUE_PROFILE_UNAVAILABLE".into(),
+                    ));
+                }
+            }
+            for profile in &hue.profiles {
+                store
+                    .register_device_source(
+                        &profile.device_id,
+                        &crate::hue::definition(profile),
+                    )
+                    .map_err(|error| {
+                        RuntimeError::Configuration(format!(
+                            "the Hue profile {} is not a valid placement of a registered device: {error}",
+                            profile.id
+                        ))
+                    })?;
+            }
+        }
         let state =
             AppState::configured(store, &config, scenario).map_err(RuntimeError::Ingestion)?;
         let mut runtime = Self::from_state(state, config).await?;
@@ -283,6 +325,15 @@ impl CoreRuntime {
         Ok(runtime)
     }
     pub async fn from_state(state: AppState, config: CoreConfig) -> Result<Self, RuntimeError> {
+        let hue_tls = if config.hue.is_some() {
+            Some(
+                crate::hue::openssl()
+                    .await
+                    .map_err(|error| RuntimeError::Configuration(error.code))?,
+            )
+        } else {
+            None
+        };
         let cancel = CancellationToken::new();
         let mut workers = Vec::new();
         for source in config.sources {
@@ -310,6 +361,14 @@ impl CoreRuntime {
             state.clone(),
             cancel.clone(),
         )));
+        if let (Some(hue), Some(binary)) = (&config.hue, hue_tls) {
+            workers.push(tokio::spawn(crate::hue::supervise(
+                binary,
+                state.clone(),
+                hue.profiles.clone(),
+                cancel.clone(),
+            )));
+        }
         if config.tailscale_peer_status {
             workers.push(tokio::spawn(crate::network_services::supervise(
                 state.clone(),

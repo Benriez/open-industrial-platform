@@ -14,6 +14,7 @@ use sha2::{Digest, Sha256};
 use std::path::Path;
 use thiserror::Error;
 mod connection;
+mod device_sources;
 mod history;
 mod inventory;
 mod settings;

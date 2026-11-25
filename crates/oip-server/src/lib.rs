@@ -27,4 +27,5 @@ pub mod browser_session;
 pub mod ssh;
 
 pub mod connection_service;
+pub mod hue;
 pub mod network_services;

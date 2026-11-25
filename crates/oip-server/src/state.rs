@@ -4,19 +4,19 @@ use crate::{
     demo,
 };
 use oip_core::*;
-use oip_opcua::{BrowseEntry, async_opcua::AsyncOpcUaClient};
+use oip_opcua::{async_opcua::AsyncOpcUaClient, BrowseEntry};
 use oip_storage::SqliteStore;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
     sync::{
-        Arc, Mutex,
         atomic::{AtomicBool, AtomicI64, AtomicU64, Ordering},
+        Arc, Mutex,
     },
     thread::JoinHandle,
     time::Duration,
 };
-use tokio::sync::{RwLock, mpsc, oneshot, watch};
+use tokio::sync::{mpsc, oneshot, watch, RwLock};
 #[path = "writer.rs"]
 mod writer;
 
@@ -153,16 +153,24 @@ impl AppState {
                 .map_err(|_| "connection attempts unavailable")?,
         );
         if let Some(h) = &hierarchy {
-            let mut ids: std::collections::BTreeSet<_> =
-                config.sources.iter().map(|s| s.id.as_str()).collect();
+            let mut ids: std::collections::BTreeSet<String> = config
+                .sources
+                .iter()
+                .map(|s| s.id.as_str().to_owned())
+                .collect();
             for c in connections.iter() {
-                ids.insert(c.source_id.as_str());
+                ids.insert(c.source_id.as_str().to_owned());
+            }
+            if let Some(hue) = &config.hue {
+                for profile in &hue.profiles {
+                    ids.insert(crate::hue::source_id(profile).as_str().to_owned());
+                }
             }
             if ids
                 != h.plan
                     .sources
                     .iter()
-                    .map(|s| s.source_id.as_str())
+                    .map(|s| s.source_id.as_str().to_owned())
                     .collect()
             {
                 return Err("runtime sources must exactly match provisioned registry".into());
@@ -190,6 +198,18 @@ impl AppState {
                     .ok_or("SSH source definition missing")?
                     .clone(),
             );
+        }
+        if let Some(hue) = &config.hue {
+            for profile in &hue.profiles {
+                let id = crate::hue::source_id(profile);
+                definitions.push(
+                    saved
+                        .iter()
+                        .find(|d| d.id == id && d.origin_class == OriginClass::External)
+                        .ok_or("Hue source definition missing")?
+                        .clone(),
+                );
+            }
         }
         let inventory = Arc::new(store.inventory_records().map_err(|_| "invalid inventory")?);
         if let Some(h) = &hierarchy {
@@ -271,6 +291,15 @@ impl AppState {
         for c in connections.iter() {
             app.configure_source_cadence(&c.source_id, (c.poll_seconds * 2000 + 15000) as i64)
                 .map_err(|_| "source cadence")?;
+        }
+        if let Some(hue) = &config.hue {
+            for profile in &hue.profiles {
+                app.configure_source_cadence(
+                    &crate::hue::source_id(profile),
+                    (profile.poll_seconds * 2000 + 15000) as i64,
+                )
+                .map_err(|_| "source cadence")?;
+            }
         }
         let (registry_tx, registry) = watch::channel(RegistrySnapshot {
             hierarchy,
