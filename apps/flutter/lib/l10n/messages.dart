@@ -1219,6 +1219,8 @@ const englishMessages = <String, String>{
   "Standorte": "Sites",
   "Status aktualisieren": "Refresh status",
   "Status unbekannt": "Unknown status",
+  "Status veraltet": "Status stale",
+  "Stoppt": "Stopping",
   "Subscription Error gemeldet": "Subscription Error reported",
   "Subscription-Fehler": "Subscription error",
   "Subscription-Fehler gemeldet": "Subscription error reported",

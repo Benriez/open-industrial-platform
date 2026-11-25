@@ -251,6 +251,7 @@ void main() {
 
       // The secure browser write path of the Core is offered.
       expect(find.byKey(const Key('devices-add-primary')), findsOneWidget);
+      expect(find.text('Autorisierter v2-Scope'), findsNothing);
     });
 
     testWidgets('API and authentication failures never restore the legacy UI',

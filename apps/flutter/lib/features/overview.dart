@@ -107,10 +107,6 @@ class _OverviewPageState extends State<OverviewPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _header(),
-              const SizedBox(height: OipTokens.s2),
-              _contextBar(),
-              const SizedBox(height: OipTokens.s2),
-              _statusStrip(),
               if (controller.infrastructure.ready &&
                   controller.infrastructure.selection.isUnified) ...[
                 const SizedBox(height: OipTokens.s2),
@@ -158,6 +154,7 @@ class _OverviewPageState extends State<OverviewPage> {
                     hasSelection: selection.kind != OverviewSelectionKind.none,
                     child: OverviewContextInspector(
                       snapshot: snapshot,
+                      transportLive: controller.connection == 'live',
                       sources: sources,
                       events: events,
                       selection: selection,
@@ -308,170 +305,6 @@ class _OverviewPageState extends State<OverviewPage> {
               !snapshot.devices.any((device) => device.hasHueLights))
             StatusPill(context.tr("READ-ONLY"), icon: Icons.lock_outline),
         ],
-      );
-
-  Widget _contextBar() => WorkstationPanel(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        child: LayoutBuilder(builder: (context, box) {
-          final infrastructure = controller.infrastructure;
-          final facts = [
-            (
-              'KONTEXT',
-              infrastructure.ready
-                  ? infrastructure.selectedBreadcrumb
-                  : 'Lokal · autorisierter v1-Umfang'
-            ),
-            (
-              'SOURCE',
-              infrastructure.selection.sourceId ??
-                  (selection.kind == OverviewSelectionKind.device &&
-                          selection.sourceId == null
-                      ? 'Nicht zugeordnet'
-                      : selection.sourceId ??
-                          snapshot.primarySourceId ??
-                          'Nicht eindeutig geliefert')
-            ),
-            (
-              'ORG / SITE',
-              infrastructure.ready
-                  ? '${infrastructure.hierarchy.organizationName(infrastructure.selection.organizationId)} / ${infrastructure.hierarchy.siteName(infrastructure.selection.siteId)}'
-                  : 'Nicht im v1-Vertrag geliefert'
-            ),
-            (
-              'TATSÄCHLICHER EMPFANG',
-              timestamp(snapshot.system.lastReceivedMs)
-            ),
-            ('TRANSPORT', controller.connection.toUpperCase()),
-          ];
-          final columns = box.maxWidth < 520 ? 2 : 5;
-          final width = (box.maxWidth - (columns - 1) * 10) / columns;
-          return Wrap(
-            spacing: 10,
-            runSpacing: 5,
-            children: facts
-                .map((fact) => SizedBox(
-                    width: width, child: _contextFact(fact.$1, fact.$2)))
-                .toList(),
-          );
-        }),
-      );
-
-  Widget _contextFact(String label, String value) => Row(children: [
-        Flexible(
-          flex: 2,
-          child: Text('$label  ',
-              overflow: TextOverflow.ellipsis,
-              style: WorkstationTokens.eyebrow(context)),
-        ),
-        Expanded(
-          flex: 3,
-          child: Text(value,
-              overflow: TextOverflow.ellipsis,
-              style: WorkstationTokens.mono(context, size: 10.5)),
-        ),
-      ]);
-
-  Widget _statusStrip() {
-    final connected =
-        sources.where((source) => source.connection == 'connected').length;
-    final freshness = _freshness(snapshot.metrics);
-    final contextFindings = controller.infrastructure.findings;
-    final findings = controller.infrastructure.ready
-        ? contextFindings
-            ?.where((finding) => finding.evidenceSourceIds.any((sourceId) {
-                  final placement =
-                      controller.infrastructure.sourcePlacement(sourceId);
-                  return placement != null &&
-                      controller.infrastructure.selection.matches(
-                        organizationId: placement.organizationId,
-                        infrastructureId: placement.infrastructureId,
-                        siteId: placement.siteId,
-                        sourceId:
-                            controller.infrastructure.selection.sourceId == null
-                                ? null
-                                : sourceId,
-                      );
-                }))
-            .length
-        : snapshot.incidents.length;
-    final items = [
-      (
-        'CORE',
-        controller.connection == 'live'
-            ? _coreLabel(snapshot.core.lifecycle).toUpperCase()
-            : 'STALE / RECONNECT',
-        controller.connection == 'live'
-            ? _coreTone(snapshot.core.lifecycle)
-            : 'stale'
-      ),
-      (
-        'SOURCES',
-        sources.isEmpty
-            ? known(snapshot.system.opcua).toUpperCase()
-            : '$connected / ${sources.length} CONNECTED',
-        sources.isEmpty
-            ? snapshot.system.opcua
-            : connected == sources.length
-                ? 'connected'
-                : 'degraded'
-      ),
-      ('DEVICES', '${snapshot.devices.length} REGISTERED', 'info'),
-      (
-        'FINDINGS',
-        findings == null
-            ? 'NICHT IM KONTEXT GELIEFERT'
-            : findings == 0
-                ? 'NONE IN CURRENT DATA'
-                : '$findings DELIVERED',
-        findings == null || findings == 0 ? 'unknown' : 'degraded'
-      ),
-      ('DATA TRUST', freshness.toUpperCase(), freshness),
-    ];
-    return WorkstationPanel(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: LayoutBuilder(builder: (context, box) {
-        final columns = box.maxWidth >= 900
-            ? 5
-            : box.maxWidth >= 520
-                ? 3
-                : 2;
-        final width = (box.maxWidth - (columns - 1) * 10) / columns;
-        return Wrap(
-          spacing: 10,
-          runSpacing: 5,
-          children: items
-              .map((item) => SizedBox(
-                  width: width, child: _statusValue(item.$1, item.$2, item.$3)))
-              .toList(),
-        );
-      }),
-    );
-  }
-
-  Widget _statusValue(String label, String value, String status) => Semantics(
-        excludeSemantics: true,
-        label: label == 'CORE'
-            ? context.tr("Core-Zustand: {0}", [
-                value == 'STALE / RECONNECT'
-                    ? 'Status veraltet'
-                    : value[0] + value.substring(1).toLowerCase()
-              ])
-            : '$label: $value',
-        child: Row(children: [
-          StatusDot(status),
-          const SizedBox(width: 7),
-          Expanded(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(label, style: WorkstationTokens.eyebrow(context)),
-              Text(value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: WorkstationTokens.mono(context,
-                      size: 10.5, weight: FontWeight.w700)),
-            ]),
-          ),
-        ]),
       );
 
   Widget _operationalFocus(Observation? selected) {
@@ -763,30 +596,3 @@ class _OverviewPageState extends State<OverviewPage> {
     return result;
   }
 }
-
-String _freshness(List<Observation> metrics) {
-  if (metrics.isEmpty) return 'unknown';
-  if (metrics.every((item) => item.freshness == 'fresh')) return 'fresh';
-  if (metrics.any((item) => item.freshness == 'fresh')) return 'mixed';
-  if (metrics.any((item) => item.freshness == 'stale')) return 'stale';
-  return 'unknown';
-}
-
-String _coreLabel(CoreLifecycle state) => switch (state) {
-      CoreLifecycle.initializing => 'Initialisierung',
-      CoreLifecycle.ready => 'Bereit',
-      CoreLifecycle.degraded => 'Degradiert',
-      CoreLifecycle.stopping => 'Stoppt',
-      CoreLifecycle.stopped => 'Gestoppt',
-      CoreLifecycle.failed => 'Fehlgeschlagen',
-      CoreLifecycle.unknown => 'Unbekannt',
-    };
-
-String _coreTone(CoreLifecycle state) => switch (state) {
-      CoreLifecycle.ready => 'connected',
-      CoreLifecycle.degraded => 'degraded',
-      CoreLifecycle.initializing || CoreLifecycle.stopping => 'waiting',
-      CoreLifecycle.stopped => 'offline',
-      CoreLifecycle.failed => 'critical',
-      CoreLifecycle.unknown => 'unknown',
-    };

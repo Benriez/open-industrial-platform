@@ -190,8 +190,8 @@ try {
 
   await openOverview();
   await waitForNameContaining('Diagnose öffnen');
-  await waitForNameContaining(`DEVICES: ${devices.length} REGISTERED`);
-  await waitForNameContaining(`SOURCES: ${sources.length}`);
+  await waitForNameContaining(`DEVICES: ${devices.length}`);
+  await waitForNameContaining(`SOURCES: ${sources.length} · `);
   pass('the Overview names the managed surface and the counts of the Core');
   await capture('overview');
 

@@ -184,6 +184,15 @@ try {
       check(`one workstation title on ${workstation.slug} at ${width}px`,
         await title.count() === 1);
       const workstationSnapshot = await snapshot();
+      if (workstation.slug === 'overview') {
+        check(`no technical summary strips on overview at ${width}px`,
+          !workstationSnapshot.includes('DATA TRUST') &&
+          !workstationSnapshot.includes('TATSÄCHLICHER EMPFANG'));
+      }
+      if (workstation.slug === 'devices') {
+        check(`no technical scope strip on devices at ${width}px`,
+          !workstationSnapshot.includes('Autorisierter v2-Scope'));
+      }
       const scopedForbidden = forbidden.filter((marker) =>
         !['M-01', 'Normalbetrieb'].includes(marker) &&
         (workstation.slug !== 'settings' || marker !== 'AGENT-FIRST'));

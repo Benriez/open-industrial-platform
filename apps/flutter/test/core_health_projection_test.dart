@@ -41,13 +41,14 @@ void main() {
       ..connection = 'live';
     await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
     await tester.pumpAndSettle();
-    expect(find.bySemanticsLabel(RegExp('Core-Zustand: Degradiert')),
-        findsOneWidget);
+    expect(find.text('Core-Zustand: Degradiert'), findsNothing);
+    await tester.tap(find.byKey(const Key('overview-inspector-open')));
+    await tester.pumpAndSettle();
+    expect(find.text('Core-Zustand: Degradiert'), findsOneWidget);
     controller.connection = 'reconnecting';
     controller.notifyListeners();
     await tester.pumpAndSettle();
-    expect(find.bySemanticsLabel(RegExp('Core-Zustand: Status veraltet')),
-        findsOneWidget);
+    expect(find.text('Core-Zustand: Status veraltet'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
     controller.dispose();

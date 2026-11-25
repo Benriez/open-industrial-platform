@@ -10,7 +10,6 @@ import '../../models/infrastructure.dart';
 import '../../services/api.dart';
 import '../../widgets/adaptive_workspace.dart';
 import '../../widgets/components.dart';
-import '../../widgets/workstation.dart';
 import 'device_comparison.dart';
 import 'service_registry.dart';
 import 'device_detail.dart';
@@ -381,8 +380,6 @@ class _DevicesPageState extends State<DevicesPage> {
             Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           _header(),
           const SizedBox(height: DevicesLayout.sectionGap),
-          _contextBar(),
-          const SizedBox(height: DevicesLayout.sectionGap),
           _modeBar(),
           const SizedBox(height: DevicesLayout.sectionGap),
           if (compareMessage != null)
@@ -525,64 +522,6 @@ class _DevicesPageState extends State<DevicesPage> {
       ),
     );
   }
-
-  Widget _contextBar() => WorkstationPanel(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-        child: LayoutBuilder(builder: (context, box) {
-          final facts = [
-            (
-              'SCOPE',
-              widget.controller.infrastructure.ready
-                  ? 'Autorisierter v2-Scope'
-                  : 'Autorisierter v1-Snapshot'
-            ),
-            ('SOURCES', '${sources.length} geliefert'),
-            ('REGISTRY', '${snapshot.devices.length} Geräte'),
-            ('EMPFANG', timestamp(snapshot.system.lastReceivedMs)),
-            (
-              'PROVENIENZ',
-              snapshot.system.simulated
-                  ? 'SIMULATED / REPORTED / OBSERVED'
-                  : 'REPORTED / OBSERVED'
-            ),
-            (
-              'ORG / SITE',
-              widget.controller.infrastructure.ready
-                  ? widget.controller.infrastructure.selectedBreadcrumb
-                  : 'Nicht im v1-Vertrag'
-            ),
-          ];
-          final columns = box.maxWidth < 520
-              ? 2
-              : box.maxWidth < 900
-                  ? 3
-                  : 6;
-          final width = (box.maxWidth - (columns - 1) * 8) / columns;
-          return Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: facts
-                .map((fact) =>
-                    SizedBox(width: width, child: _fact(fact.$1, fact.$2)))
-                .toList(),
-          );
-        }),
-      );
-
-  Widget _fact(String label, String value) => Row(children: [
-        Flexible(
-          flex: 2,
-          child: Text('$label  ',
-              overflow: TextOverflow.ellipsis,
-              style: WorkstationTokens.eyebrow(context)),
-        ),
-        Expanded(
-          flex: 3,
-          child: Text(value,
-              overflow: TextOverflow.ellipsis,
-              style: WorkstationTokens.mono(context, size: 10)),
-        ),
-      ]);
 
   Widget _modeBar() => SingleChildScrollView(
         scrollDirection: Axis.horizontal,

@@ -9,6 +9,21 @@ import 'package:oip_dashboard/models/contracts.dart';
 import 'package:oip_dashboard/services/api.dart';
 import 'support.dart';
 
+class _SilentSseApi extends FakeApi {
+  final reconnected = Completer<void>();
+
+  _SilentSseApi() {
+    emitAutomatically = false;
+  }
+
+  @override
+  Stream<ServerEvent> stream() {
+    final events = super.stream();
+    if (attempts == 2) reconnected.complete();
+    return events;
+  }
+}
+
 void main() {
   test('Missing observations and hardware metrics never become zero', () {
     final o = Observation.fromJson(observation(value: null));
@@ -268,18 +283,20 @@ void main() {
   });
 
   test('Silent SSE stream times out and reconnects', () async {
-    final api = FakeApi()..emitAutomatically = false;
+    final api = _SilentSseApi();
     final controller = OipController(
       api,
       retryDelay: const Duration(milliseconds: 1),
       streamTimeout: const Duration(milliseconds: 5),
     );
     final running = controller.start();
-    await Future<void>.delayed(const Duration(milliseconds: 30));
-    expect(api.attempts, greaterThan(1));
-    expect(controller.stale, isTrue);
-    controller.dispose();
-    await running;
+    try {
+      await api.reconnected.future.timeout(const Duration(seconds: 5));
+      expect(controller.stale, isTrue);
+    } finally {
+      controller.dispose();
+      await running;
+    }
   });
 
   test('Backend alarm classification is scoped to its registry entity', () {

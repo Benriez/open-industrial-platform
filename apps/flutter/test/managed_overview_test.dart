@@ -53,10 +53,10 @@ void main() {
 
     await pumpManaged(tester, controller, (c) => OverviewPage(c, (_) {}));
 
-    // The global infrastructure context is present and names every authorized
-    // infrastructure of the session.
-    expect(find.textContaining('Alle berechtigten Infrastrukturen'),
-        findsWidgets);
+    // The shell owns the global context selector. The workstation's
+    // infrastructure summary represents the authorized unified selection.
+    expect(find.byKey(const Key('unified-infrastructure-summary')),
+        findsOneWidget);
     // The unified view counts only the rows the Core delivered.
     expect(find.text('UNIFIED INFRASTRUCTURE VIEW'), findsOneWidget);
     expect(find.text('ORGANIZATIONS'), findsOneWidget);

@@ -89,7 +89,7 @@ try {
  await wait(async()=>(await sources())['sim-b'].accepted>before+4,'B continues');
  await page.getByRole('button',{name:/Details Simulation A/}).click();await page.getByText('Degradiert',{exact:true}).waitFor();await page.getByText('Veraltet',{exact:true}).first().waitFor();await capture('source-a-offline');await page.getByRole('button',{name:/Details schließen/}).click();
  await page.getByRole('button',{name:/Details Simulation B/}).click();await page.getByText('Aktuell',{exact:true}).first().waitFor();await capture('source-b-still-fresh');await page.getByRole('button',{name:/Details schließen/}).click();
- await nav('Übersicht');await page.getByText(/Core-Zustand: Degradiert/).first().waitFor();await capture('core-degraded-with-live-api');
+ await nav('Übersicht');await page.getByRole('button',{name:/Detail-Inspector manuell öffnen/}).click();await page.getByText(/Core-Zustand: Degradiert/).first().waitFor();await capture('core-degraded-with-live-api');
  const snap=await snapshot();const rest=await sources();assert.equal(snap.sources.find(s=>s.id==='sim-a').connection,rest['sim-a'].connection);assert.equal(snap.sources.find(s=>s.id==='sim-b').connection,'connected');assert.equal(snap.core.lifecycle,'degraded');
  assert((await api('/api/v1/devices/sim-b:M-01')).metrics.every(o=>o.data_source_id==='sim-b'));
  await nav('Diagnose & Ereignisse');await page.getByText('Quelle: sim-a',{exact:true}).first().waitFor();await capture('source-a-gap');

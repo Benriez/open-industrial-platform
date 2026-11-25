@@ -25,7 +25,7 @@ try {
   else if(cmd.op==='offline') {
    await nav('Geräte & Dienste');await page.getByRole('button',{name:/Details Simulation A/}).click();await page.getByText('Veraltet',{exact:true}).first().waitFor();await capture('source-a-stale');await page.getByRole('button',{name:/Details schließen/}).click();
    await page.getByRole('button',{name:/Details Simulation B/}).click();await page.getByText('Aktuell',{exact:true}).first().waitFor();await capture('source-b-fresh');await page.getByRole('button',{name:/Details schließen/}).click();
-   await nav('Übersicht');await page.getByText(/Core-Zustand: Degradiert/).first().waitFor();await capture('core-degraded-live-api');result={a_stale:true,b_fresh:true,core_degraded:true};
+   await nav('Übersicht');await page.getByRole('button',{name:/Detail-Inspector manuell öffnen/}).click();await page.getByText(/Core-Zustand: Degradiert/).first().waitFor();await capture('core-degraded-live-api');result={a_stale:true,b_fresh:true,core_degraded:true};
   } else if(cmd.op==='alarm') {await nav('Übersicht');await page.getByText('95.0 °C',{exact:true}).waitFor();await capture('sensor-alarm');result={alarm:true};}
   else if(cmd.op==='stale') {await nav('Übersicht');await page.getByText(/VERALTET \/ UNBEKANNT/).waitFor({timeout:15000});await capture('daemon-restored-stale');result={restore_stale:true};}
   else if(cmd.op==='browser_reconnect') {await context.close();const fresh=await browser.newContext({viewport:{width:1440,height:1000},serviceWorkers:'block'});page=await fresh.newPage();await open();result={new_flutter_connection:true};}

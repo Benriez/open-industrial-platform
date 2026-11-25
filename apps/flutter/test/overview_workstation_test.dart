@@ -159,13 +159,12 @@ Future<void> pumpOverview(WidgetTester tester, OipController controller,
 }
 
 void main() {
-  testWidgets('Operational status and persisted count retain their exact scope',
+  testWidgets('Persisted count retains its exact scope without summary strips',
       (tester) async {
     final controller = overviewController();
     await pumpOverview(tester, controller);
-    expect(find.text('1 / 1 CONNECTED'), findsOneWidget);
-    expect(find.text('2 REGISTERED'), findsOneWidget);
-    expect(find.text('NONE IN CURRENT DATA'), findsOneWidget);
+    expect(find.text('TRANSPORT  '), findsNothing);
+    expect(find.text('DATA TRUST'), findsNothing);
     await tester.tap(find.byKey(const Key('overview-workspace-tab-coverage')));
     await tester.pumpAndSettle();
     expect(find.textContaining('globaler Core/SQLite-Bestand'), findsOneWidget);
@@ -406,7 +405,8 @@ void main() {
     (data['metrics'] as List).add(stale);
     final controller = overviewController(data);
     await pumpOverview(tester, controller);
-    expect(find.text('MIXED'), findsOneWidget);
+    expect(find.text('1 Signal(e) stale'), findsOneWidget);
+    expect(find.text('DATA TRUST'), findsNothing);
   });
 
   testWidgets('Source investigation synchronizes focus, inspector and activity',

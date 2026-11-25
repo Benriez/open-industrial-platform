@@ -65,6 +65,29 @@ async function waitFor(predicate,seconds=10){
   }
 }
 
+// The semantics tree includes fields that are clipped by the inspector's
+// fixed header and actions. Scroll the inspector until the painted control
+// is reachable.
+async function inspectorControlPoint(locator){
+  const close=page.getByRole('button',{name:/^Inspector schließen/});
+  const pin=page.getByRole('button',{name:'Pinnen',exact:true});
+  for(let i=0;i<16;i++){
+    const [header,footer,box]=await Promise.all([
+      close.boundingBox(),pin.boundingBox(),locator.boundingBox(),
+    ]);
+    if(!header||!footer)return null;
+    const top=header.y+header.height+8;
+    const bottom=footer.y-8;
+    if(box&&box.y>=top&&box.y+box.height<=bottom){
+      return {x:box.x+Math.min(box.width/2,60),y:box.y+box.height/2};
+    }
+    await page.mouse.move(footer.x+footer.width/2,(top+bottom)/2);
+    await page.mouse.wheel(0,box&&box.y<top?-150:150);
+    await page.waitForTimeout(220);
+  }
+  return null;
+}
+
 /// A **button** of the Flutter view is activated with the event of its
 /// semantics node, and every way is proven with the state of the Core.
 ///
@@ -77,26 +100,16 @@ async function waitFor(predicate,seconds=10){
 /// same). The event of the semantics node activates the control itself; the
 /// painted position is the fallback.
 async function activateControl(locator,predicate){
-  const view=page.viewportSize();
-  for(let i=0;i<16;i++){
-    if(await locator.count()){
-      const box=await locator.boundingBox();
-      if(box&&box.y>70&&box.y+box.height<view.height-20){
-        try{
-          await locator.dispatchEvent('click');
-          await page.waitForTimeout(600);
-          if(await waitFor(predicate,8))return true;
-        }catch{}
-        await page.mouse.click(box.x+Math.min(box.width/2,60),box.y+box.height/2);
-        await page.waitForTimeout(600);
-        return await waitFor(predicate,8);
-      }
-    }
-    await page.mouse.move(1150,700);
-    await page.mouse.wheel(0,300);
-    await page.waitForTimeout(220);
-  }
-  return false;
+  const point=await inspectorControlPoint(locator);
+  if(!point)return false;
+  try{
+    await locator.dispatchEvent('click');
+    await page.waitForTimeout(600);
+    if(await waitFor(predicate,8))return true;
+  }catch{}
+  await page.mouse.click(point.x,point.y);
+  await page.waitForTimeout(600);
+  return await waitFor(predicate,8);
 }
 
 /// A **text field** of the Flutter view is written the way the operator
@@ -110,18 +123,10 @@ async function activateControl(locator,predicate){
 /// because a field that carries a different text is a defect of the surface
 /// and not a fact of the journey.
 async function fillField(locator,text){
-  const view=page.viewportSize();
   for(let attempt=0;attempt<3;attempt++){
-    for(let i=0;i<16;i++){
-      const box=await locator.boundingBox();
-      if(box&&box.y>70&&box.y+box.height<view.height-20){
-        await page.mouse.click(box.x+Math.min(box.width/2,60),box.y+box.height/2);
-        break;
-      }
-      await page.mouse.move(1150,700);
-      await page.mouse.wheel(0,300);
-      await page.waitForTimeout(220);
-    }
+    const point=await inspectorControlPoint(locator);
+    if(!point)return false;
+    await page.mouse.click(point.x,point.y);
     await page.waitForTimeout(500);
     await page.keyboard.press('Meta+A');
     await page.waitForTimeout(80);
@@ -450,14 +455,13 @@ try {
   await page.waitForTimeout(1500);
   const top=await page.locator('body').ariaSnapshot();
   assert(!top.includes('Temperatur M-01'),'the demo coordinates are still rendered in the managed overview');
-  // The command center carries the dynamic metrics of the authorized
-  // projection. They are read from the rendered surface, never from a
-  // constant of the test.
+  // The unified infrastructure view shows counts for the authorized projection.
   assert(top.includes('UNIFIED INFRASTRUCTURE VIEW'),'the unified infrastructure view is missing');
-  const devices=/CONNECTED DEVICES: (\d+)/.exec(top);
-  const sources=/SOURCES: (\d+) \/ (\d+) CONNECTED/.exec(top);
-  assert(devices&&devices[1].length>0,'the managed overview shows no dynamic device metric');
-  assert(sources&&sources[1].length>0,'the managed overview shows no dynamic source metric');
+  const devices=/\bDEVICES: (\d+)\b/.exec(top);
+  const sources=/\bSOURCES: (\d+) · (\d+) CONNECTED\b/.exec(top);
+  assert(devices&&Number(devices[1])>0,'the managed overview shows no authorized devices');
+  assert(sources&&Number(sources[2])>0&&Number(sources[2])<=Number(sources[1]),
+    'the managed overview shows no connected authorized sources');
   assert(!/M-01/.test(top),'the demo coordinates are still rendered in the managed overview');
   // The authorized source registry has its own section of the workstation.
   await page.getByRole('button',{name:'Source Health',exact:true}).click();
@@ -530,7 +534,7 @@ try {
   await page.getByRole('button',{name:'Operator abmelden',exact:true}).click();
   await page.getByRole('button',{name:'Operator-Sitzung autorisieren',exact:true}).waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,prepared_endpoint_without_manual_fields:true,hardware:'owned loopback SSH fixture',prepared_host_key_pinned:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,device_detail_telemetry_tab:true,device_detail_metrics:[os.metric_id,memory.metric_id],all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_administration:{device_id:manualId,revision_before:manualRevision,revision_after:updated.items[0].record.revision,display_name_updated:true,online_archive_refused:'OFFLINE_ARCHIVE_REQUIRED',archive_is_offline_operation:true,note_written:true,the_note:NOTE,the_note_is_dropped_by_a_write_without_the_merge:true},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[1]+'/'+sources[2],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'DeviceDetail Telemetry tab and connection monitoring panel of the approved UI',demo_coordinates_absent:true},rendered_diagnostics:{approved_surface:'persisted_evidence',persisted_evidence_section:true,diagnosis_history_status:status,health_transitions:healthPage.items.length,documented_gaps:gapsPage.items.length},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
+  await writeFile(resolve(out,'report.json'),JSON.stringify({status:'PASS',actual_flutter_ssh_monitoring:true,prepared_endpoint_without_manual_fields:true,hardware:'owned loopback SSH fixture',prepared_host_key_pinned:true,identity_confirmation:true,existing_device_id_preserved:true,http_only_cookie:true,no_browser_token_storage:true,rendered_measurements:{observed_metrics:observations.map(o=>o.metric_id),host_os:os.value.text,memory_total_bytes:memory.value.unsigned_integer,device_detail_telemetry_tab:true,device_detail_metrics:[os.metric_id,memory.metric_id],all_fresh:observations.every(o=>o.freshness==='fresh')},rendered_history:{persisted_samples:stored.length,rendered_samples:seen.size,all_stale:stored.every(o=>o.freshness==='stale'),receive_times_shown:seenStamps.size,first_receive_time:stamps[0],metrics:wanted.map(w=>w.split(' · ')[0])},rendered_administration:{device_id:manualId,revision_before:manualRevision,revision_after:updated.items[0].record.revision,display_name_updated:true,online_archive_refused:'OFFLINE_ARCHIVE_REQUIRED',archive_is_offline_operation:true,note_written:true,the_note:NOTE,the_note_is_dropped_by_a_write_without_the_merge:true},rendered_overview:{approved_surface:'unified_infrastructure_view',authorized_source:'SSH host browser-existing',source_registry_section:true,dynamic_device_metric:devices[1],dynamic_source_metric:sources[2]+'/'+sources[1],measured_metric:'host.memory_total_bytes',measured_value:memory.value.unsigned_integer,measurement_proof:'DeviceDetail Telemetry tab and connection monitoring panel of the approved UI',demo_coordinates_absent:true},rendered_diagnostics:{approved_surface:'persisted_evidence',persisted_evidence_section:true,diagnosis_history_status:status,health_transitions:healthPage.items.length,documented_gaps:gapsPage.items.length},rendered_network:{approved_surface:'network_engineering_explorer',authorized_placement:'Infrastructure A1',rendered_device_id:'browser-existing',source_registry_proof:'overview source registry and device engineering workspace',loading_state_absent:true,demo_zones_absent:true},loaded_build_sha256:createHash('sha256').update(loaded).digest('hex'),errors,external},null,2));
 } catch(e) {
   await writeFile(resolve(out,'ssh-requests.json'),JSON.stringify(sshRequests,null,2));
   await capture('failure');

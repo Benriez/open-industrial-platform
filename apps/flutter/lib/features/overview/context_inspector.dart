@@ -24,6 +24,7 @@ class OverviewAttentionEntry {
 
 class OverviewContextInspector extends StatelessWidget {
   final Snapshot snapshot;
+  final bool transportLive;
   final List<SourceInfo> sources;
   final List<CollectionEvent> events;
   final OverviewSelection selection;
@@ -35,6 +36,7 @@ class OverviewContextInspector extends StatelessWidget {
   const OverviewContextInspector({
     super.key,
     required this.snapshot,
+    required this.transportLive,
     required this.sources,
     required this.events,
     required this.selection,
@@ -52,12 +54,23 @@ class OverviewContextInspector extends StatelessWidget {
       accent: OipTokens.violet,
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
       child: LayoutBuilder(builder: (context, constraints) {
-        final detail = switch (selection.kind) {
+        final selectionDetail = switch (selection.kind) {
           OverviewSelectionKind.none => _empty(context),
           OverviewSelectionKind.source => _source(context),
           OverviewSelectionKind.device => _device(context),
           OverviewSelectionKind.event => _event(context),
         };
+        final detail = Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              context.tr("Core-Zustand: {0}", [context.tr(_coreStatus)]),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 6),
+            selectionDetail,
+          ],
+        );
         return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -79,6 +92,18 @@ class OverviewContextInspector extends StatelessWidget {
       }),
     );
   }
+
+  String get _coreStatus => !transportLive
+      ? 'Status veraltet'
+      : switch (snapshot.core.lifecycle) {
+          CoreLifecycle.initializing => 'Initialisierung',
+          CoreLifecycle.ready => 'Bereit',
+          CoreLifecycle.degraded => 'Degradiert',
+          CoreLifecycle.stopping => 'Stoppt',
+          CoreLifecycle.stopped => 'Gestoppt',
+          CoreLifecycle.failed => 'Fehlgeschlagen',
+          CoreLifecycle.unknown => 'Unbekannt',
+        };
 
   Widget _empty(BuildContext context) => WorkstationNote(
         context.tr("Quelle, Gerät oder Ereignis auswählen."),
