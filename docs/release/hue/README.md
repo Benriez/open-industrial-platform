@@ -49,7 +49,7 @@ Observation & Telemetry. The separate SSH setup panel can display
 
 ## Dashboard control
 
-Overview and Dashboard list every light returned by a paired bridge, including
+The lighting panel in the Dashboard lists every light returned by a paired bridge, including
 resource IDs above 32. The telemetry catalogue limit applies only to stored
 measurements. Switching, brightness, hue/saturation and white temperature are
 available according to each resource's reported capabilities.

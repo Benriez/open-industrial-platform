@@ -1,38 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oip_dashboard/app/controller.dart';
+import 'package:oip_dashboard/features/overview.dart';
 import 'package:oip_dashboard/features/overview/hue_lights.dart';
 import 'package:oip_dashboard/models/contracts.dart';
 import 'package:oip_dashboard/models/hue.dart';
 import 'package:oip_dashboard/services/api.dart';
 
-class _Bridge implements HueApi {
+import 'support.dart';
+
+class _Bridge extends FakeApi implements HueApi {
+  int reads = 0;
   final bool writable;
   _Bridge({this.writable = true});
   bool on = true;
   final commands = <Json>[];
   @override
-  Future<HueLights> hueLights(String source) async => HueLights.fromJson({
-        'can_control': writable,
-        'lights': [
-          {
-            'id': 51,
-            'name': 'Leselicht',
-            'kind': 'Extended color light',
-            'on': on,
-            'reachable': true,
-            'brightness_percent': 72,
-            'hue_degrees': 18,
-            'saturation_percent': 50
-          },
-          {
-            'id': 99,
-            'name': 'Steckdose',
-            'kind': 'On/Off plug-in unit',
-            'on': true,
-            'reachable': true
-          },
-        ]
-      });
+  Future<HueLights> hueLights(String source) async {
+    reads++;
+    return HueLights.fromJson({
+      'can_control': writable,
+      'lights': [
+        {
+          'id': 51,
+          'name': 'Leselicht',
+          'kind': 'Extended color light',
+          'on': on,
+          'reachable': true,
+          'brightness_percent': 72,
+          'hue_degrees': 18,
+          'saturation_percent': 50
+        },
+        {
+          'id': 99,
+          'name': 'Steckdose',
+          'kind': 'On/Off plug-in unit',
+          'on': true,
+          'reachable': true
+        },
+      ]
+    });
+  }
+
   @override
   Future<void> changeHueLight(String source, int id, Json change) async {
     commands.add({'source': source, 'id': id, ...change});
@@ -49,6 +58,31 @@ Future<void> open(WidgetTester t, _Bridge bridge) async {
 }
 
 void main() {
+  testWidgets('Only the open dashboard mounts and polls lighting controls',
+      (t) async {
+    final api = _Bridge();
+    final data = fixture();
+    (data['devices'] as List).first['connection'] = 'Hue HTTPS';
+    final controller = OipController(api)..snapshot = Snapshot.fromJson(data);
+    await t.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: SingleChildScrollView(
+                child: OverviewPage(controller, (_) {})))));
+    final toggle = find.byKey(const Key('overview-dashboard-toggle'));
+    expect(find.byType(HueLightsPanel), findsNothing);
+    expect(api.reads, 0);
+    await t.tap(toggle);
+    await t.pumpAndSettle();
+    expect(find.text('Leselicht'), findsOneWidget);
+    expect(api.reads, 1);
+    await t.tap(toggle);
+    await t.pumpAndSettle();
+    await t.pump(const Duration(seconds: 20));
+    expect(find.byType(HueLightsPanel), findsNothing);
+    expect(api.reads, 1);
+    await t.pumpWidget(const SizedBox());
+    controller.dispose();
+  });
   testWidgets(
       'All IDs render with supported controls and commands target the selected light',
       (t) async {

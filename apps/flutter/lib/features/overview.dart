@@ -11,8 +11,6 @@ import 'devices.dart';
 import 'overview/activity_workspace.dart';
 import 'overview/context_inspector.dart';
 import 'overview/dashboard_workspace.dart';
-import 'overview/hue_lights.dart';
-import '../services/api.dart';
 import 'overview/infrastructure_explorer.dart';
 import 'overview/overview_selection.dart';
 import 'overview/telemetry_chart.dart';
@@ -112,14 +110,6 @@ class _OverviewPageState extends State<OverviewPage> {
               const SizedBox(height: OipTokens.s2),
               _contextBar(),
               const SizedBox(height: OipTokens.s2),
-              if (controller.api is HueApi)
-                for (final bridge in hueBridges)
-                  HueLightsPanel(
-                      key: ValueKey(
-                          'hue-${controller.contextScopeSignature}-${bridge.sourceId}'),
-                      api: controller.api as HueApi,
-                      source: bridge.sourceId!,
-                      bridgeName: bridge.name),
               _statusStrip(),
               if (controller.infrastructure.ready &&
                   controller.infrastructure.selection.isUnified) ...[
@@ -265,15 +255,10 @@ class _OverviewPageState extends State<OverviewPage> {
     );
   }
 
-  Iterable<Device> get hueBridges => snapshot.devices
-      .where((d) => d.connection == 'Hue HTTPS' && d.sourceId != null);
-
   Widget _header() => AdaptiveWorkspaceHeader(
         eyebrow: dashboardMode
             ? context.tr("VISUALISIERUNG · AUTORISIERTE MESSWERTE")
-            : context.tr(hueBridges.isEmpty
-                ? "INFRASTRUCTURE COMMAND CENTER · READ-ONLY"
-                : "INFRASTRUCTURE COMMAND CENTER"),
+            : context.tr("INFRASTRUCTURE COMMAND CENTER · READ-ONLY"),
         title: dashboardMode
             ? context.tr("Infrastruktur-Dashboard")
             : context.tr("Operations Workstation"),
@@ -329,7 +314,8 @@ class _OverviewPageState extends State<OverviewPage> {
                 ? Icons.science_outlined
                 : Icons.cloud_done_outlined,
           ),
-          if (hueBridges.isEmpty)
+          if (!dashboardMode ||
+              !snapshot.devices.any((device) => device.hasHueLights))
             StatusPill(context.tr("READ-ONLY"), icon: Icons.lock_outline),
         ],
       );

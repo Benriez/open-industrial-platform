@@ -28,6 +28,7 @@ class Device {
         health = Health.fromJson(j['health'] as Json);
   // Absence remains unknown; classification belongs to the Rust service.
   bool get isFaulted => faulted == true;
+  bool get hasHueLights => connection == 'Hue HTTPS' && sourceId != null;
 }
 
 String observationKey(Observation observation) =>

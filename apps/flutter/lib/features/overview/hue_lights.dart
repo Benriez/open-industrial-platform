@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../design_system/theme.dart';
 import '../../l10n/oip_strings.dart';
 import '../../models/contracts.dart';
 import '../../models/hue.dart';
 import '../../services/api.dart';
+import '../../widgets/workstation.dart';
+import 'dashboard_panel_frame.dart';
 
 class HueLightsPanel extends StatefulWidget {
   final HueApi api;
@@ -86,80 +89,75 @@ class _HueLightsPanelState extends State<HueLightsPanel> {
   @override
   Widget build(BuildContext context) {
     final lights = data?.lights ?? const <HueLight>[];
-    return Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(children: [
-              const Icon(Icons.lightbulb_outline),
-              const SizedBox(width: 8),
-              Expanded(
-                  child: Text(context.tr('Hue-Beleuchtung'),
-                      style: Theme.of(context).textTheme.titleLarge)),
-              IconButton(
-                  tooltip: context.tr('Lichter aktualisieren'),
-                  icon: const Icon(Icons.refresh),
-                  onPressed: writing == null ? _refresh : null),
-            ]),
-            Text(widget.bridgeName,
-                style: Theme.of(context).textTheme.bodySmall),
-            if (data == null && readError == null)
-              const LinearProgressIndicator(),
-            if (readError != null) Text(readError!),
-            if (commandError != null)
-              Semantics(
-                  liveRegion: true,
-                  child: Text(commandError!,
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.error))),
-            if (data != null && lights.isEmpty)
-              Text(context
-                  .tr('Auf dieser Bridge sind keine Lichter eingerichtet.')),
-            if (lights.isNotEmpty && !data!.canControl)
-              Text(context.tr(
-                  'Zum Steuern mit einem berechtigten Operator-Konto anmelden.')),
-            if (lights.isNotEmpty)
-              LayoutBuilder(builder: (context, constraints) {
-                const gap = 10.0;
-                final columns =
-                    ((constraints.maxWidth + gap) / 285).floor().clamp(1, 4);
-                final width =
-                    (constraints.maxWidth - gap * (columns - 1)) / columns;
-                return Wrap(spacing: gap, runSpacing: gap, children: [
-                  for (final light in lights)
-                    SizedBox(
-                        width: width,
-                        child: _LightTile(
-                            key: ValueKey(light.id),
-                            light: light,
-                            allowed: data!.canControl &&
-                                writing == null &&
-                                light.reachable,
-                            pending: writing == light.id,
-                            onChange: (change) => _change(light, change))),
-                ]);
-              }),
-          ],
-        ));
+    return DashboardPanelFrame(
+      title: context.tr('Hue-Beleuchtung'),
+      subtitle: widget.bridgeName,
+      actions: [
+        IconButton(
+          tooltip: context.tr('Lichter aktualisieren'),
+          icon: const Icon(Icons.refresh, size: 16),
+          onPressed: writing == null ? _refresh : null,
+        )
+      ],
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+        child:
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          if (data == null && readError == null)
+            const LinearProgressIndicator(minHeight: 2),
+          if (readError != null) Text(readError!),
+          if (commandError != null)
+            Semantics(
+                liveRegion: true,
+                child: Text(commandError!,
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error))),
+          if (data != null && lights.isEmpty)
+            Text(context
+                .tr('Auf dieser Bridge sind keine Lichter eingerichtet.')),
+          if (lights.isNotEmpty && !data!.canControl)
+            Text(context.tr(
+                'Zum Steuern mit einem berechtigten Operator-Konto anmelden.')),
+          if (lights.isNotEmpty)
+            LayoutBuilder(builder: (context, box) {
+              const gutter = 24.0;
+              final width = box.maxWidth >= 1040
+                  ? (box.maxWidth - gutter) / 2
+                  : box.maxWidth;
+              return Wrap(spacing: gutter, children: [
+                for (final light in lights)
+                  SizedBox(
+                      key: ValueKey(light.id),
+                      width: width,
+                      child: _LightRow(
+                          light: light,
+                          allowed: data!.canControl &&
+                              writing == null &&
+                              light.reachable,
+                          pending: writing == light.id,
+                          onChange: (change) => _change(light, change))),
+              ]);
+            }),
+        ]),
+      ),
+    );
   }
 }
 
-class _LightTile extends StatefulWidget {
+class _LightRow extends StatefulWidget {
   final HueLight light;
   final bool allowed, pending;
   final ValueChanged<Json> onChange;
-  const _LightTile(
-      {super.key,
-      required this.light,
+  const _LightRow(
+      {required this.light,
       required this.allowed,
       required this.pending,
       required this.onChange});
   @override
-  State<_LightTile> createState() => _LightTileState();
+  State<_LightRow> createState() => _LightRowState();
 }
 
-class _LightTileState extends State<_LightTile> {
+class _LightRowState extends State<_LightRow> {
   double? dragging;
 
   Future<void> _pick() async {
@@ -174,77 +172,131 @@ class _LightTileState extends State<_LightTile> {
   @override
   Widget build(BuildContext context) {
     final l = widget.light;
-    final active = l.on && l.reachable;
     final theme = Theme.of(context);
+    final accent = OipTokens.readableAccent(context, OipTokens.cyan);
+    final muted = OipTokens.muted(context);
+    final editable = widget.allowed && l.on;
     final color = l.hasColor && l.colorMode != 'ct'
         ? HSVColor.fromAHSV(
                 1, l.hue!.clamp(0, 360), l.saturation!.clamp(0, 100) / 100, 1)
             .toColor()
-        : const Color(0xffffcf83);
-    return Card(
-        semanticContainer: false,
-        margin: EdgeInsets.zero,
-        child: Padding(
-            padding: const EdgeInsets.all(12),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                CircleAvatar(
-                    radius: 17,
-                    backgroundColor: active
-                        ? color.withOpacity(.18)
-                        : theme.colorScheme.surfaceVariant,
-                    child: Icon(
-                        l.kind.toLowerCase().contains('plug')
-                            ? Icons.power
-                            : Icons.lightbulb,
-                        size: 20,
-                        color: active ? color : null)),
-                const SizedBox(width: 8),
-                Expanded(
-                    child: Text(l.name, style: theme.textTheme.titleSmall)),
-                Semantics(
-                    container: true,
-                    label: context.tr('{0} schalten', [l.name]),
-                    child: Switch(
-                        value: l.on,
-                        onChanged: widget.allowed
-                            ? (v) => widget.onChange({'kind': 'power', 'on': v})
-                            : null)),
-              ]),
-              if (!l.reachable) Text(context.tr('Nicht erreichbar')),
-              if (widget.pending) const LinearProgressIndicator(),
-              if (l.brightness != null)
-                Row(children: [
-                  const Icon(Icons.brightness_6_outlined, size: 16),
-                  Expanded(
-                      child: Semantics(
-                          container: true,
-                          label: context.tr('Helligkeit von {0}', [l.name]),
-                          child: Slider(
-                            min: 1,
-                            max: 100,
-                            divisions: 99,
-                            semanticFormatterCallback: (v) => '${v.round()} %',
-                            value: (dragging ?? l.brightness!).clamp(1, 100),
-                            onChanged: widget.allowed && l.on
-                                ? (v) => setState(() => dragging = v)
-                                : null,
-                            onChangeEnd: (v) {
-                              setState(() => dragging = null);
-                              widget.onChange(
-                                  {'kind': 'brightness', 'percent': v.round()});
-                            },
-                          ))),
-                  Text('${(dragging ?? l.brightness!).round()} %'),
+        : OipTokens.readableAccent(context, OipTokens.yellow);
+    final name = Row(children: [
+      Icon(
+          l.kind.toLowerCase().contains('plug')
+              ? Icons.power_outlined
+              : Icons.lightbulb_outline,
+          size: 17,
+          color: l.reachable && l.on ? accent : muted),
+      const SizedBox(width: 8),
+      Expanded(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(l.name,
+            style: theme.textTheme.labelLarge,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis),
+        if (!l.reachable)
+          Text(context.tr('Nicht erreichbar'),
+              style: WorkstationTokens.mono(context,
+                  size: 10,
+                  color: OipTokens.statusColor(context, 'unavailable'))),
+      ])),
+    ]);
+    final power = Semantics(
+        container: true,
+        label: context.tr('{0} schalten', [l.name]),
+        child: Switch(
+          value: l.on,
+          activeColor: accent,
+          activeTrackColor: accent.withOpacity(.22),
+          onChanged: widget.allowed
+              ? (v) => widget.onChange({'kind': 'power', 'on': v})
+              : null,
+        ));
+    final colorButton = l.hasColor || l.hasWhite
+        ? TextButton.icon(
+            onPressed: editable ? _pick : null,
+            style: TextButton.styleFrom(
+                foregroundColor: theme.colorScheme.onSurface,
+                textStyle: theme.textTheme.labelSmall,
+                padding: const EdgeInsets.symmetric(horizontal: 6)),
+            icon: Icon(Icons.palette_outlined,
+                size: 15, color: editable ? color : muted),
+            label: Text(context.tr(l.hasColor ? 'Lichtfarbe' : 'Weißton')))
+        : null;
+    final brightness = l.brightness;
+    final dimmer = brightness == null
+        ? null
+        : Row(children: [
+            Expanded(
+                child: Semantics(
+              container: true,
+              label: context.tr('Helligkeit von {0}', [l.name]),
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                    trackHeight: 2,
+                    thumbShape:
+                        const RoundSliderThumbShape(enabledThumbRadius: 5),
+                    overlayShape:
+                        const RoundSliderOverlayShape(overlayRadius: 13)),
+                child: Slider(
+                  min: 1,
+                  max: 100,
+                  activeColor: accent,
+                  inactiveColor: WorkstationTokens.line(context),
+                  semanticFormatterCallback: (v) => '${v.round()} %',
+                  value: (dragging ?? brightness).clamp(1, 100),
+                  onChanged:
+                      editable ? (v) => setState(() => dragging = v) : null,
+                  onChangeEnd: editable
+                      ? (v) {
+                          setState(() => dragging = null);
+                          widget.onChange(
+                              {'kind': 'brightness', 'percent': v.round()});
+                        }
+                      : null,
+                ),
+              ),
+            )),
+            SizedBox(
+                width: 40,
+                child: Text('${(dragging ?? brightness).round()} %',
+                    textAlign: TextAlign.end,
+                    style: WorkstationTokens.mono(context,
+                        size: 11, color: muted))),
+          ]);
+    return Container(
+      decoration: BoxDecoration(
+          border: Border(
+              top: BorderSide(color: WorkstationTokens.hairline(context)))),
+      child: LayoutBuilder(builder: (context, box) {
+        final compact = box.maxWidth < 420;
+        return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 46),
+                child: Row(children: [
+                  Expanded(child: name),
+                  if (!compact) ...[
+                    SizedBox(
+                        width: box.maxWidth < 530 ? 122 : 166, child: dimmer),
+                    const SizedBox(width: 10),
+                    SizedBox(width: 90, child: colorButton),
+                  ] else if (colorButton != null)
+                    colorButton,
+                  power,
                 ]),
-              if (l.hasColor || l.hasWhite)
-                TextButton.icon(
-                    onPressed: widget.allowed && l.on ? _pick : null,
-                    icon: const Icon(Icons.palette_outlined, size: 18),
-                    label: Text(
-                        context.tr(l.hasColor ? 'Lichtfarbe' : 'Weißton'))),
-            ])));
+              ),
+              if (compact && dimmer != null)
+                Padding(
+                    padding: const EdgeInsets.only(left: 24, right: 8),
+                    child: dimmer),
+              if (widget.pending) const LinearProgressIndicator(minHeight: 2),
+            ]);
+      }),
+    );
   }
 }
 
@@ -265,7 +317,12 @@ class _LightColorState extends State<_LightColor> {
     final l = widget.light;
     final preview = HSVColor.fromAHSV(1, hue, sat / 100, 1).toColor();
     return AlertDialog(
-        title: Text(l.name),
+        backgroundColor: WorkstationTokens.panel(context),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(color: WorkstationTokens.hairline(context))),
+        title: Text(l.name, style: Theme.of(context).textTheme.titleMedium),
         content: SizedBox(
             width: 320,
             child: SingleChildScrollView(
@@ -303,25 +360,39 @@ class _LightColorState extends State<_LightColor> {
                             borderRadius: BorderRadius.circular(8))),
                     const SizedBox(height: 12),
                     Text(context.tr('Farbton')),
-                    DecoratedBox(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            gradient: const LinearGradient(colors: [
-                              Colors.red,
-                              Colors.yellow,
-                              Colors.green,
-                              Colors.cyan,
-                              Colors.blue,
-                              Colors.purple,
-                              Colors.red
-                            ])),
-                        child: Slider(
-                            min: 0,
-                            max: 360,
-                            value: hue,
-                            label: '${hue.round()}°',
-                            divisions: 360,
-                            onChanged: (v) => setState(() => hue = v))),
+                    Stack(alignment: Alignment.center, children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Container(
+                            height: 4,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(2),
+                              gradient: const LinearGradient(colors: [
+                                Color(0xffff0000),
+                                Color(0xffffff00),
+                                Color(0xff00ff00),
+                                Color(0xff00ffff),
+                                Color(0xff0000ff),
+                                Color(0xffff00ff),
+                                Color(0xffff0000),
+                              ]),
+                            )),
+                      ),
+                      SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor: Colors.transparent,
+                            inactiveTrackColor: Colors.transparent,
+                            activeTickMarkColor: Colors.transparent,
+                            inactiveTickMarkColor: Colors.transparent,
+                          ),
+                          child: Slider(
+                              min: 0,
+                              max: 360,
+                              value: hue,
+                              label: '${hue.round()}°',
+                              divisions: 360,
+                              onChanged: (v) => setState(() => hue = v))),
+                    ]),
                     Text(context.tr('Sättigung')),
                     Slider(
                         min: 0,
