@@ -369,7 +369,7 @@ try {
   await openCategory('Security & Access');
   await scrollToTheTop();
   await waitForNameContaining('PRODUCTION BLOCKERS OPEN');
-  await waitForNameContaining('RUSTSEC-2023-0071');
+  await waitForNameContaining('RUSTSEC-2024-0449');
   pass('the security category names the open advisories and the production blockers');
   await capture('security');
 

@@ -890,7 +890,7 @@ class SettingsSectionContent extends StatelessWidget {
         WorkstationNote(
           context.tr("Nicht „Secure for Production“"),
           context.tr(
-              "Offen sind RUSTSEC-2023-0071 und RUSTSEC-2026-0543, die Absicherung externer Browser-Anmeldungen und des lokalen Systemkontos, ein extern abgesichertes Audit und der Nachweis der Betriebssicherheit."),
+              "Offen sind RUSTSEC-2024-0449, die Absicherung externer Browser-Anmeldungen und des lokalen Systemkontos, ein extern abgesichertes Audit und der Nachweis der Betriebssicherheit."),
           icon: Icons.gpp_maybe_outlined,
           color: OipTokens.yellow,
         ),

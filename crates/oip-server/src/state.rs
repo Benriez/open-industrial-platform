@@ -890,7 +890,7 @@ impl AppState {
                 gpu_percent: None,
                 ram_percent: None,
                 network_status: "unknown".into(),
-                security_blocker: "RUSTSEC-2023-0071".into(),
+                security_blocker: "RUSTSEC-2024-0449".into(),
             },
             devices,
             metrics,

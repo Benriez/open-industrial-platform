@@ -38,7 +38,7 @@ async fn api_unknowns_errors_origin_and_read_only_boundaries() {
     assert_eq!(status, StatusCode::OK);
     assert!(body["cpu_percent"].is_null());
     assert!(body["gpu_percent"].is_null());
-    assert_eq!(body["security_blocker"], "RUSTSEC-2023-0071");
+    assert_eq!(body["security_blocker"], "RUSTSEC-2024-0449");
     let (_, devices) = get(app.clone(), "/api/v1/devices").await;
     assert_eq!(devices.as_array().unwrap().len(), 1);
     let (status, body) = get(app.clone(), "/api/v1/devices/no-such-device").await;

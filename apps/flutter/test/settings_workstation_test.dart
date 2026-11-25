@@ -614,7 +614,7 @@ void main() {
     await category(tester, SettingsCategory.diagnostics);
     expect(find.textContaining('documented markers'), findsWidgets);
     await category(tester, SettingsCategory.securityAccess);
-    expect(find.textContaining('RUSTSEC-2026-0543'), findsWidgets);
+    expect(find.textContaining('RUSTSEC-2024-0449'), findsWidgets);
     expect(find.text('Secure for Production'), findsNothing);
     await category(tester, SettingsCategory.system);
     expect(

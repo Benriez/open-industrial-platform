@@ -19,5 +19,5 @@ OIP-001 nutzte ausschließlich `SecurityPolicy=None` und hatte einen offenen For
 
 - Beide ungesicherten Interop-Richtungen sind verpflichtende Tests, nicht mehr ignoriert.
 - Production sichert die OPC-UA-Anwendungsidentitäten, verwendet in OIP-002 aber weiterhin Anonymous User Tokens. Benutzerauthentifizierung, CA-Ketten, CRL/Revocation und produktive Schlüsselverwaltung sind nicht implementiert.
-- Die bekannten RustSec-Befunde `RUSTSEC-2023-0071` (RSA/Marvin), `RUSTSEC-2023-0089` und `RUSTSEC-2024-0449` bleiben reale Upstream-Risiken. Ihre `deny.toml`-Ausnahmen gelten nur für lokale Tests und müssen bis 2027-02-03 erneut bewertet werden. Insbesondere der RSA-Seitenkanal verhindert eine produktive Security-Freigabe.
+- Im aktuellen OPC-UA-Stack behebt RSA 0.10.0 den Befund `RUSTSEC-2023-0071`. Die gepflegte Implementierung `sad-chrono 0.5.2` ersetzt Chrono (`RUSTSEC-2026-0543`). Die bestehende Ausnahme für den YAML-Parser (`RUSTSEC-2024-0449`) muss bis 2027-02-03 neu bewertet werden. Die verbleibenden Freigabepunkte sind im [Security-Audit](../architecture/oip-security-audit-remediation.md) dokumentiert.
 - Ein späterer TSDB-Adapter implementiert die Verträge aus `oip-core`, ohne von SQLite oder einem OPC-UA-Stack abzuhängen.

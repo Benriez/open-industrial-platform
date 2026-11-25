@@ -3,9 +3,6 @@
 version = 2
 yanked = "deny"
 unmaintained = "all"
-# The production RustSec gate reports RSA 0.9 directly. The compatible fix
-# starts at 0.10, and the pinned OPC UA client and crypto crates still require
-# 0.9. Reassess this stack before releasing with the advisory outstanding.
 ignore = [
     { id = "RUSTSEC-2024-0449", reason = "Unmaintained parser used by async-opcua's YAML helpers; OIP accepts typed JSON and constructs its OPC UA config in code; migrate the upstream dependency and review by 2027-02-03" },
 ]

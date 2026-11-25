@@ -21,3 +21,23 @@ any async-opcua upgrade.
 The server uses Postcard only to encode and decode owned opaque NodeIds.
 The manifest selects `use-std` without Postcard's default embedded heapless
 feature, removing the unused unmaintained `atomic-polyfill` dependency.
+
+## async-opcua-client and async-opcua-crypto 0.19.0
+
+Source: crates.io packages from [FreeOpcUa/async-opcua at 9ad28fc](https://github.com/FreeOpcUa/async-opcua/tree/9ad28fc011002398f2e8a95696a50408a14531d9), license MPL-2.0.
+
+The OIP patch backports the RSA 0.10 API changes from upstream
+[d6a336d](https://github.com/FreeOpcUa/async-opcua/commit/d6a336d)
+to close RUSTSEC-2023-0071. It retains the 0.19 transport, security policies
+and OPC UA certificate extensions. Private RSA operations and certificate signing
+use randomized blinding. X.509 certificate and key loading still accept the
+existing PEM and DER formats.
+
+## Chrono compatibility adapter
+
+The local `chrono` package only forwards the API and the features used in the
+lockfile to [sad-chrono 0.5.2](https://crates.io/crates/sad-chrono).
+The maintained implementation replaces the original registry package throughout
+the lockfile, including the OPC UA stack, RMCP and Schemars (RUSTSEC-2026-0543).
+The adapter keeps their date/time types identical and adds no serialization or
+date/time logic of its own.

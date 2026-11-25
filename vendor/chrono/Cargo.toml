@@ -1,0 +1,19 @@
+[package]
+name = "chrono"
+version = "0.4.45"
+edition = "2021"
+license = "Apache-2.0"
+description = "OIP compatibility adapter for dependencies using Chrono 0.4"
+
+[features]
+default = ["clock", "std", "oldtime", "wasmbind"]
+alloc = ["sad-chrono/alloc"]
+clock = ["sad-chrono/clock"]
+now = ["sad-chrono/now"]
+oldtime = ["sad-chrono/oldtime"]
+serde = ["sad-chrono/serde"]
+std = ["sad-chrono/std"]
+wasmbind = ["sad-chrono/wasmbind"]
+
+[dependencies]
+sad-chrono = { version = "=0.5.2", default-features = false }

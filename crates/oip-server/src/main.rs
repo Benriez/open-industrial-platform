@@ -505,7 +505,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         port = config.http_port,
         sources = config.sources.len(),
         code = "core_started",
-        security_blocker = "RUSTSEC-2023-0071",
+        security_blocker = "RUSTSEC-2024-0449",
         "loopback simulation core; frontend optional"
     );
     let transport_stop = CancellationToken::new();
