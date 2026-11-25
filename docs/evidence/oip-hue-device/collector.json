@@ -1,0 +1,55 @@
+{
+  "source_revision": "f6d7963832683672ac8b2749a67154e46b66bb0f",
+  "source_tree": "577ee7459b33171626313dcdf4ba6fbd2f7c636b",
+  "raspberry_pi_binary_sha256": "0bb2c2c36d6d32988be327a81211d0c7da0b24fb30a38347cb05e52670b7c167",
+  "bridge_id": "001788FFFE48E917",
+  "model_id": "BSB002",
+  "rehearsals": {
+    "without_token": {
+      "status": "PASS",
+      "finished_utc": "2026-11-25T00:26:35Z",
+      "bridge_fields": 7,
+      "light_measurements": 0,
+      "foreign_device_http_status": 404,
+      "wrong_pin_fault": "HUE_IDENTITY_CHANGED",
+      "wrong_pin_measurements": 0
+    },
+    "paired": {
+      "status": "PASS",
+      "finished_utc": "2026-11-25T00:26:35Z",
+      "bridge_fields": 7,
+      "light_measurements": 19,
+      "foreign_device_http_status": 404,
+      "wrong_pin_fault": "HUE_IDENTITY_CHANGED",
+      "wrong_pin_measurements": 0
+    }
+  },
+  "authenticated_live_device_read": {
+    "health_live": true,
+    "source_id": "hue-lan",
+    "transport": "Hue HTTPS",
+    "lights_total": 6,
+    "lights_on": 6,
+    "light_states": 6,
+    "brightness_readings": 5,
+    "poll_timestamps": [
+      1795566440890,
+      1795566472256
+    ]
+  },
+  "live_browser_device_detail": {
+    "rendered_light_names": 6,
+    "transport": "Hue HTTPS",
+    "operator_visual_approval": "pending"
+  },
+  "canonical_ui_gate": {
+    "verdict": "PASS",
+    "served_main_dart_js_sha256": "cc2afd09700a057179ac6c6c392def525782adf96793e6e67108830ab5dd3852",
+    "served_matches_local_build": true,
+    "flutter_tests_passed": 422,
+    "flutter_tests_skipped": 1,
+    "browser_checks_passed": 191,
+    "functional_phases": 8,
+    "operator_visual_approval": "VISUAL_PENDING_OPERATOR_ACCEPTANCE"
+  }
+}

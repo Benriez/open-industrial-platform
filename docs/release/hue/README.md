@@ -22,6 +22,26 @@ that presents another certificate is **refused**: the read of the bridge is veri
 the pin, and the refusal is measured
 (`tests/oip_hue_device.py`, `docs/evidence/oip-hue-device/hue-device.json`).
 
-The capabilities of the bridge that this pin makes possible are **read-only**: the public
-configuration of the bridge. The lights, the groups and the scenes need an application token,
-and the creation of a token is a **write on the device** that belongs to the operator.
+## Collector setup
+
+Configure a `hue.profiles` entry in the Core instance configuration. Use the
+registered device ID, an authorized principal, the bridge IP, port 443 and an
+absolute `pin_file` path. The collector selects an OpenSSL client that supports
+`-partial_chain` and `-verifyCAfile` at startup. An incompatible installation
+reports `HUE_TLS_TOOL_UNAVAILABLE`.
+
+The public identity is readable with the pin. To read lights, pair a Hue
+application using the bridge's link button, save the issued username in a
+private mode-0600 file and set `token_file` to its absolute path. The collector
+uses GET requests. It reports the light count and on/off count across the
+bridge, with individual names, states and available brightness for resource
+IDs 1 through 32. The smart plug reports on/off state.
+
+`tests/oip_hue_device.py` accepts an optional `--token-file`. Run both modes
+to verify authenticated readings, cross-organization access and rejection of
+a different certificate. The deployed result is recorded in
+`docs/evidence/oip-hue-device/collector.json`.
+
+In Devices & Services, open Philips Hue Bridge and expand Engineering, then
+Observation & Telemetry. The separate SSH setup panel can display
+`Telemetry NoCollector` when the bridge has active Hue readings.

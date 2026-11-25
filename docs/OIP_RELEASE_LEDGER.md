@@ -187,21 +187,12 @@ An **independent verification** of that change (a delegated, read-only audit of 
    process** behind. The captures are the **store assets**; the acceptance of the operator of
    the visible result stays **pending** (G12) and is never claimed by the capture.
 
-7. **N26 (the Philips Hue Bridge as a real device)**: the **onboarding is implemented and
-   measured** (`tools/oip_hue.py`, `tests/oip_hue_device.py`,
-   `docs/evidence/oip-hue-device/hue-device.json`; the receipt of this revision is **stale**: the
-   bridge is on `192.168.1.x` and the network of this machine is `192.168.178.0/24`, so the
-   rehearsal of the bridge failed in the refresh of this iteration — the operator's action below):
-   the identity of the bridge is verified
-   against the **pin** of its own certificate (`docs/release/hue/bridge-certificate.pem` — the
-   bridge does not present the root of its chain, so the certificate of the device is the only
-   trust anchor, exactly like the host key of an SSH host), the **public configuration** is read
-   in **one** verified TLS session, the device is written into the inventory of the Core through
-   the **authorized session** and its verified facts (model, software, API, bridge id, MAC) are
-   readable there. A bridge with **another** certificate is refused — at the pin **and** in the
-   TLS session. The **lights stay unsupported**: the bridge refuses them without an application
-   token, and the token is a **write on the device** that belongs to the operator. Nothing is
-   simulated.
+7. **N26 (Philips Hue Bridge)**. The operator paired OIP with the bridge on
+   2026-11-25. The deployed Pi Core publishes the bridge identity, six light
+   states and five brightness readings through the authenticated device API.
+   The smart plug supplies on/off state. The two rehearsals cover an unpaired
+   read, an authorized read, rejection of a different certificate and a
+   cross-organization access check. See `docs/evidence/oip-hue-device/collector.json`.
 
 8. **N27 (the type of a device is named honestly)**: **measured**. The Core paints the type of a
    device as the **raw identifier of its own enum** — `SingleBoardComputer`, `NetworkDevice`,
@@ -474,13 +465,8 @@ upload.
   either device was touched: no API key was requested, no link button pressed, no router login. The
   discovery and bridge receipts (`docs/evidence/oip-deployment-discovery/deployment-discovery.json`,
   `docs/evidence/oip-hue-device/hue-device.json`) are present, tracked and **not** flagged by the
-  verification of the release. The bridge is an **identity-only inventory device** (model, bridge id,
-  MAC, IP, verified pin); its **monitoring and control are not supported** — a control capability
-  would be a new permission, audit and scope (the negative control is measured in `hue-device.json`),
-  which only the operator can authorize. The operator's action: authorize the Hue monitoring/control
-  capability (an API key via the link button, plus the new permission), or accept the bridge as an
-  identity-only inventory device. (The earlier note that the devices were unreachable from
-  `192.168.178.0/24` was the state of the machine on another network and is superseded.)
+  verification of the release. The operator subsequently paired OIP for read-only
+  monitoring. See N26 for the live measurements. Light control would require a separate product decision.
 
 * Decide F5 permission rule (N1b) and protected schema-7 activation with a fresh schema-6 backup (N4).
   The activation itself is **rehearsed on a copy** of the store of the operator: the migration is
@@ -554,12 +540,10 @@ upload.
   (`tests/oip_deployment_discovery.py` names the banner and the host keys of the router). The
   Core reads the host report of a router — the BusyBox form of `ip` included — and states every
   measurement it could not take.
-* **The Philips Hue Bridge**: the Core has **no onboarding transport for a device with an HTTP
-  API**, so the bridge is an inventory device with its measured identity (model `BSB002`, the
-  software version, the bridge id, the MAC and the IP). Its lights are **refused without a
-  token** (measured), and a token is a **write on the device** (the button of the bridge and
-  `POST /api`). A monitoring or control capability for the bridge is a **new capability** with
-  its own permission, its own audit and its own scope — it is named here and **not** simulated.
+* **The Philips Hue Bridge** is registered as a network device. The Hue collector
+  checks its pinned certificate before reading the public identity or using the operator's
+  application key. Authorized users can read its observations in the bridge's device detail.
+
 * **The secure update**: the update path of the Core is implemented and measured. The
   operator still owns the **private key** (it never reaches a host) and the **public key of
   the instance** (`instance/etc/update-public.pem`); the first signed bundle of a release

@@ -449,8 +449,8 @@ entries are retained as dated evidence and are not current-state claims.
   authenticated installed app.
 - [x] Correct the router inventory description and confirm its live SSH source.
 - [x] Register the verified Hue Bridge in OIP inventory.
-- [ ] Pair and verify the Hue Bridge with its physical link button before
-  enabling real Hue telemetry.
+- [x] Pair the Hue Bridge using its physical link button and verify live telemetry on the Pi.
+  The app API returned six light states and five brightness readings across two polls.
 - [ ] Operator visual acceptance and repeated native window resize/crash check.
 - [ ] App Store upload readiness is prepared in source/docs, but cannot be
   proven for distribution until an Apple Distribution identity and required
