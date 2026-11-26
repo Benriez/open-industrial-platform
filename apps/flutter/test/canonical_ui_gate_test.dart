@@ -148,8 +148,10 @@ void main() {
         await tester.pump(const Duration(milliseconds: 120));
       }
       expectWorkstationTitle('Netzwerk & VPN');
+      expect(find.byKey(const Key('network-lan-view')), findsOneWidget);
+      expect(find.text('LAN-Verkabelung'), findsOneWidget);
       expect(
-          find.byKey(const Key('network-primary-connections')), findsOneWidget);
+          find.byKey(const Key('network-primary-connections')), findsNothing);
 
       // OPC-UA Browser.
       await tester.tap(find.text('OPC-UA-Browser').first);
@@ -166,7 +168,8 @@ void main() {
       }
       expectWorkstationTitle('Diagnose & Ereignisse');
       expect(find.text('Aktueller Zustand'), findsOneWidget);
-      expect(find.byKey(const Key('diagnostics-show-technical')), findsOneWidget);
+      expect(
+          find.byKey(const Key('diagnostics-show-technical')), findsOneWidget);
 
       // Settings.
       await tester.tap(find.text('Einstellungen').first);
@@ -228,7 +231,8 @@ void main() {
       await tester.tap(details);
       await tester.pumpAndSettle();
       expect(find.bySemanticsLabel('Organisationen: 2'), findsOneWidget);
-      expect(find.textContaining('Bei unbekanntem Status ist offen'), findsOneWidget);
+      expect(find.textContaining('Bei unbekanntem Status ist offen'),
+          findsOneWidget);
     });
 
     testWidgets('The shell is responsive and keeps the context selector',

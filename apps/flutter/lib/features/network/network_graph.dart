@@ -318,7 +318,7 @@ class NetworkTopologyGraph extends StatefulWidget {
   final String? selectedDeviceId, selectedEdgeId;
   final Set<String> highlightedDeviceIds;
   final bool transportLive;
-  final bool showEdgeLabels;
+  final bool showDeviceStatus, showEdgeLabels;
   final ValueChanged<Device> onNode;
   final ValueChanged<NetworkEdge> onEdge;
   final ValueChanged<Size> onViewportSize;
@@ -335,6 +335,7 @@ class NetworkTopologyGraph extends StatefulWidget {
     required this.selectedEdgeId,
     required this.highlightedDeviceIds,
     required this.transportLive,
+    this.showDeviceStatus = true,
     this.showEdgeLabels = true,
     required this.onNode,
     required this.onEdge,
@@ -449,6 +450,7 @@ class _NetworkTopologyGraphState extends State<NetworkTopologyGraph> {
                                       highlighted: widget.highlightedDeviceIds
                                           .contains(device.id),
                                       transportLive: widget.transportLive,
+                                      showStatus: widget.showDeviceStatus,
                                       onTap: () => widget.onNode(device),
                                     ),
                                   ),
@@ -513,12 +515,15 @@ class NetworkTopologyNode extends StatelessWidget {
   final bool selected, highlighted, transportLive;
   final VoidCallback onTap;
 
+  final bool showStatus;
+
   const NetworkTopologyNode({
     super.key,
     required this.device,
     required this.selected,
     required this.highlighted,
     required this.transportLive,
+    this.showStatus = true,
     required this.onTap,
   });
 
@@ -532,8 +537,10 @@ class NetworkTopologyNode extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: context.tr("Details {0}, Status {1}",
-          [device.name, OipTokens.statusLabel(status)]),
+      label: showStatus
+          ? context.tr("Details {0}, Status {1}",
+              [device.name, OipTokens.statusLabel(status)])
+          : context.tr("Details {0}", [device.name]),
       child: Material(
         color: Color.lerp(scheme.surface, category, selected ? .10 : .035),
         shape: RoundedRectangleBorder(
@@ -589,16 +596,18 @@ class NetworkTopologyNode extends StatelessWidget {
                               .textTheme
                               .bodySmall
                               ?.copyWith(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 3),
-                      Text(
-                        '${deviceKindName(device.kind)} · ${OipTokens.statusLabel(status)} · ${device.simulated ? 'Demo' : 'API'}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelSmall
-                            ?.copyWith(fontSize: 9.5, color: statusColor),
-                      ),
+                      if (showStatus) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          '${deviceKindName(device.kind)} · ${OipTokens.statusLabel(status)} · ${device.simulated ? 'Demo' : 'API'}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelSmall
+                              ?.copyWith(fontSize: 9.5, color: statusColor),
+                        ),
+                      ],
                     ],
                   ),
                 ),

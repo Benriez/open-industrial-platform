@@ -134,7 +134,12 @@ class _NetworkPageState extends State<NetworkPage> {
   Future<void> _loadWiring(String key) async {
     try {
       final loaded = await LanWiring.load(key);
-      if (mounted && _wiringKey() == key) setState(() => wiring = loaded);
+      if (mounted && _wiringKey() == key) {
+        setState(() {
+          wiring = loaded;
+          if (isLan && !userCameraUsed) fitRequested = true;
+        });
+      }
     } catch (error) {
       if (mounted && _wiringKey() == key) {
         setState(() => wiringUnavailable = true);
@@ -336,9 +341,9 @@ class _NetworkPageState extends State<NetworkPage> {
     Offset? center;
     if (selectedId != null) center = layout.center(selectedId!);
     if (selectedEdgeId != null) {
-      final edge = networkEdges(widget.controller.snapshot!)
-          .where((item) => item.id == selectedEdgeId)
-          .firstOrNull;
+      final snapshot = widget.controller.snapshot!;
+      final edges = isLan ? _recordedEdges(snapshot) : networkEdges(snapshot);
+      final edge = edges.where((item) => item.id == selectedEdgeId).firstOrNull;
       if (edge != null) {
         final endpoints = networkEdgeEndpoints(layout, edge.link);
         if (endpoints != null) center = (endpoints.$1 + endpoints.$2) / 2;
@@ -1180,165 +1185,172 @@ class _NetworkPageState extends State<NetworkPage> {
       key: isLan ? const Key('network-lan-view') : null,
       accent: OipTokens.cyan,
       padding: EdgeInsets.zero,
-      child: Column(children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(10, 8, 8, 6),
-          child: Wrap(
-              spacing: 4,
-              runSpacing: 4,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 5),
-                  child: Semantics(
-                    container: true,
-                    excludeSemantics: true,
-                    label: title,
-                    child: Text(title,
-                        style: TextStyle(fontWeight: FontWeight.w600)),
+      child: Column(
+          crossAxisAlignment:
+              isLan ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 8, 6),
+              child: Wrap(
+                  spacing: 4,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: Semantics(
+                        container: true,
+                        excludeSemantics: true,
+                        label: title,
+                        child: Text(title,
+                            style: TextStyle(fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                    if (isLan) ...[
+                      TextButton.icon(
+                        key: const Key('lan-wiring-edit'),
+                        onPressed: canEdit ? () => _editWiring(snapshot) : null,
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        label: Text(context.tr(edges.isEmpty
+                            ? 'Verkabelung eintragen'
+                            : 'Verkabelung bearbeiten')),
+                      ),
+                    ] else ...[
+                      NetworkBadge(
+                          '${layout.devices.length} GERÄTE', 'unknown'),
+                      NetworkBadge(
+                          '${visibleEdges.length} BESTÄTIGTE PFADE', 'unknown'),
+                    ],
+                    ToolButton(
+                        icon: Icons.remove,
+                        tooltip: context.tr("Verkleinern"),
+                        onPressed: hasTopology ? () => _zoom(.8) : null),
+                    ToolButton(
+                        icon: Icons.add,
+                        tooltip: context.tr("Vergrößern"),
+                        onPressed: hasTopology ? () => _zoom(1.25) : null),
+                    ToolButton(
+                        key: const Key('fit-topology'),
+                        icon: Icons.fit_screen,
+                        tooltip: context.tr("Topologie einpassen"),
+                        onPressed: hasTopology
+                            ? () => _fit(layout, user: true)
+                            : null),
+                    ToolButton(
+                        icon: Icons.restart_alt,
+                        tooltip: context.tr("Ansicht zurücksetzen"),
+                        onPressed: hasTopology
+                            ? () => _setTransform(1, Offset.zero)
+                            : null),
+                    if (!isLan || hasGraphSelection)
+                      ToolButton(
+                          icon: Icons.center_focus_strong,
+                          tooltip: context.tr("Auf Auswahl fokussieren"),
+                          onPressed: !hasGraphSelection
+                              ? null
+                              : () => _focusSelection(layout)),
+                    if (!isLan)
+                      ToolButton(
+                          key: const Key('edge-labels-toggle'),
+                          icon: showEdgeLabels
+                              ? Icons.label_outlined
+                              : Icons.label_off_outlined,
+                          tooltip: showEdgeLabels
+                              ? context.tr("Edge Labels ausblenden")
+                              : context.tr("Edge Labels anzeigen"),
+                          active: showEdgeLabels,
+                          accent: OipTokens.cyan,
+                          onPressed: hasTopology
+                              ? () => setState(
+                                  () => showEdgeLabels = !showEdgeLabels)
+                              : null),
+                    if (!isLan || hasGraphSelection)
+                      IconButton(
+                        key: const Key('selection-clear'),
+                        tooltip: context.tr("Auswahl aufheben"),
+                        onPressed: selectedId == null && selectedEdgeId == null
+                            ? null
+                            : _clearSelection,
+                        icon: const Icon(Icons.deselect, size: 18),
+                      ),
+                  ]),
+            ),
+            if (graphSelectedDeviceId != null &&
+                networkDeviceEdges(graphSelectedDeviceId, edges).isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilterChip(
+                    key: const Key('neighbors-only'),
+                    label: Text(context.tr(isLan
+                        ? 'Direkt angeschlossene Geräte'
+                        : 'Show Direct Neighbors')),
+                    selected: neighborsOnly,
+                    onSelected: (value) => setState(() {
+                      neighborsOnly = value;
+                      fitRequested = true;
+                    }),
                   ),
                 ),
-                if (isLan) ...[
-                  TextButton.icon(
-                    key: const Key('lan-wiring-edit'),
-                    onPressed: canEdit ? () => _editWiring(snapshot) : null,
-                    icon: const Icon(Icons.edit_outlined, size: 18),
-                    label: Text(context.tr(edges.isEmpty
-                        ? 'Verkabelung eintragen'
-                        : 'Verkabelung bearbeiten')),
+              ),
+            Divider(
+                height: 1, color: Theme.of(context).colorScheme.outlineVariant),
+            if (isLan)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _wiringStatus(edges.length, canEdit),
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
-                ] else ...[
-                  NetworkBadge('${layout.devices.length} GERÄTE', 'unknown'),
-                  NetworkBadge(
-                      '${visibleEdges.length} BESTÄTIGTE PFADE', 'unknown'),
-                ],
-                ToolButton(
-                    icon: Icons.remove,
-                    tooltip: context.tr("Verkleinern"),
-                    onPressed: hasTopology ? () => _zoom(.8) : null),
-                ToolButton(
-                    icon: Icons.add,
-                    tooltip: context.tr("Vergrößern"),
-                    onPressed: hasTopology ? () => _zoom(1.25) : null),
-                ToolButton(
-                    key: const Key('fit-topology'),
-                    icon: Icons.fit_screen,
-                    tooltip: context.tr("Topologie einpassen"),
-                    onPressed:
-                        hasTopology ? () => _fit(layout, user: true) : null),
-                ToolButton(
-                    icon: Icons.restart_alt,
-                    tooltip: context.tr("Ansicht zurücksetzen"),
-                    onPressed: hasTopology
-                        ? () => _setTransform(1, Offset.zero)
-                        : null),
-                if (!isLan || hasGraphSelection)
-                  ToolButton(
-                      icon: Icons.center_focus_strong,
-                      tooltip: context.tr("Auf Auswahl fokussieren"),
-                      onPressed: !hasGraphSelection
-                          ? null
-                          : () => _focusSelection(layout)),
-                if (!isLan)
-                  ToolButton(
-                      key: const Key('edge-labels-toggle'),
-                      icon: showEdgeLabels
-                          ? Icons.label_outlined
-                          : Icons.label_off_outlined,
-                      tooltip: showEdgeLabels
-                          ? context.tr("Edge Labels ausblenden")
-                          : context.tr("Edge Labels anzeigen"),
-                      active: showEdgeLabels,
-                      accent: OipTokens.cyan,
-                      onPressed: hasTopology
-                          ? () =>
-                              setState(() => showEdgeLabels = !showEdgeLabels)
-                          : null),
-                if (!isLan || hasGraphSelection)
-                  IconButton(
-                    key: const Key('selection-clear'),
-                    tooltip: context.tr("Auswahl aufheben"),
-                    onPressed: selectedId == null && selectedEdgeId == null
-                        ? null
-                        : _clearSelection,
-                    icon: const Icon(Icons.deselect, size: 18),
-                  ),
-              ]),
-        ),
-        if (graphSelectedDeviceId != null &&
-            networkDeviceEdges(graphSelectedDeviceId, edges).isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: FilterChip(
-                key: const Key('neighbors-only'),
-                label: Text(context.tr(isLan
-                    ? 'Direkt angeschlossene Geräte'
-                    : 'Show Direct Neighbors')),
-                selected: neighborsOnly,
-                onSelected: (value) => setState(() {
-                  neighborsOnly = value;
-                  fitRequested = true;
-                }),
+                ),
+              )
+            else if (visibleEdges.isEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+                child: NetworkHint(
+                  snapshot.topologyDelivered
+                      ? 'Keine bestätigten Verbindungspfade'
+                      : 'Verbindungspfade nicht mitgeliefert',
+                  'Die Knoten zeigen registrierte Geräte. Verbindungen werden nicht aus Namen, Standort oder VPN-Status abgeleitet.',
+                ),
+              ),
+            Expanded(
+              child: NetworkTopologyGraph(
+                layout: layout,
+                edges: visibleEdges,
+                transformation: transformation,
+                focusNode: graphFocus,
+                selectedDeviceId: graphSelectedDeviceId,
+                selectedEdgeId: graphSelectedEdgeId,
+                highlightedDeviceIds: highlighted,
+                transportLive: transportLive,
+                showDeviceStatus: !isLan,
+                showEdgeLabels: !isLan && showEdgeLabels,
+                onNode: _selectGraphNode,
+                onEdge: _selectEdge,
+                onViewportSize: (size) => _viewportChanged(size, layout),
+                onInteraction: () => userCameraUsed = true,
+                onKeyEvent: _graphKey,
               ),
             ),
-          ),
-        Divider(height: 1, color: Theme.of(context).colorScheme.outlineVariant),
-        if (isLan)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                _wiringStatus(edges.length, canEdit),
-                style: Theme.of(context).textTheme.bodySmall,
+            if (!isLan)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 7, 12, 8),
+                child: Text(
+                  context.tr(
+                      "{0}Nur bestätigte logische Snapshot-Pfade · keine physische Verkabelung. +/− Zoom · F Fit · 0 Reset · Pfeile Auswahl.",
+                      [
+                        panningRecommended
+                            ? 'Lesbare Mindestgröße: horizontal pannen; alle Pfade zusätzlich im Verbindungsworkspace. · '
+                            : ''
+                      ]),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
-            ),
-          )
-        else if (visibleEdges.isEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-            child: NetworkHint(
-              snapshot.topologyDelivered
-                  ? 'Keine bestätigten Verbindungspfade'
-                  : 'Verbindungspfade nicht mitgeliefert',
-              'Die Knoten zeigen registrierte Geräte. Verbindungen werden nicht aus Namen, Standort oder VPN-Status abgeleitet.',
-            ),
-          ),
-        Expanded(
-          child: NetworkTopologyGraph(
-            layout: layout,
-            edges: visibleEdges,
-            transformation: transformation,
-            focusNode: graphFocus,
-            selectedDeviceId: graphSelectedDeviceId,
-            selectedEdgeId: graphSelectedEdgeId,
-            highlightedDeviceIds: highlighted,
-            transportLive: transportLive,
-            showEdgeLabels: !isLan && showEdgeLabels,
-            onNode: _selectGraphNode,
-            onEdge: _selectEdge,
-            onViewportSize: (size) => _viewportChanged(size, layout),
-            onInteraction: () => userCameraUsed = true,
-            onKeyEvent: _graphKey,
-          ),
-        ),
-        if (!isLan)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 7, 12, 8),
-            child: Text(
-              context.tr(
-                  "{0}Nur bestätigte logische Snapshot-Pfade · keine physische Verkabelung. +/− Zoom · F Fit · 0 Reset · Pfeile Auswahl.",
-                  [
-                    panningRecommended
-                        ? 'Lesbare Mindestgröße: horizontal pannen; alle Pfade zusätzlich im Verbindungsworkspace. · '
-                        : ''
-                  ]),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
-      ]),
+          ]),
     );
   }
 
