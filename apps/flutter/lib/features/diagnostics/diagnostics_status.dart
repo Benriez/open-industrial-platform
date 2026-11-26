@@ -346,7 +346,9 @@ class DiagnosticsStatus extends StatelessWidget {
       };
 
   String _eventTime(BuildContext context, int? milliseconds) {
-    if (milliseconds == null || milliseconds.abs() > 8640000000000000) {
+    if (milliseconds == null ||
+        milliseconds < -8640000000000000 ||
+        milliseconds > 8640000000000000) {
       return context.tr('Zeitpunkt unbekannt');
     }
     final local = DateTime.fromMillisecondsSinceEpoch(milliseconds);

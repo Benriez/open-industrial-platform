@@ -501,6 +501,8 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
   }
 
   void _showTechnicalView() {
+    final scroll = Scrollable.maybeOf(context)?.position;
+    if (scroll != null) scroll.jumpTo(scroll.minScrollExtent);
     setState(() => technicalView = true);
     _loadEvents();
     if (!evidenceLoaded && !evidenceBusy) _loadEvidence();
