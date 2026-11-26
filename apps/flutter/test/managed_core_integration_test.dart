@@ -112,6 +112,10 @@ void main() {
     expect(controller.managed, isTrue);
 
     await pumpDiagnostics(tester, controller);
+    final technical = find.byKey(const Key('diagnostics-show-technical'));
+    await tester.ensureVisible(technical);
+    await tester.tap(technical);
+    await tester.pumpAndSettle();
 
     // The persisted evidence of the authorized sources is shown.
     expect(find.text('PERSISTIERTE EVIDENZ · CORE-SPEICHER'), findsOneWidget);

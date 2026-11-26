@@ -1,6 +1,61 @@
 // Client-owned interface copy. Unmapped source strings are used verbatim.
 
 const englishMessages = <String, String>{
+  "Diagnose & Ereignisse zeigt den aktuellen Zustand, konkrete Prüfschritte und die letzten Ereignisse. Die technischen Ansichten sind weiterhin erreichbar.":
+      "Diagnostics & Events shows current status, specific checks and recent events. The technical views remain available.",
+  "Aktueller Zustand": "Current status",
+  "Zustand aktualisieren": "Refresh status",
+  "Letzte Ereignisse": "Recent events",
+  "Technische Ansicht": "Technical view",
+  "Zurück zum aktuellen Zustand": "Back to current status",
+  "Der aktuelle Zustand wird abgefragt.": "Checking the current status.",
+  "Der aktuelle Zustand konnte nicht geladen werden.":
+      "Could not load the current status.",
+  "Für die gewählte Infrastruktur sind keine Datenquellen verfügbar.":
+      "No data sources are available for the selected infrastructure.",
+  "Für die gewählte Infrastruktur sind keine kürzlichen Ereignisse verfügbar.":
+      "No recent events are available for the selected infrastructure.",
+  "Keine Live-Verbindung. Der Ereignisstand kann veraltet sein.":
+      "The live connection is unavailable. Events may be out of date.",
+  "{0} von {1} Quellen sind verbunden und liefern aktuelle Messwerte.":
+      "{0} of {1} sources are connected and providing recent readings.",
+  "Jetzt prüfen": "Check now",
+  "Weitere Quellen prüfen ({0})": "More sources to check ({0})",
+  "Status unbekannt ({0})": "Unknown status ({0})",
+  "Quelle nicht erreichbar": "Source unreachable",
+  "Verbindung getrennt": "Connection disconnected",
+  "Ungültige Messwerte gemeldet": "Invalid readings reported",
+  "Messwerte sind veraltet": "Readings are out of date",
+  "Datenerfassung eingeschränkt": "Data collection degraded",
+  "Status noch unbekannt": "Status still unknown",
+  "Verbindung und Messwerte aktuell": "Connected with recent readings",
+  "Prüfe, ob das Gerät eingeschaltet und mit dem Netzwerk verbunden ist.":
+      "Check that the device is powered on and connected to the network.",
+  "Öffne das Gerät und prüfe seine Verbindung.":
+      "Open the device and check its connection.",
+  "Öffne das Gerät und vergleiche die Messwerte mit der Anzeige am Gerät.":
+      "Open the device and compare the readings with those shown on the device.",
+  "Prüfe am Gerät, ob die Überwachung eingeschaltet ist und neue Werte eintreffen.":
+      "Check whether monitoring is enabled and new readings are coming in.",
+  "Prüfe die Überwachung am Gerät und sieh dir die letzten Ereignisse an.":
+      "Check the device's monitoring and look at the recent events.",
+  "Öffne das Gerät, um seine Verbindung und Überwachung zu prüfen.":
+      "Open the device to check its connection and monitoring.",
+  "Prüfe die Verbindung und Überwachung der Geräte an dieser Quelle.":
+      "Check the connection and monitoring of the devices using this source.",
+  "Letzter Messwert: {0}": "Last reading: {0}",
+  "Messwerte konnten nicht abgerufen werden": "Could not retrieve readings",
+  "Messwerte fehlen": "Readings missing",
+  "Die Verbindung zur Datenquelle wurde unterbrochen.":
+      "The connection to the data source was interrupted.",
+  "Die Datenquelle hat sich wieder verbunden.": "The data source reconnected.",
+  "Beim Abruf der Messwerte ist ein Fehler aufgetreten.":
+      "An error occurred while retrieving readings.",
+  "Die Datenquelle hat fehlende Messwerte gemeldet.":
+      "The data source reported missing readings.",
+  "Die Datenquelle hat ein Ereignis gemeldet.": "The data source reported an event.",
+  "Gerät öffnen": "Open device",
+  "Zeitpunkt unbekannt": "Unknown time",
   "26. November 2026": "26 November 2026",
   "Beim Öffnen des Dashboards wird die Infrastrukturübersicht ausgeblendet.":
       "Opening the dashboard hides the infrastructure overview.",

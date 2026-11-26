@@ -486,6 +486,11 @@ try {
   // labels of the rendered surface, not the source of the client.
   await page.getByRole('button',{name:'Navigation Diagnose & Ereignisse',exact:true}).click();
   await page.waitForTimeout(1500);
+  const diagnosticsTop=await page.locator('body').ariaSnapshot();
+  assert(diagnosticsTop.includes('Aktueller Zustand')&&diagnosticsTop.includes('Letzte Ereignisse'),
+    'diagnostics does not start with current status and recent events');
+  await page.getByRole('button',{name:'Technische Ansicht',exact:true}).click();
+  await page.waitForTimeout(900);
   const healthPage=(await (await context.request.get(base+'/api/v2/diagnostics/health-history?limit=50',{timeout:60000})).json());
   const gapsPage=(await (await context.request.get(base+'/api/v2/diagnostics/gaps?limit=50',{timeout:60000})).json());
   const eventsPage=(await (await context.request.get(base+'/api/v2/events',{timeout:60000})).json());

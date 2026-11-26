@@ -44,7 +44,7 @@ const workstations = [
   { name: 'Geräte & Dienste', slug: 'devices', marker: 'Gerät hinzufügen' },
   { name: 'Netzwerk & VPN', slug: 'network', marker: 'Beziehungen prüfen' },
   { name: 'OPC-UA-Browser', slug: 'opcua', marker: 'SERVER-GESTEUERTER ZUGRIFF' },
-  { name: 'Diagnose & Ereignisse', slug: 'diagnostics', marker: 'EVENTS · UNTERSUCHUNGSKONTEXT' },
+  { name: 'Diagnose & Ereignisse', slug: 'diagnostics', marker: 'Aktueller Zustand' },
   { name: 'Einstellungen', slug: 'settings', marker: 'READ-ONLY / OFFLINE ADMIN' },
 ];
 const forbidden = ['Deine Infrastruktur. Ein Bild.', 'Erfasste Geräte',
@@ -212,6 +212,19 @@ try {
       if (workstation.slug === 'devices') {
         check(`no technical scope strip on devices at ${width}px`,
           !workstationSnapshot.includes('Autorisierter v2-Scope'));
+      }
+      if (workstation.slug === 'diagnostics') {
+        check(`diagnostics opens with recent events and current status at ${width}px`,
+          workstationSnapshot.includes('Letzte Ereignisse') &&
+          !workstationSnapshot.includes('EVENTS · UNTERSUCHUNGSKONTEXT'));
+        await page.waitForTimeout(650);
+        await page.getByRole('button', { name: 'Technische Ansicht', exact: true }).click();
+        await waitForAria('EVENTS · UNTERSUCHUNGSKONTEXT');
+        await page.waitForTimeout(650);
+        await page.getByRole('button', { name: 'Zurück zum aktuellen Zustand', exact: true }).click();
+        await waitForAria('Aktueller Zustand');
+        check(`diagnostics can return from the technical workspace at ${width}px`,
+          !(await snapshot()).includes('EVENTS · UNTERSUCHUNGSKONTEXT'));
       }
       const scopedForbidden = forbidden.filter((marker) =>
         !['M-01', 'Normalbetrieb'].includes(marker) &&

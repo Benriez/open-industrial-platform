@@ -165,8 +165,8 @@ void main() {
         await tester.pump(const Duration(milliseconds: 120));
       }
       expectWorkstationTitle('Diagnose & Ereignisse');
-      expect(find.byKey(const Key('diagnostics-primary-timeline')),
-          findsOneWidget);
+      expect(find.text('Aktueller Zustand'), findsOneWidget);
+      expect(find.byKey(const Key('diagnostics-show-technical')), findsOneWidget);
 
       // Settings.
       await tester.tap(find.text('Einstellungen').first);

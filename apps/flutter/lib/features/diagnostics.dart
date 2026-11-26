@@ -2,6 +2,7 @@ import '../l10n/oip_strings.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -14,6 +15,7 @@ import '../widgets/adaptive_workspace.dart';
 import '../widgets/components.dart';
 import '../widgets/workstation.dart';
 import 'diagnostics/diagnostics_model.dart';
+import 'diagnostics/diagnostics_status.dart';
 import 'diagnostics/diagnostics_workspaces.dart';
 import 'diagnostics/event_explorer.dart';
 import 'diagnostics/evidence_inspector.dart';
@@ -68,6 +70,7 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
   int evidenceGeneration = 0;
 
   _DiagnosticsMode mode = _DiagnosticsMode.events;
+  bool technicalView = false;
   _MobilePane mobilePane = _MobilePane.explorer;
   bool showTimeline = true, showFilters = false;
   bool tabletExplorer = false, tabletInspector = false;
@@ -94,14 +97,17 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
         _DiagnosticsMode.events;
     showFilters = layout.advancedFilters;
     widget.controller.addListener(_controllerChanged);
-    _loadEvents();
+    if (!widget.controller.managed) _loadEvents();
     _loadSources();
-    _loadEvidence();
     // Bounded visible-page refresh. No overlapping request is started and stale
     // responses are rejected by generation; the API itself has no cancellation.
     refreshTimer = Timer.periodic(const Duration(seconds: 4), (_) {
-      _loadEvents(automatic: true);
-      if (mode == _DiagnosticsMode.health) _loadSources(automatic: true);
+      if (!widget.controller.managed || technicalView) {
+        _loadEvents(automatic: true);
+      }
+      if (widget.controller.managed || mode == _DiagnosticsMode.health) {
+        _loadSources(automatic: true);
+      }
     });
   }
 
@@ -137,7 +143,7 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
       timelineZoom = 1;
       timelinePanMs = 0;
     });
-    _loadEvents();
+    if (!widget.controller.managed || technicalView) _loadEvents();
     _loadSources();
   }
 
@@ -158,14 +164,21 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
       final next = diagnosticEventsFromApi(append
           ? [...allEvents.map((item) => item.event), ...result.events]
           : result.events);
-      if (!append && eventsError == null && _sameEventWindow(allEvents, next)) {
+      final truncated = result.truncated && result.nextCursor != null;
+      if (!append &&
+          eventsLoaded &&
+          eventsError == null &&
+          eventsTruncated == truncated &&
+          eventsNextCursor == result.nextCursor &&
+          listEquals(eventsMissingEvidence, result.missingEvidence) &&
+          _sameEventWindow(allEvents, next)) {
         return;
       }
       setState(() {
         allEvents = next;
         eventsLoaded = true;
         eventsError = null;
-        eventsTruncated = result.truncated && result.nextCursor != null;
+        eventsTruncated = truncated;
         eventsNextCursor = result.nextCursor;
         eventsMissingEvidence = result.missingEvidence;
         final valid = next.map((item) => item.key).toSet();
@@ -240,21 +253,23 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
 
   Future<void> _loadSources({bool automatic = false}) async {
     if (loadingSources || (automatic && searchFocus.hasFocus)) return;
-    loadingSources = true;
+    setState(() => loadingSources = true);
     final current = ++sourcesGeneration;
     try {
       final result = await widget.controller.api
           .contextSources(widget.controller.infrastructure);
       if (!mounted || current != sourcesGeneration) return;
       setState(() {
+        loadingSources = false;
         sources = result;
         sourcesError = null;
       });
     } catch (error) {
       if (!mounted || current != sourcesGeneration) return;
-      setState(() => sourcesError = error);
-    } finally {
-      if (current == sourcesGeneration) loadingSources = false;
+      setState(() {
+        loadingSources = false;
+        sourcesError = error;
+      });
     }
   }
 
@@ -485,8 +500,24 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
     }
   }
 
+  void _showTechnicalView() {
+    setState(() => technicalView = true);
+    _loadEvents();
+    if (!evidenceLoaded && !evidenceBusy) _loadEvidence();
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.controller.managed && !technicalView) {
+      return DiagnosticsStatus(
+        controller: widget.controller,
+        sources: sources,
+        sourcesLoading: loadingSources,
+        sourcesFailed: sourcesError != null,
+        onRefresh: loadingSources ? null : _loadSources,
+        onTechnicalView: _showTechnicalView,
+      );
+    }
     final snapshot = widget.controller.snapshot!;
     final filtered = filteredEvents;
     final current = selected;
@@ -499,6 +530,18 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
       onKeyEvent: _pageKey,
       skipTraversal: true,
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        if (widget.controller.managed) ...[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const Key('diagnostics-show-status'),
+              onPressed: () => setState(() => technicalView = false),
+              icon: const Icon(Icons.arrow_back, size: 17),
+              label: Text(context.tr('Zurück zum aktuellen Zustand')),
+            ),
+          ),
+          const SizedBox(height: OipTokens.s2),
+        ],
         AdaptiveWorkspaceHeader(
           primaryAction: WorkspacePrimaryAction(
             buttonKey: const Key('diagnostics-primary-timeline'),

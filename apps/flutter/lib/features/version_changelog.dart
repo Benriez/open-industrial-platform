@@ -17,6 +17,14 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.52',
+      build: '55',
+      date: '26. November 2026',
+      changes: [
+        'Diagnose & Ereignisse zeigt den aktuellen Zustand, konkrete Prüfschritte und die letzten Ereignisse. Die technischen Ansichten sind weiterhin erreichbar.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.51',
       build: '54',
       date: '26. November 2026',

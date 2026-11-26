@@ -146,10 +146,15 @@ void main() {
     });
 
     testWidgets(
-        'Diagnostics starts with findings/events and timeline stays direct',
+        'Diagnostics starts with current status and keeps the technical timeline',
         (tester) async {
       await boot(tester);
       await navigate(tester, 4);
+      expect(find.text('Aktueller Zustand'), findsOneWidget);
+      expect(find.text('Letzte Ereignisse'), findsOneWidget);
+      expect(find.byKey(const Key('diagnostics-primary-timeline')), findsNothing);
+      await tester.tap(find.byKey(const Key('diagnostics-show-technical')));
+      await tester.pumpAndSettle();
       expect(find.byKey(const Key('diagnostics-primary-timeline')),
           findsOneWidget);
       expect(find.byKey(const Key('diagnostics-mode-events')), findsOneWidget);
@@ -157,6 +162,9 @@ void main() {
       await tester.tap(find.byKey(const Key('diagnostics-primary-timeline')));
       await tester.pumpAndSettle();
       expect(find.byType(DiagnosticsEventTimeline), findsOneWidget);
+      await tester.tap(find.byKey(const Key('diagnostics-show-status')));
+      await tester.pumpAndSettle();
+      expect(find.text('Aktueller Zustand'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -225,6 +233,12 @@ void main() {
         (5, 'settings'),
       ]) {
         await navigate(tester, index, width: 390);
+        if (id == 'diagnostics') {
+          final technical = find.byKey(const Key('diagnostics-show-technical'));
+          await tester.ensureVisible(technical);
+          await tester.tap(technical);
+          await tester.pumpAndSettle();
+        }
         await tester.tap(find.byKey(Key('$id-inspector-open')));
         await tester.pumpAndSettle();
         expect(find.byKey(Key('$id-adaptive-inspector')), findsOneWidget,

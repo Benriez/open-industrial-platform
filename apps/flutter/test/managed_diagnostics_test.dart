@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oip_dashboard/app/app.dart';
 import 'package:oip_dashboard/app/controller.dart';
+import 'package:oip_dashboard/features/devices.dart';
 import 'package:oip_dashboard/models/contracts.dart';
 import 'package:oip_dashboard/models/diagnostics.dart';
+import 'package:oip_dashboard/models/infrastructure.dart';
 import 'package:oip_dashboard/services/api.dart';
 
 import 'infrastructure_support.dart';
@@ -206,6 +208,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 120));
     }
 
+    expect(find.text('Aktueller Zustand'), findsOneWidget);
+    expect(find.text('Gateway A2 · Verbindung getrennt'), findsOneWidget);
+    expect(find.textContaining('Öffne das Gerät und prüfe seine Verbindung.'),
+        findsOneWidget);
+    expect(api.requests, isEmpty);
+    final technical = find.byKey(const Key('diagnostics-show-technical'));
+    await tester.ensureVisible(technical);
+    await tester.tap(technical);
+    await tester.pumpAndSettle();
+
     // The persisted evidence of the Core is shown with its markers and reason.
     expect(find.textContaining('PERSISTIERTE EVIDENZ'), findsOneWidget);
     expect(find.text('Dokumentierte Lücke · source-ssh'), findsOneWidget);
@@ -262,6 +274,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 120));
     }
 
+    final technical = find.byKey(const Key('diagnostics-show-technical'));
+    await tester.ensureVisible(technical);
+    await tester.tap(technical);
+    await tester.pumpAndSettle();
+
     // The continuation asks the same authorized route with the opaque cursor.
     final more = find.text('Lücken: weitere Einträge laden');
     await tester.ensureVisible(more);
@@ -289,5 +306,52 @@ void main() {
             .where((uri) => uri.queryParameters['cursor'] == 'opaque-gap'),
         hasLength(2));
     expect(find.text('Dokumentierte Lücke · source-ssh'), findsOneWidget);
+  });
+
+  testWidgets('Recent events open the scoped device on a narrow screen',
+      (tester) async {
+    const size = Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = size;
+    await tester.binding.setSurfaceSize(size);
+    final api = EvidenceApi()..infrastructure = infrastructureFixture();
+    final controller = OipController(api);
+    await controller.resyncInfrastructure();
+    controller.connection = 'live';
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      await tester.binding.setSurfaceSize(null);
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open-navigation')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('nav-4')));
+    await tester.pumpAndSettle();
+
+    final event = find.text('Messwerte fehlen');
+    await tester.ensureVisible(event);
+    await tester.tap(event);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Die Datenquelle hat fehlende Messwerte gemeldet.'),
+        findsOneWidget);
+    await tester.tap(find.text('Gerät öffnen'));
+    await tester.pumpAndSettle();
+    final dialog =
+        tester.widget<DeviceDetailDialog>(find.byType(DeviceDetailDialog));
+    expect(dialog.device.name, 'Gateway A2');
+    Navigator.of(tester.element(find.byType(DeviceDetailDialog))).pop();
+    await tester.pumpAndSettle();
+
+    controller.selectInfrastructure(
+        const InfrastructureSelection.infrastructure('org-a', 'infra-a1'));
+    await tester.pumpAndSettle();
+    expect(find.text('Gateway A2 · Verbindung getrennt'), findsNothing);
+    expect(find.text('Messwerte fehlen'), findsNothing);
+    expect(find.textContaining('Pump A1'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

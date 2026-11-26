@@ -52,7 +52,7 @@ const workstations = [
   // the number of the delivered nodes.
   { name: 'OPC-UA-Browser', slug: 'opcua', marker: 'SERVER-GESTEUERTER ZUGRIFF',
     ready: /([1-9][0-9]*) Nodes/ },
-  { name: 'Diagnose & Ereignisse', slug: 'diagnostics', marker: 'EVENTS · UNTERSUCHUNGSKONTEXT' },
+  { name: 'Diagnose & Ereignisse', slug: 'diagnostics', marker: 'Aktueller Zustand' },
   { name: 'Einstellungen', slug: 'settings', marker: 'READ-ONLY / OFFLINE ADMIN' },
 ];
 
