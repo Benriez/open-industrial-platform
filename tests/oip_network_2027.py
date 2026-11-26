@@ -42,6 +42,8 @@ DEVICES = [
      "device_type": "server", "site_id": "site-a1", "metadata": {}},
     {"id": "network-device-b2", "display_name": "Netzpfad Check B2",
      "device_type": "sensor", "site_id": "site-a1", "metadata": {}},
+    {"id": "network-router-a1", "display_name": "LAN Router A1",
+     "device_type": "network_device", "site_id": "site-a1", "metadata": {}},
 ]
 
 

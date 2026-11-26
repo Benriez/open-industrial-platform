@@ -127,6 +127,13 @@ class NetworkLink {
   final String from, to, transport, status;
   final double? latency, loss;
   final bool simulated;
+  const NetworkLink.recordedLan(this.from, this.to)
+      : transport = 'LAN-Kabel',
+        status = 'unknown',
+        latency = null,
+        loss = null,
+        simulated = false;
+
   NetworkLink.fromJson(Json j)
       : from = j['from'] as String,
         to = j['to'] as String,

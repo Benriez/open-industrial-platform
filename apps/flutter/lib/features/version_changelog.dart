@@ -17,6 +17,14 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.53',
+      build: '56',
+      date: '26. November 2026',
+      changes: [
+        'Netzwerk & VPN zeigt eingetragene LAN-Kabel getrennt von gemeldeten Netzwerkpfaden. Die Ansicht wurde vereinfacht.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.52',
       build: '55',
       date: '26. November 2026',

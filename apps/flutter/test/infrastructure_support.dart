@@ -6,6 +6,7 @@ import 'package:oip_dashboard/models/infrastructure.dart';
 InfrastructureBootstrap infrastructureFixture({
   bool restricted = false,
   bool empty = false,
+  bool networkExample = false,
   String principal = 'fixture-operator',
 }) {
   if (empty) {
@@ -52,15 +53,39 @@ InfrastructureBootstrap infrastructureFixture({
   final devices = <_FixtureDevice>[
     const _FixtureDevice('device-a1', 'Pump A1', 'sensor', 'site-a1-1', 'org-a',
         'infra-a1', ['source-a1'], 'receiving'),
+    if (networkExample) ...const [
+      _FixtureDevice('router-a1', 'Site router', 'NetworkDevice', 'site-a1-1',
+          'org-a', 'infra-a1', [], 'no_collector'),
+      _FixtureDevice('desk-a1', 'Office PC', 'Other', 'site-a1-1', 'org-a',
+          'infra-a1', [], 'no_collector'),
+      _FixtureDevice('server-a1', 'Monitor host', 'Other', 'site-a1-1', 'org-a',
+          'infra-a1', [], 'no_collector'),
+      _FixtureDevice('bridge-a1', 'Lighting bridge', 'NetworkDevice',
+          'site-a1-1', 'org-a', 'infra-a1', [], 'no_collector'),
+    ],
     if (!restricted) ...[
-      const _FixtureDevice('device-a1-manual', 'Manual Valve A1', 'industrial_device',
-          'site-a1-2', 'org-a', 'infra-a1', [], 'no_collector'),
-      const _FixtureDevice('device-a2', 'Gateway A2', 'network_device', 'site-a2-1',
-          'org-a', 'infra-a2', ['source-a2'], 'stale'),
-      const _FixtureDevice('device-b1', 'Sensor B1', 'sensor', 'site-b1-1', 'org-b',
-          'infra-b1', ['source-b1'], 'receiving'),
-      const _FixtureDevice('device-b1-manual', 'Manual Drive B1', 'industrial_device',
-          'site-b1-1', 'org-b', 'infra-b1', [], 'no_collector'),
+      const _FixtureDevice(
+          'device-a1-manual',
+          'Manual Valve A1',
+          'industrial_device',
+          'site-a1-2',
+          'org-a',
+          'infra-a1',
+          [],
+          'no_collector'),
+      const _FixtureDevice('device-a2', 'Gateway A2', 'network_device',
+          'site-a2-1', 'org-a', 'infra-a2', ['source-a2'], 'stale'),
+      const _FixtureDevice('device-b1', 'Sensor B1', 'sensor', 'site-b1-1',
+          'org-b', 'infra-b1', ['source-b1'], 'receiving'),
+      const _FixtureDevice(
+          'device-b1-manual',
+          'Manual Drive B1',
+          'industrial_device',
+          'site-b1-1',
+          'org-b',
+          'infra-b1',
+          [],
+          'no_collector'),
     ],
   ];
   final deviceIds = devices.map((item) => item.id).toSet();
@@ -68,8 +93,7 @@ InfrastructureBootstrap infrastructureFixture({
   final visibleLocations = locations;
   final sourceIds = visibleLocations.map((item) => item.sourceId).toList();
   final sources = [
-    for (final id in sourceIds)
-      _source(id, stale: id == 'source-a2'),
+    for (final id in sourceIds) _source(id, stale: id == 'source-a2'),
   ];
   final observations = [
     for (final device in devices)
@@ -79,10 +103,24 @@ InfrastructureBootstrap infrastructureFixture({
   ];
   final events = [
     for (final (index, id) in sourceIds.indexed)
-      _event(id, index + 1,
-          id == 'source-a2' ? 'DataLoss' : 'Reconnected'),
+      _event(id, index + 1, id == 'source-a2' ? 'DataLoss' : 'Reconnected'),
   ];
   final raw = _scoped(sources, devices, observations, events, visibleLocations);
+  if (networkExample) {
+    raw['topology'] = [
+      for (final (from, to) in [
+        ('server-a1', 'desk-a1'),
+        ('desk-a1', 'router-a1')
+      ])
+        {
+          'from': from,
+          'to': to,
+          'transport': 'Reported LAN neighbor',
+          'status': 'unknown',
+          'simulated': false
+        },
+    ];
+  }
   final inventory = devices.map((item) => item.toInventory()).toList();
   final findings = <DeterministicFinding>[
     if (sourceIds.contains('source-a2'))
@@ -125,8 +163,15 @@ class _FixtureDevice {
       infrastructureId,
       telemetry;
   final List<String> sourceIds;
-  const _FixtureDevice(this.id, this.name, this.type, this.siteId,
-      this.organizationId, this.infrastructureId, this.sourceIds, this.telemetry);
+  const _FixtureDevice(
+      this.id,
+      this.name,
+      this.type,
+      this.siteId,
+      this.organizationId,
+      this.infrastructureId,
+      this.sourceIds,
+      this.telemetry);
 
   Json json() => {
         'id': id,

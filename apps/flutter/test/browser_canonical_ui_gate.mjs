@@ -42,7 +42,7 @@ const check = (name, ok, detail) => {
 const workstations = [
   { name: 'Übersicht', slug: 'overview', marker: 'Diagnose öffnen' },
   { name: 'Geräte & Dienste', slug: 'devices', marker: 'Gerät hinzufügen' },
-  { name: 'Netzwerk & VPN', slug: 'network', marker: 'Beziehungen prüfen' },
+  { name: 'Netzwerk & VPN', slug: 'network', marker: 'LAN-Verkabelung' },
   { name: 'OPC-UA-Browser', slug: 'opcua', marker: 'SERVER-GESTEUERTER ZUGRIFF' },
   { name: 'Diagnose & Ereignisse', slug: 'diagnostics', marker: 'Aktueller Zustand' },
   { name: 'Einstellungen', slug: 'settings', marker: 'READ-ONLY / OFFLINE ADMIN' },
@@ -212,6 +212,12 @@ try {
       if (workstation.slug === 'devices') {
         check(`no technical scope strip on devices at ${width}px`,
           !workstationSnapshot.includes('Autorisierter v2-Scope'));
+      }
+      if (workstation.slug === 'network') {
+        check(`network opens on LAN wiring without technical summary strips at ${width}px`,
+          workstationSnapshot.includes('Verkabelung eintragen') &&
+          !workstationSnapshot.includes('REGISTRIERTE NODES') &&
+          !workstationSnapshot.includes('BESTÄTIGTE PFADE'));
       }
       if (workstation.slug === 'diagnostics') {
         check(`diagnostics opens with recent events and current status at ${width}px`,

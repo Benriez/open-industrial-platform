@@ -4,7 +4,9 @@ import 'package:oip_dashboard/app/app.dart';
 import 'package:oip_dashboard/app/controller.dart';
 import 'package:oip_dashboard/models/infrastructure.dart';
 import 'package:oip_dashboard/features/diagnostics/evidence_timeline.dart';
+import 'package:oip_dashboard/features/network/network_graph.dart';
 import 'package:oip_dashboard/widgets/workstation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'infrastructure_support.dart';
 import 'support.dart';
@@ -55,11 +57,13 @@ void main() {
 
   group('OIP-UX-001 task-based widget acceptance · contract fixture', () {
     Future<OipController> boot(WidgetTester tester,
-        {Size size = const Size(1440, 900)}) async {
+        {Size size = const Size(1440, 900),
+        InfrastructureBootstrap? fixtureData}) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = size;
       await tester.binding.setSurfaceSize(size);
-      final api = FakeApi()..infrastructure = infrastructureFixture();
+      final api = FakeApi()
+        ..infrastructure = fixtureData ?? infrastructureFixture();
       final controller = OipController(api);
       await controller.resyncInfrastructure();
       await tester.pumpWidget(OipApp(controller: controller, autoStart: false));
@@ -152,7 +156,8 @@ void main() {
       await navigate(tester, 4);
       expect(find.text('Aktueller Zustand'), findsOneWidget);
       expect(find.text('Letzte Ereignisse'), findsOneWidget);
-      expect(find.byKey(const Key('diagnostics-primary-timeline')), findsNothing);
+      expect(
+          find.byKey(const Key('diagnostics-primary-timeline')), findsNothing);
       await tester.tap(find.byKey(const Key('diagnostics-show-technical')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('diagnostics-primary-timeline')),
@@ -168,15 +173,15 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('Network does not lead with an empty topology canvas',
+    testWidgets('Network opens on wiring and preserves the reported map',
         (tester) async {
       await boot(tester);
       await navigate(tester, 2);
-      expect(
-          find.byKey(const Key('network-primary-connections')), findsOneWidget);
-      expect(find.byKey(const Key('topology-canvas')), findsNothing);
-      expect(find.textContaining('NICHT GELIEFERT'), findsWidgets);
-      await tester.tap(find.byKey(const Key('network-tab-topology')));
+      expect(find.byKey(const Key('network-lan-view')), findsOneWidget);
+      expect(find.byKey(const Key('network-summary')), findsNothing);
+      await tester.tap(find.byKey(const Key('network-tab-connections')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('network-show-logical-map')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('fit-topology')), findsOneWidget);
       expect(find.byKey(const Key('topology-canvas')), findsOneWidget);
@@ -184,6 +189,69 @@ void main() {
           tester.widget<ToolButton>(find.byKey(const Key('fit-topology')));
       expect(fit.onPressed, isNotNull,
           reason: 'registered devices remain visible when paths are absent');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Saved LAN cables form a router star within the selected site',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final controller = await boot(tester,
+          fixtureData: infrastructureFixture(networkExample: true));
+      controller.selectInfrastructure(
+          const InfrastructureSelection.infrastructure('org-a', 'infra-a1'));
+      controller.connection = 'live';
+      await tester.pumpAndSettle();
+      await navigate(tester, 2);
+
+      NetworkTopologyGraph graph() => tester
+          .widget<NetworkTopologyGraph>(find.byType(NetworkTopologyGraph));
+      expect(graph().edges, isEmpty);
+      expect(graph().layout.devices, hasLength(6));
+      await tester.tap(find.byKey(const Key('lan-wiring-edit')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('lan-router-select')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.textContaining('Site router').last);
+      await tester.pumpAndSettle();
+      for (final id in ['desk-a1', 'server-a1', 'bridge-a1']) {
+        final checkbox = find.byKey(Key('lan-client-$id'));
+        await tester.ensureVisible(checkbox);
+        await tester.tap(checkbox);
+        await tester.pumpAndSettle();
+      }
+      expect(
+          find.byKey(const Key('lan-client-device-a1-manual')), findsNothing);
+      await tester.tap(find.byKey(const Key('lan-wiring-save')));
+      await tester.pumpAndSettle();
+      final edges = graph().edges;
+      expect(edges.map((edge) => edge.link.from).toSet(), {'router-a1'});
+      expect(edges.map((edge) => edge.link.to).toSet(),
+          {'desk-a1', 'server-a1', 'bridge-a1'});
+      expect(
+          edges.every(
+              (edge) => edge.recordedLan && edge.link.status == 'unknown'),
+          isTrue);
+      final positions = graph().layout.positions;
+      expect(edges.map((edge) => positions[edge.link.to]!.dx).toSet(),
+          hasLength(1));
+
+      await tester.tap(find.byKey(const Key('network-tab-connections')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('network-show-logical-map')));
+      await tester.pumpAndSettle();
+      expect(graph().edges.map((edge) => edge.link.from).toSet(),
+          {'server-a1', 'desk-a1'});
+      expect(graph().edges.every((edge) => !edge.recordedLan), isTrue);
+      await tester.tap(find.byKey(const Key('network-tab-lan')));
+      await tester.pumpAndSettle();
+      await navigate(tester, 1);
+      await navigate(tester, 2);
+      expect(graph().edges, hasLength(3));
+      controller.selectInfrastructure(
+          const InfrastructureSelection.infrastructure('org-a', 'infra-a2'));
+      await tester.pumpAndSettle();
+      expect(graph().edges, isEmpty);
+      expect(find.byKey(const Key('topology-router-a1')), findsNothing);
       expect(tester.takeException(), isNull);
     });
 

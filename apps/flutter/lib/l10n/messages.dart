@@ -1,6 +1,41 @@
 // Client-owned interface copy. Unmapped source strings are used verbatim.
 
 const englishMessages = <String, String>{
+  "Netzwerk & VPN zeigt eingetragene LAN-Kabel getrennt von gemeldeten Netzwerkpfaden. Die Ansicht wurde vereinfacht.":
+      "Network & VPN separates recorded LAN cabling from reported network paths and has a simpler layout.",
+  "LAN-Verkabelung": "LAN wiring",
+  "LAN-Verkabelung eintragen": "Record LAN wiring",
+  "Verkabelung eintragen": "Record wiring",
+  "Verkabelung bearbeiten": "Edit wiring",
+  "Router auswählen": "Choose a router",
+  "Welche Geräte sind direkt per LAN-Kabel mit diesem Router verbunden?":
+      "Which devices are connected directly to this router by LAN cable?",
+  "Keine weiteren Geräte an diesem Standort.": "No other devices at this site.",
+  "Die Verkabelung wird in dieser App gespeichert.":
+      "Wiring is saved in this app.",
+  "Verkabelung speichern": "Save wiring",
+  "Die Verkabelung konnte nicht gespeichert werden.":
+      "Could not save the wiring.",
+  "Die gespeicherte Verkabelung konnte nicht geladen werden.":
+      "Could not load the saved wiring.",
+  "Verkabelung wird geladen.": "Loading saved wiring.",
+  "1 manuell eingetragenes LAN-Kabel": "1 manually recorded LAN cable",
+  "{0} manuell eingetragene LAN-Kabel": "{0} manually recorded LAN cables",
+  "Wähle den Router und die Geräte aus, die direkt per LAN-Kabel angeschlossen sind.":
+      "Choose the router and the devices connected directly by LAN cable.",
+  "Zur Auswahl eines Routers öffne den Standort mit den zugehörigen Geräten.":
+      "Open the site with the router and its devices.",
+  "Direkt angeschlossene Geräte": "Directly connected devices",
+  "Direkte LAN-Verbindungen": "Direct LAN connections",
+  "Direkte LAN-Verbindung": "Direct LAN connection",
+  "Eingetragene LAN-Kabel": "Recorded LAN cables",
+  "Manuell eingetragen · Link-Status unbekannt":
+      "Manually recorded · Link status unknown",
+  "Keine Live-Verbindung. Der Gerätestatus kann veraltet sein.":
+      "The live connection is unavailable. Device status may be out of date.",
+  "Logische Karte": "Logical map",
+  "Gemeldete Netzwerkpfade": "Reported network paths",
+  "Geräteliste": "Device list",
   "Diagnose & Ereignisse zeigt den aktuellen Zustand, konkrete Prüfschritte und die letzten Ereignisse. Die technischen Ansichten sind weiterhin erreichbar.":
       "Diagnostics & Events shows current status, specific checks and recent events. The technical views remain available.",
   "Aktueller Zustand": "Current status",
@@ -53,7 +88,8 @@ const englishMessages = <String, String>{
       "An error occurred while retrieving readings.",
   "Die Datenquelle hat fehlende Messwerte gemeldet.":
       "The data source reported missing readings.",
-  "Die Datenquelle hat ein Ereignis gemeldet.": "The data source reported an event.",
+  "Die Datenquelle hat ein Ereignis gemeldet.":
+      "The data source reported an event.",
   "Gerät öffnen": "Open device",
   "Zeitpunkt unbekannt": "Unknown time",
   "26. November 2026": "26 November 2026",
@@ -703,8 +739,8 @@ const englishMessages = <String, String>{
   "Gerät registrieren": "Register device",
   "Gerät registrieren oder die sichere SSH-Einrichtung starten. Der Core prüft die Berechtigung für den gewählten Bereich.":
       "Register a device or start secure SSH setup. The Core checks permissions for the selected scope.",
-  "Gerät {0} auswählen, ID {1}, Status {2}, {3} bekannte logische Verbindungen, {4}":
-      "Select device {0}, ID {1}, status {2}, {3} known logical connections, {4}",
+  "Gerät {0} auswählen, ID {1}, Status {2}, {3} erfasste Verbindungen, {4}":
+      "Select device {0}, ID {1}, status {2}, {3} recorded connections, {4}",
   "Gerät {0} {1} auswählen · {2} · {3} · Daten {4} · Reachability {5} reported":
       "Select device {0} {1} · {2} · {3} · Data {4} · Reachability {5} reported",
   "Gerät {0} {1} auswählen · {2} · {3} · {4} · Reachability {5} reported{6}":

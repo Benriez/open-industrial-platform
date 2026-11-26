@@ -161,6 +161,7 @@ the managed browser run.
 | 8 | Responsive geometry: the context selector survives 390/768/1440/1920 px | widget |
 | 9 | No regression of browser authentication and of the device onboarding action | widget + browser |
 | 10 | Visual comparison against hash-pinned technical references at 1440×900 and 1920×1080 | stable-shell pixel comparison + browser semantic/geometry assertions |
+| 11 | Operator-recorded LAN cabling uses only selected same-site registry devices, persists locally, and never replaces the Core-delivered logical paths | adaptive workstation widget proof + browser network landing proof |
 | 11 | The unified infrastructure summary is visible in Overview and is dismissed while the Dashboard is open, with its further figures expandable in Overview | widget + browser |
 | 12 | Managed Diagnostics opens with scoped current source status and recent events. The technical view still exposes the event workspace and persisted Core evidence | widget + browser |
 

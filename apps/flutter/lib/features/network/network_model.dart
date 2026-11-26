@@ -9,8 +9,13 @@ import '../../widgets/device_kind.dart';
 class NetworkEdge {
   final NetworkLink link;
   final int ordinal;
+  final bool recordedLan;
 
-  const NetworkEdge(this.link, this.ordinal);
+  const NetworkEdge(this.link, this.ordinal) : recordedLan = false;
+  NetworkEdge.lan(String router, String device)
+      : link = NetworkLink.recordedLan(router, device),
+        ordinal = 0,
+        recordedLan = true;
 
   String get id => '${link.from}\n${link.to}\n${link.transport}\n$ordinal';
   String get shortLabel => '${link.from} → ${link.to}';

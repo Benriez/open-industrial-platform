@@ -9,8 +9,8 @@ import 'network_model.dart';
 import '../../widgets/device_kind.dart';
 
 /// Geometry for the network view. Registered devices remain visible even when
-/// no links were delivered; only actual snapshot links create edges. No edge
-/// is inferred from a name, location, transport annotation or device type.
+/// no links were provided. The caller supplies either delivered logical links
+/// or locally recorded cables. Geometry never infers links.
 class TopologyLayout {
   static const nodeWidth = 180.0;
   static const nodeHeight = 64.0;
@@ -51,7 +51,7 @@ class TopologyLayout {
       adjacency[edge.link.to]!.add(edge.link.from);
     }
 
-    // Connected components are based solely on delivered logical links.
+    // Connected components use the links supplied for this view.
     final components = <List<String>>[];
     final remaining = devices.map((device) => device.id).toSet();
     while (remaining.isNotEmpty) {
@@ -731,12 +731,14 @@ class NetworkTopologyPainter extends CustomPainter {
       final status = edge.link.status;
       final color = selected
           ? selectedColor
-          : switch (status) {
-              'connected' || 'active' => connectedColor,
-              'degraded' || 'stale' => degradedColor,
-              'critical' || 'offline' || 'alarm' => errorColor,
-              _ => unknownColor,
-            };
+          : edge.recordedLan
+              ? connectedColor
+              : switch (status) {
+                  'connected' || 'active' => connectedColor,
+                  'degraded' || 'stale' => degradedColor,
+                  'critical' || 'offline' || 'alarm' => errorColor,
+                  _ => unknownColor,
+                };
       final related = selectedDeviceId == null ||
           edge.link.from == selectedDeviceId ||
           edge.link.to == selectedDeviceId;
@@ -755,7 +757,7 @@ class NetworkTopologyPainter extends CustomPainter {
               ..strokeCap = StrokeCap.round
               ..style = PaintingStyle.stroke);
       }
-      if (status != 'connected' && status != 'active') {
+      if (!edge.recordedLan && status != 'connected' && status != 'active') {
         for (final metric in path.computeMetrics()) {
           var distance = 0.0;
           while (distance < metric.length) {
@@ -773,7 +775,11 @@ class NetworkTopologyPainter extends CustomPainter {
           Paint()
             ..color = displayColor
             ..style = PaintingStyle.fill);
-      _arrow(canvas, curve, displayColor, selected ? 7 : 6);
+      if (edge.recordedLan) {
+        canvas.drawCircle(curve.end, 2.5, Paint()..color = displayColor);
+      } else {
+        _arrow(canvas, curve, displayColor, selected ? 7 : 6);
+      }
     }
   }
 

@@ -1,7 +1,7 @@
 name: oip_dashboard
 description: Open Industrial Platform operations workstation.
 publish_to: none
-version: 0.3.52+55
+version: 0.3.53+56
 environment:
   sdk: '>=3.4.0 <4.0.0'
   flutter: '>=3.22.0'

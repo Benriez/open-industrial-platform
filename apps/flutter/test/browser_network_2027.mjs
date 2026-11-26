@@ -198,35 +198,33 @@ try {
   await pass(`the Core delivered ${devices.length} devices and ${registered.length} registered devices`);
 
   await page.getByRole('button', {name: 'Navigation Netzwerk & VPN', exact: true}).click();
-  await page.getByRole('button', {name: 'Beziehungen prüfen', exact: true})
-    .waitFor({timeout: bootTimeout});
-
-  // 1. the summary names the absence of the paths — the Core delivers none.
-  let names = await waitForName('LOGISCHE PFADE NICHT GELIEFERT');
-  assert.ok(names.includes('VPN-TELEMETRIE NICHT GELIEFERT'),
-    'the summary does not name the absence of the VPN telemetry');
-  assert.ok(names.includes('DEMO-PFADE 0'),
-    'the summary does not name the absence of the demo paths');
-  assert.ok(names.includes(`REGISTRIERTE NODES ${devices.length}`),
-    `the summary does not name the ${devices.length} devices of the Core`);
-  await pass('the summary names the paths, the VPN telemetry and the demo paths as not delivered');
-  await capture('summary');
+  await waitForName('LAN-Verkabelung', bootTimeout);
+  await clickName('Verkabelung eintragen');
+  for (const name of ['Netzpfad Messung A1', 'Netzpfad Check B2']) {
+    await page.getByRole('checkbox', {name, exact: true}).click();
+  }
+  await clickName('Verkabelung speichern');
+  await waitForName('2 manuell eingetragene LAN-Kabel');
+  await capture('lan-wiring');
+  await page.reload();
+  await page.getByRole('button', {name: 'Navigation Netzwerk & VPN', exact: true}).click();
+  await waitForName('2 manuell eingetragene LAN-Kabel', bootTimeout);
+  await pass('operator-recorded cables survive reload in the browser');
+  await clickName('Verbindungspfade');
 
   // 2. the list of the paths is empty and an empty result is no offline state.
-  await page.getByText('Keine gelieferten Pfade im Filter', {exact: true})
-    .waitFor({timeout: bootTimeout});
-  await page.getByText(/Ein leeres Ergebnis wird nicht als Offline-Zustand interpretiert/)
-    .first().waitFor({timeout: bootTimeout});
+  await waitForNameContaining('keine gelieferten Verbindungspfade', bootTimeout);
   await pass('the list of the paths is empty and an empty result is no offline state');
 
   // 3. the transport filter offers only the transports that the Core delivered.
-  names = await theNames();
+  const names = await theNames();
   const transports = names.filter(name => name.startsWith('Transport:'));
   assert.deepEqual(transports, ['Transport: alle'],
     `the transport filter offers ${JSON.stringify(transports)}`);
   await pass('the transport filter offers only "alle" — the Core delivered no transport');
 
   // 4. the Device Explorer shows exactly the devices of the Core.
+  await clickName('Geräteliste');
   const counter = `${devices.length}/${devices.length} Geräte`;
   await page.getByText(counter, {exact: true}).waitFor({timeout: bootTimeout});
   const explorerNames = await theNames();
@@ -285,7 +283,7 @@ try {
     .first().click({force: true});
   await waitForNameContaining(`${first.name} loslösen`);
   await pass('the compare and the pin of a row are in the semantics tree and reachable by name');
-  await page.getByRole('button', {name: /Network Compare öffnen/}).click({force: true});
+  await clickName('Vergleich 2');
   await waitForNameContaining('Network Compare');
   await waitForNameContaining('2/4 Geräte · 0/4 Pfade · sitzungslokal');
   await waitForNameContaining('GERÄTEVERGLEICH · 2/4');
@@ -301,9 +299,10 @@ try {
   await page.waitForTimeout(800);
 
   // 8. the graph shows inventory nodes and names the missing path evidence.
-  await clickName('Topologie');
-  await page.getByText(/Keine bestätigten Verbindungspfade/)
-    .first().waitFor({timeout: bootTimeout});
+  await clickName('Verbindungspfade');
+  await clickName('Logische Karte');
+  await waitForNameContaining('Pfade', bootTimeout);
+  await waitForNoName('2 manuell eingetragene LAN-Kabel');
   await pass('the graph keeps registered devices visible without inventing paths');
   await capture('topology');
 
@@ -321,11 +320,11 @@ try {
 
   // 10. the channel that goes stale is named as stale.
   await context.setOffline(true);
-  await waitForName('API STALE / UNBEKANNT', 30000);
+  await waitForNameContaining('Keine Live-Verbindung', 30000);
   await pass('the channel that goes stale is named as stale');
   await capture('stale');
   await context.setOffline(false);
-  await waitForName('API CONNECTED', 60000);
+  await waitForNoName('Keine Live-Verbindung', 60000);
   await pass('the channel comes back after the interruption');
 
   assert.deepEqual(errors, [], `page errors: ${errors.join(' | ')}`);

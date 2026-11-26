@@ -46,7 +46,7 @@ fs.mkdirSync(outDir, { recursive: true });
 const workstations = [
   { name: 'Übersicht', slug: 'overview', marker: 'Diagnose öffnen' },
   { name: 'Geräte & Dienste', slug: 'devices', marker: 'Gerät hinzufügen' },
-  { name: 'Netzwerk & VPN', slug: 'network', marker: 'Beziehungen prüfen' },
+  { name: 'Netzwerk & VPN', slug: 'network', marker: 'LAN-Verkabelung' },
   // The address space is **delivered** by the Core: a capture that shows an
   // empty catalogue would misrepresent the product. The workstation waits for
   // the number of the delivered nodes.

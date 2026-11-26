@@ -524,7 +524,8 @@ try {
   // The approved network surface places the authorized device in its
   // infrastructure. It carries no logical path in a scoped projection, and
   // the source registry belongs to the overview and the device detail.
-  const wantedNetwork=['Beziehungen prüfen','Infrastructure A1','browser-existing'];
+  const wantedNetwork=['LAN-Verkabelung','Infrastructure A1','browser-existing'];
+  await page.getByRole('button',{name:'Geräteliste',exact:true}).click();
   const seenNetwork=new Set();
   for(let i=0;i<40;i++){
     const snapshot=await page.locator('body').ariaSnapshot();

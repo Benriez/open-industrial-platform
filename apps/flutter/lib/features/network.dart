@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../l10n/oip_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,10 +7,12 @@ import 'package:flutter/services.dart';
 import '../app/controller.dart';
 import '../design_system/theme.dart';
 import '../models/contracts.dart';
+import '../services/api.dart';
 import '../widgets/adaptive_workspace.dart';
 import '../widgets/components.dart';
 import '../widgets/workstation.dart';
 import 'devices.dart';
+import 'network/lan_wiring.dart';
 import 'network/network_compare.dart';
 import 'network/network_explorer.dart';
 import 'network/network_graph.dart';
@@ -16,7 +20,7 @@ import 'network/network_model.dart';
 import '../widgets/device_kind.dart';
 import '../core/keyboard.dart';
 
-enum _NetworkMode { topology, connections, vpn, diagnostics, compare }
+enum _NetworkMode { lan, topology, connections, vpn, diagnostics, compare }
 
 enum _MobilePane { primary, explorer, inspector }
 
@@ -72,6 +76,15 @@ class _NetworkPageState extends State<NetworkPage> {
   bool fitScheduled = false;
   bool userCameraUsed = false;
   bool preserveNextViewport = false;
+  String? wiringKey;
+  Map<String, String>? wiring;
+  bool wiringUnavailable = false;
+  bool savingWiring = false;
+
+  bool get managed => widget.controller.hasAuthorizedContext;
+  bool get graphMode =>
+      mode == _NetworkMode.lan || mode == _NetworkMode.topology;
+  bool get isLan => mode == _NetworkMode.lan;
 
   @override
   void initState() {
@@ -80,7 +93,8 @@ class _NetworkPageState extends State<NetworkPage> {
     mode = _NetworkMode.values
             .where((item) => item.name == preference.view)
             .firstOrNull ??
-        _NetworkMode.connections;
+        (managed ? _NetworkMode.lan : _NetworkMode.connections);
+    tabletExplorer = !managed;
     showFilters = preference.advancedFilters;
   }
 
@@ -96,6 +110,137 @@ class _NetworkPageState extends State<NetworkPage> {
   }
 
   bool get transportLive => widget.controller.connection == 'live';
+
+  String? _wiringKey() {
+    final principal = widget.controller.infrastructure.principalIdentity;
+    if (!managed || principal == null) return null;
+    final api = widget.controller.api;
+    return 'oip-lan-wiring-${jsonEncode([
+          api is RestApi ? api.base.origin : '',
+          principal,
+        ])}';
+  }
+
+  void _syncWiring() {
+    final key = _wiringKey();
+    if (wiringKey == key) return;
+    wiringKey = key;
+    wiring = null;
+    wiringUnavailable = false;
+    savingWiring = false;
+    if (key != null) _loadWiring(key);
+  }
+
+  Future<void> _loadWiring(String key) async {
+    try {
+      final loaded = await LanWiring.load(key);
+      if (mounted && _wiringKey() == key) setState(() => wiring = loaded);
+    } catch (error) {
+      if (mounted && _wiringKey() == key) {
+        setState(() => wiringUnavailable = true);
+      }
+    }
+  }
+
+  String? _site(Device device) =>
+      widget.controller.infrastructure.devicePlacement(device)?.siteId;
+
+  List<Device> _cableDevices(Snapshot snapshot) => snapshot.devices
+      .where((device) => !device.simulated && _site(device) != null)
+      .toList()
+    ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+  List<Device> _routerChoices(
+          List<Device> devices, Map<String, String> links) =>
+      devices
+          .where((device) =>
+              (device.kind == 'network_device' ||
+                  device.kind == 'NetworkDevice') &&
+              !links.containsKey(device.id))
+          .toList();
+
+  List<Device> _directClients(
+      List<Device> devices, Device router, Map<String, String> links) {
+    final site = _site(router);
+    return devices
+        .where((device) =>
+            device.id != router.id &&
+            _site(device) == site &&
+            !links.containsValue(device.id))
+        .toList();
+  }
+
+  List<NetworkEdge> _recordedEdges(Snapshot snapshot) {
+    final links = wiring;
+    if (links == null || wiringKey != _wiringKey()) return const [];
+    final devices = _cableDevices(snapshot);
+    return [
+      for (final router in _routerChoices(devices, links))
+        for (final device in _directClients(devices, router, links))
+          if (links[device.id] == router.id)
+            NetworkEdge.lan(router.id, device.id),
+    ];
+  }
+
+  Future<void> _editWiring(Snapshot snapshot) async {
+    final key = wiringKey;
+    final links = wiring;
+    if (key == null || links == null || savingWiring) return;
+    final scope = widget.controller.contextScopeSignature;
+    final devices = _cableDevices(snapshot);
+    final result = await showDialog<(String, Set<String>)>(
+      context: context,
+      builder: (_) => LanWiringDialog(
+        routers: _routerChoices(devices, links),
+        clients: (router) => _directClients(devices, router, links),
+        routerLabel: (router) =>
+            '${router.name} · ${widget.controller.infrastructure.hierarchy.siteName(_site(router))}',
+        links: links,
+      ),
+    );
+    if (!mounted ||
+        result == null ||
+        _wiringKey() != key ||
+        widget.controller.contextScopeSignature != scope) {
+      return;
+    }
+    final current = widget.controller.snapshot;
+    if (current == null) return;
+    final (routerId, selected) = result;
+    final currentDevices = _cableDevices(current);
+    final router = _routerChoices(currentDevices, links)
+        .where((device) => device.id == routerId)
+        .firstOrNull;
+    if (router == null) return;
+    final visibleClients = _directClients(currentDevices, router, links)
+        .map((device) => device.id)
+        .toSet();
+    if (!visibleClients.containsAll(selected)) return;
+    final updated = Map<String, String>.of(links)
+      ..removeWhere((device, parent) =>
+          parent == routerId && visibleClients.contains(device))
+      ..addEntries(selected.map((id) => MapEntry(id, routerId)));
+    setState(() => savingWiring = true);
+    var saved = false;
+    try {
+      saved = await LanWiring.save(key, updated);
+    } catch (error) {
+      debugPrint('OIP could not save LAN wiring: ${error.runtimeType}');
+    }
+    if (!mounted || _wiringKey() != key) return;
+    setState(() {
+      savingWiring = false;
+      if (saved) {
+        wiring = updated;
+        fitRequested = true;
+      }
+    });
+    if (!saved) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+              context.tr('Die Verkabelung konnte nicht gespeichert werden.'))));
+    }
+  }
 
   void _zoom(double factor) {
     userCameraUsed = true;
@@ -257,11 +402,9 @@ class _NetworkPageState extends State<NetworkPage> {
     setState(() {
       selectedId = device.id;
       selectedEdgeId = null;
-      if (networkDeviceEdges(
-              device.id, networkEdges(widget.controller.snapshot!))
-          .isEmpty) {
-        neighborsOnly = false;
-      }
+      final snapshot = widget.controller.snapshot!;
+      final edges = isLan ? _recordedEdges(snapshot) : networkEdges(snapshot);
+      if (networkDeviceEdges(device.id, edges).isEmpty) neighborsOnly = false;
       _remember(device);
     });
     widget.controller.revealInspector(WorkspaceId.network);
@@ -304,7 +447,7 @@ class _NetworkPageState extends State<NetworkPage> {
     setState(() {
       if (width < 600) {
         mobilePane = _MobilePane.explorer;
-      } else if (width < 1080) {
+      } else {
         tabletExplorer = true;
       }
     });
@@ -338,18 +481,17 @@ class _NetworkPageState extends State<NetworkPage> {
       });
 
   void _focusNode(Device device) {
+    final target = isLan ? _NetworkMode.lan : _NetworkMode.topology;
+    _setMode(target);
     final layout = _topologyLayout(widget.controller.snapshot!);
     if (!layout.positions.containsKey(device.id)) return;
     setState(() {
-      mode = _NetworkMode.topology;
       selectedId = device.id;
       selectedEdgeId = null;
       if (MediaQuery.of(context).size.width < 600) {
         mobilePane = _MobilePane.primary;
       }
     });
-    widget.controller
-        .setWorkspaceView(WorkspaceId.network, _NetworkMode.topology.name);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusSelection(layout);
     });
@@ -362,7 +504,8 @@ class _NetworkPageState extends State<NetworkPage> {
         SnackBar(content: Text(context.tr("{0} kopiert", [label]))));
   }
 
-  void _reconcileSnapshot(Snapshot snapshot, List<NetworkEdge> edges) {
+  void _reconcileSnapshot(Snapshot snapshot, List<NetworkEdge> edges,
+      List<NetworkEdge> logicalEdges) {
     final signature = widget.controller.contextScopeSignature;
     if (scopeSignature != null && scopeSignature != signature) {
       pinned.clear();
@@ -380,7 +523,8 @@ class _NetworkPageState extends State<NetworkPage> {
     comparedDevices.removeWhere((id, _) => !devices.containsKey(id));
     recentIds.removeWhere((id) => !devices.containsKey(id));
     final edgeIds = edges.map((edge) => edge.id).toSet();
-    comparedEdges.removeWhere((id, _) => !edgeIds.contains(id));
+    final logicalById = {for (final edge in logicalEdges) edge.id: edge};
+    comparedEdges.removeWhere((id, _) => !logicalById.containsKey(id));
     if (selectedId != null && !devices.containsKey(selectedId)) {
       selectedId = null;
     }
@@ -394,8 +538,7 @@ class _NetworkPageState extends State<NetworkPage> {
       comparedDevices[entry.key] = devices[entry.key]!;
     }
     for (final entry in comparedEdges.entries.toList()) {
-      comparedEdges[entry.key] =
-          edges.firstWhere((edge) => edge.id == entry.key);
+      comparedEdges[entry.key] = logicalById[entry.key]!;
     }
   }
 
@@ -412,7 +555,8 @@ class _NetworkPageState extends State<NetworkPage> {
     var devices = _explorerDevices(snapshot, edges);
     if (neighborsOnly && selectedId != null) {
       final neighbors = <String>{selectedId!};
-      for (final link in snapshot.topology) {
+      for (final edge in edges) {
+        final link = edge.link;
         if (link.from == selectedId) neighbors.add(link.to);
         if (link.to == selectedId) neighbors.add(link.from);
       }
@@ -423,7 +567,7 @@ class _NetworkPageState extends State<NetworkPage> {
   }
 
   TopologyLayout _topologyLayout(Snapshot snapshot) {
-    final edges = networkEdges(snapshot);
+    final edges = isLan ? _recordedEdges(snapshot) : networkEdges(snapshot);
     // Keep every registered device in the network view. A missing link is
     // unknown topology, not a reason to hide the device or imply it is absent.
     final devices = _visibleDevices(snapshot, edges);
@@ -454,7 +598,7 @@ class _NetworkPageState extends State<NetworkPage> {
     if (key == LogicalKeyboardKey.f6) {
       if (searchFocus.hasFocus) {
         listFocus.requestFocus();
-      } else if (listFocus.hasFocus && mode == _NetworkMode.topology) {
+      } else if (listFocus.hasFocus && graphMode) {
         graphFocus.requestFocus();
       } else {
         inspectorFocus.requestFocus();
@@ -467,7 +611,7 @@ class _NetworkPageState extends State<NetworkPage> {
     }
     final snapshot = widget.controller.snapshot;
     if (snapshot == null) return KeyEventResult.ignored;
-    if (key == LogicalKeyboardKey.keyF && mode == _NetworkMode.topology) {
+    if (key == LogicalKeyboardKey.keyF && graphMode) {
       _fit(_topologyLayout(snapshot), user: true);
       return KeyEventResult.handled;
     }
@@ -584,10 +728,12 @@ class _NetworkPageState extends State<NetworkPage> {
   @override
   Widget build(BuildContext context) {
     final snapshot = widget.controller.snapshot!;
-    final edges = networkEdges(snapshot);
-    _reconcileSnapshot(snapshot, edges);
+    _syncWiring();
+    final logicalEdges = networkEdges(snapshot);
+    final edges = isLan ? _recordedEdges(snapshot) : logicalEdges;
+    _reconcileSnapshot(snapshot, edges, logicalEdges);
     final layout = _topologyLayout(snapshot);
-    if (mode == _NetworkMode.topology) _scheduleFit(layout);
+    if (graphMode) _scheduleFit(layout);
     final relatedCount =
         selectedId == null ? 0 : networkDeviceEdges(selectedId!, edges).length;
     return CallbackShortcuts(
@@ -604,7 +750,7 @@ class _NetworkPageState extends State<NetworkPage> {
           // A field of the explorer is edited: the key belongs to the field.
           if (aTextFieldHasTheFocus()) return;
           if (mode == _NetworkMode.compare) {
-            _setMode(_NetworkMode.topology);
+            _setMode(managed ? _NetworkMode.lan : _NetworkMode.topology);
           } else {
             _clearSelection();
           }
@@ -618,15 +764,25 @@ class _NetworkPageState extends State<NetworkPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _header(snapshot),
-              const SizedBox(height: OipTokens.s3),
-              _summary(snapshot, edges),
-              const SizedBox(height: OipTokens.s3),
+              if (!managed) ...[
+                _header(snapshot),
+                const SizedBox(height: OipTokens.s3),
+                _summary(snapshot, logicalEdges),
+                const SizedBox(height: OipTokens.s3),
+              ],
               _modeTabs(),
+              if (managed && !transportLive)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(context.tr(
+                      'Keine Live-Verbindung. Der Gerätestatus kann veraltet sein.')),
+                ),
               const SizedBox(height: OipTokens.s3),
               _workstation(snapshot, edges, layout),
-              const SizedBox(height: OipTokens.s3),
-              _contextFooter(snapshot, relatedCount),
+              if (!managed) ...[
+                const SizedBox(height: OipTokens.s3),
+                _contextFooter(snapshot, relatedCount),
+              ],
             ],
           ),
         ),
@@ -691,7 +847,15 @@ class _NetworkPageState extends State<NetworkPage> {
   }
 
   void _setMode(_NetworkMode value) {
-    setState(() => mode = value);
+    setState(() {
+      if (isLan != (value == _NetworkMode.lan)) {
+        selectedEdgeId = null;
+        neighborsOnly = false;
+        fitRequested = true;
+      }
+      mode = value;
+      if (managed) mobilePane = _MobilePane.primary;
+    });
     widget.controller.setWorkspaceView(WorkspaceId.network, value.name);
   }
 
@@ -744,13 +908,16 @@ class _NetworkPageState extends State<NetworkPage> {
 
   Widget _modeTabs() {
     Widget tab(_NetworkMode value, String label, IconData icon) {
-      final active = mode == value;
+      final active = mode == value ||
+          (managed &&
+              mode == _NetworkMode.topology &&
+              value == _NetworkMode.connections);
       return Padding(
         padding: const EdgeInsets.only(right: 6),
         child: ChoiceChip(
           key: Key('network-tab-${value.name}'),
           avatar: Icon(icon, size: 16),
-          label: Text(label),
+          label: Text(context.tr(label)),
           selected: active,
           showCheckmark: false,
           onSelected: (_) => _setMode(value),
@@ -759,15 +926,39 @@ class _NetworkPageState extends State<NetworkPage> {
     }
 
     return Wrap(runSpacing: 6, children: [
-      tab(_NetworkMode.topology, 'Topologie', Icons.hub_outlined),
+      tab(managed ? _NetworkMode.lan : _NetworkMode.topology, 'Topologie',
+          Icons.hub_outlined),
       tab(_NetworkMode.connections, 'Verbindungspfade',
           Icons.alt_route_outlined),
       tab(_NetworkMode.vpn, 'VPN', Icons.vpn_lock_outlined),
       tab(_NetworkMode.diagnostics, 'Diagnostik', Icons.troubleshoot_outlined),
       tab(
           _NetworkMode.compare,
-          'Vergleich ${comparedDevices.length + comparedEdges.length}',
+          managed && comparedDevices.isEmpty && comparedEdges.isEmpty
+              ? 'Vergleich'
+              : 'Vergleich ${comparedDevices.length + comparedEdges.length}',
           Icons.compare_arrows_outlined),
+      if (managed) ...[
+        if (MediaQuery.sizeOf(context).width >= OipTokens.mobile)
+          ToolButton(
+            icon: Icons.list_alt_outlined,
+            tooltip: context.tr('Geräteliste'),
+            active: tabletExplorer,
+            onPressed: () => setState(() => tabletExplorer = !tabletExplorer),
+          ),
+        InspectorOpenAction(
+          controller: widget.controller,
+          workspace: WorkspaceId.network,
+          hasSelection: selectedId != null || selectedEdgeId != null,
+          onOpen: () => setState(() {
+            if (MediaQuery.sizeOf(context).width < OipTokens.mobile) {
+              mobilePane = _MobilePane.inspector;
+            } else {
+              tabletInspector = true;
+            }
+          }),
+        ),
+      ],
     ]);
   }
 
@@ -842,7 +1033,9 @@ class _NetworkPageState extends State<NetworkPage> {
           child: _inspector(snapshot, edges),
         );
     final primary = switch (mode) {
-      _NetworkMode.topology => _topologyPrimary(snapshot, edges, layout),
+      _NetworkMode.lan ||
+      _NetworkMode.topology =>
+        _topologyPrimary(snapshot, edges, layout),
       _NetworkMode.connections => _connectionsWorkspace(snapshot, edges),
       _NetworkMode.vpn => _vpnWorkspace(snapshot, edges),
       _NetworkMode.diagnostics => _diagnosticsWorkspace(snapshot, edges),
@@ -855,8 +1048,10 @@ class _NetworkPageState extends State<NetworkPage> {
         return SizedBox(
           height: height,
           child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            SizedBox(width: 240, child: _explorer(snapshot, edges)),
-            const SizedBox(width: OipTokens.s3),
+            if (!managed || tabletExplorer) ...[
+              SizedBox(width: 240, child: _explorer(snapshot, edges)),
+              const SizedBox(width: OipTokens.s3),
+            ],
             Expanded(child: primary),
             if (showInspector) ...[
               const SizedBox(width: OipTokens.s3),
@@ -867,38 +1062,38 @@ class _NetworkPageState extends State<NetworkPage> {
       }
       if (box.maxWidth >= 600) {
         return Column(children: [
-          NetworkSurface(
-            padding: const EdgeInsets.all(7),
-            child: Wrap(spacing: 7, runSpacing: 6, children: [
-              FilterChip(
-                key: const Key('network-tablet-explorer'),
-                avatar: const Icon(Icons.list_alt, size: 16),
-                label: Text(context.tr("Device Explorer")),
-                selected: tabletExplorer,
-                onSelected: (value) => setState(() => tabletExplorer = value),
-              ),
-              FilterChip(
-                key: const Key('network-tablet-inspector'),
-                avatar: const Icon(Icons.info_outline, size: 16),
-                label: Text(context.tr("Context Inspector")),
-                selected: tabletInspector,
-                onSelected: (value) {
-                  setState(() => tabletInspector = value);
-                  widget.controller
-                      .setInspectorOpen(WorkspaceId.network, value);
-                },
-              ),
-            ]),
-          ),
+          if (!managed)
+            NetworkSurface(
+              padding: const EdgeInsets.all(7),
+              child: Wrap(spacing: 7, runSpacing: 6, children: [
+                FilterChip(
+                  key: const Key('network-tablet-explorer'),
+                  avatar: const Icon(Icons.list_alt, size: 16),
+                  label: Text(context.tr("Device Explorer")),
+                  selected: tabletExplorer,
+                  onSelected: (value) => setState(() => tabletExplorer = value),
+                ),
+                FilterChip(
+                  key: const Key('network-tablet-inspector'),
+                  avatar: const Icon(Icons.info_outline, size: 16),
+                  label: Text(context.tr("Context Inspector")),
+                  selected: tabletInspector,
+                  onSelected: (value) {
+                    setState(() => tabletInspector = value);
+                    widget.controller
+                        .setInspectorOpen(WorkspaceId.network, value);
+                  },
+                ),
+              ]),
+            ),
           if (tabletExplorer) ...[
             const SizedBox(height: OipTokens.s3),
             SizedBox(height: 520, child: _explorer(snapshot, edges)),
           ],
           const SizedBox(height: OipTokens.s3),
           SizedBox(
-              height: mode == _NetworkMode.topology
-                  ? (viewportHeight - 400).clamp(300.0, 520.0)
-                  : 610,
+              height:
+                  graphMode ? (viewportHeight - 400).clamp(300.0, 520.0) : 610,
               child: primary),
           if (tabletInspector) ...[
             const SizedBox(height: OipTokens.s3),
@@ -945,7 +1140,13 @@ class _NetworkPageState extends State<NetworkPage> {
 
   Widget _topologyPrimary(
       Snapshot snapshot, List<NetworkEdge> edges, TopologyLayout layout) {
-    final visibleEdges = _visibleEdges(snapshot, edges);
+    final visibleEdges = layout.edges;
+    final title = context.tr(isLan ? 'LAN-Verkabelung' : 'Logische Topologie');
+    final currentWiring = wiring;
+    final canEdit = isLan &&
+        !savingWiring &&
+        currentWiring != null &&
+        _routerChoices(_cableDevices(snapshot), currentWiring).isNotEmpty;
     final hasTopology = layout.devices.isNotEmpty;
     final graphSelectedDeviceId =
         layout.positions.containsKey(selectedId) ? selectedId : null;
@@ -976,6 +1177,7 @@ class _NetworkPageState extends State<NetworkPage> {
     final panningRecommended = MediaQuery.of(context).size.width < 600 &&
         layout.size.width * .55 > 300;
     return WorkstationPanel(
+      key: isLan ? const Key('network-lan-view') : null,
       accent: OipTokens.cyan,
       padding: EdgeInsets.zero,
       child: Column(children: [
@@ -991,14 +1193,25 @@ class _NetworkPageState extends State<NetworkPage> {
                   child: Semantics(
                     container: true,
                     excludeSemantics: true,
-                    label: context.tr("Logische Topologie"),
-                    child: Text(context.tr("Logische Topologie"),
+                    label: title,
+                    child: Text(title,
                         style: TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 ),
-                NetworkBadge('${layout.devices.length} GERÄTE', 'unknown'),
-                NetworkBadge(
-                    '${visibleEdges.length} BESTÄTIGTE PFADE', 'unknown'),
+                if (isLan) ...[
+                  TextButton.icon(
+                    key: const Key('lan-wiring-edit'),
+                    onPressed: canEdit ? () => _editWiring(snapshot) : null,
+                    icon: const Icon(Icons.edit_outlined, size: 18),
+                    label: Text(context.tr(edges.isEmpty
+                        ? 'Verkabelung eintragen'
+                        : 'Verkabelung bearbeiten')),
+                  ),
+                ] else ...[
+                  NetworkBadge('${layout.devices.length} GERÄTE', 'unknown'),
+                  NetworkBadge(
+                      '${visibleEdges.length} BESTÄTIGTE PFADE', 'unknown'),
+                ],
                 ToolButton(
                     icon: Icons.remove,
                     tooltip: context.tr("Verkleinern"),
@@ -1019,33 +1232,37 @@ class _NetworkPageState extends State<NetworkPage> {
                     onPressed: hasTopology
                         ? () => _setTransform(1, Offset.zero)
                         : null),
-                ToolButton(
-                    icon: Icons.center_focus_strong,
-                    tooltip: context.tr("Auf Auswahl fokussieren"),
-                    onPressed: !hasGraphSelection
+                if (!isLan || hasGraphSelection)
+                  ToolButton(
+                      icon: Icons.center_focus_strong,
+                      tooltip: context.tr("Auf Auswahl fokussieren"),
+                      onPressed: !hasGraphSelection
+                          ? null
+                          : () => _focusSelection(layout)),
+                if (!isLan)
+                  ToolButton(
+                      key: const Key('edge-labels-toggle'),
+                      icon: showEdgeLabels
+                          ? Icons.label_outlined
+                          : Icons.label_off_outlined,
+                      tooltip: showEdgeLabels
+                          ? context.tr("Edge Labels ausblenden")
+                          : context.tr("Edge Labels anzeigen"),
+                      active: showEdgeLabels,
+                      accent: OipTokens.cyan,
+                      onPressed: hasTopology
+                          ? () =>
+                              setState(() => showEdgeLabels = !showEdgeLabels)
+                          : null),
+                if (!isLan || hasGraphSelection)
+                  IconButton(
+                    key: const Key('selection-clear'),
+                    tooltip: context.tr("Auswahl aufheben"),
+                    onPressed: selectedId == null && selectedEdgeId == null
                         ? null
-                        : () => _focusSelection(layout)),
-                ToolButton(
-                    key: const Key('edge-labels-toggle'),
-                    icon: showEdgeLabels
-                        ? Icons.label_outlined
-                        : Icons.label_off_outlined,
-                    tooltip: showEdgeLabels
-                        ? context.tr("Edge Labels ausblenden")
-                        : context.tr("Edge Labels anzeigen"),
-                    active: showEdgeLabels,
-                    accent: OipTokens.cyan,
-                    onPressed: hasTopology
-                        ? () => setState(() => showEdgeLabels = !showEdgeLabels)
-                        : null),
-                IconButton(
-                  key: const Key('selection-clear'),
-                  tooltip: context.tr("Auswahl aufheben"),
-                  onPressed: selectedId == null && selectedEdgeId == null
-                      ? null
-                      : _clearSelection,
-                  icon: const Icon(Icons.deselect, size: 18),
-                ),
+                        : _clearSelection,
+                    icon: const Icon(Icons.deselect, size: 18),
+                  ),
               ]),
         ),
         if (graphSelectedDeviceId != null &&
@@ -1056,7 +1273,9 @@ class _NetworkPageState extends State<NetworkPage> {
               alignment: Alignment.centerLeft,
               child: FilterChip(
                 key: const Key('neighbors-only'),
-                label: Text(context.tr("Show Direct Neighbors")),
+                label: Text(context.tr(isLan
+                    ? 'Direkt angeschlossene Geräte'
+                    : 'Show Direct Neighbors')),
                 selected: neighborsOnly,
                 onSelected: (value) => setState(() {
                   neighborsOnly = value;
@@ -1066,7 +1285,18 @@ class _NetworkPageState extends State<NetworkPage> {
             ),
           ),
         Divider(height: 1, color: Theme.of(context).colorScheme.outlineVariant),
-        if (visibleEdges.isEmpty)
+        if (isLan)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _wiringStatus(edges.length, canEdit),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          )
+        else if (visibleEdges.isEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
             child: NetworkHint(
@@ -1086,7 +1316,7 @@ class _NetworkPageState extends State<NetworkPage> {
             selectedEdgeId: graphSelectedEdgeId,
             highlightedDeviceIds: highlighted,
             transportLive: transportLive,
-            showEdgeLabels: showEdgeLabels,
+            showEdgeLabels: !isLan && showEdgeLabels,
             onNode: _selectGraphNode,
             onEdge: _selectEdge,
             onViewportSize: (size) => _viewportChanged(size, layout),
@@ -1094,21 +1324,39 @@ class _NetworkPageState extends State<NetworkPage> {
             onKeyEvent: _graphKey,
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 7, 12, 8),
-          child: Text(
-            context.tr(
-                "{0}Nur bestätigte logische Snapshot-Pfade · keine physische Verkabelung. +/− Zoom · F Fit · 0 Reset · Pfeile Auswahl.",
-                [
-                  panningRecommended
-                      ? 'Lesbare Mindestgröße: horizontal pannen; alle Pfade zusätzlich im Verbindungsworkspace. · '
-                      : ''
-                ]),
-            style: Theme.of(context).textTheme.bodySmall,
+        if (!isLan)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 7, 12, 8),
+            child: Text(
+              context.tr(
+                  "{0}Nur bestätigte logische Snapshot-Pfade · keine physische Verkabelung. +/− Zoom · F Fit · 0 Reset · Pfeile Auswahl.",
+                  [
+                    panningRecommended
+                        ? 'Lesbare Mindestgröße: horizontal pannen; alle Pfade zusätzlich im Verbindungsworkspace. · '
+                        : ''
+                  ]),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ),
-        ),
       ]),
     );
+  }
+
+  String _wiringStatus(int cables, bool canEdit) {
+    if (wiringUnavailable) {
+      return context
+          .tr('Die gespeicherte Verkabelung konnte nicht geladen werden.');
+    }
+    if (wiring == null && wiringKey != null) {
+      return context.tr('Verkabelung wird geladen.');
+    }
+    if (cables == 1) return context.tr('1 manuell eingetragenes LAN-Kabel');
+    if (cables > 1) {
+      return context.tr('{0} manuell eingetragene LAN-Kabel', [cables]);
+    }
+    return context.tr(canEdit || savingWiring
+        ? 'Wähle den Router und die Geräte aus, die direkt per LAN-Kabel angeschlossen sind.'
+        : 'Zur Auswahl eines Routers öffne den Standort mit den zugehörigen Geräten.');
   }
 
   Widget _inspector(Snapshot snapshot, List<NetworkEdge> edges) {
@@ -1164,7 +1412,9 @@ class _NetworkPageState extends State<NetworkPage> {
         PanelLabel(context.tr("Known topology"), color: OipTokens.cyan),
         NetworkKeyValue('Registrierte Geräte', '${snapshot.devices.length}'),
         NetworkKeyValue('Bekannte Topologie-Endpunkte', '$linkedCount'),
-        NetworkKeyValue('Bekannte logische Pfade', '${edges.length}'),
+        NetworkKeyValue(
+            isLan ? 'Eingetragene LAN-Kabel' : 'Bekannte logische Pfade',
+            '${edges.length}'),
         NetworkKeyValue(
             'Relation unbekannt', '${snapshot.devices.length - linkedCount}'),
         const NetworkDivider(),
@@ -1320,7 +1570,9 @@ class _NetworkPageState extends State<NetworkPage> {
             'Datenprovenienz', device.simulated ? 'Simulation' : 'API'),
         const NetworkDivider(),
         PanelLabel(context.tr("Connectivity"), color: OipTokens.cyan),
-        NetworkKeyValue('Direkte logische Nachbarn', '${related.length}'),
+        NetworkKeyValue(
+            isLan ? 'Direkte LAN-Verbindungen' : 'Direkte logische Nachbarn',
+            '${related.length}'),
         if (related.isEmpty)
           const NetworkHint('Relation unbekannt · keine bekannten Pfade',
               'Keine Kante wurde geliefert. Das beweist weder Isolation noch Offline-Status; es wird keine Relation aus Name oder Typ abgeleitet.'),
@@ -1412,6 +1664,21 @@ class _NetworkPageState extends State<NetworkPage> {
     String name(String id) =>
         snapshot.devices.where((device) => device.id == id).firstOrNull?.name ??
         id;
+    if (edge.recordedLan) {
+      return WorkstationPanel(
+        key: const Key('edge-inspector'),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(context.tr('Direkte LAN-Verbindung'),
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: OipTokens.s2),
+            Text('${name(link.from)} ↔ ${name(link.to)}'),
+            Text(context.tr('Manuell eingetragen · Link-Status unbekannt')),
+          ],
+        ),
+      );
+    }
     return WorkstationPanel(
       key: const Key('edge-inspector'),
       accent: OipTokens.violet,
@@ -1502,9 +1769,16 @@ class _NetworkPageState extends State<NetworkPage> {
           child: Wrap(spacing: 8, runSpacing: 7, children: [
             const Padding(
               padding: EdgeInsets.only(top: 7),
-              child: NetworkSectionHeader('Verbindungspfade',
-                  'Logische DTO-Relationen · keine physische Verkabelung'),
+              child: NetworkSectionHeader(
+                  'Verbindungspfade', 'Gemeldete Netzwerkpfade'),
             ),
+            if (managed)
+              TextButton.icon(
+                key: const Key('network-show-logical-map'),
+                onPressed: () => _setMode(_NetworkMode.topology),
+                icon: const Icon(Icons.account_tree_outlined, size: 18),
+                label: Text(context.tr('Logische Karte')),
+              ),
             Semantics(
               container: true,
               excludeSemantics: true,
@@ -1704,7 +1978,8 @@ class _NetworkPageState extends State<NetworkPage> {
         comparedDevices.clear();
         comparedEdges.clear();
       }),
-      onClose: () => _setMode(_NetworkMode.topology),
+      onClose: () =>
+          _setMode(managed ? _NetworkMode.lan : _NetworkMode.topology),
     );
   }
 

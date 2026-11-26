@@ -10,7 +10,7 @@ import 'network_model.dart';
 import '../../widgets/device_kind.dart';
 
 /// Dense, keyboard-accessible inventory explorer. Every row is backed by a
-/// registered Device; relation counts come only from delivered logical links.
+/// registered Device; relation counts apply to the currently displayed map.
 class NetworkDeviceExplorer extends StatelessWidget {
   final Snapshot snapshot;
   final List<NetworkEdge> edges;
@@ -431,7 +431,7 @@ class _DeviceRow extends StatelessWidget {
       button: true,
       selected: selected,
       label: context.tr(
-          "Gerät {0} auswählen, ID {1}, Status {2}, {3} bekannte logische Verbindungen, {4}",
+          "Gerät {0} auswählen, ID {1}, Status {2}, {3} erfasste Verbindungen, {4}",
           [
             device.name,
             device.id,
