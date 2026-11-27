@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric.rsa import generate_private_key
 from cryptography.x509.oid import ExtendedKeyUsageOID, NameOID
 
+from oip_encrypted_recovery import Browser
 from oip_license_e2e import login
 from oip_opcua_local_profile import NAMESPACE, SERVER_URI, identity, source, stop, until, write_private
 from oip_opcua_parity import McpClient, api, free_port
@@ -99,6 +100,56 @@ def need(response, status, code=None):
     if code is not None:
         assert response[1]["code"] == code, response
     return response[1]
+
+
+async def check_recovery(binary, directory, pki, saved, original_cert, status):
+    clone = directory / "restore"
+    archive = directory / "backup.oip"
+    port = free_port()
+    browser = Browser(port)
+    passphrase = secrets.token_urlsafe(36)
+    command = [
+        sys.executable, ROOT / "tools/oip_ops.py", "--config", directory / "core.json",
+        "--ipc-config", directory / "ipc.json", "--state-dir", directory / "ops-state",
+        "--binary", binary,
+    ]
+
+    async def recovery(*words, encrypted=False):
+        arguments = ["--passphrase-fd", "0"] if encrypted else []
+        result = await asyncio.to_thread(
+            subprocess.run, [*command, *words, *arguments],
+            input=(passphrase + "\n") if encrypted else None,
+            capture_output=True, text=True, timeout=70,
+        )
+        assert result.returncode == 0, (words[0], result.stderr, result.stdout)
+        return json.loads(result.stdout)
+
+    backup = await recovery("recovery-backup", "--output", archive, encrypted=True)
+    assert backup["status"] == "encrypted_backup_created"
+    assert (pki / "client.pem").read_bytes() not in archive.read_bytes()
+    restored = await recovery("recovery-restore", "--source", archive, "--restore-dir", clone, encrypted=True)
+    assert restored["status"] == "restored_inactive"
+    recovered = clone / "instance"
+    recovered_pki = recovered / pki.name
+    for name in ("client.der", "client.pem", "trusted/server.der"):
+        path = recovered_pki / name
+        assert path.read_bytes() == (pki / name).read_bytes() and path.stat().st_mode & 0o077 == 0
+    started = await recovery("recovery-start", "--restore-dir", clone, "--port", str(port))
+    assert started["mode"] == "isolated_recovery"
+    try:
+        manifest = json.loads((recovered / "recovery.json").read_text())
+        credential = recovered / manifest["ipc"]["clients"][0]["credential_file"]
+        await asyncio.to_thread(browser.login, binary, recovered / "oip.sock", credential, "operator")
+        current = await asyncio.to_thread(browser.call, "opcua/setup", status)
+        assert current == {**saved, "collector_enabled": False}
+        disabled = request({"action": "preview", "configuration": None,
+                            "server_certificate_pem": certificate_pem(original_cert)})
+        blocked = await asyncio.to_thread(browser.call, "opcua/setup", disabled, expected=503)
+        assert blocked["code"] == "OPCUA_SETUP_DISABLED"
+        sources = await asyncio.to_thread(browser.call, "sources")
+        assert all(item["connection"] != "connected" for item in sources)
+    finally:
+        await recovery("recovery-stop", "--restore-dir", clone)
 
 
 async def exercise(binary, directory, web=None, screenshot=None):
@@ -267,14 +318,7 @@ async def exercise(binary, directory, web=None, screenshot=None):
         await until(observed, "Managed configuration did not resume after restart")
         await shutdown()
 
-        core_json = directory / "core.json"
-        config = json.loads(core_json.read_text())
-        core_json.write_text(json.dumps({**config, "disable_managed_opcua": True}))
-        operator = await boot()
-        restored = need(await rest(SETUP_PATH, status), 200)
-        assert restored["collector_enabled"] is False and restored["server_sha256"] == replacement_hash
-        need(await rest(SETUP_PATH, preview(certificate_pem(cert), None)), 503, "OPCUA_SETUP_DISABLED")
-        assert (await health()).get("connection") != "connected"
+        await check_recovery(binary, directory, pki, rotated, cert, status)
     finally:
         await shutdown()
         if ua_server:
@@ -287,7 +331,7 @@ async def exercise(binary, directory, web=None, screenshot=None):
                        ("browser_approval_and_client_download" if web else "rest_preview_mcp_apply"),
                        "mcp_preview_rest_rotation", "server_trust",
                        "selected_value", "read_only", "changed_certificate_rejected", "namespace_reindex",
-                       "restart", "recovery_collector_inhibited"]}
+                       "restart", "encrypted_managed_pki_restore", "recovery_collector_inhibited"]}
 
 
 if __name__ == "__main__":
