@@ -35,7 +35,9 @@ try {
   if (mode === 'suspended') {
     assert.equal(before.proof_state, 'suspended');
     assert.equal(before.can_manage, false);
-    await page.getByText('Lizenzprüfung ausgesetzt', { exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Status aktualisieren' }).waitFor();
+    const panel = await page.locator('body').ariaSnapshot();
+    assert.match(panel, /Lizenzprüfung ausgesetzt/);
     assert.equal(await page.getByRole('button', { name: 'Lizenznachweis hinterlegen' }).count(), 0);
     await page.screenshot({ path: screenshot });
   } else {
