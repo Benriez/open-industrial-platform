@@ -411,8 +411,10 @@ Recovery-Geheimnisse und erteilt keine Verbindungsfreigabe.
 Die technische Ausgabe von Nachweisen erfolgt über das separate License
 Center. Wähle dort das Produkt OIP und gib die signierte JSON-Datei
 unverändert weiter. Die Kundeninstallation prüft sie offline und verwendet
-dafür ausschließlich öffentliche Schlüssel. Der OIP-Core prüft das
-Lizenzformat v1 selbst und verwendet Ed25519 aus einer Rust-Bibliothek.
+dafür ausschließlich öffentliche Schlüssel. Der OIP-Core verwendet den
+Rust-Vertrag `code-server-license-verifier` für das Lizenzformat v1. Die
+Bibliothek prüft die Ed25519-Signatur über die unveränderten Nutzdaten
+sowie Produktzuordnung, Nutzungszeitraum und Supportzeitraum.
 Verwahre den privaten Schlüssel beim Aussteller mit Zugriffsschutz und
 gesicherter Wiederherstellung.
 Halte Lizenzkennung, Vertragsgrundlage und die unabhängig vereinbarten

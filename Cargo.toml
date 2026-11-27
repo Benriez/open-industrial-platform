@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "crates/code-server-license-verifier",
     "crates/oip-core",
     "crates/oip-server",
     "crates/oip-agent",

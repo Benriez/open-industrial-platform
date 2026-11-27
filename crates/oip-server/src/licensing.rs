@@ -1,6 +1,6 @@
 //! Apply License Center artifacts without coupling collection to entitlement status.
-mod verification;
 
+use code_server_license_verifier::{identifier, verified_key, verify, Policy, Status, Verified};
 use oip_core::*;
 use sha2::{Digest, Sha256};
 use std::{
@@ -11,9 +11,8 @@ use std::{
     time::{Duration, Instant},
 };
 use time::OffsetDateTime;
-use verification::{is_identifier, verified_key, verify, Policy, Status, Verified};
 
-pub(crate) use verification::MAX_ARTIFACT;
+pub(crate) use code_server_license_verifier::MAX_ARTIFACT;
 
 pub(crate) const MAX_PREVIEW_REQUEST: usize = 50 * 1024;
 const MAX_POLICY: usize = 16 * 1024;
@@ -46,7 +45,7 @@ fn parse_policy(bytes: &[u8]) -> Result<Policy, &'static str> {
         return Err("The license policy must be for OIP from code-server.de.");
     }
     if policy.kinds.is_empty()
-        || !policy.kinds.iter().all(|kind| is_identifier(kind))
+        || !policy.kinds.iter().all(|kind| identifier(kind))
         || policy.kinds.iter().collect::<BTreeSet<_>>().len() != policy.kinds.len()
     {
         return Err("The license policy must have unique, valid license kinds.");
@@ -54,7 +53,7 @@ fn parse_policy(bytes: &[u8]) -> Result<Policy, &'static str> {
     if !policy
         .rights
         .iter()
-        .all(|(name, limit)| is_identifier(name) && (1..=999_999).contains(limit))
+        .all(|(name, limit)| identifier(name) && (1..=999_999).contains(limit))
     {
         return Err("The license policy contains an invalid right or limit.");
     }

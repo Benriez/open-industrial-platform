@@ -566,6 +566,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "code-server-license-verifier"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "ed25519-dalek",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "time",
+ "unicode-general-category",
+]
+
+[[package]]
 name = "const-oid"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1803,7 +1816,7 @@ version = "0.0.0"
 dependencies = [
  "axum",
  "base64",
- "ed25519-dalek",
+ "code-server-license-verifier",
  "flate2",
  "futures",
  "hmac 0.12.1",
@@ -1827,7 +1840,6 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
- "unicode-general-category",
 ]
 
 [[package]]

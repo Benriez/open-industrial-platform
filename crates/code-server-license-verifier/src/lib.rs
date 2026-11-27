@@ -1,29 +1,31 @@
 //! Verify version 1 License Center artifacts from their original signed bytes.
 
-use std::{collections::BTreeMap, fmt, marker::PhantomData};
+use std::{collections::BTreeMap, fmt, io, marker::PhantomData, path::Path};
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use ed25519_dalek::{Signature, VerifyingKey};
 use serde::{
-    de::{value::MapAccessDeserializer, DeserializeOwned, Error, MapAccess, Visitor},
-    Deserialize, Deserializer,
+    de::{value::MapAccessDeserializer, DeserializeOwned, Error as _, MapAccess, Visitor},
+    Deserialize, Deserializer, Serialize,
 };
 use sha2::{Digest, Sha256};
 use time::{Date, Month, OffsetDateTime, Time};
 use unicode_general_category::{get_general_category, GeneralCategory};
 
-pub(crate) const MAX_ARTIFACT: usize = 8192;
+pub const MAX_ARTIFACT: usize = 8192;
 const MAX_PAYLOAD: usize = 4096;
 const ISSUER: &str = "code-server.de";
 const PURPOSE: &str = "software-license";
 const SIGNATURE_DOMAIN: &[u8] = b"code-server.de/software-license/v1\0";
 
-pub(super) struct Policy {
-    pub(super) issuer: String,
-    pub(super) product_id: String,
-    pub(super) kinds: Vec<String>,
-    pub(super) rights: BTreeMap<String, u32>,
-    pub(super) keys: BTreeMap<String, String>,
+/// Trust and entitlement limits supplied by the consuming product.
+#[derive(Debug)]
+pub struct Policy {
+    pub issuer: String,
+    pub product_id: String,
+    pub kinds: Vec<String>,
+    pub rights: BTreeMap<String, u32>,
+    pub keys: BTreeMap<String, String>,
 }
 
 impl<'de> Deserialize<'de> for Policy {
@@ -66,44 +68,52 @@ struct Envelope {
     signature: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-pub(super) struct Claims {
-    version: u32,
-    purpose: String,
-    issuer: String,
-    product_id: String,
-    kid: String,
-    pub(super) license_id: String,
-    pub(super) revision: u32,
-    issued_at: String,
+pub struct Claims {
+    pub version: u32,
+    pub purpose: String,
+    pub issuer: String,
+    pub product_id: String,
+    pub kid: String,
+    pub license_id: String,
+    pub revision: u32,
+    pub issued_at: String,
     #[serde(deserialize_with = "object")]
-    pub(super) holder: Holder,
-    pub(super) kind: String,
+    pub holder: Holder,
+    pub kind: String,
     #[serde(deserialize_with = "unique_map")]
-    rights: BTreeMap<String, u32>,
+    pub rights: BTreeMap<String, u32>,
     #[serde(deserialize_with = "object")]
-    usage: Period,
+    pub usage: Period,
     #[serde(deserialize_with = "object")]
-    support: Period,
+    pub support: Period,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-pub(super) struct Holder {
-    id: String,
-    pub(super) name: String,
+pub struct Holder {
+    pub id: String,
+    pub name: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum Mode {
+    Fixed,
+    Perpetual,
+    None,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-struct Period {
-    mode: String,
+pub struct Period {
+    pub mode: Mode,
     // A JSON null is allowed in specific modes. Omitting either field is always an error.
     #[serde(deserialize_with = "Option::<String>::deserialize")]
-    from: Option<String>,
+    pub from: Option<String>,
     #[serde(deserialize_with = "Option::<String>::deserialize")]
-    until: Option<String>,
+    pub until: Option<String>,
 }
 
 enum PeriodPurpose {
@@ -111,80 +121,107 @@ enum PeriodPurpose {
     Support,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(super) enum Status {
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Status {
     None,
     NotYetValid,
     Active,
     Ended,
 }
 
-pub(super) struct Verified {
-    pub(super) claims: Claims,
-    pub(super) payload_digest: [u8; 32],
-    pub(super) usage_status: Status,
-    pub(super) support_status: Status,
+#[derive(Debug, Serialize, PartialEq, Eq)]
+pub struct Verified {
+    pub claims: Claims,
+    /// Digest of the exact signed payload, used to detect conflicting revisions.
+    #[serde(skip)]
+    pub payload_digest: [u8; 32],
+    pub usage_status: Status,
+    pub support_status: Status,
 }
 
-#[derive(Debug, Eq, PartialEq)]
-pub(super) enum VerificationError {
-    ArtifactSize,
-    Envelope,
-    PayloadSize,
-    Key,
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Error {
+    Size,
+    Format,
+    Version,
+    UnknownKey,
     Signature,
+    Binding,
     Claims,
-    Policy,
     Time,
 }
 
-impl fmt::Display for VerificationError {
+impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
-            Self::ArtifactSize => "license artifact exceeds the size limit",
-            Self::Envelope => "invalid license envelope",
-            Self::PayloadSize => "license payload exceeds the size limit",
-            Self::Key => "license signing key is invalid or unknown",
+            Self::Size => "license artifact or payload is outside the size limits",
+            Self::Format => "invalid license envelope or payload format",
+            Self::Version => "unsupported license version",
+            Self::UnknownKey => "license signing key is invalid or unknown",
             Self::Signature => "invalid license signature",
-            Self::Claims => "invalid license claims",
-            Self::Policy => "license claims are outside the product policy",
+            Self::Binding => "license issuer, signing key or product does not match",
+            Self::Claims => "invalid license claims or claims outside the product policy",
             Self::Time => "invalid license issuance time or period",
         })
     }
 }
 
-impl std::error::Error for VerificationError {}
+impl std::error::Error for Error {}
 
-pub(super) fn verify(
-    artifact: &[u8],
-    policy: &Policy,
-    now: OffsetDateTime,
-) -> Result<Verified, VerificationError> {
-    use VerificationError as Invalid;
+/// Read a regular local file up to a caller-supplied limit.
+pub fn read_bounded(path: &Path, max: usize) -> io::Result<Vec<u8>> {
+    use io::Read;
 
-    if artifact.len() > MAX_ARTIFACT {
-        return Err(Invalid::ArtifactSize);
+    if !std::fs::symlink_metadata(path)?.is_file() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "expected a regular file",
+        ));
     }
-    let envelope: Envelope = from_json_object(artifact).map_err(|_| Invalid::Envelope)?;
-    if envelope.v != 1 || !is_hex_id(&envelope.kid) {
-        return Err(Invalid::Envelope);
+    let file = std::fs::File::open(path)?;
+    let mut data = Vec::new();
+    file.take((max as u64).saturating_add(1))
+        .read_to_end(&mut data)?;
+    if data.len() > max {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "file exceeds the size limit",
+        ));
+    }
+    Ok(data)
+}
+
+pub fn verify(artifact: &[u8], policy: &Policy, now: OffsetDateTime) -> Result<Verified, Error> {
+    use Error as Invalid;
+
+    if artifact.is_empty() || artifact.len() > MAX_ARTIFACT {
+        return Err(Invalid::Size);
+    }
+    let envelope: Envelope = from_json_object(artifact).map_err(|_| Invalid::Format)?;
+    if envelope.v != 1 {
+        return Err(Invalid::Version);
+    }
+    if !is_hex_id(&envelope.kid) {
+        return Err(Invalid::Format);
     }
 
     let payload = URL_SAFE_NO_PAD
         .decode(envelope.payload)
-        .map_err(|_| Invalid::Envelope)?;
-    if payload.len() > MAX_PAYLOAD {
-        return Err(Invalid::PayloadSize);
+        .map_err(|_| Invalid::Format)?;
+    if payload.is_empty() || payload.len() > MAX_PAYLOAD {
+        return Err(Invalid::Size);
     }
     let signature_bytes = URL_SAFE_NO_PAD
         .decode(envelope.signature)
-        .map_err(|_| Invalid::Envelope)?;
-    let signature = Signature::from_slice(&signature_bytes).map_err(|_| Invalid::Envelope)?;
+        .map_err(|_| Invalid::Format)?;
+    let signature = Signature::from_slice(&signature_bytes).map_err(|_| Invalid::Format)?;
     let key = policy
         .keys
         .get(&envelope.kid)
         .and_then(|encoded| verified_key(&envelope.kid, encoded))
-        .ok_or(Invalid::Key)?;
+        .ok_or(Invalid::UnknownKey)?;
 
     let mut signed = Vec::with_capacity(SIGNATURE_DOMAIN.len() + payload.len());
     signed.extend_from_slice(SIGNATURE_DOMAIN);
@@ -192,13 +229,8 @@ pub(super) fn verify(
     key.verify_strict(&signed, &signature)
         .map_err(|_| Invalid::Signature)?;
 
-    let claims: Claims = from_json_object(&payload).map_err(|_| Invalid::Claims)?;
-    claims.check(&envelope.kid, policy)?;
-    if now < parse_timestamp(&claims.issued_at).ok_or(Invalid::Time)? {
-        return Err(Invalid::Time);
-    }
-    let usage_status = claims.usage.status(PeriodPurpose::Usage, now)?;
-    let support_status = claims.support.status(PeriodPurpose::Support, now)?;
+    let claims: Claims = from_json_object(&payload).map_err(|_| Invalid::Format)?;
+    let (usage_status, support_status) = validate_claims(&claims, policy, &envelope.kid, now)?;
 
     Ok(Verified {
         claims,
@@ -208,7 +240,7 @@ pub(super) fn verify(
     })
 }
 
-pub(super) fn verified_key(kid: &str, encoded: &str) -> Option<VerifyingKey> {
+pub fn verified_key(kid: &str, encoded: &str) -> Option<VerifyingKey> {
     let key_bytes: [u8; 32] = URL_SAFE_NO_PAD.decode(encoded).ok()?.try_into().ok()?;
     let digest = format!("{:x}", Sha256::digest(key_bytes));
     if kid != &digest[..32] {
@@ -223,66 +255,76 @@ pub(super) fn verified_key(kid: &str, encoded: &str) -> Option<VerifyingKey> {
     Some(key)
 }
 
-impl Claims {
-    fn check(&self, kid: &str, policy: &Policy) -> Result<(), VerificationError> {
-        if self.version != 1
-            || self.purpose != PURPOSE
-            || self.issuer != ISSUER
-            || self.kid != kid
-            || !is_hex_id(&self.license_id)
-            || !is_hex_id(&self.holder.id)
-            || self.revision == 0
-            || !is_identifier(&self.product_id)
-            || !is_identifier(&self.kind)
-            || !is_holder_name(&self.holder.name)
-            || self.rights.len() > 16
-        {
-            return Err(VerificationError::Claims);
-        }
-        if policy.issuer != ISSUER
-            || self.product_id != policy.product_id
-            || !policy.kinds.contains(&self.kind)
-        {
-            return Err(VerificationError::Policy);
-        }
-        for (right, amount) in &self.rights {
-            if !(1..=999_999).contains(amount) {
-                return Err(VerificationError::Claims);
-            }
-            if !policy
-                .rights
-                .get(right)
-                .is_some_and(|limit| amount <= limit)
-            {
-                return Err(VerificationError::Policy);
-            }
-        }
-        Ok(())
+/// Check claims before issuance. Consumers must instead call [verify] to authenticate them.
+pub fn validate_claims(
+    claims: &Claims,
+    policy: &Policy,
+    kid: &str,
+    now: OffsetDateTime,
+) -> Result<(Status, Status), Error> {
+    if claims.version != 1 {
+        return Err(Error::Version);
     }
+    if claims.purpose != PURPOSE
+        || claims.issuer != ISSUER
+        || policy.issuer != ISSUER
+        || claims.kid != kid
+        || !is_hex_id(kid)
+        || claims.product_id != policy.product_id
+    {
+        return Err(Error::Binding);
+    }
+    if !is_hex_id(&claims.license_id)
+        || !is_hex_id(&claims.holder.id)
+        || claims.revision == 0
+        || !identifier(&claims.product_id)
+        || !identifier(&claims.kind)
+        || !valid_name(&claims.holder.name)
+        || !policy.kinds.contains(&claims.kind)
+        || claims.rights.len() > 16
+        || claims.rights.iter().any(|(right, amount)| {
+            !identifier(right)
+                || !(1..=999_999).contains(amount)
+                || !policy
+                    .rights
+                    .get(right)
+                    .is_some_and(|limit| amount <= limit)
+        })
+    {
+        return Err(Error::Claims);
+    }
+    if now < parse_timestamp(&claims.issued_at).ok_or(Error::Time)? {
+        return Err(Error::Time);
+    }
+    Ok((
+        claims.usage.status(PeriodPurpose::Usage, now)?,
+        claims.support.status(PeriodPurpose::Support, now)?,
+    ))
+}
+
+/// Check the two period shapes and their date bounds before preparing claims.
+pub fn valid_periods(usage: &Period, support: &Period, now: OffsetDateTime) -> bool {
+    usage.status(PeriodPurpose::Usage, now).is_ok()
+        && support.status(PeriodPurpose::Support, now).is_ok()
 }
 
 impl Period {
-    fn status(
-        &self,
-        purpose: PeriodPurpose,
-        now: OffsetDateTime,
-    ) -> Result<Status, VerificationError> {
-        let invalid = VerificationError::Time;
+    fn status(&self, purpose: PeriodPurpose, now: OffsetDateTime) -> Result<Status, Error> {
+        let invalid = Error::Time;
         let (from, until) = match (
             purpose,
-            self.mode.as_str(),
+            self.mode,
             self.from.as_deref(),
             self.until.as_deref(),
         ) {
-            (PeriodPurpose::Support, "none", None, None) => return Ok(Status::None),
-            (PeriodPurpose::Usage, "perpetual", Some(from), None) => (from, None),
-            (_, "fixed", Some(from), Some(until)) => (
-                from,
-                Some(parse_timestamp(until).ok_or(VerificationError::Time)?),
-            ),
+            (PeriodPurpose::Support, Mode::None, None, None) => return Ok(Status::None),
+            (PeriodPurpose::Usage, Mode::Perpetual, Some(from), None) => (from, None),
+            (_, Mode::Fixed, Some(from), Some(until)) => {
+                (from, Some(parse_timestamp(until).ok_or(Error::Time)?))
+            }
             _ => return Err(invalid),
         };
-        let from = parse_timestamp(from).ok_or(VerificationError::Time)?;
+        let from = parse_timestamp(from).ok_or(Error::Time)?;
         if until.is_some_and(|end| end <= from) {
             return Err(invalid);
         }
@@ -330,14 +372,14 @@ fn is_hex_id(value: &str) -> bool {
             .all(|byte| matches!(byte, b'0'..=b'9' | b'a'..=b'f'))
 }
 
-pub(super) fn is_identifier(value: &str) -> bool {
+pub fn identifier(value: &str) -> bool {
     let mut bytes = value.bytes();
     value.len() <= 32
         && matches!(bytes.next(), Some(b'a'..=b'z'))
         && bytes.all(|byte| matches!(byte, b'a'..=b'z' | b'0'..=b'9' | b'_' | b'-'))
 }
 
-fn is_holder_name(name: &str) -> bool {
+pub fn valid_name(name: &str) -> bool {
     !name.is_empty()
         && !name.starts_with(' ')
         && !name.ends_with(' ')
@@ -406,7 +448,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{VerificationError as Invalid, *};
+    use super::{Error as Invalid, *};
     use ed25519_dalek::{Signer, SigningKey};
     use serde_json::{json, Value};
     use time::Duration;
@@ -490,7 +532,7 @@ mod tests {
         let invalid = envelope(&signer, &kid, b"{");
         assert_eq!(
             verify(invalid.to_string().as_bytes(), &policy, now).err(),
-            Some(Invalid::Claims)
+            Some(Invalid::Format)
         );
 
         let mut bytes = URL_SAFE_NO_PAD
@@ -525,14 +567,17 @@ mod tests {
         let mismatched_kid = issue(&other_signer, &other_kid, &claims);
         assert_eq!(
             verify(&mismatched_kid, &policy, now).err(),
-            Some(Invalid::Claims)
+            Some(Invalid::Binding)
         );
 
         let signed = issue(&signer, &kid, &claims);
         policy.product_id = "other-product".into();
-        assert_eq!(verify(&signed, &policy, now).err(), Some(Invalid::Policy));
+        assert_eq!(verify(&signed, &policy, now).err(), Some(Invalid::Binding));
         policy.keys.insert(kid, URL_SAFE_NO_PAD.encode(other_key));
-        assert_eq!(verify(&signed, &policy, now).err(), Some(Invalid::Key));
+        assert_eq!(
+            verify(&signed, &policy, now).err(),
+            Some(Invalid::UnknownKey)
+        );
 
         let mut identity = [0; 32];
         identity[0] = 1;
@@ -576,7 +621,7 @@ mod tests {
         let signed = issue(&signer, &kid, &forever);
         assert_eq!(
             verify(&signed, &policy, parse_timestamp(ISSUED).unwrap()).err(),
-            Some(Invalid::Claims)
+            Some(Invalid::Format)
         );
     }
 
@@ -597,7 +642,7 @@ mod tests {
             let signed = envelope(&signer, &kid, changed.as_bytes());
             assert_eq!(
                 verify(signed.to_string().as_bytes(), &policy, now).err(),
-                Some(Invalid::Claims)
+                Some(Invalid::Format)
             );
         }
         for (field, replacement) in [
@@ -613,7 +658,7 @@ mod tests {
             changed[field] = replacement;
             assert_eq!(
                 verify(&issue(&signer, &kid, &changed), &policy, now).err(),
-                Some(Invalid::Claims)
+                Some(Invalid::Format)
             );
         }
 
@@ -628,7 +673,7 @@ mod tests {
         for malformed in [sequence.to_string(), duplicate] {
             assert_eq!(
                 verify(malformed.as_bytes(), &policy, now).err(),
-                Some(Invalid::Envelope)
+                Some(Invalid::Format)
             );
         }
 
@@ -661,15 +706,12 @@ mod tests {
         artifact.resize(MAX_ARTIFACT, b' ');
         assert!(verify(&artifact, &policy, now).is_ok());
         artifact.push(b' ');
-        assert_eq!(
-            verify(&artifact, &policy, now).err(),
-            Some(Invalid::ArtifactSize)
-        );
+        assert_eq!(verify(&artifact, &policy, now).err(), Some(Invalid::Size));
         bytes.push(b' ');
         let oversized = envelope(&signer, &kid, &bytes).to_string();
         assert_eq!(
             verify(oversized.as_bytes(), &policy, now).err(),
-            Some(Invalid::PayloadSize)
+            Some(Invalid::Size)
         );
 
         let signature = signed["signature"].as_str().unwrap();
@@ -686,7 +728,7 @@ mod tests {
             changed["signature"] = json!(invalid);
             assert_eq!(
                 verify(changed.to_string().as_bytes(), &policy, now).err(),
-                Some(Invalid::Envelope)
+                Some(Invalid::Format)
             );
         }
     }
@@ -697,14 +739,14 @@ mod tests {
         let valid = payload(&kid);
         let now = parse_timestamp(ISSUED).unwrap();
         for (field, replacement, expected) in [
-            ("version", json!(2), Invalid::Claims),
-            ("purpose", json!("different-purpose"), Invalid::Claims),
-            ("issuer", json!("other-issuer"), Invalid::Claims),
+            ("version", json!(2), Invalid::Version),
+            ("purpose", json!("different-purpose"), Invalid::Binding),
+            ("issuer", json!("other-issuer"), Invalid::Binding),
             ("revision", json!(0), Invalid::Claims),
-            ("revision", json!(4294967296_u64), Invalid::Claims),
-            ("kind", json!("enterprise"), Invalid::Policy),
-            ("rights", json!({"seats": 11}), Invalid::Policy),
-            ("rights", json!({"unlisted": 1}), Invalid::Policy),
+            ("revision", json!(4294967296_u64), Invalid::Format),
+            ("kind", json!("enterprise"), Invalid::Claims),
+            ("rights", json!({"seats": 11}), Invalid::Claims),
+            ("rights", json!({"unlisted": 1}), Invalid::Claims),
             ("rights", json!({"seats": 0}), Invalid::Claims),
             ("rights", json!({"seats": 1000000}), Invalid::Claims),
             ("issued_at", json!("2023-02-29T00:00:00Z"), Invalid::Time),
@@ -747,7 +789,7 @@ mod tests {
         let mut boundary = valid;
         boundary["holder"]["name"] = json!("猫".repeat(120));
         boundary["revision"] = json!(u32::MAX);
-        let right_names: Vec<_> = (1..=17).map(|id| format!("machine.{id}")).collect();
+        let right_names: Vec<_> = (1..=17).map(|id| format!("machine-{id}")).collect();
         policy
             .rights
             .extend(right_names.iter().map(|name| (name.clone(), 999_999)));
