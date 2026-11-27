@@ -55,6 +55,11 @@ abstract class OipApi {
   /// demo contract used by existing fixtures and workstations.
   Future<List<SourceInfo>> contextSources(InfrastructureContext context) =>
       sources();
+  Future<Json> supportPackage(InfrastructureContext context) async {
+    throw const ApiFailure('Supportpaket wird vom Transport nicht unterstützt.',
+        code: 'UNSUPPORTED');
+  }
+
   Future<NodePage> contextNodes(
     String search,
     String folder,
@@ -1148,6 +1153,24 @@ class RestApi
       connection.close();
       if (identical(_events, connection)) _events = null;
     }
+  }
+
+  @override
+  Future<Json> supportPackage(InfrastructureContext context) async {
+    const path = '/api/v2/support-package';
+    final selection = context.selection;
+    final infrastructure = selection.infrastructureId;
+    if (!context.ready || infrastructure == null) {
+      throw const ApiFailure('Eine Infrastruktur auswählen.',
+          code: 'SUPPORT_SCOPE_REQUIRED', path: path);
+    }
+    final response = await _authorizedGet(path, {
+      'infrastructure': infrastructure,
+      if (selection.siteId != null) 'site': selection.siteId!,
+      if (selection.sourceId != null) 'source': selection.sourceId!,
+    });
+    _checkContextOrigin(context, response.$2, path);
+    return response.$1 as Json;
   }
 
   @override

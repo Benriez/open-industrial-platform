@@ -27,6 +27,7 @@ fn source(id: &str, port: u16) -> SourceConfig {
         endpoint: format!("opc.tcp://127.0.0.1:{port}"),
         namespace: 2,
         entity_id: None,
+        opcua: None,
     }
 }
 fn definitions() -> Vec<SourceDefinition> {

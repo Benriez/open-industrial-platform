@@ -103,6 +103,7 @@ impl ApplicationServices {
             return q.source.clone();
         }
         match request {
+            CapabilityRequest::SupportPackageRead(q) => q.source.clone(),
             CapabilityRequest::SourcesRead(q)
             | CapabilityRequest::ObservationsRead(q)
             | CapabilityRequest::EventsRead(q) => q.source.clone(),
@@ -187,7 +188,10 @@ impl ApplicationServices {
         use CapabilityRequest::*;
         let s = &self.state;
         match request {
-            HueLightsRead(_) | HueLightControl(_) | HueSetup(_) | DeviceConnectionRead(_)
+            HueLightsRead(_)
+            | HueLightControl(_)
+            | HueSetup(_)
+            | DeviceConnectionRead(_)
             | DeviceConnectionConfigure(_)
             | InventoryRead(_)
             | ServiceRegistryRead(_)
@@ -195,7 +199,8 @@ impl ApplicationServices {
             | InventoryChange(_)
             | SettingsRead(_)
             | McpManagementRead(_)
-            | SettingsChange(_) => Err(CapabilityError::new(
+            | SettingsChange(_)
+            | SupportPackageRead(_) => Err(CapabilityError::new(
                 CapabilityErrorCode::PermissionDenied,
                 "PRINCIPAL_REQUIRED",
                 "Provisioned principal required",
@@ -463,11 +468,25 @@ impl ApplicationServices {
         let total = found.len();
         let selected: Vec<_> = found.into_iter().skip(offset).take(limit).collect();
         let client = s.clients.read().await.get(&source).cloned();
+        let collected = (read_value && s.opcua_selected_sources.contains(&source)).then(|| {
+            s.view()
+                .observations
+                .into_iter()
+                .filter(|point| point.data_source_id == source && point.entity_id == entity)
+                .map(|point| (point.metric_id.clone(), point))
+                .collect::<std::collections::BTreeMap<_, _>>()
+        });
         let items = stream::iter(selected)
             .map(|(node_id, name, folder, _node_class, access)| {
                 let client = client.clone();
                 let source = source.clone();
                 let entity = entity.clone();
+                let collected = collected.as_ref().and_then(|points| {
+                    MetricId::new(&name)
+                        .ok()
+                        .and_then(|metric| points.get(&metric))
+                        .cloned()
+                });
                 async move {
                     // The browser reads the address space; it does not
                     // measure. The value of a node is read for the display
@@ -477,7 +496,9 @@ impl ApplicationServices {
                     // **node id of the server** — not to a node that is
                     // reconstructed from its name — and it is bound to the
                     // entity that the source declares.
-                    let observation = if read_value {
+                    let observation = if collected.is_some() {
+                        collected
+                    } else if read_value {
                         if let Some(client) = client {
                             match MetricId::new(&name) {
                                 Ok(metric) => {
@@ -546,6 +567,13 @@ impl ApplicationServices {
         &self,
         request: NodeWriteRequest,
     ) -> Result<NodeWriteResult, CapabilityError> {
+        if self.state.opcua_read_only {
+            return Err(CapabilityError::new(
+                CapabilityErrorCode::OperationNotSupported,
+                "OPCUA_READ_ONLY_PROFILE",
+                "This installation permits reading OPC-UA sources",
+            ));
+        }
         if request.node_id.is_empty() || request.node_id.len() > 256 {
             return Err(CapabilityError::new(
                 CapabilityErrorCode::InvalidInput,
@@ -607,8 +635,9 @@ impl CapabilityService for ApplicationServices {
                     .into_iter()
                     .filter(|id| {
                         if *id == CapabilityId::HueLightsRead {
-                            return self.state.hue_profiles.keys().any(|source|
-                                crate::hue::visible_profile(&self.state, h, p, source).is_ok());
+                            return self.state.hue_profiles.keys().any(|source| {
+                                crate::hue::visible_profile(&self.state, h, p, source).is_ok()
+                            });
                         }
                         !id.descriptor().mutating
                             && (h.platform(p, *id)
@@ -641,13 +670,17 @@ impl CapabilityService for ApplicationServices {
             .filter(|id| {
                 !matches!(
                     id,
-                    CapabilityId::HueLightsRead | CapabilityId::HueLightControl | CapabilityId::HueSetup | CapabilityId::DeviceConnectionRead
+                    CapabilityId::HueLightsRead
+                        | CapabilityId::HueLightControl
+                        | CapabilityId::HueSetup
+                        | CapabilityId::DeviceConnectionRead
                         | CapabilityId::DeviceConnectionConfigure
                         | CapabilityId::InventoryRead
                         | CapabilityId::InventoryPlanRead
                         | CapabilityId::InventoryChange
                         | CapabilityId::SettingsRead
                         | CapabilityId::McpManagementRead
+                        | CapabilityId::SupportPackageRead
                         | CapabilityId::SettingsChange
                         | CapabilityId::OrganizationsRead
                         | CapabilityId::InfrastructuresRead

@@ -1,6 +1,6 @@
 use crate::async_opcua::mapping::{
-    SimulationMetadata, data_value_to_observation, datetime_to_timestamp,
-    external_datetime_is_valid, metric_value_to_variant, variant_to_metric_value,
+    data_value_to_observation, datetime_to_timestamp, external_datetime_is_valid,
+    metric_value_to_variant, variant_to_metric_value, SimulationMetadata,
 };
 use crate::endpoint::validate_client_endpoint;
 use crate::{
@@ -15,7 +15,8 @@ use opcua::crypto::SecurityPolicy;
 use opcua::types::{
     AttributeId, BrowseDescription, BrowseDescriptionResultMask, BrowseDirection, DataValue,
     MessageSecurityMode, MonitoredItemCreateRequest, NodeClassMask, NodeId, ReadValueId,
-    ReferenceTypeId, StatusCode, TimestampsToReturn, UserTokenPolicy, WriteValue,
+    ReferenceTypeId, StatusCode, TimestampsToReturn, UserTokenPolicy, UserTokenType, Variant,
+    WriteValue,
 };
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -26,6 +27,19 @@ use tokio::task::JoinHandle;
 
 /// Capacity of the observation event channel.
 const EVENT_CHANNEL_CAPACITY: usize = 1_024;
+const MAX_SELECTED_POINTS: usize = 16;
+const MAX_BROWSE_DEPTH: usize = 24;
+const MAX_BROWSE_REQUESTS: usize = 5_200;
+const SELECTED_READ_TIMEOUT: Duration = Duration::from_secs(5);
+
+/// Canonicalize a persistent point identifier without accepting a volatile
+/// namespace index. The server's NamespaceArray is consulted separately.
+pub fn canonical_node_identifier(value: &str) -> Option<String> {
+    if value.len() > 256 || value.starts_with("ns=") || value.chars().any(char::is_control) {
+        return None;
+    }
+    value.parse::<NodeId>().ok().map(|id| id.to_string())
+}
 
 // The guard also covers connect failures after spawning but before returning Self.
 struct OwnedEventTask(JoinHandle<()>);
@@ -42,6 +56,9 @@ pub struct AsyncOpcUaClient {
     state: CollectionState,
     subscribed_metrics: Arc<Mutex<Vec<MetricId>>>,
     max_browse_nodes: usize,
+    read_only: bool,
+    explicit_secure_server: bool,
+    requests: tokio::sync::Semaphore,
     events: tokio::sync::Mutex<Option<mpsc::Receiver<ClientEvent>>>,
     event_task: OwnedEventTask,
     reported_drops: AtomicU64,
@@ -63,6 +80,9 @@ impl AsyncOpcUaClient {
     /// CurrentWrite; the server remains the final authority and rejects any
     /// node or type that it does not permit.
     pub async fn write_node(&self, node_id: &str, value: &MetricValue) -> Result<(), AdapterError> {
+        if self.read_only {
+            return Err(AdapterError::Protocol("OPC-UA client is read-only".into()));
+        }
         let node = node_id
             .parse::<NodeId>()
             .map_err(|_| AdapterError::InvalidValue("invalid OPC-UA node id".to_owned()))?;
@@ -96,6 +116,130 @@ impl AsyncOpcUaClient {
         }
     }
 
+    /// Resolve stable identifiers against the authenticated session's namespace
+    /// array. Re-run after each connection and never persist the resulting index.
+    pub async fn resolve_selected_nodes(
+        &self,
+        namespace_uri: &str,
+        identifiers: &[String],
+    ) -> Result<Vec<String>, AdapterError> {
+        self.check_selection(identifiers.len())?;
+        let mut result = self
+            .read_batch(&[ReadValueId::from(NodeId::new(0, 2255u32))])
+            .await?;
+        let value = result.pop().expect("read_batch checked result count");
+        let Some(Variant::Array(namespaces)) = value.value.as_ref() else {
+            return Err(AdapterError::Protocol(
+                "invalid server NamespaceArray".into(),
+            ));
+        };
+        if !value.status().is_good() || namespaces.dimensions.as_ref().is_some_and(|d| d.len() != 1)
+        {
+            return Err(AdapterError::Protocol(
+                "invalid server NamespaceArray".into(),
+            ));
+        }
+        let mut matches = namespaces
+            .values
+            .iter()
+            .enumerate()
+            .filter_map(|(i, value)| {
+                matches!(value, Variant::String(uri) if uri.as_ref() == namespace_uri).then_some(i)
+            });
+        let index = matches
+            .next()
+            .and_then(|index| u16::try_from(index).ok())
+            .filter(|_| matches.next().is_none())
+            .ok_or_else(|| {
+                AdapterError::Protocol("configured namespace not uniquely offered".into())
+            })?;
+        identifiers
+            .iter()
+            .map(|identifier| {
+                let mut id = canonical_node_identifier(identifier)
+                    .and_then(|value| value.parse::<NodeId>().ok())
+                    .ok_or_else(|| {
+                        AdapterError::InvalidValue("invalid configured point identifier".into())
+                    })?;
+                id.namespace = index;
+                Ok(id.to_string())
+            })
+            .collect()
+    }
+
+    /// Read the selected points together, bounded to one in-flight request.
+    pub async fn read_selected(
+        &self,
+        points: &[(String, MetricId)],
+    ) -> Result<Vec<Result<oip_core::ObservationEnvelope, AdapterError>>, AdapterError> {
+        self.check_selection(points.len())?;
+        let ids = points
+            .iter()
+            .map(|(node_id, _)| {
+                node_id
+                    .parse::<NodeId>()
+                    .map(ReadValueId::from)
+                    .map_err(|_| {
+                        AdapterError::InvalidValue("invalid resolved point identifier".into())
+                    })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        let values = self.read_batch(&ids).await?;
+        let metadata = SimulationMetadata {
+            simulation_origin_required: false,
+            ..Default::default()
+        };
+        Ok(points
+            .iter()
+            .zip(&values)
+            .map(|((_, metric), value)| {
+                let mut observation = data_value_to_observation(
+                    metric,
+                    value,
+                    &metadata,
+                    None,
+                    &self.state.freshness,
+                )?;
+                if let Some(entity) = &self.state.entity_id {
+                    observation.entity_id = entity.clone();
+                }
+                // The configured metric ID is a label and establishes no unit.
+                observation.unit = oip_core::Unit::None;
+                observation.status_code = value.status.map(|status| status.bits());
+                Ok(observation)
+            })
+            .collect())
+    }
+
+    fn check_selection(&self, count: usize) -> Result<(), AdapterError> {
+        if !self.explicit_secure_server || !(1..=MAX_SELECTED_POINTS).contains(&count) {
+            return Err(AdapterError::InvalidValue(
+                "invalid selected read profile or batch size".into(),
+            ));
+        }
+        Ok(())
+    }
+
+    async fn read_batch(&self, ids: &[ReadValueId]) -> Result<Vec<DataValue>, AdapterError> {
+        let _permit = self
+            .requests
+            .try_acquire()
+            .map_err(|_| AdapterError::Protocol("selected read already in progress".into()))?;
+        let result = tokio::time::timeout(
+            SELECTED_READ_TIMEOUT,
+            self.session.read(ids, TimestampsToReturn::Both, 0.0),
+        )
+        .await
+        .map_err(|_| AdapterError::Protocol("selected read timed out".into()))?
+        .map_err(|error| AdapterError::Protocol(error.to_string()))?;
+        if result.len() != ids.len() {
+            return Err(AdapterError::Protocol(
+                "selected read returned an unexpected number of values".into(),
+            ));
+        }
+        Ok(result)
+    }
+
     async fn user_can_write(&self, node_id: &NodeId) -> Result<bool, AdapterError> {
         let mut values = self
             .session
@@ -120,7 +264,13 @@ impl AsyncOpcUaClient {
 
     async fn connect_inner(options: &ClientOptions) -> Result<Self, AdapterError> {
         let local_simulation = options.security_profile.is_local_simulation();
+        let explicit_secure_server = options.expected_server_uri.is_some();
         validate_client_endpoint(&options.endpoint, local_simulation)?;
+        if explicit_secure_server && local_simulation {
+            return Err(AdapterError::InvalidSecurityConfiguration(
+                "an explicit server identity requires a secured connection".into(),
+            ));
+        }
         if options.session_retry_limit < 0 {
             return Err(AdapterError::Protocol(
                 "session retry limit must be finite".to_owned(),
@@ -152,6 +302,9 @@ impl AsyncOpcUaClient {
                             .to_owned(),
                     )
                 })?;
+                if explicit_secure_server {
+                    super::security::validate_private_pki(pki)?;
+                }
                 super::security::validate_production_pki(pki)?;
                 (
                     SecurityPolicy::Basic256Sha256,
@@ -179,11 +332,25 @@ impl AsyncOpcUaClient {
                 .certificate_path(&pki.certificate_path)
                 .private_key_path(&pki.private_key_path);
         }
+        if explicit_secure_server {
+            builder = builder
+                .max_array_length(4_096)
+                .max_string_length(64 * 1_024)
+                .max_byte_string_length(1024 * 1024);
+        }
         let mut client = builder
-            .session_retry_limit(options.session_retry_limit)
+            .session_retry_limit(if explicit_secure_server {
+                0
+            } else {
+                options.session_retry_limit
+            })
             .session_retry_initial(Duration::from_millis(100))
             .session_retry_max(Duration::from_millis(500))
-            .keep_alive_interval(Duration::from_millis(100))
+            .keep_alive_interval(Duration::from_millis(if explicit_secure_server {
+                5_000
+            } else {
+                100
+            }))
             .max_failed_keep_alive_count(3)
             .recreate_subscriptions(false)
             .client()
@@ -203,11 +370,40 @@ impl AsyncOpcUaClient {
                 security_mode: format!("{:?}", endpoint.security_mode),
             })
             .collect::<Vec<_>>();
-        let (session, event_loop) = client
-            .connect_to_matching_endpoint(connector, IdentityToken::Anonymous)
-            .await
-            .map_err(|error| AdapterError::Connection(error.to_string()))?;
-        let (event_sender, event_receiver) = mpsc::channel(EVENT_CHANNEL_CAPACITY);
+        let (session, event_loop) = if let Some(expected_uri) = &options.expected_server_uri {
+            let expected_url = url::Url::parse(&options.endpoint)
+                .map_err(|_| AdapterError::NoEndpoints)?;
+            let mut candidates = endpoint_descriptions.into_iter().filter(|candidate| {
+                url::Url::parse(candidate.endpoint_url.as_ref()).ok().is_some_and(|url| same_endpoint(url, &expected_url))
+                    && SecurityPolicy::from_uri(candidate.security_policy_uri.as_ref()) == security_policy
+                    && candidate.security_mode == security_mode
+                    && candidate.server.application_uri.as_ref() == expected_uri
+                    && candidate.user_identity_tokens.as_ref().is_some_and(|tokens| {
+                        tokens.iter().any(|token| token.token_type == UserTokenType::Anonymous)
+                    })
+            });
+            let endpoint = candidates.next().ok_or_else(|| {
+                AdapterError::InvalidSecurityConfiguration(
+                    "configured server identity, endpoint, SignAndEncrypt or anonymous login not offered".into()
+                )
+            })?;
+            if candidates.any(|candidate| candidate.server_certificate != endpoint.server_certificate) {
+                return Err(AdapterError::InvalidSecurityConfiguration(
+                    "multiple certificates offered for the same OPC-UA endpoint and identity".into()
+                ));
+            }
+            // The discovery server cannot redirect an approved source, cause a
+            // second discovery with different credentials, or set a weaker mode.
+            client.connect_to_endpoint_directly(endpoint, IdentityToken::Anonymous)
+        } else {
+            client.connect_to_matching_endpoint(connector, IdentityToken::Anonymous).await
+        }.map_err(|error| AdapterError::Connection(error.to_string()))?;
+        if explicit_secure_server {
+            // The Core owns the only retry loop. It resolves NamespaceArray
+            // again whenever it builds a fresh session.
+            session.disable_reconnects();
+        }
+        let (event_sender, mut event_receiver) = mpsc::channel(EVENT_CHANNEL_CAPACITY);
         let state = CollectionState::new(
             options.namespace,
             options.entity_id.clone(),
@@ -221,11 +417,14 @@ impl AsyncOpcUaClient {
             session.clone(),
             state.clone(),
             subscribed_metrics.clone(),
+            explicit_secure_server,
         ));
         if !session.wait_for_connection().await {
-            return Err(AdapterError::Connection(
-                "session did not reach connected state".to_owned(),
-            ));
+            let reason = match event_receiver.try_recv() {
+                Ok(ClientEvent::SubscriptionError { reason, .. }) => reason,
+                _ => "session did not reach connected state".into(),
+            };
+            return Err(AdapterError::Connection(reason));
         }
         let discovered_metadata = read_simulation_metadata(
             &session,
@@ -246,6 +445,9 @@ impl AsyncOpcUaClient {
             state,
             subscribed_metrics,
             max_browse_nodes: options.max_browse_nodes,
+            read_only: options.read_only || explicit_secure_server,
+            explicit_secure_server,
+            requests: tokio::sync::Semaphore::new(if explicit_secure_server { 1 } else { 8 }),
             events: tokio::sync::Mutex::new(Some(event_receiver)),
             event_task,
             reported_drops: AtomicU64::new(0),
@@ -313,6 +515,11 @@ impl AsyncOpcUaClient {
         observe: bool,
         entity: Option<oip_core::EntityId>,
     ) -> Result<oip_core::ObservationEnvelope, AdapterError> {
+        if self.explicit_secure_server {
+            return Err(AdapterError::Protocol(
+                "only selected reads are allowed".into(),
+            ));
+        }
         let value = read_data_value_at(&self.session, node_id).await?;
         let metadata = self
             .state
@@ -351,6 +558,11 @@ impl ReadOnlyOpcUaAdapter for AsyncOpcUaClient {
     }
 
     async fn browse(&self) -> Result<Vec<BrowseEntry>, AdapterError> {
+        if self.explicit_secure_server {
+            return Err(AdapterError::Protocol(
+                "unrestricted browse is disabled for selected reads".into(),
+            ));
+        }
         let mut entries = Vec::new();
         let mut visited = HashSet::new();
         // The catalogue is a **set of nodes**: a node that is reachable
@@ -360,10 +572,15 @@ impl ReadOnlyOpcUaAdapter for AsyncOpcUaClient {
         // The pending node carries the browse name of its **parent**: it is
         // the folder of every node below it. The standard root of a server
         // has the browse name of its standard folder.
-        let mut pending = vec![(NodeId::objects_folder_id(), "Objects".to_owned())];
+        let mut pending = vec![(NodeId::objects_folder_id(), "Objects".to_owned(), 0)];
         visited.insert(NodeId::objects_folder_id());
+        let mut requests = 0;
 
-        while let Some((node_id, parent_name)) = pending.pop() {
+        while let Some((node_id, parent_name, depth)) = pending.pop() {
+            requests += 1;
+            if requests > MAX_BROWSE_REQUESTS {
+                return Err(AdapterError::BrowseLimitExceeded(self.max_browse_nodes));
+            }
             let description = BrowseDescription {
                 node_id,
                 browse_direction: BrowseDirection::Forward,
@@ -402,10 +619,14 @@ impl ReadOnlyOpcUaAdapter for AsyncOpcUaClient {
                         if entries.len() >= self.max_browse_nodes {
                             return Err(AdapterError::BrowseLimitExceeded(self.max_browse_nodes));
                         }
-                        if visited.insert(target.clone()) && target.namespace == self.namespace {
-                            pending.push((target.clone(), browse_name.clone()));
+                        if depth < MAX_BROWSE_DEPTH
+                            && visited.insert(target.clone())
+                            && target.namespace == self.namespace
+                        {
+                            pending.push((target.clone(), browse_name.clone(), depth + 1));
                         }
-                        let access = if reference.node_class == opcua::types::NodeClass::Variable
+                        let access = if !self.read_only
+                            && reference.node_class == opcua::types::NodeClass::Variable
                             && self.user_can_write(&target).await.unwrap_or(false)
                         {
                             "ReadWrite"
@@ -427,6 +648,10 @@ impl ReadOnlyOpcUaAdapter for AsyncOpcUaClient {
                 let continuation_point = std::mem::take(&mut result.continuation_point);
                 if continuation_point.is_null() {
                     break;
+                }
+                requests += 1;
+                if requests > MAX_BROWSE_REQUESTS {
+                    return Err(AdapterError::BrowseLimitExceeded(self.max_browse_nodes));
                 }
                 let mut continued = self
                     .session
@@ -465,6 +690,11 @@ impl ReadOnlyOpcUaAdapter for AsyncOpcUaClient {
     /// subscribes to the metrics of the source. The read of the browser
     /// shows the value of a node and changes nothing.
     async fn subscribe(&self, metrics: &[MetricId]) -> Result<(), AdapterError> {
+        if self.explicit_secure_server {
+            return Err(AdapterError::Protocol(
+                "subscriptions are disabled for selected polling".into(),
+            ));
+        }
         let stale = self
             .state
             .active_subscriptions
@@ -804,11 +1034,21 @@ fn is_certificate_security_error(status: StatusCode) -> bool {
     )
 }
 
+fn same_endpoint(mut candidate: url::Url, expected: &url::Url) -> bool {
+    if (candidate.path().is_empty() || candidate.path() == "/")
+        && (expected.path().is_empty() || expected.path() == "/")
+    {
+        candidate.set_path(expected.path());
+    }
+    &candidate == expected
+}
+
 fn spawn_event_loop<T>(
     event_loop: opcua::client::SessionEventLoop<T>,
     session: Arc<Session>,
     state: CollectionState,
     subscribed_metrics: Arc<Mutex<Vec<MetricId>>>,
+    explicit_secure_server: bool,
 ) -> JoinHandle<()>
 where
     T: opcua::client::transport::Connector + Send + Sync + 'static,
@@ -879,6 +1119,11 @@ where
                     }
                 }
                 Ok(SessionPollResult::Reconnected(mode)) => {
+                    if explicit_secure_server {
+                        // Selected reads do not create a subscription or
+                        // consult simulator nodes on the external server.
+                        continue;
+                    }
                     tracing::debug!(?mode, "OIP client observed reconnect");
                     let at = match Timestamp::now() {
                         Ok(at) => at,

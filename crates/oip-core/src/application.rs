@@ -1,6 +1,6 @@
 //! Protocol-, database- and executor-neutral ingestion and health policy.
 use crate::*;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 struct SourceState {
     definition: SourceDefinition,
@@ -17,6 +17,7 @@ pub struct Application<R: CoreRepository> {
     phase: Lifecycle,
     stale_after_ms: i64,
     source_cadence: BTreeMap<DataSourceId, i64>,
+    polled_sources: BTreeSet<DataSourceId>,
 }
 impl<R: CoreRepository> Application<R> {
     pub fn initialize(
@@ -128,6 +129,7 @@ impl<R: CoreRepository> Application<R> {
             phase: Lifecycle::Initializing,
             stale_after_ms,
             source_cadence: BTreeMap::new(),
+            polled_sources: BTreeSet::new(),
         })
     }
     /// Attach a definition already atomically registered by the Core writer.
@@ -188,6 +190,24 @@ impl<R: CoreRepository> Application<R> {
         self.source_cadence.insert(id.clone(), stale_ms);
         Ok(())
     }
+    /// A successful external poll can return an unchanged value and source
+    /// timestamp. Allow its receive time and status to advance the current view.
+    pub fn configure_polled_source(
+        &mut self,
+        id: &DataSourceId,
+        stale_ms: i64,
+    ) -> Result<(), ApplicationError> {
+        if !self
+            .sources
+            .get(id)
+            .is_some_and(|source| source.definition.origin_class == OriginClass::External)
+        {
+            return Err(ApplicationError::RegistrationConflict);
+        }
+        self.configure_source_cadence(id, stale_ms)?;
+        self.polled_sources.insert(id.clone());
+        Ok(())
+    }
     pub fn started(&mut self) {
         self.phase = Lifecycle::Ready;
     }
@@ -246,13 +266,17 @@ impl<R: CoreRepository> Application<R> {
                 .received
                 .get_or_insert(Timestamp::from_unix_millis(now));
         }
+        let polled = self.polled_sources.contains(id);
         let mut publish_latest = false;
         if let ClientEvent::Observation(o) = &event {
             validate_observation(&s.definition, o)?;
-            publish_latest = o.collection_error != Some(CollectionError::InvalidTimestamp)
-                && s.watermarks
-                    .get(&o.metric_id)
-                    .is_none_or(|last| o.timestamps.source > *last);
+            publish_latest = if o.collection_error == Some(CollectionError::InvalidTimestamp) {
+                polled
+            } else {
+                s.watermarks.get(&o.metric_id).is_none_or(|last| {
+                    o.timestamps.source > *last || (o.timestamps.source == *last && polled)
+                })
+            };
         }
         if let ClientEvent::Reconnected { gap, .. } | ClientEvent::DataLoss { gap, .. } = &event {
             if gap.ended_at < gap.started_at {
@@ -295,8 +319,10 @@ impl<R: CoreRepository> Application<R> {
                     s.health.duplicates += 1;
                 }
                 if publish_latest {
-                    s.watermarks
-                        .insert(o.metric_id.clone(), o.timestamps.source);
+                    if o.collection_error != Some(CollectionError::InvalidTimestamp) {
+                        s.watermarks
+                            .insert(o.metric_id.clone(), o.timestamps.source);
+                    }
                     s.health.accepted += 1;
                     if s.definition.required_metrics.contains(&o.metric_id) {
                         s.health.last_received_ms = Some(now);

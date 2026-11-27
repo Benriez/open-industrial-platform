@@ -116,6 +116,7 @@ fn service() -> (AppState, Arc<ApplicationServices>) {
                 endpoint: "opc.tcp://127.0.0.1:15841".into(),
                 namespace: 2,
                 entity_id: None,
+                opcua: None,
             },
             SourceConfig {
                 id: "sim-b".into(),
@@ -123,6 +124,7 @@ fn service() -> (AppState, Arc<ApplicationServices>) {
                 endpoint: "opc.tcp://127.0.0.1:15842".into(),
                 namespace: 2,
                 entity_id: None,
+                opcua: None,
             },
         ],
         ..Default::default()

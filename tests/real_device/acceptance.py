@@ -109,6 +109,22 @@ try:
     assert h['X-Frame-Options']=='DENY' and h['Content-Security-Policy']=="frame-ancestors 'none'"
     assert request('/api/v2/browser/login',{'code':code},None,{'Origin':URL})[0]==403
     assert request('/api/v2/inventory/devices',principal=None,opener=browser)[0]==200
+    support_endpoint = '/api/v2/support-package'
+    status, report, headers = request(support_endpoint + '?infrastructure=infra-a1', principal=None, opener=browser)
+    assert status == 200 and headers['Cache-Control'] == 'no-store'
+    assert set(report) == {'format_version', 'core_version', 'build_revision', 'platform', 'architecture', 'sources'}
+    assert all(type(value) is int for value in report['sources'].values())
+    assert request(support_endpoint + '?infrastructure=infra-a1', principal=None)[0] == 403
+    assert request(support_endpoint)[0] == 400
+    assert request(support_endpoint + '?infrastructure=infra-b1')[0] in (403, 404)
+    assert request(support_endpoint + '?infrastructure=infra-a1&site=site-b1')[0] in (403, 404)
+    support_client = Client('reader-org-a', 'support-mcp')
+    try:
+        assert support_client.call('support_package_read', {'infrastructure': 'infra-a1'}) == report
+        support_client.denied('support_package_read', {'infrastructure': 'infra-b1'})
+        support_client.denied('support_package_read', {})
+    finally:
+        support_client.close()
     body={'changes':[{'operation':'register','device':{'id':'existing-pi','display_name':'Existing inventory identity','device_type':'single_board_computer','site_id':'site-a1','metadata':{}}}]}
     assert request('/api/v2/inventory/apply',body,None,{'Origin':URL},opener=browser)[0]==403
     bh={'Origin':URL,'x-oip-csrf':session['csrf_token']}

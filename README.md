@@ -2,7 +2,15 @@
 
 Die Open Industrial Platform ist eine geplante quelloffene, selbst betriebene und lokal nutzbare Plattform für industrielle Konnektivität, Beobachtbarkeit und evidenzbasierte Diagnostik.
 
-## Aktueller Status
+## Lokales Betreiberprofil
+
+Der Entwicklungsstand auf Apple Silicon verbindet den lokalen Core mit der
+Spectrum-Browseroberfläche und einem gekennzeichneten OPC-UA-Simulator.
+Einrichtung und Wartung verwenden ein signiertes lokales Paket. Das
+[Betreiber-Runbook](docs/runbooks/operations.md#lokales-betreiberprofil-auf-apple-silicon)
+beschreibt Installation, Anmeldung, Sicherung, Wiederherstellung und Diagnose.
+
+## Historische Meilensteine
 
 OIP-008.5 ergänzt im isolierten Feature-Branch ein persistentes Geräteinventar ohne Collector-Pflicht und einen normalen Start ohne Demo-Daten. Der Branch ist ausdrücklich auf OIP-008.4 (`f9969f0…`) gestapelt; `main` bleibt unverändert. Geräte starten mit Unknown/NoCollector, lokale Registrierung/Import sind autorisiert und offline, REST/MCP liefern dieselben gefilterten Reads. [Verifikation](docs/oip-0085-verification.md) · [Erstes eigenes Gerät registrieren](docs/architecture/oip-0085-operator-onboarding.md). Keine Produktionsfreigabe. Die folgenden Absätze sind historische Meilensteine.
 

@@ -1,4 +1,4 @@
-use super::{AsyncOpcUaServerConfig, RunningAsyncOpcUaServer};
+use super::{AsyncOpcUaServerConfig, RunningAsyncOpcUaServer, NAMESPACE_URI};
 use crate::async_opcua::AsyncOpcUaClient;
 use crate::{
     AdapterError, ClientEvent, ClientOptions, ProductionSecurityConfig, ReadOnlyOpcUaAdapter,
@@ -196,6 +196,68 @@ async fn production_sign_and_encrypt_supports_read_and_subscription() {
     }
     client.disconnect().await.expect("disconnect");
     server.stop().await.expect("stop server");
+}
+
+#[cfg(unix)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn selected_secure_reads_resolve_namespace_and_reject_unapproved_operations() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let fixture = SecurityFixture::new(1);
+    for (path, mode) in [
+        (fixture.client.pki_dir.clone(), 0o700),
+        (
+            fixture
+                .client
+                .pki_dir
+                .join(&fixture.client.private_key_path),
+            0o600,
+        ),
+    ] {
+        std::fs::set_permissions(path, std::fs::Permissions::from_mode(mode)).unwrap();
+    }
+    let server = RunningAsyncOpcUaServer::start(fixture.server_config(free_port()))
+        .await
+        .unwrap();
+    let mut options = fixture.client_options(server.endpoint());
+    options.expected_server_uri = Some(SERVER_URI.into());
+    options.simulation_origin_required = false;
+    options.freshness.max_source_age = None;
+    let client = AsyncOpcUaClient::connect(&options).await.unwrap();
+    let identifiers = ["s=temperature".to_owned()];
+    assert!(client
+        .resolve_selected_nodes("urn:absent", &identifiers)
+        .await
+        .is_err());
+    let identifiers = client
+        .resolve_selected_nodes(NAMESPACE_URI, &identifiers)
+        .await
+        .unwrap();
+    let metric = MetricId::new("temperature").unwrap();
+    let observation = client
+        .read_selected(&[(identifiers[0].clone(), metric.clone())])
+        .await
+        .unwrap()
+        .pop()
+        .unwrap()
+        .unwrap();
+    assert!(matches!(observation.value, Some(MetricValue::Float(_))));
+    assert_eq!(observation.unit, oip_core::Unit::None);
+    assert!(observation.simulation_origin.is_none());
+    assert!(client.browse().await.is_err());
+    assert!(client.subscribe(&[metric]).await.is_err());
+    assert!(client
+        .write_node(&identifiers[0], &MetricValue::Float(42.0))
+        .await
+        .is_err());
+    client.shutdown().await.unwrap();
+
+    options.expected_server_uri = Some("urn:wrong-server".into());
+    assert!(matches!(
+        AsyncOpcUaClient::connect(&options).await,
+        Err(AdapterError::InvalidSecurityConfiguration(_))
+    ));
+    server.stop().await.unwrap();
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

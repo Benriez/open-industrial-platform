@@ -232,6 +232,7 @@ pub fn router_with_identity(
         .route("/api/v2/infrastructures", get(infrastructures))
         .route("/api/v2/sites", get(sites))
         .route("/api/v2/sources", get(authorized_source_health))
+        .route("/api/v2/support-package", get(support_package))
         .route("/api/v2/devices", get(devices))
         .route("/api/v2/devices/{id}", get(device))
         .route("/api/v2/observations", get(metrics))
@@ -591,6 +592,23 @@ async fn authorized_source_health(
             .collect(),
     ))
 }
+async fn support_package(
+    Authorized(s): Authorized,
+    query: Result<Query<SupportPackageQuery>, axum::extract::rejection::QueryRejection>,
+) -> Result<Json<SupportPackage>, CapabilityErrorResponse> {
+    let Query(query) = query.map_err(|_| {
+        CapabilityErrorResponse(CapabilityError::new(
+            CapabilityErrorCode::InvalidInput,
+            "SUPPORT_SCOPE_REQUIRED",
+            "Select an authorized infrastructure for the support package",
+        ))
+    })?;
+    match call(s, CapabilityRequest::SupportPackageRead(query)).await? {
+        CapabilityOutput::SupportPackage(package) => Ok(Json(package)),
+        _ => Err(mismatch()),
+    }
+}
+
 async fn live(Authorized(s): Authorized) -> Result<impl IntoResponse, CapabilityErrorResponse> {
     match call(s, CapabilityRequest::CoreLivenessRead).await? {
         CapabilityOutput::CoreHealth(v) => Ok((

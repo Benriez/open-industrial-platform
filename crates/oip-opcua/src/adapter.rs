@@ -138,6 +138,12 @@ pub struct ClientOptions {
     pub security_profile: SecurityProfile,
     /// Required iff `security_profile` is `Production`.
     pub production_security: Option<ProductionSecurityConfig>,
+    /// For the supported external polling path, match this exact server URI
+    /// and validate it against the certificate presented by the server.
+    pub expected_server_uri: Option<String>,
+    /// New clients have no permission to submit a plant write. Only existing
+    /// explicitly enabled integrations opt out.
+    pub read_only: bool,
     /// Maximum number of session reconnect attempts. Must be finite.
     pub session_retry_limit: i32,
     pub freshness: FreshnessPolicy,
@@ -171,6 +177,8 @@ impl ClientOptions {
             namespace,
             security_profile: SecurityProfile::LocalSimulation,
             production_security: None,
+            expected_server_uri: None,
+            read_only: true,
             session_retry_limit: 20,
             freshness: FreshnessPolicy::default(),
             max_browse_nodes: 5_000,

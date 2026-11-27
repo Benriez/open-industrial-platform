@@ -118,6 +118,13 @@ impl ApplicationServices {
             _ => self.source_for(&request),
         };
         let mut scope = match &request {
+            CapabilityRequest::SupportPackageRead(q) => Some(
+                q.source
+                    .clone()
+                    .map(AccessScope::Source)
+                    .or_else(|| q.site.clone().map(AccessScope::Site))
+                    .unwrap_or_else(|| AccessScope::Infrastructure(q.infrastructure.clone())),
+            ),
             CapabilityRequest::InventoryRead(q) => q
                 .source
                 .clone()
@@ -291,13 +298,19 @@ impl ApplicationServices {
             let profile = crate::hue::visible_profile(&self.state, h, p, &q.source)?;
             let can_control = crate::hue::can_control(profile, h, p, &q.source);
             let can_setup = crate::hue::can_setup(profile, h, p, &q.source);
-            let lights = crate::hue::list(&self.state, profile).await.map_err(|error| {
-                if can_setup && error.code == "HUE_TOKEN_REQUIRED" {
-                    CapabilityError::new(error.kind, "HUE_PAIRING_AVAILABLE", "Connect the Hue Bridge in OIP to see its lights")
-                } else {
-                    error
-                }
-            })?;
+            let lights = crate::hue::list(&self.state, profile)
+                .await
+                .map_err(|error| {
+                    if can_setup && error.code == "HUE_TOKEN_REQUIRED" {
+                        CapabilityError::new(
+                            error.kind,
+                            "HUE_PAIRING_AVAILABLE",
+                            "Connect the Hue Bridge in OIP to see its lights",
+                        )
+                    } else {
+                        error
+                    }
+                })?;
             return Ok(CapabilityOutput::HueLights(HueLights {
                 source: q.source.clone(),
                 can_control,
@@ -310,11 +323,13 @@ impl ApplicationServices {
             if !crate::hue::can_control(profile, h, p, &q.source) {
                 return Err(denied());
             }
-            let mut started = self.audit_event(context,id,Some(&q.source),true,"started");
+            let mut started = self.audit_event(context, id, Some(&q.source), true, "started");
             started.target = format!("{}/lights/{}", q.source, q.light_id);
             self.audit.record(&started)?;
             crate::hue::command(&self.state, profile, q).await?;
-            return Ok(CapabilityOutput::HueCommandAccepted {light_id:q.light_id});
+            return Ok(CapabilityOutput::HueCommandAccepted {
+                light_id: q.light_id,
+            });
         }
         if let HueSetup(q) = &request {
             let profile = crate::hue::visible_profile(&self.state, h, p, &q.source)?;
@@ -323,7 +338,8 @@ impl ApplicationServices {
             {
                 return Err(denied());
             }
-            self.audit.record(&self.audit_event(context, id, Some(&q.source), true, "started"))?;
+            self.audit
+                .record(&self.audit_event(context, id, Some(&q.source), true, "started"))?;
             crate::hue::setup(&self.state, profile, q.action).await?;
             return Ok(CapabilityOutput::HueSetupAccepted { action: q.action });
         }
@@ -331,7 +347,8 @@ impl ApplicationServices {
             return self.connection_read(context, q.clone());
         }
         if let DeviceConnectionConfigure(q) = &request {
-            self.audit.record(&self.audit_event(context, id, None, true, "started"))?;
+            self.audit
+                .record(&self.audit_event(context, id, None, true, "started"))?;
             return self.connection_configure(context, q.clone()).await;
         }
         if let InventoryChange(q) = &request {
@@ -348,7 +365,8 @@ impl ApplicationServices {
                     "Archive remains an explicit offline operation",
                 ));
             }
-            self.audit.record(&self.audit_event(context, id, None, true, "started"))?;
+            self.audit
+                .record(&self.audit_event(context, id, None, true, "started"))?;
             return self
                 .state
                 .inventory_online(q.clone())
@@ -361,7 +379,13 @@ impl ApplicationServices {
             {
                 return Err(inaccessible());
             }
-            self.audit.record(&self.audit_event(context, id, Some(&body.source), true, "started"))?;
+            self.audit.record(&self.audit_event(
+                context,
+                id,
+                Some(&body.source),
+                true,
+                "started",
+            ))?;
             return self.run(request).await;
         }
         if id.descriptor().mutating {
@@ -526,6 +550,35 @@ impl ApplicationServices {
                     .take(l)
                     .collect();
                 Ok(CapabilityOutput::Sources(items))
+            }
+            SupportPackageRead(q) => {
+                let allowed = self.tenant_sources(
+                    h,
+                    p,
+                    id,
+                    &SourceQuery {
+                        infrastructure: Some(q.infrastructure),
+                        site: q.site,
+                        source: q.source.clone(),
+                        ..Default::default()
+                    },
+                )?;
+                // A foreign or contradictory selector cannot turn into an
+                // empty success, which is reserved for an authorized scope.
+                if q.source
+                    .as_ref()
+                    .is_some_and(|source| !allowed.contains(source))
+                {
+                    return Err(inaccessible());
+                }
+                Ok(CapabilityOutput::SupportPackage(SupportPackage {
+                    format_version: 1,
+                    core_version: env!("CARGO_PKG_VERSION").into(),
+                    build_revision: env!("OIP_BUILD_REVISION").into(),
+                    platform: std::env::consts::OS.into(),
+                    architecture: std::env::consts::ARCH.into(),
+                    sources: self.state.support_source_counts(&allowed),
+                }))
             }
             ObservationsRead(q) => {
                 let allowed = self.tenant_sources(h, p, id, &q)?;

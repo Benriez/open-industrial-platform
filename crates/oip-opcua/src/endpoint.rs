@@ -16,7 +16,9 @@ pub fn validate_client_endpoint(
     if url.scheme() != "opc.tcp"
         || !url.username().is_empty()
         || url.password().is_some()
-        || url.port().is_none()
+        || !url.port().is_some_and(|port| port > 0)
+        || url.query().is_some()
+        || url.fragment().is_some()
     {
         return Err(AdapterError::NonLoopbackEndpoint(endpoint.to_owned()));
     }
@@ -58,6 +60,9 @@ mod tests {
             "opc.tcp://user@127.0.0.1:4840",
             "https://127.0.0.1:4840",
             "opc.tcp://127.0.0.1",
+            "opc.tcp://127.0.0.1:0",
+            "opc.tcp://127.0.0.1:4840?token=value",
+            "opc.tcp://127.0.0.1:4840#point",
         ] {
             assert!(validate_loopback_endpoint(endpoint).is_err(), "{endpoint}");
         }

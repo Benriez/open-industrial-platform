@@ -93,7 +93,8 @@ struct ToolSpec {
     id: CapabilityId,
     description: &'static str,
 }
-const TOOLS: [ToolSpec; 23] = [
+const TOOLS: [ToolSpec; 24] = [
+    ToolSpec { name: "oip_support_package_read", id: CapabilityId::SupportPackageRead, description: "Generate a shareable diagnostic report for one authorized infrastructure, optionally narrowed to a site or source. Only version, platform and aggregate source counts. Never sends the report." },
     ToolSpec{name:"oip_device_connection_read",id:CapabilityId::DeviceConnectionRead,description:"Read the authorized device SSH identity, monitoring state, last attempts and actual observations. Registration never implies connectivity. No mutation or private key data."},
     ToolSpec{name:"oip_inventory_read",id:CapabilityId::InventoryRead,description:"Read authorized persistent device inventory, metadata and collector availability. No collector does not mean offline; bounded pagination."},
     ToolSpec{name:"oip_hue_lights_read",id:CapabilityId::HueLightsRead,description:"Read lights, supported controls and their current states from one authorized Hue source."},
@@ -132,6 +133,9 @@ const RESOURCES: [(&str, CapabilityId); 7] = [
 ];
 fn input_schema(id: CapabilityId) -> Value {
     let mut v = match id {
+        CapabilityId::SupportPackageRead => {
+            serde_json::to_value(schemars::schema_for!(SupportPackageQuery))
+        }
         CapabilityId::HueLightsRead => serde_json::to_value(schemars::schema_for!(HueLightsQuery)),
         CapabilityId::DeviceConnectionRead => {
             serde_json::to_value(schemars::schema_for!(ConnectionQuery))
@@ -301,6 +305,7 @@ fn output_schema(id: CapabilityId) -> Value {
         CapabilityId::DeviceRead => "device",
         CapabilityId::ObservationsRead => "observations",
         CapabilityId::SourcesRead => "sources",
+        CapabilityId::SupportPackageRead => "support_package",
         CapabilityId::EventsRead => "events",
         CapabilityId::OpcuaNodesRead => "nodes",
         CapabilityId::QueueRead => "queue",

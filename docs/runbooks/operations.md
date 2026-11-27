@@ -4,14 +4,217 @@ The runbook describes how an operator runs a **local OIP Core** on a macOS
 machine without OpenCode: how it is provisioned, started, stopped, restarted,
 how its log is read and how its data is backed up and restored.
 
-It is a description of an existing, tested procedure. Every command in it was
-executed against a disposable instance; the receipts are in
-`docs/evidence/oip-operations/`.
+The historical operational receipts in `docs/evidence/oip-operations/`
+cover the separate procedures below. The local Apple Silicon profile uses
+its own installation and acceptance tests.
 
 The tool is `tools/oip_ops.py`. It operates **one** explicit instance: one
 configuration file, one IPC configuration, one database and one state
 directory. It installs no system service, it contacts no endpoint outside the
 machine and it refuses to touch the personal installation of the operator.
+
+---
+
+## Lokales Betreiberprofil auf Apple Silicon
+
+OIP unterstützt in diesem Entwicklungsprofil einen lokalen Core und die
+Spectrum-Browseroberfläche auf demselben Mac. Das Einrichtungswerkzeug
+`current/tools/oip_local.py` richtet eine Arbeitsumgebung mit Organisation,
+Infrastruktur und Standort ein. Der normale Betrieb braucht einen lokalen
+Browser und eine Anmeldung. Einrichter und Betreiber können ohne GitHub-Konto,
+Container oder KI arbeiten. Das Profil installiert keine systemweiten Dienste.
+
+### Bestandsaufnahme des Ausgangspunkts
+
+Grundlage ist `origin/main` bei `445c8a7eb0f251aebc28bb4f1da648070e8752bd`.
+Der Checkout enthielt bereits die Spectrum-Workstations. Maßgeblich für UI und
+Betriebsgrenzen sind die [kanonische UI-Baseline](../design/OIP_CANONICAL_UI_BASELINE.md)
+und der [Remediation-Stand](../architecture/oip-security-audit-remediation.md).
+Die GitHub-Issue-Funktion ist deaktiviert. Historische Prüfberichte belegen ihre
+jeweilige Revision.
+
+| Kategorie | Ausgangspunkt | Überprüfung am Checkout |
+|---|---|---|
+| Vorhanden und verifiziert | Spectrum, autorisierte Projektionen, lokale Browser-Anmeldung, SQLite und gespeicherte Beobachtungen | Vertragsdateien und Implementierungen in `apps/flutter`, `oip-server` und `oip-storage`; Skripte `canonical_regression.py` und `oip0082/acceptance.py` verfügbar |
+| Vorhanden, ungeprüft | Nativer macOS-Updater, signierter Core-Paketweg, Sicherheitsbefunde und Rollout-Stand auf fremden Hosts | `tools/oip_ota_release.sh`, `tools/oip_update.py`, Auditunterlagen; produktive Installationen sind außerhalb dieses Profils |
+| Fehlerhaft für diesen Auftrag | Die bisherige Datenbanksicherung deckte Konfiguration, Zertifikate und Geheimnisse unvollständig ab. Der SQLite-Snapshot war unverschlüsselt. | `tools/oip_ops.py`, Befehle `backup` und `restore` dienen dem historischen DB-Weg |
+| Fehlte | Fortsetzbare Erstzuordnung, expliziter lesender OPC-UA-Betriebsmodus, prüfbares begrenztes Supportpaket und verschlüsselter Restore auf einer isolierten Instanz | Core-Provisioning und autorisierte Source-Reads waren bereits vorhanden. Die neuen Werkzeuge und der Supportpaket-Vertrag nutzen sie. |
+
+### Voraussetzungen und erster Start
+
+Benötigt werden Apple Silicon, ein lokales macOS-Benutzerkonto, Python ab 3.10,
+ein aktueller Browser, Python-`cryptography` mit Ed25519-Unterstützung,
+ein signiertes Paket samt vertrauenswürdig übergebenem
+Herausgeberschlüssel und Schreibrechte für zwei private Ordner. Für Recovery
+benötigt der Einrichter zusätzlich GnuPG mit AES-256/OCB, das mit macOS gelieferte
+SQLite-Werkzeug und `sandbox-exec`. Das Profil verwendet ausschließlich
+Loopback für HTTP und IPC für die geschützte lokale Autorisierung. Vor Anbindung
+einer Testquelle muss ein Anlagen- oder Netzwerkverantwortlicher den Endpoint,
+den Anlagenzugriff und die Belastung freigeben. Der Mac benötigt freien Platz
+für Paket, aktive Datenbank, private Logs, Update-Staging und einen separaten
+temporären Restore. Die dauerhaft zulässige Datenmenge im Pilotbetrieb ist vor
+dessen Beginn festzulegen.
+
+Installiere das signierte Paket gemäß [Abschnitt 16](#16-the-secure-update-of-the-core-of-an-instance).
+Die folgenden Beispiele setzen das installierte Paket unter einem privaten
+absoluten Pfad voraus. Der übergeordnete Ordner für Instanz und Sicherungen muss
+bereits existieren.
+
+```sh
+export OIP_INSTANCE="$HOME/OIP-Betrieb"
+export OIP_BACKUPS="$HOME/OIP-Sicherungen"
+export OIP_TOOLS="$OIP_INSTANCE/current/tools"
+
+python3 "$OIP_TOOLS/oip_local.py" --instance "$OIP_INSTANCE" setup \
+  --organization "Testbetrieb" --infrastructure "Testhalle" \
+  --site "Prüfstand" --backup-directory "$OIP_BACKUPS"
+python3 "$OIP_TOOLS/oip_local.py" --instance "$OIP_INSTANCE" run --open
+```
+
+Wiederhole eine unterbrochene Einrichtung mit denselben Angaben. Der lokale
+Einmalcode erscheint am Terminal. **OPC-UA-Browser** zeigt die Quelle
+**OPC-UA-Simulation** und ihre Messpunkte. **Diagnose & Ereignisse** zeigt
+Verbindung, Datenzustand und letzte Ereignisse. Mit `Ctrl+C` beendet der
+Einrichter die Vordergrundinstanz. Nach Neustart verwendet sie dieselbe
+Zuordnung und SQLite-Datenbank. Eine neue Browser-Sitzung erhält mit
+`oip_local.py --instance "$OIP_INSTANCE" login` einen neuen Einmalcode. Ein
+Portkonflikt oder ein Schreibfehler stoppt die Einrichtung oder den Start.
+`oip.log` liegt privat im Instanzordner. Ein simulierter Wert bleibt an seiner
+Quelle erkennbar. Für eine Testquelle wird ein separater Quelleneintrag
+provisioniert; die Simulation bleibt als Testwerkzeug eigenständig.
+
+### Freigegebene OPC-UA-Testquelle
+
+Die Variante wird offline im passenden Standort provisioniert. Sichere die
+Instanz vorher und kontrolliere Quell-ID, Geräte-ID, Endpoint, erwartete
+Server-Application-URI und Namespace-URI anhand der Betreiberangaben. Der
+Core unterstützt im expliziten Testprofil `Basic256Sha256`,
+`SignAndEncrypt`, eine freigegebene Client-Zertifikatsidentität und anonymes
+OPC-UA-User-Token. Das Gegenüber muss die Clientidentität akzeptieren. Der
+Einrichter prüft das Serverzertifikat außerhalb der Verbindung, vergleicht
+den vom Verantwortlichen bestätigten Fingerprint und hinterlegt das
+freigegebene Zertifikat in `trusted/` im privaten PKI-Ordner. Hat der Core
+genau dieses Zertifikat zuvor in `rejected/` abgelegt, verschiebe nach dem
+Fingerabdruckvergleich nur diese bestätigte Datei in `trusted/`. Abgelaufene,
+ungültige und zur erwarteten Identität unpassende Zertifikate bleiben
+gesperrt. Ein Passwortprofil und eine geführte Vertrauensentscheidung im
+Browser sind ausstehende Abnahmepunkte.
+
+Füge im gestoppten Profil unter `sources` in `core.json` einen Eintrag nach
+diesem Muster hinzu. Die Adresse und URIs sind Beispielwerte. Nutze die
+vom Anlagenverantwortlichen bestätigten Werte.
+
+```json
+{
+  "id": "opcua-test",
+  "entity_id": "testanlage",
+  "name": "Freigegebener Teststand",
+  "endpoint": "opc.tcp://127.0.0.1:4842",
+  "opcua": {
+    "server_application_uri": "urn:example:server",
+    "namespace_uri": "urn:example:measurements",
+    "poll_ms": 5000,
+    "pki_dir": "/private/tmp/oip-example/approved-pki",
+    "certificate_path": "own/certificate.der",
+    "private_key_path": "own/private-key.pem",
+    "points": [
+      {"metric": "temperature", "node_id": "s=Temperature", "value_kind": "float"}
+    ]
+  }
+}
+```
+
+Ergänze in `plan.json` unter `sources` die Zuordnung für denselben Teststand.
+Führe die bestehende offline Provisionierung unter dem Instanzkonto aus.
+Erhalte die bisherigen Einträge und Berechtigungen.
+
+```json
+{"source_id":"opcua-test","entity_id":"testanlage","site_id":"local-site","device_id":"testanlage"}
+```
+
+```sh
+"$OIP_INSTANCE/current/oip-server" --config "$OIP_INSTANCE/core.json" \
+  --provision "$OIP_INSTANCE/plan.json"
+```
+
+Starte OIP erst nach erfolgreicher Provisionierung. Der Core prüft beim
+Start, ob Quellenkonfiguration und Zuordnung übereinstimmen. Bei abgebrochener
+Provisionierung prüfe beide Dateien und wiederhole den Befehl. Die
+SQLite-Provisionierung ist transaktional. Gib keine Verbindungsdaten aus
+dieser Konfiguration in einem Supportpaket weiter.
+
+Pro Quelle werden im Profil höchstens 16 konfigurierte skalare Werte in einem
+Batch mit einem Abstand zwischen 5 und 60 Sekunden gelesen. Pro Instanz ist
+eine solche Testquelle vorgesehen. Die Zuordnung nutzt Server-Application-URI
+und Namespace-URI statt eines dauerhaft gespeicherten NamespaceIndex. Nutze
+quellenseitig beschränkte Rechte. Die Abfragen erzeugen Verkehr. Der Core setzt
+das lesende Profil auch bei REST und lokaler IPC/MCP durch.
+
+### Sicherung und Wiederherstellung
+
+Stoppe die Instanz vor der Sicherung. Lege die Passphrase getrennt vom
+Sicherungsmedium ab. Bewahre das vertrauenswürdige Paket mit genau derselben
+Core-Binärdatei auf. Das aktuell geprüfte Verfahren benutzt Schema 8.
+
+```sh
+export OIP_FILE="$OIP_BACKUPS/erste-sicherung.oip"
+export OIP_CORE="$OIP_INSTANCE/current/oip-server"
+export OIP_RESTORE="$HOME/OIP-Wiederherstellungstest"
+
+python3 "$OIP_TOOLS/oip_ops.py" recovery-backup --binary "$OIP_CORE" \
+  --config "$OIP_INSTANCE/core.json" --ipc-config "$OIP_INSTANCE/ipc.json" \
+  --output "$OIP_FILE"
+python3 "$OIP_TOOLS/oip_ops.py" recovery-restore --binary "$OIP_CORE" \
+  --source "$OIP_FILE" --restore-dir "$OIP_RESTORE"
+python3 "$OIP_TOOLS/oip_ops.py" recovery-start --binary "$OIP_CORE" \
+  --restore-dir "$OIP_RESTORE" --port 18871 --web-dir "$OIP_INSTANCE/current/web"
+```
+
+Der Restore verwendet einen neuen Ordner. Der wiederhergestellte Core
+startet zunächst mit blockierten ausgehenden Verbindungen. Auf ausdrückliche
+Freigabe ist für den Test genau ein konfigurierter Loopback-OPC-UA-Port über
+`--test-source-port` zulässig. Halte dabei die ursprüngliche Instanz gestoppt.
+Der Klon bleibt eine Prüfkopie. Zum Beenden dient `recovery-stop
+--restore-dir "$OIP_RESTORE"`. Vergleiche Zuordnungen, Rechte, gespeicherte
+Werte und erneut eintreffende Testdaten. Die Integritätsprüfung des Archivs ist
+ein eigener Nachweis neben dem Wiederherstellungstest.
+
+Die Sicherung enthält Datenbank und erfasste Historien, Konfiguration,
+Quellenzuordnung, lokale Zugangsdaten, Trust und benötigte Schlüssel des
+unterstützten Profils. Private SQLite-Daten, der private PKI-Bestand,
+Staging beim Restore sowie Logs auf dem aktiven Mac sind über Dateirechte
+geschützt. Für Schutz bei ausgeschaltetem Mac und bei lokalem Restore muss
+der Betreiber die Verschlüsselung des betreffenden Volumes prüfen. Ein
+Browserprofil hat eigene lokale Einstellungen. Dashboard-Layout und
+OPC-UA-Browser-Pins sind im ersten Stand nicht Teil dieser Sicherung.
+
+### Diagnose und Übergabe
+
+Wähle in **Diagnose & Ereignisse** zuerst eine Infrastruktur und öffne
+**Supportpaket**. Prüfe die JSON-Vorschau. Die Datei enthält feste technische
+Felder und aggregierte Zustände des gewählten Kontexts. Sie wird lokal
+gespeichert. Der Betreiber entscheidet über die Weitergabe. Die Betreiberin
+oder der Betreiber kann nach der Einweisung Daten und Quellenstatus prüfen,
+eine Unterbrechung erkennen und das Paket sichern. Der Einrichter übernimmt
+Paketprüfung, Einrichtung, Zertifikatsprüfung, gesicherten Restore und
+Updates. Freigabe, Betriebsfenster und Änderungen an Anlage und Netzwerk
+verbleiben beim Anlagenverantwortlichen.
+
+| Funktion | Bedienweg | API und MCP | Rolle und Prüfung |
+|---|---|---|---|
+| Quelle und Messwerte lesen | OPC-UA-Browser und Infrastruktur-Auswahl | `sources`, `observations`, `opcua/nodes`; `oip_sources_read`, `oip_observations_read`, `oip_opcua_nodes_read` | Authentifizierter Quellkontext; fremde Quellen verweigert |
+| Supportpaket | Diagnose, Kontext wählen, Vorschau öffnen, JSON speichern | `GET /api/v2/support-package?infrastructure=…`; `oip_support_package_read` | `sources_read` im angegebenen Scope; fehlender und fremder Kontext verweigert |
+| Installation, Quellen- und Trust-Provisionierung, Recovery, Offline-Update | Berechtigte lokale Einrichterwerkzeuge | Parität ausstehend | Betreiberkonto, explizite lokale Aktion, getrennte Prüfzustände |
+
+Das geplante Kundenangebot umfasst gewerbliche Nutzungsberechtigung,
+einmalige Einrichtung und Einweisung sowie getrennt vereinbarte Wartung und
+Unterstützung. Selbstbetreiber können Einrichtung und Betreuung selbst
+übernehmen. Private Nutzung bleibt im geplanten Angebot kostenlos. Der
+bestehende Quellcode steht unter Apache-2.0, das auch gewerbliche Nutzung
+gestattet. Ein gesondertes Angebot für kommerziell lizenzierte Produkte
+erfordert eine geklärte Distribution und gültige Nutzungsbedingungen.
+Preise, Umfang und Vertragsfristen bleiben offen. Der lokale Datenbetrieb
+und der Zugang zu Recovery hängen nicht von einem Supportvertrag ab.
 
 ---
 
@@ -1025,71 +1228,109 @@ build of phase 1 and continues with the receipts of the release.
 
 ## 16. The secure update of the Core of an instance
 
-The Core of OIP runs on a host of the operator. A deployed service that cannot be
-updated safely stays on the version it was built with. This section is the update
-path of the Core; the rehearsal `tests/oip_update.py`
-(`docs/evidence/oip-update/update.json`) measures it.
+The local browser installation packages the Core, its matching Flutter web build
+and the local administration tools together. The installer verifies files
+obtained over HTTPS or copied from removable media using the same command.
+Python 3 and its `cryptography` library with Ed25519 support must already be
+available on the installation host. Prepare those dependencies separately for
+an offline host.
 
-### 16.1 The three properties of the update path
+### 16.1 Release and initial trust
 
-| Property | How it is delivered | How it is measured |
-|---|---|---|
-| **Authenticity** | the manifest of the bundle is signed with **Ed25519** by the private key of the operator; the tool verifies the signature over the **exact bytes** of the manifest with the **public key of the instance** | a bundle whose manifest was changed after the signing is **refused** (`the signature of the manifest is not valid`) |
-| **Integrity** | the manifest names the **sha256** of every artefact; the tool verifies the digests **before** the activation and **again after the write** | a bundle whose artefact was changed on the way is **refused** (`the digest of … is …, but the manifest names …`) |
-| **Safe activation** | the artefact is written into a **version directory** of the instance; the switch is a **symlink that is renamed**; the previous version stays on the host | the instance runs the new version and the previous version is still there |
-
-### 16.2 The health check and the rollback
-
-After the switch, the new binary is started as a **disposable instance** — its own
-port, its own store, its own IPC — and asked for `/health/ready`. A version that
-does not become ready is **not** activated: the instance keeps the version it had
-(the switch back is a rename) and the journal names the rollback. The rehearsal
-drives exactly that case with a binary that leaves immediately.
-
-### 16.3 The journal
-
-Every attempt is written into `<instance>/state/updates.jsonl`: the moment, the
-revision, the version, the target, the digests, the verification, the activation,
-the health check, the rollback and the reason of a refusal. The file is
-append-only and flushed to the disk. It is the only **durable** audit of the
-update path of an instance — the execution log of the Core is not durable.
-
-### 16.4 The procedure of the operator
+Start with the matching Core, simulator and browser build from an approved
+source revision. On the controlled release machine, use the private Ed25519
+key to sign the manifest. Set the actual database schema for that build.
 
 ```sh
-# 1. the bundle arrives on the host (a copy, a tunnel, a pull of the
-#    operator): the bundle is a directory with manifest.json, the artefacts
-#    and the signature.
-# 2. the public key of the instance is in the instance (never the private
-#    key of the operator):
-#      instance/etc/update-public.pem
-# 3. the update is verified, activated, health checked and rolled back if
-#    it has to be:
-python3 tools/oip_update.py --instance <the instance> \
-    --bundle <the bundle> --public-key <the public key> \
-    --target aarch64-unknown-linux-gnu
-# 4. the result:
-#      {"the_status": "UPDATED", …}   the new version is active and ready
-#      {"the_status": "REFUSED", …}    the instance keeps its version
+python3 -B tools/oip_update.py --prepare --bundle "$NEW_BUNDLE_DIR" \
+    --binary target/release/oip-server --web apps/flutter/build/web \
+    --simulator target/release/oip-simulated-server \
+    --signing-key "$RELEASE_SIGNING_KEY" --release-version "$RELEASE_VERSION" \
+    --revision "$SOURCE_REVISION" --database-schema "$CORE_DATABASE_SCHEMA"
 ```
 
-The tool writes nothing outside the directory of the instance, installs no
-service, publishes no port and does not touch the personal store of the
-operator. The **private key never leaves the machine of the operator**: the
-public key of the instance is the only thing the host ever sees.
+The version uses numeric `major.minor.patch`. The distinct source revision
+identifies the release directory. The manifest binds platform, architecture
+and database schema to SHA-256 digests of the Core, browser, optional simulator,
+administration tools and license. The detached `signature` is the Ed25519
+signature of the exact manifest bytes.
 
-### 16.5 What is not done by this path
+For the first installation, obtain `oip_update.py`, its adjacent `oip_ops.py`
+and the Ed25519 public key through a trusted installer delivery. Check the
+key's `shasum -a 256` against the fingerprint supplied through an independently
+authenticated channel. Store the verified public key in an owner-controlled
+location outside the incoming package. The private signing key stays on
+the release machine. Subsequent updates can use the previously installed
+verifier at `current/tools/oip_update.py`.
 
-* The **client** of the operator is not updated by this path: an app of the
-  **Mac App Store** is updated by the store, and the direct distribution uses the
-  path of its own signature (the notarisation of G9/N17).
-* The tool does **not** fetch a bundle by itself: the delivery channel is the
-  operator's, and the **signature** is what carries the trust. A bundle that is
-  fetched over an unauthenticated channel is still refused when its signature
-  does not match the public key of the instance.
-* The tool does not manage the **data store** of the instance: a schema change
-  is a separate operator step with its own rehearsal (the activation of schema
-  7 on a copy of the store).
+For online delivery, the prepared directory can be archived as an immutable,
+versioned download on an approved static HTTPS host. Publish only the prepared
+files and disclose the intended platform and version alongside the download.
+The installation host needs the extracted directory. Both the offline and
+online delivery paths verify the signature before running a candidate.
+
+### 16.2 Check, install and restart
+
+Create an owner-private instance directory with `mkdir -m 700` for the first
+installation. Set `OIP_VERIFIER` to the trusted verifier path described above.
+As the OS account that owns the instance, confirm the target instance and
+verify the package before scheduling maintenance.
+
+```sh
+python3 -B "$OIP_VERIFIER" --instance "$OIP_INSTANCE" --bundle "$BUNDLE_DIR" \
+    --public-key "$TRUSTED_UPDATE_KEY" --dry-run
+```
+
+`VERIFIED` confirms the signature, the declared component hashes, the host
+target and the installed version and schema checks. For an update, take a
+current encrypted backup and stop OIP during the agreed maintenance window.
+The operator explicitly starts installation by running the same command
+without `--dry-run`.
+
+Installation checks available space and copies the signed files into a private
+staging directory. A disposable candidate uses the embedded simulator on new
+loopback ports, a fresh database and the staged browser files. OIP must report
+ready, the served HTML and JavaScript must match the package, and the actual
+schema of the disposable database must match the manifest. Existing sources,
+credentials and stored values remain outside this check.
+
+An atomic link selects the verified version as `current`. The previous release
+files remain under `versions`. New installations can continue with
+`current/tools/oip_local.py setup`. For updates, restart the normal local
+runner and confirm that the configured sources and selected measurements
+recover. Expect a collection gap during the maintenance window.
+
+### 16.3 Failures and recovery
+
+The installer rejects an active Core, a concurrent operation, another target,
+an older or equal version and a database schema change. The operator can
+read the reason on the console. A failed candidate check leaves the active
+version in place. After an interruption, check `current` and the journal
+before restarting. A hard power loss can leave an unselected directory
+under `versions`. Have the installer verify the current selection and
+inspect the abandoned staging entry before retrying.
+
+The private journal at `state/updates.jsonl` records preparation and completed
+selection. `PREPARED` alone does not confirm activation. A retained release
+directory is for inspection and recovery planning. Schema migration, rollback,
+automatic discovery and native macOS application updates have separate paths
+or are outside this profile.
+For an earlier Core-only deployment without a signed installed version
+manifest, use a separately verified migration. That older release layout
+cannot establish the version floor required by this installer.
+
+Run `python3 tests/oip_update.py` for the private fixture rehearsal. Passing
+`--core`, `--web` and optionally `--simulator` also rehearses the prepared
+release with the supplied build. The rehearsal uses generated signing keys
+and issues a local `update.json` receipt.
+
+For a later approved static HTTPS delivery, a publisher can serve the archive
+as `/oip/macos-arm64/<version>/oip-local-darwin-arm64.zip` with
+`Content-Type: application/zip` and versioned immutable caching. Test the
+download and compare the extracted, signed manifest to the local handoff
+before supplying the URL. Keep the initial verifier and signing-key
+fingerprint on the separately authenticated delivery path. No live hosting
+configuration has been installed for this profile.
 
 ### 16.6 Local Tailscale membership read
 

@@ -350,10 +350,16 @@ async fn run() -> Result<(), Box<dyn Error>> {
             .iter()
             .map(|s| s.definition())
             .collect::<Result<Vec<_>, _>>()?;
-        let result = oip_storage::SqliteStore::provision_file(
+        let external_sources = definitions
+            .iter()
+            .filter(|definition| definition.origin_class == oip_core::OriginClass::External)
+            .map(|definition| definition.id.clone())
+            .collect();
+        let result = oip_storage::SqliteStore::provision_file_with_external_sources(
             &config.database,
             plan,
             &definitions,
+            &external_sources,
             adoption.as_ref(),
         )?;
         println!("{}", serde_json::to_string(&result)?);

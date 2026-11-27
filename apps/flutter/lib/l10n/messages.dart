@@ -1,6 +1,16 @@
 // Client-owned interface copy. Unmapped source strings are used verbatim.
 
 const englishMessages = <String, String>{
+  "Supportpaket": "Support package",
+  "Lokales Supportpaket prüfen": "Review local support package",
+  "Wähle zuerst eine Infrastruktur.": "Select an infrastructure first.",
+  "Prüfe den Inhalt vor der Weitergabe. OIP sendet das Paket nicht.":
+      "Review the contents before sharing. OIP does not send the package.",
+  "JSON kopieren": "Copy JSON",
+  "JSON speichern": "Save JSON",
+  "Der Arbeitskontext hat sich geändert.": "The selected workspace changed.",
+  "Supportpaket konnte nicht erstellt werden. Prüfe die Anmeldung und deine Berechtigung.":
+      "Could not create a support package. Check your session and permissions.",
   "Netzwerk & VPN zeigt eingetragene LAN-Kabel getrennt von gemeldeten Netzwerkpfaden. Die Ansicht wurde vereinfacht.":
       "Network & VPN separates recorded LAN cabling from reported network paths and has a simpler layout.",
   "LAN-Verkabelung": "LAN wiring",

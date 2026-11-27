@@ -231,6 +231,38 @@ try {
         await waitForAria('Aktueller Zustand');
         check(`diagnostics can return from the technical workspace at ${width}px`,
           !(await snapshot()).includes('EVENTS · UNTERSUCHUNGSKONTEXT'));
+        if (width === 1440) {
+          const selector = page.getByRole('button', {
+            name: /Infrastructure Context: Alle berechtigten Infrastrukturen/,
+          });
+          await page.waitForTimeout(650);
+          await selector.first().click({ force: true });
+          await page.waitForTimeout(650);
+          await page.getByRole('button', { name: /Kontext .* · infra-a1 auswählen/ }).first().click({ force: true });
+          const support = page.getByRole('button', { name: 'Supportpaket', exact: true });
+          await page.waitForTimeout(650);
+          await support.click();
+          await waitForAria('Prüfe den Inhalt vor der Weitergabe.');
+          check('scoped support package displays a local preview', (await snapshot()).includes('format_version'));
+          await page.waitForTimeout(650);
+          const [download] = await Promise.all([
+            page.waitForEvent('download'),
+            page.getByRole('button', { name: 'JSON speichern', exact: true }).click(),
+          ]);
+          const chunks = [];
+          for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+          const report = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+          check('support package is a local file with allowlisted fields', download.suggestedFilename() === 'oip-support.json' &&
+            Object.keys(report).sort().join(',') === 'architecture,build_revision,core_version,format_version,platform,sources');
+          await page.waitForTimeout(650);
+          await page.getByRole('button', { name: 'Schließen', exact: true }).click();
+          await page.waitForTimeout(650);
+          await page.getByRole('button', {
+            name: /Infrastructure Context: Infrastructure A1/,
+          }).first().click({ force: true });
+          await page.waitForTimeout(650);
+          await page.getByRole('button', { name: /Kontext Unified View/ }).first().click({ force: true });
+        }
       }
       const scopedForbidden = forbidden.filter((marker) =>
         !['M-01', 'Normalbetrieb'].includes(marker) &&

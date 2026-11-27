@@ -210,6 +210,7 @@ async fn source_scopes_cannot_leak_other_sources_or_global_snapshots() {
                 endpoint: "opc.tcp://127.0.0.1:14841".into(),
                 namespace: 2,
                 entity_id: None,
+                opcua: None,
             },
             SourceConfig {
                 id: "b".into(),
@@ -217,6 +218,7 @@ async fn source_scopes_cannot_leak_other_sources_or_global_snapshots() {
                 endpoint: "opc.tcp://127.0.0.1:14842".into(),
                 namespace: 2,
                 entity_id: None,
+                opcua: None,
             },
         ],
         ..Default::default()

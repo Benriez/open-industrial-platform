@@ -1,11 +1,14 @@
 //! Supervised executor and protocol integration; no UI or web-server dependency.
 use crate::{
-    config::{CoreConfig, OpcUaBrowseSource, SourceConfig},
+    config::{CoreConfig, OpcUaBrowseSource, OpcUaReadProfile, SourceConfig},
     state::{now_ms, AppState, ShutdownReport},
 };
 use futures::{future::BoxFuture, FutureExt};
 use oip_core::*;
-use oip_opcua::{async_opcua::AsyncOpcUaClient, ClientOptions, ReadOnlyOpcUaAdapter};
+use oip_opcua::{
+    async_opcua::AsyncOpcUaClient, AdapterError, BrowseEntry, ClientOptions,
+    ProductionSecurityConfig, ReadOnlyOpcUaAdapter, SecurityProfile,
+};
 use oip_storage::SqliteStore;
 use std::{collections::VecDeque, panic::AssertUnwindSafe, sync::Arc, time::Duration};
 use thiserror::Error;
@@ -43,21 +46,103 @@ struct OpcUaSession {
     state: AppState,
     id: DataSourceId,
 }
+struct SelectedOpcUaSession {
+    client: AsyncOpcUaClient,
+    points: Vec<(String, MetricId)>,
+    kinds: Vec<ValueKind>,
+    pending: VecDeque<ClientEvent>,
+    period: Duration,
+    next_poll: tokio::time::Instant,
+    closed: bool,
+}
+
+impl OpcUaAdapter {
+    async fn connect_selected(
+        &self,
+        profile: &OpcUaReadProfile,
+    ) -> Result<Box<dyn CollectionSession>, RuntimeError> {
+        let definition = self
+            .config
+            .definition()
+            .map_err(RuntimeError::Configuration)?;
+        let mut options =
+            ClientOptions::local_host_service(&self.config.endpoint, 0, definition.entity_id);
+        options.security_profile = SecurityProfile::Production {
+            security_policy: "Basic256Sha256".into(),
+            security_mode: "SignAndEncrypt".into(),
+        };
+        options.production_security = Some(ProductionSecurityConfig::new(
+            &profile.pki_dir,
+            &profile.certificate_path,
+            &profile.private_key_path,
+        ));
+        options.expected_server_uri = Some(profile.server_application_uri.clone());
+        // The value can legitimately stay unchanged for hours. The Core uses
+        // local receipt cadence and connection status to evaluate freshness.
+        options.freshness.max_source_age = None;
+        let client = AsyncOpcUaClient::connect(&options).await?;
+        let identifiers: Vec<_> = profile.points.iter().map(|p| p.node_id.clone()).collect();
+        let node_ids = match client
+            .resolve_selected_nodes(&profile.namespace_uri, &identifiers)
+            .await
+        {
+            Ok(ids) => ids,
+            Err(error) => {
+                let _ = client.shutdown().await;
+                return Err(error.into());
+            }
+        };
+        let points: Vec<_> = node_ids
+            .into_iter()
+            .zip(profile.points.iter().map(|p| p.metric.clone()))
+            .collect();
+        let catalog = points
+            .iter()
+            .map(|(node_id, metric)| BrowseEntry {
+                node_id: node_id.clone(),
+                browse_name: metric.as_str().to_owned(),
+                display_name: metric.as_str().to_owned(),
+                node_class: "Variable".into(),
+                access: "Read".into(),
+                folder: "Ausgewählte Datenpunkte".into(),
+            })
+            .collect();
+        self.state
+            .catalogs
+            .write()
+            .await
+            .insert(definition.id, catalog);
+        // Keep the transport private to the collector. Browser/API/MCP use the
+        // source's collected view, so their requests cannot increase plant load.
+        Ok(Box::new(SelectedOpcUaSession {
+            client,
+            points,
+            kinds: profile.points.iter().map(|p| p.value_kind).collect(),
+            pending: VecDeque::new(),
+            period: Duration::from_millis(profile.poll_ms),
+            next_poll: tokio::time::Instant::now(),
+            closed: false,
+        }))
+    }
+}
+
 impl CollectionAdapter for OpcUaAdapter {
     fn connect(&self) -> BoxFuture<'_, Result<Box<dyn CollectionSession>, RuntimeError>> {
         Box::pin(async move {
-            let client = Arc::new(
-                AsyncOpcUaClient::connect(&ClientOptions::local_simulation_of(
-                    &self.config.endpoint,
-                    self.config.namespace,
-                    // The measurements of the source belong to the entity that
-                    // the source declares — not to the machine id of the
-                    // simulation behind it.
-                    oip_core::EntityId::new(self.config.entity_id.as_deref().unwrap_or("M-01"))
-                        .map_err(|_| RuntimeError::Configuration("entity".into()))?,
-                ))
-                .await?,
+            if let Some(profile) = &self.config.opcua {
+                return self.connect_selected(profile).await;
+            }
+            let mut options = ClientOptions::local_simulation_of(
+                &self.config.endpoint,
+                self.config.namespace,
+                // The measurements of the source belong to the entity that
+                // the source declares — not to the machine id of the
+                // simulation behind it.
+                oip_core::EntityId::new(self.config.entity_id.as_deref().unwrap_or("M-01"))
+                    .map_err(|_| RuntimeError::Configuration("entity".into()))?,
             );
+            options.read_only = self.state.opcua_read_only;
+            let client = Arc::new(AsyncOpcUaClient::connect(&options).await?);
             let catalog = client.browse().await?;
             let id = DataSourceId::new(&self.config.id)
                 .map_err(|_| RuntimeError::Configuration("id".into()))?;
@@ -94,6 +179,78 @@ impl CollectionAdapter for OpcUaAdapter {
                 state: self.state.clone(),
                 id,
             }) as Box<dyn CollectionSession>)
+        })
+    }
+}
+
+impl CollectionSession for SelectedOpcUaSession {
+    fn buffered(&self) -> BoxFuture<'_, usize> {
+        Box::pin(async move { self.pending.len() })
+    }
+
+    fn next(&mut self) -> BoxFuture<'_, Result<ClientEvent, RuntimeError>> {
+        Box::pin(async move {
+            if let Some(event) = self.pending.pop_front() {
+                return Ok(event);
+            }
+            if self.closed {
+                return Err(AdapterError::Task("selected polling session is closed".into()).into());
+            }
+            tokio::time::sleep_until(self.next_poll).await;
+            let observations = self.client.read_selected(&self.points).await?;
+            self.next_poll = tokio::time::Instant::now() + self.period;
+            let mut point_error = None;
+            for (observation, kind) in observations.into_iter().zip(&self.kinds) {
+                match observation {
+                    Ok(mut observation) => {
+                        if observation
+                            .value
+                            .as_ref()
+                            .is_some_and(|value| !kind.matches(value))
+                        {
+                            observation.value = None;
+                            observation.quality = DataQuality::Bad;
+                            observation.collection_error =
+                                Some(CollectionError::InvalidMeasurement);
+                            observation.freshness = Freshness::Unknown;
+                        }
+                        self.pending
+                            .push_back(ClientEvent::Observation(Box::new(observation)));
+                    }
+                    Err(AdapterError::MissingSourceTimestamp) => {
+                        point_error = Some("opcua_missing_source_timestamp")
+                    }
+                    Err(_) => point_error = Some("opcua_unsupported_measurement"),
+                }
+            }
+            if let Some(reason) = point_error {
+                self.pending.push_back(ClientEvent::SubscriptionError {
+                    at: Timestamp::from_unix_millis(now_ms()),
+                    reason: reason.into(),
+                });
+            }
+            self.pending.pop_front().ok_or_else(|| {
+                AdapterError::Protocol("no selected observations returned".into()).into()
+            })
+        })
+    }
+
+    fn close(&mut self) -> BoxFuture<'_, Result<(), RuntimeError>> {
+        Box::pin(async move {
+            self.closed = true;
+            let closed = self.client.shutdown().await;
+            if !self.client.local_event_task_stopped() {
+                return Err(
+                    AdapterError::Task("local OPC-UA event loop still active".into()).into(),
+                );
+            }
+            if closed.is_err() {
+                tracing::warn!(
+                    code = "opcua_remote_close_unconfirmed",
+                    "remote CloseSession unconfirmed; local event loop stopped"
+                );
+            }
+            Ok(())
         })
     }
 }
@@ -191,11 +348,14 @@ pub async fn source_worker(
     adapter: Arc<dyn CollectionAdapter>,
     cancel: CancellationToken,
 ) -> Result<(), RuntimeError> {
+    let selected = state.opcua_selected_sources.contains(&id);
+    let mut consecutive_failures = 0u32;
     loop {
         if cancel.is_cancelled() {
             break;
         }
         state.connecting(&id).await;
+        let started = tokio::time::Instant::now();
         let result = AssertUnwindSafe(session_run(&state, &id, adapter.as_ref(), &cancel))
             .catch_unwind()
             .await
@@ -203,9 +363,10 @@ pub async fn source_worker(
         if cancel.is_cancelled() {
             return result;
         }
-        let code = match result {
+        let code = match &result {
             Err(RuntimeError::AdapterPanic) => "adapter_panic",
             Err(RuntimeError::Ingestion(_)) => "ingestion_error",
+            Err(RuntimeError::Adapter(error)) if selected => selected_opcua_error_code(error),
             _ => "adapter_disconnected",
         };
         // The reason of the isolation belongs in the log: without it, a
@@ -226,9 +387,53 @@ pub async fn source_worker(
                 },
             )
             .await;
-        tokio::select! {_ = cancel.cancelled()=>break,_=tokio::time::sleep(Duration::from_secs(1))=>{}}
+        let delay = if selected {
+            if started.elapsed() >= Duration::from_secs(125) {
+                consecutive_failures = 0;
+            }
+            let base = (3000u64 << consecutive_failures.min(4)).min(48_000);
+            consecutive_failures = consecutive_failures.saturating_add(1);
+            let jitter = now_ms().unsigned_abs() % (base / 4);
+            Duration::from_millis(base + jitter)
+        } else {
+            Duration::from_secs(1)
+        };
+        tokio::select! {_ = cancel.cancelled()=>break,_=tokio::time::sleep(delay)=>{}}
     }
     Ok(())
+}
+
+fn selected_opcua_error_code(error: &AdapterError) -> &'static str {
+    match error {
+        AdapterError::InvalidSecurityConfiguration(_) => "opcua_security_configuration_invalid",
+        AdapterError::Connection(reason) | AdapterError::Protocol(reason) => {
+            if reason.contains("BadCertificateUntrusted") {
+                "opcua_certificate_untrusted"
+            } else if reason.contains("BadCertificateTimeInvalid")
+                || reason.contains("BadCertificateIssuerTimeInvalid")
+            {
+                "opcua_certificate_time_invalid"
+            } else if reason.contains("BadCertificateHostNameInvalid")
+                || reason.contains("BadCertificateUriInvalid")
+            {
+                "opcua_certificate_identity_mismatch"
+            } else if reason.contains("BadSecurityChecksFailed")
+                || reason.contains("BadCertificate")
+            {
+                "opcua_certificate_validation_failed"
+            } else if reason.contains("timed out") {
+                "opcua_request_timeout"
+            } else if reason.contains("BadIdentityToken") || reason.contains("BadUserAccessDenied")
+            {
+                "opcua_login_rejected"
+            } else if reason.contains("namespace") || reason.contains("NamespaceArray") {
+                "opcua_namespace_unavailable"
+            } else {
+                "opcua_disconnected"
+            }
+        }
+        _ => "opcua_disconnected",
+    }
 }
 #[must_use = "call shutdown() to drain and join the core"]
 pub struct CoreRuntime {
@@ -485,13 +690,10 @@ async fn opcua_browser_source_worker(
             tracing::error!(source_id=%id,code="opcua_browser_source_unregistered","OPC-UA browser binding must reference a registered source");
             tokio::select! { _ = cancel.cancelled() => break, _ = tokio::time::sleep(Duration::from_secs(30)) => continue }
         }
-        let client = match AsyncOpcUaClient::connect(&ClientOptions::local_host_service(
-            &source.endpoint,
-            source.namespace,
-            entity.clone(),
-        ))
-        .await
-        {
+        let mut options =
+            ClientOptions::local_host_service(&source.endpoint, source.namespace, entity.clone());
+        options.read_only = state.opcua_read_only;
+        let client = match AsyncOpcUaClient::connect(&options).await {
             Ok(client) => Arc::new(client),
             Err(error) => {
                 tracing::warn!(source_id=%id,code="opcua_browser_connect_failed",%error,"OPC-UA browser source unavailable");

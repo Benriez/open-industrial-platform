@@ -4,10 +4,10 @@ import '../../app/controller.dart';
 import '../../design_system/theme.dart';
 import '../../l10n/oip_strings.dart';
 import '../../models/contracts.dart';
-import '../../widgets/components.dart';
 import '../../widgets/workstation.dart';
 import '../devices.dart';
 import 'diagnostics_model.dart';
+import 'support_package.dart';
 
 enum _SourceState {
   unreachable,
@@ -24,7 +24,9 @@ enum _SourceState {
     if (source.validity == 'invalid') return invalid;
     if (source.freshness == 'stale') return stale;
     if (source.service == 'degraded') return degraded;
-    if (source.connection == 'connected' && source.freshness == 'fresh') {
+    if (source.connection == 'connected' &&
+        source.freshness == 'fresh' &&
+        source.validity == 'valid') {
       return current;
     }
     return unknown;
@@ -108,6 +110,7 @@ class DiagnosticsStatus extends StatelessWidget {
                     onPressed: onRefresh,
                     icon: const Icon(Icons.refresh),
                   ),
+                  SupportPackageButton(controller),
                 ],
               ),
               _status(context, devices),

@@ -12,6 +12,7 @@ pub enum CapabilityId {
     CoreLivenessRead,
     CoreReadinessRead,
     SourcesRead,
+    SupportPackageRead,
     QueueRead,
     SystemStatusRead,
     DevicesRead,
@@ -74,11 +75,12 @@ pub struct CapabilityDescriptor {
     pub audit: String,
 }
 impl CapabilityId {
-    pub const ALL: [Self; 37] = [
+    pub const ALL: [Self; 38] = [
         Self::CoreHealthRead,
         Self::CoreLivenessRead,
         Self::CoreReadinessRead,
         Self::SourcesRead,
+        Self::SupportPackageRead,
         Self::QueueRead,
         Self::SystemStatusRead,
         Self::DevicesRead,
@@ -116,6 +118,11 @@ impl CapabilityId {
     pub fn descriptor(self) -> CapabilityDescriptor {
         use CapabilityId::*;
         let (permission, input, output) = match self {
+            SupportPackageRead => (
+                vec![Permission::SourcesRead],
+                "SupportPackageQuery",
+                "SupportPackage",
+            ),
             HueLightsRead => (
                 vec![Permission::DevicesRead, Permission::TelemetryRead],
                 "HueLightsQuery",
@@ -338,6 +345,46 @@ pub struct SourceQuery {
     pub limit: Option<usize>,
     pub source: Option<DataSourceId>,
 }
+/// An explicit infrastructure is required. Finer filters must belong to it.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
+#[serde(deny_unknown_fields)]
+pub struct SupportPackageQuery {
+    pub infrastructure: InfrastructureId,
+    pub site: Option<SiteId>,
+    pub source: Option<DataSourceId>,
+}
+
+/// Shareable local diagnostic report. Only fixed metadata and counters may be
+/// added here. Never add names, identifiers, free text, topology or raw samples.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
+pub struct SupportPackage {
+    pub format_version: u8,
+    pub core_version: String,
+    pub build_revision: String,
+    pub platform: String,
+    pub architecture: String,
+    pub sources: SupportSourceCounts,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
+pub struct SupportSourceCounts {
+    pub total: usize,
+    pub simulated: usize,
+    pub connected: usize,
+    pub disconnected: usize,
+    pub connection_unknown: usize,
+    pub fresh: usize,
+    pub stale: usize,
+    pub freshness_unknown: usize,
+    pub invalid: usize,
+    pub degraded: usize,
+    pub reconnect_attempts: u64,
+    pub dropped: u64,
+    pub rejected: u64,
+}
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
@@ -392,6 +439,7 @@ pub struct ScenarioRequest {
     deny_unknown_fields
 )]
 pub enum CapabilityRequest {
+    SupportPackageRead(SupportPackageQuery),
     CoreHealthRead,
     CoreLivenessRead,
     CoreReadinessRead,
@@ -433,6 +481,7 @@ pub enum CapabilityRequest {
 impl CapabilityRequest {
     pub fn id(&self) -> CapabilityId {
         match self {
+            Self::SupportPackageRead(_) => CapabilityId::SupportPackageRead,
             Self::SettingsRead(_) => CapabilityId::SettingsRead,
             Self::McpManagementRead(_) => CapabilityId::McpManagementRead,
             Self::SettingsChange(_) => CapabilityId::SettingsChange,
@@ -477,6 +526,7 @@ impl CapabilityRequest {
 #[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
 #[serde(tag = "type", content = "value", rename_all = "snake_case")]
 pub enum CapabilityOutput {
+    SupportPackage(SupportPackage),
     HueLights(HueLights),
     HueCommandAccepted { light_id: u64 },
     HueSetupAccepted { action: HueSetupAction },

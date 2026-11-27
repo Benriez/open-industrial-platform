@@ -112,6 +112,8 @@ pub struct AppState {
     pub clients: Arc<RwLock<BTreeMap<DataSourceId, Arc<AsyncOpcUaClient>>>>,
     pub catalogs: Arc<RwLock<BTreeMap<DataSourceId, Vec<BrowseEntry>>>>,
     pub(crate) opcua_browse_bindings: Arc<BTreeSet<(DataSourceId, EntityId)>>,
+    pub(crate) opcua_read_only: bool,
+    pub(crate) opcua_selected_sources: Arc<BTreeSet<DataSourceId>>,
     pub tailscale_status: Arc<Mutex<Option<crate::network_services::TailscaleSnapshot>>>,
     pub scenario_tx: Option<watch::Sender<String>>,
     pub primary: Option<DataSourceId>,
@@ -310,6 +312,15 @@ impl AppState {
         )?);
         let mut app = Application::initialize(store, definitions, now_ms(), config.stale_after_ms)
             .map_err(|e| e.to_string())?;
+        let mut opcua_selected_sources = BTreeSet::new();
+        for config in &config.sources {
+            if let Some(profile) = &config.opcua {
+                let source = DataSourceId::new(&config.id).map_err(|_| "OPC-UA source id")?;
+                app.configure_polled_source(&source, (profile.poll_ms * 2 + 5000) as i64)
+                    .map_err(|_| "OPC-UA selected source cadence")?;
+                opcua_selected_sources.insert(source);
+            }
+        }
         for c in connections.iter() {
             app.configure_source_cadence(&c.source_id, (c.poll_seconds * 2000 + 15000) as i64)
                 .map_err(|_| "source cadence")?;
@@ -403,6 +414,8 @@ impl AppState {
                     })
                     .collect::<Result<_, &str>>()?,
             ),
+            opcua_read_only: config.opcua_read_only,
+            opcua_selected_sources: Arc::new(opcua_selected_sources),
             tailscale_status: Arc::new(Mutex::new(None)),
             scenario_tx,
             stopping: tokio_util::sync::CancellationToken::new(),
@@ -493,6 +506,42 @@ impl AppState {
             .map_err(|_| "writer stopped")?;
         rx.await.map_err(|_| "writer stopped")?
     }
+    pub(crate) fn support_source_counts(
+        &self,
+        allowed: &BTreeSet<DataSourceId>,
+    ) -> SupportSourceCounts {
+        let mut counts = SupportSourceCounts::default();
+        for source in self
+            .inner
+            .view
+            .borrow()
+            .sources
+            .iter()
+            .filter(|s| allowed.contains(&s.id))
+        {
+            counts.total += 1;
+            counts.simulated += usize::from(source.simulated);
+            match source.connection {
+                ConnectionHealth::Connected => counts.connected += 1,
+                ConnectionHealth::Disconnected => counts.disconnected += 1,
+                ConnectionHealth::Unknown => counts.connection_unknown += 1,
+            }
+            match source.freshness {
+                Freshness::Fresh => counts.fresh += 1,
+                Freshness::Stale => counts.stale += 1,
+                Freshness::Unknown => counts.freshness_unknown += 1,
+            }
+            counts.invalid += usize::from(source.validity == Validity::Invalid);
+            counts.degraded += usize::from(source.service == ServiceHealth::Degraded);
+            counts.reconnect_attempts = counts
+                .reconnect_attempts
+                .saturating_add(source.reconnect_attempts);
+            counts.dropped = counts.dropped.saturating_add(source.dropped);
+            counts.rejected = counts.rejected.saturating_add(source.rejected);
+        }
+        counts
+    }
+
     pub fn view(&self) -> CoreView {
         let mut v = self.inner.view.borrow().clone();
         if self.inner.stop_requested.load(Ordering::SeqCst)

@@ -1,7 +1,10 @@
 use crate::collector::METRICS;
 use oip_core::{DataSourceId, EntityId, MetricId, SourceDefinition, ValueKind};
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeSet, path::PathBuf};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    path::PathBuf,
+};
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SourceConfig {
@@ -17,6 +20,73 @@ pub struct SourceConfig {
     /// entity differs.
     #[serde(default)]
     pub entity_id: Option<String>,
+    /// Explicit read-only OPC UA polling profile. An absent profile is the
+    /// existing local simulator contract.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub opcua: Option<OpcUaReadProfile>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct OpcUaReadProfile {
+    pub namespace_uri: String,
+    pub server_application_uri: String,
+    pub poll_ms: u64,
+    pub pki_dir: PathBuf,
+    pub certificate_path: PathBuf,
+    pub private_key_path: PathBuf,
+    pub points: Vec<OpcUaReadPoint>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct OpcUaReadPoint {
+    pub metric: MetricId,
+    /// The identifier part of a NodeId (e.g. `s=Temperature` or `i=123`).
+    /// The namespace index never belongs in persisted configuration.
+    pub node_id: String,
+    pub value_kind: ValueKind,
+}
+
+impl OpcUaReadProfile {
+    fn validate(&self) -> Result<(), String> {
+        let valid_uri = |uri: &str| {
+            uri.len() <= 512
+                && !uri.chars().any(char::is_whitespace)
+                && uri
+                    .split_once(':')
+                    .is_some_and(|(scheme, rest)| !scheme.is_empty() && !rest.is_empty())
+        };
+        if !valid_uri(&self.namespace_uri)
+            || !valid_uri(&self.server_application_uri)
+            || !self.pki_dir.is_absolute()
+            || !(5_000..=60_000).contains(&self.poll_ms)
+            || !(1..=16).contains(&self.points.len())
+        {
+            return Err("invalid OPC-UA read profile: require explicit URIs, PKI, 1–16 points and a 5–60 second interval".into());
+        }
+        for path in [&self.certificate_path, &self.private_key_path] {
+            if path.as_os_str().is_empty()
+                || path
+                    .components()
+                    .any(|component| !matches!(component, std::path::Component::Normal(_)))
+            {
+                return Err("OPC-UA identity files must be relative to the PKI directory".into());
+            }
+        }
+        let mut metrics = BTreeSet::new();
+        let mut nodes = BTreeSet::new();
+        for point in &self.points {
+            let identifier = oip_opcua::async_opcua::canonical_node_identifier(&point.node_id)
+                .ok_or(
+                "invalid OPC-UA point identifier: provide an identifier without a namespace index",
+            )?;
+            if !metrics.insert(&point.metric) || !nodes.insert(identifier) {
+                return Err("duplicate metric or OPC-UA point identifier".into());
+            }
+        }
+        Ok(())
+    }
 }
 /// An OPC-UA browser binding for a source already registered by another OIP
 /// integration (for example the SSH host collector). It never provisions a
@@ -42,9 +112,53 @@ impl SourceConfig {
             endpoint: format!("opc.tcp://127.0.0.1:{port}"),
             namespace: 2,
             entity_id: None,
+            opcua: None,
         }
     }
     pub fn definition(&self) -> Result<SourceDefinition, String> {
+        if let Some(profile) = &self.opcua {
+            profile.validate()?;
+            let points = profile
+                .points
+                .iter()
+                .map(|point| {
+                    let canonical =
+                        oip_opcua::async_opcua::canonical_node_identifier(&point.node_id)
+                            .expect("validated point identifier");
+                    (&point.metric, canonical)
+                })
+                .collect::<BTreeMap<_, _>>();
+            // The persisted source definition rejects reusing a source identity
+            // for a different server, namespace or point mapping during restore
+            // or restart. Cadence and credential file paths are operational.
+            let binding = serde_json::to_string(&(
+                &self.endpoint,
+                &profile.server_application_uri,
+                &profile.namespace_uri,
+                points,
+            ))
+            .map_err(|_| "OPC-UA source binding")?;
+            let metrics = profile
+                .points
+                .iter()
+                .map(|point| (point.metric.clone(), point.value_kind))
+                .collect::<BTreeMap<_, _>>();
+            return Ok(SourceDefinition {
+                id: DataSourceId::new(&self.id).map_err(|_| "source id")?,
+                name: self.name.clone(),
+                entity_id: EntityId::new(
+                    self.entity_id
+                        .as_deref()
+                        .ok_or("OPC-UA source requires an entity")?,
+                )
+                .map_err(|_| "entity")?,
+                binding,
+                origin_class: oip_core::OriginClass::External,
+                simulation_origin_id: String::new(),
+                required_metrics: metrics.keys().cloned().collect(),
+                metrics,
+            });
+        }
         let mut metrics = METRICS
             .iter()
             .map(|m| {
@@ -133,6 +247,9 @@ pub struct CoreConfig {
     pub browser_credentials_file: Option<PathBuf>,
     pub http_port: u16,
     pub sources: Vec<SourceConfig>,
+    /// Installation-wide authoritative permission for incoming OPC-UA
+    /// operations. Existing installations retain their current permission model.
+    pub opcua_read_only: bool,
     #[serde(default)]
     pub opcua_browse_sources: Vec<OpcUaBrowseSource>,
     pub queue_capacity: usize,
@@ -151,6 +268,7 @@ impl Default for CoreConfig {
             browser_credentials_file: None,
             http_port: 8080,
             sources: Vec::new(),
+            opcua_read_only: false,
             opcua_browse_sources: Vec::new(),
             queue_capacity: 64,
             stale_after_ms: 5000,
@@ -177,7 +295,7 @@ impl CoreConfig {
         let mut ids = BTreeSet::new();
         let mut endpoints = BTreeSet::new();
         for s in &self.sources {
-            if s.namespace != 2
+            if (s.opcua.is_none() && s.namespace != 2)
                 || s.endpoint.contains(":0/")
                 || s.endpoint.ends_with(":0")
                 || s.id.is_empty()
@@ -192,10 +310,20 @@ impl CoreConfig {
             {
                 return Err("duplicate or invalid source identity/binding".into());
             }
-            oip_opcua::validate_client_endpoint(&s.endpoint, true).map_err(|_| {
-                "source must be a literal loopback OPC-UA simulation endpoint without credentials"
-            })?;
+            oip_opcua::validate_client_endpoint(&s.endpoint, s.opcua.is_none())
+                .map_err(|_| "OPC-UA source must use an explicit IP endpoint without credentials; simulation requires loopback")?;
             s.definition()?;
+        }
+        if self
+            .sources
+            .iter()
+            .filter(|source| source.opcua.is_some())
+            .count()
+            > 1
+            || (self.sources.iter().any(|source| source.opcua.is_some())
+                && (!self.opcua_read_only || self.legacy_single_infrastructure))
+        {
+            return Err("only one secured read-only OPC-UA source is supported; explicit scoped provisioning is required".into());
         }
         let mut browse_ids = BTreeSet::new();
         for source in &self.opcua_browse_sources {
@@ -209,6 +337,7 @@ impl CoreConfig {
                 || source.entity_id.is_empty()
                 || source.entity_id.len() > 128
                 || !browse_ids.insert(&source.id)
+                || ids.contains(&source.id)
             {
                 return Err("duplicate or invalid OPC-UA browser source binding".into());
             }

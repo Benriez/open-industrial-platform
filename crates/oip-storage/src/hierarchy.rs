@@ -95,6 +95,23 @@ impl SqliteStore {
         definitions: &[SourceDefinition],
         adoption: Option<&LegacyAdoption>,
     ) -> Result<ProvisioningResult, StorageError> {
+        Self::provision_file_with_external_sources(
+            path,
+            plan,
+            definitions,
+            &BTreeSet::new(),
+            adoption,
+        )
+    }
+    /// Offline entry point for the explicit external source configurations
+    /// supplied by the operator alongside the hierarchy plan.
+    pub fn provision_file_with_external_sources(
+        path: &Path,
+        plan: ProvisioningPlan,
+        definitions: &[SourceDefinition],
+        external_sources: &BTreeSet<DataSourceId>,
+        adoption: Option<&LegacyAdoption>,
+    ) -> Result<ProvisioningResult, StorageError> {
         let _owner = DatabaseOwnership::acquire(path)?;
         HierarchyRegistry::new(plan.clone()).map_err(|_| bad())?;
         let c = Connection::open(path)?;
@@ -107,7 +124,7 @@ impl SqliteStore {
         c.execute_batch("PRAGMA foreign_keys=ON;PRAGMA busy_timeout=5000;PRAGMA journal_mode=WAL;PRAGMA synchronous=FULL;")?;
         let mut s = Self { connection: c };
         s.migrate_to(2)?;
-        s.provision(plan, definitions, adoption)
+        s.provision_with_external_sources(plan, definitions, external_sources, adoption)
     }
     pub fn hierarchy(&self) -> Result<Option<HierarchyRegistry>, StorageError> {
         load(&self.connection)
@@ -118,20 +135,35 @@ impl SqliteStore {
         definitions: &[SourceDefinition],
         adoption: Option<&LegacyAdoption>,
     ) -> Result<ProvisioningResult, StorageError> {
+        self.provision_with_external_sources(plan, definitions, &BTreeSet::new(), adoption)
+    }
+    pub fn provision_with_external_sources(
+        &mut self,
+        plan: ProvisioningPlan,
+        definitions: &[SourceDefinition],
+        external_sources: &BTreeSet<DataSourceId>,
+        adoption: Option<&LegacyAdoption>,
+    ) -> Result<ProvisioningResult, StorageError> {
         let registry = HierarchyRegistry::new(plan).map_err(|_| bad())?;
         let plan = registry.plan.clone();
         let ids: BTreeSet<_> = definitions.iter().map(|d| d.id.clone()).collect();
         if ids.len() != definitions.len()
             || ids != plan.sources.iter().map(|p| p.source_id.clone()).collect()
+            || (plan.legacy_single_infrastructure && !external_sources.is_empty())
+            || external_sources
+                != &definitions
+                    .iter()
+                    .filter(|definition| definition.origin_class == OriginClass::External)
+                    .map(|definition| definition.id.clone())
+                    .collect::<BTreeSet<_>>()
         {
             return Err(bad());
         }
         for s in &plan.sources {
-            if !definitions.iter().any(|d| {
-                d.id == s.source_id
-                    && d.entity_id == s.entity_id
-                    && d.origin_class == OriginClass::Simulation
-            }) {
+            if !definitions
+                .iter()
+                .any(|d| d.id == s.source_id && d.entity_id == s.entity_id)
+            {
                 return Err(bad());
             }
         }
@@ -186,7 +218,12 @@ impl SqliteStore {
                 return Err(bad());
             }
         }
-        let evidence = legacy_evidence(&self.connection)?;
+        let evidence = if old.is_some() {
+            evidence_for_sources(&self.connection, external_sources)?
+        } else {
+            // Legacy history retains its original simulation-only admission.
+            legacy_evidence(&self.connection)?
+        };
         let has_history =
             evidence.observations > 0 || evidence.events > 0 || !evidence.sources.is_empty();
         let legacy_migrated = old.is_none() && has_history;
@@ -236,12 +273,6 @@ impl SqliteStore {
             if o.data_source_id.as_str() != source
                 || o.entity_id.as_str() != entity
                 || o.metric_id.as_str() != metric
-                || !definitions.iter().any(|d| {
-                    d.id == o.data_source_id
-                        && o.simulation_origin
-                            .as_ref()
-                            .is_some_and(|v| v.origin_id == d.simulation_origin_id)
-                })
                 || !plan
                     .sources
                     .iter()
@@ -283,12 +314,6 @@ impl SqliteStore {
                 )
                 .map_err(|_| bad())?;
                 if o.data_source_id.as_str() != source
-                    || !definitions.iter().any(|d| {
-                        d.id == o.data_source_id
-                            && o.simulation_origin
-                                .as_ref()
-                                .is_some_and(|v| v.origin_id == d.simulation_origin_id)
-                    })
                     || !plan
                         .sources
                         .iter()
@@ -299,7 +324,20 @@ impl SqliteStore {
             }
         }
         drop(events);
-        let invalid:i64=self.connection.query_row("SELECT (SELECT count(*) FROM collection_events e LEFT JOIN observations o ON e.observation_key=o.observation_key LEFT JOIN data_gaps g ON e.gap_key=g.gap_key WHERE e.origin_class!='simulation' OR (e.observation_key IS NOT NULL AND (o.data_source_id!=e.data_source_id OR o.origin_class!=e.origin_class)) OR (e.gap_key IS NOT NULL AND (g.data_source_id!=e.data_source_id OR g.origin_class!=e.origin_class))) + (SELECT count(*) FROM data_gaps WHERE origin_class!='simulation' OR started_at_ms<0 OR ended_at_ms<started_at_ms)",[],|r|r.get(0))?;
+        let invalid: i64 = self.connection.query_row(
+            "SELECT (SELECT count(*) FROM collection_events e
+                JOIN source_identities s ON s.data_source_id=e.data_source_id
+                LEFT JOIN observations o ON e.observation_key=o.observation_key
+                LEFT JOIN data_gaps g ON e.gap_key=g.gap_key
+                WHERE e.origin_class!=s.origin_class
+                    OR (e.observation_key IS NOT NULL AND (o.data_source_id!=e.data_source_id OR o.origin_class!=e.origin_class))
+                    OR (e.gap_key IS NOT NULL AND (g.data_source_id!=e.data_source_id OR g.origin_class!=e.origin_class)))
+                + (SELECT count(*) FROM data_gaps g
+                    JOIN source_identities s ON s.data_source_id=g.data_source_id
+                    WHERE g.origin_class!=s.origin_class OR started_at_ms<0 OR ended_at_ms<started_at_ms)",
+            [],
+            |r| r.get(0),
+        )?;
         if invalid != 0 {
             return Err(bad());
         }
@@ -337,15 +375,14 @@ impl SqliteStore {
                 &o,
             )
             .map_err(|_| bad())?;
-            if origin != "simulation"
+            let expected_origin = if external_sources.contains(&o.data_source_id) {
+                "external"
+            } else {
+                "simulation"
+            };
+            if origin != expected_origin
                 || o.entity_id.as_str() != entity
                 || o.data_source_id.as_str() != source
-                || !definitions.iter().any(|d| {
-                    d.id == o.data_source_id
-                        && o.simulation_origin
-                            .as_ref()
-                            .is_some_and(|v| v.origin_id == d.simulation_origin_id)
-                })
                 || !plan
                     .sources
                     .iter()
@@ -408,9 +445,13 @@ impl SqliteStore {
             )?;
         }
         for def in definitions {
+            let origin = match def.origin_class {
+                OriginClass::Simulation => "simulation",
+                OriginClass::External => "external",
+            };
             tx.execute(
-                "INSERT INTO source_identities VALUES(?1,'simulation') ON CONFLICT DO NOTHING",
-                [def.id.as_str()],
+                "INSERT INTO source_identities VALUES(?1,?2) ON CONFLICT DO NOTHING",
+                params![def.id.as_str(), origin],
             )?;
         }
         for p in &plan.principals {
@@ -472,7 +513,7 @@ impl SqliteStore {
         if load(&tx)?.ok_or_else(bad)?.plan != registry.plan {
             return Err(bad());
         }
-        let after = legacy_evidence(&tx)?;
+        let after = evidence_for_sources(&tx, external_sources)?;
         if evidence.observations != after.observations
             || evidence.events != after.events
             || evidence.gaps != after.gaps
@@ -500,6 +541,12 @@ impl SqliteStore {
     }
 }
 fn legacy_evidence(c: &Connection) -> Result<LegacyAdoption, StorageError> {
+    evidence_for_sources(c, &BTreeSet::new())
+}
+fn evidence_for_sources(
+    c: &Connection,
+    external_sources: &BTreeSet<DataSourceId>,
+) -> Result<LegacyAdoption, StorageError> {
     let mut sources = BTreeSet::new();
     let mut q = c.prepare(
         "SELECT data_source_id FROM source_identities UNION SELECT source_id FROM core_sources",
@@ -518,10 +565,18 @@ fn legacy_evidence(c: &Connection) -> Result<LegacyAdoption, StorageError> {
     {
         return Err(bad());
     }
-    let mut q =
-        c.prepare("SELECT origin_class FROM source_identities WHERE origin_class!='simulation'")?;
-    if q.query([])?.next()?.is_some() {
-        return Err(bad());
+    let mut q = c.prepare("SELECT data_source_id,origin_class FROM source_identities")?;
+    for row in q.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))? {
+        let (source, origin) = row?;
+        let id = DataSourceId::new(source).map_err(|_| bad())?;
+        let expected = if external_sources.contains(&id) {
+            "external"
+        } else {
+            "simulation"
+        };
+        if origin != expected {
+            return Err(bad());
+        }
     }
     let count = |table: &str| -> Result<u64, StorageError> {
         Ok(
@@ -656,10 +711,11 @@ fn load(c: &Connection) -> Result<Option<HierarchyRegistry>, StorageError> {
         [],
         |r| r.get(0),
     )?;
-    let services = if !holds_services {
-        Vec::new()
-    } else {
-        rows(
+    let services =
+        if !holds_services {
+            Vec::new()
+        } else {
+            rows(
             c,
             "SELECT id,site_id,device_id,name,kind,endpoint,port,state FROM services ORDER BY id",
             256,
@@ -687,7 +743,7 @@ fn load(c: &Connection) -> Result<Option<HierarchyRegistry>, StorageError> {
                 })
             },
         )?
-    };
+        };
     Ok(Some(
         HierarchyRegistry::new(ProvisioningPlan {
             organizations,

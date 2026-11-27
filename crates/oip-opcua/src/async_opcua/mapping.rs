@@ -1,5 +1,5 @@
-use crate::AdapterError;
 use crate::adapter::FreshnessPolicy;
+use crate::AdapterError;
 use oip_core::{
     CollectionError, DataQuality, DataSourceId, EntityId, Freshness, MetricId, MetricValue,
     ObservationEnvelope, SimulationOrigin, Timestamp, Timestamps, Unit,
@@ -270,7 +270,9 @@ pub(crate) fn data_value_to_observation(
         (Freshness::Unknown, None)
     };
     if let Some(freshness_quality) = freshness_quality {
-        quality = freshness_quality;
+        if quality == DataQuality::Good {
+            quality = freshness_quality;
+        }
         collection_error = collection_error.or(Some(CollectionError::StaleMeasurement));
     }
     if !timestamps_valid {
@@ -283,6 +285,9 @@ pub(crate) fn data_value_to_observation(
     }
     if metric_value.is_none() {
         freshness = Freshness::Unknown;
+        if quality == DataQuality::Good {
+            quality = DataQuality::Unknown;
+        }
     }
 
     // The provenance of a remote source is untrusted. Only the expected local
