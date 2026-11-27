@@ -64,7 +64,7 @@ try {
     }
     await page.screenshot({ path: screenshot });
     assert.ok(panel.includes(message), panel);
-    assert.match(panel, /: "?Fassung"?\s*$/m);
+    assert.ok(panel.includes(`Fassung ${before.revision} `), panel);
     assert.equal(await page.getByRole('button', { name: 'Nachweis übernehmen' }).count(), 0);
     assert.deepEqual(await (await context.request.get(path)).json(), before);
   }
