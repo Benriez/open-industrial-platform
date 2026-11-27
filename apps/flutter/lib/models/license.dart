@@ -27,6 +27,7 @@ class LicenseStatus {
   final LicenseProofState proofState;
   final LicenseEntitlement commercial, support;
   final String? licenseId, licensee, organization;
+  final int? revision;
   final bool canManage;
 
   const LicenseStatus({
@@ -35,6 +36,7 @@ class LicenseStatus {
     required this.support,
     required this.canManage,
     this.licenseId,
+    this.revision,
     this.licensee,
     this.organization,
   });
@@ -45,6 +47,7 @@ class LicenseStatus {
         commercial: LicenseEntitlement.fromWire(json['commercial']),
         support: LicenseEntitlement.fromWire(json['support']),
         licenseId: json['license_id'] as String?,
+        revision: json['revision'] as int?,
         licensee: json['licensee'] as String?,
         organization: json['organization'] as String?,
         canManage: json['can_manage'] as bool,

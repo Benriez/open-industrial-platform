@@ -52,6 +52,8 @@ pub struct LicenseStatus {
     pub commercial: EntitlementState,
     pub support: EntitlementState,
     pub license_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub revision: Option<u32>,
     pub licensee: Option<String>,
     pub organization: Option<String>,
     pub can_manage: bool,

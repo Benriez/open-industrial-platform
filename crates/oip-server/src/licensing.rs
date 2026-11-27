@@ -156,6 +156,7 @@ impl Licensing {
             commercial,
             support: entitlement(verified.support_status),
             license_id: Some(verified.claims.license_id),
+            revision: Some(verified.claims.revision),
             licensee: Some(verified.claims.holder.name),
             organization: None,
             can_manage,
@@ -181,6 +182,7 @@ impl Licensing {
             commercial: EntitlementState::Unconfirmed,
             support: EntitlementState::Unconfirmed,
             license_id: None,
+            revision: None,
             licensee: None,
             organization: None,
             can_manage: manager
@@ -191,17 +193,44 @@ impl Licensing {
         }
     }
 
-    fn claims(&self, proof: &LicenseProof) -> Result<Verified, CapabilityError> {
+    fn replacement_status(
+        &self,
+        proof: &LicenseProof,
+        current: Option<&[u8]>,
+    ) -> Result<LicenseStatus, CapabilityError> {
         let TrustAnchor::Policy(policy) = &self.trust else {
             return Err(unavailable());
         };
-        verify(proof.artifact.as_bytes(), policy, OffsetDateTime::now_utc()).map_err(|_| {
+        let now = OffsetDateTime::now_utc();
+        let next = verify(proof.artifact.as_bytes(), policy, now).map_err(|_| {
             CapabilityError::new(
                 CapabilityErrorCode::InvalidInput,
                 "LICENSE_PROOF_INVALID",
                 "The proof does not match the configured License Center policy or has an invalid format",
             )
-        })
+        })?;
+        let known = current
+            .and_then(|artifact| verify(artifact, policy, now).ok())
+            .filter(|known| known.claims.license_id == next.claims.license_id);
+        if let Some(known) = known {
+            if next.claims.revision < known.claims.revision {
+                return Err(CapabilityError::new(
+                    CapabilityErrorCode::InvalidInput,
+                    "LICENSE_PROOF_SUPERSEDED",
+                    "This licence already has a newer revision stored. Use the latest issued file.",
+                ));
+            }
+            if next.claims.revision == known.claims.revision
+                && next.payload_digest != known.payload_digest
+            {
+                return Err(CapabilityError::new(
+                    CapabilityErrorCode::InvalidInput,
+                    "LICENSE_PROOF_REVISION_CONFLICT",
+                    "The same licence revision has different signed contents. Contact the issuer.",
+                ));
+            }
+        }
+        Ok(self.status(next, true))
     }
 
     pub(crate) fn preview(
@@ -209,9 +238,10 @@ impl Licensing {
         principal: &PrincipalId,
         proof: LicenseProof,
     ) -> Result<LicensePreview, CapabilityError> {
-        let status = self.status(self.claims(&proof)?, true);
         let mut pending = self.pending.lock().map_err(|_| unavailable())?;
-        let previous = self.revision()?;
+        let current = self.current().map_err(|_| unavailable())?;
+        let status = self.replacement_status(&proof, current.as_deref())?;
+        let previous = current.as_deref().map(|bytes| Sha256::digest(bytes).into());
         let now = Instant::now();
         pending.retain(|_, item| now < item.expires);
         if pending.len() >= 32 && !pending.contains_key(principal) {
@@ -243,21 +273,17 @@ impl Licensing {
             .get(principal)
             .filter(|item| Instant::now() < item.expires && item.confirmation == confirmation)
             .ok_or_else(confirmation_required)?;
-        if item.previous != self.revision()? {
+        let current = self.current().map_err(|_| unavailable())?;
+        let current_digest = current.as_deref().map(|bytes| Sha256::digest(bytes).into());
+        if item.previous != current_digest {
             pending.remove(principal);
             return Err(confirmation_required());
         }
         let item = pending.remove(principal).expect("confirmation is locked");
-        let status = self.status(self.claims(&item.proof)?, true);
+        let status = self.replacement_status(&item.proof, current.as_deref())?;
         crate::private_state::replace_bytes(&self.proof_path, item.proof.artifact.as_bytes())
             .map_err(|_| unavailable())?;
         Ok(status)
-    }
-
-    fn revision(&self) -> Result<Option<[u8; 32]>, CapabilityError> {
-        self.current()
-            .map(|bytes| bytes.map(|bytes| Sha256::digest(bytes).into()))
-            .map_err(|_| unavailable())
     }
 }
 

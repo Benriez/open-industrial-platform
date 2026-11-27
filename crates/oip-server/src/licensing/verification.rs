@@ -75,7 +75,7 @@ pub(super) struct Claims {
     product_id: String,
     kid: String,
     pub(super) license_id: String,
-    revision: u32,
+    pub(super) revision: u32,
     issued_at: String,
     #[serde(deserialize_with = "object")]
     pub(super) holder: Holder,
@@ -121,6 +121,7 @@ pub(super) enum Status {
 
 pub(super) struct Verified {
     pub(super) claims: Claims,
+    pub(super) payload_digest: [u8; 32],
     pub(super) usage_status: Status,
     pub(super) support_status: Status,
 }
@@ -201,6 +202,7 @@ pub(super) fn verify(
 
     Ok(Verified {
         claims,
+        payload_digest: Sha256::digest(payload).into(),
         usage_status,
         support_status,
     })

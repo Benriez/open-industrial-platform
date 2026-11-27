@@ -151,13 +151,13 @@ def exercise(args, directory):
              "--commercial-license-kind", kind, *options], capture_output=True, timeout=25,
         )
 
-    def check_browser(screenshot, mode):
+    def check_browser(screenshot, mode, artifact=artifact_file):
         code_grant = subprocess.check_output([
             args.core, "--browser-login", "--ipc-socket", root / "ipc.sock",
             "--ipc-credential", root / "operator.credential",
         ], text=True, timeout=10)
         subprocess.run([
-            "node", ROOT / "apps/flutter/test/browser_license.mjs", base, artifact_file, screenshot, mode,
+            "node", ROOT / "apps/flutter/test/browser_license.mjs", base, artifact, screenshot, mode,
         ], input=json.loads(code_grant)["login_code"], text=True, check=True, timeout=150)
 
     try:
@@ -306,6 +306,43 @@ def exercise(args, directory):
                 assert hashlib.sha256(bundle.read()).hexdigest() == bundle_sha256
             check_browser(args.evidence.with_suffix(".png"), "import")
             tested.append("served_browser_file_picker_preview_and_explicit_confirmation")
+
+        renewed = sign_fixture(private, "4" * 32, now - 300, usage=active_usage, revision=2,
+                               support=period("fixed", now - 300, now + 3600))
+        conflicting = proof_request(sign_fixture(private, "4" * 32, now - 300, usage=active_usage, revision=2))
+        status, reviewed = request("/preview", proof_request(renewed))
+        assert status == 200
+        status, updated = request("/apply", {"confirmation": reviewed["confirmation"]})
+        assert status == 200 and updated == reviewed["status"] and updated["support"] == "active"
+        assert saved.read_bytes() == renewed
+        for invalid, error in ((no_support, "LICENSE_PROOF_SUPERSEDED"),
+                               (conflicting, "LICENSE_PROOF_REVISION_CONFLICT")):
+            status, refused = request("/preview", invalid)
+            assert status == 400 and refused["code"] == error, (status, refused)
+            assert_mcp_denied(mcp("operator"), "license_proof_preview", invalid, error)
+        assert updated["revision"] == 2
+
+        # Whitespace outside the signed payload must not be treated as a different revision.
+        reformatted = json.dumps(json.loads(renewed), indent=2).encode()
+        status, reviewed = request("/preview", proof_request(reformatted))
+        assert status == 200 and reviewed["status"] == updated
+        assert request("/apply", {"confirmation": reviewed["confirmation"]}) == (200, updated)
+        assert saved.read_bytes() == reformatted
+        for client in clients:
+            client.close()
+        clients.clear()
+        stop(runner)
+        operator = start()
+        assert request()[1] == mcp("operator").call("license_status_read") == updated
+        assert request("/preview", no_support)[1]["code"] == "LICENSE_PROOF_SUPERSEDED"
+        assert saved.read_bytes() == reformatted
+        continues_after("Refusing the older license revision interrupted collection")
+        tested.append("signed_revision_conflicts_and_rollback_rejected_across_rest_mcp_and_restart")
+        if args.browser:
+            older_file = directory / "older-oip.license.json"
+            older_file.write_text(no_support["proof"]["artifact"])
+            check_browser(args.evidence.with_name(args.evidence.stem + "-superseded.png"), "superseded", older_file)
+            tested.append("served_browser_displays_revision_and_explains_the_refusal_of_an_older_proof")
 
         next_key = Ed25519PrivateKey.generate()
         next_kid, next_encoded_key = public_key(next_key)

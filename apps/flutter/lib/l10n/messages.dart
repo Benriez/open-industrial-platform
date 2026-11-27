@@ -21,6 +21,7 @@ const englishMessages = <String, String>{
   "Beendet": "Ended",
   "Lizenzinhaber": "Licensee",
   "Lizenzkennung": "Licence ID",
+  "Fassung": "Revision",
   "Lizenznachweis": "Licence proof",
   "Lizenzprüfung nicht eingerichtet": "Licence verification is not configured",
   "Lizenzprüfung ausgesetzt": "Licence verification suspended",
@@ -35,6 +36,10 @@ const englishMessages = <String, String>{
       "Check your permissions for this installation.",
   "Der Core konnte den Nachweis nicht bestätigen. Prüfe die Originaldatei.":
       "The Core could not verify the proof. Check the original file.",
+  "Für diese Lizenz ist bereits eine neuere Fassung gespeichert. Wähle die aktuelle Lizenzdatei.":
+      "A newer revision of this licence is already stored. Select the current licence file.",
+  "Zwei Dateien mit derselben Versionsnummer enthalten unterschiedliche Angaben. Wende dich an den Lizenzaussteller.":
+      "Two files with the same revision contain different details. Contact the licence issuer.",
   "Lizenznachweis gespeichert.": "Licence proof saved.",
   "Die Bestätigung ist fehlgeschlagen. Prüfe den aktuellen Status und starte bei Bedarf eine neue Prüfung.":
       "Confirmation failed. Check the current status and start a new review if needed.",

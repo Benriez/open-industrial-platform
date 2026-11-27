@@ -131,8 +131,14 @@ class _InstallationLicenseState extends State<InstallationLicense> {
         await _refresh(
             feedback: 'Prüfe deine Berechtigung für diese Installation.');
       } else {
-        setState(() => _feedback =
-            'Der Core konnte den Nachweis nicht bestätigen. Prüfe die Originaldatei.');
+        final code = error is ApiFailure ? error.code : null;
+        setState(() => _feedback = switch (code) {
+              'LICENSE_PROOF_SUPERSEDED' =>
+                'Für diese Lizenz ist bereits eine neuere Fassung gespeichert. Wähle die aktuelle Lizenzdatei.',
+              'LICENSE_PROOF_REVISION_CONFLICT' =>
+                'Zwei Dateien mit derselben Versionsnummer enthalten unterschiedliche Angaben. Wende dich an den Lizenzaussteller.',
+              _ => 'Der Core konnte den Nachweis nicht bestätigen. Prüfe die Originaldatei.',
+            });
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -184,6 +190,8 @@ class _InstallationLicenseState extends State<InstallationLicense> {
         KeyValue(context.tr('Organisation'), organization, mono: false),
       if (status.licenseId case final id?)
         KeyValue(context.tr('Lizenzkennung'), id),
+      if (status.revision case final revision?)
+        KeyValue(context.tr('Fassung'), revision.toString(), mono: false),
     ]);
   }
 

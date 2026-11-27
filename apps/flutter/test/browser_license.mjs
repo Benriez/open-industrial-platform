@@ -5,7 +5,7 @@ const { chromium } = await import(process.env.PLAYWRIGHT_MODULE);
 const [base, proof, screenshot, mode = 'import'] = process.argv.slice(2);
 const artifact = fs.readFileSync(proof, 'utf8');
 const { payload } = JSON.parse(artifact);
-const { license_id: licenseId, holder } = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+const { license_id: licenseId, holder, revision } = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
 const code = fs.readFileSync(0, 'utf8').trim();
 const browser = await chromium.launch({
   executablePath: process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -45,23 +45,41 @@ try {
     assert.match(panel, /Lizenzprüfung ausgesetzt/);
     assert.equal(await page.getByRole('button', { name: 'Lizenznachweis hinterlegen' }).count(), 0);
     await page.screenshot({ path: screenshot });
-  } else {
-    assert.equal(mode, 'import');
+  } else if (mode === 'import') {
     await verifyImport(page, context, path, before);
+  } else {
+    assert.equal(mode, 'superseded');
+    assert.equal(before.license_id, licenseId);
+    assert.ok(before.revision > revision);
+    const refused = await selectProof(page, path);
+    assert.equal(refused.status(), 400);
+    assert.equal((await refused.json()).code, 'LICENSE_PROOF_SUPERSEDED');
+    await page.getByText('Für diese Lizenz ist bereits eine neuere Fassung gespeichert. Wähle die aktuelle Lizenzdatei.')
+      .waitFor();
+    await page.getByText('Fassung', { exact: true }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Nachweis übernehmen' }).count(), 0);
+    assert.deepEqual(await (await context.request.get(path)).json(), before);
+    await page.screenshot({ path: screenshot });
   }
 } finally {
   await browser.close();
 }
 
-async function verifyImport(page, context, path, before) {
+async function selectProof(page, path) {
   await page.getByRole('button', { name: 'Lizenznachweis hinterlegen' }).click();
   const fileButton = page.getByRole('button', { name: 'Lizenzdatei auswählen' });
   const [chooser] = await Promise.all([page.waitForEvent('filechooser'), fileButton.click()]);
-  const [submitted] = await Promise.all([
-    page.waitForRequest((request) => request.url() === path + '/preview'),
+  const [response] = await Promise.all([
+    page.waitForResponse((response) => response.url() === path + '/preview'),
     chooser.setFiles(proof),
   ]);
-  assert.deepEqual(submitted.postDataJSON(), { proof: { artifact } });
+  assert.deepEqual(response.request().postDataJSON(), { proof: { artifact } });
+  return response;
+}
+
+async function verifyImport(page, context, path, before) {
+  const verified = await selectProof(page, path);
+  assert.equal(verified.status(), 200);
   const confirm = page.getByRole('button', { name: 'Nachweis übernehmen' });
   await confirm.waitFor();
   const preview = await page.locator('body').ariaSnapshot();
@@ -78,6 +96,7 @@ async function verifyImport(page, context, path, before) {
   const status = await (await context.request.get(path)).json();
   assert.equal(status.license_id, licenseId);
   assert.equal(status.licensee, holder.name);
+  assert.equal(status.revision, revision);
   assert.equal(status.commercial, 'active');
   assert.equal(status.support, 'ended');
   await page.getByRole('button', { name: 'Lizenznachweis hinterlegen' }).waitFor();

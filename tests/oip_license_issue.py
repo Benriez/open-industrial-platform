@@ -94,7 +94,8 @@ def period(mode, start=None, end=None):
     }
 
 
-def sign_fixture(key, license_id, issued_at, *, usage, support=None, holder="Testbetrieb", kind="standard"):
+def sign_fixture(key, license_id, issued_at, *, usage, support=None, holder="Testbetrieb", kind="standard",
+                 revision=1):
     kid, _ = public_key(key)
     payload = json_bytes({
         "version": 1,
@@ -103,7 +104,7 @@ def sign_fixture(key, license_id, issued_at, *, usage, support=None, holder="Tes
         "product_id": PRODUCT,
         "kid": kid,
         "license_id": license_id,
-        "revision": 1,
+        "revision": revision,
         "issued_at": utc(issued_at),
         "holder": {"id": "b" * 32, "name": holder},
         "kind": kind,

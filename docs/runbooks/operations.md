@@ -419,6 +419,14 @@ Halte Lizenzkennung, Vertragsgrundlage und die unabhängig vereinbarten
 Zeiträume für Nutzung und Support beim Herausgeber fest. Das Format verlangt
 einen Nutzungszeitraum. Eine Supportvereinbarung ist optional. Bei Ersatz
 müssen alle weiterhin vereinbarten Berechtigungen im neuen Nachweis stehen.
+OIP zeigt die Fassung eines geprüften Nachweises an. Solange derselbe
+prüfbare Lizenznachweis gespeichert ist, lehnt OIP auch nach einem
+Core-Neustart eine ältere Fassung derselben Lizenzkennung ab. Zwei
+unterschiedlich signierte Inhalte mit gleicher Kennung und Fassung müssen
+beim Aussteller geklärt werden. Die Prüfung vergleicht mit der aktuell
+gespeicherten Datei. Eine andere Lizenzkennung kann nach Prüfung und
+Bestätigung übernommen werden. Eine wiederhergestellte ältere
+Gesamtinstallation kennt nur den Stand ihrer Sicherung.
 Der Code veröffentlicht keine Vertragsbedingungen. Eine geänderte
 Distribution erfordert die geklärte Rechtekette und ausdrückliche Freigabe
 der endgültigen Bedingungen. Bereits unter Apache-2.0 erhaltene
