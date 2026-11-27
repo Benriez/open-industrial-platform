@@ -17,6 +17,15 @@ class VersionChangelogDialog extends StatelessWidget {
 
   static const _releases = <_ReleaseNotes>[
     _ReleaseNotes(
+      version: '0.3.55',
+      build: '58',
+      date: '27. November 2026',
+      changes: [
+        'Beim Hinzufügen eines Geräts kannst du eine Organisation mit erster Infrastruktur und erstem Standort erstellen und direkt auswählen.',
+        'Der OPC-UA-Assistent kann ein Gerät registrieren und die Einrichtung mit diesem Gerät fortsetzen.',
+      ],
+    ),
+    _ReleaseNotes(
       version: '0.3.53',
       build: '56',
       date: '26. November 2026',

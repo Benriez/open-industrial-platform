@@ -55,13 +55,13 @@ try {
   ]);
   assert.equal(created.status(), 200);
   const placement = await created.json();
-  for (const label of ['Pruefbetrieb', 'Halle A', 'Pruefstand A']) {
-    await page.getByText(label, { exact: true }).last().waitFor({ state: 'visible' });
+  for (const label of ['Organisation Pruefbetrieb', 'Infrastruktur Halle A', 'Standort Pruefstand A']) {
+    await page.getByRole('button', { name: label, exact: true }).waitFor({ state: 'visible' });
   }
   await page.screenshot({ path: screenshot.replace(/\.png$/, '-selected.png') });
   await input(page, 'Anzeigename', 'Prüfmaschine');
   await page.getByRole('button', { name: 'Registrierung prüfen', exact: true }).click();
-  await page.getByText('Ich bestätige die reine Inventarregistrierung ohne Verbindung.', { exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Ich bestätige die reine Inventarregistrierung ohne Verbindung.', exact: true }).click();
   const [registered, setup] = await Promise.all([
     page.waitForResponse((response) => response.url() === base + '/api/v2/inventory/apply'),
     page.waitForResponse((response) => response.url() === base + '/api/v2/opcua/setup' &&

@@ -33,6 +33,10 @@ const englishMessages = <String, String>{
   "Registrieren Sie ein Gerät unter Geräte & Dienste und wählen Sie seinen Standort im Arbeitsbereich aus.": "Register a device in Devices & Services and select its site in the workspace.",
   "Gerät und Standort": "Device and site",
   "Neue Organisation": "New organization",
+  "Beim Hinzufügen eines Geräts kannst du eine Organisation mit erster Infrastruktur und erstem Standort erstellen und direkt auswählen.":
+      "When adding a device, you can create an organization with its first infrastructure and site and select it immediately.",
+  "Der OPC-UA-Assistent kann ein Gerät registrieren und die Einrichtung mit diesem Gerät fortsetzen.":
+      "The OPC UA wizard can register a device and continue setup with that device.",
   "Organisation erstellen": "Create organization",
   "Name der Organisation": "Organization name",
   "Name der Infrastruktur": "Infrastructure name",
