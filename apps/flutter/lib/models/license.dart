@@ -1,6 +1,13 @@
 import 'contracts.dart';
 
-enum LicenseProofState { unconfigured, missing, invalid, verified, unavailable }
+enum LicenseProofState {
+  unconfigured,
+  suspended,
+  missing,
+  invalid,
+  verified,
+  unavailable,
+}
 
 enum LicenseEntitlement {
   unconfirmed('unconfirmed'),

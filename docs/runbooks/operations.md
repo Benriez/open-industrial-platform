@@ -315,6 +315,20 @@ Schlüssel auf jeder betroffenen Installation. Die lokale Prüfung verwendet
 die installierte Richtlinie. Ohne deren Aktualisierung erfährt die Instanz
 nichts von einer Änderung im License Center. Nach dem Neustart werden mit
 einem entfernten Schlüssel ausgestellte Nachweise als ungültig angezeigt.
+
+Ist der einzige vertrauenswürdige Schlüssel kompromittiert und liegt noch
+kein freigegebener Ersatz vor, verwende im selben Wartungsablauf
+`rotate-license-keys --suspend-trust` anstelle von
+`rotate-license-keys --license-policy PFAD`. Prüfe die angezeigten
+Fingerabdrücke und bestätige die Änderung mit `--confirm`. Nach dem Neustart
+zeigt OIP **Lizenzprüfung ausgesetzt**. Nutzungs- und Supportberechtigung sind
+unbestätigt. Die gespeicherte Nachweisdatei bleibt verfügbar und ein neuer
+Nachweis kann erst nach Freigabe eines Ersatzschlüssels hinterlegt werden.
+Für die Wiederaufnahme verwende `rotate-license-keys --license-policy PFAD`
+mit der bestätigten Ersatzrichtlinie. Die Ersteinrichtung und signierte
+Installationspakete mit Lizenzrichtlinie benötigen weiterhin mindestens
+einen vertrauenswürdigen Schlüssel.
+
 Eine Wiederherstellung aus einer älteren Sicherung verwendet deren
 Richtlinie. Vergleiche die Schlüssel in der isolierten Prüfkopie vor einer
 erneuten betrieblichen Nutzung mit der aktuellen Freigabe des Herausgebers.
@@ -340,7 +354,7 @@ Recovery-Geheimnisse und erteilt keine Verbindungsfreigabe.
 | Nachweis prüfen | Lizenznachweis hinterlegen → Nachweis prüfen | `POST /api/v2/license/preview` · `oip_license_proof_preview` | Plattformweit `license_read` und `license_manage`. Die Signatur, der Geltungsbereich und die installierte Ausstelleridentität werden geprüft. Fehlerhafte Nachweise werden abgewiesen. |
 | Geprüften Nachweis übernehmen | Nachweis übernehmen | `POST /api/v2/license/apply` · `oip_license_proof_apply` | Gleiche Rolle. Einmalige, zur Vorschau gehörige Bestätigung erforderlich. Für MCP-Verwaltung ist ein explizit so berechtigter lokaler IPC-Client nötig. |
 | Herausgeberrichtlinie vorbereiten und hinterlegen | Einrichter bei der Provisionierung | `prepare-license-policy`, `--check-license-policy`, geschützte lokale Core-Konfiguration | Zuständiger lokaler Einrichter. Auswahl über separat bestätigte Fingerabdrücke. Der signierte Nachweis kann die Ausstellerkonfiguration nicht verändern. |
-| Herausgeberschlüssel wechseln | Geplante Wartung der lokalen Installation | `rotate-license-keys` an der gestoppten Instanz. Der daraus folgende Lizenzstatus erscheint in der App, REST und MCP. | Besitzer des privaten Instanzverzeichnisses. Vorschau und ausdrückliche Bestätigung für das gewählte Verzeichnis, den Konfigurationsstand und die freigegebene Richtliniendatei. |
+| Herausgeberschlüssel wechseln oder gesamte Lizenzprüfung aussetzen | Wartung der lokalen Installation | `rotate-license-keys` an der gestoppten Instanz. Der daraus folgende Lizenzstatus erscheint in der App, REST und MCP. | Besitzer des privaten Instanzverzeichnisses. Vorschau und ausdrückliche Bestätigung für das gewählte Verzeichnis, den Konfigurationsstand und die gewählte Änderung. |
 
 Die technische Ausgabe von Nachweisen erfolgt über das separate License
 Center. Wähle dort das Produkt OIP und gib die signierte JSON-Datei

@@ -51,8 +51,8 @@ class LicensePolicy(unittest.TestCase):
              *flags], cwd=self.directory, capture_output=True, timeout=15,
         )
 
-    def check_policy(self, policy):
-        return subprocess.run([CORE, "--check-license-policy"], input=policy, cwd=self.directory,
+    def check_policy(self, policy, *options):
+        return subprocess.run([CORE, "--check-license-policy", *options], input=policy, cwd=self.directory,
                               capture_output=True, timeout=15)
 
     def assert_refused(self, result):
@@ -159,6 +159,14 @@ class LicensePolicy(unittest.TestCase):
                 self.assertNotEqual(malformed, valid)
                 self.assert_refused(self.check_policy(malformed))
         self.assertEqual(list(self.directory.iterdir()), [])
+
+    def test_maintenance_validation_accepts_only_a_well_formed_suspension(self):
+        suspended = {**self.policy, "keys": {}}
+        self.assert_refused(self.check_policy(json_line(suspended)))
+        result = self.check_policy(json_line(suspended), "--allow-no-trusted-keys")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        invalid = {**suspended, "rights": {"installations": 0}}
+        self.assert_refused(self.check_policy(json_line(invalid), "--allow-no-trusted-keys"))
 
     def test_setup_refuses_invalid_policy_without_writing_configuration(self):
         policy = self.directory / "policy.json"

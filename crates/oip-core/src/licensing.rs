@@ -27,6 +27,7 @@ pub struct LicenseApplyRequest {
 #[serde(rename_all = "snake_case")]
 pub enum LicenseProofState {
     Unconfigured,
+    Suspended,
     Missing,
     Invalid,
     Verified,

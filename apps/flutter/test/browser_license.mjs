@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE);
-const [base, proof, screenshot] = process.argv.slice(2);
+const [base, proof, screenshot, mode = 'import'] = process.argv.slice(2);
 const artifact = fs.readFileSync(proof, 'utf8');
 const { payload } = JSON.parse(artifact);
 const { license_id: licenseId, holder } = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
@@ -32,6 +32,21 @@ try {
   await page.getByRole('button', { name: 'Settings-Kategorie System' }).click();
   await page.waitForTimeout(650);
   await page.getByRole('button', { name: 'Settings-Bereich Versionen & Updates' }).click();
+  if (mode === 'suspended') {
+    assert.equal(before.proof_state, 'suspended');
+    assert.equal(before.can_manage, false);
+    await page.getByText('Lizenzprüfung ausgesetzt', { exact: true }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Lizenznachweis hinterlegen' }).count(), 0);
+    await page.screenshot({ path: screenshot });
+  } else {
+    assert.equal(mode, 'import');
+    await verifyImport(page, context, path, before);
+  }
+} finally {
+  await browser.close();
+}
+
+async function verifyImport(page, context, path, before) {
   await page.getByRole('button', { name: 'Lizenznachweis hinterlegen' }).click();
   const fileButton = page.getByRole('button', { name: 'Lizenzdatei auswählen' });
   const [chooser] = await Promise.all([page.waitForEvent('filechooser'), fileButton.click()]);
@@ -63,6 +78,4 @@ try {
   const saved = await page.locator('body').ariaSnapshot();
   assert.match(saved, /Nachweis geprüft/);
   assert.ok(saved.includes(licenseId));
-} finally {
-  await browser.close();
 }

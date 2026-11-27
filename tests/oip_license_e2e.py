@@ -140,10 +140,20 @@ def exercise(args, directory):
                    data, headers, browser)
 
     def rotate(candidate, *confirmation):
+        selection = ["--license-policy", candidate] if candidate else ["--suspend-trust"]
         return subprocess.run(
-            [*command, "rotate-license-keys", "--license-policy", candidate, *confirmation],
+            [*command, "rotate-license-keys", *selection, *confirmation],
             capture_output=True, timeout=25,
         )
+
+    def check_browser(screenshot, mode):
+        code_grant = subprocess.check_output([
+            args.core, "--browser-login", "--ipc-socket", root / "ipc.sock",
+            "--ipc-credential", root / "operator.credential",
+        ], text=True, timeout=10)
+        subprocess.run([
+            "node", ROOT / "apps/flutter/test/browser_license.mjs", base, artifact_file, screenshot, mode,
+        ], input=json.loads(code_grant)["login_code"], text=True, check=True, timeout=150)
 
     try:
         operator = start()
@@ -236,14 +246,7 @@ def exercise(args, directory):
             with urllib.request.urlopen(base + "/main.dart.js", timeout=60) as bundle:
                 assert bundle.status == 200
                 assert hashlib.sha256(bundle.read()).hexdigest() == bundle_sha256
-            code_grant = subprocess.check_output([
-                args.core, "--browser-login", "--ipc-socket", root / "ipc.sock",
-                "--ipc-credential", root / "operator.credential",
-            ], text=True, timeout=10)
-            subprocess.run([
-                "node", ROOT / "apps/flutter/test/browser_license.mjs", base,
-                artifact_file, args.evidence.with_suffix(".png"),
-            ], input=json.loads(code_grant)["login_code"], text=True, check=True, timeout=150)
+            check_browser(args.evidence.with_suffix(".png"), "import")
             tested.append("served_browser_file_picker_preview_and_explicit_confirmation")
 
         next_key = Ed25519PrivateKey.generate()
@@ -308,11 +311,11 @@ def exercise(args, directory):
         assert status == 200 and request("/apply", {"confirmation": preview["confirmation"]})[0] == 200
         stop(runner)
         successor = directory / "successor.json"
-        write_policy(successor, {**{key: value for key, value in keys.items() if key != old_kid},
-                                 next_kid: next_encoded_key})
+        write_policy(successor, {next_kid: next_encoded_key})
         retirement = json.loads(rotate(successor).stdout)
-        assert retirement["removed_fingerprints"] == [old_fingerprint]
+        assert old_fingerprint in retirement["removed_fingerprints"]
         assert retirement["added_fingerprints"] == []
+        assert retirement["retained_fingerprints"] == [next_fingerprint]
         applied = rotate(successor, "--confirm", retirement["confirmation"])
         assert applied.returncode == 0 and json.loads(applied.stdout)["status"] == "applied", applied.stderr
         assert saved.read_bytes() == PHP_OIP_ARTIFACT
@@ -326,6 +329,55 @@ def exercise(args, directory):
         assert request()[1]["license_id"] == "5" * 32
         assert mcp("operator").call("license_status_read") == request()[1]
         tested.append("removing_key_rejects_its_proof_without_stopping_collection")
+
+        assert b"already running" in rotate(None).stderr
+        stop(runner)
+        suspended_policy = directory / "suspended.json"
+        write_policy(suspended_policy, {})
+        assert b"requires at least one trusted key" in rotate(suspended_policy).stderr
+        suspension = json.loads(rotate(None).stdout)
+        assert suspension["trust_suspended"] is True
+        assert suspension["removed_fingerprints"] == [next_fingerprint]
+        assert suspension["added_fingerprints"] == suspension["retained_fingerprints"] == []
+        applied = rotate(None, "--confirm", suspension["confirmation"])
+        assert applied.returncode == 0 and json.loads(applied.stdout)["status"] == "applied", applied.stderr
+        assert json.loads(json.loads(config_file.read_bytes())["license_policy"]) == json.loads(
+            suspended_policy.read_bytes()
+        )
+        assert saved.read_bytes() == next_artifact
+        operator = start()
+        status, suspended = request()
+        assert status == 200 and suspended == {
+            "proof_state": "suspended", "commercial": "unconfirmed", "support": "unconfirmed",
+            "can_manage": False, "licensee": None, "license_id": None, "organization": None,
+        }
+        suspension_mcp = mcp("operator")
+        assert suspension_mcp.call("license_status_read") == suspended
+        assert request("/preview", next_proof)[1]["code"] == "LICENSE_UNAVAILABLE"
+        assert_mcp_denied(suspension_mcp, "license_proof_preview", next_proof, "LICENSE_UNAVAILABLE")
+        continues_after("Suspended issuer trust interrupted data collection")
+        tested.append("suspending_the_last_issuer_key_preserves_data_and_denies_proofs")
+        if args.browser:
+            check_browser(args.evidence.with_name(args.evidence.stem + "-suspended.png"), "suspended")
+            tested.append("served_browser_distinguishes_suspended_trust_and_disables_import")
+
+        stop(runner)
+        replacement_key = Ed25519PrivateKey.generate()
+        replacement_policy = directory / "replacement.json"
+        write_policy(replacement_policy, dict([public_key(replacement_key)]))
+        reenable = json.loads(rotate(replacement_policy).stdout)
+        assert reenable["trust_suspended"] is False
+        assert reenable["removed_fingerprints"] == [] and len(reenable["added_fingerprints"]) == 1
+        applied = rotate(replacement_policy, "--confirm", reenable["confirmation"])
+        assert applied.returncode == 0 and json.loads(applied.stdout)["status"] == "applied", applied.stderr
+        operator = start()
+        assert request()[1]["proof_state"] == "invalid"
+        assert request("/preview", next_proof)[1]["code"] == "LICENSE_PROOF_INVALID"
+        replacement = proof_request(sign_fixture(replacement_key, "6" * 32, now - 300, usage=active_usage))
+        status, preview = request("/preview", replacement)
+        assert status == 200 and request("/apply", {"confirmation": preview["confirmation"]})[0] == 200
+        assert request()[1]["license_id"] == "6" * 32
+        tested.append("approved_replacement_recovers_verification_without_retrusting_the_removed_key")
     finally:
         for client in clients:
             client.close()

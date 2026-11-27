@@ -183,6 +183,20 @@ void main() {
     expect(find.text('Unbestätigt'), findsNothing);
   });
 
+  testWidgets('suspended issuer trust is visible with proof import disabled',
+      (tester) async {
+    final api = _LicenseApi(LicenseStatus.fromJson({
+      'proof_state': 'suspended',
+      'commercial': 'unconfirmed',
+      'support': 'unconfirmed',
+      'can_manage': false,
+    }));
+    await _mount(tester, api, locale: const Locale('en'));
+    expect(find.text('Licence verification suspended'), findsOneWidget);
+    expect(find.text('Unconfirmed'), findsNWidgets(2));
+    expect(find.byKey(const Key('enter-license-proof')), findsNothing);
+  });
+
   test('license HTTP contracts reuse authenticated session and CSRF', () async {
     const result = {
       'proof_state': 'verified',

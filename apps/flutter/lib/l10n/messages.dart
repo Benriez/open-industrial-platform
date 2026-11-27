@@ -23,6 +23,7 @@ const englishMessages = <String, String>{
   "Lizenzkennung": "Licence ID",
   "Lizenznachweis": "Licence proof",
   "Lizenzprüfung nicht eingerichtet": "Licence verification is not configured",
+  "Lizenzprüfung ausgesetzt": "Licence verification suspended",
   "Kein Nachweis gespeichert": "No proof stored",
   "Nachweis ungültig": "Invalid proof",
   "Nachweis geprüft": "Verified proof",

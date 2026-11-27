@@ -62,10 +62,16 @@ async fn run() -> Result<(), Box<dyn Error>> {
         .first()
         .is_some_and(|arg| arg == "--check-license-policy")
     {
-        if args.len() != 1 {
-            return Err("usage: --check-license-policy < POLICY.json".into());
-        }
-        oip_server::check_license_policy(std::io::stdin().lock())?;
+        let allow_no_trusted_keys = match &args[1..] {
+            [] => false,
+            [option] if option == "--allow-no-trusted-keys" => true,
+            _ => {
+                return Err(
+                    "usage: --check-license-policy [--allow-no-trusted-keys] < POLICY.json".into(),
+                )
+            }
+        };
+        oip_server::check_license_policy(std::io::stdin().lock(), allow_no_trusted_keys)?;
         return Ok(());
     }
     // Bridge mode is parsed and returned before config, DB or CoreRuntime access.

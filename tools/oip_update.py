@@ -129,8 +129,11 @@ def unique_manifest_fields(pairs):
     return fields
 
 
-def check_license_policy(core: pathlib.Path, data: bytes):
-    result = subprocess.run([core, "--check-license-policy"], input=data,
+def check_license_policy(core: pathlib.Path, data: bytes, *, allow_no_trusted_keys=False):
+    command = [core, "--check-license-policy"]
+    if allow_no_trusted_keys:
+        command.append("--allow-no-trusted-keys")
+    result = subprocess.run(command, input=data,
                             capture_output=True, timeout=10)
     if result.returncode != 0:
         detail = result.stderr.decode("utf-8", errors="replace").strip()

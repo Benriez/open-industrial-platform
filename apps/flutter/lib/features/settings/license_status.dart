@@ -211,6 +211,8 @@ class _InstallationLicenseState extends State<InstallationLicense> {
                 context.tr(switch (status.proofState) {
                   LicenseProofState.unconfigured =>
                     'Lizenzprüfung nicht eingerichtet',
+                  LicenseProofState.suspended =>
+                    'Lizenzprüfung ausgesetzt',
                   LicenseProofState.missing => 'Kein Nachweis gespeichert',
                   LicenseProofState.invalid => 'Nachweis ungültig',
                   LicenseProofState.verified => 'Nachweis geprüft',

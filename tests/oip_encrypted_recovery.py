@@ -169,6 +169,15 @@ def rehearsal(args, root):
         live_refusal = tool("recovery-backup", "--output", vault, secured_by=secret, expected=2)
         assert "Stop the Core" in live_refusal and not vault.exists()
         tool("stop")
+        if args.suspended_license_trust:
+            suspended_policy = {**json.loads(trust.read_text()), "keys": {}}
+            put(config, {**core_configuration, "license_policy": json.dumps(suspended_policy)})
+            tool("start")
+            admin.login(args.binary, root / "s", license_credential, principal="platform-reader")
+            license_status = admin.call("license")
+            assert license_status["proof_state"] == "suspended"
+            assert license_status["license_id"] is None and license_status["can_manage"] is False
+            tool("stop")
         original_points = count(database)
 
         original_ipc = json.loads(ipc.read_text())
@@ -270,7 +279,8 @@ def rehearsal(args, root):
                        "incomplete_authenticated_archive_refused", "existing_target_preserved",
                        "multi_os_user_backup_refused",
                        "inventory_and_scoped_identity_preserved", "active_pairing_preserved",
-                       "license_proof_verified_and_access_scoped_after_restore",
+                       ("license_trust_suspension_preserved_and_access_scoped_after_restore"
+                        if args.suspended_license_trust else "license_proof_verified_and_access_scoped_after_restore"),
                        "revocation_and_repair_denial_preserved",
                        "fresh_clone_outbound_blocked", "only_explicit_loopback_reconnected"],
             "identical_restored_observations": original_points,
@@ -296,6 +306,8 @@ def main():
     parser.add_argument("--receipt", type=Path)
     parser.add_argument("--read-only-profile", action="store_true",
                         help="verify the supported Core's OPC-UA read-only configuration")
+    parser.add_argument("--suspended-license-trust", action="store_true",
+                        help="rehearse recovery with the last trusted issuer key removed")
     args = parser.parse_args()
     if sys.platform != "darwin":
         parser.error("This rehearsal verifies the macOS recovery sandbox.")

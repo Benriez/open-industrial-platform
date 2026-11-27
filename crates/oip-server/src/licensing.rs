@@ -19,15 +19,21 @@ pub(crate) const MAX_PREVIEW_REQUEST: usize = 50 * 1024;
 const MAX_POLICY: usize = 16 * 1024;
 const CONFIRMATION_LIFETIME: Duration = Duration::from_secs(300);
 
-/// Check a provisioner's policy with the same rules the daemon uses.
-pub fn check_license_policy(input: impl Read) -> io::Result<()> {
+/// Check a policy before initial provisioning or deliberate local maintenance.
+pub fn check_license_policy(input: impl Read, allow_no_trusted_keys: bool) -> io::Result<()> {
     let mut bytes = Vec::new();
     input
         .take((MAX_POLICY + 1) as u64)
         .read_to_end(&mut bytes)?;
-    parse_policy(&bytes)
-        .map(|_| ())
-        .map_err(|reason| io::Error::new(io::ErrorKind::InvalidData, reason))
+    let policy = parse_policy(&bytes)
+        .map_err(|reason| io::Error::new(io::ErrorKind::InvalidData, reason))?;
+    if policy.keys.is_empty() && !allow_no_trusted_keys {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "The initial license policy requires at least one trusted key.",
+        ));
+    }
+    Ok(())
 }
 
 fn parse_policy(bytes: &[u8]) -> Result<Policy, &'static str> {
@@ -52,11 +58,10 @@ fn parse_policy(bytes: &[u8]) -> Result<Policy, &'static str> {
     {
         return Err("The license policy contains an invalid right or limit.");
     }
-    if policy.keys.is_empty()
-        || !policy
-            .keys
-            .iter()
-            .all(|(kid, key)| verified_key(kid, key).is_some())
+    if !policy
+        .keys
+        .iter()
+        .all(|(kid, key)| verified_key(kid, key).is_some())
     {
         return Err("The license policy must have valid Ed25519 keys with matching key IDs.");
     }
@@ -65,6 +70,7 @@ fn parse_policy(bytes: &[u8]) -> Result<Policy, &'static str> {
 
 enum TrustAnchor {
     Unconfigured,
+    Suspended,
     Invalid,
     Policy(Policy),
 }
@@ -84,7 +90,11 @@ impl TrustAnchor {
                     .iter()
                     .all(|kind| policy.kinds.contains(kind)) =>
             {
-                Self::Policy(policy)
+                if policy.keys.is_empty() {
+                    Self::Suspended
+                } else {
+                    Self::Policy(policy)
+                }
             }
             _ => Self::Invalid,
         }
@@ -155,6 +165,7 @@ impl Licensing {
     pub(crate) fn read(&self, manager: bool) -> LicenseStatus {
         let proof_state = match &self.trust {
             TrustAnchor::Unconfigured => LicenseProofState::Unconfigured,
+            TrustAnchor::Suspended => LicenseProofState::Suspended,
             TrustAnchor::Invalid => LicenseProofState::Unavailable,
             TrustAnchor::Policy(policy) => match self.current() {
                 Ok(Some(bytes)) => match verify(&bytes, policy, OffsetDateTime::now_utc()) {

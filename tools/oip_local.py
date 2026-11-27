@@ -246,10 +246,14 @@ def rotate_license_keys(root, args, core):
         raise ValueError("Choose a managed local instance with an existing license policy.")
 
     current_text = config["license_policy"].encode("utf-8")
-    candidate_text = bounded_file(args.license_policy, MAX_LICENSE_POLICY, "The license policy")
-    for data in (current_text, candidate_text):
-        check_license_policy(core, data)
-    current, candidate = json.loads(current_text), json.loads(candidate_text)
+    check_license_policy(core, current_text, allow_no_trusted_keys=True)
+    current = json.loads(current_text)
+    if args.suspend_trust:
+        candidate_text = (json.dumps({**current, "keys": {}}, sort_keys=True) + "\n").encode()
+    else:
+        candidate_text = bounded_file(args.license_policy, MAX_LICENSE_POLICY, "The license policy")
+    check_license_policy(core, candidate_text, allow_no_trusted_keys=args.suspend_trust)
+    candidate = json.loads(candidate_text)
     current_keys, candidate_keys = current.pop("keys"), candidate.pop("keys")
     current["kinds"].sort()
     candidate["kinds"].sort()
@@ -260,7 +264,7 @@ def rotate_license_keys(root, args, core):
 
     old = key_fingerprints(current_keys.values())
     new = key_fingerprints(candidate_keys.values())
-    review = {"instance": str(root), "added_fingerprints": sorted(new - old),
+    review = {"instance": str(root), "trust_suspended": not new, "added_fingerprints": sorted(new - old),
               "removed_fingerprints": sorted(old - new), "retained_fingerprints": sorted(old & new)}
     if current_keys == candidate_keys:
         print(json.dumps({**review, "status": "unchanged"}, indent=2))
@@ -486,7 +490,10 @@ def main():
     policy.add_argument("--right", action="append", default=[])
     rotation = commands.add_parser("rotate-license-keys",
                                    help="Review or apply issuer key rotation in a stopped managed instance")
-    rotation.add_argument("--license-policy", required=True, help="Approved replacement OIP policy file")
+    rotation_source = rotation.add_mutually_exclusive_group(required=True)
+    rotation_source.add_argument("--license-policy", help="Approved replacement OIP policy file")
+    rotation_source.add_argument("--suspend-trust", action="store_true",
+                                 help="Remove all trusted issuer keys until a replacement is approved")
     rotation.add_argument("--confirm", help="Confirmation from the review of this policy and instance")
     args = parser.parse_args()
     os.umask(0o077)
