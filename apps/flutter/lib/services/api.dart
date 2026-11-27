@@ -13,6 +13,7 @@ import '../models/diagnostics.dart';
 import '../models/history.dart';
 import '../models/hue.dart';
 import '../models/infrastructure.dart';
+import '../models/license.dart';
 import '../models/onboarding.dart';
 import '../features/settings/settings_models.dart';
 
@@ -219,6 +220,12 @@ abstract class PairedDeviceManagementApi {
   Future<bool> revokeDeviceSignIn(String id);
 }
 
+abstract class LicenseManagementApi {
+  Future<LicenseStatus> licenseStatus();
+  Future<LicensePreview> previewLicense(LicenseProof proof);
+  Future<LicenseStatus> applyLicense(String confirmation);
+}
+
 class ApiFailure implements Exception {
   final String message;
   final String? code;
@@ -247,6 +254,7 @@ class RestApi
         DeviceManagementApi,
         TouchIdManagementApi,
         PairedDeviceManagementApi,
+        LicenseManagementApi,
         HueApi,
         HueSetupApi {
   final Uri base;
@@ -359,6 +367,31 @@ class RestApi
       _csrf = null;
       disconnect();
     }
+  }
+
+  @override
+  Future<LicenseStatus> licenseStatus() {
+    const path = '/api/v2/license';
+    return _parseContract(
+        path, () async => LicenseStatus.fromJson(await _get(path) as Json));
+  }
+
+  @override
+  Future<LicensePreview> previewLicense(LicenseProof proof) {
+    const path = '/api/v2/license/preview';
+    return _parseContract(path, () async {
+      final data = await _change(path, {'proof': proof.toJson()}) as Json;
+      return LicensePreview.fromJson(data);
+    });
+  }
+
+  @override
+  Future<LicenseStatus> applyLicense(String confirmation) {
+    const path = '/api/v2/license/apply';
+    return _parseContract(path, () async {
+      final data = await _change(path, {'confirmation': confirmation}) as Json;
+      return LicenseStatus.fromJson(data);
+    });
   }
 
   @override

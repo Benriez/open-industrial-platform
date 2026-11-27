@@ -16,6 +16,7 @@ import 'ota_update_control.dart';
 import 'settings_session.dart';
 import 'settings_tool_explorer.dart';
 import 'paired_device_sign_ins.dart';
+import 'license_status.dart';
 
 class SettingsSectionContent extends StatelessWidget {
   final SettingsSection section;
@@ -91,9 +92,22 @@ class SettingsSectionContent extends StatelessWidget {
         SettingsSection.auditSecurity =>
           _security(context),
         SettingsSection.runtime => _system(context),
-        SettingsSection.versions => ListView(children: [_about(context)]),
+        SettingsSection.versions => _versions(context),
         SettingsSection.capabilities => _capabilities(context),
       };
+
+  Widget _versions(BuildContext context) {
+    final api = controller.api;
+    return ListView(children: [
+      _about(context),
+      if (controller.managed && api is LicenseManagementApi)
+        InstallationLicense(
+          key: ValueKey((controller.contextScopeSignature,
+              controller.infrastructure.sessionGeneration, api)),
+          api: api as LicenseManagementApi,
+        ),
+    ]);
+  }
 
   Widget _application(BuildContext context) {
     final snapshot = settings!;

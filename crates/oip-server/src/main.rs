@@ -58,6 +58,16 @@ async fn signal() {
 }
 async fn run() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args
+        .first()
+        .is_some_and(|arg| arg == "--check-license-policy")
+    {
+        if args.len() != 1 {
+            return Err("usage: --check-license-policy < POLICY.json".into());
+        }
+        oip_server::check_license_policy(std::io::stdin().lock())?;
+        return Ok(());
+    }
     // Bridge mode is parsed and returned before config, DB or CoreRuntime access.
     if args.iter().any(|a| a == "--mcp-bridge") {
         #[cfg(unix)]

@@ -227,6 +227,17 @@ pub fn router_with_identity(
         )
         .route("/api/v2/inventory/plan", post(inventory_plan))
         .route("/api/v2/settings", get(settings_read))
+        .route("/api/v2/license", get(license_status))
+        .route(
+            "/api/v2/license/preview",
+            post(license_preview).layer(axum::extract::DefaultBodyLimit::max(
+                crate::licensing::MAX_PREVIEW_REQUEST,
+            )),
+        )
+        .route(
+            "/api/v2/license/apply",
+            post(license_apply).layer(axum::extract::DefaultBodyLimit::max(1024)),
+        )
         .route("/api/v2/management", get(management_read))
         .route("/api/v2/organizations", get(organizations))
         .route("/api/v2/infrastructures", get(infrastructures))
@@ -801,6 +812,33 @@ diagnostic_handler!(
     DiagnosticPage,
     DiagnosticPage
 );
+
+async fn license_status(
+    Authorized(s): Authorized,
+) -> Result<Json<LicenseStatus>, CapabilityErrorResponse> {
+    match call(s, CapabilityRequest::LicenseStatusRead).await? {
+        CapabilityOutput::LicenseStatus(value) => Ok(Json(value)),
+        _ => Err(mismatch()),
+    }
+}
+async fn license_preview(
+    Authorized(s): Authorized,
+    Json(input): Json<LicensePreviewRequest>,
+) -> Result<Json<LicensePreview>, CapabilityErrorResponse> {
+    match call(s, CapabilityRequest::LicenseProofPreview(input)).await? {
+        CapabilityOutput::LicensePreview(value) => Ok(Json(value)),
+        _ => Err(mismatch()),
+    }
+}
+async fn license_apply(
+    Authorized(s): Authorized,
+    Json(input): Json<LicenseApplyRequest>,
+) -> Result<Json<LicenseStatus>, CapabilityErrorResponse> {
+    match call(s, CapabilityRequest::LicenseProofApply(input)).await? {
+        CapabilityOutput::LicenseStatus(value) => Ok(Json(value)),
+        _ => Err(mismatch()),
+    }
+}
 
 async fn settings_read(
     Authorized(s): Authorized,

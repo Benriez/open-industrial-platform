@@ -13,6 +13,9 @@ pub enum CapabilityId {
     CoreReadinessRead,
     SourcesRead,
     SupportPackageRead,
+    LicenseStatusRead,
+    LicenseProofPreview,
+    LicenseProofApply,
     QueueRead,
     SystemStatusRead,
     DevicesRead,
@@ -61,6 +64,8 @@ pub enum Permission {
     SimulationControl,
     SettingsRead,
     SettingsWrite,
+    LicenseRead,
+    LicenseManage,
     InventoryManage,
     McpManagementRead,
 }
@@ -75,12 +80,15 @@ pub struct CapabilityDescriptor {
     pub audit: String,
 }
 impl CapabilityId {
-    pub const ALL: [Self; 38] = [
+    pub const ALL: [Self; 41] = [
         Self::CoreHealthRead,
         Self::CoreLivenessRead,
         Self::CoreReadinessRead,
         Self::SourcesRead,
         Self::SupportPackageRead,
+        Self::LicenseStatusRead,
+        Self::LicenseProofPreview,
+        Self::LicenseProofApply,
         Self::QueueRead,
         Self::SystemStatusRead,
         Self::DevicesRead,
@@ -118,6 +126,17 @@ impl CapabilityId {
     pub fn descriptor(self) -> CapabilityDescriptor {
         use CapabilityId::*;
         let (permission, input, output) = match self {
+            LicenseStatusRead => (vec![Permission::LicenseRead], "Empty", "LicenseStatus"),
+            LicenseProofPreview => (
+                vec![Permission::LicenseRead, Permission::LicenseManage],
+                "LicensePreviewRequest",
+                "LicensePreview",
+            ),
+            LicenseProofApply => (
+                vec![Permission::LicenseRead, Permission::LicenseManage],
+                "LicenseApplyRequest",
+                "LicenseStatus",
+            ),
             SupportPackageRead => (
                 vec![Permission::SourcesRead],
                 "SupportPackageQuery",
@@ -308,6 +327,8 @@ impl CapabilityId {
                 self,
                 SimulationScenarioSet
                     | SettingsChange
+                    | LicenseProofPreview
+                    | LicenseProofApply
                     | InventoryChange
                     | DeviceConnectionConfigure
                     | OpcuaNodeWrite
@@ -320,6 +341,8 @@ impl CapabilityId {
                 self,
                 SimulationScenarioSet
                     | SettingsChange
+                    | LicenseProofPreview
+                    | LicenseProofApply
                     | InventoryChange
                     | DeviceConnectionConfigure
                     | OpcuaNodeWrite
@@ -440,6 +463,9 @@ pub struct ScenarioRequest {
 )]
 pub enum CapabilityRequest {
     SupportPackageRead(SupportPackageQuery),
+    LicenseStatusRead,
+    LicenseProofPreview(LicensePreviewRequest),
+    LicenseProofApply(LicenseApplyRequest),
     CoreHealthRead,
     CoreLivenessRead,
     CoreReadinessRead,
@@ -481,6 +507,9 @@ pub enum CapabilityRequest {
 impl CapabilityRequest {
     pub fn id(&self) -> CapabilityId {
         match self {
+            Self::LicenseStatusRead => CapabilityId::LicenseStatusRead,
+            Self::LicenseProofPreview(_) => CapabilityId::LicenseProofPreview,
+            Self::LicenseProofApply(_) => CapabilityId::LicenseProofApply,
             Self::SupportPackageRead(_) => CapabilityId::SupportPackageRead,
             Self::SettingsRead(_) => CapabilityId::SettingsRead,
             Self::McpManagementRead(_) => CapabilityId::McpManagementRead,
@@ -527,6 +556,8 @@ impl CapabilityRequest {
 #[serde(tag = "type", content = "value", rename_all = "snake_case")]
 pub enum CapabilityOutput {
     SupportPackage(SupportPackage),
+    LicenseStatus(LicenseStatus),
+    LicensePreview(LicensePreview),
     HueLights(HueLights),
     HueCommandAccepted { light_id: u64 },
     HueSetupAccepted { action: HueSetupAction },

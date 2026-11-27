@@ -13,6 +13,10 @@ workspace = true
 # the Streamable HTTP clients of the SDK).
 rmcp = { version = "=3.9.0", default-features = false, features = ["server", "transport-io"] }
 schemars = "1"
+base64 = "0.22"
+ed25519-dalek = "2.2"
+time = "0.3.44"
+unicode-general-category = "1.1"
 axum = "0.8.9"
 flate2 = "1"
 futures = "0.3"

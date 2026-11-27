@@ -3,6 +3,8 @@ pub mod collector;
 pub mod contracts;
 pub mod demo;
 pub mod diagnostic_services;
+mod licensing;
+pub use licensing::check_license_policy;
 pub mod state;
 
 pub mod config;

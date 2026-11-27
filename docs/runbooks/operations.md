@@ -216,6 +216,122 @@ erfordert eine geklärte Distribution und gültige Nutzungsbedingungen.
 Preise, Umfang und Vertragsfristen bleiben offen. Der lokale Datenbetrieb
 und der Zugang zu Recovery hängen nicht von einem Supportvertrag ab.
 
+### Nutzungsnachweise einrichten und verwalten
+
+In **Einstellungen → System → Versionen & Updates** zeigt OIP den
+gewerblichen Nutzungsnachweis und die Supportberechtigung getrennt an. Der
+Nachweis wird lokal für die Installation hinterlegt. OIP zeigt den im
+Nachweis genannten Inhaber und die Kennung für die Verwaltung an. Bei
+Fragen oder einem fehlenden Nachweis wendet sich der Betreiber an die
+zuständige Person für die Installation. Die lokale Datenerfassung sowie
+berechtigte Datenzugriffe, Export, Sicherung und Wiederherstellung stehen
+unabhängig vom Prüfstatus zur Verfügung.
+Ein verifizierter Nachweis ohne Support zeigt bei der Supportberechtigung
+**Nicht enthalten**. Fehlt ein überprüfbarer Nachweis, lautet der Status
+**Unbestätigt**.
+
+Einrichter beziehen die freigegebene Vertrauensrichtlinie für OIP vom
+zuständigen Herausgeber. Sie enthält öffentliche Ed25519-Schlüssel,
+zulässige Nachweisarten und gegebenenfalls Rechte mit Obergrenzen.
+Für eine neue Richtlinie exportiert der Herausgeber im License Center unter
+**Sicherheit → Öffentliche Schlüssel exportieren** das Register
+`pruefschluessel.json`. Gleiche die vollständigen SHA-256-Fingerabdrücke der
+freigegebenen OIP-Schlüssel über einen getrennt authentifizierten Kanal mit
+dem Herausgeber ab. Erstelle daraus lokal die Richtlinie in einer neuen Datei.
+
+```sh
+python3 "$OIP_TOOLS/oip_local.py" prepare-license-policy \
+  --registry pruefschluessel.json \
+  --key-fingerprint SHA256_FINGERABDRUCK \
+  --kind FREIGEGEBENE_NACHWEISART > oip-richtlinie-neu.json
+"$OIP_INSTANCE/current/oip-server" --check-license-policy < oip-richtlinie-neu.json
+```
+
+Wiederhole `--key-fingerprint` und `--kind` für weitere freigegebene Werte.
+Für ausdrücklich vereinbarte Rechte kann `--right NAME=OBERGRENZE`
+wiederholt werden. Das Register macht einen Schlüssel sichtbar. Erst der
+bestätigte Fingerabdruck nimmt ihn in die neue Richtlinie auf. Ein
+vorbereiteter Schlüssel kann vor der Aktivierung verteilt werden. Bereits
+ausgestellte Nachweise können mit einem weiterhin freigegebenen historischen
+Schlüssel geprüft werden. Schlüssel anderer Produkte und als kompromittiert
+markierte Schlüssel weist der Befehl ab.
+
+Nutze `oip_local.py setup --license-policy PFAD` mit der freigegebenen
+Datei. Gib jede ausdrücklich als gewerblich vereinbarte Nachweisart separat
+mit `--commercial-license-kind ART` an. Ohne diese Zuordnung weist der Core
+keine Art als gewerblich aus. Die Einrichtung prüft die Richtlinie vor dem
+Schreiben der Konfiguration. Die Vorbereitung startet keine Instanz.
+Für eine bereits verwaltete Instanz erfolgt die Ergänzung kontrolliert bei
+gestopptem Core. Prüfe die neue Richtlinie mit `oip-server --check-license-policy`,
+sichere die Core-Konfiguration, ergänze dort die bestätigte Richtlinie als
+JSON-Text im Feld `license_policy` und hinterlege die
+vereinbarten Arten als Liste in `commercial_license_kinds`. Verwende die
+bestehende, vollständige Provisionierung für den zusätzlichen
+Plattform-Rollenbindungseintrag. Der Rolle genügen `license_read` und
+`license_manage`. Lesezugriff allein benötigt nur `license_read`.
+Bestehende Organisationsrollen und Quellenbindungen bleiben erhalten.
+Eine Rotation des Herausgeberschlüssels ist ein gesonderter Betriebswechsel.
+Für eine Überlappung kann die bestätigte Richtlinie beide öffentlichen
+Schlüssel enthalten. Sobald ein Schlüssel entfernt wird, sind seine
+Nachweise lokal nicht mehr überprüfbar. Der Datenbetrieb läuft auch ohne
+eingerichtete Herausgeberrichtlinie weiter.
+
+Nach Einweisung kann ein Lizenzverwalter den erhaltenen JSON-Nachweis in
+der App als Datei auswählen und prüfen. Die angezeigten Berechtigungen
+und die Identität können vor der ausdrücklichen Übernahme kontrolliert werden. Die Bestätigung gilt höchstens
+fünf Minuten für dieselbe Identität und denselben vorherigen Dateistand.
+Sie ist einmalig einlösbar und verfällt bei einem Core-Neustart oder wenn
+ein anderer Nachweis gespeichert wurde. Die Datei liegt im geschützten
+Instanzverzeichnis neben der Datenbank und wird bei jedem Statusabruf
+geprüft. Der Core vergleicht Gültigkeitszeiten mit der lokalen Uhr.
+Bewahre den erhaltenen signierten Nachweis separat auf. Nach einer
+isolierten Wartungswiederherstellung kann ein berechtigter Betreiber den
+Nachweis bei Bedarf erneut übernehmen. Der Nachweis enthält keine
+Recovery-Geheimnisse und erteilt keine Verbindungsfreigabe.
+
+| Funktion | UI | REST · MCP | Rolle und Nachweis |
+|---|---|---|---|
+| Status ansehen | Versionen & Updates | `GET /api/v2/license` · `oip_license_status_read` | Plattformweit `license_read`. Ohne Berechtigung bleiben auch Namen und Kennungen verborgen. |
+| Nachweis prüfen | Lizenznachweis hinterlegen → Nachweis prüfen | `POST /api/v2/license/preview` · `oip_license_proof_preview` | Plattformweit `license_read` und `license_manage`. Die Signatur, der Geltungsbereich und die installierte Ausstelleridentität werden geprüft. Fehlerhafte Nachweise werden abgewiesen. |
+| Geprüften Nachweis übernehmen | Nachweis übernehmen | `POST /api/v2/license/apply` · `oip_license_proof_apply` | Gleiche Rolle. Einmalige, zur Vorschau gehörige Bestätigung erforderlich. Für MCP-Verwaltung ist ein explizit so berechtigter lokaler IPC-Client nötig. |
+| Herausgeberrichtlinie vorbereiten und hinterlegen | Einrichter bei der Provisionierung | `prepare-license-policy`, `--check-license-policy`, geschützte lokale Core-Konfiguration | Zuständiger lokaler Einrichter. Auswahl über separat bestätigte Fingerabdrücke. Der signierte Nachweis kann die Ausstellerkonfiguration nicht verändern. |
+
+Die technische Ausgabe von Nachweisen erfolgt über das separate License
+Center. Wähle dort das Produkt OIP und gib die signierte JSON-Datei
+unverändert weiter. Die Kundeninstallation prüft sie offline und verwendet
+dafür ausschließlich öffentliche Schlüssel. Der OIP-Core prüft das
+Lizenzformat v1 selbst und verwendet Ed25519 aus einer Rust-Bibliothek.
+Verwahre den privaten Schlüssel beim Aussteller mit Zugriffsschutz und
+gesicherter Wiederherstellung.
+Halte Lizenzkennung, Vertragsgrundlage und die unabhängig vereinbarten
+Zeiträume für Nutzung und Support beim Herausgeber fest. Das Format verlangt
+einen Nutzungszeitraum. Eine Supportvereinbarung ist optional. Bei Ersatz
+müssen alle weiterhin vereinbarten Berechtigungen im neuen Nachweis stehen.
+Der Code veröffentlicht keine Vertragsbedingungen. Eine geänderte
+Distribution erfordert die geklärte Rechtekette und ausdrückliche Freigabe
+der endgültigen Bedingungen. Bereits unter Apache-2.0 erhaltene
+Nutzungsrechte bleiben bestehen.
+
+Die technische Prüfung ist mit `tests/oip_license_policy.py`, `tests/oip_license_issue.py` und
+`tests/oip_license_e2e.py --evidence PFAD` reproduzierbar. Mit `--browser`
+und eingerichtetem Playwright prüft der Test zusätzlich den Dateidialog der
+gebauten Weboberfläche. Der Test
+startet eine frische, isolierte Instanz mit synthetischen Nachweisen. Dazu
+gehören im PHP-Aussteller erzeugte OIP- und ODP-Testdateien. Er prüft REST,
+MCP, die Produkt- und Rollengrenzen und den durchgehenden Datenbetrieb bei
+fehlendem, beschädigtem oder abgelaufenem Nachweis.
+
+Die Paketprobe in `tests/oip_update.py` verwendet den gebauten Core,
+die Weboberfläche und den Simulator. Die Paketprüfung verlangt den Lizenztext
+und die Hinweise zu Drittbestandteilen als signierte Manifest-Einträge.
+Der Test erzeugt die öffentliche Herausgeberrichtlinie aus einem
+Schlüsselregister mit bestätigten Fingerabdrücken und
+prüft einen ausgestellten Nachweis über die Operator-Sitzung. Ein
+Nachweis, der mit dem Paket-Signierschlüssel ausgestellt wurde, wird
+abgelehnt. Danach prüft der Test, ob Nachweis, Vertrauen und Rolle nach
+dem signierten Offline-Update weiterhin verfügbar sind. Beide Schlüssel
+der Paketprobe werden eigens für die isolierte Prüfung erzeugt.
+
 ---
 
 ## 0. What the instance consists of

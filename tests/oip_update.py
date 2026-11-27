@@ -2,8 +2,9 @@
 """Verify the offline Core package workflow in private temporary directories."""
 
 import argparse
-from contextlib import closing
+from contextlib import closing, contextmanager
 import fcntl
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -17,16 +18,22 @@ import tempfile
 import time
 from types import SimpleNamespace
 from unittest.mock import patch
-import urllib.error
-import urllib.request
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from cryptography.hazmat.primitives.serialization import Encoding, NoEncryption, PrivateFormat, PublicFormat
+from cryptography.hazmat.primitives.serialization import (
+    Encoding, NoEncryption, PrivateFormat, PublicFormat, load_pem_private_key,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 UPDATER = ROOT / "tools" / "oip_update.py"
 sys.path.insert(0, str(UPDATER.parent))
 import oip_update
+from oip_license_issue import (
+    ISSUER, PHP_ODP_ARTIFACT, PHP_OIP_ARTIFACT, PHP_OIP_HOLDER, PHP_OIP_LICENSE_ID, PHP_TEST_KEYS,
+    decode, json_line, period, proof_request, sign_fixture,
+)
+from oip_local_operator import session
+from oip_opcua_parity import api
 
 
 READY_CORE = """
@@ -86,7 +93,7 @@ def prepare(bundle, secret, core, web, revision, version, *, simulator=None, sch
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["the_status"] == "PACKAGED"
     assert sorted(item.name for item in bundle.iterdir()) == sorted(
-        ["oip-server", "web", "tools", "manifest.json", "signature", "LICENSE"]
+        ["oip-server", "web", "tools", "manifest.json", "signature", "LICENSE", "THIRD_PARTY_NOTICES.txt"]
         + (["oip-simulated-server"] if simulator else [])
     )
     return bundle
@@ -187,6 +194,20 @@ def rehearse(work, report):
     assert_refusal(run(instance, forged, public), "signature")
     report["steps"].append("modified signed manifest refused")
 
+    missing_notice = work / "missing-license-notice"
+    shutil.copytree(next_bundle, missing_notice)
+    path = missing_notice / "manifest.json"
+    manifest = json.loads(path.read_bytes())
+    del manifest["the_artefacts"][oip_update.NOTICE]
+    payload = json_line(manifest)
+    path.write_bytes(payload)
+    signer = load_pem_private_key(secret.read_bytes(), password=None)
+    (missing_notice / "signature").write_bytes(signer.sign(payload))
+    (missing_notice / oip_update.NOTICE).unlink()
+    assert_refusal(run(instance, missing_notice, public), "license files")
+    assert current.resolve().name == "fixture-two"
+    report["steps"].append("correctly signed package without required license notices refused")
+
     target = oip_update.host_target()
     arch, platform = target.split("-", 1)
     alternate = ("x86_64" if arch == "aarch64" else "aarch64") + "-" + platform
@@ -276,21 +297,95 @@ def rehearse(work, report):
     report["steps"].append("durable journal distinguishes preparation from activation")
 
 
+@contextmanager
+def installed_browser(instance, port, work):
+    command = [sys.executable, "-B", str(instance / "current" / "tools" / "oip_local.py"),
+               "--instance", str(instance)]
+    base = f"http://127.0.0.1:{port}"
+    runner = subprocess.Popen(
+        [*command, "run"], cwd=work, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+    )
+    try:
+        browser, csrf = session(command, runner, base)
+        yield base, browser, {"Origin": base, "x-oip-csrf": csrf}
+    finally:
+        if runner.poll() is None:
+            runner.terminate()
+        try:
+            _, error = runner.communicate(timeout=45)
+        except subprocess.TimeoutExpired:
+            runner.kill()
+            runner.communicate()
+            raise
+        assert runner.returncode == 0, error
+
+
+def install_proof(access, proof, rejected_proof):
+    base, browser, headers = access
+    status_path = "/api/v2/license"
+    code, before = api(base, status_path, opener=browser)
+    assert code == 200 and before["proof_state"] == "missing" and before["can_manage"] is True
+    code, error = api(base, status_path + "/preview", "POST", rejected_proof, headers, browser)
+    assert code == 400 and error["code"] == "LICENSE_PROOF_INVALID"
+    code, preview = api(base, status_path + "/preview", "POST", proof, headers, browser)
+    assert code == 200 and preview["status"]["license_id"] == PHP_OIP_LICENSE_ID
+    assert preview["status"]["licensee"] == PHP_OIP_HOLDER
+    assert api(base, status_path, opener=browser) == (200, before)
+    code, after = api(base, status_path + "/apply", "POST",
+                      {"confirmation": preview["confirmation"]}, headers, browser)
+    assert code == 200 and after["proof_state"] == "verified"
+    assert after["commercial"] == "active" and after["support"] == "ended"
+    return after
+
+
 def real_candidate(work, report, args):
     secret, public = keys(work)
     instance = work / "real"
     instance.mkdir(mode=0o700)
     bundle = prepare(work / "real-bundle", secret, args.core, args.web, "real-candidate",
                      "1.0.0", simulator=args.simulator)
+    manifest = (bundle / "manifest.json").read_text()
     if args.real_receipt:
-        args.real_receipt.write_text((bundle / "manifest.json").read_text())
+        args.real_receipt.write_text(manifest)
+    artefacts = json.loads(manifest)["the_artefacts"]
+    report["the_core_sha256"] = artefacts["oip-server"]
+    report["the_browser_sha256"] = artefacts["web/main.dart.js"]
     result = run(instance, bundle, public)
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["the_status"] == "UPDATED"
     report["steps"].append("built OIP Core, embedded OPC UA simulation, and provided browser assets")
     if args.simulator:
+        expected_tools = {"oip_local.py", "oip_ops.py", "oip_recovery.py", "oip_update.py"}
+        for directory in (bundle, instance / "current"):
+            assert {path.name for path in (directory / "tools").iterdir()} == expected_tools
+        for name in ("LICENSE", "THIRD_PARTY_NOTICES.txt"):
+            assert (bundle / name).read_bytes() == (ROOT / name).read_bytes()
+            assert (instance / "current" / name).read_bytes() == (ROOT / name).read_bytes()
+        report["steps"].append("release contains the source license and notices and only operator tools")
         shutil.rmtree(bundle)
         installed = instance / "current" / "tools" / "oip_local.py"
+        policy = work / "license-policy.json"
+        registry = work / "pruefschluessel.json"
+        rows = []
+        for product, artifact in (("oip", PHP_OIP_ARTIFACT), ("odp", PHP_ODP_ARTIFACT)):
+            key_id = json.loads(artifact)["kid"]
+            key = PHP_TEST_KEYS[key_id]
+            rows.append({"product_id": product, "kid": key_id, "public_key": key,
+                         "fingerprint": hashlib.sha256(decode(key)).hexdigest(), "state": "active"})
+        registry.write_bytes(json_line({"issuer": ISSUER, "keys": rows}))
+        result = subprocess.run(
+            [sys.executable, "-B", str(installed), "prepare-license-policy", "--registry", str(registry),
+             "--key-fingerprint", rows[0]["fingerprint"], "--kind", "standard", "--right", "installations=20"],
+            capture_output=True, check=True, timeout=30, cwd=work,
+        )
+        assert json.loads(result.stdout)["keys"] == {rows[0]["kid"]: rows[0]["public_key"]}
+        policy.write_bytes(result.stdout)
+        report["steps"].append("packaged provisioner prepares offline OIP policy from explicit registry fingerprints")
+        release_key = load_pem_private_key(secret.read_bytes(), password=None)
+        now = int(time.time()) - 300
+        rejected_proof = proof_request(sign_fixture(
+            release_key, "2" * 32, now, usage=period("perpetual", now),
+        ))
         with socket.socket() as http, socket.socket() as opcua:
             http.bind(("127.0.0.1", 0))
             opcua.bind(("127.0.0.1", 0))
@@ -299,38 +394,22 @@ def real_candidate(work, report, args):
             [sys.executable, "-B", str(installed), "--instance", str(instance), "setup",
              "--organization", "Fixture organization", "--infrastructure", "Fixture infrastructure",
              "--site", "Fixture site", "--backup-directory", str(work / "backups"),
-             "--port", str(port), "--simulator-port", str(simulator_port)],
+             "--port", str(port), "--simulator-port", str(simulator_port),
+             "--license-policy", str(policy), "--commercial-license-kind", "standard"],
             capture_output=True, text=True, timeout=120, cwd=work,
         )
         assert result.returncode == 0, result.stderr
         second = prepare(work / "real-update", secret, args.core, args.web, "real-update",
                          "1.0.1", simulator=args.simulator)
-        runner = subprocess.Popen(
-            [sys.executable, "-B", str(installed), "--instance", str(instance), "run"],
-            cwd=work, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
-        )
-        try:
-            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-            deadline = time.monotonic() + 30
-            while time.monotonic() < deadline and runner.poll() is None:
-                try:
-                    url = f"http://127.0.0.1:{port}/api/v2/browser/session"
-                    with opener.open(url, timeout=1) as reply:
-                        if json.load(reply).get("mode") == "login_required":
-                            break
-                except urllib.error.URLError:
-                    time.sleep(0.2)
-            else:
-                raise AssertionError("The installed local runner did not start the authenticated browser service")
+        with installed_browser(instance, port, work) as access:
+            accepted = install_proof(access, proof_request(PHP_OIP_ARTIFACT), rejected_proof)
             assert_refusal(run(instance, second, public), "local operation")
-        finally:
-            if runner.poll() is None:
-                runner.terminate()
-            _, error = runner.communicate(timeout=45)
-        assert runner.returncode == 0, error
+        report["steps"].append("installed operator confirms the PHP License Center artifact and rejects the update signing key")
         database = instance / "core.sqlite"
+        proof_path = instance / "core.license.json"
         initial_database = database.read_bytes()
         initial_configuration = (instance / "core.json").read_bytes()
+        assert proof_path.read_bytes() == PHP_OIP_ARTIFACT
         result = run(instance, second, public)
         assert result.returncode == 0, result.stderr
         assert json.loads(result.stdout)["the_status"] == "UPDATED"
@@ -338,6 +417,10 @@ def real_candidate(work, report, args):
         assert database.read_bytes() == initial_database
         assert (instance / "core.json").read_bytes() == initial_configuration
         report["steps"].append("signed tools setup and start, active-instance refusal, same-schema offline update")
+        assert proof_path.read_bytes() == PHP_OIP_ARTIFACT
+        with installed_browser(instance, port, work) as (base, browser, _):
+            assert api(base, "/api/v2/license", opener=browser) == (200, accepted)
+        report["steps"].append("offline update preserves the license proof, issuer trust and operator permission")
 
 
 def main():

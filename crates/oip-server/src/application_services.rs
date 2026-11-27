@@ -200,6 +200,9 @@ impl ApplicationServices {
             | SettingsRead(_)
             | McpManagementRead(_)
             | SettingsChange(_)
+            | LicenseStatusRead
+            | LicenseProofPreview(_)
+            | LicenseProofApply(_)
             | SupportPackageRead(_) => Err(CapabilityError::new(
                 CapabilityErrorCode::PermissionDenied,
                 "PRINCIPAL_REQUIRED",
@@ -639,6 +642,14 @@ impl CapabilityService for ApplicationServices {
                                 crate::hue::visible_profile(&self.state, h, p, source).is_ok()
                             });
                         }
+                        if matches!(
+                            id,
+                            CapabilityId::LicenseStatusRead
+                                | CapabilityId::LicenseProofPreview
+                                | CapabilityId::LicenseProofApply
+                        ) {
+                            return h.platform(p, *id);
+                        }
                         !id.descriptor().mutating
                             && (h.platform(p, *id)
                                 || (!matches!(
@@ -681,6 +692,9 @@ impl CapabilityService for ApplicationServices {
                         | CapabilityId::SettingsRead
                         | CapabilityId::McpManagementRead
                         | CapabilityId::SupportPackageRead
+                        | CapabilityId::LicenseStatusRead
+                        | CapabilityId::LicenseProofPreview
+                        | CapabilityId::LicenseProofApply
                         | CapabilityId::SettingsChange
                         | CapabilityId::OrganizationsRead
                         | CapabilityId::InfrastructuresRead

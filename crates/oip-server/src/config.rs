@@ -245,6 +245,12 @@ pub struct CoreConfig {
     /// ephemeral. If omitted, CoreRuntime derives it beside the database.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub browser_credentials_file: Option<PathBuf>,
+    /// License Center policy JSON, obtained independently of the proof.
+    #[serde(default, alias = "license_issuer_key", skip_serializing_if = "Option::is_none")]
+    pub license_policy: Option<String>,
+    /// Only these approved policy kinds count as a commercial authorization.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub commercial_license_kinds: Vec<String>,
     pub http_port: u16,
     pub sources: Vec<SourceConfig>,
     /// Installation-wide authoritative permission for incoming OPC-UA
@@ -266,6 +272,8 @@ impl Default for CoreConfig {
             tailscale_peer_status: false,
             database: "oip.sqlite".into(),
             browser_credentials_file: None,
+            license_policy: None,
+            commercial_license_kinds: Vec::new(),
             http_port: 8080,
             sources: Vec::new(),
             opcua_read_only: false,

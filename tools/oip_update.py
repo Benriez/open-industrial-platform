@@ -33,7 +33,8 @@ from oip_ops import is_personal
 
 SCHEMA = "oip-update-v2"
 OPERATOR_TOOLS = {"tools/oip_local.py", "tools/oip_ops.py", "tools/oip_recovery.py", "tools/oip_update.py"}
-REQUIRED_ASSETS = {"oip-server", "web/index.html", "web/main.dart.js", "LICENSE"} | OPERATOR_TOOLS
+NOTICE = "THIRD_PARTY_NOTICES.txt"
+REQUIRED_ASSETS = {"oip-server", "web/index.html", "web/main.dart.js", "LICENSE", NOTICE} | OPERATOR_TOOLS
 EXECUTABLES = {"oip-server", "oip-simulated-server"}
 MAX_MANIFEST = 1024 * 1024
 MAX_ASSET_BYTES = 2 * 1024 * 1024 * 1024
@@ -77,7 +78,7 @@ def host_target() -> str:
 
 
 def release_name(name: str) -> bool:
-    if name in EXECUTABLES or name in OPERATOR_TOOLS or name == "LICENSE":
+    if name in EXECUTABLES or name in OPERATOR_TOOLS or name in {"LICENSE", NOTICE}:
         return True
     return name.startswith("web/") and all(
         re.fullmatch(r"[A-Za-z0-9_-][A-Za-z0-9_.-]{0,127}", component)
@@ -144,7 +145,7 @@ def verify_manifest(bundle: pathlib.Path, key, expected_target: str):
         raise Refused("the signed update does not declare a supported database schema")
     assets = manifest.get("the_artefacts")
     if not isinstance(assets, dict) or not REQUIRED_ASSETS <= assets.keys() or len(assets) > 4096:
-        raise Refused("the update package does not declare all required Core and browser files")
+        raise Refused("the update package does not declare all required Core, browser and license files")
     for name, digest in assets.items():
         if not release_name(name) or not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
             raise Refused("the update manifest contains an invalid file name or digest")
@@ -396,7 +397,7 @@ def package(args):
         raise Refused("the release signer must be an Ed25519 key")
     version_tuple(args.release_version)
     distribution = pathlib.Path(__file__).resolve().parents[1]
-    files = {name: distribution / name for name in {"LICENSE"} | OPERATOR_TOOLS}
+    files = {name: distribution / name for name in {"LICENSE", NOTICE} | OPERATOR_TOOLS}
     files["oip-server"] = args.binary
     if args.simulator:
         files["oip-simulated-server"] = args.simulator

@@ -1,5 +1,5 @@
 //! Bound SDK request bookkeeping through response completion, including slow writers.
-use super::{MAX_INPUT, MAX_REQUESTS};
+use super::MAX_REQUESTS;
 use rmcp::transport::async_rw::AsyncRwTransport;
 use rmcp::{
     model::*,
@@ -27,7 +27,8 @@ where
 {
     pub fn new(read: R, write: W) -> Self {
         Self {
-            inner: AsyncRwTransport::new(read, write).with_max_line_length(MAX_INPUT),
+            inner: AsyncRwTransport::new(read, write)
+                .with_max_line_length(crate::licensing::MAX_PREVIEW_REQUEST + 1024),
             pending: Default::default(),
             failed: Default::default(),
         }

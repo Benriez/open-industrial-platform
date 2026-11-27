@@ -38,3 +38,6 @@ pub use services::*;
 
 mod hue;
 pub use hue::*;
+
+mod licensing;
+pub use licensing::*;

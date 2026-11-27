@@ -1,4 +1,4 @@
-//! Local read-only MCP adapter. No SQL, protocol client or domain policy lives here.
+//! Local MCP adapter with explicit Core-authorized tool discovery.
 use oip_core::*;
 use rmcp::{model::*, service::RequestContext, ErrorData, RoleServer, ServerHandler};
 use serde::{Deserialize, Serialize};
@@ -93,7 +93,10 @@ struct ToolSpec {
     id: CapabilityId,
     description: &'static str,
 }
-const TOOLS: [ToolSpec; 24] = [
+const TOOLS: [ToolSpec; 27] = [
+    ToolSpec { name: "oip_license_status_read", id: CapabilityId::LicenseStatusRead, description: "Read installation-wide commercial and support entitlement status. Requires explicit installation license read permission." },
+    ToolSpec { name: "oip_license_proof_preview", id: CapabilityId::LicenseProofPreview, description: "Verify an OIP proof against the installed issuer and prepare a short-lived confirmation for review. Requires installation license management permission." },
+    ToolSpec { name: "oip_license_proof_apply", id: CapabilityId::LicenseProofApply, description: "Save the verified proof after the authorized installation administrator expressly confirms the displayed preview. Only pass a confirmation after the administrator has agreed to save it." },
     ToolSpec { name: "oip_support_package_read", id: CapabilityId::SupportPackageRead, description: "Generate a shareable diagnostic report for one authorized infrastructure, optionally narrowed to a site or source. Only version, platform and aggregate source counts. Never sends the report." },
     ToolSpec{name:"oip_device_connection_read",id:CapabilityId::DeviceConnectionRead,description:"Read the authorized device SSH identity, monitoring state, last attempts and actual observations. Registration never implies connectivity. No mutation or private key data."},
     ToolSpec{name:"oip_inventory_read",id:CapabilityId::InventoryRead,description:"Read authorized persistent device inventory, metadata and collector availability. No collector does not mean offline; bounded pagination."},
@@ -133,6 +136,15 @@ const RESOURCES: [(&str, CapabilityId); 7] = [
 ];
 fn input_schema(id: CapabilityId) -> Value {
     let mut v = match id {
+        CapabilityId::LicenseStatusRead => {
+            Ok(json!({"type":"object","properties":{},"additionalProperties":false}))
+        }
+        CapabilityId::LicenseProofPreview => {
+            serde_json::to_value(schemars::schema_for!(LicensePreviewRequest))
+        }
+        CapabilityId::LicenseProofApply => {
+            serde_json::to_value(schemars::schema_for!(LicenseApplyRequest))
+        }
         CapabilityId::SupportPackageRead => {
             serde_json::to_value(schemars::schema_for!(SupportPackageQuery))
         }
@@ -191,6 +203,9 @@ fn input_schema(id: CapabilityId) -> Value {
                         p["minLength"] = json!(1);
                     }
                 }
+                "confirmation" => {
+                    *p = json!({"type":"string","minLength":64,"maxLength":64,"pattern":"^[a-f0-9]{64}$"});
+                }
                 "offset" => {
                     p["maximum"] = json!(1_000_000);
                 }
@@ -201,6 +216,10 @@ fn input_schema(id: CapabilityId) -> Value {
                 _ => {}
             }
         }
+    }
+    if id == CapabilityId::LicenseProofPreview {
+        v["$defs"]["LicenseProof"]["properties"]["artifact"]["maxLength"] =
+            json!(crate::licensing::MAX_ARTIFACT);
     }
     use CapabilityId::*;
     if matches!(
@@ -244,10 +263,22 @@ fn invalid() -> ErrorData {
     ErrorData::invalid_params("Invalid bounded tool arguments; see inputSchema", None)
 }
 fn parse_request(spec: ToolSpec, args: Value) -> Result<CapabilityRequest, ErrorData> {
-    if serde_json::to_vec(&args).map_err(|_| invalid())?.len() > MAX_INPUT {
+    let size = serde_json::to_vec(&args).map_err(|_| invalid())?.len();
+    let limit = if spec.id == CapabilityId::LicenseProofPreview {
+        crate::licensing::MAX_PREVIEW_REQUEST
+    } else {
+        MAX_INPUT
+    };
+    if size > limit {
         return Err(invalid());
     }
     let obj = args.as_object().ok_or_else(invalid)?;
+    if spec.id == CapabilityId::LicenseStatusRead {
+        return obj
+            .is_empty()
+            .then_some(CapabilityRequest::LicenseStatusRead)
+            .ok_or_else(invalid);
+    }
     for (key, value) in obj {
         if let Some(s) = value.as_str() {
             let max = if key == "source" { 128 } else { 256 };
@@ -288,6 +319,8 @@ fn output_schema(id: CapabilityId) -> Value {
         CapabilityId::ServiceRegistryRead => "service_registry",
         CapabilityId::InventoryPlanRead | CapabilityId::InventoryChange => "inventory_plan",
         CapabilityId::SettingsRead => "settings",
+        CapabilityId::LicenseStatusRead | CapabilityId::LicenseProofApply => "license_status",
+        CapabilityId::LicenseProofPreview => "license_preview",
         CapabilityId::McpManagementRead => "management",
         CapabilityId::SettingsChange => "settings_changed",
         CapabilityId::EvidenceRead => "evidence",
@@ -373,7 +406,14 @@ pub fn capability_mapping() -> Value {
     CACHE.get_or_init(|| json!({"protocol":"2026-07-28","legacy_protocol":"2025-11-25","sdk":"rmcp 3.8.0","capabilities":CapabilityId::ALL.into_iter().map(|id| {
         let tool=TOOLS.iter().find(|t|t.id==id);
         let resource=RESOURCES.iter().find(|(_,c)|*c==id).map(|(uri,_)|*uri);
-        json!({"capability":id,"core_status":if matches!(id,CapabilityId::SettingsChange) {"OFFLINE_OPERATOR_ONLY"}else{"IMPLEMENTED"},"rest":!matches!(id,CapabilityId::SettingsChange),"mcp_status":if id.descriptor().mutating {"BLOCKED"}else{"IMPLEMENTED"},"tool":tool.map(|t|t.name),"resource":resource,"source_resource":if id==CapabilityId::SourcesRead {Some("oip://v1/sources/{id}/health")}else{None},"permissions":id.descriptor().permission,"input_schema":tool.map(|_|input_schema(id)),"output_schema":if id.descriptor().mutating {None}else{Some(output_schema(id))},"test":"crates/oip-server/tests/mcp.rs"})
+        let mcp_status = if tool.is_some() && id.descriptor().mutating {
+            "AUTHORIZED_ADMIN"
+        } else if id.descriptor().mutating {
+            "BLOCKED"
+        } else {
+            "IMPLEMENTED"
+        };
+        json!({"capability":id,"core_status":if matches!(id,CapabilityId::SettingsChange) {"OFFLINE_OPERATOR_ONLY"}else{"IMPLEMENTED"},"rest":!matches!(id,CapabilityId::SettingsChange),"mcp_status":mcp_status,"tool":tool.map(|t|t.name),"resource":resource,"source_resource":if id==CapabilityId::SourcesRead {Some("oip://v1/sources/{id}/health")}else{None},"permissions":id.descriptor().permission,"input_schema":tool.map(|_|input_schema(id)),"output_schema":if mcp_status == "BLOCKED" {None}else{Some(output_schema(id))},"test":"crates/oip-server/tests/mcp.rs"})
     }).collect::<Vec<_>>()})).clone()
 }
 fn bounded(output: CapabilityOutput) -> Result<Value, ErrorData> {
@@ -433,9 +473,9 @@ impl McpAdapter {
                     Some(Arc::new(output_schema(s.id).as_object().unwrap().clone()));
                 tool.annotations = Some(ToolAnnotations::from_raw(
                     None,
-                    Some(true),
-                    Some(false),
-                    Some(true),
+                    Some(!s.id.descriptor().mutating),
+                    Some(s.id == CapabilityId::LicenseProofApply),
+                    Some(!s.id.descriptor().mutating),
                     Some(false),
                 ));
                 tool
@@ -506,14 +546,14 @@ impl McpAdapter {
     ) -> Result<Result<Value, CapabilityError>, ErrorData> {
         let ctx = self.policy.execution_context();
         // Scope is trusted policy data, not tool payload. Existing audit records the decision/result.
-        tracing::info!(actor=%ctx.actor,correlation_id=%ctx.correlation_id,source_scope=?ctx.sources,capability=?request.id(),code="mcp_dispatch","local read request");
+        tracing::info!(actor=%ctx.actor,correlation_id=%ctx.correlation_id,source_scope=?ctx.sources,capability=?request.id(),code="mcp_dispatch","local capability request");
         tokio::select! {
             biased;
-            _=cancel.cancelled()=> {tracing::info!(correlation_id=%ctx.correlation_id,code="mcp_cancelled","read cancelled");Err(ErrorData::internal_error("Request cancelled",None))},
+            _=cancel.cancelled()=> {tracing::info!(correlation_id=%ctx.correlation_id,code="mcp_cancelled","request cancelled");Err(ErrorData::internal_error("Request cancelled",None))},
             result=tokio::time::timeout(READ_TIMEOUT,self.service.execute(&ctx,request))=> match result {
                 Ok(Ok(value))=>bounded(value).map(Ok),
                 Ok(Err(error))=>Ok(Err(error)),
-                Err(_)=> {tracing::warn!(correlation_id=%ctx.correlation_id,code="mcp_timeout","read deadline exceeded");Err(ErrorData::internal_error("Read deadline exceeded",None))},
+                Err(_)=> {tracing::warn!(correlation_id=%ctx.correlation_id,code="mcp_timeout","request deadline exceeded");Err(ErrorData::internal_error("Request deadline exceeded",None))},
             }
         }
     }

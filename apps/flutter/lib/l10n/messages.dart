@@ -11,6 +11,43 @@ const englishMessages = <String, String>{
   "Der Arbeitskontext hat sich geändert.": "The selected workspace changed.",
   "Supportpaket konnte nicht erstellt werden. Prüfe die Anmeldung und deine Berechtigung.":
       "Could not create a support package. Check your session and permissions.",
+  "Nutzungsberechtigung & Support": "Licence and support",
+  "Gilt für diese OIP-Installation.": "Applies to this OIP installation.",
+  "Gewerbliche Nutzung": "Commercial use",
+  "Supportberechtigung": "Support entitlement",
+  "Unbestätigt": "Unconfirmed",
+  "Nicht enthalten": "Not included",
+  "Noch nicht aktiv": "Not active yet",
+  "Beendet": "Ended",
+  "Lizenzinhaber": "Licensee",
+  "Lizenzkennung": "Licence ID",
+  "Lizenznachweis": "Licence proof",
+  "Lizenzprüfung nicht eingerichtet": "Licence verification is not configured",
+  "Kein Nachweis gespeichert": "No proof stored",
+  "Nachweis ungültig": "Invalid proof",
+  "Nachweis geprüft": "Verified proof",
+  "Offene Fragen klärt die für diese Installation zuständige Person.":
+      "Contact the person responsible for this installation if you have questions.",
+  "Lizenzstatus konnte nicht geladen werden.": "Could not load the licence status.",
+  "Füge einen gültigen JSON-Lizenznachweis ein.": "Paste a valid JSON licence proof.",
+  "Prüfe deine Berechtigung für diese Installation.":
+      "Check your permissions for this installation.",
+  "Der Core konnte den Nachweis nicht bestätigen. Prüfe die Originaldatei.":
+      "The Core could not verify the proof. Check the original file.",
+  "Lizenznachweis gespeichert.": "Licence proof saved.",
+  "Die Bestätigung ist fehlgeschlagen. Prüfe den aktuellen Status und starte bei Bedarf eine neue Prüfung.":
+      "Confirmation failed. Check the current status and start a new review if needed.",
+  "Inhalt der Lizenzdatei einfügen": "Paste the contents of the licence file",
+  "Geprüfter Nachweis zur Übernahme": "Review the verified proof",
+  "Nachweis prüfen": "Verify proof",
+  "Nachweis übernehmen": "Accept proof",
+  "Lizenznachweis hinterlegen": "Add licence proof",
+  "Lizenzdatei auswählen": "Choose licence file",
+  "Die Lizenzdatei darf höchstens 8 KB groß sein.":
+      "The licence file must be 8 KB or smaller.",
+  "Die Lizenzdatei konnte nicht gelesen werden.": "Could not read the licence file.",
+  "Die ausgewählte Datei enthält keinen gültigen JSON-Lizenznachweis.":
+      "The selected file does not contain a valid JSON licence proof.",
   "Netzwerk & VPN zeigt eingetragene LAN-Kabel getrennt von gemeldeten Netzwerkpfaden. Die Ansicht wurde vereinfacht.":
       "Network & VPN separates recorded LAN cabling from reported network paths and has a simpler layout.",
   "LAN-Verkabelung": "LAN wiring",

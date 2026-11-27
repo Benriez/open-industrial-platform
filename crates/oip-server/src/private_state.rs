@@ -56,6 +56,11 @@ pub(crate) fn load<T: serde::de::DeserializeOwned>(
 }
 
 pub(crate) fn replace(path: &Path, stored: &impl Serialize) -> io::Result<()> {
+    let bytes = serde_json::to_vec(stored).map_err(io::Error::other)?;
+    replace_bytes(path, &bytes)
+}
+
+pub(crate) fn replace_bytes(path: &Path, bytes: &[u8]) -> io::Result<()> {
     match fs::symlink_metadata(path) {
         Ok(metadata) => validate_store_metadata(&metadata)?,
         Err(error) if error.kind() == io::ErrorKind::NotFound => {}
@@ -76,7 +81,6 @@ pub(crate) fn replace(path: &Path, stored: &impl Serialize) -> io::Result<()> {
             .as_nanos()
     );
     let temp = parent.join(temp_name);
-    let bytes = serde_json::to_vec(stored).map_err(io::Error::other)?;
     let mut options = OpenOptions::new();
     options.write(true).create_new(true);
     #[cfg(unix)]
@@ -86,7 +90,7 @@ pub(crate) fn replace(path: &Path, stored: &impl Serialize) -> io::Result<()> {
     }
     let result = (|| {
         let mut file = options.open(&temp)?;
-        file.write_all(&bytes)?;
+        file.write_all(bytes)?;
         file.sync_all()?;
         fs::rename(&temp, path)?;
         File::open(parent)?.sync_all()?;

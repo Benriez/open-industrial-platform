@@ -133,7 +133,10 @@ impl ApplicationServices {
                 .or_else(|| q.infrastructure.clone().map(AccessScope::Infrastructure))
                 .or_else(|| q.organization.clone().map(AccessScope::Organization)),
             CapabilityRequest::SettingsRead(q) => q.target().ok(),
-            CapabilityRequest::McpManagementRead(_) => Some(AccessScope::Platform),
+            CapabilityRequest::McpManagementRead(_)
+            | CapabilityRequest::LicenseStatusRead
+            | CapabilityRequest::LicenseProofPreview(_)
+            | CapabilityRequest::LicenseProofApply(_) => Some(AccessScope::Platform),
             CapabilityRequest::OrganizationsRead(q)
             | CapabilityRequest::InfrastructuresRead(q)
             | CapabilityRequest::SitesRead(q) => q
@@ -387,6 +390,38 @@ impl ApplicationServices {
                 "started",
             ))?;
             return self.run(request).await;
+        }
+        if matches!(
+            id,
+            CapabilityId::LicenseStatusRead
+                | CapabilityId::LicenseProofPreview
+                | CapabilityId::LicenseProofApply
+        ) {
+            if !h.platform(p, id) {
+                return Err(denied());
+            }
+            return match request {
+                LicenseStatusRead => Ok(CapabilityOutput::LicenseStatus(
+                    self.state
+                        .licensing
+                        .read(h.platform(p, CapabilityId::LicenseProofApply)),
+                )),
+                LicenseProofPreview(input) => self
+                    .state
+                    .licensing
+                    .preview(p, input.proof)
+                    .map(CapabilityOutput::LicensePreview),
+                LicenseProofApply(input) => {
+                    let mut event = self.audit_event(context, id, None, true, "started");
+                    event.scope = Some(AccessScope::Platform);
+                    self.audit.record(&event)?;
+                    self.state
+                        .licensing
+                        .apply(p, &input.confirmation)
+                        .map(CapabilityOutput::LicenseStatus)
+                }
+                _ => unreachable!("license capability branches"),
+            };
         }
         if id.descriptor().mutating {
             return Err(denied());
