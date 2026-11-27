@@ -198,7 +198,8 @@ def state_paths(state_dir: pathlib.Path) -> dict:
 
 def read_pid(paths: dict) -> int | None:
     try:
-        return int(paths["pid"].read_text().strip())
+        pid = int(paths["pid"].read_text().strip())
+        return pid if pid > 1 else None
     except (FileNotFoundError, ValueError):
         return None
 
@@ -230,7 +231,7 @@ def wait_for(predicate, seconds: float, interval: float = 0.2) -> bool:
     return predicate()
 
 
-def command_start(args, config_path, paths, config) -> int:
+def command_start(args, config_path, paths, config, launcher=(), context=None) -> int:
     state_dir = pathlib.Path(args.state_dir)
     state_dir.mkdir(parents=True, exist_ok=True)
     pid = read_pid(paths)
@@ -242,7 +243,7 @@ def command_start(args, config_path, paths, config) -> int:
     ipc_path = pathlib.Path(args.ipc_config).resolve() if args.ipc_config else None
     if not ipc_path:
         fail("start needs --ipc-config: the daemon always runs with its protected local IPC")
-    command = [args.binary, "--daemon", "--config", str(config_path),
+    command = [*launcher, args.binary, "--daemon", "--config", str(config_path),
                *the_database_argument(database)]
     provisioned = provision_ipc(ipc_path)
     command += ["--ipc-config", str(ipc_path)]
@@ -260,10 +261,20 @@ def command_start(args, config_path, paths, config) -> int:
         "config": str(config_path),
         "binary": str(args.binary),
         "started_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        **(context or {}),
     }, indent=2) + "\n")
     port = port_of(config)
-    if not wait_for(lambda: alive(process.pid) and port_open(port), 30):
-        fail("the Core did not answer on its port within 30 seconds")
+    responded = wait_for(lambda: process.poll() is not None or port_open(port), 30)
+    if not responded or process.poll() is not None:
+        if process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+        paths["pid"].unlink(missing_ok=True)
+        fail("the Core did not start on its local port. Check the local instance log.")
     print(json.dumps({
         "status": "started",
         "pid": process.pid,
@@ -271,6 +282,7 @@ def command_start(args, config_path, paths, config) -> int:
         "database": str(database),
         "log": str(paths["log"]),
         "ipc_credentials_provisioned": len(provisioned),
+        **(context or {}),
     }))
     return 0
 
@@ -339,8 +351,11 @@ def sqlite_query(database: pathlib.Path, statement: str) -> str:
 def sqlite_backup(source: pathlib.Path, target: pathlib.Path) -> None:
     """A consistent snapshot of a running Core database."""
     if os.path.exists(SQLITE_CLI):
+        # Keep the directory out of SQLite's .backup command parser.
+        quoted_target = json.dumps(target.name, ensure_ascii=False)
         result = subprocess.run(
-            [SQLITE_CLI, "-batch", str(source), f".backup '{target}'"],
+            [SQLITE_CLI, "-batch", str(source.resolve()), f".backup {quoted_target}"],
+            cwd=target.parent,
             capture_output=True, text=True, timeout=600)
         if result.returncode != 0:
             fail(f"the backup failed: {result.stderr.strip()[-200:]}")
@@ -449,11 +464,14 @@ COMMANDS = {
 }
 
 
+RECOVERY_COMMANDS = {"recovery-backup", "recovery-restore", "recovery-start", "recovery-stop"}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=sorted(COMMANDS))
-    parser.add_argument("--state-dir", required=True)
-    parser.add_argument("--config", required=True)
+    parser.add_argument("command", choices=sorted(COMMANDS.keys() | RECOVERY_COMMANDS))
+    parser.add_argument("--state-dir")
+    parser.add_argument("--config")
     parser.add_argument("--ipc-config", default=None)
     parser.add_argument("--binary", default="target/release/oip-server")
     parser.add_argument("--output", default=None)
@@ -461,7 +479,20 @@ def main() -> int:
     parser.add_argument("--plan", default=None)
     parser.add_argument("--lines", type=int, default=50,
                         help="the number of the last lines of the log (0: all)")
+    parser.add_argument("--restore-dir", help="new recovery directory, or an existing recovered instance")
+    parser.add_argument("--port", type=int, help="local HTTP port for an isolated recovered instance")
+    parser.add_argument("--test-source-port", type=int,
+                        help="approve one configured literal-loopback OPC-UA test port for the isolated instance")
+    parser.add_argument("--web-dir", help="compatible OIP browser bundle for isolated recovery")
+    parser.add_argument("--passphrase-fd", type=int,
+                        help="read the recovery passphrase from an inherited file descriptor")
     args = parser.parse_args()
+    if args.command in RECOVERY_COMMANDS:
+        import oip_recovery
+
+        return oip_recovery.dispatch(args, sys.modules[__name__])
+    if not args.config or not args.state_dir:
+        parser.error("--config and --state-dir are required for this operation")
 
     config_path = pathlib.Path(args.config).resolve()
     state_dir = pathlib.Path(args.state_dir).resolve()
