@@ -920,6 +920,18 @@ def rehearse_publication(work, report, args):
     ]
     report["steps"].append("the private publication stage only accepts the approved ZIP and trusted signer and refuses replacement")
 
+    bootstrap = work / "first-install"
+    export = subprocess.run([sys.executable, "-B", ROOT / "tools/oip_publication.py", "--bundle", bundle,
+                             "--bootstrap", bootstrap, "--public-key", public, "--sha256", approved],
+                            capture_output=True, text=True, timeout=60)
+    assert export.returncode == 0, export.stderr
+    bootstrap_receipt = json.loads(export.stdout)
+    assert bootstrap_receipt["the_status"] == "BOOTSTRAP_READY"
+    for field in ("the_zip_sha256", "the_manifest_sha256", "the_license_sha256", "the_revision", "the_version"):
+        assert bootstrap_receipt[field] == staged[field]
+    bootstrap_files = {"oip_update.py", "oip_ops.py", "update-public.pem", "LICENSE", "THIRD_PARTY_NOTICES.txt"}
+    assert {path.name for path in bootstrap.iterdir()} == bootstrap_files | {"SHA256SUMS"}
+
     certificate, tls_key = work / "tls.crt", work / "tls.key"
     subprocess.run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1",
                     "-subj", "/CN=localhost", "-addext", "subjectAltName=IP:127.0.0.1",
@@ -956,7 +968,7 @@ EnableMMAP Off
     client = build_opener(ProxyHandler({}), oip_update.LocalProbe(),
                           HTTPSHandler(context=ssl.create_default_context(cafile=str(certificate))))
     base = f"https://127.0.0.1:{tls_port}"
-    downloaded = work / "downloaded.zip"
+    downloaded = bootstrap / "oip-local-darwin-arm64.zip"
     # Simulate an accidental additional file to verify the directory rule.
     accidental = web_root / expected_path.lstrip("/")
     accidental.with_name("private-fixture.txt").write_text("Generated test data\n")
@@ -1001,11 +1013,17 @@ EnableMMAP Off
         assert oip_update.digest_of(received) == approved
     report["steps"].append("anonymous certificate-validated HTTPS serves the exact approved ZIP with immutable caching and blocks HTTP and other files")
 
+    verify_first_install_files(bootstrap, bootstrap_receipt["the_bootstrap_manifest_sha256"],
+                               {"oip_update.py", "oip_ops.py", "update-public.pem", downloaded.name})
+    report["the_bootstrap"] = bootstrap_receipt
+    report["steps"].append("an independently delivered checksum authenticates both verifier scripts, the key and the exact first-install ZIP before execution")
+
     instance = work / "recipient"
     instance.mkdir(mode=0o700)
-    checked = run(instance, downloaded, public, "--dry-run")
+    verifier, key = bootstrap / "oip_update.py", bootstrap / "update-public.pem"
+    checked = run(instance, downloaded, key, "--dry-run", updater=verifier)
     assert checked.returncode == 0 and json.loads(checked.stdout)["the_status"] == "VERIFIED", checked.stderr
-    installed = run(instance, downloaded, public)
+    installed = run(instance, downloaded, key, updater=verifier)
     assert installed.returncode == 0 and json.loads(installed.stdout)["the_status"] == "UPDATED", installed.stderr
     current = instance / "current"
     assert current.resolve().name == report["the_revision"]
@@ -1014,7 +1032,7 @@ EnableMMAP Off
     core_port, source_port = free_port(), free_port()
     while source_port == core_port:
         source_port = free_port()
-    subprocess.run(real_setup_command(work, instance, public, core_port, source_port),
+    subprocess.run(real_setup_command(work, instance, key, core_port, source_port),
                    check=True, stdout=subprocess.DEVNULL, timeout=120, cwd=work)
     with installed_browser(instance, core_port, work) as (base, browser, _):
         report["the_core_build_revision"] = started_core_revision(base, browser)
@@ -1025,6 +1043,36 @@ EnableMMAP Off
     report["the_core_sha256"] = assets["oip-server"]
     report["the_publication"] = staged
     report["steps"].append("after stopping the HTTPS host, the same updater verifies and installs the downloaded package offline")
+
+
+def verify_first_install_files(directory, pin, files):
+    check = ["/usr/bin/shasum", "-a", "256", "-c", "--strict"]
+
+    def check_pin(value):
+        return subprocess.run([*check, "-"], input=f"{value}  SHA256SUMS\n", cwd=directory,
+                              text=True, capture_output=True, timeout=10)
+
+    def check_files():
+        return subprocess.run([*check, "SHA256SUMS"], cwd=directory, text=True,
+                              capture_output=True, timeout=10)
+
+    assert check_pin("0" * 64).returncode == 1
+    pinned = check_pin(pin)
+    assert pinned.returncode == 0 and "SHA256SUMS: OK" in pinned.stdout, pinned.stderr
+    verified = check_files()
+    assert verified.returncode == 0 and all(f"{name}: OK" in verified.stdout for name in files), verified.stderr
+    for name in sorted(files | {"SHA256SUMS"}):
+        path = directory / name
+        with path.open("r+b") as handle:
+            handle.seek(0, os.SEEK_END)
+            length = handle.tell()
+            handle.write(b"altered")
+            handle.flush()
+            try:
+                mismatch = check_pin(pin) if name == "SHA256SUMS" else check_files()
+                assert mismatch.returncode == 1 and f"{name}: FAILED" in mismatch.stdout, mismatch.stdout
+            finally:
+                handle.truncate(length)
 
 
 def main():

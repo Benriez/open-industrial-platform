@@ -1499,12 +1499,9 @@ issuer. The installer checks the policy with the staged Core before activation.
 Deliver customer proofs separately. Keep both private keys in their protected
 publishing or issuing workflows.
 
-For the first installation, obtain `oip_update.py`, its adjacent `oip_ops.py`
-and the Ed25519 public key through a trusted installer delivery. Check the
-key's `shasum -a 256` against the fingerprint supplied through an independently
-authenticated channel. Store the verified public key in an owner-controlled
-location outside the incoming package. The private signing key stays on
-the release machine. Subsequent updates can use the previously installed
+For the first installation, use the [verified first-install handoff](#165-authenticate-the-first-install-verifier).
+Keep the verified public key in an owner-controlled location outside the
+incoming package. Subsequent updates can use the previously installed
 verifier at `current/tools/oip_update.py`.
 
 Use a new path ending in `.zip` for a single downloadable release file. The
@@ -1614,8 +1611,7 @@ The command verifies the signature, all declared files, the signed commercial
 assignment, the separation of signing keys and the approved digest of the
 exact ZIP. It emits its relative public route, version and signed-manifest
 and license digests. The version directory contains only the ZIP and an
-Apache `.htaccess` file. Keep the verifier and initial signing-key fingerprint
-on the separately authenticated delivery path.
+Apache `.htaccess` file. Prepare the verifier handoff separately in §16.5.
 
 Once the release and HTTPS host are approved, publish the complete version
 directory under `/oip/macos-arm64/<version>/`. Provision an Apache HTTPS
@@ -1634,9 +1630,10 @@ installer with `--dry-run` and the provisioned key. Check the response headers
 and verify that plain HTTP and the directory are unavailable. The same approved
 ZIP can be delivered on removable media.
 
-The rehearsal uses the macOS Apache binary and OpenSSL on loopback.
-It generates short-lived TLS and signing keys and tests the exact staged ZIP
-through an anonymous HTTPS download and subsequent offline installation.
+The rehearsal uses the macOS Apache binary and OpenSSL on loopback. It
+generates short-lived TLS and signing keys and tests the exact staged ZIP
+through an anonymous HTTPS download, the authenticated first-install handoff
+and subsequent offline installation.
 
 ```sh
 python3 -B tests/oip_update.py --publication --core target/release/oip-server \
@@ -1646,6 +1643,44 @@ python3 -B tests/oip_update.py --publication --core target/release/oip-server \
 
 `publication.json` records the rehearsal. Hosting activation and validation
 on the approved target require a separate production release.
+
+### 16.5 Authenticate the first-install verifier
+
+On the release machine, export the handoff for the same approved ZIP and
+public key. The two Python files, the license and the notices are taken from
+the verified package. `SHA256SUMS` checks them, the public key and the exact
+initial ZIP. The command prints the SHA-256 of `SHA256SUMS` as
+`the_bootstrap_manifest_sha256`.
+
+```sh
+python3 -B tools/oip_publication.py --bundle "$REVIEWED_ZIP" \
+    --public-key "$TRUSTED_UPDATE_KEY" --sha256 "$APPROVED_ZIP_SHA256" \
+    --bootstrap "$NEW_INSTALLER_HANDOFF"
+```
+
+Give the installer the approved version, platform and checksum for
+`SHA256SUMS` in person or through a known, independently authenticated
+channel. Keep that checksum separate from the downloadable files. On the
+installation Mac, place only `oip_update.py`, `oip_ops.py`, `update-public.pem`,
+`LICENSE`, `THIRD_PARTY_NOTICES.txt`, `SHA256SUMS` and the downloaded
+`oip-local-darwin-arm64.zip` in a new owner-private directory. Retrieve the
+same ZIP from the approved HTTPS address or removable media.
+
+Set `OIP_HANDOFF` to that absolute path and `OIP_HANDOFF_SHA256` to the checksum
+received over the authenticated channel. Run both checks with the macOS tool
+before running Python. Continue only when both checks succeed and report
+`OK` for every file.
+
+```sh
+cd "$OIP_HANDOFF" &&
+    printf '%s  SHA256SUMS\n' "$OIP_HANDOFF_SHA256" | /usr/bin/shasum -a 256 -c --strict - &&
+    /usr/bin/shasum -a 256 -c --strict SHA256SUMS
+```
+
+Use §16.2 with `OIP_VERIFIER="$OIP_HANDOFF/oip_update.py"`,
+`TRUSTED_UPDATE_KEY="$OIP_HANDOFF/update-public.pem"` and
+`BUNDLE_ZIP="$OIP_HANDOFF/oip-local-darwin-arm64.zip"`. The first `--dry-run`
+then checks the package signature and compatibility using the verified key.
 
 ### 16.6 Local Tailscale membership read
 
