@@ -243,7 +243,8 @@ try {
           await page.waitForTimeout(650);
           await support.click();
           await waitForAria('Prüfe den Inhalt vor der Weitergabe.');
-          check('scoped support package displays a local preview', (await snapshot()).includes('format_version'));
+          const preview = page.getByRole('dialog').getByRole('textbox');
+          check('scoped support package displays a selectable local preview', await preview.isVisible());
           await page.waitForTimeout(650);
           const [download] = await Promise.all([
             page.waitForEvent('download'),
