@@ -29,6 +29,8 @@ BROWSER = DATABASE + ".browser-credentials.json"
 LICENSE = Path(DATABASE).with_suffix(".license.json").name
 AUDIT = DATABASE + ".security-audit"
 AUDIT_FILES = ("key.json", "seal.json", "events.jsonl")
+MANAGED_OPCUA = ".managed-opcua"
+MANAGED_OPCUA_FILES = ("client.der", "client.pem", "trusted/server.der")
 MAX_DB = 16 * 1024**3
 MAX_RESOURCE = 256 * 1024**2
 MAX_MEMBERS = 512
@@ -136,6 +138,18 @@ def sqlite_checks(ops, database):
         or ops.sqlite_query(database, "pragma user_version;") != str(CORE_SCHEMA)
     ):
         raise RecoveryError(f"Recovery requires an intact schema {CORE_SCHEMA} database.")
+
+
+def has_managed_opcua(ops, database):
+    count = ops.sqlite_query(
+        database, "SELECT count(*) FROM core_sources WHERE source_id = 'managed-opcua' "
+        "AND json_extract(payload_json, '$.binding') LIKE 'oip-managed-opcua-v1:%';",
+    )
+    return count == "1"
+
+
+def managed_opcua_members():
+    return {f"{DATABASE}{MANAGED_OPCUA}/{name}" for name in MANAGED_OPCUA_FILES}
 
 
 def passphrase(args, confirm):
@@ -325,6 +339,13 @@ def backup(args, ops):
         ops.sqlite_backup(database, snapshot)
         sqlite_checks(ops, snapshot)
         include(DATABASE, snapshot)
+        if has_managed_opcua(ops, snapshot):
+            directory = Path(str(database) + MANAGED_OPCUA)
+            for parent in (directory, directory / "trusted"):
+                if parent.resolve() != parent or not parent.is_dir() or parent.stat().st_mode & 0o077:
+                    raise RecoveryError("Managed OPC-UA PKI requires local private directories.")
+            for name in MANAGED_OPCUA_FILES:
+                include(f"{DATABASE}{MANAGED_OPCUA}/{name}", directory / name)
         if sizes[DATABASE] > MAX_DB:
             raise RecoveryError("Database exceeds the recovery profile's size limit.")
         manifest = {
@@ -416,7 +437,10 @@ def read_manifest(path, binary):
     audit_members = audit.intersection(sizes)
     if audit_members and audit_members != audit:
         raise RecoveryError("Incomplete security audit state.")
-    fixed = {DATABASE, BROWSER, BROWSER + ".revocations", LICENSE} | audit
+    managed = managed_opcua_members()
+    if managed.intersection(sizes) and not managed.issubset(sizes):
+        raise RecoveryError("Incomplete managed OPC-UA trust and identity.")
+    fixed = {DATABASE, BROWSER, BROWSER + ".revocations", LICENSE} | audit | managed
     for name in sizes:
         checked_name(name)
         if name not in fixed and not (
@@ -475,6 +499,11 @@ def recovery_paths(directory, manifest, http_port, web_dir=None):
         return str(root)
 
     normalize_core_paths(core, file_ref, tree_ref)
+    if managed_opcua_members().issubset(manifest["members"]):
+        for name in managed_opcua_members():
+            file_ref(name)
+        for name in (DATABASE + MANAGED_OPCUA, DATABASE + MANAGED_OPCUA + "/trusted"):
+            (directory / name).chmod(0o700)
     if LICENSE in manifest["members"]:
         file_ref(LICENSE)
     core.update(
@@ -483,6 +512,7 @@ def recovery_paths(directory, manifest, http_port, web_dir=None):
         http_port=http_port,
         web_dir=web_dir,
         tailscale_peer_status=False,
+        disable_managed_opcua=True,
     )
     if "opcua_read_only" in core:
         core["opcua_read_only"] = True
@@ -513,6 +543,8 @@ def restore(args, ops):
         manifest = unpack(plaintext, recovered, args.binary)
         plaintext.unlink()
         sqlite_checks(ops, recovered / DATABASE)
+        if has_managed_opcua(ops, recovered / DATABASE) != managed_opcua_members().issubset(manifest["members"]):
+            raise RecoveryError("Managed OPC-UA state does not match the backup file inventory.")
         recovery_paths(recovered, manifest, http_port=0)
         target.mkdir(mode=0o700)
         try:

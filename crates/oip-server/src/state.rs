@@ -39,6 +39,14 @@ struct EventCommand {
     reply: oneshot::Sender<Result<IngestOutcome, String>>,
 }
 enum Command {
+    OpcuaSetup(
+        Arc<crate::opcua_setup::Setup>,
+        PrincipalId,
+        Box<crate::opcua_setup::ManagedSource>,
+        Vec<u8>,
+        Option<String>,
+        oneshot::Sender<Result<(), CapabilityError>>,
+    ),
     InventoryOnline(
         InventoryAdministration,
         oneshot::Sender<Result<InventoryPlan, CapabilityError>>,
@@ -114,6 +122,7 @@ pub struct AppState {
     pub catalogs: Arc<RwLock<BTreeMap<DataSourceId, Vec<BrowseEntry>>>>,
     pub(crate) opcua_browse_bindings: Arc<BTreeSet<(DataSourceId, EntityId)>>,
     pub(crate) opcua_read_only: bool,
+    pub(crate) opcua_setup: Arc<crate::opcua_setup::Setup>,
     pub(crate) opcua_selected_sources: Arc<BTreeSet<DataSourceId>>,
     pub tailscale_status: Arc<Mutex<Option<crate::network_services::TailscaleSnapshot>>>,
     pub scenario_tx: Option<watch::Sender<String>>,
@@ -177,6 +186,16 @@ impl AppState {
                 .connection_attempts()
                 .map_err(|_| "connection attempts unavailable")?,
         );
+        let saved = store.definitions().map_err(|_| "source definitions")?;
+        let mut managed = None;
+        for definition in &saved {
+            if let Some(source) = crate::opcua_setup::ManagedSource::decode(definition)? {
+                if managed.replace(source).is_some() {
+                    return Err("more than one managed OPC-UA source".into());
+                }
+            }
+        }
+        let opcua_setup = Arc::new(crate::opcua_setup::Setup::new(config, managed.clone())?);
         if let Some(h) = &hierarchy {
             let mut ids: std::collections::BTreeSet<String> = config
                 .sources
@@ -190,6 +209,14 @@ impl AppState {
                 for profile in &hue.profiles {
                     ids.insert(crate::hue::source_id(profile).as_str().to_owned());
                 }
+            }
+            if let Some(source) = &managed {
+                let id = crate::opcua_setup::source_id();
+                let location = h.location(&id).ok_or("managed OPC-UA placement missing")?;
+                if location.site_id != source.site || h.source_for_device(source.device.as_str()) != Some(&id) {
+                    return Err("managed OPC-UA placement mismatch".into());
+                }
+                ids.insert(id.to_string());
             }
             if ids
                 != h.plan
@@ -213,8 +240,9 @@ impl AppState {
             .iter()
             .map(SourceConfig::definition)
             .collect::<Result<Vec<_>, _>>()?;
-        use oip_core::CoreRepository;
-        let saved = store.definitions().map_err(|_| "source definitions")?;
+        if let Some(source) = &managed {
+            definitions.push(source.definition(&opcua_setup.root)?);
+        }
         for c in connections.iter() {
             definitions.push(
                 saved
@@ -322,6 +350,10 @@ impl AppState {
                 opcua_selected_sources.insert(source);
             }
         }
+        if let Some(source) = &managed {
+            app.configure_polled_source(&crate::opcua_setup::source_id(), source.cadence_ms())
+                .map_err(|_| "managed OPC-UA cadence")?;
+        }
         for c in connections.iter() {
             app.configure_source_cadence(&c.source_id, (c.poll_seconds * 2000 + 15000) as i64)
                 .map_err(|_| "source cadence")?;
@@ -421,6 +453,7 @@ impl AppState {
                     .collect::<Result<_, &str>>()?,
             ),
             opcua_read_only: config.opcua_read_only,
+            opcua_setup,
             opcua_selected_sources: Arc::new(opcua_selected_sources),
             tailscale_status: Arc::new(Mutex::new(None)),
             scenario_tx,
@@ -460,6 +493,25 @@ impl AppState {
             .map_err(|_| denied())?;
         rx.await.map_err(|_| denied())?
     }
+    pub(crate) fn is_selected_opcua(&self, source: &DataSourceId) -> bool {
+        self.opcua_selected_sources.contains(source)
+            || (*source == crate::opcua_setup::source_id() && self.opcua_setup.configured.borrow().is_some())
+    }
+
+    pub(crate) async fn apply_opcua_setup(
+        &self, principal: PrincipalId, source: crate::opcua_setup::ManagedSource,
+        der: Vec<u8>, previous_sha256: Option<String>,
+    ) -> Result<(), CapabilityError> {
+        if self.stopping.is_cancelled() {
+            return Err(crate::opcua_setup::unavailable());
+        }
+        let (tx, rx) = oneshot::channel();
+        self.inner.tx.send(Command::OpcuaSetup(
+            self.opcua_setup.clone(), principal, Box::new(source), der, previous_sha256, tx,
+        )).await.map_err(|_| crate::opcua_setup::unavailable())?;
+        rx.await.map_err(|_| crate::opcua_setup::unavailable())?
+    }
+
     pub async fn connection_commit(
         &self,
         request: VerifiedConnectionCommit,

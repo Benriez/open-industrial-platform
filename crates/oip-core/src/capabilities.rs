@@ -23,6 +23,7 @@ pub enum CapabilityId {
     ObservationsRead,
     EventsRead,
     OpcuaNodesRead,
+    OpcuaSetup,
     OpcuaNodeWrite,
     SnapshotRead,
     SimulationScenarioSet,
@@ -80,7 +81,7 @@ pub struct CapabilityDescriptor {
     pub audit: String,
 }
 impl CapabilityId {
-    pub const ALL: [Self; 41] = [
+    pub const ALL: [Self; 42] = [
         Self::CoreHealthRead,
         Self::CoreLivenessRead,
         Self::CoreReadinessRead,
@@ -96,6 +97,7 @@ impl CapabilityId {
         Self::ObservationsRead,
         Self::EventsRead,
         Self::OpcuaNodesRead,
+        Self::OpcuaSetup,
         Self::OpcuaNodeWrite,
         Self::SnapshotRead,
         Self::SimulationScenarioSet,
@@ -155,6 +157,11 @@ impl CapabilityId {
                 ],
                 "HueLightCommand",
                 "HueCommandAccepted",
+            ),
+            OpcuaSetup => (
+                vec![Permission::InventoryManage, Permission::OpcuaRead],
+                "OpcuaSetupRequest",
+                "OpcuaSetupResult",
             ),
             HueSetup => (
                 vec![
@@ -331,6 +338,7 @@ impl CapabilityId {
                     | LicenseProofApply
                     | InventoryChange
                     | DeviceConnectionConfigure
+                    | OpcuaSetup
                     | OpcuaNodeWrite
                     | HueLightControl
                     | HueSetup
@@ -345,6 +353,7 @@ impl CapabilityId {
                     | LicenseProofApply
                     | InventoryChange
                     | DeviceConnectionConfigure
+                    | OpcuaSetup
                     | OpcuaNodeWrite
                     | HueLightControl
                     | HueSetup
@@ -462,6 +471,7 @@ pub struct ScenarioRequest {
     deny_unknown_fields
 )]
 pub enum CapabilityRequest {
+    OpcuaSetup(OpcuaSetupRequest),
     SupportPackageRead(SupportPackageQuery),
     LicenseStatusRead,
     LicenseProofPreview(LicensePreviewRequest),
@@ -507,6 +517,7 @@ pub enum CapabilityRequest {
 impl CapabilityRequest {
     pub fn id(&self) -> CapabilityId {
         match self {
+            Self::OpcuaSetup(_) => CapabilityId::OpcuaSetup,
             Self::LicenseStatusRead => CapabilityId::LicenseStatusRead,
             Self::LicenseProofPreview(_) => CapabilityId::LicenseProofPreview,
             Self::LicenseProofApply(_) => CapabilityId::LicenseProofApply,
@@ -556,6 +567,7 @@ impl CapabilityRequest {
 #[serde(tag = "type", content = "value", rename_all = "snake_case")]
 pub enum CapabilityOutput {
     SupportPackage(SupportPackage),
+    OpcuaSetup(Box<OpcuaSetupResult>),
     LicenseStatus(LicenseStatus),
     LicensePreview(LicensePreview),
     HueLights(HueLights),

@@ -77,6 +77,20 @@ impl OpcUaAdapter {
             &profile.private_key_path,
         ));
         options.expected_server_uri = Some(profile.server_application_uri.clone());
+        if definition.id == crate::opcua_setup::source_id()
+            && self.state.opcua_setup.configured.borrow().is_some()
+        {
+            options.client_application_uri = Some(
+                crate::opcua_setup::client_application_uri(&profile.pki_dir).map_err(|_| {
+                    AdapterError::InvalidSecurityConfiguration("managed OPC-UA client identity unavailable".into())
+                })?
+            );
+            options.expected_server_certificate = Some(
+                crate::opcua_setup::server_certificate(&profile.pki_dir).map_err(|_| {
+                    AdapterError::InvalidSecurityConfiguration("managed OPC-UA server certificate unavailable".into())
+                })?
+            );
+        }
         // The value can legitimately stay unchanged for hours. The Core uses
         // local receipt cadence and connection status to evaluate freshness.
         options.freshness.max_source_age = None;
@@ -348,7 +362,7 @@ pub async fn source_worker(
     adapter: Arc<dyn CollectionAdapter>,
     cancel: CancellationToken,
 ) -> Result<(), RuntimeError> {
-    let selected = state.opcua_selected_sources.contains(&id);
+    let selected = state.is_selected_opcua(&id);
     let mut consecutive_failures = 0u32;
     loop {
         if cancel.is_cancelled() {
@@ -403,8 +417,45 @@ pub async fn source_worker(
     Ok(())
 }
 
+async fn managed_opcua_worker(state: AppState, cancel: CancellationToken) -> Result<(), RuntimeError> {
+    let setup = state.opcua_setup.clone();
+    let mut updates = setup.configured.subscribe();
+    loop {
+        let saved = updates.borrow_and_update().clone();
+        if let Some(source) = saved {
+            let child = cancel.child_token();
+            let adapter = Arc::new(OpcUaAdapter { config: source.config(&setup.root), state: state.clone() });
+            let worker = source_worker(state.clone(), crate::opcua_setup::source_id(), adapter, child.clone());
+            tokio::pin!(worker);
+            tokio::select! {
+                result = &mut worker => return result,
+                changed = updates.changed() => {
+                    child.cancel();
+                    let stopped = worker.await;
+                    if changed.is_err() || cancel.is_cancelled() {
+                        return stopped;
+                    }
+                    if stopped.is_err() {
+                        tracing::warn!(code="opcua_rotation_shutdown", "previous OPC-UA session stopped with an error");
+                    }
+                }
+            }
+        } else {
+            tokio::select! {
+                _ = cancel.cancelled() => return Ok(()),
+                result = updates.changed() => {
+                    if result.is_err() {
+                        return Ok(());
+                    }
+                }
+            }
+        }
+    }
+}
+
 fn selected_opcua_error_code(error: &AdapterError) -> &'static str {
     match error {
+        AdapterError::InvalidSecurityConfiguration(reason) if reason.contains("server certificate changed") => "opcua_certificate_changed",
         AdapterError::InvalidSecurityConfiguration(_) => "opcua_security_configuration_invalid",
         AdapterError::Connection(reason) | AdapterError::Protocol(reason) => {
             if reason.contains("BadCertificateUntrusted") {
@@ -547,6 +598,9 @@ impl CoreRuntime {
         };
         let cancel = CancellationToken::new();
         let mut workers = Vec::new();
+        if state.opcua_setup.enabled && state.hierarchy().is_some() {
+            workers.push(tokio::spawn(managed_opcua_worker(state.clone(), cancel.clone())));
+        }
         for source in config.sources {
             let id = DataSourceId::new(&source.id)
                 .map_err(|_| RuntimeError::Configuration("source id".into()))?;

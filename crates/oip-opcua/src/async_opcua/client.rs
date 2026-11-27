@@ -64,6 +64,27 @@ pub struct AsyncOpcUaClient {
     reported_drops: AtomicU64,
 }
 
+const CLIENT_URI: &str = "urn:oip:local-test-client";
+
+/// Create a persistent installation identity using the same application URI as the SDK.
+pub fn local_client_identity(application_uri: &str) -> Result<(Vec<u8>, Vec<u8>), AdapterError> {
+    use opcua::crypto::{X509Data, X509};
+    let (cert, key) = X509::cert_and_pkey(&X509Data {
+        key_size: 2048,
+        common_name: "Open Industrial Platform".into(),
+        organization: "Open Industrial Platform".into(),
+        organizational_unit: String::new(),
+        country: String::new(),
+        state: String::new(),
+        alt_host_names: X509Data::alt_host_names(application_uri, None, false, false, false),
+        certificate_duration_days: 365,
+    }).map_err(AdapterError::InvalidSecurityConfiguration)?;
+    let invalid = |_| AdapterError::InvalidSecurityConfiguration("client identity encoding".into());
+    let cert = cert.to_der().map_err(invalid)?;
+    let key = key.to_der().map_err(|_| AdapterError::InvalidSecurityConfiguration("client key encoding".into()))?;
+    Ok((cert, key.as_bytes().to_vec()))
+}
+
 impl AsyncOpcUaClient {
     pub async fn connect(options: &ClientOptions) -> Result<Self, AdapterError> {
         tokio::time::timeout(Duration::from_secs(15), Self::connect_inner(options))
@@ -320,7 +341,7 @@ impl AsyncOpcUaClient {
         );
         let mut builder = ClientBuilder::new()
             .application_name("OIP Read-only Client")
-            .application_uri("urn:oip:local-test-client")
+            .application_uri(options.client_application_uri.as_deref().unwrap_or(CLIENT_URI))
             .product_uri("urn:oip:local-simulation")
             .trust_server_certs(false)
             .verify_server_certs(true)
@@ -355,6 +376,12 @@ impl AsyncOpcUaClient {
             .recreate_subscriptions(false)
             .client()
             .map_err(|errors| AdapterError::Connection(errors.join(", ")))?;
+        if let Some(expected) = &options.expected_server_certificate {
+            client
+                .certificate_store()
+                .write()
+                .pin_peer_certificate(expected.clone());
+        }
         let endpoint_descriptions = client
             .get_server_endpoints_from_url(options.endpoint.as_str())
             .await
@@ -391,6 +418,13 @@ impl AsyncOpcUaClient {
                 return Err(AdapterError::InvalidSecurityConfiguration(
                     "multiple certificates offered for the same OPC-UA endpoint and identity".into()
                 ));
+            }
+            if let Some(expected) = &options.expected_server_certificate {
+                if endpoint.server_certificate.as_ref() != expected {
+                    return Err(AdapterError::InvalidSecurityConfiguration(
+                        "OPC-UA server certificate changed; verify and approve the replacement in OIP".into()
+                    ));
+                }
             }
             // The discovery server cannot redirect an approved source, cause a
             // second discovery with different credentials, or set a weaker mode.

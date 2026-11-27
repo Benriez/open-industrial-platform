@@ -9,3 +9,5 @@ mod server;
 
 pub use client::{canonical_node_identifier, AsyncOpcUaClient};
 pub use server::{AsyncOpcUaServerConfig, RunningAsyncOpcUaServer, NAMESPACE_URI};
+
+pub use client::local_client_identity;

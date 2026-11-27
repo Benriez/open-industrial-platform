@@ -141,6 +141,8 @@ pub struct ClientOptions {
     /// For the supported external polling path, match this exact server URI
     /// and validate it against the certificate presented by the server.
     pub expected_server_uri: Option<String>,
+    pub expected_server_certificate: Option<Vec<u8>>,
+    pub client_application_uri: Option<String>,
     /// New clients have no permission to submit a plant write. Only existing
     /// explicitly enabled integrations opt out.
     pub read_only: bool,
@@ -178,6 +180,8 @@ impl ClientOptions {
             security_profile: SecurityProfile::LocalSimulation,
             production_security: None,
             expected_server_uri: None,
+            expected_server_certificate: None,
+            client_application_uri: None,
             read_only: true,
             session_retry_limit: 20,
             freshness: FreshnessPolicy::default(),

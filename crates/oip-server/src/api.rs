@@ -217,6 +217,10 @@ pub fn router_with_identity(
             "/api/v2/hue/setup",
             post(hue_setup).layer(axum::extract::DefaultBodyLimit::max(1024)),
         )
+        .route(
+            "/api/v2/opcua/setup",
+            post(opcua_setup).layer(axum::extract::DefaultBodyLimit::max(crate::opcua_setup::MAX_REQUEST)),
+        )
         .route("/api/v2/services", get(services_read))
         .route("/api/v2/inventory/apply", post(inventory_apply))
         .route(
@@ -812,6 +816,19 @@ diagnostic_handler!(
     DiagnosticPage,
     DiagnosticPage
 );
+
+async fn opcua_setup(
+    Authorized(s): Authorized,
+    body: Result<Json<OpcuaSetupRequest>, axum::extract::rejection::JsonRejection>,
+) -> Result<Json<OpcuaSetupResult>, CapabilityErrorResponse> {
+    let Json(input) = body.map_err(|_| CapabilityErrorResponse(CapabilityError::new(
+        CapabilityErrorCode::InvalidInput, "OPCUA_SETUP_ARGUMENTS", "Invalid OPC-UA setup request."
+    )))?;
+    match call(s, CapabilityRequest::OpcuaSetup(input)).await? {
+        CapabilityOutput::OpcuaSetup(value) => Ok(Json(*value)),
+        _ => Err(mismatch()),
+    }
+}
 
 async fn license_status(
     Authorized(s): Authorized,

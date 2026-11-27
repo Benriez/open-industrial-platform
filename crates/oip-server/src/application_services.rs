@@ -191,6 +191,7 @@ impl ApplicationServices {
             HueLightsRead(_)
             | HueLightControl(_)
             | HueSetup(_)
+            | OpcuaSetup(_)
             | DeviceConnectionRead(_)
             | DeviceConnectionConfigure(_)
             | InventoryRead(_)
@@ -471,7 +472,7 @@ impl ApplicationServices {
         let total = found.len();
         let selected: Vec<_> = found.into_iter().skip(offset).take(limit).collect();
         let client = s.clients.read().await.get(&source).cloned();
-        let collected = (read_value && s.opcua_selected_sources.contains(&source)).then(|| {
+        let collected = (read_value && s.is_selected_opcua(&source)).then(|| {
             s.view()
                 .observations
                 .into_iter()
@@ -570,7 +571,7 @@ impl ApplicationServices {
         &self,
         request: NodeWriteRequest,
     ) -> Result<NodeWriteResult, CapabilityError> {
-        if self.state.opcua_read_only {
+        if self.state.opcua_read_only || self.state.is_selected_opcua(&request.source) {
             return Err(CapabilityError::new(
                 CapabilityErrorCode::OperationNotSupported,
                 "OPCUA_READ_ONLY_PROFILE",
@@ -637,6 +638,11 @@ impl CapabilityService for ApplicationServices {
                 return CapabilityId::ALL
                     .into_iter()
                     .filter(|id| {
+                        if *id == CapabilityId::OpcuaSetup {
+                            return h.plan.sites.iter().any(|site| {
+                                crate::opcua_setup::authorize(h, p, &site.id)
+                            });
+                        }
                         if *id == CapabilityId::HueLightsRead {
                             return self.state.hue_profiles.keys().any(|source| {
                                 crate::hue::visible_profile(&self.state, h, p, source).is_ok()
@@ -684,6 +690,7 @@ impl CapabilityService for ApplicationServices {
                     CapabilityId::HueLightsRead
                         | CapabilityId::HueLightControl
                         | CapabilityId::HueSetup
+                        | CapabilityId::OpcuaSetup
                         | CapabilityId::DeviceConnectionRead
                         | CapabilityId::DeviceConnectionConfigure
                         | CapabilityId::InventoryRead

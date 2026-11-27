@@ -13,6 +13,7 @@ import '../widgets/workstation.dart';
 import '../widgets/opcua_compare.dart';
 import 'diagnostics.dart' show scenarios;
 import 'opcua_value.dart';
+import 'opcua_setup.dart';
 import '../core/keyboard.dart';
 
 /// OPC UA workstation: context rail, node explorer and value inspector.
@@ -856,6 +857,19 @@ class _OpcuaPageState extends State<OpcuaPage> {
 
   // ---------------------------------------------------------------- header
 
+  Future<void> _openSetup(OpcuaSetupApi api) async {
+    final source = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => OpcuaSetupDialog(api, widget.controller.infrastructure),
+    );
+    if (!mounted || source == null) return;
+    await widget.controller.resyncInfrastructure();
+    if (!mounted) return;
+    requestedSource = source;
+    await _reloadContext();
+  }
+
   Widget _header(BuildContext context, Snapshot snapshot) {
     final system = snapshot.system;
     final source = _selectedSourceInfo;
@@ -864,6 +878,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
         ? system.subscription
         : 'unknown';
     final stale = widget.controller.stale;
+    final api = widget.controller.api;
     return AdaptiveWorkspaceHeader(
       primaryAction: WorkspacePrimaryAction(
         buttonKey: const Key('opcua-primary-search'),
@@ -873,6 +888,14 @@ class _OpcuaPageState extends State<OpcuaPage> {
         onPressed: searchFocus.requestFocus,
       ),
       actions: [
+        if (api is OpcuaSetupApi && widget.controller.infrastructure.ready &&
+            !widget.controller.infrastructure.isFixture)
+          OutlinedButton.icon(
+            key: const Key('opcua-setup-open'),
+            icon: const Icon(Icons.add_link),
+            label: Text(context.tr('OPC-UA einrichten')),
+            onPressed: () => _openSetup(api as OpcuaSetupApi),
+          ),
         InspectorOpenAction(
           controller: widget.controller,
           workspace: WorkspaceId.opcua,

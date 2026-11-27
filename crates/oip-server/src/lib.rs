@@ -33,4 +33,5 @@ pub mod hue;
 pub mod network_services;
 
 mod private_state;
+mod opcua_setup;
 mod security_audit;

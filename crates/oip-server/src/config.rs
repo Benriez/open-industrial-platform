@@ -49,7 +49,7 @@ pub struct OpcUaReadPoint {
 }
 
 impl OpcUaReadProfile {
-    fn validate(&self) -> Result<(), String> {
+    pub(crate) fn validate(&self) -> Result<(), String> {
         let valid_uri = |uri: &str| {
             uri.len() <= 512
                 && !uri.chars().any(char::is_whitespace)
@@ -256,6 +256,8 @@ pub struct CoreConfig {
     /// Installation-wide authoritative permission for incoming OPC-UA
     /// operations. Existing installations retain their current permission model.
     pub opcua_read_only: bool,
+    /// Isolated recovery launches keep managed sources inert.
+    pub disable_managed_opcua: bool,
     #[serde(default)]
     pub opcua_browse_sources: Vec<OpcUaBrowseSource>,
     pub queue_capacity: usize,
@@ -277,6 +279,7 @@ impl Default for CoreConfig {
             http_port: 8080,
             sources: Vec::new(),
             opcua_read_only: false,
+            disable_managed_opcua: false,
             opcua_browse_sources: Vec::new(),
             queue_capacity: 64,
             stale_after_ms: 5000,

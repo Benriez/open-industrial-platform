@@ -93,7 +93,8 @@ struct ToolSpec {
     id: CapabilityId,
     description: &'static str,
 }
-const TOOLS: [ToolSpec; 27] = [
+const TOOLS: [ToolSpec; 28] = [
+    ToolSpec { name: "oip_opcua_setup", id: CapabilityId::OpcuaSetup, description: "Read local OPC-UA setup, preview a server certificate, or apply an independently verified SHA-256 fingerprint. Requires explicit management and OPC-UA access for the registered device's site. Only one read-only collector." },
     ToolSpec { name: "oip_license_status_read", id: CapabilityId::LicenseStatusRead, description: "Read installation-wide commercial and support entitlement status. Requires explicit installation license read permission." },
     ToolSpec { name: "oip_license_proof_preview", id: CapabilityId::LicenseProofPreview, description: "Verify an OIP proof against the installed issuer and prepare a short-lived confirmation for review. Requires installation license management permission." },
     ToolSpec { name: "oip_license_proof_apply", id: CapabilityId::LicenseProofApply, description: "Save the verified proof after the authorized installation administrator expressly confirms the displayed preview. Only pass a confirmation after the administrator has agreed to save it." },
@@ -136,6 +137,7 @@ const RESOURCES: [(&str, CapabilityId); 7] = [
 ];
 fn input_schema(id: CapabilityId) -> Value {
     let mut v = match id {
+        CapabilityId::OpcuaSetup => serde_json::to_value(schemars::schema_for!(OpcuaSetupRequest)),
         CapabilityId::LicenseStatusRead => {
             Ok(json!({"type":"object","properties":{},"additionalProperties":false}))
         }
@@ -266,6 +268,8 @@ fn parse_request(spec: ToolSpec, args: Value) -> Result<CapabilityRequest, Error
     let size = serde_json::to_vec(&args).map_err(|_| invalid())?.len();
     let limit = if spec.id == CapabilityId::LicenseProofPreview {
         crate::licensing::MAX_PREVIEW_REQUEST
+    } else if spec.id == CapabilityId::OpcuaSetup {
+        crate::opcua_setup::MAX_REQUEST
     } else {
         MAX_INPUT
     };
@@ -309,6 +313,7 @@ fn unit_request(id: CapabilityId) -> CapabilityRequest {
 }
 fn output_schema(id: CapabilityId) -> Value {
     let tag = match id {
+        CapabilityId::OpcuaSetup => "opcua_setup",
         CapabilityId::DeviceConnectionRead | CapabilityId::DeviceConnectionConfigure => {
             "connection"
         }
@@ -474,9 +479,9 @@ impl McpAdapter {
                 tool.annotations = Some(ToolAnnotations::from_raw(
                     None,
                     Some(!s.id.descriptor().mutating),
-                    Some(s.id == CapabilityId::LicenseProofApply),
+                    Some(matches!(s.id, CapabilityId::LicenseProofApply | CapabilityId::OpcuaSetup)),
                     Some(!s.id.descriptor().mutating),
-                    Some(false),
+                    Some(s.id == CapabilityId::OpcuaSetup),
                 ));
                 tool
             })

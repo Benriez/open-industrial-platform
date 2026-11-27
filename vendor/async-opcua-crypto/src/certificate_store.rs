@@ -50,6 +50,7 @@ pub struct CertificateStore {
     /// into the trusted folder if this flag is set. Certs in the trusted folder must still pass
     /// validity checks.
     trust_unknown_certs: bool,
+    pinned_peer_der: Option<Vec<u8>>,
 }
 
 impl CertificateStore {
@@ -64,6 +65,7 @@ impl CertificateStore {
             check_time: true,
             skip_verify_certs: false,
             trust_unknown_certs: false,
+            pinned_peer_der: None,
         }
     }
 
@@ -129,6 +131,14 @@ impl CertificateStore {
         self.trust_unknown_certs = trust_unknown_certs;
     }
 
+    /// Require an explicitly approved application certificate for this store.
+    /// The normal time, key, hostname, and application URI checks still apply.
+    pub fn pin_peer_certificate(&mut self, der: Vec<u8>) {
+        self.pinned_peer_der = Some(der);
+        self.skip_verify_certs = false;
+        self.check_time = true;
+    }
+
     /// Check expiration time of incoming certificates.
     pub fn set_check_time(&mut self, check_time: bool) {
         self.check_time = check_time;
@@ -178,9 +188,7 @@ impl CertificateStore {
         // Write the private key
         use rsa::pkcs8;
         let doc = pkey.to_der().unwrap();
-        let pem = doc
-            .to_pem("PRIVATE KEY", pkcs8::LineEnding::CR)
-            .unwrap();
+        let pem = doc.to_pem("PRIVATE KEY", pkcs8::LineEnding::CR).unwrap();
         let _ = CertificateStore::write_to_file(pem.as_bytes(), pkey_path, overwrite)?;
         Ok((cert, pkey))
     }
@@ -281,6 +289,76 @@ impl CertificateStore {
         let cert_file_name = CertificateStore::cert_file_name(cert);
         debug!("Validating cert with name on disk {}", cert_file_name);
 
+        if let Some(expected_der) = &self.pinned_peer_der {
+            if cert.as_byte_string().as_ref() != expected_der.as_slice() {
+                return Err(Error::new(
+                    StatusCode::BadCertificateUntrusted,
+                    "The peer certificate differs from the approved certificate",
+                ));
+            }
+        } else {
+            self.validate_trust_directory(cert, &cert_file_name)?;
+        }
+
+        // Check that the certificate is the right length for the security policy
+        match cert.key_length() {
+            Err(_) => {
+                error!("Cannot read key length from certificate {}", cert_file_name);
+                return Err(Error::new(
+                    StatusCode::BadSecurityChecksFailed,
+                    format!("Cannot read key length from certificate {}", cert_file_name),
+                ));
+            }
+            Ok(key_length) => {
+                if !security_policy.is_valid_keylength(key_length) {
+                    warn!(
+                        "Certificate {} has an invalid key length {} for the policy {}",
+                        cert_file_name, key_length, security_policy
+                    );
+                    return Err(Error::new(
+                        StatusCode::BadSecurityChecksFailed,
+                        format!(
+                            "Certificate {} has an invalid key length {} for the policy {}",
+                            cert_file_name, key_length, security_policy
+                        ),
+                    ));
+                }
+            }
+        }
+
+        if self.skip_verify_certs {
+            debug!(
+                "Skipping additional verifications for certificate {}",
+                cert_file_name
+            );
+            return Ok(());
+        }
+
+        // Now inspect the cert not before / after values to ensure its validity
+        if self.check_time {
+            use chrono::Utc;
+            let now = Utc::now();
+            cert.is_time_valid(&now)?;
+        }
+
+        // Compare the hostname of the cert against the cert supplied
+        if let Some(hostname) = hostname {
+            cert.is_hostname_valid(hostname)?;
+        }
+
+        // Compare the application / product uri to the supplied application description
+        if let Some(application_uri) = application_uri {
+            cert.is_application_uri_valid(application_uri)?;
+        }
+
+        // Other tests that we might do with trust lists
+        // ... issuer
+        // ... trust (self-signed, ca etc.)
+        // ... revocation
+        Ok(())
+    }
+
+    fn validate_trust_directory(&self, cert: &X509, cert_file_name: &str) -> Result<(), Error> {
         // Look for the cert in the rejected folder. If it's rejected there is no purpose going
         // any further
         {
@@ -298,7 +376,7 @@ impl CertificateStore {
                     ),
                 ));
             }
-            cert_path.push(&cert_file_name);
+            cert_path.push(cert_file_name);
             if cert_path.exists() {
                 warn!(
                     "Certificate {} is untrusted because it resides in the rejected directory",
@@ -332,7 +410,7 @@ impl CertificateStore {
                     ),
                 ));
             }
-            cert_path.push(&cert_file_name);
+            cert_path.push(cert_file_name);
 
             // Check if cert is in the trusted folder
             if !cert_path.exists() {
@@ -357,62 +435,6 @@ impl CertificateStore {
                 error!("Certificate in memory does not match the one on disk {} so cert will automatically be treated as untrusted", cert_path.display());
                 return Err(Error::new(StatusCode::BadUnexpectedError, format!("Certificate in memory does not match the one on disk {} so cert will automatically be treated as untrusted", cert_path.display())));
             }
-
-            // Check that the certificate is the right length for the security policy
-            match cert.key_length() {
-                Err(_) => {
-                    error!("Cannot read key length from certificate {}", cert_file_name);
-                    return Err(Error::new(
-                        StatusCode::BadSecurityChecksFailed,
-                        format!("Cannot read key length from certificate {}", cert_file_name),
-                    ));
-                }
-                Ok(key_length) => {
-                    if !security_policy.is_valid_keylength(key_length) {
-                        warn!(
-                            "Certificate {} has an invalid key length {} for the policy {}",
-                            cert_file_name, key_length, security_policy
-                        );
-                        return Err(Error::new(
-                            StatusCode::BadSecurityChecksFailed,
-                            format!(
-                                "Certificate {} has an invalid key length {} for the policy {}",
-                                cert_file_name, key_length, security_policy
-                            ),
-                        ));
-                    }
-                }
-            }
-
-            if self.skip_verify_certs {
-                debug!(
-                    "Skipping additional verifications for certificate {}",
-                    cert_file_name
-                );
-                return Ok(());
-            }
-
-            // Now inspect the cert not before / after values to ensure its validity
-            if self.check_time {
-                use chrono::Utc;
-                let now = Utc::now();
-                cert.is_time_valid(&now)?;
-            }
-
-            // Compare the hostname of the cert against the cert supplied
-            if let Some(hostname) = hostname {
-                cert.is_hostname_valid(hostname)?;
-            }
-
-            // Compare the application / product uri to the supplied application description
-            if let Some(application_uri) = application_uri {
-                cert.is_application_uri_valid(application_uri)?;
-            }
-
-            // Other tests that we might do with trust lists
-            // ... issuer
-            // ... trust (self-signed, ca etc.)
-            // ... revocation
         }
         Ok(())
     }

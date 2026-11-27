@@ -41,3 +41,6 @@ pub use hue::*;
 
 mod licensing;
 pub use licensing::*;
+
+mod opcua_setup;
+pub use opcua_setup::*;

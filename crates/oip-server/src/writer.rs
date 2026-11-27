@@ -29,6 +29,43 @@ impl Writer {
         self.notifications.send_modify(|n| *n = n.wrapping_add(1));
         Ok(())
     }
+    fn apply_opcua_setup(
+        &mut self, setup: &crate::opcua_setup::Setup, principal: &PrincipalId,
+        source: crate::opcua_setup::ManagedSource, der: &[u8], previous: Option<&str>,
+    ) -> Result<(), CapabilityError> {
+        use crate::opcua_setup::{authorize, denied, may_use_device, unavailable};
+        if self.expired() || !setup.enabled {
+            return Err(unavailable());
+        }
+        let store = &mut self.app.repository;
+        let hierarchy = store.hierarchy().map_err(|_| unavailable())?.ok_or_else(denied)?;
+        let inventory = store.inventory_records().map_err(|_| unavailable())?;
+        if !authorize(&hierarchy, principal, &source.site)
+            || !may_use_device(&hierarchy, &inventory, &source.site, &source.device)
+        {
+            return Err(denied());
+        }
+        setup.check_revision(&source, previous)?;
+        let definition = source.definition(&setup.root).map_err(|_| unavailable())?;
+        if previous.is_none() && hierarchy.location(&definition.id).is_some() {
+            return Err(denied());
+        }
+        setup.save_certificate(der, previous.is_some())?;
+        if previous.is_none() {
+            store.register_device_source(&source.device, &definition).map_err(|_| unavailable())?;
+            let id = definition.id.clone();
+            if self.app.attach_persisted_source(definition).is_err()
+                || self.app.configure_polled_source(&id, source.cadence_ms()).is_err()
+            {
+                self.app.persistence_failed();
+                return Err(unavailable());
+            }
+            self.refresh_registry()?;
+        }
+        setup.configured.send_replace(Some(source));
+        self.publish();
+        Ok(())
+    }
     fn publish(&mut self) {
         self.publish_at(now_ms());
     }
@@ -169,6 +206,10 @@ pub(super) fn spawn(
             };
             while let Some(command) = commands.blocking_recv() {
                 match command {
+                    Command::OpcuaSetup(setup, principal, source, certificate, previous, reply) => {
+                        let result = writer.apply_opcua_setup(&setup, &principal, *source, &certificate, previous.as_deref());
+                        let _ = reply.send(result);
+                    }
                     Command::InventoryOnline(request, reply) => {
                         let result = if writer.expired() {
                             Err(mutation_error())

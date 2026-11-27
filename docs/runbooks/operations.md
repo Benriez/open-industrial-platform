@@ -86,6 +86,59 @@ provisioniert; die Simulation bleibt als Testwerkzeug eigenständig.
 
 ### Freigegebene OPC-UA-Testquelle
 
+1. Lass dir vom Anlagenverantwortlichen die IP-Adresse mit Port, die
+   Server-Anwendungs-URI, die Namensraum-URI und die Kennungen und Datentypen
+   der freigegebenen Datenpunkte geben. Hole das öffentliche Serverzertifikat
+   und seinen bestätigten SHA-256-Fingerabdruck über getrennte Wege ein.
+2. Registriere das Gerät unter **Geräte & Dienste** am richtigen Standort.
+   Öffne **OPC-UA-Browser → OPC-UA einrichten** und wähle das Gerät aus.
+   Trage die Verbindungsdaten und 1–16 Datenpunkte ein. Verwende in der
+   Node-Kennung beispielsweise `s=Temperature` oder `i=42`. OIP sucht den
+   aktuellen Index des eingegebenen Namensraums bei jedem Verbindungsaufbau.
+3. Wähle die PEM- oder DER-Zertifikatsdatei im Browser aus oder füge den
+   PEM-Text ein. Klicke auf **Zertifikat prüfen**. Vergleiche Endpunkt, Identität
+   und Fingerabdruck mit den Betreiberangaben. Trage den unabhängig
+   bestätigten Fingerabdruck ein und klicke auf **Zertifikat freigeben**.
+4. Speichere oder kopiere OIPs öffentliches Clientzertifikat im selben Dialog.
+   Lass es vom Anlagenverantwortlichen auf dem Server freigeben. Im
+   OPC-UA-Browser zeigt die Quelle anschließend die ausgewählten Datenpunkte
+   und den aktuellen Verbindungszustand. Prüfe bei ausbleibenden Messwerten
+   die Gegenfreigabe sowie den Status der gewählten Datenpunkte.
+
+Das Profil enthält eine verwaltete Quelle pro Instanz mit 1–16 lesenden
+Datenpunkten und einem Abfrageintervall von 5–60 Sekunden. Der Endpunkt
+verwendet eine IP-Adresse mit explizitem Port, `Basic256Sha256` und
+`SignAndEncrypt`. Der Server muss einen anonymen, serverseitig lesenden
+UA-Benutzer und das OIP-Clientzertifikat zulassen. OIP prüft ein einzelnes
+selbstsigniertes RSA-Serverzertifikat mit Server-Authentifizierung, passender
+IP-Adresse und der Server-Anwendungs-URI als erstem SAN-Eintrag. Andere
+Anmeldemethoden und CA-Ketten gehören zu künftigen Profilen.
+
+Erscheint ein neues Serverzertifikat, endet die Datenerfassung nach der
+Unterbrechung und bleibt bis zur erneuten Freigabe getrennt. Öffne
+**OPC-UA einrichten**, wähle das Gerät und **Serverzertifikat ersetzen**.
+Prüfe die neuen Betreiberangaben und bestätige den neuen Fingerabdruck.
+Die bisherige Clientidentität bleibt erhalten. Ein normaler Core-Neustart
+lädt die Freigabe und Quelle erneut. Ein isolierter Restore enthält die
+Quelle und Vertrauensdaten und hält die Datenerfassung gesperrt.
+
+| Vorgang | App | REST | MCP | Berechtigung und Prüfung |
+| --- | --- | --- | --- | --- |
+| Einrichtung abfragen | Gerät im Einrichtungsdialog wählen | `POST /api/v2/opcua/setup`, `operation.action=status` | `oip_opcua_setup`, `status` | Inventarverwaltung und OPC-UA-Zugriff am Standort des registrierten Geräts |
+| Zertifikat prüfen | Zertifikat prüfen | gleiche Route, `preview` | gleiches Tool, `preview` | Gleiche Rolle. Core prüft Gültigkeit und Identität. Vorschau öffnet keine Verbindung. |
+| Freigeben / ersetzen | SHA-256 eingeben, Zertifikat freigeben | gleiche Route, `apply` | gleiches Tool, `apply` | Gleiche Rolle, passende Vorschau derselben Identität, gültig für fünf Minuten und einmalig nutzbar. |
+| Öffentliches Clientzertifikat abrufen | Im gespeicherten Dialog speichern oder kopieren | Feld `client_certificate_pem` in `status`/`apply` | gleiches Feld | Gleiche Rolle. Der private Schlüssel bleibt im lokalen Instanzspeicher. |
+
+Die lokale Abnahme lässt sich mit `python3 tests/oip_opcua_setup.py
+--evidence target/oip-opcua-setup.json` gegen einen unabhängigen lokalen
+asyncua-Server wiederholen. Für die Browserabnahme zusätzlich
+`--web apps/flutter/build/web` mit den Playwright- und Chromium-Pfaden des
+kanonischen UI-Gates setzen. Der Test prüft auch verweigerten Zugriff,
+Zertifikatswechsel, erneutes Lesen nach Core-Neustart und die
+Verbindungssperre im Wiederherstellungsprofil.
+
+#### Vorhandene per Datei provisionierte Profile
+
 Die Variante wird offline im passenden Standort provisioniert. Sichere die
 Instanz vorher und kontrolliere Quell-ID, Geräte-ID, Endpoint, erwartete
 Server-Application-URI und Namespace-URI anhand der Betreiberangaben. Der
@@ -98,8 +151,8 @@ freigegebene Zertifikat in `trusted/` im privaten PKI-Ordner. Hat der Core
 genau dieses Zertifikat zuvor in `rejected/` abgelegt, verschiebe nach dem
 Fingerabdruckvergleich nur diese bestätigte Datei in `trusted/`. Abgelaufene,
 ungültige und zur erwarteten Identität unpassende Zertifikate bleiben
-gesperrt. Ein Passwortprofil und eine geführte Vertrauensentscheidung im
-Browser sind ausstehende Abnahmepunkte.
+gesperrt. Die App-Einrichtung steht für solche Instanzen erst zur Verfügung, wenn das
+Dateiprofil kontrolliert außer Betrieb genommen wurde.
 
 Füge im gestoppten Profil unter `sources` in `core.json` einen Eintrag nach
 diesem Muster hinzu. Die Adresse und URIs sind Beispielwerte. Nutze die

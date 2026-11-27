@@ -15,6 +15,7 @@ import '../models/hue.dart';
 import '../models/infrastructure.dart';
 import '../models/license.dart';
 import '../models/onboarding.dart';
+import '../models/opcua_setup.dart';
 import '../features/settings/settings_models.dart';
 
 abstract class OipApi {
@@ -220,6 +221,14 @@ abstract class PairedDeviceManagementApi {
   Future<bool> revokeDeviceSignIn(String id);
 }
 
+abstract class OpcuaSetupApi {
+  Future<OpcuaSetupResult> opcuaSetupStatus(String site, String device);
+  Future<OpcuaSetupResult> previewOpcuaSetup(String site, String device,
+      OpcuaSourceConfiguration? configuration, String certificate);
+  Future<OpcuaSetupResult> applyOpcuaSetup(String site, String device,
+      String confirmation, String fingerprint);
+}
+
 abstract class LicenseManagementApi {
   Future<LicenseStatus> licenseStatus();
   Future<LicensePreview> previewLicense(LicenseProof proof);
@@ -255,6 +264,7 @@ class RestApi
         TouchIdManagementApi,
         PairedDeviceManagementApi,
         LicenseManagementApi,
+        OpcuaSetupApi,
         HueApi,
         HueSetupApi {
   final Uri base;
@@ -368,6 +378,40 @@ class RestApi
       disconnect();
     }
   }
+
+  Future<OpcuaSetupResult> _opcuaSetup(
+      String site, String device, Json operation) {
+    const path = '/api/v2/opcua/setup';
+    return _parseContract(path, () async => OpcuaSetupResult.fromJson(
+          await _change(path, {
+            'site': site,
+            'device': device,
+            'operation': operation,
+          }) as Json,
+        ));
+  }
+
+  @override
+  Future<OpcuaSetupResult> opcuaSetupStatus(String site, String device) =>
+      _opcuaSetup(site, device, {'action': 'status'});
+
+  @override
+  Future<OpcuaSetupResult> previewOpcuaSetup(String site, String device,
+          OpcuaSourceConfiguration? configuration, String certificate) =>
+      _opcuaSetup(site, device, {
+        'action': 'preview',
+        if (configuration != null) 'configuration': configuration.toJson(),
+        'server_certificate_pem': certificate,
+      });
+
+  @override
+  Future<OpcuaSetupResult> applyOpcuaSetup(String site, String device,
+          String confirmation, String fingerprint) =>
+      _opcuaSetup(site, device, {
+        'action': 'apply',
+        'confirmation': confirmation,
+        'verified_sha256': fingerprint,
+      });
 
   @override
   Future<LicenseStatus> licenseStatus() {

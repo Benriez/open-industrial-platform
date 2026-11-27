@@ -16,6 +16,7 @@ schemars = "1"
 base64 = "0.22"
 code-server-license-verifier = { path = "../code-server-license-verifier" }
 time = "0.3.44"
+x509-parser = { version = "=0.18.1", features = ["verify"] }
 axum = "0.8.9"
 flate2 = "1"
 futures = "0.3"

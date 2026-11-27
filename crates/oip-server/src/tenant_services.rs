@@ -118,6 +118,7 @@ impl ApplicationServices {
             _ => self.source_for(&request),
         };
         let mut scope = match &request {
+            CapabilityRequest::OpcuaSetup(q) => Some(AccessScope::Site(q.site.clone())),
             CapabilityRequest::SupportPackageRead(q) => Some(
                 q.source
                     .clone()
@@ -297,6 +298,18 @@ impl ApplicationServices {
     ) -> Result<CapabilityOutput, CapabilityError> {
         use CapabilityRequest::*;
         let id = request.id();
+        if let OpcuaSetup(q) = request {
+            if !crate::opcua_setup::authorize(h, p, &q.site) {
+                return Err(crate::opcua_setup::denied());
+            }
+            if matches!(q.operation, OpcuaSetupOperation::Apply { .. }) {
+                let mut started = self.audit_event(context, id, None, true, "started");
+                started.scope = Some(AccessScope::Site(q.site.clone()));
+                self.audit.record(&started)?;
+            }
+            let result = self.state.opcua_setup.execute(&self.state, h, p, q).await?;
+            return Ok(CapabilityOutput::OpcuaSetup(Box::new(result)));
+        }
         if let HueLightsRead(q) = &request {
             let profile = crate::hue::visible_profile(&self.state, h, p, &q.source)?;
             let can_control = crate::hue::can_control(profile, h, p, &q.source);
