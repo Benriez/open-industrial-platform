@@ -277,15 +277,35 @@ vereinbarte Nachweisart separat
 mit `--commercial-license-kind ART` an. Ohne diese Zuordnung weist der Core
 keine Art als gewerblich aus. Die Einrichtung prüft die Richtlinie vor dem
 Schreiben der Konfiguration. Die Vorbereitung startet keine Instanz.
-Für eine bereits verwaltete Instanz erfolgt die Ergänzung kontrolliert bei
-gestopptem Core. Prüfe die neue Richtlinie mit `oip-server --check-license-policy`,
-sichere die Core-Konfiguration, ergänze dort die bestätigte Richtlinie als
-JSON-Text im Feld `license_policy` und hinterlege die
-vereinbarten Arten als Liste in `commercial_license_kinds`. Verwende die
-bestehende, vollständige Provisionierung für den zusätzlichen
-Plattform-Rollenbindungseintrag. Der Rolle genügen `license_read` und
-`license_manage`. Lesezugriff allein benötigt nur `license_read`.
-Bestehende Organisationsrollen und Quellenbindungen bleiben erhalten.
+
+Bei einer bestehenden lokalen Instanz ohne Lizenzrichtlinie stoppt der
+Einrichter OIP regulär, erstellt eine verschlüsselte Sicherung und ruft die
+Vorschau auf. Sie zeigt das Instanzverzeichnis, die vollständigen Fingerabdrücke
+der Herausgeberschlüssel, die Nachweisarten, ihre gewerbliche Zuordnung sowie die
+definierten Rechte und Grenzen.
+
+```sh
+python3 "$OIP_TOOLS/oip_local.py" --instance "$OIP_INSTANCE" install-license-policy \
+  --license-policy oip-richtlinie.json --commercial-license-kind FREIGEGEBENE_ART
+```
+
+Für die freigegebene Richtlinie aus dem aktuell installierten signierten Paket
+verwende stattdessen `install-license-policy --package-public-key PFAD`. Der
+Einrichter muss den vertrauenswürdig bezogenen Paketschlüssel verwenden. In
+beiden Fällen prüft der Core die Richtlinie. Nach dem Abgleich mit der Freigabe
+des Herausgebers wiederholt der Einrichter den Befehl mit
+`--confirm BESTAETIGUNG_AUS_VORSCHAU`. Bei einer geänderten Richtlinie, Zuordnung
+oder Konfiguration ist eine neue Vorschau erforderlich. Bereits konfigurierte
+und ausgesetzte Lizenzrichtlinien werden über den Schlüsselwechsel verwaltet.
+
+Das Einrichten der ersten Richtlinie ändert nur die beiden Lizenzfelder der
+privaten Core-Konfiguration. Der Einrichter startet OIP wieder und prüft den
+Lizenzstatus. Der individuelle Nachweis wird separat in der App hinterlegt.
+Aktuelle lokale Einrichtungen enthalten bereits die vorgesehene Plattformrolle.
+Bei älteren Instanzen, denen diese Rolle fehlt, ergänzt ein berechtigter
+Einrichter sie über die bestehende vollständige Provisionierung. Für die
+Verwaltung benötigt die Rolle `license_read` und `license_manage`, für das
+Lesen genügt `license_read`.
 
 Für einen geplanten Schlüsselwechsel bereitet der Einrichter zunächst eine
 Richtlinie mit beiden bestätigten Schlüsseln vor. Er stoppt die gewählte
@@ -354,7 +374,7 @@ Recovery-Geheimnisse und erteilt keine Verbindungsfreigabe.
 | Nachweis prüfen | Lizenznachweis hinterlegen → Nachweis prüfen | `POST /api/v2/license/preview` · `oip_license_proof_preview` | Plattformweit `license_read` und `license_manage`. Die Signatur, der Geltungsbereich und die installierte Ausstelleridentität werden geprüft. Fehlerhafte Nachweise werden abgewiesen. |
 | Geprüften Nachweis übernehmen | Nachweis übernehmen | `POST /api/v2/license/apply` · `oip_license_proof_apply` | Gleiche Rolle. Einmalige, zur Vorschau gehörige Bestätigung erforderlich. Für MCP-Verwaltung ist ein explizit so berechtigter lokaler IPC-Client nötig. |
 | Herausgeberrichtlinie vorbereiten und hinterlegen | Einrichter bei der Provisionierung | `prepare-license-policy`, `--check-license-policy`, geschützte lokale Core-Konfiguration | Zuständiger lokaler Einrichter. Auswahl über separat bestätigte Fingerabdrücke. Der signierte Nachweis kann die Ausstellerkonfiguration nicht verändern. |
-| Herausgeberschlüssel wechseln oder gesamte Lizenzprüfung aussetzen | Wartung der lokalen Installation | `rotate-license-keys` an der gestoppten Instanz. Der daraus folgende Lizenzstatus erscheint in der App, REST und MCP. | Besitzer des privaten Instanzverzeichnisses. Vorschau und ausdrückliche Bestätigung für das gewählte Verzeichnis, den Konfigurationsstand und die gewählte Änderung. |
+| Erste Lizenzrichtlinie hinterlegen, Herausgeberschlüssel wechseln oder Lizenzprüfung aussetzen | Wartung der lokalen Installation | `install-license-policy` oder `rotate-license-keys` an der gestoppten Instanz. Der daraus folgende Lizenzstatus erscheint in der App, REST und MCP. | Besitzer des privaten Instanzverzeichnisses. Vorschau und ausdrückliche Bestätigung für das gewählte Verzeichnis, den Konfigurationsstand und die gewählte Änderung. |
 
 Die technische Ausgabe von Nachweisen erfolgt über das separate License
 Center. Wähle dort das Produkt OIP und gib die signierte JSON-Datei

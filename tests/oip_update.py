@@ -445,6 +445,41 @@ def refuse_changed_license_setup(work, instance, setup, policy, release_key, rep
     assert result.returncode == 1 and "signature" in result.stderr, result.stderr
     assert not any((instance / name).exists() for name in ("setup.json", "core.json", "core.sqlite"))
     report["steps"].append("first setup refuses tampered, ambiguous, and foreign-signed license defaults")
+    return unrelated_key
+
+
+def rehearse_signed_policy_install(work, bundle, public, wrong_key, port, simulator_port, report):
+    directory = work / "existing"
+    directory.mkdir(mode=0o700)
+    instance = directory / "instance"
+    instance.mkdir(mode=0o700)
+    result = run(instance, bundle, public)
+    assert result.returncode == 0, result.stderr
+    setup = real_setup_command(directory, instance, public, port, simulator_port)
+    subprocess.run(setup[:-2], check=True, stdout=subprocess.DEVNULL, timeout=120, cwd=work)
+    config = instance / "core.json"
+    original = config.read_bytes()
+    assert "license_policy" not in json.loads(original)
+    install = [*installed_operator(instance), "install-license-policy", "--package-public-key", str(public)]
+    result = subprocess.run([*install[:-1], str(wrong_key)], capture_output=True, text=True,
+                            timeout=30, cwd=work)
+    assert result.returncode == 1 and "signature" in result.stderr, result.stderr
+    assert config.read_bytes() == original
+    review = json.loads(subprocess.check_output(install, text=True, timeout=30, cwd=work))
+    assert (review["status"], review["commercial_license_kinds"]) == ("review", ["standard"])
+    assert config.read_bytes() == original
+    result = subprocess.check_output([*install, "--confirm", review["confirmation"]],
+                                     text=True, timeout=30, cwd=work)
+    assert json.loads(result)["status"] == "applied"
+    manifest = json.loads((bundle / "manifest.json").read_bytes())
+    updated = config.read_bytes()
+    assert json.loads(updated) == {**json.loads(original), **manifest[oip_update.LICENSE_SETUP]}
+    subprocess.run(setup, check=True, stdout=subprocess.DEVNULL, timeout=120, cwd=work)
+    assert config.read_bytes() == updated
+    with installed_browser(instance, port, work) as (base, browser, _):
+        code, status = api(base, "/api/v2/license", opener=browser)
+        assert code == 200 and status["proof_state"] == "missing" and status["can_manage"] is True
+    report["steps"].append("existing instance explicitly adopts reverified signed license defaults and preserves them on setup retry")
 
 
 def real_candidate(work, report, args):
@@ -476,7 +511,6 @@ def real_candidate(work, report, args):
             assert (bundle / name).read_bytes() == (ROOT / name).read_bytes()
             assert (instance / "current" / name).read_bytes() == (ROOT / name).read_bytes()
         report["steps"].append("release contains the source license and notices and only operator tools")
-        shutil.rmtree(bundle)
         refuse_single_signer(work, secret, release_key, args, policy, report)
         now = int(time.time()) - 300
         rejected_proof = proof_request(sign_fixture(
@@ -487,7 +521,9 @@ def real_candidate(work, report, args):
             opcua.bind(("127.0.0.1", 0))
             port, simulator_port = http.getsockname()[1], opcua.getsockname()[1]
         setup = real_setup_command(work, instance, public, port, simulator_port)
-        refuse_changed_license_setup(work, instance, setup, policy, release_key, report)
+        wrong_key = refuse_changed_license_setup(work, instance, setup, policy, release_key, report)
+        rehearse_signed_policy_install(work, bundle, public, wrong_key, port, simulator_port, report)
+        shutil.rmtree(bundle)
         policy.unlink()
         (work / "pruefschluessel.json").unlink()
         result = subprocess.run(setup, capture_output=True, text=True, timeout=120, cwd=work)

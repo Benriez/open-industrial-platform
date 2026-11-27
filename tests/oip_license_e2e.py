@@ -110,11 +110,10 @@ def exercise(args, directory):
     base = f"http://127.0.0.1:{port}"
     command = [sys.executable, str(ROOT / "tools/oip_local.py"), "--instance", str(root),
                "--core", str(args.core), "--simulator", str(args.simulator), "--web", str(args.web)]
-    subprocess.run([*command, "setup", "--organization", "Testbetrieb", "--infrastructure", "Halle",
-                    "--site", "Teststand", "--backup-directory", str(directory / "backup"),
-                    "--port", str(port), "--simulator-port", str(sim_port),
-                    "--license-policy", str(policy), "--commercial-license-kind", "standard"],
-                   check=True, timeout=45, stdout=subprocess.DEVNULL)
+    setup = [*command, "setup", "--organization", "Testbetrieb", "--infrastructure", "Halle",
+             "--site", "Teststand", "--backup-directory", str(directory / "backup"),
+             "--port", str(port), "--simulator-port", str(sim_port)]
+    subprocess.run(setup, check=True, timeout=45, stdout=subprocess.DEVNULL)
     license_roles(args.core, root)
     saved = root / "core.license.json"
     clients = []
@@ -146,6 +145,12 @@ def exercise(args, directory):
             capture_output=True, timeout=25,
         )
 
+    def install_policy(*options, kind="standard"):
+        return subprocess.run(
+            [*command, "install-license-policy", "--license-policy", policy,
+             "--commercial-license-kind", kind, *options], capture_output=True, timeout=25,
+        )
+
     def check_browser(screenshot, mode):
         code_grant = subprocess.check_output([
             args.core, "--browser-login", "--ipc-socket", root / "ipc.sock",
@@ -157,11 +162,6 @@ def exercise(args, directory):
 
     try:
         operator = start()
-        tenant = login(args.core, root, base, "tenant-operator")
-        auditor = login(args.core, root, base, "auditor")
-        alternate = login(args.core, root, base, "alternate-admin")
-        operator_mcp, auditor_mcp, tenant_mcp = (mcp(p) for p in ("operator", "auditor", "tenant-operator"))
-
         def continues_after(label):
             # An existing good value alone is insufficient evidence of collection.
             started = time.time_ns() // 1_000_000
@@ -175,6 +175,64 @@ def exercise(args, directory):
 
             until(received, label)
 
+        continues_after("An unconfigured instance did not deliver data")
+        status, unconfigured = request()
+        assert status == 200 and unconfigured["proof_state"] == "unconfigured"
+        assert unconfigured["can_manage"] is False
+        with_unconfigured = mcp("operator")
+        assert with_unconfigured.call("license_status_read") == unconfigured
+        assert request("/preview", proof)[1]["code"] == "LICENSE_UNAVAILABLE"
+        assert b"already running" in install_policy().stderr
+        with_unconfigured.close()
+        clients.clear()
+        stop(runner)
+        protected = {name: (root / name).read_bytes() for name in (
+            "core.sqlite", "setup.json", "setup-complete.json", "plan.json", "ipc.json", "operator.credential",
+        )}
+        assert protected["core.sqlite"]
+        config_file = root / "core.json"
+        original = config_file.read_bytes()
+        with (root / "core.sqlite.oip-lock").open("rb") as database_lock:
+            fcntl.flock(database_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            assert b"Stop the Core" in install_policy().stderr
+        preview = json.loads(install_policy().stdout)
+        assert preview["status"] == "review" and preview["instance"] == str(root)
+        assert preview["fingerprints"] == sorted(hashlib.sha256(decode(key)).hexdigest() for key in keys.values())
+        approved = json.loads(policy.read_bytes())
+        assert preview["allowed_kinds"] == sorted(approved["kinds"]) and preview["rights"] == approved["rights"]
+        assert preview["commercial_license_kinds"] == ["standard"]
+        confirmation = ("--confirm", preview["confirmation"])
+        assert install_policy(*confirmation, kind="personal").returncode != 0
+        assert install_policy(kind="unknown").returncode != 0
+        config_file.write_bytes(original + b"\n")
+        assert install_policy(*confirmation).returncode != 0
+        assert config_file.read_bytes() == original + b"\n"
+        config_file.write_bytes(original)
+        original_policy = policy.read_bytes()
+        policy.write_bytes(original_policy + b"\n")
+        assert install_policy(*confirmation).returncode != 0
+        assert config_file.read_bytes() == original
+        policy.write_bytes(original_policy)
+        applied = install_policy(*confirmation)
+        assert applied.returncode == 0 and json.loads(applied.stdout)["status"] == "applied", applied.stderr
+        installed_config = config_file.read_bytes()
+        assert json.loads(installed_config) == {
+            **json.loads(original), "license_policy": policy.read_text(), "commercial_license_kinds": ["standard"],
+        }
+        assert config_file.stat().st_mode & 0o077 == 0
+        assert json.loads(install_policy(*confirmation).stdout)["status"] == "unchanged"
+        assert install_policy(kind="personal").returncode != 0
+        subprocess.run(setup, check=True, timeout=45, stdout=subprocess.DEVNULL)
+        assert config_file.read_bytes() == installed_config
+        assert all((root / name).read_bytes() == content for name, content in protected.items())
+        assert not saved.exists()
+        tested.append("initial_license_policy_requires_stopped_core_exact_confirmation_and_preserves_existing_data")
+
+        operator = start()
+        tenant = login(args.core, root, base, "tenant-operator")
+        auditor = login(args.core, root, base, "auditor")
+        alternate = login(args.core, root, base, "alternate-admin")
+        operator_mcp, auditor_mcp, tenant_mcp = (mcp(p) for p in ("operator", "auditor", "tenant-operator"))
         continues_after("Simulator did not deliver data without a license")
         tested.append("missing_proof_allows_data_collection")
         status, missing = request()
@@ -344,6 +402,7 @@ def exercise(args, directory):
         assert json.loads(json.loads(config_file.read_bytes())["license_policy"]) == json.loads(
             suspended_policy.read_bytes()
         )
+        assert b"already has license settings" in install_policy().stderr
         assert saved.read_bytes() == next_artifact
         operator = start()
         status, suspended = request()
