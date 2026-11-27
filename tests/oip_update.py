@@ -307,10 +307,14 @@ def rehearse(work, report):
     report["steps"].append("durable journal distinguishes preparation from activation")
 
 
+def installed_operator(instance):
+    return [sys.executable, "-B", str(instance / "current" / "tools" / "oip_local.py"),
+            "--instance", str(instance)]
+
+
 @contextmanager
 def installed_browser(instance, port, work):
-    command = [sys.executable, "-B", str(instance / "current" / "tools" / "oip_local.py"),
-               "--instance", str(instance)]
+    command = installed_operator(instance)
     base = f"http://127.0.0.1:{port}"
     runner = subprocess.Popen(
         [*command, "run"], cwd=work, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
@@ -406,8 +410,7 @@ def refuse_invalid_signed_policy(instance, bundle, public, release_key, report):
 
 
 def real_setup_command(work, instance, public, port, simulator_port):
-    return [sys.executable, "-B", str(instance / "current" / "tools" / "oip_local.py"),
-            "--instance", str(instance), "setup", "--organization", "Fixture organization",
+    return [*installed_operator(instance), "setup", "--organization", "Fixture organization",
             "--infrastructure", "Fixture infrastructure", "--site", "Fixture site",
             "--backup-directory", str(work / "backups"), "--port", str(port),
             "--simulator-port", str(simulator_port), "--package-public-key", str(public)]
@@ -529,6 +532,31 @@ def real_candidate(work, report, args):
         with installed_browser(instance, port, work) as (base, browser, _):
             assert api(base, "/api/v2/license", opener=browser) == (200, accepted)
         report["steps"].append("offline update with different signed defaults preserves existing proof, issuer trust and operator permission")
+
+        successor = Ed25519PrivateKey.generate()
+        kid, key = public_key(successor)
+        rotated_policy = json.loads(json.loads(initial_configuration)["license_policy"])
+        rotated_policy["keys"] = {kid: key}
+        replacement.write_bytes(json_line(rotated_policy))
+        rotate = [*installed_operator(instance), "rotate-license-keys", "--license-policy", str(replacement)]
+        review = subprocess.check_output(rotate, text=True, timeout=30, cwd=work)
+        approval = json.loads(review)["confirmation"]
+        result = subprocess.check_output([*rotate, "--confirm", approval], text=True, timeout=30, cwd=work)
+        assert json.loads(result)["status"] == "applied"
+        rotated_config = (instance / "core.json").read_bytes()
+        assert json.loads(rotated_config) == {
+            **json.loads(initial_configuration), "license_policy": replacement.read_text(),
+        }
+        subprocess.run(setup, check=True, stdout=subprocess.DEVNULL, timeout=120, cwd=work)
+        assert (instance / "core.json").read_bytes() == rotated_config
+        assert proof_path.read_bytes() == PHP_OIP_ARTIFACT
+        with installed_browser(instance, port, work) as (base, browser, headers):
+            code, status = api(base, "/api/v2/license", opener=browser)
+            assert code == 200 and status["proof_state"] == "invalid" and status["can_manage"] is True
+            proof = proof_request(sign_fixture(successor, "5" * 32, now, usage=period("perpetual", now)))
+            code, preview = api(base, "/api/v2/license/preview", "POST", proof, headers, browser)
+            assert code == 200 and preview["status"]["commercial"] == "active"
+        report["steps"].append("signed operator tools rotate trust and repeated setup keeps the new policy")
 
 
 def main():

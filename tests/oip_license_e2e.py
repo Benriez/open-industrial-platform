@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Verify offline OIP entitlements through production REST and protected IPC/MCP."""
 import argparse
+import fcntl
 import hashlib
 import http.cookiejar
 import json
@@ -138,6 +139,12 @@ def exercise(args, directory):
         return api(base, "/api/v2/license" + path, "POST" if data is not None else "GET",
                    data, headers, browser)
 
+    def rotate(candidate, *confirmation):
+        return subprocess.run(
+            [*command, "rotate-license-keys", "--license-policy", candidate, *confirmation],
+            capture_output=True, timeout=25,
+        )
+
     try:
         operator = start()
         tenant = login(args.core, root, base, "tenant-operator")
@@ -238,6 +245,87 @@ def exercise(args, directory):
                 artifact_file, args.evidence.with_suffix(".png"),
             ], input=json.loads(code_grant)["login_code"], text=True, check=True, timeout=150)
             tested.append("served_browser_file_picker_preview_and_explicit_confirmation")
+
+        next_key = Ed25519PrivateKey.generate()
+        next_kid, next_encoded_key = public_key(next_key)
+        next_artifact = sign_fixture(next_key, "5" * 32, now - 300, usage=active_usage)
+        next_proof = proof_request(next_artifact)
+        next_fingerprint = hashlib.sha256(decode(next_encoded_key)).hexdigest()
+        old_kid = json.loads(PHP_OIP_ARTIFACT)["kid"]
+        old_fingerprint = hashlib.sha256(decode(keys[old_kid])).hexdigest()
+        overlap = directory / "overlap.json"
+        write_policy(overlap, {**keys, next_kid: next_encoded_key})
+        status, preview = request("/preview", proof)
+        assert status == 200 and request("/apply", {"confirmation": preview["confirmation"]})[0] == 200
+        assert request("/preview", next_proof)[1]["code"] == "LICENSE_PROOF_INVALID"
+        assert b"already running" in rotate(overlap).stderr
+        stop(runner)
+
+        config_file = root / "core.json"
+        original = config_file.read_bytes()
+        prior_setup = (root / "setup-complete.json").read_bytes()
+        with (root / "core.sqlite.oip-lock").open("rb") as database_lock:
+            fcntl.flock(database_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            assert b"Stop the Core" in rotate(overlap).stderr
+        review = rotate(overlap)
+        assert review.returncode == 0, review.stderr
+        proposal = json.loads(review.stdout)
+        assert proposal["status"] == "review" and proposal["instance"] == str(root)
+        assert proposal["added_fingerprints"] == [next_fingerprint]
+        assert proposal["removed_fingerprints"] == [] and old_fingerprint in proposal["retained_fingerprints"]
+        assert config_file.read_bytes() == original
+        assert rotate(overlap, "--confirm", "0" * 64).returncode != 0
+        config_file.write_bytes(original + b"\n")
+        assert rotate(overlap, "--confirm", proposal["confirmation"]).returncode != 0
+        assert config_file.read_bytes() == original + b"\n"
+        config_file.write_bytes(original)
+        original_policy = overlap.read_bytes()
+        overlap.write_bytes(original_policy + b"\n")
+        assert rotate(overlap, "--confirm", proposal["confirmation"]).returncode != 0
+        overlap.write_bytes(original_policy)
+        invalid = directory / "changed-rights.json"
+        invalid.write_bytes(json_line({**json.loads(overlap.read_bytes()), "rights": {}}))
+        assert b"existing license kinds, rights" in rotate(invalid).stderr
+        assert config_file.read_bytes() == original and saved.read_bytes() == PHP_OIP_ARTIFACT
+        applied = rotate(overlap, "--confirm", proposal["confirmation"])
+        assert applied.returncode == 0 and json.loads(applied.stdout)["status"] == "applied", applied.stderr
+        assert config_file.stat().st_mode & 0o077 == 0
+        assert json.loads(config_file.read_bytes()) == {
+            **json.loads(original), "license_policy": overlap.read_text(),
+        }
+        assert (root / "setup-complete.json").read_bytes() == prior_setup
+        assert json.loads(rotate(overlap).stdout)["status"] == "unchanged"
+        operator = start()
+        assert request()[1] == verified
+        status, preview = request("/preview", next_proof)
+        assert status == 200 and preview["status"]["commercial"] == "active"
+        assert request("/apply", {"confirmation": preview["confirmation"]})[0] == 200
+        assert saved.read_bytes() == next_artifact
+        tested.append("offline_key_rotation_requires_stopped_instance_and_current_confirmation")
+        tested.append("overlapping_keys_verify_existing_and_reissued_proofs")
+
+        status, preview = request("/preview", proof)
+        assert status == 200 and request("/apply", {"confirmation": preview["confirmation"]})[0] == 200
+        stop(runner)
+        successor = directory / "successor.json"
+        write_policy(successor, {**{key: value for key, value in keys.items() if key != old_kid},
+                                 next_kid: next_encoded_key})
+        retirement = json.loads(rotate(successor).stdout)
+        assert retirement["removed_fingerprints"] == [old_fingerprint]
+        assert retirement["added_fingerprints"] == []
+        applied = rotate(successor, "--confirm", retirement["confirmation"])
+        assert applied.returncode == 0 and json.loads(applied.stdout)["status"] == "applied", applied.stderr
+        assert saved.read_bytes() == PHP_OIP_ARTIFACT
+        operator = start()
+        assert request()[1]["proof_state"] == "invalid"
+        assert mcp("operator").call("license_status_read") == request()[1]
+        assert request("/preview", proof)[1]["code"] == "LICENSE_PROOF_INVALID"
+        continues_after("Retiring a key interrupted data collection")
+        status, preview = request("/preview", next_proof)
+        assert status == 200 and request("/apply", {"confirmation": preview["confirmation"]})[0] == 200
+        assert request()[1]["license_id"] == "5" * 32
+        assert mcp("operator").call("license_status_read") == request()[1]
+        tested.append("removing_key_rejects_its_proof_without_stopping_collection")
     finally:
         for client in clients:
             client.close()

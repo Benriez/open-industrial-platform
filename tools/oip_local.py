@@ -22,7 +22,7 @@ import urllib.request
 from oip_ops import is_personal
 from oip_update import (
     LICENSE_SETUP, MAX_LICENSE_POLICY, Refused, check_license_policy,
-    host_target, installed, public_key, verify_assets,
+    flush_directory, host_target, installed, ownership, public_key, verify_assets,
 )
 
 
@@ -66,11 +66,7 @@ def private_json(path):
     return json.loads(read_private(path))
 
 
-def publish_once(path, content):
-    # Setup owns the instance lock. Rename the fully written file without
-    # disturbing existing configuration or leaving a second live hardlink.
-    if os.path.lexists(path):
-        return
+def replace_private(path, content):
     with tempfile.NamedTemporaryFile(dir=path.parent, prefix=".setup-", delete=False) as pending:
         staged = Path(pending.name)
         try:
@@ -80,6 +76,12 @@ def publish_once(path, content):
             os.replace(staged, path)
         finally:
             staged.unlink(missing_ok=True)
+
+
+def publish_once(path, content):
+    # Setup owns the instance lock and preserves any existing file.
+    if not os.path.lexists(path):
+        replace_private(path, content)
 
 
 def ensure_json(path, data):
@@ -122,7 +124,7 @@ def bounded_file(path, limit, label):
 def unique_json_object(pairs):
     result = dict(pairs)
     if len(result) != len(pairs):
-        raise ValueError("The key registry contains duplicate JSON fields.")
+        raise ValueError("The input contains duplicate JSON fields.")
     return result
 
 
@@ -229,6 +231,56 @@ def license_setup(root, args, core):
     if any(kind not in policy["kinds"] for kind in kinds):
         raise ValueError("Each commercial license kind must be approved by the trusted policy.")
     return {"license_policy": policy_text, "commercial_license_kinds": kinds}
+
+
+def key_fingerprints(keys):
+    return {hashlib.sha256(base64.urlsafe_b64decode(key + "=")).hexdigest() for key in keys}
+
+
+def rotate_license_keys(root, args, core):
+    config_path = root / "core.json"
+    original = read_private(config_path)
+    config = json.loads(original, object_pairs_hook=unique_json_object)
+    if (not isinstance(config, dict) or config.get("database") != str(root / "core.sqlite")
+            or "license_issuer_key" in config or not isinstance(config.get("license_policy"), str)):
+        raise ValueError("Choose a managed local instance with an existing license policy.")
+
+    current_text = config["license_policy"].encode("utf-8")
+    candidate_text = bounded_file(args.license_policy, MAX_LICENSE_POLICY, "The license policy")
+    for data in (current_text, candidate_text):
+        check_license_policy(core, data)
+    current, candidate = json.loads(current_text), json.loads(candidate_text)
+    current_keys, candidate_keys = current.pop("keys"), candidate.pop("keys")
+    current["kinds"].sort()
+    candidate["kinds"].sort()
+    commercial_kinds = config.get("commercial_license_kinds", [])
+    if (current != candidate or not isinstance(commercial_kinds, list)
+            or any(kind not in current["kinds"] for kind in commercial_kinds)):
+        raise ValueError("Key rotation requires the existing license kinds, rights and commercial assignments.")
+
+    old = key_fingerprints(current_keys.values())
+    new = key_fingerprints(candidate_keys.values())
+    review = {"instance": str(root), "added_fingerprints": sorted(new - old),
+              "removed_fingerprints": sorted(old - new), "retained_fingerprints": sorted(old & new)}
+    if current_keys == candidate_keys:
+        print(json.dumps({**review, "status": "unchanged"}, indent=2))
+        return
+    # The explicit approval applies only to this installation and exact inputs.
+    snapshot = [str(root), hashlib.sha256(original).hexdigest(),
+                hashlib.sha256(candidate_text).hexdigest()]
+    confirmation = hashlib.sha256(json.dumps(snapshot).encode("utf-8")).hexdigest()
+    if args.confirm is None:
+        print(json.dumps({**review, "status": "review", "confirmation": confirmation}, indent=2))
+        return
+    if not KEY_FINGERPRINT.fullmatch(args.confirm) or not secrets.compare_digest(args.confirm, confirmation):
+        raise ValueError("The confirmation is invalid or the installation or policy changed. Preview the rotation again.")
+    if read_private(config_path) != original:
+        raise ValueError("The configuration changed. Preview the rotation again.")
+    config["license_policy"] = candidate_text.decode("utf-8")
+    updated = (json.dumps(config, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+    replace_private(config_path, updated)
+    flush_directory(root)
+    print(json.dumps({**review, "status": "applied"}, indent=2))
 
 
 def prepare(root, args, core):
@@ -407,7 +459,7 @@ def run(root, args, core, web, simulator):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--instance", help="Absolute instance directory for setup, run and login")
+    parser.add_argument("--instance", help="Absolute managed instance directory")
     parser.add_argument("--core", help="Explicit development Core binary")
     parser.add_argument("--web", help="Explicit development browser assets")
     parser.add_argument("--simulator", help="Explicit development simulator binary")
@@ -432,6 +484,10 @@ def main():
     policy.add_argument("--key-fingerprint", action="append", required=True)
     policy.add_argument("--kind", action="append", required=True)
     policy.add_argument("--right", action="append", default=[])
+    rotation = commands.add_parser("rotate-license-keys",
+                                   help="Review or apply issuer key rotation in a stopped managed instance")
+    rotation.add_argument("--license-policy", required=True, help="Approved replacement OIP policy file")
+    rotation.add_argument("--confirm", help="Confirmation from the review of this policy and instance")
     args = parser.parse_args()
     os.umask(0o077)
     try:
@@ -452,6 +508,13 @@ def main():
         with owning_instance(root):
             if args.command == "setup":
                 prepare(root, args, core)
+            elif args.command == "rotate-license-keys":
+                private_json(root / "setup-complete.json")
+                database = root / "core.sqlite"
+                if database.is_symlink() or not database.is_file():
+                    raise ValueError("The configured OIP database is missing or outside this installation.")
+                with ownership(root / "core.sqlite.oip-lock", "Stop the Core before rotating issuer keys."):
+                    rotate_license_keys(root, args, core)
             else:
                 run(root, args, core, web, simulator)
     except ImportError:

@@ -286,11 +286,40 @@ bestehende, vollständige Provisionierung für den zusätzlichen
 Plattform-Rollenbindungseintrag. Der Rolle genügen `license_read` und
 `license_manage`. Lesezugriff allein benötigt nur `license_read`.
 Bestehende Organisationsrollen und Quellenbindungen bleiben erhalten.
-Eine Rotation des Herausgeberschlüssels ist ein gesonderter Betriebswechsel.
-Für eine Überlappung kann die bestätigte Richtlinie beide öffentlichen
-Schlüssel enthalten. Sobald ein Schlüssel entfernt wird, sind seine
-Nachweise lokal nicht mehr überprüfbar. Der Datenbetrieb läuft auch ohne
-eingerichtete Herausgeberrichtlinie weiter.
+
+Für einen geplanten Schlüsselwechsel bereitet der Einrichter zunächst eine
+Richtlinie mit beiden bestätigten Schlüsseln vor. Er stoppt die gewählte
+Instanz regulär, erzeugt eine verschlüsselte
+[Sicherung](#sicherung-und-wiederherstellung) und ruft die Vorschau auf.
+
+```sh
+python3 "$OIP_TOOLS/oip_local.py" --instance "$OIP_INSTANCE" rotate-license-keys \
+  --license-policy oip-richtlinie-neu.json
+```
+
+Die Vorschau zeigt das Instanzverzeichnis und die vollständigen
+Fingerabdrücke der hinzugefügten, beibehaltenen und entfernten Schlüssel.
+Nach dem Abgleich mit der Freigabe des Herausgebers führt der Einrichter
+denselben Befehl mit `--confirm BESTAETIGUNG_AUS_VORSCHAU` aus.
+Eine Änderung an Konfiguration oder Richtliniendatei erfordert eine neue
+Vorschau. Der Befehl übernimmt ausschließlich Schlüsseländerungen in der
+privaten Core-Konfiguration der gewählten Instanz. Nachweisarten, ihre
+gewerbliche Zuordnung und vereinbarte Rechte bleiben erhalten.
+
+Starte diese Instanz und prüfe den bestehenden Nachweis. Hinterlege und
+prüfe anschließend den neu ausgestellten Nachweis in der App. Entferne den
+alten Schlüssel in einem zweiten bestätigten Wechsel, sobald der neue
+Nachweis geprüft ist. Bei einem kompromittierten Schlüssel prüft der
+Einrichter die korrigierte Richtlinie mit dem Herausgeber und entfernt den
+Schlüssel auf jeder betroffenen Installation. Die lokale Prüfung verwendet
+die installierte Richtlinie. Ohne deren Aktualisierung erfährt die Instanz
+nichts von einer Änderung im License Center. Nach dem Neustart werden mit
+einem entfernten Schlüssel ausgestellte Nachweise als ungültig angezeigt.
+Eine Wiederherstellung aus einer älteren Sicherung verwendet deren
+Richtlinie. Vergleiche die Schlüssel in der isolierten Prüfkopie vor einer
+erneuten betrieblichen Nutzung mit der aktuellen Freigabe des Herausgebers.
+Die Datenerfassung und die berechtigten Datenzugriffe bleiben unabhängig
+vom Lizenzstatus verfügbar.
 
 Nach Einweisung kann ein Lizenzverwalter den erhaltenen JSON-Nachweis in
 der App als Datei auswählen und prüfen. Die angezeigten Berechtigungen
@@ -311,6 +340,7 @@ Recovery-Geheimnisse und erteilt keine Verbindungsfreigabe.
 | Nachweis prüfen | Lizenznachweis hinterlegen → Nachweis prüfen | `POST /api/v2/license/preview` · `oip_license_proof_preview` | Plattformweit `license_read` und `license_manage`. Die Signatur, der Geltungsbereich und die installierte Ausstelleridentität werden geprüft. Fehlerhafte Nachweise werden abgewiesen. |
 | Geprüften Nachweis übernehmen | Nachweis übernehmen | `POST /api/v2/license/apply` · `oip_license_proof_apply` | Gleiche Rolle. Einmalige, zur Vorschau gehörige Bestätigung erforderlich. Für MCP-Verwaltung ist ein explizit so berechtigter lokaler IPC-Client nötig. |
 | Herausgeberrichtlinie vorbereiten und hinterlegen | Einrichter bei der Provisionierung | `prepare-license-policy`, `--check-license-policy`, geschützte lokale Core-Konfiguration | Zuständiger lokaler Einrichter. Auswahl über separat bestätigte Fingerabdrücke. Der signierte Nachweis kann die Ausstellerkonfiguration nicht verändern. |
+| Herausgeberschlüssel wechseln | Geplante Wartung der lokalen Installation | `rotate-license-keys` an der gestoppten Instanz. Der daraus folgende Lizenzstatus erscheint in der App, REST und MCP. | Besitzer des privaten Instanzverzeichnisses. Vorschau und ausdrückliche Bestätigung für das gewählte Verzeichnis, den Konfigurationsstand und die freigegebene Richtliniendatei. |
 
 Die technische Ausgabe von Nachweisen erfolgt über das separate License
 Center. Wähle dort das Produkt OIP und gib die signierte JSON-Datei
