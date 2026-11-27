@@ -443,6 +443,14 @@ gehören im PHP-Aussteller erzeugte OIP- und ODP-Testdateien. Er prüft REST,
 MCP, die Produkt- und Rollengrenzen und den durchgehenden Datenbetrieb bei
 fehlendem, beschädigtem oder abgelaufenem Nachweis.
 
+Für die direkte Prüfung mit dem Rust License Center verwende die Dateien
+aus dessen isoliertem Abnahmetest mit `--interop`. Übergib nur diesen
+synthetischen Export an `tests/oip_license_center_interop.py` mit
+`--issuer-artifacts PFAD --evidence PFAD`. OIP richtet dabei eine frische
+Testinstanz ein, weist den ODP-Nachweis ab und übernimmt den OIP-Nachweis
+nach Vorschau über MCP und Bestätigung über REST. Die Prüfung vergleicht die
+gespeicherten Bytes und prüft nach einem Neustart neue Simulatorwerte.
+
 Die Paketprobe in `tests/oip_update.py` verwendet den gebauten Core,
 die Weboberfläche und den Simulator. Die Paketprüfung verlangt den Lizenztext
 und die Hinweise zu Drittbestandteilen als signierte Manifest-Einträge.
