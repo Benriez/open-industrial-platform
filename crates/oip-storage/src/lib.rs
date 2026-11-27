@@ -22,7 +22,7 @@ pub use history::*;
 mod ownership;
 pub use ownership::DatabaseOwnership;
 mod hierarchy;
-pub use hierarchy::{LegacyAdoption, ProvisioningResult};
+pub use hierarchy::{LegacyAdoption, LocalLicenseRoleChange, ProvisioningResult};
 
 #[derive(Clone, Copy)]
 struct Migration {

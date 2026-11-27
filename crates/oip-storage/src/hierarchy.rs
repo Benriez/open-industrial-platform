@@ -60,6 +60,19 @@ pub struct ProvisioningResult {
     pub idempotent: bool,
     pub legacy_migrated: bool,
 }
+#[derive(Debug, Serialize)]
+pub struct LocalLicenseRoleChange {
+    pub instance: std::path::PathBuf,
+    pub principal_id: PrincipalId,
+    pub principal_name: String,
+    pub role_id: RoleId,
+    pub scope: AccessScope,
+    pub permissions: BTreeSet<Permission>,
+    pub status: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub confirmation: Option<String>,
+}
+
 fn bad() -> StorageError {
     StorageError::Hierarchy("hierarchy/provisioning validation failed")
 }
@@ -89,6 +102,142 @@ impl SqliteStore {
         let c = Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         legacy_evidence(&c)
     }
+    /// Offline upgrade for the original managed local operator. The persisted
+    /// hierarchy, not the setup-time plan file, is the authority for existing grants.
+    pub fn provision_local_license_role(
+        path: &Path,
+        config_digest: &str,
+        confirmation: Option<&str>,
+    ) -> Result<LocalLicenseRoleChange, StorageError> {
+        if !path.is_file() || path.canonicalize()? != path {
+            return Err(StorageError::Hierarchy(
+                "managed database must be an existing canonical file",
+            ));
+        }
+        let _owner = DatabaseOwnership::acquire(path)?;
+        let connection =
+            Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE)?;
+        connection.execute_batch(
+            "PRAGMA foreign_keys=ON;PRAGMA busy_timeout=5000;PRAGMA synchronous=FULL;",
+        )?;
+        let mut store = Self { connection };
+        if store.pragma_version()? != MIGRATIONS.last().map_or(0, |migration| migration.version) {
+            return Err(StorageError::Hierarchy(
+                "use the compatible managed database schema first",
+            ));
+        }
+        store.migrate_to(0)?;
+        let tx = store.write_transaction()?;
+        let registry = load(&tx)?.ok_or_else(bad)?;
+        let plan = registry.plan.clone();
+        let principal_id = PrincipalId::new("operator").map_err(|_| bad())?;
+        let principal = plan
+            .principals
+            .iter()
+            .find(|p| p.id == principal_id && p.enabled)
+            .ok_or(StorageError::Hierarchy(
+                "the original local operator is not authorized",
+            ))?;
+        let operator_role = RoleId::new("local-operator").map_err(|_| bad())?;
+        let organization =
+            AccessScope::Organization(OrganizationId::new("local-org").map_err(|_| bad())?);
+        if plan.legacy_single_infrastructure
+            || !plan.bindings.iter().any(|binding| {
+                binding.principal_id == principal_id
+                    && binding.role_id == operator_role
+                    && binding.scope == organization
+            })
+            || !registry.permits(
+                &principal_id,
+                CapabilityId::SettingsChange,
+                &organization,
+                false,
+            )
+            || !plan.roles.iter().any(|role| {
+                role.id == operator_role
+                    && role.permissions.contains(&Permission::SettingsWrite)
+                    && role.permissions.contains(&Permission::InventoryManage)
+            })
+        {
+            return Err(StorageError::Hierarchy(
+                "the original local operator is not authorized",
+            ));
+        }
+        let role = ReadRole {
+            id: RoleId::new("installation-licensing").map_err(|_| bad())?,
+            name: "OIP-Lizenzverwaltung".to_owned(),
+            permissions: BTreeSet::from([Permission::LicenseRead, Permission::LicenseManage]),
+        };
+        let mut result = LocalLicenseRoleChange {
+            instance: path.parent().ok_or_else(bad)?.to_path_buf(),
+            principal_id: principal_id.clone(),
+            principal_name: principal.name.clone(),
+            role_id: role.id.clone(),
+            scope: AccessScope::Platform,
+            permissions: role.permissions.clone(),
+            status: "unchanged",
+            confirmation: None,
+        };
+        if registry.platform(&principal_id, CapabilityId::LicenseProofApply) {
+            return Ok(result);
+        }
+        if plan.roles.iter().any(|existing| existing.id == role.id) {
+            return Err(StorageError::Hierarchy(
+                "the installation license role already exists with other assignments; review the current access policy",
+            ));
+        }
+        let revision: i64 = tx.query_row(
+            "SELECT revision FROM provision_meta WHERE id=1",
+            [],
+            |row| row.get(0),
+        )?;
+        let digest = content_hash(&serde_json::to_vec(&plan)?);
+        let expected = content_hash(&serde_json::to_vec(&(
+            "provision-local-license-role",
+            path,
+            config_digest,
+            revision,
+            digest,
+            &role,
+            &principal_id,
+        ))?);
+        let Some(confirmation) = confirmation else {
+            result.status = "review";
+            result.confirmation = Some(expected);
+            return Ok(result);
+        };
+        if confirmation != expected {
+            return Err(StorageError::Hierarchy(
+                "the confirmation is invalid or the installation changed; review again",
+            ));
+        }
+        tx.execute(
+            "INSERT INTO read_roles(id,name,permissions_json) VALUES(?1,?2,?3)",
+            params![
+                role.id.as_str(),
+                role.name,
+                serde_json::to_string(&role.permissions)?
+            ],
+        )?;
+        tx.execute(
+            "INSERT INTO role_bindings(principal_id,role_id,scope_kind,scope_id) VALUES(?1,?2,'platform','')",
+            params![principal_id.as_str(), role.id.as_str()],
+        )?;
+        tx.execute(
+            "UPDATE provision_meta SET revision=revision+1 WHERE id=1",
+            [],
+        )?;
+        let updated = load(&tx)?.ok_or_else(bad)?;
+        let digest = content_hash(&serde_json::to_vec(&updated.plan)?);
+        tx.execute(
+            "INSERT INTO provisioning_audit(at_ms,actor,operation,plan_digest,outcome) VALUES(?1,'local-offline-operator','provision_local_license_role',?2,'committed')",
+            params![Timestamp::now().map_err(|_|bad())?.as_unix_millis(), digest],
+        )?;
+        tx.commit()?;
+        result.status = "applied";
+        Ok(result)
+    }
+
     pub fn provision_file(
         path: &Path,
         plan: ProvisioningPlan,

@@ -74,6 +74,43 @@ async fn run() -> Result<(), Box<dyn Error>> {
         oip_server::check_license_policy(std::io::stdin().lock(), allow_no_trusted_keys)?;
         return Ok(());
     }
+    if args
+        .first()
+        .is_some_and(|arg| arg == "--provision-local-license-role")
+    {
+        let (config_path, confirmation) = match &args[1..] {
+            [path] => (path, None),
+            [path, flag, token] if flag == "--confirm" => (path, Some(token.as_str())),
+            _ => {
+                return Err(
+                    "usage: --provision-local-license-role CORE.json [--confirm TOKEN]".into(),
+                )
+            }
+        };
+        let path = std::path::Path::new(config_path);
+        let bytes = std::fs::read(path)?;
+        let config: CoreConfig = serde_json::from_slice(&bytes)?;
+        if !config.opcua_read_only
+            || config.legacy_single_infrastructure
+            || !path.is_absolute()
+            || path.file_name().and_then(|name| name.to_str()) != Some("core.json")
+            || config.database
+                != path
+                    .parent()
+                    .ok_or("missing instance directory")?
+                    .join("core.sqlite")
+        {
+            return Err("choose the configuration of a managed local read-only instance".into());
+        }
+        use sha2::{Digest, Sha256};
+        let result = oip_storage::SqliteStore::provision_local_license_role(
+            &config.database,
+            &format!("{:x}", Sha256::digest(bytes)),
+            confirmation,
+        )?;
+        println!("{}", serde_json::to_string(&result)?);
+        return Ok(());
+    }
     // Bridge mode is parsed and returned before config, DB or CoreRuntime access.
     if args.iter().any(|a| a == "--mcp-bridge") {
         #[cfg(unix)]

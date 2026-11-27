@@ -551,6 +551,9 @@ def main():
     first_policy.add_argument("--commercial-license-kind", action="append", default=[],
                               help="Approved policy kind that grants commercial usage; repeat as needed")
     first_policy.add_argument("--confirm", help="Confirmation from the review of this policy and instance")
+    grant = commands.add_parser("enable-license-management",
+                                help="Review or add license permissions to the original local operator")
+    grant.add_argument("--confirm", help="Confirmation from the review of this installation and role")
     rotation = commands.add_parser("rotate-license-keys",
                                    help="Review or apply issuer key rotation in a stopped managed instance")
     rotation_source = rotation.add_mutually_exclusive_group(required=True)
@@ -580,6 +583,14 @@ def main():
         with owning_instance(root):
             if args.command == "setup":
                 prepare(root, args, core)
+            elif args.command == "enable-license-management":
+                private_json(root / "setup-complete.json")
+                config_path = root / "core.json"
+                read_private(config_path)
+                command = [core, "--provision-local-license-role", config_path]
+                if args.confirm is not None:
+                    command.extend(("--confirm", args.confirm))
+                subprocess.run(command, check=True, timeout=30)
             elif args.command in {"install-license-policy", "rotate-license-keys"}:
                 private_json(root / "setup-complete.json")
                 database = root / "core.sqlite"

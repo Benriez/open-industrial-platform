@@ -302,10 +302,31 @@ Das Einrichten der ersten Richtlinie ändert nur die beiden Lizenzfelder der
 privaten Core-Konfiguration. Der Einrichter startet OIP wieder und prüft den
 Lizenzstatus. Der individuelle Nachweis wird separat in der App hinterlegt.
 Aktuelle lokale Einrichtungen enthalten bereits die vorgesehene Plattformrolle.
-Bei älteren Instanzen, denen diese Rolle fehlt, ergänzt ein berechtigter
-Einrichter sie über die bestehende vollständige Provisionierung. Für die
-Verwaltung benötigt die Rolle `license_read` und `license_manage`, für das
-Lesen genügt `license_read`.
+Bei dem älteren lokalen Installationsprofil kann der Einrichter die fehlenden
+Lizenzrechte für den ursprünglichen Betreiber `operator` ergänzen. Halte die
+Instanz für diesen Schritt an und sichere sie verschlüsselt. Rufe die Vorschau
+mit den Werkzeugen der aktualisierten Installation auf.
+
+```sh
+python3 "$OIP_TOOLS/oip_local.py" --instance "$OIP_INSTANCE" enable-license-management
+```
+
+Prüfe Instanz, Betreiber und die plattformweite Geltung der beiden
+Lizenzrechte `license_read` und `license_manage`. Wiederhole den Befehl
+mit `--confirm BESTAETIGUNG_AUS_VORSCHAU`. Ändern sich Core-Konfiguration
+oder Berechtigungen zwischen den Aufrufen, ist eine neue Vorschau erforderlich.
+Der Core ergänzt die Zuweisung und protokolliert sie in einer Transaktion.
+Er verwendet dafür die aktuelle Berechtigungslage aus der Datenbank. Bei
+entzogener Betreiberrolle oder einem Konflikt mit der bereits vorhandenen
+Lizenzrolle verlangt er eine Prüfung der Zugriffsregeln durch den Einrichter.
+
+Dieser Schritt übernimmt die Rolle unmittelbar in die laufzeitrelevante
+Datenbank. Die ursprüngliche `plan.json` dient weiterhin als Nachweis der
+Ersteinrichtung. Übernimm die bestätigte Rolle und Zuweisung bei einer späteren
+vollständigen Provisionierung in den dafür eigens geprüften Plan. Separat
+delegierter Lesezugriff benötigt nur `license_read`. Die Nachrüstung wurde
+mit dem ursprünglichen Einrichtungswerkzeug und dem aktuellen Core mit
+`tests/oip_license_legacy.py --evidence PFAD` erprobt.
 
 Für einen geplanten Schlüsselwechsel bereitet der Einrichter zunächst eine
 Richtlinie mit beiden bestätigten Schlüsseln vor. Er stoppt die gewählte
@@ -384,6 +405,7 @@ Recovery-Geheimnisse und erteilt keine Verbindungsfreigabe.
 | Nachweis prüfen | Lizenznachweis hinterlegen → Nachweis prüfen | `POST /api/v2/license/preview` · `oip_license_proof_preview` | Plattformweit `license_read` und `license_manage`. Die Signatur, der Geltungsbereich und die installierte Ausstelleridentität werden geprüft. Fehlerhafte Nachweise werden abgewiesen. |
 | Geprüften Nachweis übernehmen | Nachweis übernehmen | `POST /api/v2/license/apply` · `oip_license_proof_apply` | Gleiche Rolle. Einmalige, zur Vorschau gehörige Bestätigung erforderlich. Für MCP-Verwaltung ist ein explizit so berechtigter lokaler IPC-Client nötig. |
 | Herausgeberrichtlinie vorbereiten und hinterlegen | Einrichter bei der Provisionierung | `prepare-license-policy`, `--check-license-policy`, geschützte lokale Core-Konfiguration | Zuständiger lokaler Einrichter. Auswahl über separat bestätigte Fingerabdrücke. Der signierte Nachweis kann die Ausstellerkonfiguration nicht verändern. |
+| Lizenzverwaltung im älteren lokalen Profil nachrüsten | Wartung der lokalen Installation | `enable-license-management` mit gestopptem Core. Der neue Berechtigungsstand gilt anschließend auch über App, REST und MCP. | Besitzer des privaten Instanzverzeichnisses. Vorschau und Bestätigung für den ursprünglichen, weiterhin berechtigten lokalen Betreiber. |
 | Erste Lizenzrichtlinie hinterlegen, Herausgeberschlüssel wechseln oder Lizenzprüfung aussetzen | Wartung der lokalen Installation | `install-license-policy` oder `rotate-license-keys` an der gestoppten Instanz. Der daraus folgende Lizenzstatus erscheint in der App, REST und MCP. | Besitzer des privaten Instanzverzeichnisses. Vorschau und ausdrückliche Bestätigung für das gewählte Verzeichnis, den Konfigurationsstand und die gewählte Änderung. |
 
 Die technische Ausgabe von Nachweisen erfolgt über das separate License
