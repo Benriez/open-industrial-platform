@@ -191,6 +191,25 @@ impl ApplicationServices {
                 report.limitations.push("Replace placeholders using an existing authorized local profile. Preview grants nothing and performs no connection. Private paths and credential bytes are never enumerated.".into());
             }
             System => {
+                let status = serde_json::to_value(code_server_license_verifier::configured_status(
+                    "oip",
+                    "OIP_LICENSE_POLICY_PATH",
+                    "OIP_LICENSE_FILE_PATH",
+                ))
+                .map_err(|_| denied())?;
+                for (field, name) in [
+                    ("state", "Software license"),
+                    ("usage_status", "Usage entitlement"),
+                    ("support_status", "Support entitlement"),
+                    ("reason", "License verification error"),
+                ] {
+                    if let Some(value) = status[field].as_str() {
+                        fact(name, value.to_owned());
+                    }
+                }
+                if let Some(revision) = status["revision"].as_u64() {
+                    fact("License revision", revision.to_string());
+                }
                 fact("version", env!("CARGO_PKG_VERSION").into());
                 fact("build_revision", env!("OIP_BUILD_REVISION").into());
                 fact("uptime_ms", info.started.elapsed().as_millis().to_string());

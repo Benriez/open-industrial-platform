@@ -288,6 +288,109 @@ async fn foreign_scopes_platform_management_forged_actor_and_mutations_denied() 
     clean(state, path).await;
 }
 #[tokio::test]
+async fn software_license_status_matches_across_rest_and_mcp() {
+    use std::os::unix::fs::PermissionsExt;
+    let (state, services, path) = fixture().await;
+    std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700)).unwrap();
+    let credential = path.join("credential");
+    std::fs::write(&credential, [13; 32]).unwrap();
+    std::fs::set_permissions(&credential, std::fs::Permissions::from_mode(0o600)).unwrap();
+    let ipc_file = path.join("ipc.json");
+    let ipc_config = serde_json::json!({
+        "socket": path.join("s"),
+        "clients": [{
+            "uid": oip_server::mcp::ipc::local_uid().unwrap(),
+            "credential_file": credential,
+            "policy": { "principal": "platform-reader" }
+        }]
+    });
+    std::fs::write(&ipc_file, serde_json::to_vec(&ipc_config).unwrap()).unwrap();
+    std::fs::set_permissions(&ipc_file, std::fs::Permissions::from_mode(0o600)).unwrap();
+    let ipc = oip_server::mcp::ipc::LocalIpc::prepare(&ipc_file)
+        .await
+        .unwrap();
+    let identities = ipc.rest_identities();
+    drop(ipc);
+    let rest = api::router_with_identity(state.clone(), services.clone(), None, identities, None)
+        .oneshot(
+            Request::builder()
+                .uri("/api/v2/management?section=system")
+                .header("host", "localhost")
+                .header("authorization", format!("Bearer {}", "0d".repeat(32)))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(rest.status(), 200);
+    let rest: ManagementReport =
+        serde_json::from_slice(&to_bytes(rest.into_body(), 1_000_000).await.unwrap()).unwrap();
+
+    let ctx = context("platform-reader");
+    let adapter = McpAdapter::new(
+        services,
+        McpPolicy {
+            principal: ctx.principal,
+            actor: String::new(),
+            permissions: Default::default(),
+            sources: SourceScope::Only(Default::default()),
+        },
+    )
+    .unwrap();
+    let (client, server) = tokio::io::duplex(1_000_000);
+    let task = tokio::spawn(async move {
+        adapter
+            .serve(server)
+            .await
+            .unwrap()
+            .waiting()
+            .await
+            .unwrap();
+    });
+    let sdk = ().serve(client).await.unwrap();
+    let mcp = sdk
+        .call_tool(
+            CallToolRequestParams::new("oip_mcp_management_read").with_arguments(
+                serde_json::json!({"section":"system"})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+            ),
+        )
+        .await
+        .unwrap()
+        .structured_content
+        .unwrap();
+    let mcp: ManagementReport = serde_json::from_value(mcp["value"].clone()).unwrap();
+    let license_facts = |report: ManagementReport| {
+        report
+            .facts
+            .into_iter()
+            .filter(|fact| {
+                [
+                    "Software license",
+                    "Usage entitlement",
+                    "Support entitlement",
+                    "License revision",
+                    "License verification error",
+                ]
+                .contains(&fact.name.as_str())
+            })
+            .map(|fact| (fact.name, fact.value))
+            .collect::<Vec<_>>()
+    };
+    let facts = license_facts(rest);
+    assert!(!facts.is_empty());
+    assert_eq!(facts, license_facts(mcp));
+    if let Ok(expected) = std::env::var("LICENSE_TEST_EXPECTED_STATE") {
+        assert_eq!(facts[0].1, expected);
+    }
+    sdk.cancel().await.unwrap();
+    task.await.unwrap();
+    clean(state, path).await;
+}
+
+#[tokio::test]
 async fn management_catalog_schema_and_configuration_redaction() {
     let (state, s, path) = fixture().await;
     let ctx = context("platform-reader");

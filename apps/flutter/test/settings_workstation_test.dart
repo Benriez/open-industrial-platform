@@ -622,6 +622,18 @@ void main() {
     expect(find.textContaining('no host collector data'), findsOneWidget);
   });
 
+  testWidgets('Runtime shows local software usage and support separately',
+      (tester) async {
+    await bootstrapSettings(tester);
+    await category(tester, SettingsCategory.system);
+    expect(find.text('Software license'), findsOneWidget);
+    expect(find.text('verified'), findsOneWidget);
+    expect(find.text('Usage entitlement'), findsOneWidget);
+    expect(find.text('active'), findsOneWidget);
+    expect(find.text('Support entitlement'), findsOneWidget);
+    expect(find.text('ended'), findsOneWidget);
+  });
+
   testWidgets('Keyboard slash focuses search and Escape clears only text input',
       (tester) async {
     await bootstrapSettings(tester);

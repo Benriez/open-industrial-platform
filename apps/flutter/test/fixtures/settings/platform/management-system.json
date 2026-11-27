@@ -3,6 +3,22 @@
   "availability": "read_only",
   "facts": [
     {
+      "name": "Software license",
+      "value": "verified"
+    },
+    {
+      "name": "Usage entitlement",
+      "value": "active"
+    },
+    {
+      "name": "Support entitlement",
+      "value": "ended"
+    },
+    {
+      "name": "License revision",
+      "value": "2"
+    },
+    {
       "name": "version",
       "value": "0.0.0"
     },

@@ -9,6 +9,7 @@ publish = false
 workspace = true
 
 [dependencies]
+code-server-license-verifier = { path = "../../vendor/code-server-license-verifier" }
 # rmcp 3.9 closes RUSTSEC-2026-0462 (unbounded response body buffering in
 # the Streamable HTTP clients of the SDK).
 rmcp = { version = "=3.9.0", default-features = false, features = ["server", "transport-io"] }
