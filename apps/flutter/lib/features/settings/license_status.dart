@@ -234,6 +234,8 @@ class _InstallationLicenseState extends State<InstallationLicense> {
               Text(context.tr(
                   'Offene Fragen klärt die für diese Installation zuständige Person.')),
           ],
+          if (_feedback case final feedback?)
+            Semantics(liveRegion: true, child: Text(context.tr(feedback))),
           if (_editing && preview == null) ...[
             const SizedBox(height: 12),
             if (canPickLicenseFile || widget.filePicker != null) ...[
@@ -264,8 +266,6 @@ class _InstallationLicenseState extends State<InstallationLicense> {
                 style: Theme.of(context).textTheme.titleSmall),
             _details(context, preview.status),
           ],
-          if (_feedback case final feedback?)
-            Semantics(liveRegion: true, child: Text(context.tr(feedback))),
           const SizedBox(height: 8),
           Wrap(spacing: 8, runSpacing: 8, children: [
             if (_editing) ...[

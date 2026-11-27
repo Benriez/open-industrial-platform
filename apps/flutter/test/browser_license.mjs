@@ -54,12 +54,19 @@ try {
     const refused = await selectProof(page, path);
     assert.equal(refused.status(), 400);
     assert.equal((await refused.json()).code, 'LICENSE_PROOF_SUPERSEDED');
-    await page.getByText('Für diese Lizenz ist bereits eine neuere Fassung gespeichert. Wähle die aktuelle Lizenzdatei.')
-      .waitFor();
-    await page.getByText('Fassung', { exact: true }).waitFor();
+    const body = page.locator('body');
+    const message = 'Für diese Lizenz ist bereits eine neuere Fassung gespeichert. Wähle die aktuelle Lizenzdatei.';
+    const deadline = Date.now() + 15000;
+    let panel = await body.ariaSnapshot();
+    while (!panel.includes(message) && Date.now() < deadline) {
+      await page.waitForTimeout(250);
+      panel = await body.ariaSnapshot();
+    }
+    await page.screenshot({ path: screenshot });
+    assert.ok(panel.includes(message), panel);
+    assert.match(panel, /: "?Fassung"?\s*$/m);
     assert.equal(await page.getByRole('button', { name: 'Nachweis übernehmen' }).count(), 0);
     assert.deepEqual(await (await context.request.get(path)).json(), before);
-    await page.screenshot({ path: screenshot });
   }
 } finally {
   await browser.close();
