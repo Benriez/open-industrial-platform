@@ -181,7 +181,11 @@ ein eigener Nachweis neben dem Wiederherstellungstest.
 
 Die Sicherung enthält Datenbank und erfasste Historien, Konfiguration,
 Quellenzuordnung, lokale Zugangsdaten, Trust und benötigte Schlüssel des
-unterstützten Profils. Private SQLite-Daten, der private PKI-Bestand,
+unterstützten Profils. Ein hinterlegter Lizenznachweis wird zusammen mit der
+Ausstellerrichtlinie verschlüsselt gesichert. Nach der Wiederherstellung prüft
+der Core den Nachweis erneut, einschließlich der aktuellen Zeiträume.
+Sicherung und Restore bleiben auch ohne Nachweis möglich.
+Private SQLite-Daten, der private PKI-Bestand,
 Staging beim Restore sowie Logs auf dem aktiven Mac sind über Dateirechte
 geschützt. Für Schutz bei ausgeschaltetem Mac und bei lokalem Restore muss
 der Betreiber die Verschlüsselung des betreffenden Volumes prüfen. Ein

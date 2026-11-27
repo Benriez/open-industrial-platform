@@ -26,6 +26,7 @@ CORE_SCHEMA = 8
 CONTROL = "recovery.json"
 DATABASE = "core.sqlite"
 BROWSER = DATABASE + ".browser-credentials.json"
+LICENSE = Path(DATABASE).with_suffix(".license.json").name
 AUDIT = DATABASE + ".security-audit"
 AUDIT_FILES = ("key.json", "seal.json", "events.jsonl")
 MAX_DB = 16 * 1024**3
@@ -300,7 +301,11 @@ def backup(args, ops):
             config.get("browser_credentials_file") or str(database) + ".browser-credentials.json",
             base,
         )
-        for path, name in ((browser, BROWSER), (Path(str(browser) + ".revocations"), BROWSER + ".revocations")):
+        for path, name in (
+            (browser, BROWSER),
+            (Path(str(browser) + ".revocations"), BROWSER + ".revocations"),
+            (database.with_suffix(".license.json"), LICENSE),
+        ):
             if path.exists() or path.is_symlink():
                 include(name, path)
         audit = Path(str(database) + ".security-audit")
@@ -407,10 +412,11 @@ def read_manifest(path, binary):
         or sum(sizes.values()) - sizes[DATABASE] > MAX_RESOURCE
     ):
         raise RecoveryError("Invalid or incomplete recovery file inventory.")
-    fixed = {DATABASE, BROWSER, BROWSER + ".revocations", *(f"{AUDIT}/{name}" for name in AUDIT_FILES)}
-    audit_members = fixed.intersection(sizes) - {DATABASE, BROWSER, BROWSER + ".revocations"}
-    if audit_members and len(audit_members) != len(AUDIT_FILES):
+    audit = {f"{AUDIT}/{name}" for name in AUDIT_FILES}
+    audit_members = audit.intersection(sizes)
+    if audit_members and audit_members != audit:
         raise RecoveryError("Incomplete security audit state.")
+    fixed = {DATABASE, BROWSER, BROWSER + ".revocations", LICENSE} | audit
     for name in sizes:
         checked_name(name)
         if name not in fixed and not (
@@ -469,6 +475,8 @@ def recovery_paths(directory, manifest, http_port, web_dir=None):
         return str(root)
 
     normalize_core_paths(core, file_ref, tree_ref)
+    if LICENSE in manifest["members"]:
+        file_ref(LICENSE)
     core.update(
         database=file_ref(DATABASE),
         browser_credentials_file=str(directory / BROWSER),

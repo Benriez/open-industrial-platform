@@ -19,6 +19,9 @@ ROOT = Path(__file__).resolve().parents[1]
 TOOL = ROOT / "tools/oip_ops.py"
 sys.path.insert(0, str(TOOL.parent))
 from oip_recovery import encrypt_files  # noqa: E402
+from oip_license_issue import (  # noqa: E402
+    PHP_OIP_ARTIFACT, PHP_OIP_LICENSE_ID, PHP_TEST_KEYS, proof_request, write_policy,
+)
 
 
 def port():
@@ -59,13 +62,13 @@ class Browser:
             assert answer.status == expected, (path, answer.status)
             return json.load(answer)
 
-    def login(self, binary, ipc, credential):
+    def login(self, binary, ipc, credential, principal="reader-org-a"):
         raw = subprocess.check_output(
             [binary, "--browser-login", "--ipc-socket", ipc, "--ipc-credential", credential],
             stderr=subprocess.DEVNULL, timeout=10,
         )
         session = self.call("browser/login", {"code": json.loads(raw)["login_code"]})
-        assert session["principal_id"] == "reader-org-a"
+        assert session["principal_id"] == principal
         self.csrf = session["csrf_token"]
 
 
@@ -79,10 +82,14 @@ def rehearsal(args, root):
     http_port, opcua_port, restored_port = port(), port(), port()
     while len({http_port, opcua_port, restored_port}) < 3:
         opcua_port, restored_port = port(), port()
-    database = root / "core.sqlite"
+    database = root / "original.sqlite"
+    proof_file = database.with_suffix(".license.json")
     config = root / "core.json"
     ipc = root / "ipc.json"
     credential = root / "operator.credential"
+    license_credential = root / "license-admin.credential"
+    trust = root / "license-policy.json"
+    write_policy(trust, PHP_TEST_KEYS)
     plan = root / "plan.json"
     vault = root / "backup.oip"
     clone = root / "clone"
@@ -92,17 +99,31 @@ def rehearsal(args, root):
         {"id": "source-a", "name": "Recovery fixture OPC-UA",
          "endpoint": f"opc.tcp://127.0.0.1:{opcua_port}"},
     ]}
+    core_configuration.update(
+        license_policy=trust.read_text(), commercial_license_kinds=["standard"],
+    )
     if args.read_only_profile:
         core_configuration["opcua_read_only"] = True
     put(config, core_configuration)
     put(ipc, {"socket": str(root / "s"), "clients": [{
         "uid": os.getuid(), "credential_file": str(credential),
         "policy": {"principal": "reader-org-a"},
+    }, {
+        "uid": os.getuid(), "credential_file": str(license_credential),
+        "policy": {"principal": "platform-reader"},
     }]})
     plan_data = json.loads((ROOT / "examples/multi-infrastructure-plan.json").read_text())
     plan_data["sources"] = plan_data["sources"][:1]
     plan_data["services"] = []
     plan_data["bindings"] = [item for item in plan_data["bindings"] if item["scope"]["kind"] != "source"]
+    plan_data["roles"].append({
+        "id": "license-admin", "name": "License administrator",
+        "permissions": ["license_read", "license_manage"],
+    })
+    plan_data["bindings"].append({
+        "principal_id": "platform-reader", "role_id": "license-admin",
+        "scope": {"kind": "platform"},
+    })
     put(plan, plan_data)
 
     def tool(*words, expected=0, secured_by=None, binary=args.binary):
@@ -130,6 +151,13 @@ def rehearsal(args, root):
         browser.call("inventory/devices", expected=403)
         browser.login(args.binary, root / "s", credential)
         devices = browser.call("inventory/devices")["items"]
+        browser.call("license", expected=403)
+        admin = Browser(http_port)
+        admin.login(args.binary, root / "s", license_credential, principal="platform-reader")
+        preview = admin.call("license/preview", proof_request(PHP_OIP_ARTIFACT))
+        license_status = admin.call("license/apply", {"confirmation": preview["confirmation"]})
+        assert license_status["license_id"] == PHP_OIP_LICENSE_ID
+        assert proof_file.read_bytes() == PHP_OIP_ARTIFACT
         revoked, active = secrets.token_hex(32), secrets.token_hex(32)
         browser.call("browser/pairing", {"credential": revoked})
         paired_id = browser.call("browser/device-credentials")["items"][0]["id"]
@@ -155,7 +183,8 @@ def rehearsal(args, root):
         assert backup["status"] == "encrypted_backup_created"
         assert backup["database_schema"] == 8 and backup["restore_tested"] is False
         assert vault.stat().st_mode & 0o077 == 0
-        for sensitive in (credential.read_bytes(), b"SQLite format 3", b"Recovery fixture OPC-UA"):
+        for sensitive in (credential.read_bytes(), b"SQLite format 3", b"Recovery fixture OPC-UA",
+                          PHP_OIP_ARTIFACT):
             assert sensitive not in vault.read_bytes()
         tool("recovery-backup", "--output", vault, secured_by=secret, expected=2)
 
@@ -184,6 +213,9 @@ def rehearsal(args, root):
         restored_db = clone / "instance/core.sqlite"
         recovered_points = count(restored_db)
         assert recovered_points == original_points
+        recovered_proof = restored_db.with_suffix(".license.json")
+        assert recovered_proof.read_bytes() == PHP_OIP_ARTIFACT
+        assert recovered_proof.stat().st_mode & 0o077 == 0
         original_bytes = restored_db.read_bytes()
         tool("recovery-restore", "--source", vault, "--restore-dir", clone, secured_by=secret, expected=2)
         assert restored_db.read_bytes() == original_bytes
@@ -201,6 +233,12 @@ def rehearsal(args, root):
         again = Browser(restored_port)
         again.call("inventory/devices", expected=403)
         again.login(args.binary, recovered_dir / "oip.sock", recovered_cred)
+        again.call("license", expected=403)
+        recovered_license_credential = recovered_dir / recovered_data["ipc"]["clients"][1]["credential_file"]
+        restored_admin = Browser(restored_port)
+        restored_admin.login(args.binary, recovered_dir / "oip.sock", recovered_license_credential,
+                             principal="platform-reader")
+        assert restored_admin.call("license") == license_status
         assert [row["record"]["device"]["id"] for row in again.call("inventory/devices")["items"]] == [
             row["record"]["device"]["id"] for row in devices
         ]
@@ -232,6 +270,7 @@ def rehearsal(args, root):
                        "incomplete_authenticated_archive_refused", "existing_target_preserved",
                        "multi_os_user_backup_refused",
                        "inventory_and_scoped_identity_preserved", "active_pairing_preserved",
+                       "license_proof_verified_and_access_scoped_after_restore",
                        "revocation_and_repair_denial_preserved",
                        "fresh_clone_outbound_blocked", "only_explicit_loopback_reconnected"],
             "identical_restored_observations": original_points,
