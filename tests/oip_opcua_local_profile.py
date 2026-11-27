@@ -12,7 +12,6 @@ import os
 from pathlib import Path
 import secrets
 import signal
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -31,6 +30,9 @@ from oip_opcua_parity import api, free_port, McpClient
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "tools"))
+from oip_ops import sqlite_query
+
 SERVER_URI = "urn:oip-test:independent-server"
 CLIENT_URI = "urn:oip:local-test-client"
 NAMESPACE = "urn:oip-test:selected-points"
@@ -233,7 +235,9 @@ async def scenario(binary, evidence, work):
             process, browser, csrf = await boot()
 
             async def refused():
-                return list(rejected.glob("*.der")) and (await health())["connection"] != "connected"
+                item = await health()
+                return (list(rejected.glob("*.der")) and item["connection"] != "connected"
+                        and item["last_error"] == "opcua_certificate_untrusted")
             await until(refused, "Peer without published trust was not rejected")
             assert not list(trusted.iterdir())
             request = next(rejected.glob("*.der"))
@@ -305,17 +309,11 @@ async def scenario(binary, evidence, work):
             process, browser, _ = await boot()
             checked_observation(await until(fresh, "Point did not return after Core restart"))
         await stop(process)
-        sqlite = "/usr/bin/sqlite3" if sys.platform == "darwin" else shutil.which("sqlite3")
-        assert sqlite, "The fixture requires the sqlite3 command"
-
-        def query(sql):
-            return subprocess.check_output(
-                [sqlite, "-readonly", config["database"], sql], timeout=10, text=True,
-            ).strip()
-
-        assert query("PRAGMA integrity_check") == "ok"
-        assert query("SELECT DISTINCT origin_class FROM observations") == "external"
-        assert int(query("SELECT count(*) FROM data_gaps")) >= 1
+        database = Path(config["database"])
+        assert database.is_file()
+        assert sqlite_query(database, "PRAGMA integrity_check") == "ok"
+        assert sqlite_query(database, "SELECT DISTINCT origin_class FROM observations") == "external"
+        assert int(sqlite_query(database, "SELECT count(*) FROM data_gaps")) >= 1
     finally:
         if process is not None:
             await stop(process)

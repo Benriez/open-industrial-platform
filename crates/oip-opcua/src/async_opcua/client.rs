@@ -419,7 +419,25 @@ impl AsyncOpcUaClient {
             subscribed_metrics.clone(),
             explicit_secure_server,
         ));
-        if !session.wait_for_connection().await {
+        let connected = if explicit_secure_server {
+            // The SDK's state watch can stay open after a failed handshake.
+            // Consume its terminal event immediately to preserve the status.
+            tokio::select! {
+                biased;
+                event = event_receiver.recv() => {
+                    let reason = match event {
+                        Some(ClientEvent::SubscriptionError { reason, .. }
+                            | ClientEvent::ConnectionLost { reason, .. }) => reason,
+                        _ => "session event loop stopped before connecting".into(),
+                    };
+                    return Err(AdapterError::Connection(reason));
+                }
+                connected = session.wait_for_connection() => connected,
+            }
+        } else {
+            session.wait_for_connection().await
+        };
+        if !connected {
             let reason = match event_receiver.try_recv() {
                 Ok(ClientEvent::SubscriptionError { reason, .. }) => reason,
                 _ => "session did not reach connected state".into(),
