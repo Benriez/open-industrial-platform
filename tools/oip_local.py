@@ -20,6 +20,10 @@ import time
 import urllib.request
 
 from oip_ops import is_personal
+from oip_update import (
+    LICENSE_SETUP, MAX_LICENSE_POLICY, Refused, check_license_policy,
+    host_target, installed, public_key, verify_assets,
+)
 
 
 READ_PERMISSIONS = [
@@ -27,7 +31,6 @@ READ_PERMISSIONS = [
     "telemetry_read", "events_read", "opcua_read", "settings_read",
 ]
 
-MAX_LICENSE_POLICY = 16 * 1024
 MAX_KEY_REGISTRY = 1024 * 1024
 LICENSE_ISSUER = "code-server.de"
 LICENSE_PRODUCT = "oip"
@@ -188,17 +191,38 @@ def prepare_license_policy(args):
     print(output)
 
 
-def license_setup(args, core):
+def package_license_setup(root, args):
+    if args.core or args.web or args.simulator or args.commercial_license_kind:
+        raise ValueError("Use the installed package without development overrides or separate license kinds.")
+    manifest = installed(root, public_key(Path(args.package_public_key).absolute()), host_target())
+    if manifest is None:
+        raise ValueError("Install a verified OIP package before configuring its license policy.")
+    verify_assets((root / "current").resolve(strict=True), manifest["the_artefacts"])
+    previous_setup = root / "setup.json"
+    if os.path.lexists(previous_setup):
+        existing = private_json(previous_setup)
+        if not isinstance(existing, dict):
+            raise ValueError("The existing setup record is invalid. Use the Recovery procedure.")
+        return {name: existing[name] for name in ("license_policy", "commercial_license_kinds")
+                if name in existing}
+    return manifest.get(LICENSE_SETUP, {})
+
+
+def license_setup(root, args, core):
+    if args.package_public_key:
+        config = package_license_setup(root, args)
+        if config:
+            text = config.get("license_policy")
+            if not isinstance(text, str):
+                raise ValueError("The existing license setup record is invalid.")
+            check_license_policy(core, text.encode("utf-8"))
+        return config
     if not args.license_policy:
         if args.commercial_license_kind:
             raise ValueError("A commercial license kind requires the trusted OIP license policy.")
         return {}
     data = bounded_file(args.license_policy, MAX_LICENSE_POLICY, "The license policy")
-    checked = subprocess.run([core, "--check-license-policy"], input=data,
-                             capture_output=True, timeout=10)
-    if checked.returncode != 0:
-        detail = checked.stderr.decode("utf-8", errors="replace").strip()
-        raise ValueError(f"The OIP Core refused the license policy. {detail}")
+    check_license_policy(core, data)
     policy_text = data.decode("utf-8")
     policy = json.loads(policy_text)
     kinds = sorted(set(args.commercial_license_kind))
@@ -215,7 +239,7 @@ def prepare(root, args, core):
     labels = [v.strip() for v in (args.organization, args.infrastructure, args.site)]
     if any(not v or len(v) > 96 or not v.isprintable() for v in labels):
         raise ValueError("Enter an organization, infrastructure and site name with 1 to 96 characters.")
-    license_config = license_setup(args, core)
+    license_config = license_setup(root, args, core)
     backup = absolute_path(args.backup_directory)
     if backup == root or root in backup.parents:
         raise ValueError("Choose a backup directory outside this OIP instance.")
@@ -393,7 +417,9 @@ def main():
     init.add_argument("--infrastructure", required=True)
     init.add_argument("--site", required=True)
     init.add_argument("--backup-directory", required=True)
-    init.add_argument("--license-policy", help="Approved License Center policy for OIP (JSON file)")
+    policy_source = init.add_mutually_exclusive_group()
+    policy_source.add_argument("--license-policy", help="Approved License Center policy for OIP (JSON file)")
+    policy_source.add_argument("--package-public-key", help="Provision license policy from the reverified installed package (PEM)")
     init.add_argument("--commercial-license-kind", action="append", default=[],
                       help="Approved policy kind that grants commercial usage; repeat as needed")
     init.add_argument("--port", type=int, default=18870)
@@ -428,7 +454,9 @@ def main():
                 prepare(root, args, core)
             else:
                 run(root, args, core, web, simulator)
-    except (ValueError, OSError, subprocess.SubprocessError) as error:
+    except ImportError:
+        parser.exit(1, "OIP: Package verification requires Python cryptography with Ed25519 support.\n")
+    except (Refused, ValueError, OSError, subprocess.SubprocessError) as error:
         parser.exit(1, f"OIP: {error}\n")
 
 

@@ -67,7 +67,8 @@ export OIP_TOOLS="$OIP_INSTANCE/current/tools"
 
 python3 "$OIP_TOOLS/oip_local.py" --instance "$OIP_INSTANCE" setup \
   --organization "Testbetrieb" --infrastructure "Testhalle" \
-  --site "Prüfstand" --backup-directory "$OIP_BACKUPS"
+  --site "Prüfstand" --backup-directory "$OIP_BACKUPS" \
+  --package-public-key "$TRUSTED_UPDATE_KEY"
 python3 "$OIP_TOOLS/oip_local.py" --instance "$OIP_INSTANCE" run --open
 ```
 
@@ -260,8 +261,19 @@ ausgestellte Nachweise können mit einem weiterhin freigegebenen historischen
 Schlüssel geprüft werden. Schlüssel anderer Produkte und als kompromittiert
 markierte Schlüssel weist der Befehl ab.
 
-Nutze `oip_local.py setup --license-policy PFAD` mit der freigegebenen
-Datei. Gib jede ausdrücklich als gewerblich vereinbarte Nachweisart separat
+Bei Auslieferung als signiertes Paket kann der Herausgeber die freigegebene
+Richtlinie im Manifest mitgeben. Der Einrichter verwendet für `setup` denselben
+aus vertrauenswürdiger Quelle bezogenen öffentlichen Paketschlüssel wie für die
+Installation. Dazu dient `--package-public-key PFAD`. Die Ersteinrichtung prüft
+das installierte Manifest und seine Dateien erneut. Der Core prüft die
+freigegebene Richtlinie, bevor die Einrichtung sie speichert. Ein Update oder
+ein erneuter Aufruf von `setup` übernimmt keine neuen Lizenzvorgaben in eine
+bestehende Einrichtung. Der individuelle Nachweis wird weiterhin separat in OIP
+importiert.
+
+Für die separate Provisionierung nutze `oip_local.py setup --license-policy
+PFAD` mit der freigegebenen Datei. Gib jede ausdrücklich als gewerblich
+vereinbarte Nachweisart separat
 mit `--commercial-license-kind ART` an. Ohne diese Zuordnung weist der Core
 keine Art als gewerblich aus. Die Einrichtung prüft die Richtlinie vor dem
 Schreiben der Konfiguration. Die Vorbereitung startet keine Instanz.
@@ -1375,6 +1387,15 @@ and database schema to SHA-256 digests of the Core, browser, optional simulator,
 administration tools and license. The detached `signature` is the Ed25519
 signature of the exact manifest bytes.
 
+For a package with licensing preconfigured, add `--license-policy FILE` to
+`--prepare` and repeat `--commercial-license-kind KIND` for each agreed
+commercial kind in that policy. Use the policy prepared from explicitly
+approved License Center fingerprints. The manifest signs the public policy
+and the commercial kinds. The package key cannot be an accepted license
+issuer. The installer checks the policy with the staged Core before activation.
+Deliver customer proofs separately. Keep both private keys in their protected
+publishing or issuing workflows.
+
 For the first installation, obtain `oip_update.py`, its adjacent `oip_ops.py`
 and the Ed25519 public key through a trusted installer delivery. Check the
 key's `shasum -a 256` against the fingerprint supplied through an independently
@@ -1416,7 +1437,9 @@ credentials and stored values remain outside this check.
 
 An atomic link selects the verified version as `current`. The previous release
 files remain under `versions`. New installations can continue with
-`current/tools/oip_local.py setup`. For updates, restart the normal local
+`current/tools/oip_local.py setup --package-public-key "$TRUSTED_UPDATE_KEY"`
+and their workspace arguments. The package copy is reverified before setup
+uses the signed licensing defaults. For updates, restart the normal local
 runner and confirm that the configured sources and selected measurements
 recover. Expect a collection gap during the maintenance window.
 

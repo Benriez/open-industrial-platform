@@ -30,7 +30,7 @@ sys.path.insert(0, str(UPDATER.parent))
 import oip_update
 from oip_license_issue import (
     ISSUER, PHP_ODP_ARTIFACT, PHP_OIP_ARTIFACT, PHP_OIP_HOLDER, PHP_OIP_LICENSE_ID, PHP_TEST_KEYS,
-    decode, json_line, period, proof_request, sign_fixture,
+    decode, json_line, period, proof_request, public_key, sign_fixture,
 )
 from oip_local_operator import session
 from oip_opcua_parity import api
@@ -81,7 +81,8 @@ def keys(work):
     return secret, public
 
 
-def prepare(bundle, secret, core, web, revision, version, *, simulator=None, schema=8, target=None):
+def prepare_command(bundle, secret, core, web, revision, version, *, simulator=None, schema=8,
+                    target=None, policy=None, kinds=()):
     command = [sys.executable, str(UPDATER), "--prepare", "--bundle", str(bundle),
                "--signing-key", str(secret), "--binary", str(core), "--web", str(web),
                "--revision", revision, "--release-version", version, "--database-schema", str(schema)]
@@ -89,12 +90,21 @@ def prepare(bundle, secret, core, web, revision, version, *, simulator=None, sch
         command.extend(("--simulator", str(simulator)))
     if target:
         command.extend(("--target", target))
+    if policy:
+        command.extend(("--license-policy", str(policy)))
+    for kind in kinds:
+        command.extend(("--commercial-license-kind", kind))
+    return command
+
+
+def prepare(bundle, secret, core, web, revision, version, **options):
+    command = prepare_command(bundle, secret, core, web, revision, version, **options)
     result = subprocess.run(command, capture_output=True, text=True, timeout=120)
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["the_status"] == "PACKAGED"
     assert sorted(item.name for item in bundle.iterdir()) == sorted(
         ["oip-server", "web", "tools", "manifest.json", "signature", "LICENSE", "THIRD_PARTY_NOTICES.txt"]
-        + (["oip-simulated-server"] if simulator else [])
+        + (["oip-simulated-server"] if options.get("simulator") else [])
     )
     return bundle
 
@@ -338,18 +348,119 @@ def install_proof(access, proof, rejected_proof):
     return after
 
 
+def prepare_issuer_policy(work):
+    registry = work / "pruefschluessel.json"
+    rows = []
+    for product, artifact in (("oip", PHP_OIP_ARTIFACT), ("odp", PHP_ODP_ARTIFACT)):
+        key_id = json.loads(artifact)["kid"]
+        key = PHP_TEST_KEYS[key_id]
+        rows.append({"product_id": product, "kid": key_id, "public_key": key,
+                     "fingerprint": hashlib.sha256(decode(key)).hexdigest(), "state": "active"})
+    registry.write_bytes(json_line({"issuer": ISSUER, "keys": rows}))
+    result = subprocess.run(
+        [sys.executable, "-B", str(ROOT / "tools/oip_local.py"), "prepare-license-policy",
+         "--registry", str(registry), "--key-fingerprint", rows[0]["fingerprint"],
+         "--kind", "standard", "--right", "installations=20"],
+        capture_output=True, check=True, timeout=30, cwd=work,
+    )
+    assert json.loads(result.stdout)["keys"] == {rows[0]["kid"]: rows[0]["public_key"]}
+    policy = work / "license-policy.json"
+    policy.write_bytes(result.stdout)
+    return policy
+
+
+def refuse_single_signer(work, secret, release_key, args, policy, report):
+    content = json.loads(policy.read_bytes())
+    kid, key = public_key(release_key)
+    content["keys"][kid] = key
+    combined = work / "combined-signers.json"
+    combined.write_bytes(json_line(content))
+    command = prepare_command(work / "combined-bundle", secret, args.core, args.web,
+                              "one-signer", "1.0.0", policy=combined, kinds=("standard",))
+    result = subprocess.run(command, capture_output=True, text=True, timeout=120)
+    assert_refusal(result, "package signing key cannot issue OIP licenses")
+    assert not (work / "combined-bundle").exists()
+    report["steps"].append("package preparation refuses to trust the package signing key for licensing")
+
+
+def refuse_invalid_signed_policy(instance, bundle, public, release_key, report):
+    manifest_path = bundle / "manifest.json"
+    signature_path = bundle / "signature"
+    original = manifest_path.read_bytes()
+    signature = signature_path.read_bytes()
+    manifest = json.loads(original)
+    defaults = manifest[oip_update.LICENSE_SETUP]
+    policy = json.loads(defaults["license_policy"])
+    policy["rights"]["installations"] = -1
+    defaults["license_policy"] = json_line(policy).decode("utf-8")
+    invalid = json_line(manifest)
+    manifest_path.write_bytes(invalid)
+    signature_path.write_bytes(release_key.sign(invalid))
+    result = run(instance, bundle, public)
+    assert_refusal(result, "OIP Core refused the license policy")
+    assert not (instance / "current").exists()
+    assert not (instance / "core.json").exists()
+    manifest_path.write_bytes(original)
+    signature_path.write_bytes(signature)
+    report["steps"].append("staged Core refuses an invalid policy despite a valid package signature")
+
+
+def real_setup_command(work, instance, public, port, simulator_port):
+    return [sys.executable, "-B", str(instance / "current" / "tools" / "oip_local.py"),
+            "--instance", str(instance), "setup", "--organization", "Fixture organization",
+            "--infrastructure", "Fixture infrastructure", "--site", "Fixture site",
+            "--backup-directory", str(work / "backups"), "--port", str(port),
+            "--simulator-port", str(simulator_port), "--package-public-key", str(public)]
+
+
+def refuse_changed_license_setup(work, instance, setup, policy, release_key, report):
+    manifest_path = instance / "current" / "manifest.json"
+    signature_path = instance / "current" / "signature"
+    manifest_bytes = manifest_path.read_bytes()
+    signature = signature_path.read_bytes()
+    manifest = json.loads(manifest_bytes)
+    defaults = manifest[oip_update.LICENSE_SETUP]
+    assert defaults == {"license_policy": policy.read_text(), "commercial_license_kinds": ["standard"]}
+    defaults["commercial_license_kinds"] = []
+    manifest_path.write_bytes(json_line(manifest))
+    result = subprocess.run(setup, capture_output=True, text=True, timeout=30, cwd=work)
+    assert result.returncode == 1 and "signature" in result.stderr, result.stderr
+
+    bad_payload = manifest_bytes.replace(b'{', b'{"the_license_setup": null,', 1)
+    manifest_path.write_bytes(bad_payload)
+    signature_path.write_bytes(release_key.sign(bad_payload))
+    result = subprocess.run(setup, capture_output=True, text=True, timeout=30, cwd=work)
+    assert result.returncode == 1 and "not valid JSON" in result.stderr, result.stderr
+
+    manifest_path.write_bytes(manifest_bytes)
+    signature_path.write_bytes(signature)
+    other_signer = work / "other-signer"
+    other_signer.mkdir(mode=0o700)
+    _, unrelated_key = keys(other_signer)
+    result = subprocess.run([*setup[:-1], str(unrelated_key)], capture_output=True, text=True,
+                            timeout=30, cwd=work)
+    assert result.returncode == 1 and "signature" in result.stderr, result.stderr
+    assert not any((instance / name).exists() for name in ("setup.json", "core.json", "core.sqlite"))
+    report["steps"].append("first setup refuses tampered, ambiguous, and foreign-signed license defaults")
+
+
 def real_candidate(work, report, args):
     secret, public = keys(work)
     instance = work / "real"
     instance.mkdir(mode=0o700)
+    policy = prepare_issuer_policy(work) if args.simulator else None
+    kinds = ("standard",) if policy else ()
     bundle = prepare(work / "real-bundle", secret, args.core, args.web, "real-candidate",
-                     "1.0.0", simulator=args.simulator)
+                     "1.0.0", simulator=args.simulator, policy=policy, kinds=kinds)
     manifest = (bundle / "manifest.json").read_text()
     if args.real_receipt:
         args.real_receipt.write_text(manifest)
     artefacts = json.loads(manifest)["the_artefacts"]
     report["the_core_sha256"] = artefacts["oip-server"]
     report["the_browser_sha256"] = artefacts["web/main.dart.js"]
+    release_key = load_pem_private_key(secret.read_bytes(), password=None)
+    if policy:
+        refuse_invalid_signed_policy(instance, bundle, public, release_key, report)
     result = run(instance, bundle, public)
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["the_status"] == "UPDATED"
@@ -363,25 +474,7 @@ def real_candidate(work, report, args):
             assert (instance / "current" / name).read_bytes() == (ROOT / name).read_bytes()
         report["steps"].append("release contains the source license and notices and only operator tools")
         shutil.rmtree(bundle)
-        installed = instance / "current" / "tools" / "oip_local.py"
-        policy = work / "license-policy.json"
-        registry = work / "pruefschluessel.json"
-        rows = []
-        for product, artifact in (("oip", PHP_OIP_ARTIFACT), ("odp", PHP_ODP_ARTIFACT)):
-            key_id = json.loads(artifact)["kid"]
-            key = PHP_TEST_KEYS[key_id]
-            rows.append({"product_id": product, "kid": key_id, "public_key": key,
-                         "fingerprint": hashlib.sha256(decode(key)).hexdigest(), "state": "active"})
-        registry.write_bytes(json_line({"issuer": ISSUER, "keys": rows}))
-        result = subprocess.run(
-            [sys.executable, "-B", str(installed), "prepare-license-policy", "--registry", str(registry),
-             "--key-fingerprint", rows[0]["fingerprint"], "--kind", "standard", "--right", "installations=20"],
-            capture_output=True, check=True, timeout=30, cwd=work,
-        )
-        assert json.loads(result.stdout)["keys"] == {rows[0]["kid"]: rows[0]["public_key"]}
-        policy.write_bytes(result.stdout)
-        report["steps"].append("packaged provisioner prepares offline OIP policy from explicit registry fingerprints")
-        release_key = load_pem_private_key(secret.read_bytes(), password=None)
+        refuse_single_signer(work, secret, release_key, args, policy, report)
         now = int(time.time()) - 300
         rejected_proof = proof_request(sign_fixture(
             release_key, "2" * 32, now, usage=period("perpetual", now),
@@ -390,17 +483,28 @@ def real_candidate(work, report, args):
             http.bind(("127.0.0.1", 0))
             opcua.bind(("127.0.0.1", 0))
             port, simulator_port = http.getsockname()[1], opcua.getsockname()[1]
-        result = subprocess.run(
-            [sys.executable, "-B", str(installed), "--instance", str(instance), "setup",
-             "--organization", "Fixture organization", "--infrastructure", "Fixture infrastructure",
-             "--site", "Fixture site", "--backup-directory", str(work / "backups"),
-             "--port", str(port), "--simulator-port", str(simulator_port),
-             "--license-policy", str(policy), "--commercial-license-kind", "standard"],
-            capture_output=True, text=True, timeout=120, cwd=work,
-        )
+        setup = real_setup_command(work, instance, public, port, simulator_port)
+        refuse_changed_license_setup(work, instance, setup, policy, release_key, report)
+        policy.unlink()
+        (work / "pruefschluessel.json").unlink()
+        result = subprocess.run(setup, capture_output=True, text=True, timeout=120, cwd=work)
         assert result.returncode == 0, result.stderr
+        report["steps"].append("first setup uses signed defaults without a separate issuer policy, registry or token")
+        marker = instance / "setup-complete.json"
+        completion = marker.read_bytes()
+        credential = (instance / "operator.credential").read_bytes()
+        marker.unlink()
+        result = subprocess.run(setup, capture_output=True, text=True, timeout=120, cwd=work)
+        assert result.returncode == 0, result.stderr
+        assert marker.read_bytes() == completion
+        assert (instance / "operator.credential").read_bytes() == credential
+        report["steps"].append("interrupted first setup preserves the trusted defaults and operator identity")
+        replacement = work / "replacement-policy.json"
+        updated_policy = json.loads(json.loads(manifest)[oip_update.LICENSE_SETUP]["license_policy"])
+        updated_policy["kinds"] = ["personal"]
+        replacement.write_bytes(json_line(updated_policy))
         second = prepare(work / "real-update", secret, args.core, args.web, "real-update",
-                         "1.0.1", simulator=args.simulator)
+                         "1.0.1", simulator=args.simulator, policy=replacement)
         with installed_browser(instance, port, work) as access:
             accepted = install_proof(access, proof_request(PHP_OIP_ARTIFACT), rejected_proof)
             assert_refusal(run(instance, second, public), "local operation")
@@ -418,9 +522,13 @@ def real_candidate(work, report, args):
         assert (instance / "core.json").read_bytes() == initial_configuration
         report["steps"].append("signed tools setup and start, active-instance refusal, same-schema offline update")
         assert proof_path.read_bytes() == PHP_OIP_ARTIFACT
+        result = subprocess.run(setup, capture_output=True, text=True, timeout=120, cwd=work)
+        assert result.returncode == 0 and "bereits eingerichtet" in result.stdout, result.stderr
+        assert (instance / "core.json").read_bytes() == initial_configuration
+        assert json.loads(initial_configuration)["commercial_license_kinds"] == ["standard"]
         with installed_browser(instance, port, work) as (base, browser, _):
             assert api(base, "/api/v2/license", opener=browser) == (200, accepted)
-        report["steps"].append("offline update preserves the license proof, issuer trust and operator permission")
+        report["steps"].append("offline update with different signed defaults preserves existing proof, issuer trust and operator permission")
 
 
 def main():

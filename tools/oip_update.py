@@ -8,6 +8,7 @@ The existing Core must be stopped. This path does not migrate its database.
 from __future__ import annotations
 
 import argparse
+import base64
 from contextlib import closing, contextmanager
 from datetime import datetime, timezone
 import fcntl
@@ -37,6 +38,8 @@ NOTICE = "THIRD_PARTY_NOTICES.txt"
 REQUIRED_ASSETS = {"oip-server", "web/index.html", "web/main.dart.js", "LICENSE", NOTICE} | OPERATOR_TOOLS
 EXECUTABLES = {"oip-server", "oip-simulated-server"}
 MAX_MANIFEST = 1024 * 1024
+MAX_LICENSE_POLICY = 16 * 1024
+LICENSE_SETUP = "the_license_setup"
 MAX_ASSET_BYTES = 2 * 1024 * 1024 * 1024
 
 
@@ -119,6 +122,50 @@ def public_key(path: pathlib.Path):
     return key
 
 
+def unique_manifest_fields(pairs):
+    fields = dict(pairs)
+    if len(fields) != len(pairs):
+        raise ValueError("Duplicate JSON fields.")
+    return fields
+
+
+def check_license_policy(core: pathlib.Path, data: bytes):
+    result = subprocess.run([core, "--check-license-policy"], input=data,
+                            capture_output=True, timeout=10)
+    if result.returncode != 0:
+        detail = result.stderr.decode("utf-8", errors="replace").strip()
+        raise Refused(f"the OIP Core refused the license policy. {detail}")
+
+
+def verify_license_setup(setup, package_key):
+    from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+
+    if (not isinstance(setup, dict) or set(setup) != {"license_policy", "commercial_license_kinds"}
+            or not isinstance(setup["license_policy"], str)):
+        raise Refused("the signed package has invalid license setup fields")
+    try:
+        data = setup["license_policy"].encode("utf-8")
+        if len(data) > MAX_LICENSE_POLICY:
+            raise ValueError("Policy exceeds the size limit.")
+        policy = json.loads(data, object_pairs_hook=unique_manifest_fields)
+    except (ValueError, RecursionError) as error:
+        raise Refused("the signed package has an invalid license policy") from error
+    if (not isinstance(policy, dict) or set(policy) != {"issuer", "product_id", "keys", "kinds", "rights"}
+            or policy["issuer"] != "code-server.de" or policy["product_id"] != "oip"
+            or not isinstance(policy["keys"], dict) or not policy["keys"]
+            or not isinstance(policy["kinds"], list) or not policy["kinds"]):
+        raise Refused("the signed package must contain an OIP License Center policy")
+    kinds = setup["commercial_license_kinds"]
+    if (not isinstance(kinds, list)
+            or not all(isinstance(kind, str) and kind in policy["kinds"] for kind in kinds)
+            or len(set(kinds)) != len(kinds)):
+        raise Refused("each commercial license kind must be unique and approved by the signed policy")
+    raw_key = package_key.public_bytes(Encoding.Raw, PublicFormat.Raw)
+    signer = base64.urlsafe_b64encode(raw_key).rstrip(b"=").decode("ascii")
+    if signer in policy["keys"].values():
+        raise Refused("the package signing key cannot issue OIP licenses")
+
+
 def verify_manifest(bundle: pathlib.Path, key, expected_target: str):
     from cryptography.exceptions import InvalidSignature
 
@@ -129,8 +176,8 @@ def verify_manifest(bundle: pathlib.Path, key, expected_target: str):
     except InvalidSignature as error:
         raise Refused("the update signature does not match the provisioned key") from error
     try:
-        manifest = json.loads(payload)
-    except ValueError as error:
+        manifest = json.loads(payload, object_pairs_hook=unique_manifest_fields)
+    except (ValueError, RecursionError) as error:
         raise Refused("the signed update manifest is not valid JSON") from error
     if not isinstance(manifest, dict) or manifest.get("schema") != SCHEMA:
         raise Refused("unsupported signed update format")
@@ -149,6 +196,8 @@ def verify_manifest(bundle: pathlib.Path, key, expected_target: str):
     for name, digest in assets.items():
         if not release_name(name) or not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
             raise Refused("the update manifest contains an invalid file name or digest")
+    if LICENSE_SETUP in manifest:
+        verify_license_setup(manifest[LICENSE_SETUP], key)
     return manifest, payload, signature
 
 
@@ -362,6 +411,9 @@ def install(instance, bundle, manifest, payload, signature, current, total):
         write_release_file(staged / "manifest.json", BytesIO(payload))
         write_release_file(staged / "signature", BytesIO(signature))
         verify_assets(staged, manifest["the_artefacts"])
+        if LICENSE_SETUP in manifest:
+            policy = manifest[LICENSE_SETUP]["license_policy"].encode("utf-8")
+            check_license_policy(staged / "oip-server", policy)
         check_in_isolation(staged, manifest)
         for directory, _, _ in os.walk(staged, topdown=False):
             flush_directory(directory)
@@ -396,6 +448,16 @@ def package(args):
     if not isinstance(secret, Ed25519PrivateKey):
         raise Refused("the release signer must be an Ed25519 key")
     version_tuple(args.release_version)
+    target = args.target or host_target()
+    license_setup = None
+    if args.license_policy:
+        path = args.license_policy.absolute()
+        data = bounded_asset(path.parent, path.name, MAX_LICENSE_POLICY)
+        license_setup = {"license_policy": data.decode("utf-8"),
+                         "commercial_license_kinds": sorted(args.commercial_license_kind)}
+        verify_license_setup(license_setup, secret.public_key())
+    elif args.commercial_license_kind:
+        raise Refused("a commercial license kind requires --license-policy")
     distribution = pathlib.Path(__file__).resolve().parents[1]
     files = {name: distribution / name for name in {"LICENSE", NOTICE} | OPERATOR_TOOLS}
     files["oip-server"] = args.binary
@@ -425,11 +487,14 @@ def package(args):
                 remaining -= write_release_file(staged / name, source, name in EXECUTABLES, remaining)
             with (staged / name).open("rb") as source:
                 assets[name] = digest_of(source)
-        target = args.target or host_target()
         manifest = {
             "schema": SCHEMA, "the_revision": args.revision, "the_version": args.release_version,
             "the_target": target, "the_database_schema": args.database_schema, "the_artefacts": assets,
         }
+        if license_setup is not None:
+            if target == host_target():
+                check_license_policy(staged / "oip-server", data)
+            manifest[LICENSE_SETUP] = license_setup
         payload = (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode()
         write_release_file(staged / "manifest.json", BytesIO(payload))
         write_release_file(staged / "signature", BytesIO(secret.sign(payload)))
@@ -500,7 +565,12 @@ def main() -> int:
     parser.add_argument("--release-version")
     parser.add_argument("--revision")
     parser.add_argument("--database-schema", type=int)
+    parser.add_argument("--license-policy", type=pathlib.Path, help="approved public OIP license policy for first setup")
+    parser.add_argument("--commercial-license-kind", action="append", default=[],
+                        help="approved kind granting commercial usage (repeat as needed)")
     args = parser.parse_args()
+    if not args.prepare and (args.license_policy or args.commercial_license_kind):
+        parser.error("license setup options require --prepare")
     signal.signal(signal.SIGTERM, interrupted)
     try:
         (package if args.prepare else update)(args)
@@ -510,7 +580,7 @@ def main() -> int:
     except ImportError:
         print("error: the updater requires Python cryptography with Ed25519 support", file=sys.stderr)
         return 2
-    except (Refused, OSError, ValueError, sqlite3.Error) as error:
+    except (Refused, OSError, ValueError, sqlite3.Error, subprocess.SubprocessError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
     return 0
