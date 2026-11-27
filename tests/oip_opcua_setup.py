@@ -52,7 +52,7 @@ def prepare(binary, directory, port, web=None):
     if web:
         config["web_dir"] = str(web)
     principals = ("operator", "peer", "reader", "foreign")
-    role_permissions = ["hierarchy_read", "core_read", "sources_read", "devices_read", "opcua_read", "telemetry_read"]
+    role_permissions = ["hierarchy_read", "core_read", "sources_read", "devices_read", "opcua_read", "telemetry_read", "events_read"]
     plan = {
         "organizations": [{"id": org, "name": org} for org in ("primary", "other")],
         "infrastructures": [
@@ -159,6 +159,7 @@ async def exercise(binary, directory, web=None, screenshot=None):
     base = f"http://127.0.0.1:{port}"
     endpoint = f"opc.tcp://127.0.0.1:{source_port}/"
     command, socket = prepare(binary, directory, port, web)
+    bundle_sha = hashlib.sha256((web / "main.dart.js").read_bytes()).hexdigest() if web else None
     log = (directory / "core.log").open("w")
     process, managers, ua_server = None, [], None
     configuration = {
@@ -275,10 +276,10 @@ async def exercise(binary, directory, web=None, screenshot=None):
                 "--ipc-credential", directory / "operator.credential",
             ], text=True, timeout=10)
             fixture = {**configuration, "code": json.loads(receipt)["login_code"],
-                       "certificate": str(cert), "sha256": cert_hash}
+                       "certificate": str(cert), "sha256": cert_hash, "bundleSha256": bundle_sha}
             await asyncio.to_thread(subprocess.run, [
                 "node", ROOT / "apps/flutter/test/browser_opcua_setup.mjs", base, screenshot,
-            ], input=json.dumps(fixture), text=True, check=True, timeout=180)
+            ], input=json.dumps(fixture), text=True, check=True, timeout=420)
             saved = await asyncio.to_thread(manager.call, "opcua_setup", status)
         else:
             saved = await asyncio.to_thread(manager.call, "opcua_setup", confirm)
@@ -296,7 +297,7 @@ async def exercise(binary, directory, web=None, screenshot=None):
         write = await rest("/api/v2/opcua/write", {
             "source": SOURCE, "node_id": sample["node_id"], "value": {"float": 31.0},
         })
-        assert 400 <= write[0] < 500 and await point.read_value() == 22.5, write
+        assert write[1]["code"] == "OPCUA_READ_ONLY_PROFILE" and await point.read_value() == 22.5, write
 
         await ua_server.stop()
         ua_server, _, _ = await source(endpoint, replacement, replacement_key, store, shifted=True)
@@ -326,6 +327,7 @@ async def exercise(binary, directory, web=None, screenshot=None):
         log.close()
     return {"status": "PASS", "core_sha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
             "server": "independent asyncua loopback, Basic256Sha256/SignAndEncrypt",
+            "browser_bundle_sha256": bundle_sha,
             "checks": ["site_and_role_denial", "csrf", "invalid_expired_wrong_identity", "no_preapproval_collector",
                        "fingerprint_mismatch", "foreign_confirmation", "single_use_confirmation",
                        ("browser_approval_and_client_download" if web else "rest_preview_mcp_apply"),
