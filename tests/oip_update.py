@@ -469,7 +469,7 @@ def real_setup_command(work, instance, public, port, simulator_port):
             "--simulator-port", str(simulator_port), "--package-public-key", str(public)]
 
 
-def refuse_changed_license_setup(work, instance, setup, policy, release_key, report):
+def refuse_changed_license_setup(work, instance, setup, policy, release_key, wrong_key, report):
     manifest_path = instance / "current" / "manifest.json"
     signature_path = instance / "current" / "signature"
     manifest_bytes = manifest_path.read_bytes()
@@ -490,15 +490,11 @@ def refuse_changed_license_setup(work, instance, setup, policy, release_key, rep
 
     manifest_path.write_bytes(manifest_bytes)
     signature_path.write_bytes(signature)
-    other_signer = work / "other-signer"
-    other_signer.mkdir(mode=0o700)
-    _, unrelated_key = keys(other_signer)
-    result = subprocess.run([*setup[:-1], str(unrelated_key)], capture_output=True, text=True,
+    result = subprocess.run([*setup[:-1], str(wrong_key)], capture_output=True, text=True,
                             timeout=30, cwd=work)
     assert result.returncode == 1 and "signature" in result.stderr, result.stderr
     assert not any((instance / name).exists() for name in ("setup.json", "core.json", "core.sqlite"))
     report["steps"].append("first setup refuses tampered, ambiguous, and foreign-signed license defaults")
-    return unrelated_key
 
 
 def rehearse_signed_policy_install(work, bundle, public, wrong_key, port, simulator_port, report):
@@ -533,7 +529,7 @@ def rehearse_signed_policy_install(work, bundle, public, wrong_key, port, simula
         for name in (oip_update.OPCUA_SOURCE, oip_update.ROBOTO_NOTICE):
             with browser.open(f"{base}/{name.removeprefix('web/')}", timeout=10) as asset:
                 assert asset.read() == (bundle / name).read_bytes()
-    report["steps"].append("existing instance explicitly adopts reverified signed license defaults and preserves them on setup retry")
+    report["steps"].append("existing instance adopts reverified license defaults and serves the exact signed license materials")
 
 
 def real_candidate(work, report, args):
@@ -553,6 +549,15 @@ def real_candidate(work, report, args):
     release_key = load_pem_private_key(secret.read_bytes(), password=None)
     if policy:
         refuse_invalid_signed_policy(instance, bundle, public, release_key, report)
+        with socket.socket() as http, socket.socket() as opcua:
+            http.bind(("127.0.0.1", 0))
+            opcua.bind(("127.0.0.1", 0))
+            port, simulator_port = http.getsockname()[1], opcua.getsockname()[1]
+        other_signer = work / "other-signer"
+        other_signer.mkdir(mode=0o700)
+        _, wrong_key = keys(other_signer)
+        with tempfile.TemporaryDirectory(prefix="existing-", dir=work) as existing:
+            rehearse_signed_policy_install(Path(existing), bundle, public, wrong_key, port, simulator_port, report)
     result = run(instance, bundle, public)
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["the_status"] == "UPDATED"
@@ -571,14 +576,8 @@ def real_candidate(work, report, args):
         rejected_proof = proof_request(sign_fixture(
             release_key, "2" * 32, now, usage=period("perpetual", now),
         ))
-        with socket.socket() as http, socket.socket() as opcua:
-            http.bind(("127.0.0.1", 0))
-            opcua.bind(("127.0.0.1", 0))
-            port, simulator_port = http.getsockname()[1], opcua.getsockname()[1]
         setup = real_setup_command(work, instance, public, port, simulator_port)
-        wrong_key = refuse_changed_license_setup(work, instance, setup, policy, release_key, report)
-        with tempfile.TemporaryDirectory(prefix="existing-", dir=work) as existing:
-            rehearse_signed_policy_install(Path(existing), bundle, public, wrong_key, port, simulator_port, report)
+        refuse_changed_license_setup(work, instance, setup, policy, release_key, wrong_key, report)
         shutil.rmtree(bundle)
         policy.unlink()
         (work / "pruefschluessel.json").unlink()
