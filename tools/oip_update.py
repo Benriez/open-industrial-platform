@@ -1,383 +1,517 @@
 #!/usr/bin/env python3
-"""The secure update of the Core of an instance.
+"""Build, verify and install a signed Core and browser package from a directory.
 
-The Core of OIP runs on a host of the operator (the Raspberry Pi). A deployed
-service that cannot be updated safely is a service that stays on the version
-it was built with. This tool is the update path of the Core:
-
-  1. **delivery** — the update arrives as a **bundle**: a manifest, the
-     artefacts and the signature of the manifest. The bundle may travel over
-     any channel (a copy, a tunnel, a pull of the operator); the channel
-     carries the bytes, **the signature carries the trust**.
-  2. **authenticity and integrity** — the manifest is signed with **Ed25519**
-     by the operator's private key. The tool verifies the signature over the
-     **exact bytes** of the manifest with the **public key of the instance**
-     and then the digest of every artefact. A bundle that was changed on the
-     way is refused; a bundle of another key is refused.
-  3. **safe activation** — the artefact is written into a **version directory**
-     of the instance, the digest is verified **again after the write**, and
-     the switch to the new version is **atomic** (a symlink that is renamed).
-     The previous version stays on the host: the rollback is one rename.
-  4. **health check** — the new binary is started as a **disposable instance**
-     (its own port, its own store) and asked for `/health/ready`. A version
-     that does not become ready is **not** activated: the instance keeps the
-     version it had.
-  5. **rollback** — the switch back to the previous version is a rename, and
-     it is written into the **durable journal** of the instance together with
-     the digests, the revision and the reason.
-
-The journal is a plain, append-only file: it is the only durable audit of the
-update path of an instance (the execution log of the Core is not durable).
-
-The **private key never touches a host**: the tool verifies with a public key
-only. The key of the rehearsal is a fixture of the rehearsal and says so.
-
-Usage:
-  python3 tools/oip_update.py --instance DIR --bundle DIR --public-key FILE
-                               [--allow-downgrade] [--dry-run] [--evidence DIR]
+The same verifier handles a copied package and the files delivered by HTTPS.
+Installation changes the version pointer only after an isolated health check.
+The existing Core must be stopped. This path does not migrate its database.
 """
 from __future__ import annotations
 
 import argparse
+from contextlib import closing, contextmanager
+from datetime import datetime, timezone
+import fcntl
 import hashlib
+from io import BytesIO
 import json
 import os
 import pathlib
+import re
 import shutil
+import signal
+import socket
+import sqlite3
+import stat
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
 
-SCHEMA = "oip-update-v1"
+from oip_ops import is_personal
+
+SCHEMA = "oip-update-v2"
+OPERATOR_TOOLS = {"tools/oip_local.py", "tools/oip_ops.py", "tools/oip_recovery.py", "tools/oip_update.py"}
+REQUIRED_ASSETS = {"oip-server", "web/index.html", "web/main.dart.js", "LICENSE"} | OPERATOR_TOOLS
+EXECUTABLES = {"oip-server", "oip-simulated-server"}
+MAX_MANIFEST = 1024 * 1024
+MAX_ASSET_BYTES = 2 * 1024 * 1024 * 1024
 
 
 class Refused(Exception):
-    """The bundle is refused. The reason is written into the journal."""
+    """An update cannot safely proceed."""
 
 
-def fail(message: str) -> "NoReturn":  # type: ignore[name-defined]
-    print("error: " + message, file=sys.stderr)
-    raise Refused(message)
+class LocalProbe(urllib.request.HTTPRedirectHandler):
+    """Keep the isolated update check on its own loopback endpoint."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
 
 
-def the_digest(path: pathlib.Path) -> str:
+def digest_of(handle, limit: int = MAX_ASSET_BYTES) -> str:
     digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
+    for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+        limit -= len(chunk)
+        if limit < 0:
+            raise Refused("the package file exceeds its allowed size")
+        digest.update(chunk)
     return digest.hexdigest()
 
 
-def the_public_key(path: pathlib.Path):
-    """The public key of the instance.
+def version_tuple(version):
+    if not isinstance(version, str) or not re.fullmatch(
+        r"(0|[1-9][0-9]{0,8})\.(0|[1-9][0-9]{0,8})\.(0|[1-9][0-9]{0,8})", version
+    ):
+        raise Refused("the package requires a numeric major.minor.patch version")
+    return tuple(map(int, version.split(".")))
 
-    The key is a **public** key: it may live on the host. The private key
-    never does.
-    """
+
+def host_target() -> str:
+    system = {"Darwin": "apple-darwin", "Linux": "unknown-linux-gnu"}.get(os.uname().sysname)
+    architecture = {"arm64": "aarch64", "aarch64": "aarch64", "x86_64": "x86_64"}.get(os.uname().machine)
+    if not system or not architecture:
+        raise Refused("this host platform is unsupported")
+    return f"{architecture}-{system}"
+
+
+def release_name(name: str) -> bool:
+    if name in EXECUTABLES or name in OPERATOR_TOOLS or name == "LICENSE":
+        return True
+    return name.startswith("web/") and all(
+        re.fullmatch(r"[A-Za-z0-9_-][A-Za-z0-9_.-]{0,127}", component)
+        for component in name.split("/")
+    )
+
+
+@contextmanager
+def open_asset(root: pathlib.Path, name: str):
+    path = root / name
+    for parent in path.parents:
+        if parent == root:
+            break
+        if parent.is_symlink() or not parent.is_dir():
+            raise Refused(f"unsafe directory for package file {name}")
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, "rb") as handle:
+        if not stat.S_ISREG(os.fstat(handle.fileno()).st_mode):
+            raise Refused(f"package file is not a regular file: {name}")
+        yield handle
+
+
+def bounded_asset(bundle: pathlib.Path, name: str, limit: int) -> bytes:
+    with open_asset(bundle, name) as handle:
+        data = handle.read(limit + 1)
+    if len(data) > limit:
+        raise Refused(f"package file is too large: {name}")
+    return data
+
+
+def public_key(path: pathlib.Path):
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+    from cryptography.hazmat.primitives.serialization import load_pem_public_key
+
+    key = load_pem_public_key(bounded_asset(path.parent, path.name, 8192))
+    if not isinstance(key, Ed25519PublicKey):
+        raise Refused("the provisioned update key is not Ed25519")
+    return key
+
+
+def verify_manifest(bundle: pathlib.Path, key, expected_target: str):
+    from cryptography.exceptions import InvalidSignature
+
+    payload = bounded_asset(bundle, "manifest.json", MAX_MANIFEST)
+    signature = bounded_asset(bundle, "signature", 64)
     try:
-        from cryptography.hazmat.primitives.asymmetric.ed25519 import (
-            Ed25519PublicKey,
-        )
-        from cryptography.hazmat.primitives.serialization import load_pem_public_key
-    except ImportError as error:
-        fail(f"the module cryptography is missing on this host: {error}")
-        return None
-    try:
-        return load_pem_public_key(path.read_bytes())
-    except Exception as error:
-        fail(f"the public key {path} cannot be read: {error}")
-        return None
-
-
-def the_signature(bundle: pathlib.Path) -> bytes:
-    signature = bundle / "signature"
-    if not signature.is_file():
-        fail(f"the bundle carries no signature: {signature}")
-    return signature.read_bytes()
-
-
-def the_target_of_the_host() -> str:
-    """The target triple of the host that runs the updater."""
-    machine = os.uname().machine
-    system = os.uname().sysname.lower()
-    architecture = {"arm64": "aarch64", "aarch64": "aarch64",
-                    "x86_64": "x86_64", "amd64": "x86_64"}.get(machine, machine)
-    operating_system = "apple-darwin" if system == "darwin" else "unknown-linux-gnu"
-    return f"{architecture}-{operating_system}"
-
-
-def verify(bundle: pathlib.Path, public_key, instance: pathlib.Path,
-           expected_target: str | None = None):
-    """The authenticity and the integrity of the bundle."""
-    manifest_path = bundle / "manifest.json"
-    if not manifest_path.is_file():
-        fail(f"the bundle carries no manifest: {manifest_path}")
-    payload = manifest_path.read_bytes()
-    try:
-        from cryptography.exceptions import InvalidSignature
-        from cryptography.hazmat.primitives.asymmetric.ed25519 import (
-            Ed25519PublicKey,
-        )
-    except ImportError:
-        fail("the module cryptography is missing on this host")
-        return None
-    try:
-        public_key.verify(the_signature(bundle), payload)
-    except InvalidSignature:
-        fail("the signature of the manifest is not valid for the public key of "
-             "the instance: the bundle is refused")
-    except Exception as error:
-        fail(f"the signature cannot be verified: {error}")
+        key.verify(signature, payload)
+    except InvalidSignature as error:
+        raise Refused("the update signature does not match the provisioned key") from error
     try:
         manifest = json.loads(payload)
     except ValueError as error:
-        fail(f"the manifest is not valid JSON: {error}")
-    if manifest.get("schema") != SCHEMA:
-        fail(f"the manifest names the schema {manifest.get('schema')!r}, "
-             f"but this tool knows {SCHEMA!r}")
-    artefacts = manifest.get("the_artefacts") or {}
-    if not artefacts:
-        fail("the manifest names no artefact")
-    for name, digest in artefacts.items():
-        artefact = bundle / name
-        if not artefact.is_file():
-            fail(f"the bundle does not carry the artefact {name}")
-        actual = the_digest(artefact)
-        if actual != digest:
-            fail(f"the digest of {name} is {actual}, but the manifest names "
-                 f"{digest}: the bundle is refused")
-    # The **target** of the instance is named explicitly: the bundle must be
-    # built for it. The host alone is not enough — the rehearsal of the
-    # procedure runs on another machine than the instance.
-    target = manifest.get("the_target")
-    if target and expected_target and target != expected_target:
-        fail(f"the bundle is built for {target}, but the instance is {expected_target}")
-    current = the_current_revision(instance)
+        raise Refused("the signed update manifest is not valid JSON") from error
+    if not isinstance(manifest, dict) or manifest.get("schema") != SCHEMA:
+        raise Refused("unsupported signed update format")
     revision = manifest.get("the_revision")
-    if current and revision == current and not manifest.get("the_allow_reinstall"):
-        fail(f"the revision {revision} is already the version of the instance")
+    if not isinstance(revision, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", revision):
+        raise Refused("invalid update revision")
+    version_tuple(manifest.get("the_version"))
+    if manifest.get("the_target") != expected_target:
+        raise Refused("the update package is for a different operating system or architecture")
+    schema = manifest.get("the_database_schema")
+    if type(schema) is not int or not 1 <= schema <= 65535:
+        raise Refused("the signed update does not declare a supported database schema")
+    assets = manifest.get("the_artefacts")
+    if not isinstance(assets, dict) or not REQUIRED_ASSETS <= assets.keys() or len(assets) > 4096:
+        raise Refused("the update package does not declare all required Core and browser files")
+    for name, digest in assets.items():
+        if not release_name(name) or not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
+            raise Refused("the update manifest contains an invalid file name or digest")
+    return manifest, payload, signature
+
+
+def verify_assets(bundle: pathlib.Path, assets: dict) -> int:
+    total = 0
+    for name, expected in assets.items():
+        with open_asset(bundle, name) as handle:
+            size = os.fstat(handle.fileno()).st_size
+            total += size
+            if total > MAX_ASSET_BYTES:
+                raise Refused("the update package exceeds the supported size")
+            if digest_of(handle, size) != expected:
+                raise Refused(f"the package digest does not match for {name}")
+    return total
+
+
+def private_directory(path: pathlib.Path):
+    path.mkdir(mode=0o700, exist_ok=True)
+    info = path.lstat()
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid() or info.st_mode & 0o077:
+        raise Refused("the instance directory must be private and owned by the local operator")
+
+
+@contextmanager
+def ownership(path: pathlib.Path, busy_message: str):
+    fd = os.open(path, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600)
+    with os.fdopen(fd, "rb") as handle:
+        info = os.fstat(handle.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid() or info.st_nlink != 1 or info.st_mode & 0o077:
+            raise Refused("the update or database ownership file is unsafe")
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise Refused(busy_message) from error
+        yield
+
+
+def installed(instance: pathlib.Path, key, target: str):
+    current = instance / "current"
+    if not current.is_symlink():
+        if current.exists():
+            raise Refused("the current release pointer is not a symlink")
+        return None
+    directory = current.resolve(strict=True)
+    if directory.parent != instance / "versions":
+        raise Refused("the current release points outside the instance version directory")
+    if not (directory / "manifest.json").is_file():
+        raise Refused("the installed release has no signed version metadata. Use a separately verified migration")
+    manifest, _, _ = verify_manifest(directory, key, target)
+    if manifest["the_revision"] != directory.name:
+        raise Refused("the saved release revision does not match its version directory")
     return manifest
 
 
-def the_versions(instance: pathlib.Path) -> pathlib.Path:
-    return instance / "versions"
+def database_path(instance: pathlib.Path, config: pathlib.Path, current, manifest) -> pathlib.Path:
+    if not config.exists() and not config.is_symlink():
+        database = instance / "core.sqlite"
+        if current or database.exists() or database.is_symlink() or (instance / "setup-complete.json").exists():
+            raise Refused("the setup configuration of the existing instance is missing")
+        return database
+    if instance not in config.resolve(strict=True).parents:
+        raise Refused("the instance configuration must be inside the selected OIP directory")
+    settings = json.loads(bounded_asset(config.parent, config.name, 1024 * 1024))
+    if not isinstance(settings, dict) or not isinstance(settings.get("database"), str):
+        raise Refused("the instance configuration does not name a database")
+    database = pathlib.Path(settings["database"])
+    if not database.is_absolute():
+        raise Refused("the instance configuration must name an absolute database path")
+    database = database.resolve()
+    if instance not in database.parents or is_personal(database):
+        raise Refused("the database must belong to the selected isolated OIP instance")
+    if settings.get("web_dir") not in (None, str(instance / "current" / "web")):
+        raise Refused("the instance browser files must use the current release directory")
+    sources = settings.get("sources", [])
+    if not isinstance(sources, list):
+        raise Refused("the instance configuration does not contain a source list")
+    if any(
+        isinstance(source, dict) and source.get("id") == "local-simulation"
+        for source in sources
+    ) and "oip-simulated-server" not in manifest["the_artefacts"]:
+        raise Refused("the package is missing the simulator required by this installation")
+    return database
 
 
-def the_current(instance: pathlib.Path) -> pathlib.Path:
-    return instance / "current"
+def database_schema(database: pathlib.Path) -> int:
+    with closing(sqlite3.connect(database.as_uri() + "?mode=ro", uri=True, timeout=2)) as conn:
+        return conn.execute("PRAGMA user_version").fetchone()[0]
 
 
-def the_current_revision(instance: pathlib.Path):
-    """The revision that the instance runs."""
-    link = the_current(instance)
-    if not link.is_symlink():
-        return None
-    return os.path.basename(os.readlink(link))
+def check_compatibility(instance: pathlib.Path, database: pathlib.Path, manifest, current):
+    if current and version_tuple(manifest["the_version"]) <= version_tuple(current["the_version"]):
+        raise Refused("the package version is not strictly newer than the installed version")
+    if (instance / "versions" / manifest["the_revision"]).exists():
+        raise Refused("the package revision was already staged or installed")
+    if database.exists():
+        if database_schema(database) != manifest["the_database_schema"]:
+            raise Refused("the package requires a separate, tested database migration")
+    elif current:
+        raise Refused("the configured database of the installed instance is missing")
 
 
-def the_previous_revision(instance: pathlib.Path):
-    link = instance / "previous"
-    if not link.is_symlink():
-        return None
-    return os.path.basename(os.readlink(link))
+def flush_directory(path: pathlib.Path):
+    fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
 
 
-def the_journal(instance: pathlib.Path):
-    return instance / "state" / "updates.jsonl"
+def write_release_file(destination: pathlib.Path, source, executable: bool = False, limit=MAX_ASSET_BYTES):
+    destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    written = 0
+    with destination.open("xb") as handle:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            written += len(chunk)
+            if written > limit:
+                raise Refused("the package exceeds its allowed size")
+            handle.write(chunk)
+        os.fchmod(handle.fileno(), 0o700 if executable else 0o600)
+        handle.flush()
+        os.fsync(handle.fileno())
+    return written
 
 
-def write_the_journal(instance: pathlib.Path, entry: dict):
-    """The durable journal of the update path: append-only and flushed."""
-    path = the_journal(instance)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a") as handle:
-        handle.write(json.dumps(entry, sort_keys=True) + "\n")
+def check_in_isolation(directory: pathlib.Path, manifest, timeout=30):
+    """Probe the embedded simulator and signed browser without saved sources or credentials."""
+    with tempfile.TemporaryDirectory(prefix="oip-update-check-", dir="/tmp") as temp:
+        work = pathlib.Path(temp).resolve()
+        with socket.socket() as probe, socket.socket() as simulator:
+            probe.bind(("127.0.0.1", 0))
+            simulator.bind(("127.0.0.1", 0))
+            port = probe.getsockname()[1]
+            simulator_port = simulator.getsockname()[1]
+        conf = work / "core.json"
+        database = work / "check.sqlite"
+        conf.write_text(json.dumps({
+            "database": str(database), "http_port": port, "sources": [],
+            "web_dir": str(directory / "web"), "legacy_single_infrastructure": True,
+        }))
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), LocalProbe())
+        ready = False
+        with (work / "check.log").open("wb") as log:
+            process = None
+            try:
+                process = subprocess.Popen(
+                    [str(directory / "oip-server"), "--config", str(conf),
+                     "--demo", "--opcua-port", str(simulator_port)],
+                    cwd=work, stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
+                    env={"PATH": "/usr/bin:/bin", "HOME": str(work)}, start_new_session=True,
+                )
+                deadline = time.monotonic() + timeout
+                url = f"http://127.0.0.1:{port}"
+                assets = manifest["the_artefacts"]
+                while time.monotonic() < deadline and process.poll() is None:
+                    try:
+                        with opener.open(url + "/health/ready", timeout=1) as reply:
+                            health = json.loads(reply.read(64 * 1024))
+                        if isinstance(health, dict) and health.get("ready") is True:
+                            for name in ("index.html", "main.dart.js"):
+                                size = (directory / "web" / name).stat().st_size
+                                with opener.open(url + "/" + name, timeout=1) as reply:
+                                    if digest_of(reply, size) != assets["web/" + name]:
+                                        raise Refused("the isolated Core did not serve the signed browser files")
+                            ready = process.poll() is None
+                            break
+                    except (urllib.error.URLError, OSError, ValueError):
+                        pass
+                    time.sleep(0.2)
+            finally:
+                if process is not None and process.poll() is None:
+                    process.terminate()
+                    try:
+                        process.wait(timeout=10)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
+                        process.wait()
+        if not ready or not database.is_file() or database_schema(database) != manifest["the_database_schema"]:
+            raise Refused("the candidate failed the isolated Core, browser or database schema check")
+
+
+def append_journal(instance: pathlib.Path, entry: dict):
+    path = instance / "state"
+    private_directory(path)
+    fd = os.open(path / "updates.jsonl",
+                 os.O_APPEND | os.O_CREAT | os.O_WRONLY | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600)
+    with os.fdopen(fd, "a") as handle:
+        info = os.fstat(handle.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid() or info.st_nlink != 1 or info.st_mode & 0o077:
+            raise Refused("the update journal must be a private regular file")
+        recorded = {"the_recorded_utc": datetime.now(timezone.utc).isoformat(), **entry}
+        handle.write(json.dumps(recorded, sort_keys=True) + "\n")
         handle.flush()
         os.fsync(handle.fileno())
 
 
-def activate(instance: pathlib.Path, bundle: pathlib.Path, manifest: dict):
-    """The activation: a version directory, a digest after the write, an
-    atomic switch."""
+def install(instance, bundle, manifest, payload, signature, current, total):
+    versions = instance / "versions"
+    private_directory(versions)
+    if shutil.disk_usage(versions).free < total + 16 * 1024 * 1024:
+        raise Refused("insufficient space to stage the update while retaining the installed version")
     revision = manifest["the_revision"]
-    version_directory = the_versions(instance) / revision
-    version_directory.mkdir(parents=True, exist_ok=True)
-    for name, digest in manifest["the_artefacts"].items():
-        source = bundle / name
-        target = version_directory / name
-        shutil.copyfile(source, target)
-        os.chmod(target, 0o755)
-        actual = the_digest(target)
-        if actual != digest:
-            fail(f"the digest of the written artefact {name} is {actual}, but "
-                 f"the manifest names {digest}: the activation is refused")
-    previous = the_current_revision(instance)
-    if previous:
-        link = instance / "previous.tmp"
-        if link.is_symlink() or link.exists():
-            link.unlink()
-        link.symlink_to(the_versions(instance) / previous)
-        os.replace(link, instance / "previous")
-    link = instance / "current.tmp"
-    if link.is_symlink() or link.exists():
-        link.unlink()
-    link.symlink_to(version_directory)
-    os.replace(link, the_current(instance))
-    return revision, previous
+    destination = versions / revision
+    with tempfile.TemporaryDirectory(prefix=".staged-", dir=versions) as temp:
+        work = pathlib.Path(temp)
+        staged = work / revision
+        staged.mkdir(mode=0o700)
+        remaining = total
+        for name in manifest["the_artefacts"]:
+            with open_asset(bundle, name) as source:
+                remaining -= write_release_file(staged / name, source, name in EXECUTABLES, remaining)
+        write_release_file(staged / "manifest.json", BytesIO(payload))
+        write_release_file(staged / "signature", BytesIO(signature))
+        verify_assets(staged, manifest["the_artefacts"])
+        check_in_isolation(staged, manifest)
+        for directory, _, _ in os.walk(staged, topdown=False):
+            flush_directory(directory)
+        entry = {"the_revision": revision, "the_version": manifest["the_version"]}
+        try:
+            os.rename(staged, destination)
+            flush_directory(versions)
+            append_journal(instance, {**entry, "the_result": "PREPARED"})
+            if current:
+                (work / "previous").symlink_to(pathlib.Path("versions") / current["the_revision"])
+                os.replace(work / "previous", instance / "previous")
+            (work / "current").symlink_to(pathlib.Path("versions") / revision)
+            os.replace(work / "current", instance / "current")
+        finally:
+            # A failed switch must never delete the installed release.
+            if destination.is_dir() and (instance / "current").resolve() != destination:
+                shutil.rmtree(destination)
+        try:
+            flush_directory(instance)
+        except OSError:
+            return "the release is selected but the version pointer could not be flushed to disk"
 
 
-def the_health_check(instance: pathlib.Path, revision: str, timeout=60):
-    """The health check of the new version.
+def package(args):
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
-    The new binary is started as a **disposable instance**: its own port, its
-    own store, its own state directory. Nothing of the running instance is
-    touched.
-    """
-    import socket
-    import tempfile
-
-    with socket.socket() as probe:
-        probe.bind(("127.0.0.1", 0))
-        port = probe.getsockname()[1]
-    work = pathlib.Path(tempfile.mkdtemp(prefix="oip-update-check-", dir="/private/tmp"))
-    try:
-        configuration = work / "core.json"
-        configuration.write_text(json.dumps({
-            "database": str(work / "check.sqlite"),
-            "http_port": port,
-            "sources": [],
-            "legacy_single_infrastructure": True,
-        }))
-        # The daemon of the Core runs with its protected local IPC: the
-        # health check owns one, in its own directory.
-        credential = work / "check.credential"
-        credential.write_bytes(os.urandom(32))
-        os.chmod(credential, 0o600)
-        ipc = work / "ipc.json"
-        ipc.write_text(json.dumps({
-            "socket": str(work / "check.sock"),
-            "max_sessions": 4,
-            "clients": [{
-                "uid": os.geteuid(),
-                "credential_file": str(credential),
-                "policy": {"principal": "platform-reader"},
-            }],
-        }))
-        os.chmod(ipc, 0o600)
-        binary = the_versions(instance) / revision / "oip-server"
-        log = (work / "check.log").open("ab")
-        process = subprocess.Popen([str(binary), "--daemon", "--config",
-                                     str(configuration), "--ipc-config", str(ipc)],
-                                    stdout=log, stderr=subprocess.STDOUT,
-                                    start_new_session=True)
-        deadline = time.monotonic() + timeout
-        ready = False
-        while time.monotonic() < deadline:
-            if process.poll() is not None:
-                break
-            try:
-                with urllib.request.urlopen(
-                        f"http://127.0.0.1:{port}/health/ready", timeout=2) as answer:
-                    if answer.status == 200:
-                        ready = True
-                        break
-            except (urllib.error.URLError, OSError):
-                time.sleep(0.2)
-        return ready, process
-    finally:
-        pass
+    if not all((args.binary, args.web, args.signing_key, args.release_version, args.revision, args.database_schema)):
+        raise Refused("--prepare needs --binary, --web, --signing-key, --release-version, --revision and --database-schema")
+    signing_key = args.signing_key.absolute()
+    secret = load_pem_private_key(bounded_asset(signing_key.parent, signing_key.name, 8192), password=None)
+    if not isinstance(secret, Ed25519PrivateKey):
+        raise Refused("the release signer must be an Ed25519 key")
+    version_tuple(args.release_version)
+    distribution = pathlib.Path(__file__).resolve().parents[1]
+    files = {name: distribution / name for name in {"LICENSE"} | OPERATOR_TOOLS}
+    files["oip-server"] = args.binary
+    if args.simulator:
+        files["oip-simulated-server"] = args.simulator
+    for source in sorted(args.web.rglob("*")):
+        relative = source.relative_to(args.web)
+        if any(part.startswith(".") for part in relative.parts):
+            continue
+        name = "web/" + relative.as_posix()
+        if source.is_symlink() or not release_name(name):
+            raise Refused("the browser build contains an unsupported path")
+        if source.is_file():
+            files[name] = source
+    if not REQUIRED_ASSETS <= files.keys():
+        raise Refused("the release must include built browser files, the Core and license notice")
+    bundle = args.bundle.resolve()
+    if bundle.exists():
+        raise Refused("the output directory already exists")
+    with tempfile.TemporaryDirectory(prefix=".oip-package-", dir=bundle.parent) as temp:
+        staged = pathlib.Path(temp) / "package"
+        staged.mkdir(mode=0o700)
+        assets = {}
+        remaining = MAX_ASSET_BYTES
+        for name, path in files.items():
+            with open_asset(path.parent, path.name) as source:
+                remaining -= write_release_file(staged / name, source, name in EXECUTABLES, remaining)
+            with (staged / name).open("rb") as source:
+                assets[name] = digest_of(source)
+        target = args.target or host_target()
+        manifest = {
+            "schema": SCHEMA, "the_revision": args.revision, "the_version": args.release_version,
+            "the_target": target, "the_database_schema": args.database_schema, "the_artefacts": assets,
+        }
+        payload = (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode()
+        write_release_file(staged / "manifest.json", BytesIO(payload))
+        write_release_file(staged / "signature", BytesIO(secret.sign(payload)))
+        verify_manifest(staged, secret.public_key(), target)
+        verify_assets(staged, assets)
+        os.rename(staged, bundle)
+    print(json.dumps({"the_status": "PACKAGED", "the_revision": args.revision}))
 
 
-def rollback(instance: pathlib.Path, previous: str | None):
-    """The rollback: the switch back to the version that was there."""
-    if not previous:
-        return False
-    link = instance / "current.tmp"
-    if link.is_symlink() or link.exists():
-        link.unlink()
-    link.symlink_to(the_versions(instance) / previous)
-    os.replace(link, the_current(instance))
-    return True
+def update(args):
+    if not args.instance or not args.public_key:
+        raise Refused("verification and installation require --instance and --public-key")
+    instance = args.instance.resolve(strict=True)
+    if is_personal(instance):
+        raise Refused("the selected instance is a personal or system installation")
+    config = (args.config or instance / "core.json").absolute()
+    if instance not in config.resolve().parents:
+        raise Refused("the instance configuration must be inside the selected OIP directory")
+    bundle = args.bundle.resolve(strict=True)
+    target = host_target()
+    if args.target and args.target != target:
+        raise Refused("the requested update target does not match this host")
+    key = public_key(args.public_key.absolute())
+    manifest, payload, signature = verify_manifest(bundle, key, target)
+    total = verify_assets(bundle, manifest["the_artefacts"])
+    if args.dry_run:
+        current = installed(instance, key, target)
+        database = database_path(instance, config, current, manifest)
+        check_compatibility(instance, database, manifest, current)
+        print(json.dumps({"the_status": "VERIFIED", "the_revision": manifest["the_revision"]}))
+        return
+    private_directory(instance)
+    with ownership(instance / ".local-operation.lock", "OIP or another local operation is already running"):
+        current = installed(instance, key, target)
+        database = database_path(instance, config, current, manifest)
+        with ownership(pathlib.Path(str(database) + ".oip-lock"), "the Core is running or the database is in use"):
+            check_compatibility(instance, database, manifest, current)
+            warning = install(instance, bundle, manifest, payload, signature, current, total)
+        entry = {"the_status": "UPDATED", "the_revision": manifest["the_revision"],
+                 "the_version": manifest["the_version"], "the_target": target}
+        if warning:
+            entry["the_storage_warning"] = warning
+        try:
+            append_journal(instance, entry)
+        except (OSError, Refused):
+            entry["the_journal_warning"] = "the release is switched but the final journal entry could not be saved"
+        print(json.dumps(entry))
+
+
+def interrupted(_number, _frame):
+    raise KeyboardInterrupt
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="The secure update of the Core of an instance.")
-    parser.add_argument("--instance", required=True,
-                        help="the directory of the instance")
-    parser.add_argument("--bundle", required=True, help="the update bundle")
-    parser.add_argument("--public-key", required=True,
-                        help="the public key of the instance")
-    parser.add_argument("--allow-downgrade", action="store_true")
-    parser.add_argument("--target", default=None,
-                        help="the target triple of the instance (the host by default)")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="verify the bundle without touching the instance")
-    parser.add_argument("--evidence", default=None)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--instance", type=pathlib.Path)
+    parser.add_argument("--config", type=pathlib.Path)
+    parser.add_argument("--bundle", type=pathlib.Path, required=True)
+    parser.add_argument("--public-key", type=pathlib.Path)
+    parser.add_argument("--target")
+    action = parser.add_mutually_exclusive_group()
+    action.add_argument("--dry-run", action="store_true", help="verify without staging or installing")
+    action.add_argument("--prepare", action="store_true", help="create a signed bundle on the release machine")
+    parser.add_argument("--binary", type=pathlib.Path)
+    parser.add_argument("--web", type=pathlib.Path)
+    parser.add_argument("--simulator", type=pathlib.Path)
+    parser.add_argument("--signing-key", type=pathlib.Path)
+    parser.add_argument("--release-version")
+    parser.add_argument("--revision")
+    parser.add_argument("--database-schema", type=int)
     args = parser.parse_args()
-    instance = pathlib.Path(args.instance).resolve()
-    bundle = pathlib.Path(args.bundle).resolve()
-    if not instance.is_dir():
-        fail(f"the instance {instance} does not exist")
-    public_key = the_public_key(pathlib.Path(args.public_key))
-    expected_target = args.target or the_target_of_the_host()
+    signal.signal(signal.SIGTERM, interrupted)
     try:
-        manifest = verify(bundle, public_key, instance, expected_target)
-    except Refused as refusal:
-        # A refused bundle is a security relevant event: it is written into
-        # the durable journal of the instance, with the reason.
-        write_the_journal(instance, {
-            "the_moment_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "the_target_of_the_instance": expected_target,
-            "the_bundle": str(bundle),
-            "the_result": "REFUSED: the verification failed",
-            "the_detail": str(refusal),
-        })
-        print("error: " + str(refusal), file=sys.stderr)
+        (package if args.prepare else update)(args)
+    except KeyboardInterrupt:
+        print("error: update interrupted. Check the selected release before restart.", file=sys.stderr)
+        return 130
+    except ImportError:
+        print("error: the updater requires Python cryptography with Ed25519 support", file=sys.stderr)
         return 2
-    if manifest is None:
-        return 1
-    entry = {
-        "the_moment_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "the_target_of_the_instance": expected_target,
-        "the_revision": manifest.get("the_revision"),
-        "the_version": manifest.get("the_version"),
-        "the_target": manifest.get("the_target"),
-        "the_artefacts": manifest.get("the_artefacts"),
-        "the_verification": "the signature and every digest are verified",
-    }
-    if args.dry_run:
-        entry["the_activation"] = "dry run: the instance was not touched"
-        write_the_journal(instance, entry)
-        print(json.dumps({"the_status": "VERIFIED", "the_revision": entry["the_revision"],
-                          "the_dry_run": True}, indent=2))
-        return 0
-    revision, previous = activate(instance, bundle, manifest)
-    entry["the_activation"] = f"the version {revision} is active"
-    entry["the_previous_revision"] = previous
-    ready, process = the_health_check(instance, revision)
-    if process.poll() is None:
-        process.terminate()
-        try:
-            process.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            process.kill()
-    entry["the_health_check"] = "the new version became ready" if ready else \
-        "the new version did not become ready"
-    if not ready:
-        rolled_back = rollback(instance, previous)
-        entry["the_rollback"] = ("the instance keeps the previous version"
-                                 if rolled_back else
-                                 "there was no previous version to roll back to")
-        entry["the_result"] = "REFUSED: the new version did not pass the health check"
-        write_the_journal(instance, entry)
-        print(json.dumps({"the_status": "REFUSED", **entry}, indent=2))
-        return 1
-    entry["the_result"] = "the new version is active and ready"
-    write_the_journal(instance, entry)
-    print(json.dumps({"the_status": "UPDATED", **entry}, indent=2))
+    except (Refused, OSError, ValueError, sqlite3.Error) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 2
     return 0
 
 
