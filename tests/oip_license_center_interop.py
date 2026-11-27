@@ -37,7 +37,7 @@ def exercise(args, directory):
     ], check=True, timeout=45, stdout=subprocess.DEVNULL)
     install = [
         *command, "install-license-policy", "--license-policy", policy,
-        "--commercial-license-kind", "commercial",
+        "--commercial-license-kind", args.commercial_kind,
     ]
     approval = json.loads(subprocess.check_output(install, timeout=25))["confirmation"]
     subprocess.run([*install, "--confirm", approval], check=True, timeout=25, stdout=subprocess.DEVNULL)
@@ -61,7 +61,8 @@ def exercise(args, directory):
                                {"confirmation": review["confirmation"]}, headers, browser)
         assert code == 200
         assert license_status["proof_state"] == "verified"
-        assert license_status["commercial"] == "active" and license_status["support"] == "not_granted"
+        assert license_status["commercial"] == "active"
+        assert license_status["support"] == args.expected_support, license_status["support"]
         assert client.call("license_status_read") == license_status
         client.close()
         client = None
@@ -91,6 +92,8 @@ def exercise(args, directory):
         "oip_core_sha256": hashlib.sha256(args.core.read_bytes()).hexdigest(),
         "oip_proof_sha256": hashlib.sha256(oip_proof).hexdigest(),
         "odp_proof_sha256": hashlib.sha256(odp_proof).hexdigest(),
+        "commercial_kind": args.commercial_kind,
+        "expected_support": args.expected_support,
         "tests": ["odp_proof_denied", "mcp_preview_rest_confirmation", "byte_exact_storage",
                   "license_status_persisted", "simulator_data_after_restart"],
     }
@@ -99,6 +102,11 @@ def exercise(args, directory):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--issuer-artifacts", type=Path, required=True)
+    parser.add_argument("--commercial-kind", default="commercial",
+                        help="explicitly approved commercial kind for the synthetic policy")
+    parser.add_argument("--expected-support", default="not_granted",
+                        choices=("not_granted", "not_yet_active", "active", "ended"),
+                        help="expected support status of the signed synthetic proof")
     parser.add_argument("--core", type=Path, default=RELEASE / "oip-server")
     parser.add_argument("--simulator", type=Path, default=RELEASE / "oip-simulated-server")
     parser.add_argument("--web", type=Path, default=WEB)

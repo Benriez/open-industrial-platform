@@ -446,7 +446,9 @@ fehlendem, beschädigtem oder abgelaufenem Nachweis.
 Für die direkte Prüfung mit dem Rust License Center verwende die Dateien
 aus dessen isoliertem Abnahmetest mit `--interop`. Übergib nur diesen
 synthetischen Export an `tests/oip_license_center_interop.py` mit
-`--issuer-artifacts PFAD --evidence PFAD`. OIP richtet dabei eine frische
+`--issuer-artifacts PFAD --evidence PFAD`. Verwende für den aktuellen
+Rust-Abnahmetest zusätzlich `--commercial-kind standard --expected-support ended`.
+OIP richtet dabei eine frische
 Testinstanz ein, weist den ODP-Nachweis ab und übernimmt den OIP-Nachweis
 nach Vorschau über MCP und Bestätigung über REST. Die Prüfung vergleicht die
 gespeicherten Bytes und prüft nach einem Neustart neue Simulatorwerte.
