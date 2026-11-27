@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build, verify and install a signed Core and browser package from a directory.
+"""Build, verify and install a signed Core and browser package from a directory or ZIP.
 
 The same verifier handles a copied package and the files delivered by HTTPS.
 Installation changes the version pointer only after an isolated health check.
@@ -29,7 +29,8 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
-from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
+import zlib
+from zipfile import ZIP_DEFLATED, ZIP_STORED, BadZipFile, LargeZipFile, ZipFile
 
 from oip_ops import is_personal
 
@@ -45,6 +46,10 @@ MAX_MANIFEST = 1024 * 1024
 MAX_LICENSE_POLICY = 16 * 1024
 LICENSE_SETUP = "the_license_setup"
 MAX_ASSET_BYTES = 2 * 1024 * 1024 * 1024
+MAX_ASSETS = 4096
+PACKAGE_METADATA = {"manifest.json", "signature"}
+MAX_ZIP_DIRECTORY = 4 * 1024 * 1024
+ZIP_END_SIZE = 22
 
 
 class Refused(Exception):
@@ -108,8 +113,74 @@ def open_asset(root: pathlib.Path, name: str):
         yield handle
 
 
-def bounded_asset(bundle: pathlib.Path, name: str, limit: int) -> bytes:
-    with open_asset(bundle, name) as handle:
+class PackageZipInput:
+    """Bound the central-directory read that ZipFile performs at open."""
+
+    def __init__(self, handle):
+        self.handle = handle
+
+    def seek(self, offset, whence=os.SEEK_SET):
+        return self.handle.seek(offset, whence)
+
+    def tell(self):
+        return self.handle.tell()
+
+    def seekable(self):
+        return self.handle.seekable()
+
+    def read(self, size=-1):
+        if size < 0:
+            size = max(0, os.fstat(self.handle.fileno()).st_size - self.tell())
+        if size > MAX_ZIP_DIRECTORY:
+            raise Refused("the ZIP package directory exceeds the supported size")
+        return self.handle.read(size)
+
+
+@contextmanager
+def open_package(path: pathlib.Path):
+    if path.is_dir():
+        yield path
+        return
+    with open_asset(path.parent, path.name) as handle:
+        size = os.fstat(handle.fileno()).st_size
+        if size > MAX_ASSET_BYTES + 2 * MAX_ZIP_DIRECTORY:
+            raise Refused("the ZIP package exceeds the supported size")
+        if size < ZIP_END_SIZE:
+            raise Refused("the ZIP package is damaged")
+        # The publisher writes no comment. Require the end marker at EOF so an
+        # incomplete package cannot be mistaken for an embedded ZIP.
+        handle.seek(-ZIP_END_SIZE, os.SEEK_END)
+        end = handle.read(ZIP_END_SIZE)
+        if not end.startswith(b"PK\x05\x06") or end[-2:] != b"\x00\x00":
+            raise Refused("the ZIP package is damaged or has an unsupported comment")
+        with ZipFile(PackageZipInput(handle)) as archive:
+            entries = archive.infolist()
+            if len(entries) > MAX_ASSETS + len(PACKAGE_METADATA):
+                raise Refused("the ZIP package contains too many entries")
+            seen = set()
+            for entry in entries:
+                name = entry.filename
+                mode = stat.S_IFMT(entry.external_attr >> 16)
+                if (name != entry.orig_filename or name in seen
+                        or (name not in PACKAGE_METADATA and not release_name(name))
+                        or mode not in {0, stat.S_IFREG} or entry.external_attr & 0x10
+                        or entry.compress_type not in {ZIP_STORED, ZIP_DEFLATED}
+                        or entry.flag_bits & 0x1):
+                    raise Refused("the ZIP package contains an unsafe or duplicate entry")
+                seen.add(name)
+            if not PACKAGE_METADATA <= seen:
+                raise Refused("the ZIP package is missing its manifest or signature")
+            yield archive
+
+
+def open_package_asset(bundle, name: str):
+    if isinstance(bundle, ZipFile):
+        return bundle.open(name, "r")
+    return open_asset(bundle, name)
+
+
+def bounded_asset(bundle, name: str, limit: int) -> bytes:
+    with open_package_asset(bundle, name) as handle:
         data = handle.read(limit + 1)
     if len(data) > limit:
         raise Refused(f"package file is too large: {name}")
@@ -173,7 +244,7 @@ def verify_license_setup(setup, package_key):
         raise Refused("the package signing key cannot issue OIP licenses")
 
 
-def verify_manifest(bundle: pathlib.Path, key, expected_target: str):
+def verify_manifest(bundle, key, expected_target: str):
     from cryptography.exceptions import InvalidSignature
 
     payload = bounded_asset(bundle, "manifest.json", MAX_MANIFEST)
@@ -198,7 +269,7 @@ def verify_manifest(bundle: pathlib.Path, key, expected_target: str):
     if type(schema) is not int or not 1 <= schema <= 65535:
         raise Refused("the signed update does not declare a supported database schema")
     assets = manifest.get("the_artefacts")
-    if not isinstance(assets, dict) or not REQUIRED_ASSETS <= assets.keys() or len(assets) > 4096:
+    if not isinstance(assets, dict) or not REQUIRED_ASSETS <= assets.keys() or len(assets) > MAX_ASSETS:
         raise Refused("the update package does not declare all required Core, browser and license files")
     if LICENSE_MATERIALS in manifest:
         version = manifest[LICENSE_MATERIALS]
@@ -209,14 +280,17 @@ def verify_manifest(bundle: pathlib.Path, key, expected_target: str):
             raise Refused("the update manifest contains an invalid file name or digest")
     if LICENSE_SETUP in manifest:
         verify_license_setup(manifest[LICENSE_SETUP], key)
+    if isinstance(bundle, ZipFile) and set(bundle.namelist()) != set(assets) | PACKAGE_METADATA:
+        raise Refused("the ZIP package contents do not match the signed manifest")
     return manifest, payload, signature
 
 
-def verify_assets(bundle: pathlib.Path, assets: dict) -> int:
+def verify_assets(bundle, assets: dict) -> int:
     total = 0
     for name, expected in assets.items():
-        with open_asset(bundle, name) as handle:
-            size = os.fstat(handle.fileno()).st_size
+        with open_package_asset(bundle, name) as handle:
+            size = (bundle.getinfo(name).file_size if isinstance(bundle, ZipFile)
+                    else os.fstat(handle.fileno()).st_size)
             total += size
             if total > MAX_ASSET_BYTES:
                 raise Refused("the update package exceeds the supported size")
@@ -417,7 +491,7 @@ def install(instance, bundle, manifest, payload, signature, current, total):
         staged.mkdir(mode=0o700)
         remaining = total
         for name in manifest["the_artefacts"]:
-            with open_asset(bundle, name) as source:
+            with open_package_asset(bundle, name) as source:
                 remaining -= write_release_file(staged / name, source, name in EXECUTABLES, remaining)
         write_release_file(staged / "manifest.json", BytesIO(payload))
         write_release_file(staged / "signature", BytesIO(signature))
@@ -536,7 +610,7 @@ def package(args):
         raise Refused("the release must include built browser files, the Core and license notice")
     bundle = args.bundle.resolve()
     if bundle.exists():
-        raise Refused("the output directory already exists")
+        raise Refused("the output path already exists")
     with tempfile.TemporaryDirectory(prefix=".oip-package-", dir=bundle.parent) as temp:
         staged = pathlib.Path(temp) / "package"
         staged.mkdir(mode=0o700)
@@ -564,7 +638,18 @@ def package(args):
         write_release_file(staged / "signature", BytesIO(secret.sign(payload)))
         verify_manifest(staged, secret.public_key(), target)
         verify_assets(staged, assets)
-        os.rename(staged, bundle)
+        if bundle.suffix.lower() == ".zip":
+            staged_zip = pathlib.Path(temp) / "package.zip"
+            with ZipFile(staged_zip, "x", ZIP_DEFLATED, allowZip64=False) as archive:
+                for name in sorted(assets.keys() | PACKAGE_METADATA):
+                    archive.write(staged / name, name)
+            with open_package(staged_zip) as archive:
+                verify_manifest(archive, secret.public_key(), target)
+                verify_assets(archive, assets)
+            # Publish only the complete, verified archive and never replace an existing file.
+            os.link(staged_zip, bundle)
+        else:
+            os.rename(staged, bundle)
     print(json.dumps({"the_status": "PACKAGED", "the_revision": args.revision}))
 
 
@@ -582,30 +667,31 @@ def update(args):
     if args.target and args.target != target:
         raise Refused("the requested update target does not match this host")
     key = public_key(args.public_key.absolute())
-    manifest, payload, signature = verify_manifest(bundle, key, target)
-    total = verify_assets(bundle, manifest["the_artefacts"])
-    if args.dry_run:
-        current = installed(instance, key, target)
-        database = database_path(instance, config, current, manifest)
-        check_compatibility(instance, database, manifest, current)
-        print(json.dumps({"the_status": "VERIFIED", "the_revision": manifest["the_revision"]}))
-        return
-    private_directory(instance)
-    with ownership(instance / ".local-operation.lock", "OIP or another local operation is already running"):
-        current = installed(instance, key, target)
-        database = database_path(instance, config, current, manifest)
-        with ownership(pathlib.Path(str(database) + ".oip-lock"), "the Core is running or the database is in use"):
+    with open_package(bundle) as package_source:
+        manifest, payload, signature = verify_manifest(package_source, key, target)
+        total = verify_assets(package_source, manifest["the_artefacts"])
+        if args.dry_run:
+            current = installed(instance, key, target)
+            database = database_path(instance, config, current, manifest)
             check_compatibility(instance, database, manifest, current)
-            warning = install(instance, bundle, manifest, payload, signature, current, total)
-        entry = {"the_status": "UPDATED", "the_revision": manifest["the_revision"],
-                 "the_version": manifest["the_version"], "the_target": target}
-        if warning:
-            entry["the_storage_warning"] = warning
-        try:
-            append_journal(instance, entry)
-        except (OSError, Refused):
-            entry["the_journal_warning"] = "the release is switched but the final journal entry could not be saved"
-        print(json.dumps(entry))
+            print(json.dumps({"the_status": "VERIFIED", "the_revision": manifest["the_revision"]}))
+            return
+        private_directory(instance)
+        with ownership(instance / ".local-operation.lock", "OIP or another local operation is already running"):
+            current = installed(instance, key, target)
+            database = database_path(instance, config, current, manifest)
+            with ownership(pathlib.Path(str(database) + ".oip-lock"), "the Core is running or the database is in use"):
+                check_compatibility(instance, database, manifest, current)
+                warning = install(instance, package_source, manifest, payload, signature, current, total)
+            entry = {"the_status": "UPDATED", "the_revision": manifest["the_revision"],
+                     "the_version": manifest["the_version"], "the_target": target}
+            if warning:
+                entry["the_storage_warning"] = warning
+            try:
+                append_journal(instance, entry)
+            except (OSError, Refused):
+                entry["the_journal_warning"] = "the release is switched but the final journal entry could not be saved"
+            print(json.dumps(entry))
 
 
 def interrupted(_number, _frame):
@@ -616,7 +702,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--instance", type=pathlib.Path)
     parser.add_argument("--config", type=pathlib.Path)
-    parser.add_argument("--bundle", type=pathlib.Path, required=True)
+    parser.add_argument("--bundle", type=pathlib.Path, required=True,
+                        help="signed release directory or ZIP; --prepare uses .zip for archive output")
     parser.add_argument("--public-key", type=pathlib.Path)
     parser.add_argument("--target")
     action = parser.add_mutually_exclusive_group()
@@ -643,6 +730,9 @@ def main() -> int:
         return 130
     except ImportError:
         print("error: the updater requires Python cryptography with Ed25519 support", file=sys.stderr)
+        return 2
+    except (BadZipFile, LargeZipFile, EOFError, NotImplementedError, zlib.error) as error:
+        print(f"error: the ZIP package is damaged: {error}", file=sys.stderr)
         return 2
     except (Refused, OSError, ValueError, sqlite3.Error, subprocess.SubprocessError) as error:
         print(f"error: {error}", file=sys.stderr)

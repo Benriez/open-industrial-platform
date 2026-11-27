@@ -1438,7 +1438,7 @@ source revision. On the controlled release machine, use the private Ed25519
 key to sign the manifest. Set the actual database schema for that build.
 
 ```sh
-python3 -B tools/oip_update.py --prepare --bundle "$NEW_BUNDLE_DIR" \
+python3 -B tools/oip_update.py --prepare --bundle "$NEW_BUNDLE_ZIP" \
     --binary target/release/oip-server --web apps/flutter/build/web \
     --simulator target/release/oip-simulated-server \
     --signing-key "$RELEASE_SIGNING_KEY" --release-version "$RELEASE_VERSION" \
@@ -1475,11 +1475,17 @@ location outside the incoming package. The private signing key stays on
 the release machine. Subsequent updates can use the previously installed
 verifier at `current/tools/oip_update.py`.
 
-For online delivery, the prepared directory can be archived as an immutable,
-versioned download on an approved static HTTPS host. Publish only the prepared
-files and disclose the intended platform and version alongside the download.
-The installation host needs the extracted directory. Both the offline and
-online delivery paths verify the signature before running a candidate.
+Use a new path ending in `.zip` for a single downloadable release file. The
+publisher verifies the completed archive before making it available at that
+path. A path without that suffix still prepares the previous directory format.
+
+Provide the same ZIP on removable media or as an immutable, versioned file on
+an approved static HTTPS host. Disclose the intended platform and version
+alongside the download. Save the completed download to a local file. OIP
+verifies the signed contents directly, so there is no manual extraction.
+Instances whose installed verifier still predates ZIP support use the prior
+directory format for their next update, or receive the trusted newer verifier
+through the original installer delivery path.
 
 ### 16.2 Check, install and restart
 
@@ -1489,7 +1495,7 @@ As the OS account that owns the instance, confirm the target instance and
 verify the package before scheduling maintenance.
 
 ```sh
-python3 -B "$OIP_VERIFIER" --instance "$OIP_INSTANCE" --bundle "$BUNDLE_DIR" \
+python3 -B "$OIP_VERIFIER" --instance "$OIP_INSTANCE" --bundle "$BUNDLE_ZIP" \
     --public-key "$TRUSTED_UPDATE_KEY" --dry-run
 ```
 
@@ -1541,8 +1547,8 @@ and issues a local `update.json` receipt.
 For a later approved static HTTPS delivery, a publisher can serve the archive
 as `/oip/macos-arm64/<version>/oip-local-darwin-arm64.zip` with
 `Content-Type: application/zip` and versioned immutable caching. Test the
-download and compare the extracted, signed manifest to the local handoff
-before supplying the URL. Keep the initial verifier and signing-key
+download with the provisioned public key and the direct ZIP verification
+command before supplying the URL. Keep the initial verifier and signing-key
 fingerprint on the separately authenticated delivery path. No live hosting
 configuration has been installed for this profile.
 

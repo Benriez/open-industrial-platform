@@ -12,6 +12,7 @@ from pathlib import Path
 import shutil
 import signal
 import socket
+import stat
 import sqlite3
 import subprocess
 import sys
@@ -20,7 +21,8 @@ import tempfile
 import time
 from types import SimpleNamespace
 from unittest.mock import patch
-from zipfile import ZipFile
+import warnings
+from zipfile import ZipFile, ZipInfo
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import (
@@ -105,20 +107,26 @@ def prepare(bundle, secret, core, web, revision, version, **options):
     result = subprocess.run(command, capture_output=True, text=True, timeout=120)
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["the_status"] == "PACKAGED"
-    assert sorted(item.name for item in bundle.iterdir()) == sorted(
-        ["oip-server", "web", "tools", "manifest.json", "signature", "LICENSE", "THIRD_PARTY_NOTICES.txt"]
-        + (["oip-simulated-server"] if options.get("simulator") else [])
-    )
+    if bundle.suffix == ".zip":
+        with ZipFile(bundle) as package:
+            names = package.namelist()
+            manifest = json.loads(package.read("manifest.json"))
+            assert set(names) == set(manifest["the_artefacts"]) | {"manifest.json", "signature"}
+    else:
+        assert sorted(item.name for item in bundle.iterdir()) == sorted(
+            ["oip-server", "web", "tools", "manifest.json", "signature", "LICENSE", "THIRD_PARTY_NOTICES.txt"]
+            + (["oip-simulated-server"] if options.get("simulator") else [])
+        )
     return bundle
 
 
-def command(instance, bundle, public, *more):
-    return [sys.executable, str(UPDATER), "--instance", str(instance), "--bundle",
+def command(instance, bundle, public, *more, updater=UPDATER):
+    return [sys.executable, str(updater), "--instance", str(instance), "--bundle",
             str(bundle), "--public-key", str(public), *more]
 
 
-def run(instance, bundle, public, *more):
-    return subprocess.run(command(instance, bundle, public, *more),
+def run(instance, bundle, public, *more, updater=UPDATER):
+    return subprocess.run(command(instance, bundle, public, *more, updater=updater),
                           capture_output=True, text=True, timeout=120)
 
 
@@ -158,6 +166,50 @@ def verify_license_materials(bundle):
             assert f'checksum = "{hashlib.sha256(data).hexdigest()}"' in lockfile
             with tarfile.open(fileobj=BytesIO(data), mode="r:gz") as crate:
                 assert crate.getmember(f"{Path(name).stem}/Cargo.toml").isfile()
+
+
+def check_zip_refusals(work, instance, bundle, public, wrong_key):
+    members = {path.relative_to(bundle).as_posix(): path.read_bytes()
+               for path in bundle.rglob("*") if path.is_file()}
+
+    def make_zip(name, fields):
+        target = work / f"{name}.zip"
+        with ZipFile(target, "w") as archive:
+            for entry, contents in fields:
+                archive.writestr(entry, contents)
+        return target
+
+    verified = make_zip("signed-flat", members.items())
+    assert_refusal(run(instance, verified, wrong_key, "--dry-run"), "signature")
+    cases = (
+        ("mutated", {**members, oip_update.OPCUA_SOURCE: b"altered"}.items(), "digest"),
+        ("unsigned", [*members.items(), ("web/unlisted.js", b"extra")], "signed manifest"),
+        ("missing", [(name, value) for name, value in members.items() if name != oip_update.ROBOTO_NOTICE],
+         "signed manifest"),
+        ("unsafe", [*members.items(), ("web/../outside", b"extra")], "unsafe or duplicate entry"),
+    )
+    for name, fields, explanation in cases:
+        assert_refusal(run(instance, make_zip(name, fields), public), explanation)
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="Duplicate name:")
+        duplicate = make_zip("duplicate", [*members.items(), ("manifest.json", members["manifest.json"])])
+    assert_refusal(run(instance, duplicate, public), "unsafe or duplicate entry")
+    link = ZipInfo(oip_update.ROBOTO_NOTICE)
+    link.create_system = 3
+    link.external_attr = (stat.S_IFLNK | 0o777) << 16
+    symlink = make_zip("symlink", [(link if name == link.filename else name, value)
+                                  for name, value in members.items()])
+    assert_refusal(run(instance, symlink, public), "unsafe or duplicate entry")
+    truncated = work / "truncated.zip"
+    truncated.write_bytes(verified.read_bytes()[:-22])
+    assert_refusal(run(instance, truncated, public), "ZIP package is damaged")
+    with patch.object(oip_update, "MAX_ZIP_DIRECTORY", 128):
+        try:
+            with oip_update.open_package(verified):
+                raise AssertionError("The oversized central directory was accepted")
+        except oip_update.Refused as error:
+            assert "directory exceeds" in str(error)
 
 
 def rehearse(work, report):
@@ -200,14 +252,24 @@ def rehearse(work, report):
         connection.commit()
     initial_database = database.read_bytes()
     initial_config = config.read_bytes()
-    second = prepare(work / "second", secret, core, web, "fixture-two", "1.10.0", simulator=core)
+    second = prepare(work / "second.zip", secret, core, web, "fixture-two", "1.10.0", simulator=core)
+    unchanged = second.read_bytes()
+    refuse_replace = subprocess.run(
+        prepare_command(second, secret, core, web, "fixture-two", "1.10.0", simulator=core),
+        capture_output=True, text=True, timeout=120,
+    )
+    assert_refusal(refuse_replace, "output path already exists")
+    assert second.read_bytes() == unchanged
+    assert run(instance, second, public, "--dry-run").returncode == 0
+    assert current.resolve().name == "fixture-one"
     result = run(instance, second, public)
     assert result.returncode == 0, result.stderr
     assert current.resolve().name == "fixture-two"
     assert (instance / "previous").resolve().name == "fixture-one"
+    assert_refusal(run(instance, second, public, "--dry-run"), "strictly newer")
     assert database.read_bytes() == initial_database
     assert config.read_bytes() == initial_config
-    report["steps"].append("numeric update, same schema, preserved data and configuration")
+    report["steps"].append("signed ZIP created, verified and installed without unpacking, preserving data and configuration")
 
     next_bundle = prepare(work / "next", secret, core, web, "fixture-next", "1.10.1", simulator=core)
     wrong_key = work / "wrong.pem"
@@ -215,6 +277,10 @@ def rehearse(work, report):
         Encoding.PEM, PublicFormat.SubjectPublicKeyInfo))
     assert_refusal(run(instance, next_bundle, wrong_key), "signature")
     report["steps"].append("untrusted signer refused")
+    check_zip_refusals(work, instance, next_bundle, public, wrong_key)
+    assert current.resolve().name == "fixture-two"
+    assert not list((instance / "versions").glob(".staged-*"))
+    report["steps"].append("ZIP rejects unsigned bytes, bad signatures, duplicate, missing, extra or unsafe entries and damaged archives")
 
     tampered = work / "changed-file"
     shutil.copytree(next_bundle, tampered)
@@ -597,18 +663,22 @@ def real_candidate(work, report, args):
         updated_policy = json.loads(json.loads(manifest)[oip_update.LICENSE_SETUP]["license_policy"])
         updated_policy["kinds"] = ["personal"]
         replacement.write_bytes(json_line(updated_policy))
-        second = prepare(work / "real-update", secret, args.core, args.web, "real-update",
+        second = prepare(work / "real-update.zip", secret, args.core, args.web, "real-update",
                          "1.0.1", simulator=args.simulator, policy=replacement)
+        updater = instance / "current/tools/oip_update.py"
         with installed_browser(instance, port, work) as access:
             accepted = install_proof(access, proof_request(PHP_OIP_ARTIFACT), rejected_proof)
-            assert_refusal(run(instance, second, public), "local operation")
+            assert_refusal(run(instance, second, public, updater=updater), "local operation")
         report["steps"].append("installed operator confirms the PHP License Center artifact and rejects the update signing key")
         database = instance / "core.sqlite"
         proof_path = instance / "core.license.json"
         initial_database = database.read_bytes()
         initial_configuration = (instance / "core.json").read_bytes()
         assert proof_path.read_bytes() == PHP_OIP_ARTIFACT
-        result = run(instance, second, public)
+        result = run(instance, second, public, "--dry-run", updater=updater)
+        assert result.returncode == 0, result.stderr
+        assert json.loads(result.stdout)["the_status"] == "VERIFIED"
+        result = run(instance, second, public, updater=updater)
         assert result.returncode == 0, result.stderr
         assert json.loads(result.stdout)["the_status"] == "UPDATED"
         assert (instance / "current").resolve().name == "real-update"
@@ -622,7 +692,7 @@ def real_candidate(work, report, args):
         assert json.loads(initial_configuration)["commercial_license_kinds"] == ["standard"]
         with installed_browser(instance, port, work) as (base, browser, _):
             assert api(base, "/api/v2/license", opener=browser) == (200, accepted)
-        report["steps"].append("offline update with different signed defaults preserves existing proof, issuer trust and operator permission")
+        report["steps"].append("offline ZIP update with different signed defaults preserves existing proof, issuer trust and operator permission")
 
         successor = Ed25519PrivateKey.generate()
         kid, key = public_key(successor)
