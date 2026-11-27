@@ -326,6 +326,16 @@ Vorschau. Der Befehl übernimmt ausschließlich Schlüsseländerungen in der
 privaten Core-Konfiguration der gewählten Instanz. Nachweisarten, ihre
 gewerbliche Zuordnung und vereinbarte Rechte bleiben erhalten.
 
+Wenn ein signiertes OIP-Update die bestätigten Ersatzschlüssel enthält,
+kann der Einrichter nach der Installation stattdessen
+`rotate-license-keys --package-public-key PFAD` verwenden. Verwende den
+bereits vertrauenswürdig bezogenen öffentlichen Paketschlüssel. Von der
+Vorschau bis zur Bestätigung prüft der Befehl bei jedem Aufruf die Signatur
+und die Dateien des aktuell installierten Pakets erneut. Das Paket muss
+dieselben Nachweisarten, Rechte und gewerblichen Zuordnungen wie die
+Installation ausweisen. Der Schlüsselwechsel bleibt ein separat
+bestätigter Wartungsschritt nach dem Update.
+
 Starte diese Instanz und prüfe den bestehenden Nachweis. Hinterlege und
 prüfe anschließend den neu ausgestellten Nachweis in der App. Entferne den
 alten Schlüssel in einem zweiten bestätigten Wechsel, sobald der neue

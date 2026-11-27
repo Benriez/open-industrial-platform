@@ -130,8 +130,8 @@ def run(instance, bundle, public, *more, updater=UPDATER):
                           capture_output=True, text=True, timeout=120)
 
 
-def assert_refusal(result, explanation):
-    assert result.returncode == 2 and explanation in result.stderr, (
+def assert_refusal(result, explanation, *, exit_code=2):
+    assert result.returncode == exit_code and explanation in result.stderr, (
         f"Expected refusal containing {explanation!r}. Received {result.returncode}: {result.stderr}"
     )
 
@@ -660,9 +660,11 @@ def real_candidate(work, report, args):
         assert (instance / "operator.credential").read_bytes() == credential, "Setup changed the operator identity"
         report["steps"].append("interrupted first setup preserves the trusted defaults and operator identity")
         replacement = work / "replacement-policy.json"
-        updated_policy = json.loads(json.loads(manifest)[oip_update.LICENSE_SETUP]["license_policy"])
-        updated_policy["kinds"] = ["personal"]
-        replacement.write_bytes(json_line(updated_policy))
+        successor = Ed25519PrivateKey.generate()
+        kid, key = public_key(successor)
+        rotated_policy = json.loads(json.loads(manifest)[oip_update.LICENSE_SETUP]["license_policy"])
+        rotated_policy["keys"] = {kid: key}
+        replacement.write_bytes(json_line(rotated_policy))
         second = prepare(work / "real-update.zip", secret, args.core, args.web, "real-update",
                          "1.0.1", simulator=args.simulator, policy=replacement)
         updater = instance / "current/tools/oip_update.py"
@@ -694,16 +696,57 @@ def real_candidate(work, report, args):
             assert api(base, "/api/v2/license", opener=browser) == (200, accepted)
         report["steps"].append("offline ZIP update with different signed defaults preserves existing proof, issuer trust and operator permission")
 
-        successor = Ed25519PrivateKey.generate()
-        kid, key = public_key(successor)
-        rotated_policy = json.loads(json.loads(initial_configuration)["license_policy"])
-        rotated_policy["keys"] = {kid: key}
-        replacement.write_bytes(json_line(rotated_policy))
-        rotate = [*installed_operator(instance), "rotate-license-keys", "--license-policy", str(replacement)]
-        review = subprocess.check_output(rotate, text=True, timeout=30, cwd=work)
-        approval = json.loads(review)["confirmation"]
-        result = subprocess.check_output([*rotate, "--confirm", approval], text=True, timeout=30, cwd=work)
-        assert json.loads(result)["status"] == "applied"
+        config_path = instance / "core.json"
+
+        def rotate(package_key=public, *options):
+            command = [*installed_operator(instance), "rotate-license-keys",
+                       "--package-public-key", str(package_key), *options]
+            return subprocess.run(command, capture_output=True, text=True, timeout=30, cwd=work)
+
+        assert_refusal(rotate(), "changes the existing commercial license assignments", exit_code=1)
+        assert config_path.read_bytes() == initial_configuration
+        report["steps"].append("signed package with changed commercial assignments cannot rotate trust")
+        second.unlink()
+        third = prepare(work / "key-rollover.zip", secret, args.core, args.web, "key-rollover",
+                        "1.0.2", simulator=args.simulator, policy=replacement, kinds=("standard",))
+        result = run(instance, third, public, updater=updater)
+        assert result.returncode == 0, result.stderr
+        assert config_path.read_bytes() == initial_configuration
+        with installed_browser(instance, port, work) as (base, browser, _):
+            assert api(base, "/api/v2/license", opener=browser) == (200, accepted)
+            assert_refusal(rotate(), "already running", exit_code=1)
+
+        assert_refusal(rotate(wrong_key), "signature", exit_code=1)
+        review = rotate()
+        assert review.returncode == 0, review.stderr
+        preview = json.loads(review.stdout)
+        assert (preview["status"], preview["source"]) == ("review", "verified-installed-package")
+        assert preview["added_fingerprints"] == [hashlib.sha256(decode(key)).hexdigest()]
+        approval = ("--confirm", preview["confirmation"])
+        using_policy_file = subprocess.run(
+            [*installed_operator(instance), "rotate-license-keys", "--license-policy", str(replacement), *approval],
+            capture_output=True, text=True, timeout=30, cwd=work,
+        )
+        assert_refusal(using_policy_file, "confirmation is invalid", exit_code=1)
+        notice = instance / "current" / oip_update.ROBOTO_NOTICE
+        original_notice = notice.read_bytes()
+        try:
+            notice.write_bytes(original_notice + b"changed during review")
+            assert_refusal(rotate(public, *approval), "digest", exit_code=1)
+        finally:
+            notice.write_bytes(original_notice)
+        packaged_core = instance / "current" / "oip-server"
+        saved_core = work / "original-core"
+        packaged_core.rename(saved_core)
+        try:
+            packaged_core.write_bytes(b"This is not the signed Core binary.")
+            packaged_core.chmod(0o700)
+            assert_refusal(rotate(public, *approval), "digest", exit_code=1)
+        finally:
+            saved_core.replace(packaged_core)
+        assert config_path.read_bytes() == initial_configuration
+        result = rotate(public, *approval)
+        assert result.returncode == 0 and json.loads(result.stdout)["status"] == "applied", result.stderr
         rotated_config = (instance / "core.json").read_bytes()
         assert json.loads(rotated_config) == {
             **json.loads(initial_configuration), "license_policy": replacement.read_text(),
@@ -717,7 +760,17 @@ def real_candidate(work, report, args):
             proof = proof_request(sign_fixture(successor, "5" * 32, now, usage=period("perpetual", now)))
             code, preview = api(base, "/api/v2/license/preview", "POST", proof, headers, browser)
             assert code == 200 and preview["status"]["commercial"] == "active"
-        report["steps"].append("signed operator tools rotate trust and repeated setup keeps the new policy")
+            code, accepted = api(base, "/api/v2/license/apply", "POST",
+                                 {"confirmation": preview["confirmation"]}, headers, browser)
+            assert code == 200 and accepted["proof_state"] == "verified" and accepted["commercial"] == "active"
+        with installed_browser(instance, port, work) as (base, browser, _):
+            assert api(base, "/api/v2/license", opener=browser) == (200, accepted)
+            with browser.open(f"{base}/main.dart.js", timeout=10) as asset:
+                served_sha256 = hashlib.sha256(asset.read()).hexdigest()
+            assert served_sha256 == artefacts["web/main.dart.js"]
+            report["the_served_browser_sha256"] = served_sha256
+        assert json.loads(rotate().stdout)["status"] == "unchanged"
+        report["steps"].append("confirmed offline rotation revalidates the installed package and accepts the successor proof across restart")
 
 
 def main():

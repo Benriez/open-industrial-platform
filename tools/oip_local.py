@@ -194,8 +194,8 @@ def prepare_license_policy(args):
 
 
 def package_license_setup(root, args, *, resume):
-    if args.core or args.web or args.simulator or args.commercial_license_kind:
-        raise ValueError("Use the installed package without development overrides or separate license kinds.")
+    if args.core or args.web or args.simulator:
+        raise ValueError("Use the installed package without development overrides.")
     manifest = installed(root, public_key(Path(args.package_public_key).absolute()), host_target())
     if manifest is None:
         raise ValueError("Install a verified OIP package before configuring its license policy.")
@@ -212,6 +212,8 @@ def package_license_setup(root, args, *, resume):
 
 def license_setup(root, args, core, *, resume=True):
     if args.package_public_key:
+        if args.commercial_license_kind:
+            raise ValueError("The signed OIP package defines the commercial license kinds.")
         config = package_license_setup(root, args, resume=resume)
         if config:
             text = config.get("license_policy")
@@ -284,10 +286,18 @@ def rotate_license_keys(root, args, core):
             or "license_issuer_key" in config or not isinstance(config.get("license_policy"), str)):
         raise ValueError("Choose a managed local instance with an existing license policy.")
 
+    packaged = None
+    if args.package_public_key:
+        packaged = package_license_setup(root, args, resume=False)
+        if not packaged:
+            raise ValueError("The installed package has no approved OIP license policy.")
+
     current_text = config["license_policy"].encode("utf-8")
     check_license_policy(core, current_text, allow_no_trusted_keys=True)
     current = json.loads(current_text)
-    if args.suspend_trust:
+    if packaged is not None:
+        candidate_text = packaged["license_policy"].encode("utf-8")
+    elif args.suspend_trust:
         candidate_text = (json.dumps({**current, "keys": {}}, sort_keys=True) + "\n").encode()
     else:
         candidate_text = bounded_file(args.license_policy, MAX_LICENSE_POLICY, "The license policy")
@@ -300,17 +310,23 @@ def rotate_license_keys(root, args, core):
     if (current != candidate or not isinstance(commercial_kinds, list)
             or any(kind not in current["kinds"] for kind in commercial_kinds)):
         raise ValueError("Key rotation requires the existing license kinds, rights and commercial assignments.")
+    if packaged is not None and set(packaged["commercial_license_kinds"]) != set(commercial_kinds):
+        raise ValueError("The signed package changes the existing commercial license assignments.")
 
     old = key_fingerprints(current_keys.values())
     new = key_fingerprints(candidate_keys.values())
     review = {"instance": str(root), "trust_suspended": not new, "added_fingerprints": sorted(new - old),
               "removed_fingerprints": sorted(old - new), "retained_fingerprints": sorted(old & new)}
+    if args.package_public_key:
+        review["source"] = "verified-installed-package"
     if current_keys == candidate_keys:
         print(json.dumps({**review, "status": "unchanged"}, indent=2))
         return
     # The explicit approval applies only to this installation and exact inputs.
     snapshot = [str(root), hashlib.sha256(original).hexdigest(),
                 hashlib.sha256(candidate_text).hexdigest()]
+    if args.package_public_key:
+        snapshot.append(review["source"])
     confirmation = hashlib.sha256(json.dumps(snapshot).encode("utf-8")).hexdigest()
     if args.confirm is None:
         print(json.dumps({**review, "status": "review", "confirmation": confirmation}, indent=2))
@@ -539,6 +555,8 @@ def main():
                                    help="Review or apply issuer key rotation in a stopped managed instance")
     rotation_source = rotation.add_mutually_exclusive_group(required=True)
     rotation_source.add_argument("--license-policy", help="Approved replacement OIP policy file")
+    rotation_source.add_argument("--package-public-key",
+                                 help="Use replacement keys from the reverified installed package (PEM)")
     rotation_source.add_argument("--suspend-trust", action="store_true",
                                  help="Remove all trusted issuer keys until a replacement is approved")
     rotation.add_argument("--confirm", help="Confirmation from the review of this policy and instance")
