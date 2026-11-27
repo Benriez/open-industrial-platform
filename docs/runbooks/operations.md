@@ -1583,8 +1583,8 @@ and issues a local `update.json` receipt.
 
 To rehearse the issuer handoff, first run the isolated License Center browser
 test from its clean checkout with `LICENSE_CENTER_OIP_HANDOFF` set to a new
-file in a private test directory. It exports the test registry and the two
-proofs downloaded in that run. Use only this synthetic output. Build the
+file in a private test directory. It exports the test registry, the issued
+ODP proof and both revisions of the issued OIP proof. Use only this synthetic output. Build the
 Core, simulator and browser from the clean OIP candidate. Use the workspace
 build in §9.0 for the Core and `mcp_probe`, then run:
 
@@ -1597,10 +1597,13 @@ PLAYWRIGHT_MODULE="$PLAYWRIGHT_NODE_MODULE" python3 -B tests/oip_update.py \
 
 This run installs a newly signed ZIP in a fresh instance, checks that only
 the approved OIP key is provisioned, rejects the issued ODP proof and imports
-the fresh OIP proof in the compiled browser. After restarting the Core, it
-checks REST and MCP parity and fresh simulator data with ended support.
-`issuer-handoff.json` records source revisions and asset digests. Treat
-`issuer-handoff.png` as a browser test capture.
+the initial OIP proof in the compiled browser. After restarting the Core, it
+checks fresh simulator data with ended support. It previews the signed renewal
+over MCP, confirms it over REST and checks that support is active while the
+commercial entitlement stays valid. After a further restart, the built browser
+refuses the initial proof and the stored renewal remains byte-identical.
+`issuer-handoff.json` records source revisions and asset digests. The two PNG
+files are browser test captures.
 
 ### 16.4 Stage a commercial ZIP for static HTTPS delivery
 

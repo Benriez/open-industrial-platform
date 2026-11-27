@@ -792,14 +792,17 @@ def rehearse_issuer_handoff(work, report, args):
     with args.issuer_handoff.open("rb") as source:
         handoff = json.loads(source.read(64 * 1024 + 1))
         assert source.tell() <= 64 * 1024, "The test handoff exceeds 64 KiB"
-    assert handoff["schema"] == "oip-license-center-test-handoff-v1"
+    assert handoff["schema"] == "oip-license-center-test-handoff-v2"
     assert handoff["issuer_checkout_clean"] is True
     for field in ("issuer_revision", "issuer_tree"):
         assert re.fullmatch(r"[a-f0-9]{40}", handoff[field]), field
         report[field] = handoff[field]
     assert report["the_working_tree_is_clean"], "Build and test a clean OIP checkout"
-    registry, proof, foreign = (decode(handoff[name]) for name in ("registry", "oip_proof", "odp_proof"))
-    for name, data in (("registry", registry), ("oip_proof", proof), ("odp_proof", foreign)):
+    registry, proof, renewal, foreign = (
+        decode(handoff[name]) for name in ("registry", "oip_proof", "oip_renewal", "odp_proof")
+    )
+    for name, data in (("registry", registry), ("oip_proof", proof),
+                       ("oip_renewal", renewal), ("odp_proof", foreign)):
         report[name + "_sha256"] = hashlib.sha256(data).hexdigest()
 
     registry_file = work / "issuer-registry.json"
@@ -841,6 +844,19 @@ def rehearse_issuer_handoff(work, report, args):
     proof_file = work / "freshly-issued.license.json"
     proof_file.write_bytes(proof)
     license_path = "/api/v2/license"
+
+    def check_license_ui(base, mode, screenshot):
+        login = subprocess.check_output(
+            [instance / "current" / "oip-server", "--browser-login",
+             "--ipc-socket", instance / "ipc.sock", "--ipc-credential", instance / "operator.credential"],
+            text=True, timeout=10,
+        )
+        subprocess.run(
+            ["node", ROOT / "apps/flutter/test/browser_license.mjs", base, proof_file,
+             args.evidence / screenshot, mode],
+            input=json.loads(login)["login_code"], text=True, check=True, timeout=150,
+        )
+
     with installed_browser(instance, port, work) as (base, browser, headers):
         report["the_core_build_revision"] = started_core_revision(base, browser)
         code, before = api(base, license_path, opener=browser)
@@ -849,19 +865,11 @@ def rehearse_issuer_handoff(work, report, args):
                            proof_request(foreign), headers, browser)
         assert code == 400 and denied["code"] == "LICENSE_PROOF_INVALID"
         assert api(base, license_path, opener=browser) == (200, before)
-        login = subprocess.check_output(
-            [instance / "current" / "oip-server", "--browser-login",
-             "--ipc-socket", instance / "ipc.sock", "--ipc-credential", instance / "operator.credential"],
-            text=True, timeout=10,
-        )
-        subprocess.run(
-            ["node", ROOT / "apps/flutter/test/browser_license.mjs", base, proof_file,
-             args.evidence / "issuer-handoff.png"],
-            input=json.loads(login)["login_code"], text=True, check=True, timeout=150,
-        )
+        check_license_ui(base, "import", "issuer-handoff.png")
         code, after = api(base, license_path, opener=browser)
         assert code == 200 and after["proof_state"] == "verified"
         assert after["commercial"] == "active" and after["support"] == "ended"
+        assert after["revision"] == 1
         assert (instance / "core.license.json").read_bytes() == proof
         with browser.open(f"{base}/main.dart.js", timeout=10) as asset:
             served = hashlib.sha256(asset.read()).hexdigest()
@@ -869,22 +877,38 @@ def rehearse_issuer_handoff(work, report, args):
         report["the_served_browser_sha256"] = served
     report["steps"].append("REST rejects the issued ODP proof and the compiled UI imports the exact OIP proof after confirmation")
 
-    with installed_browser(instance, port, work) as (base, browser, _):
+    with installed_browser(instance, port, work) as (base, browser, headers):
         assert api(base, license_path, opener=browser) == (200, after)
-        mcp = McpClient(instance / "current" / "oip-server", instance / "ipc.sock",
-                        instance / "operator.credential", "operator")
-        try:
-            assert mcp.call("license_status_read") == after
-        finally:
-            mcp.close()
         restarted = time.time_ns() // 1_000_000
 
         def received_after_restart():
             code, values = api(base, "/api/v2/observations?source=local-simulation", opener=browser)
             return code == 200 and any((value["timestamps"]["received"] or 0) > restarted for value in values)
 
-        until(received_after_restart, "No fresh simulator observation after Core restart")
-    report["steps"].append("the restarted OIP Core agrees across REST and MCP and receives fresh data with ended support")
+        until(received_after_restart, "No fresh simulator observation with ended support")
+        report["steps"].append("the restarted OIP Core receives fresh simulator data with ended support")
+
+        mcp = McpClient(instance / "current" / "oip-server", instance / "ipc.sock",
+                        instance / "operator.credential", "operator")
+        try:
+            assert mcp.call("license_status_read") == after
+            preview = mcp.call("license_proof_preview", proof_request(renewal))
+            renewed = {**after, "revision": 2, "support": "active"}
+            assert preview["status"] == renewed
+            assert api(base, license_path, opener=browser) == (200, after)
+            assert api(base, license_path + "/apply", "POST", {"confirmation": preview["confirmation"]},
+                       headers, browser) == (200, renewed)
+            assert mcp.call("license_status_read") == renewed
+            assert (instance / "core.license.json").read_bytes() == renewal
+        finally:
+            mcp.close()
+    report["steps"].append("MCP reviews the issued renewal and REST confirms it without changing the commercial entitlement")
+
+    with installed_browser(instance, port, work) as (base, browser, _):
+        assert api(base, license_path, opener=browser) == (200, renewed)
+        check_license_ui(base, "superseded", "issuer-handoff-superseded.png")
+        assert (instance / "core.license.json").read_bytes() == renewal
+    report["steps"].append("the compiled UI refuses the old issued file after restart and preserves the renewal unchanged")
 
 
 def rehearse_publication(work, report, args):
