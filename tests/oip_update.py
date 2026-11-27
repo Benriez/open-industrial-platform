@@ -5,6 +5,7 @@ import argparse
 from contextlib import closing, contextmanager
 import fcntl
 import hashlib
+from io import BytesIO
 import json
 import os
 from pathlib import Path
@@ -14,10 +15,12 @@ import socket
 import sqlite3
 import subprocess
 import sys
+import tarfile
 import tempfile
 import time
 from types import SimpleNamespace
 from unittest.mock import patch
+from zipfile import ZipFile
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import (
@@ -131,6 +134,32 @@ def fake_core(path, body):
     return path
 
 
+def verify_license_materials(bundle):
+    manifest = json.loads((bundle / "manifest.json").read_bytes())
+    assert manifest[oip_update.LICENSE_MATERIALS] == 1
+    for name in (oip_update.OPCUA_SOURCE, oip_update.ROBOTO_NOTICE):
+        assert hashlib.sha256((bundle / name).read_bytes()).hexdigest() == manifest["the_artefacts"][name]
+    assert (bundle / oip_update.ROBOTO_NOTICE).read_bytes() == (
+        ROOT / "apps/flutter/assets/fonts/Roboto_LICENSE.txt"
+    ).read_bytes()
+    patches = ["vendor/async-opcua-" + part for part in ("client", "crypto", "server")]
+    tracked = subprocess.check_output(["git", "ls-files", "-z", "--", *patches], cwd=ROOT).split(b"\0")[:-1]
+    tracked = {name.decode() for name in tracked}
+    lockfile = (ROOT / "Cargo.lock").read_text()
+    with ZipFile(bundle / oip_update.OPCUA_SOURCE) as archive:
+        original = {f"registry/async-opcua{part}-0.19.0.crate"
+                    for part in ("", "-core", "-core-namespace", "-macros", "-nodes", "-types")}
+        assert set(archive.namelist()) == tracked | original | {"README.md"}
+        assert archive.read("README.md") == (ROOT / "vendor/README.md").read_bytes()
+        for name in tracked:
+            assert archive.read(name) == (ROOT / name).read_bytes()
+        for name in original:
+            data = archive.read(name)
+            assert f'checksum = "{hashlib.sha256(data).hexdigest()}"' in lockfile
+            with tarfile.open(fileobj=BytesIO(data), mode="r:gz") as crate:
+                assert crate.getmember(f"{Path(name).stem}/Cargo.toml").isfile()
+
+
 def rehearse(work, report):
     instance = work / "instance"
     instance.mkdir(mode=0o700)
@@ -144,6 +173,7 @@ def rehearse(work, report):
     secret, public = keys(work)
 
     first = prepare(work / "first", secret, core, web, "fixture-one", "1.9.2", simulator=core)
+    verify_license_materials(first)
     verified = run(instance, first, public, "--dry-run")
     assert verified.returncode == 0, verified.stderr
     assert json.loads(verified.stdout)["the_status"] == "VERIFIED"
@@ -217,6 +247,29 @@ def rehearse(work, report):
     assert_refusal(run(instance, missing_notice, public), "license files")
     assert current.resolve().name == "fixture-two"
     report["steps"].append("correctly signed package without required license notices refused")
+
+    licence_materials = work / "license-materials"
+    shutil.copytree(next_bundle, licence_materials)
+    original_archive = (licence_materials / oip_update.OPCUA_SOURCE).read_bytes()
+    (licence_materials / oip_update.OPCUA_SOURCE).write_bytes(original_archive + b"extra")
+    assert_refusal(run(instance, licence_materials, public, "--dry-run"), "digest")
+    (licence_materials / oip_update.OPCUA_SOURCE).write_bytes(original_archive)
+    path = licence_materials / "manifest.json"
+    manifest = json.loads(path.read_bytes())
+    for name in (oip_update.OPCUA_SOURCE, oip_update.ROBOTO_NOTICE):
+        del manifest["the_artefacts"][name]
+        (licence_materials / name).unlink()
+    payload = json_line(manifest)
+    path.write_bytes(payload)
+    (licence_materials / "signature").write_bytes(signer.sign(payload))
+    assert_refusal(run(instance, licence_materials, public, "--dry-run"), "third-party license materials")
+    del manifest[oip_update.LICENSE_MATERIALS]
+    payload = json_line(manifest)
+    path.write_bytes(payload)
+    (licence_materials / "signature").write_bytes(signer.sign(payload))
+    assert run(instance, licence_materials, public, "--dry-run").returncode == 0
+    assert current.resolve().name == "fixture-two"
+    report["steps"].append("signed source and font materials verified, edits and omissions denied, legacy packages readable")
 
     target = oip_update.host_target()
     arch, platform = target.split("-", 1)
@@ -449,13 +502,11 @@ def refuse_changed_license_setup(work, instance, setup, policy, release_key, rep
 
 
 def rehearse_signed_policy_install(work, bundle, public, wrong_key, port, simulator_port, report):
-    directory = work / "existing"
-    directory.mkdir(mode=0o700)
-    instance = directory / "instance"
+    instance = work / "instance"
     instance.mkdir(mode=0o700)
     result = run(instance, bundle, public)
     assert result.returncode == 0, result.stderr
-    setup = real_setup_command(directory, instance, public, port, simulator_port)
+    setup = real_setup_command(work, instance, public, port, simulator_port)
     subprocess.run(setup[:-2], check=True, stdout=subprocess.DEVNULL, timeout=120, cwd=work)
     config = instance / "core.json"
     original = config.read_bytes()
@@ -479,6 +530,9 @@ def rehearse_signed_policy_install(work, bundle, public, wrong_key, port, simula
     with installed_browser(instance, port, work) as (base, browser, _):
         code, status = api(base, "/api/v2/license", opener=browser)
         assert code == 200 and status["proof_state"] == "missing" and status["can_manage"] is True
+        for name in (oip_update.OPCUA_SOURCE, oip_update.ROBOTO_NOTICE):
+            with browser.open(f"{base}/{name.removeprefix('web/')}", timeout=10) as asset:
+                assert asset.read() == (bundle / name).read_bytes()
     report["steps"].append("existing instance explicitly adopts reverified signed license defaults and preserves them on setup retry")
 
 
@@ -510,7 +564,8 @@ def real_candidate(work, report, args):
         for name in ("LICENSE", "THIRD_PARTY_NOTICES.txt"):
             assert (bundle / name).read_bytes() == (ROOT / name).read_bytes()
             assert (instance / "current" / name).read_bytes() == (ROOT / name).read_bytes()
-        report["steps"].append("release contains the source license and notices and only operator tools")
+        verify_license_materials(instance / "current")
+        report["steps"].append("installed release contains signed source and font materials and only operator tools")
         refuse_single_signer(work, secret, release_key, args, policy, report)
         now = int(time.time()) - 300
         rejected_proof = proof_request(sign_fixture(
@@ -522,7 +577,8 @@ def real_candidate(work, report, args):
             port, simulator_port = http.getsockname()[1], opcua.getsockname()[1]
         setup = real_setup_command(work, instance, public, port, simulator_port)
         wrong_key = refuse_changed_license_setup(work, instance, setup, policy, release_key, report)
-        rehearse_signed_policy_install(work, bundle, public, wrong_key, port, simulator_port, report)
+        with tempfile.TemporaryDirectory(prefix="existing-", dir=work) as existing:
+            rehearse_signed_policy_install(Path(existing), bundle, public, wrong_key, port, simulator_port, report)
         shutil.rmtree(bundle)
         policy.unlink()
         (work / "pruefschluessel.json").unlink()

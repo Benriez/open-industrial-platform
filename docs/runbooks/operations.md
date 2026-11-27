@@ -1451,6 +1451,13 @@ and database schema to SHA-256 digests of the Core, browser, optional simulator,
 administration tools and license. The detached `signature` is the Ed25519
 signature of the exact manifest bytes.
 
+Prepare the package from the same clean checkout used for its locked Core and
+simulator builds. On the release machine, package preparation uses Git and
+the locally cached Cargo archives from that build. The signed package includes
+the patched MPL-2.0 OPC UA sources and the original locked archives, plus the
+Roboto license. The materials are under `web/licenses/` and described in
+`THIRD_PARTY_NOTICES.txt`. The installation host needs neither Git nor Cargo.
+
 For a package with licensing preconfigured, add `--license-policy FILE` to
 `--prepare` and repeat `--commercial-license-kind KIND` for each agreed
 commercial kind in that policy. Use the policy prepared from explicitly

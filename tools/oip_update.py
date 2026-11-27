@@ -29,12 +29,16 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
 from oip_ops import is_personal
 
 SCHEMA = "oip-update-v2"
 OPERATOR_TOOLS = {"tools/oip_local.py", "tools/oip_ops.py", "tools/oip_recovery.py", "tools/oip_update.py"}
 NOTICE = "THIRD_PARTY_NOTICES.txt"
+OPCUA_SOURCE = "web/licenses/async-opcua-source.zip"
+ROBOTO_NOTICE = "web/licenses/Roboto_LICENSE.txt"
+LICENSE_MATERIALS = "the_license_materials"
 REQUIRED_ASSETS = {"oip-server", "web/index.html", "web/main.dart.js", "LICENSE", NOTICE} | OPERATOR_TOOLS
 EXECUTABLES = {"oip-server", "oip-simulated-server"}
 MAX_MANIFEST = 1024 * 1024
@@ -196,6 +200,10 @@ def verify_manifest(bundle: pathlib.Path, key, expected_target: str):
     assets = manifest.get("the_artefacts")
     if not isinstance(assets, dict) or not REQUIRED_ASSETS <= assets.keys() or len(assets) > 4096:
         raise Refused("the update package does not declare all required Core, browser and license files")
+    if LICENSE_MATERIALS in manifest:
+        version = manifest[LICENSE_MATERIALS]
+        if type(version) is not int or version != 1 or not {OPCUA_SOURCE, ROBOTO_NOTICE} <= assets.keys():
+            raise Refused("the update package does not declare the required third-party license materials")
     for name, digest in assets.items():
         if not release_name(name) or not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
             raise Refused("the update manifest contains an invalid file name or digest")
@@ -440,6 +448,52 @@ def install(instance, bundle, manifest, payload, signature, current, total):
             return "the release is selected but the version pointer could not be flushed to disk"
 
 
+def opcua_source_archive(distribution, target):
+    metadata = json.loads(subprocess.check_output(
+        ["cargo", "metadata", "--offline", "--locked", "--format-version", "1", "--filter-platform", target],
+        cwd=distribution, timeout=60,
+    ))
+    packages = sorted((package for package in metadata["packages"]
+                       if package["name"].startswith("async-opcua") and package["license"] == "MPL-2.0"),
+                      key=lambda package: package["name"])
+    if not packages:
+        raise Refused("the locked build did not identify the async-opcua license sources")
+    lockfile = (distribution / "Cargo.lock").read_text(encoding="utf-8")
+    # Cargo.lock lists the exact registry archive SHA-256 beside each package identity.
+    registry_checksums = {(name, version, source): checksum for name, version, source, checksum in re.findall(
+        r'\n\[\[package\]\]\nname = "([^"]+)"\nversion = "([^"]+)"\n'
+        r'source = "([^"]+)"\nchecksum = "([0-9a-f]{64})"\n', lockfile,
+    )}
+    output = BytesIO()
+    with ZipFile(output, "w", ZIP_DEFLATED) as archive:
+        archive.writestr("README.md", bounded_asset(distribution, "vendor/README.md", MAX_ASSET_BYTES))
+        for package in packages:
+            name, version, source = package["name"], package["version"], package["source"]
+            directory = pathlib.Path(package["manifest_path"]).parent
+            if source is not None:
+                filename = f"{name}-{version}.crate"
+                cache = directory.parents[2] / "cache" / directory.parent.name
+                data = bounded_asset(cache, filename, MAX_ASSET_BYTES)
+                if hashlib.sha256(data).hexdigest() != registry_checksums.get((name, version, source)):
+                    raise Refused(f"the registry source for {name} does not match Cargo.lock")
+                archive.writestr(f"registry/{filename}", data, compress_type=ZIP_STORED)
+                continue
+            if directory != distribution / "vendor" / name:
+                raise Refused(f"the patched source for {name} is outside the release source tree")
+            tracked = subprocess.check_output(
+                ["git", "ls-files", "-z", "--", f"vendor/{name}"], cwd=distribution, timeout=30,
+            ).decode("utf-8").split("\0")[:-1]
+            if f"vendor/{name}/LICENSE.md" not in tracked:
+                raise Refused(f"the patched source for {name} is missing its license")
+            for path in tracked:
+                relative = pathlib.PurePosixPath(path).relative_to("vendor", name)
+                if not ((relative.parts[0] == "src" and relative.suffix == ".rs") or
+                        relative.as_posix() in {"Cargo.toml", "Cargo.toml.orig", "Cargo.lock", "LICENSE.md", "README.md"}):
+                    raise Refused(f"the patched source for {name} contains an undeclared distribution file")
+                archive.writestr(path, bounded_asset(distribution, path, MAX_ASSET_BYTES))
+    return output.getvalue()
+
+
 def package(args):
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
     from cryptography.hazmat.primitives.serialization import load_pem_private_key
@@ -463,6 +517,7 @@ def package(args):
         raise Refused("a commercial license kind requires --license-policy")
     distribution = pathlib.Path(__file__).resolve().parents[1]
     files = {name: distribution / name for name in {"LICENSE", NOTICE} | OPERATOR_TOOLS}
+    files[ROBOTO_NOTICE] = distribution / "apps/flutter/assets/fonts/Roboto_LICENSE.txt"
     files["oip-server"] = args.binary
     if args.simulator:
         files["oip-simulated-server"] = args.simulator
@@ -474,6 +529,8 @@ def package(args):
         if source.is_symlink() or not release_name(name):
             raise Refused("the browser build contains an unsupported path")
         if source.is_file():
+            if name in {OPCUA_SOURCE, ROBOTO_NOTICE}:
+                raise Refused("the browser build contains a reserved third-party license path")
             files[name] = source
     if not REQUIRED_ASSETS <= files.keys():
         raise Refused("the release must include built browser files, the Core and license notice")
@@ -490,9 +547,13 @@ def package(args):
                 remaining -= write_release_file(staged / name, source, name in EXECUTABLES, remaining)
             with (staged / name).open("rb") as source:
                 assets[name] = digest_of(source)
+        source_archive = opcua_source_archive(distribution, target)
+        write_release_file(staged / OPCUA_SOURCE, BytesIO(source_archive), limit=remaining)
+        assets[OPCUA_SOURCE] = hashlib.sha256(source_archive).hexdigest()
         manifest = {
             "schema": SCHEMA, "the_revision": args.revision, "the_version": args.release_version,
             "the_target": target, "the_database_schema": args.database_schema, "the_artefacts": assets,
+            LICENSE_MATERIALS: 1,
         }
         if license_setup is not None:
             if target == host_target():

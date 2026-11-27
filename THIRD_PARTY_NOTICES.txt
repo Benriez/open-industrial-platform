@@ -1,3 +1,20 @@
+OIP third-party license materials
+
+async-opcua 0.19.0 (MPL-2.0)
+===========================
+
+The corresponding source is included in web/licenses/async-opcua-source.zip
+in the signed local OIP package. It contains the patched client, crypto and
+server crates with their license texts, OIP's descriptions of the changes,
+and the original crates.io source archives for the other async-opcua crates
+from the build lockfile. Open a .crate file as a gzip-compressed tar archive.
+
+Roboto (Apache-2.0)
+===================
+
+The license supplied with the Roboto font files is included in
+web/licenses/Roboto_LICENSE.txt in the signed local OIP package.
+
 OIP Core offline license verification dependencies
 
 ed25519-dalek 2.2.0 (BSD-3-Clause)
