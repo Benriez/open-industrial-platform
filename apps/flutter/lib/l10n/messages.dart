@@ -32,6 +32,24 @@ const englishMessages = <String, String>{
   "Datenpunkt hinzufügen": "Add data point",
   "Registrieren Sie ein Gerät unter Geräte & Dienste und wählen Sie seinen Standort im Arbeitsbereich aus.": "Register a device in Devices & Services and select its site in the workspace.",
   "Gerät und Standort": "Device and site",
+  "Neue Organisation": "New organization",
+  "Organisation erstellen": "Create organization",
+  "Name der Organisation": "Organization name",
+  "Name der Infrastruktur": "Infrastructure name",
+  "Name des ersten Standorts": "Initial site name",
+  "Auswahl neu laden": "Reload choices",
+  "Die neue Organisation konnte nicht ausgewählt werden.":
+      "The new organization could not be selected.",
+  "Gerät {0} am Standort {1} registrieren. Danach kannst du die OPC-UA-Verbindung einrichten.":
+      "Register device {0} at site {1}. Then you can set up the OPC UA connection.",
+  "Registrierung prüfen": "Review registration",
+  "Gib einen Namen für Organisation, Infrastruktur und Standort ein.":
+      "Enter a name for the organization, infrastructure and site.",
+  "OPC-UA-Gerät registrieren": "Register OPC UA device",
+  "Der Assistent benötigt ein registriertes Gerät ohne andere Datenquelle.":
+      "The wizard requires a registered device with no other data source.",
+  "Das registrierte Gerät konnte nicht geladen werden.":
+      "The registered device could not be loaded.",
   "Gültig bis {0}": "Valid until {0}",
   "Bisheriger SHA-256-Fingerabdruck: {0}": "Previous SHA-256 fingerprint: {0}",
   "Neuer SHA-256-Fingerabdruck: {0}": "New SHA-256 fingerprint: {0}",

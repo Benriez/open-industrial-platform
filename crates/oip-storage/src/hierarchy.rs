@@ -98,6 +98,169 @@ fn decode_scope(kind: String, id: String) -> Result<AccessScope, StorageError> {
     })
 }
 impl SqliteStore {
+    /// Add a tenant and its first placement through the single Core writer.
+    /// Existing hierarchy, bindings, device identities and collectors are untouched.
+    pub fn create_organization(
+        &mut self,
+        principal: &PrincipalId,
+        request: OrganizationSetupRequest,
+        at_ms: i64,
+    ) -> Result<OrganizationSetupResult, CapabilityError> {
+        fn unavailable(_: impl std::fmt::Display) -> CapabilityError {
+            CapabilityError::new(
+                CapabilityErrorCode::PersistenceUnavailable,
+                "ORGANIZATION_SETUP_UNAVAILABLE",
+                "The organization could not be saved. Retry the same request after checking local storage.",
+            )
+        }
+        let OrganizationSetupRequest::Create {
+            request_id,
+            organization,
+            infrastructure,
+            site,
+        } = request
+        else {
+            return Err(organization_setup_invalid());
+        };
+        if request_id.len() != 36
+            || !request_id.bytes().enumerate().all(|(pos, byte)| match pos {
+                8 | 13 | 18 | 23 => byte == b'-',
+                14 => byte == b'4',
+                19 => matches!(byte, b'8' | b'9' | b'a' | b'b'),
+                _ => byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte),
+            })
+        {
+            return Err(organization_setup_invalid());
+        }
+        let names = [organization.trim(), infrastructure.trim(), site.trim()];
+        if names
+            .iter()
+            .any(|name| name.is_empty() || name.len() > 256 || name.chars().any(char::is_control))
+        {
+            return Err(organization_setup_invalid());
+        }
+        let organization_id = OrganizationId::new(format!("org-{request_id}")).unwrap();
+        let infrastructure_id = InfrastructureId::new(format!("infra-{request_id}")).unwrap();
+        let site_id = SiteId::new(format!("site-{request_id}")).unwrap();
+        let role = ReadRole {
+            id: RoleId::new("oip-organization-owner").unwrap(),
+            name: "OIP organization owner".into(),
+            permissions: BTreeSet::from([
+                Permission::HierarchyRead,
+                Permission::CoreRead,
+                Permission::SourcesRead,
+                Permission::DevicesRead,
+                Permission::TelemetryRead,
+                Permission::EventsRead,
+                Permission::OpcuaRead,
+                Permission::InventoryManage,
+            ]),
+        };
+        let binding = RoleBinding {
+            principal_id: principal.clone(),
+            role_id: role.id.clone(),
+            scope: AccessScope::Organization(organization_id.clone()),
+        };
+        let created = OrganizationSetupResult::Created {
+            organization_id: organization_id.clone(),
+            infrastructure_id: infrastructure_id.clone(),
+            site_id: site_id.clone(),
+        };
+
+        let tx = self.write_transaction().map_err(unavailable)?;
+        let registry = load(&tx).map_err(unavailable)?.ok_or_else(denied)?;
+        if !registry.can_create_organization(principal) {
+            return Err(denied());
+        }
+        let plan = &registry.plan;
+        let existing_role = plan.roles.iter().find(|row| row.id == role.id);
+        if existing_role.is_some_and(|existing| *existing != role) {
+            return Err(organization_setup_invalid());
+        }
+        let existing_org = plan
+            .organizations
+            .iter()
+            .find(|row| row.id == organization_id);
+        let existing_infra = plan
+            .infrastructures
+            .iter()
+            .find(|row| row.id == infrastructure_id);
+        let existing_site = plan.sites.iter().find(|row| row.id == site_id);
+        if let (Some(org), Some(infra), Some(site)) = (existing_org, existing_infra, existing_site)
+        {
+            if existing_role.is_some()
+                && plan.bindings.contains(&binding)
+                && infra.organization_id == organization_id
+                && site.infrastructure_id == infrastructure_id
+                && [org.name.as_str(), infra.name.as_str(), site.name.as_str()] == names
+            {
+                return Ok(created);
+            }
+            return Err(organization_setup_invalid());
+        }
+        if existing_org.is_some()
+            || existing_infra.is_some()
+            || existing_site.is_some()
+            || plan.organizations.len() >= 64
+            || plan.infrastructures.len() >= 128
+            || plan.sites.len() >= 256
+            || plan.bindings.len() >= 512
+            || (existing_role.is_none() && plan.roles.len() >= 64)
+        {
+            return Err(organization_setup_invalid());
+        }
+
+        tx.execute(
+            "INSERT INTO organizations VALUES(?1,?2)",
+            params![organization_id.as_str(), names[0]],
+        )
+        .map_err(unavailable)?;
+        tx.execute(
+            "INSERT INTO infrastructures VALUES(?1,?2,?3)",
+            params![
+                infrastructure_id.as_str(),
+                organization_id.as_str(),
+                names[1]
+            ],
+        )
+        .map_err(unavailable)?;
+        tx.execute(
+            "INSERT INTO sites VALUES(?1,?2,?3)",
+            params![site_id.as_str(), infrastructure_id.as_str(), names[2]],
+        )
+        .map_err(unavailable)?;
+        if existing_role.is_none() {
+            let permissions = serde_json::to_string(&role.permissions).map_err(unavailable)?;
+            tx.execute(
+                "INSERT INTO read_roles VALUES(?1,?2,?3)",
+                params![role.id.as_str(), role.name, permissions],
+            )
+            .map_err(unavailable)?;
+        }
+        tx.execute(
+            "INSERT INTO role_bindings VALUES(?1,?2,'organization',?3)",
+            params![
+                principal.as_str(),
+                role.id.as_str(),
+                organization_id.as_str()
+            ],
+        )
+        .map_err(unavailable)?;
+        tx.execute(
+            "UPDATE provision_meta SET revision=revision+1 WHERE id=1",
+            [],
+        )
+        .map_err(unavailable)?;
+        let digest =
+            content_hash(&serde_json::to_vec(&(principal, &created, names)).map_err(unavailable)?);
+        tx.execute(
+            "INSERT INTO provisioning_audit(at_ms,actor,operation,plan_digest,outcome) VALUES(?1,?2,'create_organization',?3,'committed')",
+            params![at_ms, principal.as_str(), digest],
+        ).map_err(unavailable)?;
+        tx.commit().map_err(unavailable)?;
+        Ok(created)
+    }
+
     pub fn inspect_legacy(path: &Path) -> Result<LegacyAdoption, StorageError> {
         let c = Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         legacy_evidence(&c)

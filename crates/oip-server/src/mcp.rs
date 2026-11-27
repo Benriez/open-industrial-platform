@@ -93,7 +93,8 @@ struct ToolSpec {
     id: CapabilityId,
     description: &'static str,
 }
-const TOOLS: [ToolSpec; 28] = [
+const TOOLS: [ToolSpec; 29] = [
+    ToolSpec { name: "oip_organization_setup", id: CapabilityId::OrganizationSetup, description: "Check explicit local delegation or create an organization with an initial infrastructure and site. Call create only after the administrator approves the three names. Use the same UUID to retry the same request. No existing resources or grants are changed." },
     ToolSpec { name: "oip_opcua_setup", id: CapabilityId::OpcuaSetup, description: "Read local OPC-UA setup, preview a server certificate, or apply an independently verified SHA-256 fingerprint. Requires explicit management and OPC-UA access for the registered device's site. Only one read-only collector." },
     ToolSpec { name: "oip_license_status_read", id: CapabilityId::LicenseStatusRead, description: "Read installation-wide commercial and support entitlement status. Requires explicit installation license read permission." },
     ToolSpec { name: "oip_license_proof_preview", id: CapabilityId::LicenseProofPreview, description: "Verify an OIP proof against the installed issuer and prepare a short-lived confirmation for review. Requires installation license management permission." },
@@ -137,6 +138,7 @@ const RESOURCES: [(&str, CapabilityId); 7] = [
 ];
 fn input_schema(id: CapabilityId) -> Value {
     let mut v = match id {
+        CapabilityId::OrganizationSetup => serde_json::to_value(schemars::schema_for!(OrganizationSetupRequest)),
         CapabilityId::OpcuaSetup => serde_json::to_value(schemars::schema_for!(OpcuaSetupRequest)),
         CapabilityId::LicenseStatusRead => {
             Ok(json!({"type":"object","properties":{},"additionalProperties":false}))
@@ -183,6 +185,9 @@ fn input_schema(id: CapabilityId) -> Value {
         _ => serde_json::to_value(schemars::schema_for!(SourceQuery)),
     }
     .expect("static serializable schema");
+    if id == CapabilityId::OrganizationSetup {
+        v["type"] = json!("object");
+    }
     if let Some(props) = v.get_mut("properties").and_then(Value::as_object_mut) {
         for (name, p) in props {
             match name.as_str() {
@@ -313,6 +318,7 @@ fn unit_request(id: CapabilityId) -> CapabilityRequest {
 }
 fn output_schema(id: CapabilityId) -> Value {
     let tag = match id {
+        CapabilityId::OrganizationSetup => "organization_setup",
         CapabilityId::OpcuaSetup => "opcua_setup",
         CapabilityId::DeviceConnectionRead | CapabilityId::DeviceConnectionConfigure => {
             "connection"
@@ -480,7 +486,7 @@ impl McpAdapter {
                     None,
                     Some(!s.id.descriptor().mutating),
                     Some(matches!(s.id, CapabilityId::LicenseProofApply | CapabilityId::OpcuaSetup)),
-                    Some(!s.id.descriptor().mutating),
+                    Some(!s.id.descriptor().mutating || s.id == CapabilityId::OrganizationSetup),
                     Some(s.id == CapabilityId::OpcuaSetup),
                 ));
                 tool

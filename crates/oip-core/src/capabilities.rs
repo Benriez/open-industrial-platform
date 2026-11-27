@@ -28,6 +28,7 @@ pub enum CapabilityId {
     SnapshotRead,
     SimulationScenarioSet,
     OrganizationsRead,
+    OrganizationSetup,
     InfrastructuresRead,
     SitesRead,
     ScopedSnapshotRead,
@@ -81,7 +82,7 @@ pub struct CapabilityDescriptor {
     pub audit: String,
 }
 impl CapabilityId {
-    pub const ALL: [Self; 42] = [
+    pub const ALL: [Self; 43] = [
         Self::CoreHealthRead,
         Self::CoreLivenessRead,
         Self::CoreReadinessRead,
@@ -102,6 +103,7 @@ impl CapabilityId {
         Self::SnapshotRead,
         Self::SimulationScenarioSet,
         Self::OrganizationsRead,
+        Self::OrganizationSetup,
         Self::InfrastructuresRead,
         Self::SitesRead,
         Self::ScopedSnapshotRead,
@@ -249,6 +251,11 @@ impl CapabilityId {
                 "DiagnosticQuery",
                 "EvidenceSet",
             ),
+            OrganizationSetup => (
+                vec![Permission::HierarchyRead, Permission::InventoryManage],
+                "OrganizationSetupRequest",
+                "OrganizationSetupResult",
+            ),
             OrganizationsRead => (
                 vec![Permission::HierarchyRead],
                 "HierarchyQuery",
@@ -334,6 +341,7 @@ impl CapabilityId {
                 self,
                 SimulationScenarioSet
                     | SettingsChange
+                    | OrganizationSetup
                     | LicenseProofPreview
                     | LicenseProofApply
                     | InventoryChange
@@ -349,6 +357,7 @@ impl CapabilityId {
                 self,
                 SimulationScenarioSet
                     | SettingsChange
+                    | OrganizationSetup
                     | LicenseProofPreview
                     | LicenseProofApply
                     | InventoryChange
@@ -491,6 +500,7 @@ pub enum CapabilityRequest {
     SnapshotRead,
     SimulationScenarioSet(ScenarioRequest),
     OrganizationsRead(HierarchyQuery),
+    OrganizationSetup(OrganizationSetupRequest),
     InfrastructuresRead(HierarchyQuery),
     SitesRead(HierarchyQuery),
     ScopedSnapshotRead,
@@ -556,6 +566,7 @@ impl CapabilityRequest {
             Self::SnapshotRead => CapabilityId::SnapshotRead,
             Self::SimulationScenarioSet(_) => CapabilityId::SimulationScenarioSet,
             Self::OrganizationsRead(_) => CapabilityId::OrganizationsRead,
+            Self::OrganizationSetup(_) => CapabilityId::OrganizationSetup,
             Self::InfrastructuresRead(_) => CapabilityId::InfrastructuresRead,
             Self::SitesRead(_) => CapabilityId::SitesRead,
             Self::ScopedSnapshotRead => CapabilityId::ScopedSnapshotRead,
@@ -595,6 +606,7 @@ pub enum CapabilityOutput {
     Snapshot(Box<Snapshot>),
     Scenario(ScenarioResponse),
     Organizations(Page<Organization>),
+    OrganizationSetup(OrganizationSetupResult),
     Infrastructures(Page<Infrastructure>),
     Sites(Page<Site>),
     ScopedSnapshot(ScopedSnapshot),

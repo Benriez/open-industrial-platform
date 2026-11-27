@@ -186,6 +186,16 @@ abstract class DeviceManagementApi {
       {required String deviceId, String? cursor, int limit = 20});
 }
 
+abstract class OrganizationSetupApi {
+  Future<bool> canCreateOrganization();
+  Future<OnboardingScope> createOrganization({
+    required String requestId,
+    required String organization,
+    required String infrastructure,
+    required String site,
+  });
+}
+
 abstract class HueApi {
   Future<HueLights> hueLights(String source);
   Future<void> changeHueLight(String source, int id, Json change);
@@ -261,6 +271,7 @@ class RestApi
     implements
         OipApi,
         DeviceManagementApi,
+        OrganizationSetupApi,
         TouchIdManagementApi,
         PairedDeviceManagementApi,
         LicenseManagementApi,
@@ -454,6 +465,39 @@ class RestApi
       if (rows.length < 100) return items;
     }
     throw const ApiFailure('Hierarchieauswahl benötigt einen engeren Kontext.');
+  }
+
+  @override
+  Future<bool> canCreateOrganization() async {
+    const path = '/api/v2/organizations/setup';
+    return _parseContract(path, () async {
+      final data = await _change(path, {'action': 'status'}) as Json;
+      return data['can_create'] as bool;
+    });
+  }
+
+  @override
+  Future<OnboardingScope> createOrganization({
+    required String requestId,
+    required String organization,
+    required String infrastructure,
+    required String site,
+  }) async {
+    const path = '/api/v2/organizations/setup';
+    return _parseContract(path, () async {
+      final data = await _change(path, {
+        'action': 'create',
+        'request_id': requestId,
+        'organization': organization,
+        'infrastructure': infrastructure,
+        'site': site,
+      }) as Json;
+      return OnboardingScope(
+        organization: data['organization_id'] as String,
+        infrastructure: data['infrastructure_id'] as String,
+        site: data['site_id'] as String,
+      );
+    });
   }
 
   @override

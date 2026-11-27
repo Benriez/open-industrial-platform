@@ -244,6 +244,10 @@ pub fn router_with_identity(
         )
         .route("/api/v2/management", get(management_read))
         .route("/api/v2/organizations", get(organizations))
+        .route(
+            "/api/v2/organizations/setup",
+            post(organization_setup).layer(axum::extract::DefaultBodyLimit::max(8192)),
+        )
         .route("/api/v2/infrastructures", get(infrastructures))
         .route("/api/v2/sites", get(sites))
         .route("/api/v2/sources", get(authorized_source_health))
@@ -724,6 +728,16 @@ hierarchy_handler!(
     Infrastructure
 );
 hierarchy_handler!(sites, SitesRead, Sites, Site);
+async fn organization_setup(
+    Authorized(s): Authorized,
+    body: Result<Json<OrganizationSetupRequest>, axum::extract::rejection::JsonRejection>,
+) -> Result<Json<OrganizationSetupResult>, CapabilityErrorResponse> {
+    let Json(request) = body.map_err(|_| CapabilityErrorResponse(organization_setup_invalid()))?;
+    match call(s, CapabilityRequest::OrganizationSetup(request)).await? {
+        CapabilityOutput::OrganizationSetup(result) => Ok(Json(result)),
+        _ => Err(mismatch()),
+    }
+}
 async fn scoped_snapshot(
     Authorized(s): Authorized,
 ) -> Result<Json<ScopedSnapshot>, CapabilityErrorResponse> {

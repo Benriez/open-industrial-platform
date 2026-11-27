@@ -47,6 +47,11 @@ enum Command {
         Option<String>,
         oneshot::Sender<Result<(), CapabilityError>>,
     ),
+    OrganizationCreate(
+        PrincipalId,
+        OrganizationSetupRequest,
+        oneshot::Sender<Result<OrganizationSetupResult, CapabilityError>>,
+    ),
     InventoryOnline(
         InventoryAdministration,
         oneshot::Sender<Result<InventoryPlan, CapabilityError>>,
@@ -114,6 +119,7 @@ pub struct AppState {
     pub history: Arc<crate::diagnostic_services::DiagnosticReads>,
     registry: watch::Receiver<RegistrySnapshot>,
     pub legacy_access: bool,
+    pub(crate) organization_creators: Arc<BTreeSet<PrincipalId>>,
     inner: Arc<Inner>,
     pub updates: watch::Sender<u64>,
     pub data: Arc<Mutex<UiData>>,
@@ -414,6 +420,7 @@ impl AppState {
                 .join("hue-credentials"),
             ssh,
             browser_sessions: Arc::new(browser_sessions),
+            organization_creators: Arc::new(config.organization_creators.clone()),
             security_audit,
             licensing: Arc::new(crate::licensing::Licensing::new(
                 config.license_policy.as_deref(),
@@ -477,6 +484,27 @@ impl AppState {
     pub fn connections(&self) -> Arc<Vec<DeviceConnectionRecord>> {
         self.registry.borrow().connections.clone()
     }
+    pub(crate) fn can_create_organization(&self, h: &HierarchyRegistry, p: &PrincipalId) -> bool {
+        self.organization_creators.contains(p) && h.can_create_organization(p)
+    }
+
+    pub(crate) async fn create_organization(
+        &self,
+        principal: PrincipalId,
+        request: OrganizationSetupRequest,
+    ) -> Result<OrganizationSetupResult, CapabilityError> {
+        if self.stopping.is_cancelled() {
+            return Err(writer::mutation_error());
+        }
+        let (tx, rx) = oneshot::channel();
+        self.inner
+            .tx
+            .send(Command::OrganizationCreate(principal, request, tx))
+            .await
+            .map_err(|_| writer::mutation_error())?;
+        rx.await.map_err(|_| writer::mutation_error())?
+    }
+
     pub async fn inventory_online(
         &self,
         request: InventoryAdministration,

@@ -8,13 +8,14 @@ import '../models/onboarding.dart';
 import '../services/api.dart';
 import '../widgets/device_kind.dart';
 
-Future<void> showDeviceOnboarding(
-        BuildContext context, OipController controller, {String? deviceId}) =>
-    showDialog<void>(
+Future<String?> showDeviceOnboarding(
+        BuildContext context, OipController controller,
+        {String? deviceId, bool forOpcua = false}) =>
+    showDialog<String>(
         context: context,
         barrierDismissible: false,
-        builder: (_) =>
-            DeviceOnboarding(controller: controller, deviceId: deviceId));
+        builder: (_) => DeviceOnboarding(
+            controller: controller, deviceId: deviceId, forOpcua: forOpcua));
 
 String _id() {
   final random = Random.secure();
@@ -28,7 +29,13 @@ String _id() {
 class DeviceOnboarding extends StatefulWidget {
   final OipController controller;
   final String? deviceId;
-  const DeviceOnboarding({super.key, required this.controller, this.deviceId});
+  final bool forOpcua;
+  const DeviceOnboarding({
+    super.key,
+    required this.controller,
+    this.deviceId,
+    this.forOpcua = false,
+  });
   @override
   State<DeviceOnboarding> createState() => _DeviceOnboardingState();
 }
@@ -38,7 +45,20 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
       host = TextEditingController(),
       port = TextEditingController(text: '22'),
       user = TextEditingController(),
-      interval = TextEditingController(text: '30');
+      interval = TextEditingController(text: '30'),
+      organizationName = TextEditingController(),
+      infrastructureName = TextEditingController(),
+      siteName = TextEditingController();
+  OrganizationSetupApi? get organizationApi {
+    final transport = widget.controller.api;
+    return transport is OrganizationSetupApi
+        ? transport as OrganizationSetupApi
+        : null;
+  }
+
+  bool canCreateOrganization = false, creatingOrganization = false;
+  String? organizationRequestId;
+  OnboardingScope? createdPlacement;
   late final DeviceManagementApi api = widget.controller.management!;
   final registrationId = _id();
   List<HierarchyItem> organizations = [], infrastructures = [], sites = [];
@@ -90,6 +110,10 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
   @override
   void initState() {
     super.initState();
+    if (widget.forOpcua) {
+      method = 'manual';
+      kind = 'industrial_device';
+    }
     _contextRevision = widget.controller.contextRevision;
     _scopeSignature = widget.controller.contextScopeSignature;
     widget.controller.addListener(contextChanged);
@@ -108,7 +132,16 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
               (_) {},
               onError: (Object _) {}));
     }
-    for (final c in [name, host, port, user, interval]) {
+    for (final c in [
+      name,
+      host,
+      port,
+      user,
+      interval,
+      organizationName,
+      infrastructureName,
+      siteName,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -157,6 +190,15 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
             item['infrastructure_id'] as String, device['site_id'] as String);
       }
       if (!mounted || _scopeInvalidated) return;
+      if (widget.deviceId == null) {
+        try {
+          canCreateOrganization =
+              await organizationApi?.canCreateOrganization() ?? false;
+        } on ApiFailure {
+          // The installed Core may predate organization creation.
+        }
+      }
+      if (!active || widget.forOpcua) return;
       final options = await api.connection(deviceId: widget.deviceId);
       if (!active) return;
       profiles = options.profiles;
@@ -169,8 +211,59 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
           e,
           context
               .tr("Autorisierte Konfiguration konnte nicht geladen werden."));
+    } finally {
+      if (active) setState(() => busy = false);
     }
-    if (mounted && !_scopeInvalidated) setState(() => busy = false);
+  }
+
+  Future<void> createOrganization() async {
+    final management = organizationApi;
+    if (management == null || !canCreateOrganization) return;
+    final labels = [
+      organizationName.text.trim(),
+      infrastructureName.text.trim(),
+      siteName.text.trim(),
+    ];
+    if (labels.any((label) => label.isEmpty)) {
+      throw ApiFailure(context.tr(
+          'Gib einen Namen für Organisation, Infrastruktur und Standort ein.'));
+    }
+    final placement = createdPlacement ??= await management.createOrganization(
+      requestId: organizationRequestId ??= _id(),
+      organization: labels[0],
+      infrastructure: labels[1],
+      site: labels[2],
+    );
+    if (!active) return;
+    final newOrganizations = await api.hierarchy('organizations', {});
+    final newInfrastructures = await api.hierarchy(
+        'infrastructures', {'organization': placement.organization!});
+    final newSites = await api
+        .hierarchy('sites', {'infrastructure': placement.infrastructure!});
+    if (!active) return;
+    if (!newOrganizations.any((row) => row.id == placement.organization) ||
+        !newInfrastructures.any((row) => row.id == placement.infrastructure) ||
+        !newSites.any((row) => row.id == placement.site)) {
+      throw ApiFailure(
+          context.tr('Die neue Organisation konnte nicht ausgewählt werden.'));
+    }
+    setState(() {
+      organizations = newOrganizations;
+      infrastructures = newInfrastructures;
+      sites = newSites;
+      organization = placement.organization;
+      infrastructure = placement.infrastructure;
+      site = placement.site;
+      creatingOrganization = false;
+      organizationRequestId = null;
+      createdPlacement = null;
+      organizationName.clear();
+      infrastructureName.clear();
+      siteName.clear();
+    });
+    unawaited(widget.controller
+        .resyncInfrastructure()
+        .then<void>((_) {}, onError: (Object _) {}));
   }
 
   Future<void> loadInfrastructure(
@@ -318,6 +411,12 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
       monitor = savedConnection?.enabled == true;
     }
     if (!active) return;
+    if (widget.forOpcua) {
+      done = true;
+      Navigator.pop(context, registrationId);
+      widget.controller.reconnect();
+      return;
+    }
     setState(() {
       done = true;
       step = 4;
@@ -411,25 +510,28 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                         existing
                             ? context
                                 .tr("Verbindung für dieses Gerät einrichten")
-                            : context.tr("Gerät hinzufügen"),
+                            : context.tr(widget.forOpcua
+                                ? "OPC-UA-Gerät registrieren"
+                                : "Gerät hinzufügen"),
                         style: Theme.of(context).textTheme.headlineSmall)),
                 IconButton(
                     tooltip: context.tr("Einrichtung schließen"),
                     onPressed: busy ? null : () => Navigator.pop(context),
                     icon: const Icon(Icons.close))
               ]),
-              Text(context.tr("Schritt {0}/5 · {1}", [
-                step + 1,
-                [
-                  'Infrastruktur auswählen',
-                  'Verbindung konfigurieren',
-                  'Verbindung testen',
-                  'Gerät bestätigen',
-                  method == 'manual'
-                      ? 'Inventar gespeichert'
-                      : 'Monitoring aktivieren'
-                ][step]
-              ])),
+              if (!widget.forOpcua)
+                Text(context.tr("Schritt {0}/5 · {1}", [
+                  step + 1,
+                  [
+                    'Infrastruktur auswählen',
+                    'Verbindung konfigurieren',
+                    'Verbindung testen',
+                    'Gerät bestätigen',
+                    method == 'manual'
+                        ? 'Inventar gespeichert'
+                        : 'Monitoring aktivieren'
+                  ][step]
+                ])),
               const SizedBox(height: 16),
               if (busy) const LinearProgressIndicator(),
               if (error != null)
@@ -439,9 +541,35 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                         key: const Key('onboarding-error'),
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.error))),
-              if (step == 0) ...[
+              if (step == 0 && creatingOrganization) ...[
+                field('Name der Organisation', organizationName,
+                    'organization-name',
+                    locked: createdPlacement != null),
+                field('Name der Infrastruktur', infrastructureName,
+                    'infrastructure-name',
+                    locked: createdPlacement != null),
+                field('Name des ersten Standorts', siteName, 'site-name',
+                    locked: createdPlacement != null),
+                FilledButton(
+                  key: const Key('save-new-organization'),
+                  onPressed: busy ? null : () => run(createOrganization),
+                  child: Text(context.tr(createdPlacement == null
+                      ? 'Organisation erstellen'
+                      : 'Auswahl neu laden')),
+                ),
+                TextButton(
+                  onPressed: busy || createdPlacement != null
+                      ? null
+                      : () => setState(() {
+                            creatingOrganization = false;
+                            error = null;
+                          }),
+                  child: Text(context.tr('Zurück')),
+                ),
+              ],
+              if (step == 0 && !creatingOrganization) ...[
                 select(
-                    'Organization',
+                    'Organisation',
                     organization,
                     organizations,
                     (v) => run(() async {
@@ -450,7 +578,7 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                         }),
                     locked: existing),
                 select(
-                    'Infrastructure',
+                    'Infrastruktur',
                     infrastructure,
                     infrastructures,
                     (v) => run(() async {
@@ -458,8 +586,23 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                           await loadSites();
                         }),
                     locked: existing),
-                select('Site', site, sites, (v) => setState(() => site = v),
+                select('Standort', site, sites, (v) => setState(() => site = v),
                     locked: existing),
+                if (canCreateOrganization)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      key: const Key('create-organization'),
+                      onPressed: busy
+                          ? null
+                          : () => setState(() {
+                                creatingOrganization = true;
+                                error = null;
+                              }),
+                      icon: const Icon(Icons.add),
+                      label: Text(context.tr('Neue Organisation')),
+                    ),
+                  ),
                 field('Anzeigename', name, 'device-name', locked: existing),
                 if (!existing)
                   DropdownButtonFormField<String>(
@@ -488,8 +631,12 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                     key: const Key('onboarding-scope-next'),
                     onPressed: busy || site == null
                         ? null
-                        : () => setState(() => step = 1),
-                    child: Text(context.tr("Verbindungsmethode wählen"))),
+                        : widget.forOpcua
+                            ? () => run(start)
+                            : () => setState(() => step = 1),
+                    child: Text(context.tr(widget.forOpcua
+                        ? "Registrierung prüfen"
+                        : "Verbindungsmethode wählen"))),
               ],
               if (step == 1) ...[
                 DropdownButtonFormField<String>(
@@ -633,7 +780,20 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
               if (step == 3) ...[
                 if (method == 'manual')
                   Text(context.tr(
-                      "Nur Inventar: Registered · Connectivity Unknown · Telemetry NoCollector · Health NotEvaluated. Es wird keine Verbindung aufgebaut."))
+                    widget.forOpcua
+                        ? "Gerät {0} am Standort {1} registrieren. Danach kannst du die OPC-UA-Verbindung einrichten."
+                        : "Nur Inventar: Registered · Connectivity Unknown · Telemetry NoCollector · Health NotEvaluated. Es wird keine Verbindung aufgebaut.",
+                    widget.forOpcua
+                        ? [
+                            name.text.trim(),
+                            sites
+                                    .where((row) => row.id == site)
+                                    .firstOrNull
+                                    ?.name ??
+                                ''
+                          ]
+                        : const [],
+                  ))
                 else ...[
                   Text(context.tr(
                       "Verification complete · tatsächlich gelesene Geräteidentität")),
@@ -671,6 +831,16 @@ class _DeviceOnboardingState extends State<DeviceOnboarding> {
                         ? context.tr("Nur im Inventar registrieren")
                         : context.tr(
                             "Identität bestätigen und Verbindung speichern"))),
+                if (widget.forOpcua)
+                  TextButton(
+                    onPressed: busy
+                        ? null
+                        : () => setState(() {
+                              step = 0;
+                              consent = false;
+                            }),
+                    child: Text(context.tr('Zurück')),
+                  ),
               ],
               if (step == 4) ...[
                 Text(method == 'manual'

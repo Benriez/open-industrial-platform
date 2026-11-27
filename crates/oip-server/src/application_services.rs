@@ -192,6 +192,7 @@ impl ApplicationServices {
             | HueLightControl(_)
             | HueSetup(_)
             | OpcuaSetup(_)
+            | OrganizationSetup(_)
             | DeviceConnectionRead(_)
             | DeviceConnectionConfigure(_)
             | InventoryRead(_)
@@ -638,6 +639,9 @@ impl CapabilityService for ApplicationServices {
                 return CapabilityId::ALL
                     .into_iter()
                     .filter(|id| {
+                        if *id == CapabilityId::OrganizationSetup {
+                            return self.state.can_create_organization(h, p);
+                        }
                         if *id == CapabilityId::OpcuaSetup {
                             return h.plan.sites.iter().any(|site| {
                                 crate::opcua_setup::authorize(h, p, &site.id)
@@ -691,6 +695,7 @@ impl CapabilityService for ApplicationServices {
                         | CapabilityId::HueLightControl
                         | CapabilityId::HueSetup
                         | CapabilityId::OpcuaSetup
+                        | CapabilityId::OrganizationSetup
                         | CapabilityId::DeviceConnectionRead
                         | CapabilityId::DeviceConnectionConfigure
                         | CapabilityId::InventoryRead

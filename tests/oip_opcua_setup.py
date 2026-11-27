@@ -47,7 +47,7 @@ def expired_certificate(template):
         builder = builder.add_extension(extension.value, extension.critical)
     return builder.sign(key, hashes.SHA256()).public_bytes(serialization.Encoding.PEM).decode()
 
-def prepare(binary, directory, port, web=None):
+def prepare(binary, directory, port, web=None, *, organization_management=False):
     config = {"database": str(directory / "core.sqlite"), "http_port": port, "sources": []}
     if web:
         config["web_dir"] = str(web)
@@ -76,6 +76,13 @@ def prepare(binary, directory, port, web=None):
         ],
         "legacy_single_infrastructure": False,
     }
+    if organization_management:
+        # The reader also appears in the delegation so the Core must verify
+        # existing organization-level administration independently.
+        config["organization_creators"] = ["operator", "reader"]
+        for binding in plan["bindings"]:
+            if binding["principal_id"] in ("operator", "reader"):
+                binding["scope"] = {"kind": "organization", "id": "primary"}
     socket = directory / "ipc.sock"
     ipc = {"socket": str(socket), "clients": []}
     for principal in principals:

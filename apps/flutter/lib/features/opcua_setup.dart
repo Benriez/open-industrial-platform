@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../app/controller.dart';
 import '../l10n/oip_strings.dart';
 import '../models/infrastructure.dart';
 import '../models/opcua_setup.dart';
@@ -11,11 +12,13 @@ import '../services/local_file_picker_stub.dart'
     if (dart.library.html) '../services/local_file_picker_web.dart';
 import '../services/local_text_download_stub.dart'
     if (dart.library.html) '../services/local_text_download_web.dart';
+import 'device_onboarding.dart';
 
 class OpcuaSetupDialog extends StatefulWidget {
-  const OpcuaSetupDialog(this.api, this.infrastructure, {super.key});
+  const OpcuaSetupDialog(this.api, this.controller, {super.key});
   final OpcuaSetupApi api;
-  final InfrastructureContext infrastructure;
+  final OipController controller;
+  InfrastructureContext get infrastructure => controller.infrastructure;
 
   @override
   State<OpcuaSetupDialog> createState() => _OpcuaSetupDialogState();
@@ -58,8 +61,14 @@ class _OpcuaSetupDialogState extends State<OpcuaSetupDialog> {
   }
 
   void _checkScope() {
-    if (widget.infrastructure.scopeSignature != originalScope && mounted) {
-      Navigator.of(context).pop();
+    if (!mounted || widget.infrastructure.scopeSignature == originalScope)
+      return;
+    final route = ModalRoute.of(context);
+    if (route == null || !route.isActive) return;
+    if (route.isCurrent) {
+      route.navigator?.pop();
+    } else {
+      route.navigator?.removeRoute(route);
     }
   }
 
@@ -167,6 +176,31 @@ class _OpcuaSetupDialogState extends State<OpcuaSetupDialog> {
     if (selected != null) {
       await _run(
           () => widget.api.opcuaSetupStatus(selected.siteId, selected.id));
+    }
+  }
+
+  Future<void> _registerDevice() async {
+    final management = widget.controller.management;
+    if (management == null) return;
+    final id = await showDeviceOnboarding(
+      context,
+      widget.controller,
+      forOpcua: true,
+    );
+    if (id == null ||
+        !mounted ||
+        widget.infrastructure.scopeSignature != originalScope) return;
+    try {
+      final registered =
+          InventoryDevice.fromJson(await management.inventory(id));
+      if (!mounted || widget.infrastructure.scopeSignature != originalScope)
+        return;
+      await _choose(registered);
+    } catch (failure) {
+      if (mounted) {
+        setState(() => error = apiErrorMessage(failure,
+            context.tr('Das registrierte Gerät konnte nicht geladen werden.')));
+      }
     }
   }
 
@@ -311,22 +345,21 @@ class _OpcuaSetupDialogState extends State<OpcuaSetupDialog> {
   @override
   Widget build(BuildContext context) {
     final infrastructure = widget.infrastructure;
-    final devices = (infrastructure.inventory ?? const <InventoryDevice>[])
-        .where((row) =>
-            row.registration == 'registered' &&
+    final scope = infrastructure.selection;
+    final devices = {
+      for (final row in infrastructure.inventory ?? const <InventoryDevice>[])
+        if (row.registration == 'registered' &&
             (row.sourceIds.isEmpty ||
                 row.sourceIds.contains('managed-opcua')) &&
-            infrastructure.selection.matches(
+            scope.matches(
               organizationId: row.organizationId,
               infrastructureId: row.infrastructureId,
               siteId: row.siteId,
-              sourceId: infrastructure.selection.sourceId == null
-                  ? null
-                  : row.sourceIds
-                      .where((id) => id == infrastructure.selection.sourceId)
-                      .firstOrNull,
+              sourceId: scope.sourceId,
             ))
-        .toList();
+          row.id: row,
+      if (device case final selected?) selected.id: selected,
+    }.values.toList();
     final preview = result is OpcuaCertificatePreview
         ? result as OpcuaCertificatePreview
         : null;
@@ -344,9 +377,20 @@ class _OpcuaSetupDialogState extends State<OpcuaSetupDialog> {
               children: [
                 if (devices.isEmpty)
                   Text(context.tr(
-                      'Registrieren Sie ein Gerät unter Geräte & Dienste und wählen Sie seinen Standort im Arbeitsbereich aus.')),
+                      'Der Assistent benötigt ein registriertes Gerät ohne andere Datenquelle.')),
+                if (device == null && widget.controller.management != null)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      key: const Key('opcua-register-device'),
+                      onPressed: busy ? null : _registerDevice,
+                      icon: const Icon(Icons.add),
+                      label: Text(context.tr('OPC-UA-Gerät registrieren')),
+                    ),
+                  ),
                 if (devices.isNotEmpty)
                   DropdownButtonFormField<String>(
+                    key: ValueKey('opcua-device-${device?.id}'),
                     value: device?.id,
                     isExpanded: true,
                     decoration: InputDecoration(

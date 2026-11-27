@@ -861,7 +861,7 @@ class _OpcuaPageState extends State<OpcuaPage> {
     final source = await showDialog<String>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => OpcuaSetupDialog(api, widget.controller.infrastructure),
+      builder: (context) => OpcuaSetupDialog(api, widget.controller),
     );
     if (!mounted || source == null) return;
     await widget.controller.resyncInfrastructure();

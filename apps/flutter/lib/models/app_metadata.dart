@@ -43,8 +43,8 @@ class OipApplicationInfo {
   /// The exact `version:` value of `pubspec.yaml`, kept next to the fields it
   /// describes so a drift between the manifest and the rendered identity is
   /// visible in one place.
-  static const _packageVersion = '0.3.54';
-  static const _packageBuild = '57';
+  static const _packageVersion = '0.3.55';
+  static const _packageBuild = '58';
   static const String manifestDeclaration = '$_packageVersion+$_packageBuild';
 }
 

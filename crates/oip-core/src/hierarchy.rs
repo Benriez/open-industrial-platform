@@ -149,6 +149,40 @@ pub struct HierarchyLocation {
     pub site_id: SiteId,
     pub source_id: SourceId,
 }
+/// Local administration, with no source, role, or principal supplied by the caller.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
+#[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
+pub enum OrganizationSetupRequest {
+    Status,
+    Create {
+        request_id: String,
+        organization: String,
+        infrastructure: String,
+        site: String,
+    },
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemas", derive(schemars::JsonSchema))]
+#[serde(tag = "state", rename_all = "snake_case")]
+pub enum OrganizationSetupResult {
+    Status { can_create: bool },
+    Created {
+        organization_id: OrganizationId,
+        infrastructure_id: InfrastructureId,
+        site_id: SiteId,
+    },
+}
+
+pub fn organization_setup_invalid() -> CapabilityError {
+    CapabilityError::new(
+        CapabilityErrorCode::InvalidInput,
+        "ORGANIZATION_SETUP_INVALID",
+        "Enter a valid name for the organization, infrastructure and site. Review and retry if the request already exists or the hierarchy is full.",
+    )
+}
+
 #[derive(Clone, Debug)]
 pub struct HierarchyRegistry {
     pub plan: ProvisioningPlan,
@@ -170,6 +204,15 @@ pub fn denied() -> CapabilityError {
     )
 }
 impl HierarchyRegistry {
+    pub fn can_create_organization(&self, principal: &PrincipalId) -> bool {
+        !self.plan.legacy_single_infrastructure
+            && self.plan.bindings.iter().any(|binding| {
+                &binding.principal_id == principal
+                    && matches!(&binding.scope, AccessScope::Organization(_))
+                    && self.permits(principal, CapabilityId::OrganizationSetup, &binding.scope, false)
+            })
+    }
+
     pub fn new(mut plan: ProvisioningPlan) -> Result<Self, &'static str> {
         if plan.organizations.is_empty()
             || plan.organizations.len() > 64

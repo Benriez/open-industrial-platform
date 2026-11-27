@@ -210,6 +210,18 @@ pub(super) fn spawn(
                         let result = writer.apply_opcua_setup(&setup, &principal, *source, &certificate, previous.as_deref());
                         let _ = reply.send(result);
                     }
+                    Command::OrganizationCreate(principal, request, reply) => {
+                        let result = if writer.expired() {
+                            Err(mutation_error())
+                        } else {
+                            writer.app.repository.create_organization(&principal, request, now_ms())
+                                .and_then(|created| {
+                                    writer.refresh_registry()?;
+                                    Ok(created)
+                                })
+                        };
+                        let _ = reply.send(result);
+                    }
                     Command::InventoryOnline(request, reply) => {
                         let result = if writer.expired() {
                             Err(mutation_error())
@@ -350,7 +362,7 @@ pub(super) fn spawn(
         })
 }
 
-fn mutation_error() -> CapabilityError {
+pub(super) fn mutation_error() -> CapabilityError {
     CapabilityError::new(
         CapabilityErrorCode::InvalidInput,
         "REGISTRATION_POLICY_OR_REVISION_CONFLICT",

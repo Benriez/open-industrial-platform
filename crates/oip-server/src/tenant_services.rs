@@ -137,7 +137,8 @@ impl ApplicationServices {
             CapabilityRequest::McpManagementRead(_)
             | CapabilityRequest::LicenseStatusRead
             | CapabilityRequest::LicenseProofPreview(_)
-            | CapabilityRequest::LicenseProofApply(_) => Some(AccessScope::Platform),
+            | CapabilityRequest::LicenseProofApply(_)
+            | CapabilityRequest::OrganizationSetup(_) => Some(AccessScope::Platform),
             CapabilityRequest::OrganizationsRead(q)
             | CapabilityRequest::InfrastructuresRead(q)
             | CapabilityRequest::SitesRead(q) => q
@@ -298,6 +299,22 @@ impl ApplicationServices {
     ) -> Result<CapabilityOutput, CapabilityError> {
         use CapabilityRequest::*;
         let id = request.id();
+        if let OrganizationSetup(q) = request {
+            let can_create = self.state.can_create_organization(h, p);
+            let result = match q {
+                OrganizationSetupRequest::Status => OrganizationSetupResult::Status { can_create },
+                OrganizationSetupRequest::Create { .. } => {
+                    if !can_create {
+                        return Err(denied());
+                    }
+                    let mut started = self.audit_event(context, id, None, true, "started");
+                    started.scope = Some(AccessScope::Platform);
+                    self.audit.record(&started)?;
+                    self.state.create_organization(p.clone(), q).await?
+                }
+            };
+            return Ok(CapabilityOutput::OrganizationSetup(result));
+        }
         if let OpcuaSetup(q) = request {
             if !crate::opcua_setup::authorize(h, p, &q.site) {
                 return Err(crate::opcua_setup::denied());

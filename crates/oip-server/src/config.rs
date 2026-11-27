@@ -245,6 +245,9 @@ pub struct CoreConfig {
     /// ephemeral. If omitted, CoreRuntime derives it beside the database.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub browser_credentials_file: Option<PathBuf>,
+    /// Explicit local delegation for existing organization administrators.
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub organization_creators: BTreeSet<oip_core::PrincipalId>,
     /// License Center policy JSON, obtained independently of the proof.
     #[serde(default, alias = "license_issuer_key", skip_serializing_if = "Option::is_none")]
     pub license_policy: Option<String>,
@@ -274,6 +277,7 @@ impl Default for CoreConfig {
             tailscale_peer_status: false,
             database: "oip.sqlite".into(),
             browser_credentials_file: None,
+            organization_creators: BTreeSet::new(),
             license_policy: None,
             commercial_license_kinds: Vec::new(),
             http_port: 8080,
@@ -295,6 +299,8 @@ impl CoreConfig {
                 .browser_credentials_file
                 .as_ref()
                 .is_some_and(|path| path.as_os_str().is_empty())
+            || self.organization_creators.len() > 64
+            || (self.legacy_single_infrastructure && !self.organization_creators.is_empty())
             || self.sources.len() > 32
             || self.opcua_browse_sources.len() > 64
             || !(1..=4096).contains(&self.queue_capacity)
