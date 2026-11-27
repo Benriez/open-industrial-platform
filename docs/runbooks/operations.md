@@ -1597,13 +1597,55 @@ checks REST and MCP parity and fresh simulator data with ended support.
 `issuer-handoff.json` records source revisions and asset digests. Treat
 `issuer-handoff.png` as a browser test capture.
 
-For a later approved static HTTPS delivery, a publisher can serve the archive
-as `/oip/macos-arm64/<version>/oip-local-darwin-arm64.zip` with
-`Content-Type: application/zip` and versioned immutable caching. Test the
-download with the provisioned public key and the direct ZIP verification
-command before supplying the URL. Keep the initial verifier and signing-key
-fingerprint on the separately authenticated delivery path. No live hosting
-configuration has been installed for this profile.
+### 16.4 Stage a commercial ZIP for static HTTPS delivery
+
+On the release machine, review the exact ZIP including the signed license
+text, third-party notices, public issuer policy and client assets. Approve its
+whole-file SHA-256 for transfer. Use the independently provisioned package
+public key to stage the same bytes into a new local directory.
+
+```sh
+python3 -B tools/oip_publication.py --bundle "$REVIEWED_ZIP" \
+    --public-key "$TRUSTED_UPDATE_KEY" --sha256 "$APPROVED_ZIP_SHA256" \
+    --output "$NEW_PUBLISH_TREE"
+```
+
+The command verifies the signature, all declared files, the signed commercial
+assignment, the separation of signing keys and the approved digest of the
+exact ZIP. It emits its relative public route, version and signed-manifest
+and license digests. The version directory contains only the ZIP and an
+Apache `.htaccess` file. Keep the verifier and initial signing-key fingerprint
+on the separately authenticated delivery path.
+
+Once the release and HTTPS host are approved, publish the complete version
+directory under `/oip/macos-arm64/<version>/`. Provision an Apache HTTPS
+virtual host with a valid certificate. Disable directory indexes and content
+negotiation on this static route. The version directory's override uses
+`AuthConfig`, `FileInfo`, `Options` and `mod_headers`. It requires HTTPS,
+serves the ZIP as `application/zip` with immutable caching and denies other
+files in the directory. Check override support and actual file readability
+on the chosen host. Keep the URL immutable by putting any replacement in a
+new version directory. Expose a version directory only after transferring
+both files.
+
+Download the public URL with an ordinary TLS-validating client using no
+account or token. Compare its SHA-256 with the approved ZIP and run the local
+installer with `--dry-run` and the provisioned key. Check the response headers
+and verify that plain HTTP and the directory are unavailable. The same approved
+ZIP can be delivered on removable media.
+
+The rehearsal uses the macOS Apache binary and OpenSSL on loopback.
+It generates short-lived TLS and signing keys and tests the exact staged ZIP
+through an anonymous HTTPS download and subsequent offline installation.
+
+```sh
+python3 -B tests/oip_update.py --publication --core target/release/oip-server \
+    --web apps/flutter/build/web --simulator target/release/oip-simulated-server \
+    --evidence target/oip-publication
+```
+
+`publication.json` records the rehearsal. Hosting activation and validation
+on the approved target require a separate production release.
 
 ### 16.6 Local Tailscale membership read
 

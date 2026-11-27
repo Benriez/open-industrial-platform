@@ -13,6 +13,7 @@ import re
 import shutil
 import signal
 import socket
+import ssl
 import stat
 import sqlite3
 import subprocess
@@ -22,6 +23,8 @@ import tempfile
 import time
 from types import SimpleNamespace
 from unittest.mock import patch
+from urllib.error import HTTPError, URLError
+from urllib.request import HTTPSHandler, ProxyHandler, Request, build_opener
 import warnings
 from zipfile import ZipFile, ZipInfo
 
@@ -38,7 +41,7 @@ from oip_license_issue import (
     ISSUER, PHP_ODP_ARTIFACT, PHP_OIP_ARTIFACT, PHP_OIP_HOLDER, PHP_OIP_LICENSE_ID, PHP_TEST_KEYS,
     decode, json_line, period, proof_request, public_key, sign_fixture,
 )
-from oip_local_operator import session, until
+from oip_local_operator import session, stop, until
 from oip_opcua_parity import McpClient, api, free_port
 
 
@@ -454,6 +457,17 @@ def installed_browser(instance, port, work):
         assert runner.returncode == 0, error
 
 
+def started_core_revision(base, browser):
+    code, system = api(base, "/api/v2/support-package?infrastructure=local-infra", opener=browser)
+    assert code == 200, system
+    expected = subprocess.check_output(
+        ["git", "describe", "--always", "--abbrev=40", "--dirty"], cwd=ROOT, text=True,
+    ).strip()
+    revision = system["build_revision"]
+    assert revision == expected, revision
+    return revision
+
+
 def install_proof(access, proof, rejected_proof):
     base, browser, headers = access
     status_path = "/api/v2/license"
@@ -828,13 +842,7 @@ def rehearse_issuer_handoff(work, report, args):
     proof_file.write_bytes(proof)
     license_path = "/api/v2/license"
     with installed_browser(instance, port, work) as (base, browser, headers):
-        code, system = api(base, "/api/v2/support-package?infrastructure=local-infra", opener=browser)
-        assert code == 200, system
-        expected_build = subprocess.check_output(
-            ["git", "describe", "--always", "--abbrev=40", "--dirty"], cwd=ROOT, text=True,
-        ).strip()
-        assert system["build_revision"] == expected_build, system["build_revision"]
-        report["the_core_build_revision"] = system["build_revision"]
+        report["the_core_build_revision"] = started_core_revision(base, browser)
         code, before = api(base, license_path, opener=browser)
         assert code == 200 and before["proof_state"] == "missing" and before["can_manage"] is True
         code, denied = api(base, license_path + "/preview", "POST",
@@ -879,6 +887,146 @@ def rehearse_issuer_handoff(work, report, args):
     report["steps"].append("the restarted OIP Core agrees across REST and MCP and receives fresh data with ended support")
 
 
+def rehearse_publication(work, report, args):
+    secret, public = keys(work)
+    policy = prepare_issuer_policy(work)
+    bundle = prepare(work / "approved.zip", secret, args.core, args.web, report["the_revision"],
+                     "1.2.3", simulator=args.simulator, policy=policy, kinds=("standard",))
+    with bundle.open("rb") as source:
+        approved = oip_update.digest_of(source)
+    web_root = work / "public"
+    command = [sys.executable, "-B", ROOT / "tools/oip_publication.py",
+               "--bundle", bundle, "--output", web_root]
+
+    def stage(key, digest):
+        return subprocess.run([*command, "--public-key", key, "--sha256", digest],
+                              capture_output=True, text=True, timeout=60)
+
+    other = work / "other"
+    other.mkdir(mode=0o700)
+    _, wrong_key = keys(other)
+    assert_refusal(stage(public, "0" * 64), "does not match the approved SHA-256")
+    assert_refusal(stage(wrong_key, approved), "signature does not match")
+    assert not web_root.exists()
+    result = stage(public, approved)
+    assert result.returncode == 0, result.stderr
+    staged = json.loads(result.stdout)
+    expected_path = "/oip/macos-arm64/1.2.3/oip-local-darwin-arm64.zip"
+    assert staged["the_status"] == "STAGED" and staged["the_public_path"] == expected_path
+    assert staged["the_zip_sha256"] == approved
+    assert_refusal(stage(public, approved), "already exists")
+    assert sorted(path.name for path in (web_root / expected_path.lstrip("/")).parent.iterdir()) == [
+        ".htaccess", "oip-local-darwin-arm64.zip",
+    ]
+    report["steps"].append("the private publication stage only accepts the approved ZIP and trusted signer and refuses replacement")
+
+    certificate, tls_key = work / "tls.crt", work / "tls.key"
+    subprocess.run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1",
+                    "-subj", "/CN=localhost", "-addext", "subjectAltName=IP:127.0.0.1",
+                    "-keyout", tls_key, "-out", certificate], capture_output=True, check=True, timeout=15)
+    tls_port, http_port = free_port(), free_port()
+    while http_port == tls_port:
+        http_port = free_port()
+    config, log = work / "httpd.conf", work / "apache.log"
+    modules = ("mpm_prefork", "unixd", "authz_core", "headers", "ssl")
+    config.write_text("\n".join(f"LoadModule {module}_module /usr/libexec/apache2/mod_{module}.so"
+                                for module in modules) + f"""
+ServerRoot "{work}"
+DefaultRuntimeDir "{work}"
+Mutex file:{work} default
+ServerName localhost
+Listen 127.0.0.1:{http_port}
+Listen 127.0.0.1:{tls_port} https
+PidFile "{work / 'apache.pid'}"
+ErrorLog "{log}"
+DocumentRoot "{web_root}"
+EnableSendfile Off
+EnableMMAP Off
+<Directory "{web_root}">
+    Options None
+    AllowOverride AuthConfig FileInfo Options
+    Require all granted
+</Directory>
+<VirtualHost 127.0.0.1:{tls_port}>
+    SSLEngine on
+    SSLCertificateFile "{certificate}"
+    SSLCertificateKeyFile "{tls_key}"
+</VirtualHost>
+""")
+    client = build_opener(ProxyHandler({}), oip_update.LocalProbe(),
+                          HTTPSHandler(context=ssl.create_default_context(cafile=str(certificate))))
+    base = f"https://127.0.0.1:{tls_port}"
+    downloaded = work / "downloaded.zip"
+    # Simulate an accidental additional file to verify the directory rule.
+    accidental = web_root / expected_path.lstrip("/")
+    accidental.with_name("private-fixture.txt").write_text("Generated test data\n")
+    with (work / "apache-start.log").open("wb") as startup:
+        # Apache signals its process group on shutdown.
+        process = subprocess.Popen(["/usr/sbin/httpd", "-f", config, "-DFOREGROUND"],
+                                   stdout=startup, stderr=startup, start_new_session=True)
+        try:
+            def ready():
+                assert process.poll() is None, (work / "apache-start.log").read_text()
+                try:
+                    with client.open(Request(base + expected_path, method="HEAD"), timeout=2) as response:
+                        return response.status == 200
+                except HTTPError:
+                    raise
+                except URLError:
+                    return False
+
+            until(ready, "Apache HTTPS did not start", timeout=10)
+            with client.open(base + expected_path, timeout=15) as download:
+                assert download.headers["Content-Type"] == "application/zip"
+                assert download.headers["Cache-Control"] == "public, max-age=31536000, immutable"
+                assert download.headers["X-Content-Type-Options"] == "nosniff"
+                oip_update.write_release_file(downloaded, download,
+                                              limit=bundle.stat().st_size)
+            for url in (
+                base + expected_path + "/extra",
+                base + expected_path.rsplit("/", 1)[0] + "/",
+                base + expected_path.rsplit("/", 1)[0] + "/.htaccess",
+                base + expected_path.rsplit("/", 1)[0] + "/private-fixture.txt",
+                f"http://127.0.0.1:{http_port}" + expected_path,
+            ):
+                try:
+                    with client.open(url, timeout=5) as unexpected:
+                        raise AssertionError(f"Apache exposed {url} with status {unexpected.status}")
+                except HTTPError as response:
+                    with response:
+                        assert response.code in {403, 404}, (response.code, url)
+        finally:
+            stop(process)
+    with downloaded.open("rb") as received:
+        assert oip_update.digest_of(received) == approved
+    report["steps"].append("anonymous certificate-validated HTTPS serves the exact approved ZIP with immutable caching and blocks HTTP and other files")
+
+    instance = work / "recipient"
+    instance.mkdir(mode=0o700)
+    checked = run(instance, downloaded, public, "--dry-run")
+    assert checked.returncode == 0 and json.loads(checked.stdout)["the_status"] == "VERIFIED", checked.stderr
+    installed = run(instance, downloaded, public)
+    assert installed.returncode == 0 and json.loads(installed.stdout)["the_status"] == "UPDATED", installed.stderr
+    current = instance / "current"
+    assert current.resolve().name == report["the_revision"]
+    manifest = json.loads((current / "manifest.json").read_bytes())
+    assets = manifest["the_artefacts"]
+    core_port, source_port = free_port(), free_port()
+    while source_port == core_port:
+        source_port = free_port()
+    subprocess.run(real_setup_command(work, instance, public, core_port, source_port),
+                   check=True, stdout=subprocess.DEVNULL, timeout=120, cwd=work)
+    with installed_browser(instance, core_port, work) as (base, browser, _):
+        report["the_core_build_revision"] = started_core_revision(base, browser)
+        with browser.open(f"{base}/main.dart.js", timeout=10) as asset:
+            served = oip_update.digest_of(asset)
+        assert served == assets["web/main.dart.js"]
+        report["the_served_browser_sha256"] = served
+    report["the_core_sha256"] = assets["oip-server"]
+    report["the_publication"] = staged
+    report["steps"].append("after stopping the HTTPS host, the same updater verifies and installs the downloaded package offline")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence", type=Path, default=ROOT / "target" / "oip-update")
@@ -886,13 +1034,18 @@ def main():
     parser.add_argument("--web", type=Path)
     parser.add_argument("--simulator", type=Path)
     parser.add_argument("--real-receipt", type=Path)
-    parser.add_argument("--issuer-handoff", type=Path,
+    action = parser.add_mutually_exclusive_group()
+    action.add_argument("--issuer-handoff", type=Path,
                         help="Only rehearse fresh synthetic License Center browser exports")
+    action.add_argument("--publication", action="store_true",
+                        help="Only rehearse publication on local Apache HTTPS on macOS ARM64")
     args = parser.parse_args()
     if bool(args.core) != bool(args.web):
         parser.error("--core and --web must be passed together")
     if args.issuer_handoff and (not args.core or not args.simulator or args.real_receipt):
         parser.error("--issuer-handoff requires --core, --web and --simulator and excludes --real-receipt")
+    if args.publication and (not args.core or not args.simulator or args.real_receipt):
+        parser.error("--publication requires --core, --web and --simulator and excludes --real-receipt")
     args.evidence.mkdir(parents=True, exist_ok=True)
     report = {"schema": "oip-update-v2", "steps": [], "the_problems": [],
               "the_target": oip_update.host_target()}
@@ -903,7 +1056,10 @@ def main():
     with tempfile.TemporaryDirectory(prefix="oip-update-test-", dir="/tmp") as temporary:
         work = Path(temporary).resolve()
         try:
-            if args.issuer_handoff:
+            if args.publication:
+                report["the_profile"] = "local-apache-https-to-offline-oip"
+                rehearse_publication(work, report, args)
+            elif args.issuer_handoff:
                 report["the_profile"] = "synthetic-issuer-to-installed-oip"
                 rehearse_issuer_handoff(work, report, args)
             else:
@@ -914,7 +1070,11 @@ def main():
             report["the_problems"].append(str(error))
     report["the_status"] = "FAIL" if report["the_problems"] else "PASS"
     report["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    receipt = "issuer-handoff.json" if args.issuer_handoff else "update.json"
+    receipt = "update.json"
+    if args.publication:
+        receipt = "publication.json"
+    if args.issuer_handoff:
+        receipt = "issuer-handoff.json"
     (args.evidence / receipt).write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps({"the_status": report["the_status"], "the_steps": len(report["steps"]),
                       "the_problems": report["the_problems"]}, indent=2))
