@@ -198,14 +198,14 @@ def package_license_setup(root, args):
     if manifest is None:
         raise ValueError("Install a verified OIP package before configuring its license policy.")
     verify_assets((root / "current").resolve(strict=True), manifest["the_artefacts"])
+    defaults = manifest.get(LICENSE_SETUP, {})
     previous_setup = root / "setup.json"
     if os.path.lexists(previous_setup):
-        existing = private_json(previous_setup)
-        if not isinstance(existing, dict):
+        defaults = private_json(previous_setup)
+        if not isinstance(defaults, dict):
             raise ValueError("The existing setup record is invalid. Use the Recovery procedure.")
-        return {name: existing[name] for name in ("license_policy", "commercial_license_kinds")
-                if name in existing}
-    return manifest.get(LICENSE_SETUP, {})
+    return {name: defaults[name] for name in ("license_policy", "commercial_license_kinds")
+            if name in defaults}
 
 
 def license_setup(root, args, core):

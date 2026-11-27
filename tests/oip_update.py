@@ -496,8 +496,8 @@ def real_candidate(work, report, args):
         marker.unlink()
         result = subprocess.run(setup, capture_output=True, text=True, timeout=120, cwd=work)
         assert result.returncode == 0, result.stderr
-        assert marker.read_bytes() == completion
-        assert (instance / "operator.credential").read_bytes() == credential
+        assert marker.read_bytes() == completion, "Setup rewrote the completion record on resume"
+        assert (instance / "operator.credential").read_bytes() == credential, "Setup changed the operator identity"
         report["steps"].append("interrupted first setup preserves the trusted defaults and operator identity")
         replacement = work / "replacement-policy.json"
         updated_policy = json.loads(json.loads(manifest)[oip_update.LICENSE_SETUP]["license_policy"])
