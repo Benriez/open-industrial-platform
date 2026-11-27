@@ -9,6 +9,7 @@ from io import BytesIO
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import signal
 import socket
@@ -37,8 +38,8 @@ from oip_license_issue import (
     ISSUER, PHP_ODP_ARTIFACT, PHP_OIP_ARTIFACT, PHP_OIP_HOLDER, PHP_OIP_LICENSE_ID, PHP_TEST_KEYS,
     decode, json_line, period, proof_request, public_key, sign_fixture,
 )
-from oip_local_operator import session
-from oip_opcua_parity import api
+from oip_local_operator import session, until
+from oip_opcua_parity import McpClient, api, free_port
 
 
 READY_CORE = """
@@ -773,6 +774,111 @@ def real_candidate(work, report, args):
         report["steps"].append("confirmed offline rotation revalidates the installed package and accepts the successor proof across restart")
 
 
+def rehearse_issuer_handoff(work, report, args):
+    with args.issuer_handoff.open("rb") as source:
+        handoff = json.loads(source.read(64 * 1024 + 1))
+        assert source.tell() <= 64 * 1024, "The test handoff exceeds 64 KiB"
+    assert handoff["schema"] == "oip-license-center-test-handoff-v1"
+    assert handoff["issuer_checkout_clean"] is True
+    for field in ("issuer_revision", "issuer_tree"):
+        assert re.fullmatch(r"[a-f0-9]{40}", handoff[field]), field
+        report[field] = handoff[field]
+    assert report["the_working_tree_is_clean"], "Build and test a clean OIP checkout"
+    registry, proof, foreign = (decode(handoff[name]) for name in ("registry", "oip_proof", "odp_proof"))
+    for name, data in (("registry", registry), ("oip_proof", proof), ("odp_proof", foreign)):
+        report[name + "_sha256"] = hashlib.sha256(data).hexdigest()
+
+    registry_file = work / "issuer-registry.json"
+    registry_file.write_bytes(registry)
+    policy = work / "license-policy.json"
+    policy.write_bytes(subprocess.check_output(
+        [sys.executable, "-B", ROOT / "tools/oip_local.py", "prepare-license-policy",
+         "--registry", registry_file, "--key-fingerprint", handoff["oip_fingerprint"],
+         "--kind", "standard", "--right", "sites=20"],
+        cwd=work, timeout=30,
+    ))
+    trusted_keys = set(json.loads(policy.read_bytes())["keys"])
+    assert trusted_keys == {json.loads(proof)["kid"]}
+    assert json.loads(foreign)["kid"] not in trusted_keys
+    report["steps"].append("approved OIP fingerprint selects only the matching key in the License Center export")
+
+    secret, public = keys(work)
+    instance = work / "recipient"
+    instance.mkdir(mode=0o700)
+    bundle = prepare(work / "recipient.zip", secret, args.core, args.web, report["the_revision"],
+                     "1.0.0", simulator=args.simulator, policy=policy, kinds=("standard",))
+    with ZipFile(bundle) as archive:
+        assets = json.loads(archive.read("manifest.json"))["the_artefacts"]
+    report["the_core_sha256"] = assets["oip-server"]
+    report["the_browser_sha256"] = assets["web/main.dart.js"]
+    checked = run(instance, bundle, public, "--dry-run")
+    assert checked.returncode == 0 and json.loads(checked.stdout)["the_status"] == "VERIFIED", checked.stderr
+    installed = run(instance, bundle, public)
+    assert installed.returncode == 0 and json.loads(installed.stdout)["the_status"] == "UPDATED", installed.stderr
+    for path in (registry_file, policy, bundle, secret):
+        path.unlink()
+    port, simulator_port = free_port(), free_port()
+    while simulator_port == port:
+        simulator_port = free_port()
+    subprocess.run(real_setup_command(work, instance, public, port, simulator_port),
+                   check=True, stdout=subprocess.DEVNULL, timeout=120, cwd=work)
+    report["steps"].append("fresh offline installation adopts issuer trust from the signed ZIP")
+
+    proof_file = work / "freshly-issued.license.json"
+    proof_file.write_bytes(proof)
+    license_path = "/api/v2/license"
+    with installed_browser(instance, port, work) as (base, browser, headers):
+        code, system = api(base, "/api/v2/support-package?infrastructure=local-infra", opener=browser)
+        assert code == 200, system
+        expected_build = subprocess.check_output(
+            ["git", "describe", "--always", "--abbrev=40", "--dirty"], cwd=ROOT, text=True,
+        ).strip()
+        assert system["build_revision"] == expected_build, system["build_revision"]
+        report["the_core_build_revision"] = system["build_revision"]
+        code, before = api(base, license_path, opener=browser)
+        assert code == 200 and before["proof_state"] == "missing" and before["can_manage"] is True
+        code, denied = api(base, license_path + "/preview", "POST",
+                           proof_request(foreign), headers, browser)
+        assert code == 400 and denied["code"] == "LICENSE_PROOF_INVALID"
+        assert api(base, license_path, opener=browser) == (200, before)
+        login = subprocess.check_output(
+            [instance / "current" / "oip-server", "--browser-login",
+             "--ipc-socket", instance / "ipc.sock", "--ipc-credential", instance / "operator.credential"],
+            text=True, timeout=10,
+        )
+        subprocess.run(
+            ["node", ROOT / "apps/flutter/test/browser_license.mjs", base, proof_file,
+             args.evidence / "issuer-handoff.png"],
+            input=json.loads(login)["login_code"], text=True, check=True, timeout=150,
+        )
+        code, after = api(base, license_path, opener=browser)
+        assert code == 200 and after["proof_state"] == "verified"
+        assert after["commercial"] == "active" and after["support"] == "ended"
+        assert (instance / "core.license.json").read_bytes() == proof
+        with browser.open(f"{base}/main.dart.js", timeout=10) as asset:
+            served = hashlib.sha256(asset.read()).hexdigest()
+        assert served == assets["web/main.dart.js"]
+        report["the_served_browser_sha256"] = served
+    report["steps"].append("REST rejects the issued ODP proof and the compiled UI imports the exact OIP proof after confirmation")
+
+    with installed_browser(instance, port, work) as (base, browser, _):
+        assert api(base, license_path, opener=browser) == (200, after)
+        mcp = McpClient(instance / "current" / "oip-server", instance / "ipc.sock",
+                        instance / "operator.credential", "operator")
+        try:
+            assert mcp.call("license_status_read") == after
+        finally:
+            mcp.close()
+        restarted = time.time_ns() // 1_000_000
+
+        def received_after_restart():
+            code, values = api(base, "/api/v2/observations?source=local-simulation", opener=browser)
+            return code == 200 and any((value["timestamps"]["received"] or 0) > restarted for value in values)
+
+        until(received_after_restart, "No fresh simulator observation after Core restart")
+    report["steps"].append("the restarted OIP Core agrees across REST and MCP and receives fresh data with ended support")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence", type=Path, default=ROOT / "target" / "oip-update")
@@ -780,27 +886,36 @@ def main():
     parser.add_argument("--web", type=Path)
     parser.add_argument("--simulator", type=Path)
     parser.add_argument("--real-receipt", type=Path)
+    parser.add_argument("--issuer-handoff", type=Path,
+                        help="Only rehearse fresh synthetic License Center browser exports")
     args = parser.parse_args()
     if bool(args.core) != bool(args.web):
         parser.error("--core and --web must be passed together")
+    if args.issuer_handoff and (not args.core or not args.simulator or args.real_receipt):
+        parser.error("--issuer-handoff requires --core, --web and --simulator and excludes --real-receipt")
     args.evidence.mkdir(parents=True, exist_ok=True)
     report = {"schema": "oip-update-v2", "steps": [], "the_problems": [],
               "the_target": oip_update.host_target()}
-    with tempfile.TemporaryDirectory(prefix="oip-update-test-", dir="/tmp") as temporary:
-        work = Path(temporary).resolve()
-        try:
-            rehearse(work, report)
-            if args.core:
-                real_candidate(work, report, args)
-        except (AssertionError, OSError, subprocess.SubprocessError, ValueError) as error:
-            report["the_problems"].append(str(error))
-    report["the_status"] = "FAIL" if report["the_problems"] else "PASS"
     for field, value in (("the_revision", "HEAD"), ("the_tree", "HEAD^{tree}")):
         report[field] = subprocess.check_output(["git", "rev-parse", value], cwd=ROOT, text=True).strip()
     report["the_working_tree_is_clean"] = not subprocess.check_output(
         ["git", "status", "--porcelain"], cwd=ROOT, text=True).strip()
+    with tempfile.TemporaryDirectory(prefix="oip-update-test-", dir="/tmp") as temporary:
+        work = Path(temporary).resolve()
+        try:
+            if args.issuer_handoff:
+                report["the_profile"] = "synthetic-issuer-to-installed-oip"
+                rehearse_issuer_handoff(work, report, args)
+            else:
+                rehearse(work, report)
+                if args.core:
+                    real_candidate(work, report, args)
+        except (AssertionError, KeyError, OSError, subprocess.SubprocessError, ValueError) as error:
+            report["the_problems"].append(str(error))
+    report["the_status"] = "FAIL" if report["the_problems"] else "PASS"
     report["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    (args.evidence / "update.json").write_text(json.dumps(report, indent=2) + "\n")
+    receipt = "issuer-handoff.json" if args.issuer_handoff else "update.json"
+    (args.evidence / receipt).write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps({"the_status": report["the_status"], "the_steps": len(report["steps"]),
                       "the_problems": report["the_problems"]}, indent=2))
     return 0 if report["the_status"] == "PASS" else 1

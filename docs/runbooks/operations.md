@@ -1576,6 +1576,27 @@ Run `python3 tests/oip_update.py` for the private fixture rehearsal. Passing
 release with the supplied build. The rehearsal uses generated signing keys
 and issues a local `update.json` receipt.
 
+To rehearse the issuer handoff, first run the isolated License Center browser
+test from its clean checkout with `LICENSE_CENTER_OIP_HANDOFF` set to a new
+file in a private test directory. It exports the test registry and the two
+proofs downloaded in that run. Use only this synthetic output. Build the
+Core, simulator and browser from the clean OIP candidate. Use the workspace
+build in §9.0 for the Core and `mcp_probe`, then run:
+
+```sh
+PLAYWRIGHT_MODULE="$PLAYWRIGHT_NODE_MODULE" python3 -B tests/oip_update.py \
+    --issuer-handoff "$TEST_HANDOFF" --core target/release/oip-server \
+    --web apps/flutter/build/web --simulator target/release/oip-simulated-server \
+    --evidence target/oip-issuer-handoff
+```
+
+This run installs a newly signed ZIP in a fresh instance, checks that only
+the approved OIP key is provisioned, rejects the issued ODP proof and imports
+the fresh OIP proof in the compiled browser. After restarting the Core, it
+checks REST and MCP parity and fresh simulator data with ended support.
+`issuer-handoff.json` records source revisions and asset digests. Treat
+`issuer-handoff.png` as a browser test capture.
+
 For a later approved static HTTPS delivery, a publisher can serve the archive
 as `/oip/macos-arm64/<version>/oip-local-darwin-arm64.zip` with
 `Content-Type: application/zip` and versioned immutable caching. Test the
